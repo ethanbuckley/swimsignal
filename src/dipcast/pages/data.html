@@ -36,6 +36,7 @@
 <tr data-file="verification_spots_live.csv"><td><a href="data/verification_spots_live.csv">verification_spots_live.csv</a></td><td>Each spot's forecast level beside the level the spills that happened would have given</td><td class="num">–</td></tr>
 <tr data-file="spot_scores.json"><td><a href="data/spot_scores.json">spot_scores.json</a></td><td>Those live spill scores summed over each spot's upstream overflows, for its page</td><td class="num">–</td></tr>
 <tr data-file="upstream/"><td>upstream/</td><td>Every monitored storm overflow upstream of each spot, one file a spot, for the organisers' page</td><td class="num">–</td></tr>
+<tr data-file="research/"><td><a href="data/research/ecoli.json">research/</a></td><td>Every Environment Agency E. coli lab sample at the inland bathing waters, with a model estimate worked out afterwards beside each</td><td class="num">–</td></tr>
 <tr data-file="anypoint/"><td><a href="data/anypoint/tiles.json">anypoint/</a></td><td>The river network, upstream overflows and spill probabilities for forecasts at a clicked point</td><td class="num">–</td></tr>
 <tr data-file="coastal.json"><td><a href="data/coastal.json">coastal.json</a></td><td>Official English coastal and estuary directory, historical ratings and dated advice</td><td class="num">–</td></tr>
 <tr data-file="places.json"><td><a href="data/places.json">places.json</a></td><td>The towns, villages and districts Plan a swim can start from</td><td class="num">–</td></tr>
@@ -180,6 +181,12 @@
 </dl>
 <p><b>Licence.</b> SwimSignal's upstream calculations, with the overflow records and river network under the licences in the credits.</p>
 
+<h2 id="research">research/</h2>
+<p>The E. coli samples the <a href="/samples">samples page</a> shows, split from the research export (<a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/ECOLI-EVIDENCE-CONTRACT-v1.md">its contract, version 1</a>). The table links <code>ecoli.json</code>; its size is the whole folder's. A dated historical record: each sample is what the Environment Agency's lab measured on the day it was taken. The estimate beside each sample was worked out afterwards and was never shown on the site (<code>issued</code> is false). Sample data © Environment Agency, Open Government Licence v3.0.</p>
+<dl class="fields">
+<dt><code>ecoli.json</code></dt><dd>The export without each bathing water's samples: what it may and may not say (<code>claim</code>), the 900 line and the 25% warning line, how the hindsight estimate was made (<code>hindsight</code>), the sources with each input's SHA-256, and every bathing water's counts and first and last dates (<code>summary</code>), with the Environment Agency's page for it (<code>profile</code>) and its rating in this build (<code>rating</code>). <code>available</code> is false, with <code>why</code>, when no export was published</dd>
+<dt><code>ecoli/&lt;spot_id&gt;.json</code></dt><dd>One bathing water whole: every sample in time order, with its time, its E. coli and intestinal enterococci counts per 100 ml, each count's qualifier (<code>"&lt;"</code> below or <code>"&gt;"</code> above the lab's limit), its source, whether it was over 900, and the hindsight estimate of that, or null where there is none</dd>
+</dl>
 <h2 id="anypoint">anypoint/</h2>
 <p>The files the map uses to calculate a forecast at a point you click, on your device. The table links <code>tiles.json</code>, the index of available 0.25-degree squares, versions, distance units and probability scales; its size is the whole folder's. These files are intended to be read together by the site's <a href="https://github.com/ethanbuckley/swimsignal/blob/main/src/dipcast/site/anypoint.js">point-forecast script</a>.</p>
 <dl class="fields">
