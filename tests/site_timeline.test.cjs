@@ -122,3 +122,13 @@ test('the page loads the script, puts the fold after what the level rests on, an
   assert.ok([...mine].every(n => /^(timeline|TIMELINE)/.test(n)), [...mine].join(', '));
   assert.match(fs.readFileSync(join(site, 'sw.js'), 'utf8'), /`timeline\.js\?v=\$\{BUILD\}`/);
 });
+
+test('a partner sample also sent through samples/ is listed once, as the samples/ result', () => {
+  const link = { href: 'waterhead.html', by: 'Ambleside Action for a Future' };
+  const doc = { samples: [{ date: '2026-10-12', ecoli: 20, ie: 5 }, { date: '2026-10-05', ecoli: 0, ie: 2 }] };
+  const d = { id: 'osm-windermere-waterhead', kind: 'lake', days: [{}], measured: [
+    { sampled_at: '2026-10-12', time_known: false, ecoli: 20, enterococci: 5, supplier: 'Ambleside Action for a Future' },
+    { sampled_at: '2026-10-05', time_known: false, ecoli: 0, enterococci: 2, supplier: 'Ambleside Action for a Future' }] };
+  const items = t.timelineItems(d, { partnerLink: link, partner: doc }, NOW, GEN).filter(x => x.kind === 'measurement');
+  assert.deepEqual(items.map(x => [x.day, x.what]), [['2026-10-12', 'Lab result sent to SwimSignal'], ['2026-10-05', 'Lab result sent to SwimSignal']]);
+});

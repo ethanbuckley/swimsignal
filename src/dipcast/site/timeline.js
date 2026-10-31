@@ -94,18 +94,20 @@ function timelineAgency(d, ecoli) {
     status: 'Official bathing water sample, as the Environment Agency publishes it' }));
 }
 
-// Lab results an organisation sent (spots.json `measured`, measured.js): the last 30 days only, as the build gives them.
+// Lab results an organisation or sampling partner sent (spots.json `measured`, measured.js; samples/README.md): the last
+// 30 days only, as the build gives them.
 function timelineMeasured(d) {
   return (Array.isArray(d.measured) ? d.measured : []).filter(s => s && s.supplier && timelineDay(s.sampled_at)
     && timelineCounts(s.ecoli, s.ecoli_qualifier, s.enterococci, s.enterococci_qualifier))
     .map(s => ({ day: timelineDay(s.sampled_at), at: s.sampled_at, kind: 'measurement', what: 'Lab result sent to SwimSignal',
       says: timelineCounts(s.ecoli, s.ecoli_qualifier, s.enterococci, s.enterococci_qualifier),
       source: `${timelineEsc(s.supplier)}${s.lab ? `; lab: ${timelineEsc(s.lab)}` : ''}${s.method ? `; method: ${timelineEsc(s.method)}` : ''}`,
-      status: `Sent by ${timelineEsc(s.supplier)}. SwimSignal did not take or check the sample` }));
+      status: `Sent by ${timelineEsc(s.supplier)}, published with its permission. SwimSignal did not take or check the sample` }));
 }
 
-// A partner group's samples (data/research/local-samples.json names the file; for Waterhead, waterhead_wet.json):
-// every sample, each with who took it. A recorded 0 is said as recorded, with what is not known about it.
+// A partner group's whole published series (data/research/local-samples.json names the file; for Waterhead, the WET
+// research export, waterhead_wet.json): every sample, each with who took it. samples/ holds only the last 30 days on a
+// spot, so a partner's history comes from its research export. A recorded 0 is said as recorded, with what is not known about it.
 function timelinePartner(link, doc) {
   if (!link || !doc || !Array.isArray(doc.samples) || !link.by) return [];
   const page = /^[a-z0-9-]+\.html$/.test(link.href || '') ? link.href : null;
@@ -147,11 +149,13 @@ function timelineVisits(d, index, nowMs) {
     });
 }
 
-// Every item, newest first; on one day, measurements, then reports, then the forecast.
+// Every item, newest first; on one day, measurements, then reports, then the forecast. A partner's sample that also
+// came through samples/ (`measured`, the last 30 days) is listed once, as the samples/ result: the same day and counts.
 function timelineItems(d, files, nowMs, generatedAt) {
-  const f = files || {};
+  const f = files || {}, measured = timelineMeasured(d), same = new Set(measured.map(x => `${x.day}|${x.says}`));
+  const partner = timelinePartner(f.partnerLink, f.partner).filter(x => !same.has(`${x.day}|${x.says.replace(/ A recorded 0 .*$/, '')}`));
   const all = [...timelineForecast(d, generatedAt), ...timelineOfficial(d), ...timelineAlgae(d), ...timelineAgency(d, f.ecoli),
-    ...timelineMeasured(d), ...timelinePartner(f.partnerLink, f.partner), ...timelineSatellite(f.lake), ...timelineVisits(d, f.reviews, nowMs)];
+    ...measured, ...partner, ...timelineSatellite(f.lake), ...timelineVisits(d, f.reviews, nowMs)];
   return all.filter(x => x.day).sort((a, b) => b.day.localeCompare(a.day) || TIMELINE_ORDER[a.kind] - TIMELINE_ORDER[b.kind]
     || String(b.at || '').localeCompare(String(a.at || '')));
 }
