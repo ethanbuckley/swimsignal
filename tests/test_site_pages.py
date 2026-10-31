@@ -63,7 +63,7 @@ def test_every_spot_gets_its_own_page_and_preview(tmp_path):
     assert 'href="https://example.org/swim/icons/apple-touch-icon.png"' in lost
     assert (tmp_path / "robots.txt").read_text() == "User-agent: *\nAllow: /\nSitemap: https://example.org/swim/sitemap.xml\n"
     sm = (tmp_path / "sitemap.xml").read_text()
-    assert sm.count("<url>") == 25 and "<loc>https://example.org/swim/spot/tarn/</loc>" in sm   # with sites.html, record.html, clubs.html, quality.html, spots.html, research.html, lakes.html, lake-temperatures.html, durations.html (spill durations), samples.html, waterhead.html, models.html (the model scorecard) and two profiles
+    assert sm.count("<url>") == 28 and "<loc>https://example.org/swim/spot/tarn/</loc>" in sm   # with sites.html, record.html, clubs.html, quality.html, spots.html, research.html, lakes.html, lake-temperatures.html, durations.html (spill durations), samples.html, waterhead.html, research-catalogue.html, sampling-planner.html, partners.html, models.html and two profiles
     assert (tmp_path / "quality.html").exists()   # without an overflow table its lists say so (tests/test_quality.py)
     assert "<loc>https://example.org/swim/methods.html</loc>" in sm
     assert "<loc>https://example.org/swim/coverage.html</loc>" in sm
@@ -236,7 +236,7 @@ def test_a_spot_with_a_share_card_previews_it_and_the_rest_keep_the_shared_pictu
 
 PROSE_PAGES = ["organisers.html", "verification.html", "spots.html", "about.html", "methods.html", "clubs.html", "coverage.html",
                "privacy.html", "terms.html", "testing.html", "feedback.html", "data.html", "sites.html", "record.html",
-               "quality.html", "support.html", "durations.html", "samples.html"]
+               "quality.html", "support.html", "durations.html", "samples.html", "sampling-planner.html"]
 
 
 def test_every_prose_page_has_its_own_share_preview(tmp_path):
@@ -949,7 +949,7 @@ def test_tips_add_a_page_a_link_in_every_foot_and_a_privacy_section_only_when_on
     assert ">Support SwimSignal</a>" in spot
     privacy = (tmp_path / "privacy.html").read_text()
     assert '<h2 id="tips">If you leave a tip</h2>' in privacy and bs.SUPPORT_RIGHTS[1] in privacy
-    assert "Last updated 30 October 2026 (page-view counter, tips)." in privacy   # after the counter's own note
+    assert "Last updated 31 October 2026 (page-view counter, tips)." in privacy   # after the counter's own note
     assert "(tips)" not in (tmp_path / "terms.html").read_text()
     assert 'href="support.html">How to tip' in (tmp_path / "about.html").read_text()
     assert "support.html" in (tmp_path / "sitemap.xml").read_text()
@@ -957,7 +957,7 @@ def test_tips_add_a_page_a_link_in_every_foot_and_a_privacy_section_only_when_on
     bs.write_pages(tmp_path, SPOTS[:1], root="https://example.org/swim/")   # turned off again
     assert not (tmp_path / "support.html").exists()
     assert not any("Support SwimSignal" in p.read_text() for p in tmp_path.rglob("*.html"))
-    assert "Last updated 30 October 2026." in (tmp_path / "privacy.html").read_text()
+    assert "Last updated 31 October 2026." in (tmp_path / "privacy.html").read_text()
 
 
 def test_map_tiles_stay_on_openstreetmap_unless_a_known_provider_has_a_key(monkeypatch):
@@ -1007,7 +1007,7 @@ def test_another_tile_provider_reaches_the_map_the_privacy_notice_and_the_terms(
     privacy = (tmp_path / "privacy.html").read_text()
     assert "OpenStreetMap Foundation" not in privacy and "fetched from OpenStreetMap" not in privacy
     assert '<li><b>CARTO</b>, for the map images. Its <a href="https://carto.com/privacy/">privacy policy</a>' in privacy
-    assert "Last updated 30 October 2026 (page-view counter, map images, tips)." in privacy
+    assert "Last updated 31 October 2026 (page-view counter, map images, tips)." in privacy
     terms = (tmp_path / "terms.html").read_text()
     assert bs.OSM_TERMS not in terms and "map tiles from CARTO:" in terms
 

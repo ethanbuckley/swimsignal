@@ -29,7 +29,7 @@ from dipcast import __version__, config
 from dipcast.access import attach_access
 from dipcast.algae import by_site, refresh_algae
 from dipcast.forecast_log import describe_fetch, latest_samples, load_poll_log, load_verification, samples_status
-from dipcast.guides import attach_guides, copy_photos
+from dipcast.guides import attach_guides, boat_note, copy_photos
 from dipcast import official_advice
 from dipcast.samples import attach_measured
 from dipcast.ingest import rainfall
@@ -123,8 +123,8 @@ SITE_URL_ENV = "DIPCAST_SITE_URL"
 # string is the privacy notice's own lead, so the terms page's date is not touched.
 COUNTER_TOKEN_ENV = "DIPCAST_CF_BEACON_TOKEN"
 COUNTER_JS = TEMPLATE.parent / "counter.js"
-NO_COUNTER = ("and what it does not. Last updated 30 October 2026.", "There is no analytics script and no third-party tracking.")
-WITH_COUNTER = ("and what it does not. Last updated 30 October 2026 (page-view counter).",
+NO_COUNTER = ("and what it does not. Last updated 31 October 2026.", "There is no analytics script and no third-party tracking.")
+WITH_COUNTER = ("and what it does not. Last updated 31 October 2026 (page-view counter).",
                 ("Page views are counted with Cloudflare Web Analytics. Cloudflare states that it sets no cookies, "
                  "uses no local storage and does not fingerprint visitors. It sees your IP address when the counter "
                  "loads, as any web server would, and its "
@@ -340,6 +340,51 @@ def email_config() -> dict | None:
     return {"url": url}
 
 
+# Ask SwimSignal (ask/, the Worker): on when DIPCAST_ASK_URL is set to the Worker's address. It puts
+# "ask": {"url": ...} in spots.json, which shows the question tile on Plan a swim (ask.js), and adds the
+# privacy notice's section. Set it only once the Worker is deployed and answering (ask/README.md).
+ASK_URL_ENV = "DIPCAST_ASK_URL"
+
+
+def ask_config() -> dict | None:
+    url = os.environ.get(ASK_URL_ENV, "").strip()
+    if not url:
+        return None
+    if not re.fullmatch(r"https://[A-Za-z0-9.-]+(:\d+)?/", url):
+        log.warning("%s must be https://host/: Ask SwimSignal left off", ASK_URL_ENV)
+        return None
+    return {"url": url}
+
+
+# With Ask on, the privacy notice gains this section before "The server version", and "(Ask SwimSignal)"
+# after its date. What it says is what ask/src/index.js does: the question goes to the Worker and to
+# Anthropic; the Worker keeps a keyed hash of the connection and the day, deleted the day after, and the
+# day's total spend, and logs no question. Anthropic's own retention is its, under its commercial terms.
+ASK_PRIVACY = (
+    '<h2 id="ask">Ask SwimSignal</h2>\n<p>On Plan a swim you can ask a question in your own words. When you press Ask, '
+    "your question is sent to SwimSignal's Ask service, which runs on Cloudflare Workers, and from there to Anthropic, "
+    "whose AI model, Claude, reads SwimSignal's published data to answer it. Nothing else is sent: not your location, "
+    "your saved spots or your plan. Do not put your name or other personal details in a question. SwimSignal does not "
+    "keep your question or its answer. To limit how many questions one connection can ask in a day, the service keeps "
+    "a count under a keyed hash of your IP address and the day, never the address itself, and deletes it the day "
+    "after. It also keeps each day's total number of questions and what they cost, with nothing that links them to "
+    "anyone. Anthropic processes the question for SwimSignal and keeps it for a limited time under its own terms; "
+    '<a href="https://www.anthropic.com/legal/privacy">Anthropic\'s privacy policy</a> applies to that. Cloudflare '
+    "sees your IP address when you press Ask, as any web server would; "
+    '<a href="https://www.cloudflare.com/privacypolicy/">Cloudflare\'s privacy policy</a> applies to that. Either '
+    "may handle the question outside the UK under its own safeguards. The basis is SwimSignal's legitimate interest "
+    "in answering the question you chose to ask. The answer is written by an AI model from SwimSignal's data and can "
+    "be wrong: check a spot's page and the signs at the water.</p>\n")
+
+
+def with_ask(html: str) -> str:
+    """The privacy notice with Ask SwimSignal on: its section before "The server version", and its name after the date."""
+    if "<h2>The server version</h2>" not in html:
+        raise ValueError("privacy.html has lost its heading The server version, before which Ask's section goes")
+    html = html.replace("<h2>The server version</h2>", ASK_PRIVACY + "<h2>The server version</h2>", 1)
+    return privacy_updated(html, "Ask SwimSignal")
+
+
 def with_push(html: str, on: bool, email: bool = False, dates: bool = False) -> str:
     """The privacy page: the alerts section when alerts are on (in the browser, by email or both),
     else the planned-feature note. dates: alerts for a date are on too (DIPCAST_PUSH_DATES)."""
@@ -549,7 +594,7 @@ def with_tiles(html: str, name: str, tiles: dict | None) -> str:
 
 
 def privacy_updated(html: str, what: str) -> str:
-    """Say after the privacy notice's date what a setting added: "Last updated 30 October 2026
+    """Say after the privacy notice's date what a setting added: "Last updated 31 October 2026
     (page-view counter, tips)"."""
     return re.sub(r"(Last updated [^.<(]*?)(?: \(([^)]*)\))?\.", lambda m: f"{m[1]} ({m[2] + ', ' if m[2] else ''}{what}).",
                   html, count=1)
@@ -2179,9 +2224,15 @@ VERSIONED_SCRIPTS += ('<script src="guide.js"></script>',)
 # first time one is typed (PLACES, below).
 SHELL_SOURCES.append(TEMPLATE.parent / "plan.js")
 VERSIONED_SCRIPTS += ('<script src="plan.js"></script>',)
+# Ask SwimSignal on Plan a swim (ask.js): the question tile, shown only with DIPCAST_ASK_URL set (ask_config).
+SHELL_SOURCES.append(TEMPLATE.parent / "ask.js")
+VERSIONED_SCRIPTS += ('<script src="ask.js"></script>',)
 # A plan's outing (plan/): outing.js, when, the spot and a backup side by side; it uses plan.js.
 SHELL_SOURCES.append(TEMPLATE.parent / "outing.js")
 VERSIONED_SCRIPTS += ('<script src="outing.js"></script>',)
+# The day plan (dayplan.js): a few options with what is known at each, and the plan as a picture to send.
+SHELL_SOURCES.append(TEMPLATE.parent / "dayplan.js")
+VERSIONED_SCRIPTS += ('<script src="dayplan.js"></script>',)
 # A spot on a date (spotdate.js): the calendar file and the alerts for a date, which the outing and the
 # organisers' page share.
 SHELL_SOURCES.append(TEMPLATE.parent / "spotdate.js")
@@ -2220,6 +2271,10 @@ VERSIONED_SCRIPTS += ('<script src="passport.js"></script>',)
 # which the app reads from data/spot/<id>.json as it does the guide (DETAIL_FIELDS).
 SHELL_SOURCES.append(TEMPLATE.parent / "measured.js")
 VERSIONED_SCRIPTS += ('<script src="measured.js"></script>',)
+# The evidence timeline (timeline.js): a spot's dated measurements, reports and forecast in one list, from files the
+# site already has, fetched when its fold is opened.
+SHELL_SOURCES.append(TEMPLATE.parent / "timeline.js")
+VERSIONED_SCRIPTS += ('<script src="timeline.js"></script>',)
 # A plan's outing kept for offline use (outingpack.js): the plan's page, its spots' pages and files, and the
 # offline copy's own files, in a cache of their own that sw.js answers from and a new build leaves alone.
 SHELL_SOURCES.append(TEMPLATE.parent / "outingpack.js")
@@ -2234,6 +2289,9 @@ SHELL_SOURCES.append(TEMPLATE.parent / "replay.js")
 # The evidence map (prototype, ?evidence=1 only, docs/EVIDENCE-MAP-2026-10.md): index.html adds evmap.js itself
 # when asked, as it does replay.js, at levels.js's ?v=<stamp> (mountEvMap); the offline copy stores it (sw.js SHELL).
 SHELL_SOURCES.append(TEMPLATE.parent / "evmap.js")
+# The spill map (docs/PLUME-MAP-2026-10.md): index.html adds plume.js itself when the map's place on a spot's page
+# comes near the screen, at levels.js's ?v=<stamp> (mountPlume); the offline copy stores it (sw.js SHELL).
+SHELL_SOURCES.append(TEMPLATE.parent / "plume.js")
 
 
 def copy_app_files(site: Path, stamp: str | None = None) -> None:
@@ -2253,7 +2311,9 @@ def copy_app_files(site: Path, stamp: str | None = None) -> None:
     shutil.copy(TEMPLATE.parent / "levels.js", site / "levels.js")   # the level rules, which the page loads
     shutil.copy(TEMPLATE.parent / "anypoint.js", site / "anypoint.js")   # a forecast for any point clicked on the map
     shutil.copy(TEMPLATE.parent / "plan.js", site / "plan.js")   # Plan a swim
+    shutil.copy(TEMPLATE.parent / "ask.js", site / "ask.js")   # Ask SwimSignal, on Plan a swim when on
     shutil.copy(TEMPLATE.parent / "outing.js", site / "outing.js")   # a plan's outing and its backup
+    shutil.copy(TEMPLATE.parent / "dayplan.js", site / "dayplan.js")   # the day plan: options, and the plan as a picture
     shutil.copy(TEMPLATE.parent / "spotdate.js", site / "spotdate.js")   # the calendar file and alerts for a date
     shutil.copy(TEMPLATE.parent / "since.js", site / "since.js")   # what changed since you last looked
     shutil.copy(TEMPLATE.parent / "outingwatch.js", site / "outingwatch.js")   # what would change a plan's outing
@@ -2266,10 +2326,12 @@ def copy_app_files(site: Path, stamp: str | None = None) -> None:
     shutil.copy(TEMPLATE.parent / "journal.js", site / "journal.js")   # the swim journal, on the device only
     shutil.copy(TEMPLATE.parent / "passport.js", site / "passport.js")   # the swim passport, from the journal
     shutil.copy(TEMPLATE.parent / "measured.js", site / "measured.js")   # lab results an organisation sent (samples/)
+    shutil.copy(TEMPLATE.parent / "timeline.js", site / "timeline.js")   # the evidence timeline, newest first
     shutil.copy(TEMPLATE.parent / "outingpack.js", site / "outingpack.js")   # a plan's outing kept for offline use
     shutil.copy(TEMPLATE.parent / "arrive.js", site / "arrive.js")   # the arrival guide, ?arrive=1 only
     shutil.copy(TEMPLATE.parent / "replay.js", site / "replay.js")   # catchment replay, ?replay=1 only (src/dipcast/replay.py)
     shutil.copy(TEMPLATE.parent / "evmap.js", site / "evmap.js")   # evidence map, ?evidence=1 only (prototype)
+    shutil.copy(TEMPLATE.parent / "plume.js", site / "plume.js")   # the spill map on a spot's page (src/dipcast/plume.py)
     shutil.copytree(TEMPLATE.parent / "icons", site / "icons", dirs_exist_ok=True)
     # The map library, Leaflet, served from this site (vendor/leaflet/VERSION.txt) rather than a CDN.
     shutil.copytree(TEMPLATE.parent / "vendor", site / "vendor", dirs_exist_ok=True)
@@ -2662,8 +2724,8 @@ def robots(root: str) -> str:
     return f"User-agent: *\nAllow: /\nSitemap: {root}sitemap.xml\n"
 
 
-def sitemap(root: str, spot_ids: list[str], day: str, extra: list[str] | None = None) -> str:
-    urls = [root, f"{root}plan/", f"{root}about.html", f"{root}verification.html", f"{root}methods.html", f"{root}testing.html", f"{root}coverage.html", f"{root}data.html", f"{root}organisers.html", f"{root}sites.html", f"{root}record.html", f"{root}clubs.html", f"{root}quality.html", f"{root}spots.html", f"{root}research.html", f"{root}lakes.html", f"{root}lake-temperatures.html", f"{root}durations.html", f"{root}samples.html", f"{root}waterhead.html", f"{root}models.html"] +[f"{root}{x}" for x in extra or []] + [f"{root}spot/{i}/" for i in spot_ids] + [f"{root}spot/{i}/profile/" for i in spot_ids]
+def sitemap(root: str, spot_ids: list[str], day: str, extra: list[str] | None = None, overflow_ids: list[str] | None = None) -> str:
+    urls = [root, f"{root}plan/", f"{root}about.html", f"{root}verification.html", f"{root}methods.html", f"{root}testing.html", f"{root}coverage.html", f"{root}data.html", f"{root}organisers.html", f"{root}sites.html", f"{root}record.html", f"{root}clubs.html", f"{root}quality.html", f"{root}spots.html", f"{root}research.html", f"{root}lakes.html", f"{root}lake-temperatures.html", f"{root}durations.html", f"{root}samples.html", f"{root}waterhead.html", f"{root}research-catalogue.html", f"{root}sampling-planner.html", f"{root}partners.html", f"{root}models.html"] +[f"{root}{x}" for x in extra or []] + [f"{root}spot/{i}/" for i in spot_ids] + [f"{root}spot/{i}/profile/" for i in spot_ids] + [f"{root}overflow/{i}/" for i in overflow_ids or []]
     body = "".join(f"<url><loc>{escape(u)}</loc><lastmod>{day}</lastmod></url>" for u in urls)
     return f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{body}</urlset>\n'
 
@@ -2895,14 +2957,15 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
                 scotland: dict | None = None, email: bool = False, ireland: dict | None = None,
                 northern_ireland: dict | None = None, support: str | None = None, tiles: dict | None = None,
                 push_dates: bool = False, spot_cards: dict[str, str] | None = None, cards_v: str = "",
-                overflows: pd.DataFrame | None = None, generated: pd.Timestamp | None = None) -> int:
+                overflows: pd.DataFrame | None = None, generated: pd.Timestamp | None = None, ask: bool = False) -> int:
     """Every HTML page, the sitemap and the app files. Returns the number of spot pages. A spot
     whose id is not letters, digits and hyphens gets no page of its own and keeps ?spot=.
     support is the Ko-fi page tips go to (support_url), or None for no tips; tiles the map tile
     provider (tile_config), or None for OpenStreetMap's. spot_cards: {id: alt} for the spots with a share
     card in cards/spot/ (write_spot_cards); cards_v goes on its address, so a preview fetched again
     gets this build's card rather than a cached one. overflows: this build's overflow table, for the
-    data-quality page (write_quality_page); generated: the forecast's issue time, which that page gives."""
+    data-quality page (write_quality_page); generated: the forecast's issue time, which that page gives.
+    ask: Ask SwimSignal is on (ask_config), which adds its section to the privacy notice."""
     root = root or site_url()
     stamp = shell_stamp()
     template = with_tiles(with_build(TEMPLATE.read_text(), stamp), "index.html", tiles)
@@ -2911,7 +2974,7 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     template = lean_page(template)   # its CSS comments and comment-only script lines: the source keeps them
     template, app_js = split_app_script(template, stamp)   # the page's own script, deferred, as app.js
     for name in ["about.html", "verification.html", "terms.html", "privacy.html", "feedback.html", "testing.html", "methods.html", "coverage.html", "clubs.html",
-                 "research.html"]:
+                 "research.html", "partners.html"]:
         s = (STATIC / name).read_text()
         if name == "verification.html":   # before REWRITES, which then reach the links the figures carry
             s = with_verification_figures(s, site / "data" / "verification.json")   # build() writes it before the pages
@@ -2937,6 +3000,8 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
             from dipcast.northern_ireland import render as render_ni
             s = re.sub(r'<!-- NI_DIRECTORY -->.*?<!-- END_NI_DIRECTORY -->',
                        lambda _: render_ni(northern_ireland), s, flags=re.S)
+        if name == "privacy.html" and ask:
+            s = with_ask(s)
         s = with_counter(with_push(s, push, email, push_dates) if name == "privacy.html" else s, token)
         s = with_share_meta(with_tiles(s, name, tiles), name, root)
         (site / name).write_text(with_support(s, name) if support else s)
@@ -2981,16 +3046,19 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     paged = [r for r in results if r["id"] in set(ids)]
     write_spill_durations(site, paged)   # data/research/spill_durations*, before the profiles that show them and the data page
     write_profiles(site, paged, token, root=root)   # spot/<id>/profile/, from data/upstream/
+    overflow_ids = write_overflow_pages(site, paged, token, root=root, generated=generated)   # overflow/<id>/, from the same files
     write_every_spot(site, paged, root, token)   # spots.html, the spots' pages as plain links
     write_feeds(site, results, root)   # feed.xml, feed/, spot/<id>/feed.xml: after spot/ is written, before the data page lists them
     (site / "sitemap.xml").write_text(sitemap(root, ids, day or pd.Timestamp.now(tz="Europe/London").date().isoformat(),
-                                              extra=["support.html"] if support else []))
+                                              extra=["support.html"] if support else [], overflow_ids=overflow_ids))
     (site / "404.html").write_text(with_counter(with_phone_nav(not_found_page(root), root), token))
     (site / "robots.txt").write_text(robots(root))
     (site / ".nojekyll").write_text("")
     write_lakes(site, token, root)   # the satellite lake observations (Research): before the data page, which lists data/research/
     write_samples(site, token, root, results)   # every EA E. coli sample at a bathing water, from the research export: before the data page lists data/research/
     write_waterhead(site, token, root)   # Ambleside Action for a Future's Waterhead samples: before the data page lists data/research/
+    write_research_catalogue(site, token, root)   # every research record, its verdict and stage: before the data page lists data/research/
+    write_sampling_planner(site, token, root)   # where samples are thin, and the sampling simulation's results (Research)
     write_model_scorecard(site, token, root)   # each model's test record and stage: before the data page lists data/research/
     write_lake_temperatures(site)   # data/research/lake-temperatures/, before the data page lists data/
     write_data_page(site, token, root)   # lists what is in data/, so build() writes the data files first
@@ -3194,7 +3262,8 @@ def reach_by_company(contributors: list[dict]) -> list[list]:
 def write_app_data(site: Path, doc: dict) -> int:
     """data/spots-lite.json, spots.json (doc) without DETAIL_FIELDS, and data/spot/<id>.json with them,
     one file a spot. A lite spot names its file in `detail_file`, relative to data/, and gives whose its
-    overflows are in `reach_by_company` (reach_by_company), where it has any. A spot whose id
+    overflows are in `reach_by_company` (reach_by_company), where it has any, and its guide's first fact for boats and
+    boards in `boat_note` (guides.boat_note), where it has one. A spot whose id
     cannot be a file name keeps every field in the lite file. Returns the number of spot files."""
     out = site / "data" / "spot"
     shutil.rmtree(out, ignore_errors=True)   # no file left from a spot that has gone
@@ -3208,7 +3277,8 @@ def write_app_data(site: Path, doc: dict) -> int:
         (out / f"{s['id']}.json").write_text(json.dumps({"id": s["id"], "generated_at": doc["generated_at"], **detail,
                                                          "credits": doc.get("credits")}, separators=(",", ":"), default=str))
         lite.append({**{k: v for k, v in s.items() if k not in DETAIL_FIELDS}, "detail_file": f"spot/{s['id']}.json",
-                     **({"reach_by_company": by} if (by := reach_by_company(s.get("contributors"))) else {})})
+                     **({"reach_by_company": by} if (by := reach_by_company(s.get("contributors"))) else {}),
+                     **({"boat_note": note} if (note := boat_note(s.get("guide"))) else {})})   # Plan a swim's list, for a boat or a board
     # generated_at first: the push Worker reads only the file's first 4 KB for it (push/src/dispatch.js).
     (site / "data" / "spots-lite.json").write_text(json.dumps({"generated_at": doc["generated_at"], **doc, "spots": lite},
                                                               separators=(",", ":"), default=str))
@@ -3650,7 +3720,8 @@ def wet_link(doc: dict) -> dict:
     """What a linked spot's page says of the samples (index.html, localSamplesLine): where, who, how many and when."""
     s = doc["samples"]
     return {"href": "waterhead.html", "place": doc["site"]["name"], "by": "Ambleside Action for a Future",
-            "samples": len(s), "first": s[0]["date"], "last": s[-1]["date"]}
+            "samples": len(s), "first": s[0]["date"], "last": s[-1]["date"],
+            "data": "data/research/waterhead_wet.json"}   # every sample, for the spot's evidence timeline (timeline.js)
 
 
 def write_waterhead(site: Path, token: str | None = None, root: str | None = None, path: Path | None = None) -> dict:
@@ -3687,6 +3758,243 @@ def write_waterhead(site: Path, token: str | None = None, root: str | None = Non
                                                           "version": doc["version"]}
 
 
+# The research catalogue (docs/RESEARCH-CATALOGUE-CONTRACT-v1.md): one entry per record in the recovery register
+# (docs/RESEARCH-RECOVERY-2026-10.md), each with its original verdict kept apart from its current stage, its scope, its
+# records and PRs (closed ones with their branch), and, for an archived version, what would reopen it. Edited by hand;
+# tests/test_research_catalogue.py checks every quote against its record. Every entry is written into the page, so it
+# reads with scripts off; the page's own few lines only hide entries a search or a stage leaves out.
+CATALOGUE = config.ROOT / "data" / "research" / "research_catalogue.v1.json"
+CATALOGUE_SCHEMA, CATALOGUE_MAJOR = "swimsignal.research-catalogue", "1"
+REWRITES += [('href="/research-catalogue"', 'href="research-catalogue.html"')]   # Research links the page
+REPO_BLOB = "https://github.com/ethanbuckley/swimsignal/blob/"
+
+
+def catalogue_entry(x: dict, doc: dict) -> str:
+    """One record: where it stands now, what its test found, its scope, what would reopen it, then its records and PRs.
+    data-text is what the search reads: every word shown, with the topics, PR numbers and branch names."""
+    prs = [doc["prs"][str(n)] for n in x["prs"]]
+    when = lambda iso: pd.Timestamp(iso).strftime("%-d %b %Y")
+    read = f' Next date: {escape(when(x["read_on"]))}.' if x.get("read_on") else ""
+    now = f'<b>Now: {escape(doc["stages"][x["stage"]].lower())}.</b> {escape(x["stage_note"])}{read}'
+    rows = [f'<p>{now}</p>', f'<p><b>What the test found when it was run:</b> {escape(x["verdict"])}</p>',
+            f'<p><b>What it covers:</b> {escape(x["scope"])}</p>']
+    if x.get("next"):
+        rows.append(f'<p><b>Next:</b> {escape(x["next"])}</p>')
+    if x.get("reopen_when"):
+        rows.append(f'<p><b>Reopen when:</b> {escape(x["reopen_when"])}</p>')
+    rows += [f'<p class="rc-links"><a href="{escape(a["href"])}">{escape(a["label"])}</a></p>' for a in x.get("links", [])]
+    seen, docs = set(), []
+    for r in x["records"]:
+        if r["doc"] in seen:
+            continue
+        seen.add(r["doc"])
+        where = r.get("branch", "main")
+        docs.append(f'<a href="{REPO_BLOB}{escape(where)}/{escape(r["doc"])}">{escape(r["doc"].rsplit("/", 1)[-1])}</a>'
+                    + (f' (on branch <code>{escape(where)}</code>)' if "branch" in r else ""))
+    words = {"merged": "merged", "closed": "closed, not merged", "open": "open"}
+    pr_links = [f'<a href="https://github.com/ethanbuckley/swimsignal/pull/{p["n"]}">#{p["n"]}</a> ({words.get(p["state"], escape(p["state"]))}'
+                + (f', branch <code>{escape(p["branch"])}</code>' if p["state"] != "merged" and p["branch_exists"] else "") + ")"
+                for p in prs]
+    rows.append(f'<p class="rc-links">Records: {", ".join(docs)}. Pull requests: {", ".join(pr_links)}.</p>')
+    if x.get("register_note"):
+        rows.append(f'<p class="rc-note">Where our summaries differ: {escape(x["register_note"])}</p>')
+    text = " ".join([x["id"], x["title"], x["verdict"], x["scope"], x["stage_note"], x.get("next", ""), x.get("reopen_when", ""),
+                     x.get("register_note", ""), x.get("project", ""), " ".join(x["topics"]), doc["stages"][x["stage"]],
+                     " ".join(f'#{p["n"]} {p["branch"]}' for p in prs), " ".join(r["doc"] for r in x["records"])])
+    return (f'<section class="rc-entry" id="{escape(x["id"])}" data-stage="{escape(x["stage"])}" data-text="{escape(text.lower())}">'
+            f'<h3>{escape(x["title"])}</h3>' + "".join(rows) + "</section>")
+
+
+def catalogue_body(doc: dict) -> str:
+    """The search and the stage choice, then the entries by the register's sections, in its order."""
+    stages = "".join(f'<option value="{escape(k)}">{escape(v)}</option>' for k, v in doc["stages"].items())
+    parts = ['<form class="rc-find" role="search" onsubmit="return false"><label for="rc-q">Search the records'
+             '<input id="rc-q" type="search" autocomplete="off" placeholder="satellite, #187, lakes"></label>'
+             f'<label for="rc-stage">Where it stands now<select id="rc-stage"><option value="">Every stage</option>{stages}</select></label></form>',
+             f'<p class="rc-count" id="rc-count" aria-live="polite">{len(doc["entries"])} records.</p>']
+    for key, name in doc["sections"].items():
+        items = [x for x in doc["entries"] if x["section"] == key]
+        if items:
+            parts.append(f'<div class="rc-section" data-section="{escape(key)}"><h2>{escape(name)}</h2>'
+                         + "".join(catalogue_entry(x, doc) for x in items) + "</div>")
+    return "\n".join(parts)
+
+
+def write_research_catalogue(site: Path, token: str | None = None, root: str | None = None, path: Path | None = None) -> dict:
+    """research-catalogue.html, and data/research/research_catalogue.json, from the catalogue (CATALOGUE unless path), or
+    the page saying none are shown. Returns the build's health entry."""
+    path = path or CATALOGUE
+    out = site / "data" / "research" / "research_catalogue.json"
+    out.unlink(missing_ok=True)
+    why = None
+    if not path.is_file():
+        why = "no catalogue in this build"
+    else:
+        doc = json.loads(path.read_text())
+        if doc.get("schema") != CATALOGUE_SCHEMA or str(doc.get("version", "")).split(".")[0] != CATALOGUE_MAJOR:
+            why = f"catalogue is {doc.get('schema')} {doc.get('version')}, not {CATALOGUE_SCHEMA} {CATALOGUE_MAJOR}.x"
+    page = (TEMPLATE.parent / "research-catalogue.html").read_text()
+    if why:
+        body = '<p class="notice">No records are published in this build.</p>'
+    else:
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(json.dumps(doc, ensure_ascii=False, separators=(",", ":")))
+        body = catalogue_body(doc)
+    if "<!-- CATALOGUE -->" not in page:
+        raise ValueError("research-catalogue.html has lost <!-- CATALOGUE -->, which write_research_catalogue fills")
+    page = page.replace("<!-- CATALOGUE -->", body, 1)
+    (site / "research-catalogue.html").write_text(with_counter(with_share_meta(page, "research-catalogue.html", root or site_url()), token))
+    return {"available": False, "why": why} if why else {"available": True, "entries": len(doc["entries"]), "version": doc["version"]}
+# The sampling planner (docs/SAMPLING-PLANNER-CONTRACT-v1.md, issue #482): where the EA's E. coli samples behind the
+# model are thin, by spot, year, month and rain, and the sampling-priorities simulation's results (#381, failed) for its
+# four ways of spending a budget, from scripts/export_sampling_planner.py. Written whole, as the Waterhead page is;
+# sampling-planner.js only does the cost lines from the form, with the simulation's runs on the form. Suggests nothing
+# to anyone and allocates no sample. A file of another schema or major version is not published: the page says so.
+PLANNER = config.ROOT / "data" / "research" / "sampling_planner.v1.json"
+PLANNER_SCHEMA, PLANNER_MAJOR = "swimsignal.sampling-planner", "1"
+REWRITES += [('href="/sampling-planner"', 'href="sampling-planner.html"')]   # Research links the page
+
+
+def planner_body(doc: dict) -> str:
+    """The lead, then where samples are thin, the simulation's four policies and its verdict, the cost form and the
+    suggested priorities, kept apart from any plan."""
+    c, sim, n = doc["coverage"], doc["simulation"], lambda v, d=0: f"{v:,.{d}f}"
+    sites, sp, wet = c["sites"], c["spots"], c["wet"]
+    none = sp["total"] - sp["with_ea"] - sp["with_local"]
+    one = [s for s in sites if sum(1 for y in s["by_year"] if y) == 1]
+    rained = lambda k: [s for s in sites if s["kind"] == k and s["rain_rows"]]
+    wet_of = lambda ss: (sum(s["wet_rows"] for s in ss), sum(s["rain_rows"] for s in ss))
+    (rw, rn), (lw, ln) = wet_of(rained("river")), wet_of(rained("lake"))
+    names = lambda ss: "; ".join(escape(s["name"]) for s in ss[:-1]) + ("; and " if len(ss) > 1 else "") + escape(ss[-1]["name"])   # names hold commas
+    small = lambda v: f"{v:.6f}".replace("-", "−")
+    month = dict(zip(c["months"], c["by_month"]))
+    word = {"05": "May", "06": "June", "07": "July", "08": "August", "09": "September"}
+    parts = [f'<p class="lead">{escape(doc["claim"]["public_wording"])}</p>',
+             "<h2>Where samples are thin</h2>",
+             f'<p>SwimSignal\'s E. coli model learns only from lab samples. All of them are the Environment Agency\'s, at the '
+             f'{len(sites)} inland bathing waters: {n(c["samples"])} samples from {c["years"][0]} to {c["years"][-1]}.</p><ul>'
+             f'<li><b>Most spots have none.</b> {none} of SwimSignal\'s {sp["total"]} spots ({sp["none_rivers"]} rivers and '
+             f'{sp["none_lakes"]} lakes) have no lab samples here.'
+             + (f' {"One" if sp["with_local"] == 1 else sp["with_local"]} more has a local group\'s samples (<a href="waterhead.html">Waterhead</a>), which are '
+                'not part of the model\'s data.' if sp["with_local"] else "") + "</li>"
+             f'<li><b>Only May to September.</b> No sample here was taken from October to April. May ({n(month["05"])}) '
+             f'and September ({n(month["09"])}) have fewer than June ({n(month["06"])}) and July ({n(month["07"])}).</li>'
+             f'<li><b>{len(one)} bathing waters have one season.</b> {names(one)} have only {c["years"][-1]} samples here, '
+             'about 20 each.</li>'
+             f'<li><b>Few samples after rain.</b> Of the {n(wet["rows"])} samples from 2024 to 2026 with archived rain, '
+             f'{n(wet["wet_rows"])} ({round(100 * wet["wet_rows"] / wet["rows"])}%) came after more than {wet["mm_48h"]} mm '
+             f'in 48 hours: {rw} of {rn} at rivers and {lw} of {ln} at lakes. The {len(sites) - wet["sites"]} bathing waters '
+             'with no monitored overflow upstream have no rain figures here.</li></ul>']
+    parts.append('<div class="tw"><table class="sp-areas"><caption>SwimSignal\'s spots by area.</caption><thead><tr>'
+                 '<th scope="col">Area</th><th scope="col" class="num">Spots</th><th scope="col" class="num">With EA samples</th>'
+                 '<th scope="col" class="num">With none</th></tr></thead><tbody>'
+                 + "".join(f'<tr><th scope="row">{escape(a["area"])}</th><td class="num">{a["spots"]}</td>'
+                           f'<td class="num">{a["with_ea"]}</td><td class="num">{a["spots"] - a["with_ea"] - a["with_local"]}</td></tr>'
+                           for a in sp["by_area"]) + "</tbody></table></div>")
+    ordered = sorted(sites, key=lambda s: (s["samples"], s["name"]))
+    after = lambda s: f'{s["wet_rows"]} of {s["rain_rows"]}' if s["rain_rows"] else "–"
+    parts.append('<div class="tw"><table class="sp-sites"><caption>Each bathing water, fewest samples first. After rain: '
+                 f'samples after more than {wet["mm_48h"]} mm in 48 hours, of those with archived rain, 2024 to 2026.</caption>'
+                 '<thead><tr><th scope="col">Bathing water</th><th scope="col">Kind</th><th scope="col" class="num">Samples</th>'
+                 + "".join(f'<th scope="col" class="num">{y}</th>' for y in c["years"])
+                 + "".join(f'<th scope="col" class="num">{word[m][:3]}</th>' for m in c["months"])
+                 + '<th scope="col" class="num">After rain</th></tr></thead><tbody>'
+                 + "".join(f'<tr><th scope="row">{escape(s["name"])}</th><td>{escape(s["kind"])}</td>'
+                           f'<td class="num">{s["samples"]}</td>' + "".join(f'<td class="num">{y}</td>' for y in s["by_year"])
+                           + "".join(f'<td class="num">{m}</td>' for m in s["by_month"]) + f'<td class="num">{after(s)}</td></tr>'
+                           for s in ordered) + "</tbody></table></div>")
+    main, w = sim["runs"][0], sim["world"]
+    st, cov = main["strategies"], main["info_vs"]["COVER"]
+    rnd = main["info_vs"]["RANDOM"]
+    lower = lambda k: round(100 * (st["RANDOM"]["P"] - st[k]["P"]) / st["RANDOM"]["P"])
+    parts += ["<h2>Four ways to spend a budget, in a simulation</h2>",
+              f'<p>A simulation tried four ways of choosing where and when to take {main["budget"]} extra samples in one '
+              f'season. Its world was made up: {escape(w["note"])} Nothing here has been tried on real water.</p><dl class="fields">'
+              + "".join(f'<dt>{escape(p["name"])}</dt><dd>{escape(p["rule"])}</dd>' for p in doc["policies"]) + "</dl>",
+              '<div class="tw"><table class="sp-runs"><caption>The simulation\'s results, means over '
+              f'{main["replications"]} made-up worlds. Error is how far the model\'s rate for each site was from the true '
+              'rate in a later season: lower is better. A high result is a made-up sample over the line.</caption><thead><tr><th scope="col">Policy</th>'
+              '<th scope="col" class="num">Error</th><th scope="col" class="num">Lower than random</th>'
+              '<th scope="col" class="num">Error at sites never sampled before</th>'
+              f'<th scope="col" class="num">High results, of {main["budget"]}</th>'
+              '<th scope="col" class="num">Rain in the 48 hours before, mm</th></tr></thead><tbody>'
+              + "".join(f'<tr><th scope="row">{escape(p["name"])}</th><td class="num">{st[p["id"]]["P"]:.5f}</td>'
+                        f'<td class="num">{"–" if p["id"] == "RANDOM" else str(lower(p["id"])) + "%"}</td>'
+                        f'<td class="num">{st[p["id"]]["P_never"]:.5f}</td><td class="num">{st[p["id"]]["S4_exceedances"]:.1f}</td>'
+                        f'<td class="num">{st[p["id"]]["mean_rain48"]:.1f}</td></tr>' for p in doc["policies"])
+              + "</tbody></table></div>",
+              f'<p><b>The information policy failed its test.</b> It needed lower error than equal coverage in at least 60% '
+              f'of the {main["replications"]} worlds, and had it in {cov["share_info_lower"] * 100:.1f}%. Its mean gain over '
+              f'equal coverage was {small(cov["mean_gain"])} (95% interval {small(cov["ci95"][0])} to {small(cov["ci95"][1])}), '
+              f'about {round(100 * cov["mean_gain"] / st["COVER"]["P"])}% of equal coverage\'s error. Against random it '
+              f'had lower error in {rnd["share_info_lower"] * 100:.0f}%. Nothing was adopted, and this page does not change '
+              'that.</p>',
+              '<p>Almost all of the difference was at sites never sampled before. Equal coverage and the information policy '
+              'both went mostly there; the information policy also chose wetter days. The wettest, riskiest days caught the '
+              'most samples over the line, but taught the model little more than random did.</p>']
+    near = lambda r: {"main": f'The test: {n(r["per_site"])} per new site', "tau0": f'Check: {n(r["per_site"])} per new '
+                      'site, sites truly alike', "budget120": f'Check: {n(r["per_site"])} per new site'}.get(r["run"], r["run"])
+    parts.append('<div class="tw"><table class="sp-runs"><caption>The information policy against equal coverage, in '
+                 'each simulated run. The runs other than the first were checks that decided nothing.</caption><thead><tr>'
+                 '<th scope="col">Run</th><th scope="col" class="num">Samples</th><th scope="col" class="num">Lower error in</th>'
+                 '<th scope="col" class="num">Mean gain</th><th scope="col">95% interval</th></tr></thead><tbody>'
+                 + "".join(f'<tr><th scope="row">{escape(near(r))}</th><td class="num">{r["budget"]}</td>'
+                           f'<td class="num">{r["info_vs"]["COVER"]["share_info_lower"] * 100:.1f}%</td>'
+                           f'<td class="num">{small(r["info_vs"]["COVER"]["mean_gain"])}</td>'
+                           f'<td>{small(r["info_vs"]["COVER"]["ci95"][0])} to {small(r["info_vs"]["COVER"]["ci95"][1])}</td></tr>'
+                           for r in sim["runs"]) + "</tbody></table></div>"
+                 '<p>With about 10 samples per new site, equal coverage caught up: the interval includes 0.</p>')
+    k, runs = doc["cost"], [{f: r[f] for f in ("run", "tau", "budget", "per_site", "replications", "info_vs")} for r in sim["runs"]]
+    parts += ["<h2>What a season would cost</h2>",
+              f'<p>Set the samples, the price of one sample and the sites to share them over. {escape(k["note"])}</p>',
+              f'<form class="sp-calc" id="sp-calc" data-runs="{escape(json.dumps(runs, separators=(",", ":")))}">'
+              f'<label>Samples in the season<input name="samples" type="number" inputmode="numeric" min="1" step="1" value="{k["samples"]}"></label>'
+              f'<label>Price per sample, £ (your assumption)<input name="price" type="number" inputmode="decimal" min="0" step="any" value="{k["per_sample_gbp"]}"></label>'
+              f'<label>Sites to share them over<input name="sites" type="number" inputmode="numeric" min="1" step="1" value="{k["sites"]}"></label></form>',
+              '<div id="sp-out" aria-live="polite"><noscript><p>The cost lines need JavaScript.</p></noscript></div>',
+              '<p class="sp-note">Every policy here takes the same number of samples, so the lab bill is the same. What '
+              'differs is which sites and which days.</p>']
+    by_none = sorted(sp["by_area"], key=lambda a: -(a["spots"] - a["with_ea"] - a["with_local"]))[:3]
+    dry = sorted((s for s in sites if s["kind"] == "river" and s["rain_rows"]), key=lambda s: (s["wet_rows"], s["name"]))[:4]
+    parts += ["<h2>Suggested priorities, not a plan</h2>",
+              '<p>If a sampler asks where one more sample would add most, the rule of thumb recorded on 26 October 2026 is: '
+              'the least-sampled sites, on wetter days. It comes from the simulation above, not from real water. On '
+              'these files it points to:</p><ul>'
+              f'<li>the {none} spots with no samples, most of them in '
+              + ", ".join(f'{escape(a["area"])} ({a["spots"] - a["with_ea"] - a["with_local"]})' for a in by_none) + "</li>"
+              f'<li>the bathing waters with one season of samples: {names(one)}</li>'
+              f'<li>the rivers with fewest samples after rain: ' + "; ".join(f'{escape(s["name"])} ({after(s)})' for s in dry)
+              + "</li></ul>",
+              '<p>These are things to talk about. SwimSignal does not choose where or when anyone samples, and sends no '
+              'list to a sampler. It has not shown that any of these choices teaches the model more than a fixed '
+              'schedule.</p>']
+    return "\n".join(parts)
+
+
+def write_sampling_planner(site: Path, token: str | None = None, root: str | None = None, path: Path | None = None) -> dict:
+    """sampling-planner.html and sampling-planner.js from the export (PLANNER unless path), or the page saying nothing
+    is shown. Returns the build's health entry."""
+    path, why = path or PLANNER, None
+    if not path.is_file():
+        why = "no export in this build"
+    else:
+        doc = json.loads(path.read_text())
+        if doc.get("schema") != PLANNER_SCHEMA or str(doc.get("version", "")).split(".")[0] != PLANNER_MAJOR:
+            why = f"export is {doc.get('schema')} {doc.get('version')}, not {PLANNER_SCHEMA} {PLANNER_MAJOR}.x"
+    page = (TEMPLATE.parent / "sampling-planner.html").read_text()
+    js = TEMPLATE.parent / "sampling-planner.js"
+    body = '<p class="notice">No planning figures are published in this build.</p>' if why else planner_body(doc)
+    for marker, text in (("<!-- SP -->", body), ("<!-- SP-ATTRIB -->", "" if why else escape(" ".join(doc["attribution"])) + ".")):
+        if marker not in page:
+            raise ValueError(f"sampling-planner.html has lost {marker}, which write_sampling_planner fills")
+        page = page.replace(marker, text, 1)
+    tag = '<script src="sampling-planner.js"></script>'
+    if tag not in page:
+        raise ValueError(f"sampling-planner.html has lost {tag}, which the build versions")
+    page = page.replace(tag, f'<script src="sampling-planner.js?v={hashlib.sha256(js.read_bytes()).hexdigest()[:8]}"></script>', 1)
+    shutil.copy(js, site / "sampling-planner.js")
+    (site / "sampling-planner.html").write_text(with_counter(with_share_meta(page, "sampling-planner.html", root or site_url()), token))
+    return {"available": False, "why": why} if why else {"available": True, "version": doc["version"]}
 # The model scorecard (docs/MODEL-SCORECARD-CONTRACT-v1.md): each forecast model or candidate, its test record against
 # a simple reference, and its stage, as scripts/export_model_scorecard.py exports it from the test records in docs/.
 # A prose page with no script, models.html, one section a model; the file is copied to data/research/model_scorecard.json.
@@ -3810,6 +4118,8 @@ def write_model_scorecard(site: Path, token: str | None = None, root: str | None
 # written again from a downloaded data/ alone. A prose page with no script, in the sitemap beside the
 # spot's page; not in the offline copy, and not on the data page, which lists data files.
 REWRITES += [('href="/clubs"', 'href="clubs.html"')]   # the page for clubs, centres and leaders (About links it)
+# The page for sampling partners (docs/PARTNER-PROGRAMME-2026-11.md): groups and labs that share water-sample results.
+REWRITES += [('href="/partners"', 'href="partners.html"')]
 
 
 def write_quality_page(site: Path, overflows: pd.DataFrame | None, generated: pd.Timestamp | None = None,
@@ -3887,6 +4197,57 @@ def write_profiles(site: Path, spots: list[dict], token: str | None = None, retu
             with_counter(with_phone_nav(profile.site_page(r, t, MARK, url=f"{root}spot/{r['id']}/profile/", root=root,
                                            durations=spill_durations_for(site, r["id"]) if t is not None else None)), token))
     return n
+
+
+# One page for each monitored overflow upstream of a spot with a page, overflow/<id>/ (src/dipcast/overflow_record.py):
+# its permit, spills each year, recent spills, the improvements recorded and a draft to send on, from open sources only.
+# Written from data/upstream/ like the profiles, so they too can be written again from a downloaded data/. Prose pages
+# with no script, in the sitemap; not in the offline copy, and not on the data page.
+
+
+def write_overflow_pages(site: Path, spots: list[dict], token: str | None = None, root: str | None = None,
+                         generated: pd.Timestamp | None = None, returns: Path | None = None, record: Path | None = None,
+                         winep: Path | None = None, upgrades: Path | None = None, dry: Path | None = None,
+                         lengths: Path | None = None) -> list[str]:
+    """overflow/<id>/index.html for every overflow in a spot's data/upstream/<id>.json whose id can be a folder name.
+    A missing or unreadable source leaves its part of each page saying so; nothing here stops the build. Returns the
+    ids written, sorted, for the sitemap."""
+    from dipcast import overflow_record as orec
+    root = root or site_url()
+    shutil.rmtree(site / "overflow", ignore_errors=True)   # an overflow no longer upstream of any spot loses its page
+    upstream = {}
+    for r in spots:
+        f = site / "data" / "upstream" / f"{r['id']}.json"
+        if SPOT_ID.fullmatch(str(r["id"])) and f.is_file():
+            upstream[r["id"]] = json.loads(f.read_text()).get("overflows") or []
+    found = orec.gather(upstream, {r["id"]: str(r["name"]) for r in spots})
+    if not found:
+        return []
+
+    def read(what: str, fn, default):
+        try:
+            return fn()
+        except Exception as e:  # noqa: BLE001 - a public record beside the forecast must not stop the site
+            announce(f"overflow pages without {what}: {e}")
+            return default
+    returns_by = read("the annual returns", lambda: orec.load_returns(returns or config.PROCESSED / "annual_returns.parquet", found), {})
+    record_by = read("the permits and improvement activity", lambda: orec.load_record(record or orec.RECORD), {})
+    actions = read("the WINEP deadlines", lambda: orec.winep_actions(pd.read_parquet(winep or orec.WINEP), record_by), None)
+    ups = read("the upgrade notes", lambda: read_upgrades(upgrades or UPGRADES), {})
+    drys = read("the dry-weather counts", lambda: read_dry_weather(dry or DRY_WEATHER), {})
+    spill = orec.spill_lengths(lengths or SPILL_DURATIONS)
+    as_of = (generated or pd.Timestamp.now(tz="Europe/London")).tz_convert("Europe/London").strftime("%-d %b %Y, %H:%M")
+    template = orec.TEMPLATE.read_text()
+    for oid, o in found.items():
+        company = o["row"].get("company")
+        u = ups.get(oid)
+        d = drys.get(oid)
+        (site / "overflow" / oid).mkdir(parents=True, exist_ok=True)
+        (site / "overflow" / oid / "index.html").write_text(with_counter(with_phone_nav(orec.site_page(
+            oid, o, MARK, returns=returns_by.get(oid), record=record_by.get(oid), actions=None if actions is None else actions.get(oid, []),
+            upgrade=u if u and u.get("company") == company else None, dry=d if d and d.get("company") == company else None,
+            lengths=spill, root=root, as_of=as_of, template=template)), token))
+    return sorted(found)
 
 
 # Every spot, spots.html: the spots with a page of their own, each an ordinary link to it, by area
@@ -3983,6 +4344,22 @@ def replay_files(site: Path, results: list[dict], upstream: dict[str, list[dict]
         out = write(site, results, upstream, generated.tz_convert("UTC"))
     except Exception as e:  # noqa: BLE001
         out = {"written": 0, "warning": f"catchment replay not written: {e}"}
+    if out.get("warning"):
+        announce(out["warning"])
+    return out
+
+
+def plume_files(site: Path, results: list[dict], upstream: dict[str, list[dict]], generated: pd.Timestamp,
+                write=None) -> dict:
+    """data/spot/<id>-plume.json, the routes the spill map moves the replay's spills along (src/dipcast/plume.py,
+    site/plume.js): from the river network and the replay files, so no request. After replay_files. A failure is
+    announced and recorded in the build health, as the replay's is: a map must never stop the site publishing."""
+    try:
+        if write is None:
+            from dipcast.plume import write_plumes as write
+        out = write(site, results, upstream, generated.tz_convert("UTC"))
+    except Exception as e:  # noqa: BLE001
+        out = {"written": 0, "warning": f"spill map routes not written: {e}"}
     if out.get("warning"):
         announce(out["warning"])
     return out
@@ -4152,15 +4529,16 @@ def build(refresh: bool = True) -> dict:
     for name, snap in nations.items():
         health[name]["water_temperature_estimate"] = attach_directory_water_temp(snap["sites"], air, nation=name)
         (SITE / "data" / f"{name}.json").write_text(json.dumps(snap))
-    push, email = push_config(), email_config()
+    push, email, ask = push_config(), email_config(), ask_config()
     doc = {"generated_at": generated.isoformat(), "version": __version__, "n": len(results), "build": health,
            "lead_skill": lead_skill(), "ecoli_check": ecoli_check(),
-           **({"push": push} if push else {}), **({"email": email} if email else {}),
+           **({"push": push} if push else {}), **({"email": email} if email else {}), **({"ask": ask} if ask else {}),
            "commit": code_commit(), "credits": credits, "spots": results}
     (SITE / "data" / "spots.json").write_text(json.dumps(doc, default=str))
     write_app_data(SITE, doc)   # spots-lite.json and data/spot/<id>.json, what the app loads
     health["trace_files"] = write_traces(SITE, traces, upstream, generated, credits, cuts)   # data/spot/<id>-trace.json, after write_app_data clears data/spot/
     health["replay_files"] = replay_files(SITE, results, upstream, generated)   # ?replay=1 only; never stops the build
+    health["plume_files"] = plume_files(SITE, results, upstream, generated)   # the spill map's routes, from the replay files; never stops the build
     alerts_ok = write_alerts(SITE, site_url(), push is not None or email is not None)   # carries the credits from spots.json
     spot_cards = write_spot_cards(SITE, results, generated.isoformat(), alerts_ok)   # before the pages, which point at them
     health["spot_cards"] = len(spot_cards)
@@ -4182,7 +4560,7 @@ def build(refresh: bool = True) -> dict:
     health["spot_pages"] = write_pages(SITE, results, token, day=generated.date().isoformat(), push=push is not None,
                                        coastal=coastal, wales=wales, scotland=scotland, email=email is not None,
                                        ireland=ireland, northern_ireland=northern_ireland, support=support_url(), tiles=tile_config(),
-                                       push_dates=bool(push and push.get("dates")),
+                                       push_dates=bool(push and push.get("dates")), ask=ask is not None,
                                        spot_cards=spot_cards, cards_v=generated.strftime("%Y%m%d%H%M"),
                                        overflows=_overflows(), generated=generated)
     # Swimmers' reviews: the published ones into site/reviews/, and their sections into the pages just written.

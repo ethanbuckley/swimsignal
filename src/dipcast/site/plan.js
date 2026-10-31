@@ -133,7 +133,8 @@ function planOuting(hash, dates, has = () => true) {
 const planOutingKey = p => p && p.spot ? [p.day, p.spot, p.backup, p.when, p.act, p.meet, p.finish].map(x => x || '').join('|') : '';
 const planInvited = (plan, kept, address, was = false) => !!plan.spot && planOutingKey(plan) !== planOutingKey(kept) && (address || was);
 // ------------------------------------------------------------------------------ what you do on the water
-// An optional choice on the Saved page (index.html, actsChips): swimming, paddling and paddleboarding, any of them, kept in
+// An optional choice, made on Plan a swim (index.html, planAct; the Saved page's chips until 31 Oct 2026, which could keep
+// more than one): swimming, a kayak or canoe ('paddle') and paddleboarding ('sup'), kept in
 // this browser (ACTS_KEY) and sent nowhere. It changes what is offered first (a new outing's activity, finishes downstream
 // for a paddle, the access a paddle needs), never a level: the forecast is for the water, whoever is in it.
 const ACTS_KEY = 'dipcast.acts';
