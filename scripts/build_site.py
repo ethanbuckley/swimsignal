@@ -2468,7 +2468,7 @@ def robots(root: str) -> str:
 
 
 def sitemap(root: str, spot_ids: list[str], day: str, extra: list[str] | None = None) -> str:
-    urls = [root, f"{root}plan/", f"{root}about.html", f"{root}verification.html", f"{root}methods.html", f"{root}testing.html", f"{root}coverage.html", f"{root}data.html", f"{root}organisers.html", f"{root}sites.html", f"{root}record.html", f"{root}clubs.html", f"{root}quality.html", f"{root}spots.html", f"{root}research.html", f"{root}lakes.html"] +[f"{root}{x}" for x in extra or []] + [f"{root}spot/{i}/" for i in spot_ids] + [f"{root}spot/{i}/profile/" for i in spot_ids]
+    urls = [root, f"{root}plan/", f"{root}about.html", f"{root}verification.html", f"{root}methods.html", f"{root}testing.html", f"{root}coverage.html", f"{root}data.html", f"{root}organisers.html", f"{root}sites.html", f"{root}record.html", f"{root}clubs.html", f"{root}quality.html", f"{root}spots.html", f"{root}research.html", f"{root}lakes.html", f"{root}lake-temperatures.html"] +[f"{root}{x}" for x in extra or []] + [f"{root}spot/{i}/" for i in spot_ids] + [f"{root}spot/{i}/profile/" for i in spot_ids]
     body = "".join(f"<url><loc>{escape(u)}</loc><lastmod>{day}</lastmod></url>" for u in urls)
     return f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{body}</urlset>\n'
 
@@ -2793,12 +2793,14 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     (site / "robots.txt").write_text(robots(root))
     (site / ".nojekyll").write_text("")
     write_lakes(site, token, root)   # the satellite lake observations (Research): before the data page, which lists data/research/
+    write_lake_temperatures(site)   # data/research/lake-temperatures/, before the data page lists data/
     write_data_page(site, token, root)   # lists what is in data/, so build() writes the data files first
     write_quality_page(site, overflows, generated, token, root=root)
     write_embed(site)
     write_organisers(site, token, root)
     write_sites(site, token, root)
     write_record(site, token, root)
+    write_lake_temperatures_page(site, token, root)   # measured lake temperatures (research): the viewer
     if support:
         add_support_links(site)   # last, so every page written above has its foot
     return len(ids)
@@ -3154,6 +3156,62 @@ def write_lakes(site: Path, token: str | None = None, root: str | None = None) -
 
 def write_record(site: Path, token: str | None = None, root: str | None = None) -> str:
     return write_scripted_page(site, "record.html", RECORD_SCRIPTS, ("organisers.js", "printed.js", "brief.js", "record.js"), token, root)
+
+
+# Measured lake temperatures (docs/LAKE-TEMPERATURE-OBS-CONTRACT-v1.md): the Environment Agency's water temperature
+# readings in lakes, May to September 2000-2026, as the research side exports them in one file,
+# data/research/lake_temperature_obs.v1.json (scripts/export_lake_temperature_obs.py, from cached readings: the build
+# fetches nothing). The site splits it into data/research/lake-temperatures/: index.json, every lake's name, summary
+# and linked spots without its readings, sampling points or size (its months' counts as `n`, May to September), with
+# the listed spots by spot id, which a lake spot's page reads for its one link (9 kB gzipped for 210 lakes, 30 Oct 2026); and lake/<wb_id>.json, one lake whole, fetched when it is picked.
+# A file of another schema, or another major version, is not published: the viewer then says so, rather than read
+# fields it does not know. Only this folder is replaced, so other research files beside it stay.
+LAKE_TEMPS = config.ROOT / "data" / "research" / "lake_temperature_obs.v1.json"
+LAKE_TEMP_SCHEMA, LAKE_TEMP_MAJOR = "swimsignal.lake-temperature-obs", "1"
+LAKE_TEMP_HEAVY = ("readings", "points", "monthly", "area_km2", "depth_m", "reservoir")   # per lake, only in its own file
+LAKE_TEMP_MONTHS = (5, 6, 7, 8, 9)   # the months fetched; the page shows no other
+REWRITES += [('href="/lake-temperatures"', 'href="lake-temperatures.html"')]   # the data page links the viewer
+
+
+def write_lake_temperatures(site: Path, path: Path | None = None) -> dict:
+    """data/research/lake-temperatures/index.json and lake/<wb_id>.json from the research export (LAKE_TEMPS unless
+    path), or index.json saying none are published (`available` false, with why). Returns the build's health entry."""
+    path = path or LAKE_TEMPS
+    out = site / "data" / "research" / "lake-temperatures"
+    shutil.rmtree(out, ignore_errors=True)   # no file left from a lake that has gone, or from an export now refused
+    (out / "lake").mkdir(parents=True)
+    why = None
+    if not path.is_file():
+        why = "no export in this build"
+    else:
+        doc = json.loads(path.read_text())
+        if doc.get("schema") != LAKE_TEMP_SCHEMA or str(doc.get("version", "")).split(".")[0] != LAKE_TEMP_MAJOR:
+            why = f"export is {doc.get('schema')} {doc.get('version')}, not {LAKE_TEMP_SCHEMA} {LAKE_TEMP_MAJOR}.x"
+    if why:
+        (out / "index.json").write_text(json.dumps({"schema": LAKE_TEMP_SCHEMA, "available": False, "why": why}))
+        return {"available": False, "why": why}
+    lakes = [x for x in doc["lakes"] if SPOT_ID.fullmatch(str(x.get("wb_id", "")))]
+    for x in lakes:
+        (out / "lake" / f"{x['wb_id']}.json").write_text(json.dumps(x, separators=(",", ":")))
+    month_n = lambda x: [next((m.get("n", 0) for m in x.get("monthly") or [] if m.get("month") == k), 0) for k in LAKE_TEMP_MONTHS]
+    # The spots' links, by spot id: the lake, how far the spot is from its nearest sampling point, and the years.
+    spots = {s["spot_id"]: {"wb_id": x["wb_id"], "lake": x["name"], "nearest_point_m": s.get("nearest_point_m"),
+                            "outside_lake_m": s.get("outside_lake_m"), "first": (x.get("summary") or {}).get("first"),
+                            "last": (x.get("summary") or {}).get("last"), "readings": (x.get("summary") or {}).get("readings")}
+             for x in lakes for s in x.get("spots") or [] if SPOT_ID.fullmatch(str(s.get("spot_id", "")))}
+    index = {**{k: v for k, v in doc.items() if k not in ("lakes", "sources")}, "available": True,
+             "lakes": [{k: v for k, v in x.items() if k not in LAKE_TEMP_HEAVY} | {"n": month_n(x), "n_points": len(x.get("points") or [])}
+                       for x in lakes],
+             "spots": spots}
+    (out / "index.json").write_text(json.dumps(index, separators=(",", ":")))
+    return {"available": True, "lakes": len(lakes), "skipped_ids": len(doc["lakes"]) - len(lakes), "spots": len(spots),
+            "version": doc["version"]}
+
+
+def write_lake_temperatures_page(site: Path, token: str | None = None, root: str | None = None) -> str:
+    """lake-temperatures.html and lake-temperatures.js beside the app, which read data/research/lake-temperatures/
+    (write_lake_temperatures, run before the data page). Returns the script's version."""
+    return write_scripted_page(site, "lake-temperatures.html", ("lake-temperatures.js",), ("lake-temperatures.js",), token, root)
 
 
 # A spot's overflow history, spot/<id>/profile/ (docs/MARKETS-2026-10.md): every monitored overflow

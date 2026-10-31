@@ -425,6 +425,9 @@
   /* The two groups of tiles on a spot's page: the open day's forecast, then the latest readings. */
   .tiles > .grp-h { grid-column:1 / -1; margin:12px 2px 0; font:600 var(--fs-head)/1.25 var(--font-display); }
   .tiles > .grp-sub { grid-column:1 / -1; margin:-4px 2px 0; color:var(--muted); font-size:var(--fs-note); }
+  /* A lake spot's one link to its lake's past measured temperatures (lakeTempLine), after the latest readings. */
+  .lt-past { margin:8px 2px 0; color:var(--muted); font-size:var(--fs-note); }
+  .lt-past[hidden] { display:none; }
   #nearby-host:empty { display:none; }
   #sources-host:empty { display:none; }
   .stack .loc { margin:0; }
@@ -2100,6 +2103,28 @@ function waterTile(w, e = null, kind = null, miss = null) {
     fig: `${Math.round(w.temp_c)}°`, unit: 'C',
     say: `Measured ${esc(w.where)}${w.river ? ` on the ${esc(w.river)}` : ''}, ${fmt(w.river_km, 1)}&nbsp;km ${w.direction}, ${agoSpan(t)} ago.${est ? ` At the spot: ${waterEstSay(est).replace(/^About/, 'about')}` : ''}`,
     more: `The Environment Agency's water-quality sensor nearest the spot on this river, within 15&nbsp;km in a straight line, that has reported in the last day: upstream if there is one, since the water here comes from upstream.${w.quality === 'Unchecked' ? ' The EA has not yet checked the reading.' : ''} The water where you swim can be warmer or colder. Not part of the pollution level.${/^https:\/\/environment\.data\.gov\.uk\//.test(w.url || '') ? ` <a href="${esc(w.url)}">The Environment Agency's page for this sensor</a> has its record.` : ''}${est ? ` ${waterEstMore(est)}` : ''}` };
+}
+// Past measured temperatures for a lake spot (lake-temperatures.html; build_site.write_lake_temperatures, from the
+// research export, docs/LAKE-TEMPERATURE-OBS-CONTRACT-v1.md): one link, after the latest readings, to its lake's
+// readings by month. Never a figure here, so nothing on the spot's page reads as the water's temperature now: it says
+// the months and years, that the Environment Agency measured them, how far the sampling point is from the spot, and
+// that it is a different place from where you get in. The index is asked for only on a lake spot's page, once.
+const LT_INDEX = 'data/research/lake-temperatures/index.json';
+let ltIndex = null, ltAsked = null;
+const ltFar = m => typeof m !== 'number' || !isFinite(m) ? null : m < 10 ? 'under 10&nbsp;m' : m < 1000 ? `${Math.round(m / 10) * 10}&nbsp;m` : `${(m / 1000).toFixed(1)}&nbsp;km`;
+function lakeTempLine(link) {
+  if (!link || !/^[A-Za-z0-9_-]+$/.test(link.wb_id || '') || !link.first || !link.last || !ltFar(link.nearest_point_m)) return '';
+  const a = String(link.first).slice(0, 4), b = String(link.last).slice(0, 4);
+  return `<a href="lake-temperatures.html#lake=${link.wb_id}">Past water temperatures in ${esc(link.lake)}, by month</a>: measured by the Environment Agency between May and September, ${a === b ? a : `${a} to ${b}`}, at a sampling point ${ltFar(link.nearest_point_m)} from this spot. A different place from where you get in, and not today's temperature.`;
+}
+const lakeTempHost = d => { const html = d.kind === 'lake' && ltIndex && ltIndex.available ? lakeTempLine((ltIndex.spots || {})[d.id]) : '';
+  return `<p class="lt-past" id="lt-past"${html ? '' : ' hidden'}>${html}</p>`; };
+function lakeTempFor(d) {
+  if (d.kind !== 'lake' || d.unlisted || ltIndex) return;
+  ltAsked = ltAsked || fetch(LT_INDEX).then(r => r.ok ? r.json() : null).catch(() => null);
+  ltAsked.then(x => { ltIndex = x || { available: false };
+    const el = document.getElementById('lt-past'), html = current && current.id === d.id && ltIndex.available ? lakeTempLine((ltIndex.spots || {})[d.id]) : '';
+    if (el && html) { el.innerHTML = html; el.hidden = false; } });
 }
 // ------------------------------------------------------------------------------ the answer and the tiles
 // The page as Apple Weather's (docs/DESIGN.md): the answer as one big word, what set it
@@ -4733,7 +4758,7 @@ function render(d) {
   const fx = facts(d), atWater = fx.filter(o => o.icon === ICON.rating).map(tile).join('')
     + (typeof measuredTile === 'function' ? measuredTile(d, Date.now()) : '')   // lab results an organisation sent (measured.js): not part of the level
     + (typeof guideTile === 'function' ? guideTile(d, serverToday) : '');
-  const tiles = dayTiles(d, DAY) + nowTiles(d);   // the open day's forecast, then the readings
+  const tiles = dayTiles(d, DAY) + nowTiles(d) + lakeTempHost(d);   // the open day's forecast, then the readings, then a lake's past temperatures
   // The folded detail after the tiles. On a desktop it goes under the first column (col-more), which
   // is otherwise the shorter; on a phone it follows the tiles.
   const more = (typeof evidenceTile === 'function' ? evidenceTile(d, Date.now(), DATA.generated_at) : '')
@@ -4767,7 +4792,7 @@ function render(d) {
   if (REPLAY && d.detail_file) h += '<div id="replay-host"></div>';   // ?replay=1 only (mountReplay)
   h += dayTable(d, total, loc.mode === 'lake', d.ecoli_scope || {}) + '</div></div>';
   h += actions(d) + tech(d);
-  setPanel(h); bindBack(); bindSave(d); planHere(d); bindShare(d); bindShareImage(d); bindSwim(d); bindNearby(); bindDays(d); miniMap(d); reviewsFor(d);
+  setPanel(h); bindBack(); bindSave(d); planHere(d); bindShare(d); bindShareImage(d); bindSwim(d); bindNearby(); bindDays(d); miniMap(d); reviewsFor(d); lakeTempFor(d);
   const moreBtn = document.getElementById('more-contrib');
   if (moreBtn) moreBtn.addEventListener('click', () => { const t = document.getElementById('contrib'), all = t.classList.toggle('all');
     moreBtn.setAttribute('aria-expanded', String(all)); moreBtn.textContent = all ? `Show the top 3` : `Show all ${d.contributors.length}`; });
@@ -4784,7 +4809,7 @@ function render(d) {
 // moves them again). Reviews, visit notes and illness reports mount at the end of "At the water".
 const FOLDS = [
   ['why', 'Why this level', ['#sources-host', '.spot-map-tile', '#day-tiles']],
-  ['water', 'At the water', ['#now-tiles', '.loc', '#nearby-host ~ *', '#reviews', '#visits', '#illness']],
+  ['water', 'At the water', ['#now-tiles', '#lt-past', '.loc', '#nearby-host ~ *', '#reviews', '#visits', '#illness']],
   ['limits', 'What this forecast cannot see', ['#unknowns', '.col-more > *']],
 ];
 // The line under a fold's title: the headings of what it holds, as this spot has them, so it never promises a
