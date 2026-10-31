@@ -2044,22 +2044,47 @@ const weatherRow = (d, iso) => { const w = weatherOn(d, iso); if (!w) return '';
 // an estimate for the spot today: after the reading where there is a sensor, on its own where there is none. It
 // is shown only on the day it is for, so an old page never offers yesterday's. Rivers only: the model passed its
 // test for rivers and failed for lakes (docs/WATER-TEMPERATURE-MODEL-TEST-2026-10.md), so a lake never shows one.
-function waterTile(w, e = null, kind = null) {
-  const waterEstOk = x => !!x && kind === 'river' && typeof x.temp_c === 'number' && typeof x.within_c === 'number'
-    && x.date === today();
-  const waterEstSay = x => `About ${x.temp_c}&nbsp;°C (estimated, typically within ${fmt(x.within_c, 0)}&nbsp;°C).`;
+// Water temperature (#492; Ethan, 30 October 2026: a clearly labelled provisional estimate at every river and lake spot,
+// all year). The build's estimate says its route (water_temp.estimate_any): the tested river model, May to September; a
+// lake route whose summer test error is measured but which failed the lake test; or any water October to April, not yet
+// checked in those months. Each route is worded by what was measured for it and nothing more: no error is said where
+// none was measured. A sensor reading is a measurement, said as one, apart from the estimate. Only today's estimate shows.
+const WT_ROUTES = new Set(['river_model', 'lake_model', 'lake_curve', 'river_off_season', 'lake_off_season']);
+const waterEstOk = (x, kind) => !!x && (kind === 'river' || kind === 'lake') && typeof x.temp_c === 'number' && x.date === today()
+  && (WT_ROUTES.has(x.route) || (!x.route && kind === 'river' && typeof x.within_c === 'number'));   // a file from before routes: the river model, rivers only
+const waterEstHow = x => !x.route || x.route === 'river_model' ? `estimated, typically within ${fmt(x.within_c ?? 2, 0)}&nbsp;°C`
+  : x.route.endsWith('_off_season') ? 'provisional estimate, not yet checked in these months'
+  : `provisional estimate; typical error ${fmt(x.typical_c, 1)}&nbsp;°C at lakes in a summer test`;
+const waterEstSay = x => `About ${x.temp_c}&nbsp;°C (${waterEstHow(x)}).`;
+// For a line elsewhere (the planner's columns): "water about 11 °C today, estimated", or ''.
+function waterEstShort(e, kind) { return waterEstOk(e, kind) ? `water about ${e.temp_c} °C today, ${!e.route || e.route === 'river_model' ? 'estimated' : 'provisional estimate'}` : ''; }
+const WT_AIR = 'It comes from a weather model\'s air temperature for this area over the last 30 days, today\'s forecast included, with the date';
+const WT_TAIL = ' It is the water near the surface: it changes through the day and can be warmer or colder where you swim. Not part of the pollution level.';
+function waterEstMore(x) {
+  const r = x.route || 'river_model';
+  if (r === 'river_model') return `The estimate is not a measurement. ${WT_AIR}, the size of the river and the height of the land. The model was tested on 3,798 rivers it had not seen, against the Environment Agency's own samples from May to September 2023 to 2025, using archived air: its typical error there was 1.6&nbsp;°C, and 1 time in 10 it was 2.5&nbsp;°C or more out. The forecast air used here was checked against that archive twice and ran 0.25 to 0.5&nbsp;°C cooler; today's forecast itself was not checked.${WT_TAIL}`;
+  if (r === 'lake_model' || r === 'lake_curve') return `A provisional estimate, not a measurement. ${WT_AIR}${r === 'lake_model' ? ' and the size of the lake' : ' alone, as for large lakes the fuller model did worse'}. The lake model did not pass its test: against the Environment Agency's samples at 307 lakes it had not seen, May to September 2023 to 2025, its typical error was 1.8&nbsp;°C, too cold early in the season and a little warm in September. For ${r === 'lake_model' ? 'lakes under 1&nbsp;km²' : 'lakes of 1&nbsp;km² or more'} the typical error was ${fmt(x.typical_c, 1)}&nbsp;°C. A deep lake's surface can lag the air by more than a month.${WT_TAIL}`;
+  return `A provisional estimate, not a measurement. ${WT_AIR}, through a relation between the air and the ${r === 'lake_off_season' ? 'lake' : 'river'} fitted on May to September samples. It has not been checked from October to April: no test so far had samples from those months, so how far out it is in winter is not known yet. Each estimate is saved and is being compared with the Environment Agency's water sensors as the winter goes on.${WT_TAIL}`;
+}
+function waterTile(w, e = null, kind = null, miss = null) {
   const wtIcon = () => glyph('<path d="M10 14.6V5a2 2 0 0 1 4 0v9.6a3.6 3.6 0 1 1-4 0Z"/><path d="M12 9.5v8"/>');
-  const WT_EST_MORE = 'The estimate is not a measurement. It comes from a weather model\'s air temperature for this area over the last 30 days, today\'s forecast included, with the date, the size of the river and the height of the land. The model was tested on 3,798 rivers it had not seen, against the Environment Agency\'s own samples from May to September 2023 to 2025, using archived air: its typical error there was 1.6&nbsp;°C, and 1 time in 10 it was 2.5&nbsp;°C or more out. The forecast air used here was checked against that archive twice and ran 0.25 to 0.5&nbsp;°C cooler; today\'s forecast itself was not checked. The water changes through the day and can be warmer or colder where you swim. Not part of the pollution level. There is no estimate for lakes: the same test failed for them.';
   const t = w ? Date.parse(w.observed_at) : NaN;
-  const est = waterEstOk(e) ? e : null;
+  const est = waterEstOk(e, kind) ? e : null;
   if (!w || nil(w.temp_c) || isNaN(t) || nil(w.river_km) || !['upstream', 'downstream'].includes(w.direction)) {
-    if (!est) return null;
-    return { icon: wtIcon(), label: 'Water temperature', fig: `${est.temp_c}°`, unit: 'C, estimated', say: waterEstSay(est), more: WT_EST_MORE };
+    if (!est) {
+      // No estimate today because its inputs did not arrive: said, rather than an empty space read as "none needed".
+      if (miss && miss.date === today() && (kind === 'river' || kind === 'lake'))
+        return { icon: wtIcon(), label: 'Water temperature', fig: '–', unit: 'not estimated today',
+          say: 'No estimate in this update: the air temperatures it is worked out from did not all arrive.', more: 'The next update will try again. An older estimate is not shown as today\'s.' };
+      return null;
+    }
+    return { icon: wtIcon(), label: 'Water temperature', fig: `${est.temp_c}°`, unit: est.route && est.route !== 'river_model' ? 'C, provisional estimate' : 'C, estimated',
+      say: waterEstSay(est), more: waterEstMore(est) };
   }
   return { live: true, icon: wtIcon(), label: 'Water temperature',
     fig: `${Math.round(w.temp_c)}°`, unit: 'C',
     say: `Measured ${esc(w.where)}${w.river ? ` on the ${esc(w.river)}` : ''}, ${fmt(w.river_km, 1)}&nbsp;km ${w.direction}, ${ago(Math.max(0, (Date.now() - t) / 60000))} ago.${est ? ` At the spot: ${waterEstSay(est).replace(/^About/, 'about')}` : ''}`,
-    more: `The Environment Agency's water-quality sensor nearest the spot on this river, within 15&nbsp;km in a straight line, that has reported in the last day: upstream if there is one, since the water here comes from upstream.${w.quality === 'Unchecked' ? ' The EA has not yet checked the reading.' : ''} The water where you swim can be warmer or colder. Not part of the pollution level.${/^https:\/\/environment\.data\.gov\.uk\//.test(w.url || '') ? ` <a href="${esc(w.url)}">The Environment Agency's page for this sensor</a> has its record.` : ''}${est ? ` ${WT_EST_MORE}` : ''}` };
+    more: `The Environment Agency's water-quality sensor nearest the spot on this river, within 15&nbsp;km in a straight line, that has reported in the last day: upstream if there is one, since the water here comes from upstream.${w.quality === 'Unchecked' ? ' The EA has not yet checked the reading.' : ''} The water where you swim can be warmer or colder. Not part of the pollution level.${/^https:\/\/environment\.data\.gov\.uk\//.test(w.url || '') ? ` <a href="${esc(w.url)}">The Environment Agency's page for this sensor</a> has its record.` : ''}${est ? ` ${waterEstMore(est)}` : ''}` };
 }
 // ------------------------------------------------------------------------------ the answer and the tiles
 // The page as Apple Weather's (docs/DESIGN.md): the answer as one big word, what set it
@@ -2346,7 +2371,7 @@ function facts(d, iso = null) {
   if (!d.error && total && x0 && !nil(x0.rain_48h_mm)) { const wet = d.days.slice(0, 5).reduce((p, q) => (q.rain_48h_mm || 0) > (p.rain_48h_mm || 0) ? q : p);
     out.push({ icon: ICON.rain, label: 'Rain here', fig: Math.round(x0.rain_48h_mm), unit: 'mm', vis: rainCols(d, x0.date),
       say: `In the 48&nbsp;h to midday ${first ? 'today' : dayName(x0.date)}.${first && wet !== x0 && wet.rain_48h_mm >= 1 ? ` The most ahead: ${Math.round(wet.rain_48h_mm)}&nbsp;mm in the 48&nbsp;h to midday ${dayName(wet.date)}.` : ''}` }); }
-  const wt = waterTile(d.water_temp, d.water_temp_est, d.kind); if (wt) out.push(wt);
+  const wt = waterTile(d.water_temp, d.water_temp_est, d.kind, d.water_temp_est_missing); if (wt) out.push(wt);
   const wx = weatherOn(d, first || !x0 ? today() : x0.date);
   if (wx) out.push({ icon: ICON.sun, label: 'Weather', fig: nil(wx.tmax) ? '–' : `${wx.tmax}°`, unit: nil(wx.tmax) ? '' : 'C high', vis: sunPath(wx, first),
     say: `Sunrise ${esc(wx.sunrise)}, sunset ${esc(wx.sunset)}.`, credit: true });

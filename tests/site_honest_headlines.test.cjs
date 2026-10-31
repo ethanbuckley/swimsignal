@@ -474,7 +474,7 @@ test('the E. coli estimate is labelled with what is true today: its season, its 
 // decision record's rows. The folded day-by-day numbers keep them, marked †.
 const ECOLI_PAGE = ['esc', 'glyph', 'ICON', 'tone', 'scaleBar', 'untested', 'explain', 'factorRow', 'ecoliName', 'ecoliFold', 'ecoliCheck', 'ecoliSaid', 'ecoliMore',
   'noFeedSaid', 'nowTile', 'feedDown', 'feedStale', 'liveSay', 'recentSay', 'overflowDots', 'runningAtLastAnswer', 'statusText', 'feedTime', 'fmt', 'riverTile', 'rangeBar',
-  'waterTile', 'weatherOn', 'spilling', 'bandWords', 'initial', 'rainCols', 'sunPath', 'facts', 'UNLISTED_ECOLI', 'water'];
+  'WT_ROUTES', 'waterEstOk', 'waterEstHow', 'waterEstSay', 'WT_AIR', 'WT_TAIL', 'waterEstMore', 'waterTile', 'weatherOn', 'spilling', 'bandWords', 'initial', 'rainCols', 'sunPath', 'facts', 'UNLISTED_ECOLI', 'water'];
 const longBridges = week(['low', 'moderate', 'moderate', 'moderate', 'high'], { id: 'osm-thames-long-bridges', name: 'River Thames, Long Bridges, Oxford',
   source: 'openstreetmap', upstream_summary: { overflows: 45 },
   now: { risk: 0.1, label: 'low', discharging_upstream: 2, recent_upstream: 0, monitored_upstream: 44 },
