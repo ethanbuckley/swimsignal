@@ -2181,6 +2181,9 @@ VERSIONED_SCRIPTS += ('<script src="plan.js"></script>',)
 # A plan's outing (plan/): outing.js, when, the spot and a backup side by side; it uses plan.js.
 SHELL_SOURCES.append(TEMPLATE.parent / "outing.js")
 VERSIONED_SCRIPTS += ('<script src="outing.js"></script>',)
+# The day plan (dayplan.js): a few options with what is known at each, and the plan as a picture to send.
+SHELL_SOURCES.append(TEMPLATE.parent / "dayplan.js")
+VERSIONED_SCRIPTS += ('<script src="dayplan.js"></script>',)
 # A spot on a date (spotdate.js): the calendar file and the alerts for a date, which the outing and the
 # organisers' page share.
 SHELL_SOURCES.append(TEMPLATE.parent / "spotdate.js")
@@ -2253,6 +2256,7 @@ def copy_app_files(site: Path, stamp: str | None = None) -> None:
     shutil.copy(TEMPLATE.parent / "anypoint.js", site / "anypoint.js")   # a forecast for any point clicked on the map
     shutil.copy(TEMPLATE.parent / "plan.js", site / "plan.js")   # Plan a swim
     shutil.copy(TEMPLATE.parent / "outing.js", site / "outing.js")   # a plan's outing and its backup
+    shutil.copy(TEMPLATE.parent / "dayplan.js", site / "dayplan.js")   # the day plan: options, and the plan as a picture
     shutil.copy(TEMPLATE.parent / "spotdate.js", site / "spotdate.js")   # the calendar file and alerts for a date
     shutil.copy(TEMPLATE.parent / "since.js", site / "since.js")   # what changed since you last looked
     shutil.copy(TEMPLATE.parent / "outingwatch.js", site / "outingwatch.js")   # what would change a plan's outing

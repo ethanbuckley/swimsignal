@@ -858,6 +858,19 @@
   .act-line { margin:0; padding:0 0 6px; font-size:var(--fs-meta); line-height:1.4; }
   .act-line:last-child { padding-bottom:12px; }
   .act-row { margin-top:12px; }
+  /* The day plan's options (dayplan.js): one list in one tile, a hairline between options; each value labelled. */
+  .dp-list { list-style:none; margin:0; padding:0; }
+  .dp-opt { padding:14px 0; border-top:1px solid var(--hair); }
+  .dp-opt:first-child { border-top:0; padding-top:4px; }
+  .dp-nm { margin:0 0 2px; font-family:var(--font-display); font-weight:600; font-size:var(--fs-head); overflow-wrap:anywhere; }
+  .dp-nm a { color:var(--ink); text-decoration:none; display:inline-block; padding:8px 0; margin:-8px 0; }
+  .dp-facts { display:grid; grid-template-columns:max-content minmax(0, 1fr); gap:6px 14px; margin:10px 0 6px; font-size:var(--fs-note); line-height:1.4; }
+  .dp-facts div { display:contents; }
+  .dp-facts dt { color:var(--muted); }
+  .dp-facts dd { margin:0; }
+  .dp-gap { margin:0 0 8px; font-size:var(--fs-meta); color:var(--muted); }
+  .dp-go { margin:10px 0 0; }
+  .dp-pic { display:block; width:100%; max-width:432px; height:auto; margin:12px 0 4px; border:1px solid var(--line); border-radius:var(--radius); }
   /* Your outing (outing.js): the choices, then the spot and its backup in two equal columns, which on a
      375 px phone are about 160 px each; one spot alone takes the width. No fills or rules beyond the tile's. */
   .outing-fields { display:grid; gap:10px; margin:14px 0; }
@@ -1452,6 +1465,7 @@
 <script src="plan.js"></script>   <!-- Plan a swim: the spots within reach on a day -->
 <script src="spotdate.js"></script>   <!-- a spot on a date: the calendar file and alerts for a date, shared with the organisers' page -->
 <script src="outing.js"></script>   <!-- a plan's outing: when, the spot and a backup, side by side; uses plan.js and spotdate.js -->
+<script src="dayplan.js"></script>   <!-- the day plan: a few options with what is known at each, and the plan as a picture to send -->
 <script src="outingwatch.js"></script>   <!-- what would change the outing, and what has since it was planned: uses since.js -->
 <script src="findwindow.js"></script>   <!-- Find a window on Saved: each spot's Low days, as ranges; uses levels.js and eatoday.js -->
 <script src="lists.js"></script>   <!-- named lists of saved spots, and the links that share a list or a plan -->
@@ -4116,11 +4130,64 @@ const planActRow = act => `<div class="chips-row act-row" role="group" aria-labe
 const planActNote = act => OUTING_FINISH_ACTS.includes(act)
   ? 'Each spot shows launching and places to finish downstream, where SwimSignal knows them. The levels are the same: they are for the water, whoever is in it.' : '';
 let PLAN_BY_ID = null;   // the listed spots by id, made once for the finishes
-const planActLine = s => {
-  if (!OUTING_FINISH_ACTS.includes(PLAN.act)) return '';
-  if (!PLAN_BY_ID || PLAN_BY_ID.from !== DATA.spots) PLAN_BY_ID = { from: DATA.spots, map: new Map(DATA.spots.map(x => [x.id, x])) };
-  return outingActLine(s, PLAN.act, PLAN_BY_ID.map, (d, fin) => planPath() + planFromSpot(d, PLAN, PLAN.day, fin));
-};
+const planById = () => { if (!PLAN_BY_ID || PLAN_BY_ID.from !== DATA.spots) PLAN_BY_ID = { from: DATA.spots, map: new Map(DATA.spots.map(x => [x.id, x])) };
+  return PLAN_BY_ID.map; };
+const planActLine = s => !OUTING_FINISH_ACTS.includes(PLAN.act) ? ''
+  : outingActLine(s, PLAN.act, planById(), (d, fin) => planPath() + planFromSpot(d, PLAN, PLAN.day, fin));
+// The day plan's options (dayplan.js): the nearest few spots with a low forecast that no official notice restricts,
+// each with what is known there and what is not, and "Plan the day here", which puts it in the outing with the next
+// option as its backup. First in the results: the answer, before the full list. Each option's own file (its guide)
+// is asked for, three at most, and the tile is drawn again once they are in.
+function planOptions(box, groups) {
+  const old = document.getElementById('dp'); if (old) old.remove();
+  const opts = dpOptions(groups, planAdvised, PLAN.act), byId = planById(), on = dayWord(PLAN.day);
+  const items = opts.map((o, i) => { const s = o.s, other = opts.find(x => x !== o);
+    return dpOption(o, { href: spotPath(s.id) + (daily(s) ? '#day=' + PLAN.day : ''), headline: dayHeadline(s, PLAN.day), tone: tone(o.level),
+      official: outingOfficial(s), meta: [cap(milesAway(o.miles)), cap(s.kind)].join(' · '), chosen: PLAN.spot === s.id },
+    dpConditions(s, PLAN.day, today(), PLAN.act, byId), other && other.s.name, i); });
+  box.insertAdjacentHTML('afterbegin', dpSection(on, items, PLAN.act && OUTING_ACT_WORDS[PLAN.act] ? OUTING_ACT_WORDS[PLAN.act][1] : 'swimming', OUTING_FINISH_ACTS.includes(PLAN.act)));
+  const tile = document.getElementById('dp');
+  tile.querySelectorAll('a[data-id]').forEach(a => a.addEventListener('click', e => { if (!plainClick(e)) return; e.preventDefault(); select(a.dataset.id, true, true, PLAN.day); }));
+  tile.querySelectorAll('[data-dp-go]').forEach(b => b.addEventListener('click', () => {
+    const id = b.dataset.dpGo, other = opts.find(o => o.s.id !== id), next = outingChanged(PLAN, 'spot');
+    for (const x of Object.keys(PLAN)) if (!(x in next)) delete PLAN[x];
+    PLAN.spot = id; if (other) PLAN.backup = other.s.id; else delete PLAN.backup;
+    OUTING_OPEN = true; drawPlan();
+    const t = document.getElementById('outing'); if (t) { t.scrollIntoView({ block: 'start' }); t.querySelector('summary').focus({ preventScroll: true }); }
+  }));
+  const want = opts.map(o => o.s).filter(s => typeof spotDetail === 'function' && s.detail_file && !s.detail_loaded && !s.detail_missing);
+  if (want.length) Promise.all(want.map(spotDetail)).then(() => { const b = document.getElementById('plan-results');
+    if (b && shown === 'plan' && document.getElementById('dp')) planOptions(b, groups); });
+}
+// The plan as a picture (dayplan.js, dpPicture), from the outing's spots: made when asked, shown in the tile, then
+// shared with the phone's own share sheet where it takes a file, or saved. Drawn again without the map's images if the
+// map's provider does not allow a page to read them.
+async function planPicture(pair, fin, link) {
+  const host = document.getElementById('outing-picture-box'); if (!host) return;
+  host.innerHTML = '<p class="small muted">Drawing the picture…</p>';
+  const css = getComputedStyle(document.documentElement), v = k => css.getPropertyValue(k).trim();
+  const byId = planById(), strip = h => String(h).replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&copy;/g, '©').replace(/&amp;/g, '&');
+  const ing = PLAN.act && PLAN.act !== 'swim' && OUTING_ACT_WORDS[PLAN.act] ? OUTING_ACT_WORDS[PLAN.act][1] : '';
+  const title = dpTitle(outingWhen(PLAN.day, PLAN.when), pair.main.name, pair.backup && pair.backup.name, ing);
+  const spot = (s, role) => { const c = dpConditions(s, PLAN.day, today(), PLAN.act, byId).rows.filter(([k]) => k === 'Daylight' || (k === 'Water' && PLAN.day === today()));
+    return { role, name: s.name, lat: s.lat, lon: s.lon, level: strip(dayHeadline(s, PLAN.day)), colour: v(`--k-${tone(dayLevel(s, PLAN.day))}`) || v('--k-na'),
+      lines: [c.map(([, t]) => strip(t)).join('. ')].filter(Boolean) }; };
+  const layer = tiles();
+  const p = { title, spots: [spot(pair.main, 'Your spot'), ...(fin ? [spot(fin, 'Finish')] : []), ...(pair.backup ? [spot(pair.backup, 'Backup')] : [])],
+    from: null, issued: issued(), url: `${location.host}${planPath()}`,
+    tiles: { url: layer._url, sub: layer.options.subdomains, credit: strip(layer.options.attribution || '').replace(/^©\s*/, '© ') },
+    colours: { bar: v('--bar'), ink: v('--ink'), muted: v('--muted'), paper: v('--bg'), line: v('--map-bg'), brand: v('--brand') } };
+  let blob = await dpBlob(await dpPicture(p));
+  if (!blob) blob = await dpBlob(await dpPicture({ ...p, tiles: null }));
+  if (!blob) { host.innerHTML = '<p class="small muted">This browser could not make the picture.</p>'; return; }
+  const name = `swimsignal-plan-${PLAN.day}.png`, file = new File([blob], name, { type: 'image/png' }), url = URL.createObjectURL(blob);
+  const canShare = navigator.canShare && navigator.canShare({ files: [file] });
+  host.innerHTML = `<img class="dp-pic" src="${url}" alt="${esc(title)}: a map of the spots and each one's level for the day">`
+    + `<p class="outing-acts">${canShare ? '<button type="button" class="btn primary" id="dp-share">Share picture</button> ' : ''}<a class="btn" href="${url}" download="${esc(name)}">Save picture</a></p>`
+    + '<p class="small muted">Made in this browser. It holds the spots, their levels and when the forecast was issued, not where you start from.</p>';
+  const sh = document.getElementById('dp-share');
+  if (sh) sh.addEventListener('click', () => navigator.share({ files: [file], title, text: `${title}. ${link}` }).catch(() => {}));
+}
 function planAct(k) {
   if (k) PLAN.act = k; else delete PLAN.act;
   if (!OUTING_FINISH_ACTS.includes(PLAN.act)) delete PLAN.finish;   // a finish is for a boat or a board
@@ -4224,6 +4291,7 @@ function drawPlan(fit = false) {
   box.querySelectorAll('ul.spots').forEach(bindItems);
   if (r.count) planCompare(r.groups, head);
   if (typeof drawOuting === 'function') drawOuting(box, r.groups.flat());   // outing.js: at the top of the results
+  if (r.count && typeof dpSection === 'function') planOptions(box, r.groups);   // dayplan.js: the options, above it
   planShare(r.groups[0].concat(r.groups[1]).sort((a, b) => a.miles - b.miles), on);
   // Find a window (findwindow.js): the plan's spots, its area and activity, over the five days, nearest first by distance
   // and never by level, with why each other day is not low risk and any official notice apart from the levels.
