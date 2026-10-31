@@ -100,6 +100,10 @@ function fwSection(spots, dates, href) {
 // by level, at most FW_PLAN_MAX; the rest are counted. items: [{s, miles}]; what: the plan's words for its spots and
 // reach ("river spots within 10 miles of Oxford"); meta(s): the row's distance and kind.
 const FW_PLAN_MAX = 12;
+const fwEveryDay = (s, dates) => { const f = fwFind(s, dates); return f.daily && f.ranges.length === 1 && f.ranges[0].n === dates.length && !fwRestricts()(s); };
+const fwAllLow = (spots, dates, href) => { const all = spots.filter(s => fwEveryDay(s, dates));
+  return all.length ? `<p class="fw-low">Low risk on all ${dates.length} days at ${all.length === 1 ? '1 spot' : `${all.length} spots`}: `
+    + fwList(all.map(s => `<a href="${fwEsc(href(s))}" data-id="${fwEsc(s.id)}">${fwEsc(s.name)}</a>`)) + '.</p>' : ''; };
 function fwPlanSection(items, dates, href, what, meta) {
   if (!items.length || !dates.length) return '';
   const near = [...items].sort((a, b) => a.miles - b.miles || a.s.name.localeCompare(b.s.name)), shown = near.slice(0, FW_PLAN_MAX);
@@ -108,10 +112,13 @@ function fwPlanSection(items, dates, href, what, meta) {
     + `<p class="sub">The days at low risk in the next five, nearest spot first.</p>`
     + `<details class="more"><summary>How these windows are found</summary><p>For each of the ${fwEsc(what)}: an order by distance, not a ranking. `
     + 'Why the other days are not low risk is under each, in the forecast\'s words. ' + FW_LIMITS + '</p></details>'
-    + `<ul class="fw-list">${fwRows(shown.map(o => o.s), dates, href, meta)}</ul>`
+    // Spots at low risk on every day are named once, together, rather than each with the same line: Thames Valley's 11
+    // rows said "Low risk: Sat 31 Oct to Wed 4 Nov" ten times (31 Oct 2026). The rows are the spots whose days differ.
+    + fwAllLow(shown.map(o => o.s), dates, href)
+    + `<ul class="fw-list">${fwRows(shown.map(o => o.s).filter(s => !fwEveryDay(s, dates)), dates, href, meta)}</ul>`
     + (more ? `<p class="small muted">And ${more} more further away: see them in the groups above.</p>` : '') + '</section>';
 }
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { fwFind, fwWords, fwRange, fwDay, fwApart, fwSection, fwPlanSection, FW_PLAN_MAX };
+  module.exports = { fwFind, fwWords, fwRange, fwDay, fwApart, fwSection, fwPlanSection, fwEveryDay, FW_PLAN_MAX };
 }

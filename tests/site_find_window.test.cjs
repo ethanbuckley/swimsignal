@@ -132,7 +132,11 @@ test("Plan a swim: the plan's spots nearest first by distance, never by level, c
   const items = [{ s: far, miles: 9 }, { s: mid, miles: 4 }, { s: near, miles: 1 }];
   const h = W.fwPlanSection(items, DATES, s => `spot/${s.id}/`, 'river spots within 10 miles of Oxford', s => `${s.id} miles`);
   const at = id => h.indexOf(`data-id="${id}"`);
-  assert.ok(at('near') < at('mid') && at('mid') < at('far'));   // by distance: the all-low spot is last
+  assert.ok(at('near') < at('mid'));   // by distance
+  // A spot at low risk on all five days is named once in a line over the rows, not given a row of its own.
+  assert.ok(at('far') >= 0 && at('far') < at('near'));
+  assert.match(h, /<p class="fw-low">Low risk on all 5 days at 1 spot: <a href="spot\/far\/" data-id="far">Far Pond<\/a>\.<\/p>/);
+  assert.equal((h.match(/<li>/g) || []).length, 2);
   assert.match(h, /<p class="sub">The days at low risk in the next five, nearest spot first\.<\/p><details class="more"><summary>How these windows are found<\/summary><p>For each of the river spots within 10 miles of Oxford: an order by distance, not a ranking\./);
   assert.ok(h.includes('<p class="fw-note">near miles</p>'));
   // A restricting notice shows apart from the levels, and asks to follow it; the levels are as they are.
@@ -141,7 +145,8 @@ test("Plan a swim: the plan's spots nearest first by distance, never by level, c
   // Capped, the rest counted.
   const many = Array.from({ length: W.FW_PLAN_MAX + 3 }, (_, i) => ({ s: spot(['low', 'low', 'low', 'low', 'low'], { id: `s${i}`, name: `S${i}` }), miles: i }));
   const hm = W.fwPlanSection(many, DATES, s => '', 'spots', () => '');
-  assert.equal((hm.match(/<li>/g) || []).length, W.FW_PLAN_MAX);
+  assert.equal((hm.match(/<li>/g) || []).length, 0);   // all low every day: one line, no rows
+  assert.match(hm, new RegExp(`Low risk on all 5 days at ${W.FW_PLAN_MAX} spots: `));
   assert.match(hm, /And 3 more further away/);
   assert.equal(W.fwPlanSection([], DATES, s => '', 'spots', () => ''), '');
 });

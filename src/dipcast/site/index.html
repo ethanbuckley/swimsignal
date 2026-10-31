@@ -327,6 +327,13 @@
   li.area-head span { font:400 var(--fs-note) var(--font-text); color:var(--muted); }
   /* The area's spots with no monitored overflow upstream, behind one line (areaRows): the count, then
      their names, muted; a tap shows their rows. A chevron says it opens, as a fold's does. */
+  /* The folded list's areas (areaFold): a full-width line that opens, with a chevron as a fold's. */
+  .area-btn { display:flex; align-items:baseline; justify-content:space-between; gap:12px; width:100%; min-height:52px; padding:12px 28px 12px 0; position:relative;
+              font:600 var(--fs-body)/1.3 var(--font-display); color:var(--ink); text-align:left; background:none; border:0; cursor:pointer; }
+  .area-btn span { flex:none; }
+  .area-btn::after { content:""; position:absolute; right:6px; top:50%; width:8px; height:8px; margin-top:-6px; border-right:1.75px solid var(--muted); border-bottom:1.75px solid var(--muted); transform:rotate(45deg); }
+  .area-btn[aria-expanded="true"]::after { margin-top:-2px; transform:rotate(-135deg); }
+  ul.spots li.area-head:has(.area-btn) { padding:0; }
   .quiet-btn { display:flex; flex-direction:column; align-items:flex-start; gap:2px; width:100%; min-height:60px; padding:12px 28px 12px 0; position:relative;
                font:600 var(--fs-note)/1.35 var(--font-text); color:var(--ink); text-align:left; background:none; border:0; cursor:pointer; }
   .quiet-btn .k { font-weight:400; font-size:var(--fs-meta); color:var(--muted); }
@@ -511,6 +518,7 @@
   .t-lab .ic { width:15px; height:15px; vertical-align:0; }
   .t-fig { display:flex; flex-wrap:wrap; align-items:baseline; gap:0 5px; margin:8px 0 0; font:300 var(--fs-level)/1 var(--font-text); font-variant-numeric:tabular-nums lining-nums; }
   .t-fig small { font:600 var(--fs-note)/1.2 var(--font-text); color:var(--muted); }
+  .t-fig.t-fig-words { font:500 var(--fs-head)/1.25 var(--font-text); }
   .t-fig.hot { color:var(--k-veryhigh); } .t-fig.low { color:var(--k-low); } .t-fig.moderate { color:var(--k-moderate); } .t-fig.high { color:var(--k-high); } .t-fig.veryhigh { color:var(--k-veryhigh); }
   .t-word { flex-basis:100%; margin-top:5px; font:700 var(--fs-note)/1.2 var(--font-text); color:var(--k-na); }
   .t-word.low { color:var(--k-low); } .t-word.moderate { color:var(--k-moderate); } .t-word.high { color:var(--k-high); } .t-word.veryhigh { color:var(--k-veryhigh); } .t-word.plain { color:var(--ink); }
@@ -692,6 +700,7 @@
      desktop column alike. At most 480 px, so a wide single column does not stretch them. */
   .actions { display:grid; grid-template-columns:1fr 1fr; gap:8px; max-width:480px; margin:32px 0 8px; }
   .actions .btn { text-align:center; line-height:1.2; }   /* a label in two lines stays centred and compact */
+  .actions > .btn:last-child:nth-child(odd) { grid-column:1 / -1; }   /* an odd last button the row's width, not half of it */
   /* Folds: a chevron, not a text marker, and a 44 px target. A section that folds keeps its heading
      where an open section's sits: the target reaches up into the section's padding. */
   details.fold > summary, details.more > summary, details.comparison > summary, details.outing > summary, details.lists > summary, details.sec.tile > summary { cursor:pointer; list-style:none; display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:44px; }
@@ -1734,7 +1743,7 @@ window.addEventListener('resize', setHeaderHeight);
 
 // shown: the view on screen ('list' or 'saved') when a spot is opened, for the spot's back link.
 let DATA = null, current = null, shown = null;
-const VIEW = { q: '', filter: 'all', sort: 'low', here: null, geoMsg: '', geoAt: 'sort', lowOnly: false, day: null, quiet: new Set() };   // lowest risk first (29 October 2026; it was A–Z by area)
+const VIEW = { q: '', filter: 'all', sort: 'low', here: null, geoMsg: '', geoAt: 'sort', lowOnly: false, day: null, quiet: new Set(), areas: new Set() };   // lowest risk first (29 October 2026; it was A–Z by area)
 const SORT0 = VIEW.sort;   // how the list opens: the Filter button counts a sort that differs
 // Names and descriptions come from spots.csv and the water companies' feeds: escape them.
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'})[c]);
@@ -2504,7 +2513,9 @@ const sunPath = (w, dot = true) => { const m = s => { const [h, mm] = String(s).
 // A tile: the label with its icon, the figure (with its unit, and a level word under it), the drawing,
 // how the figure stands to the level above (rel: levels.js, tileLine), the sentence, the weather's credit where its figures are, and the rest folded in the corner.
 const tile = o => `<div class="tile${o.wide ? ' wide' : ''}"><h2 class="t-lab">${o.icon}<span>${o.label}</span></h2>`
-  + (o.fig === undefined ? '' : `<p class="t-fig${o.figTone ? ' ' + o.figTone : ''}">${o.fig}${o.unit ? `<small>${o.unit}</small>` : ''}${o.word ? `<span class="t-word ${o.wordTone || ''}">${o.word}</span>` : ''}</p>`)
+  // A figure in words of more than one ("Out of season", "None seen") at the heading's size, not the number's: in
+  // the number's it was the largest text on the tile and said the least (31 Oct 2026).
+  + (o.fig === undefined ? '' : `<p class="t-fig${o.figTone ? ' ' + o.figTone : ''}${typeof o.fig === 'string' && /^[A-Za-z]+ [A-Za-z ]+$/.test(o.fig) ? ' t-fig-words' : ''}">${o.fig}${o.unit ? `<small>${o.unit}</small>` : ''}${o.word ? `<span class="t-word ${o.wordTone || ''}">${o.word}</span>` : ''}</p>`)
   + (o.vis || '') + (o.rel ? `<p class="t-say">${o.rel}</p>` : '') + (o.say ? `<p class="t-say">${o.say}</p>` : '')
   + (o.note ? `<p class="t-note">${o.note}</p>` : '')   // a quiet line: what the build could not check
   + (o.credit ? '<p class="t-credit"><a href="https://open-meteo.com/">Weather data by Open-Meteo.com</a></p>' : '')
@@ -3304,7 +3315,7 @@ function overview(spots) {
   // the counts are then named for what they are, the sewage forecast's.
   const advised = typeof eaTodayAdvice === 'function' ? spots.filter(s => eaTodayAdvice(s).length).length : 0;
   return `Updated ${issued()} · ${advised ? 'Sewage pollution risk' : 'Pollution risk'}: ${low} low · ${rated.length - low - high} moderate · ${high} high or very high`
-    + `${clear ? ` · ${clear} with no monitored overflow found upstream` : ''} · ${none} without a level`
+    + `${clear ? ` · ${clear} with no monitored overflow found upstream` : ''}${none ? ` · ${none} without a level` : ''}`
     + `${none ? ': ' + Object.entries(why).sort((a, b) => b[1] - a[1]).map(([w, n]) => `${n} ${w}`).join(', ') : ''}. ${cap(mapWhen())}.`
     + (advised ? ` ${advised} with an official notice: ${noticeVerb(spots.filter(s => eaTodayAdvice(s).length))}.` : '');
 }
@@ -3481,8 +3492,11 @@ const searchText = s => fold([s.name, s.kind, s.notes, (s.location || {}).waterc
 // A–Z groups the list by area (spots.csv's `area`), north to south by the mean latitude of each area's
 // spots, A–Z within each. Not in the other orders, which rank the whole list, and not while any spot
 // has no area (a forecast built before 15 Oct 2026), so the page never shows a group without a name.
+// Lowest risk with no search and no place given folds too (byArea): 109 rows ran 11,000 px on a phone and began in Cumbria
+// for everyone (31 Oct 2026). Each area is one line, "Thames Valley · 9 of 11 at low risk", that opens its spots.
+const byArea = () => VIEW.sort === 'low' && !VIEW.q.trim() && !VIEW.here;
 function areaGroups(items) {
-  if (VIEW.sort !== 'name' || !items.length || DATA.spots.some(s => !s.area)) return null;
+  if (!(VIEW.sort === 'name' || byArea()) || !items.length || DATA.spots.some(s => !s.area)) return null;
   const by = new Map();
   for (const s of items) { if (!by.has(s.area)) by.set(s.area, []); by.get(s.area).push(s); }
   const lat = a => { const xs = DATA.spots.filter(s => s.area === a); return xs.reduce((t, s) => t + s.lat, 0) / xs.length; };
@@ -3495,6 +3509,13 @@ const areaHead = (a, xs) => { const low = xs.filter(s => mapLevel(s) === 'low').
 // one line that names them and opens them on a tap; a search shows its matches as rows. The count over
 // the list, the other sorts and the spots' own pages are unchanged. `open`: the areas opened (VIEW.quiet).
 const QUIET_NAMES = 3;
+// An area of the folded list (byArea): its line as a button, then its spots, lowest risk first, only while it is open.
+function areaFold(a, xs, item) {
+  const on = VIEW.areas.has(a), low = xs.filter(s => mapLevel(s) === 'low').length;
+  const head = `<li class="area-head"><h3><button type="button" class="area-btn" data-area="${esc(a)}" aria-expanded="${on}">${esc(a)}`
+    + ` <span>${low} of ${xs.length} at low risk</span></button></h3></li>`;
+  return on ? head + areaRows(a, xs, item, VIEW.quiet).replace(areaHead(a, xs), '') : head;
+}
 function areaRows(a, xs, item, open, fold = true) {
   const quiet = fold ? xs.filter(s => plainLevel(mapLevel(s))) : [], loud = xs.filter(s => !quiet.includes(s));
   let h = areaHead(a, xs) + loud.map(item).join('');
@@ -3562,7 +3583,7 @@ function drawSpots() {
     nearList.innerHTML = near.spots.map(s => savedCard(s, false, VIEW.day, false, 'spots near you', true)).join('');
     bindItems(nearList);
   }
-  document.getElementById('all-h').textContent = VIEW.q.trim() || VIEW.filter !== 'all' || VIEW.lowOnly ? 'Matching spots' : 'All spots';
+  document.getElementById('all-h').textContent = VIEW.q.trim() || VIEW.filter !== 'all' || VIEW.lowOnly ? 'Matching spots' : byArea() ? 'Spots by area' : 'All spots';
   document.getElementById('overview').textContent = overviewTop(items);
   const changed = [VIEW.sort !== SORT0, VIEW.filter !== 'all', VIEW.lowOnly].filter(Boolean).length, fn = document.getElementById('filter-n');
   if (fn) { fn.textContent = changed; fn.hidden = !changed; document.getElementById('filter-btn').setAttribute('aria-label', changed ? `Filter, ${changed} on` : 'Filter'); }
@@ -3573,7 +3594,7 @@ function drawSpots() {
   // paragraph of its own under it, two lines about notices one after the other on a phone's first screen).
   if (firstNote) document.getElementById('overview').textContent += ' ' + firstNote;
   const groups = areaGroups(items);
-  ul.innerHTML = groups ? groups.map(([a, xs]) => areaRows(a, xs, spotItem, VIEW.quiet, !words.length)).join('')
+  ul.innerHTML = groups ? groups.map(([a, xs]) => byArea() ? areaFold(a, xs, spotItem) : areaRows(a, xs, spotItem, VIEW.quiet, !words.length)).join('')
     : items.length ? items.map(spotItem).join('')
     : `<li class="empty"><p class="below">No inland forecasts match. SwimSignal forecasts ${DATA.spots.length} river and lake spots in England. ${regionalLink(VIEW.q)} Missing yours? <a href="feedback.html?type=spot">Request it</a>.</p>`
       + `<button type="button" class="btn" id="clear-filters">Clear search and filters</button></li>`;
@@ -3581,6 +3602,12 @@ function drawSpots() {
   bindClear();
   bindItems(ul);
   offerOnMap();
+  ul.querySelectorAll('[data-area]').forEach(b => b.addEventListener('click', () => {
+    const a = b.dataset.area, opening = !VIEW.areas.has(a); if (opening) VIEW.areas.add(a); else VIEW.areas.delete(a);
+    // Where the map shows beside the list, an area opened brings its spots into view, as Saved and the plan do.
+    const xs = DATA.spots.filter(s => s.area === a);
+    if (opening && xs.length && !PHONE.matches) map.fitBounds(L.latLngBounds(xs.map(s => [s.lat, s.lon])), { padding: [60, 60], maxZoom: 11, ...MOTION() });
+    drawSpots(); const again = [...document.querySelectorAll('[data-area]')].find(x => x.dataset.area === a); if (again) again.focus(); }));
   ul.querySelectorAll('[data-quiet]').forEach(b => b.addEventListener('click', () => {
     const a = b.dataset.quiet, on = !VIEW.quiet.has(a);
     if (on) VIEW.quiet.add(a); else VIEW.quiet.delete(a);
@@ -4772,8 +4799,11 @@ function clearSentence(d) {
   const k = n.discharging_upstream || 0, last = n.clears_after || {}, h = Math.round(last.travel_h);
   const later = d.days.slice(1, 5).find(x => hasData(x) && spillLevel(x.risk_from_later_spills ?? 0) !== 'low');
   const why = n.clears_by === 'window' ? `, as it stops counting each spill ${d.assumptions.recent_spill_hours} hours after its water has passed`
+    // The overflow the sentence above already names, with its hours (sourceSentence), is not named and timed again:
+    // Grantchester said "about 29 hours away" and then "takes about 29 hours to get here" (31 Oct 2026).
     : n.clears_by === 'travel' && (last.site_name || last.site_id) && h >= 1
-      ? `, allowing for travel time: water from ${esc(overflowNames(last).plain)} takes about ${h} hour${h === 1 ? '' : 's'} to get here` : '';
+      ? (last.site_id && last.site_id === (n.source || {}).site_id ? ', allowing for its travel time'
+        : `, allowing for travel time: water from ${esc(overflowNames(last).plain)} takes about ${h} hour${h === 1 ? '' : 's'} to get here`) : '';
   return `If ${k === 1 ? 'the overflow discharging upstream stops now' : k ? `the ${k} overflows discharging upstream stop now` : 'no new spill starts'}, `
     + `the model expects low risk from spills ${partOfDay(n.clears_at)}${why}.`
     + (later ? ` Rain may bring new spills and ${later.label} risk ${dayWord(later.date)}.` : '');
