@@ -34,6 +34,7 @@ before it is published. Nothing in this file comes from his models.
 | `claim` | `public_wording`, the page's lead, and `not_claimed` |
 | `seasons` | Per year: first and last date, sample count, median and highest E. coli and enterococci, how it was sampled |
 | `open_questions` | What is not yet confirmed |
+| `spots` (1.1) | The SwimSignal spots whose pages link here: `osm-windermere-waterhead`. The build writes `data/research/local-samples.json` from it, by spot id, for the spot page's one link |
 | `attribution`, `permission`, `report` | The credit, the permission, and the WET technical report (Tim Boden, 17 Nov 2025) |
 | `sources` | The sheet's name, SHA-256 and date received, and the export script's SHA-256 |
 | `samples` | Every sample in date order: `date`, `ecoli`, `ie` |
@@ -60,6 +61,10 @@ The page does not compare a single count with a bathing water line.
 3. What a recorded 0 means. It is most likely below the method's detection limit, not a true zero.
 
 When Tim answers, the export changes its `open_questions` and `seasons[].how`. That is a minor version.
+
+## Changes
+
+- **1.1.0 (31 Oct 2026):** `spots` added. The lead says "at the time it was taken", not "on that morning" (the 2026 time is unconfirmed); 2025 is "mostly" Thursday mornings (16 Apr 2025 was a Wednesday). The page lists seasons and samples newest first and links back to the spot's forecast.
 
 ## Use in tests
 

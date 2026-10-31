@@ -26,20 +26,22 @@ XLSX = (Path.home() / "Documents" / "GitHub" / "swimsignal-private" / "tim-boden
         / "25-26 Bacteria Levels.xlsx")
 XLSX_SHA = "c9f229c832eea9782b6d8874e79c8feaa430f8443549669b52778b647516d3b5"   # as received 25 Oct 2026
 OUT = ROOT / "data" / "research" / "waterhead_wet.v1.json"
-SCHEMA, VERSION = "swimsignal.waterhead-wet", "1.0.0"
+SCHEMA, VERSION = "swimsignal.waterhead-wet", "1.1.0"
 COLS = {"Date": "date", "E-Coli (cfu/100ml)": "ecoli", "Intestinal Enterococci (cfu/100ml)": "ie"}
 CLAIM = {
     "public_wording": "Weekly water samples taken at Waterhead, Windermere, by Ambleside Action for a Future's Waterhead "
                       "E. coli Testing project, and the E. coli and intestinal enterococci counted in each. A sample is "
-                      "the water at that place on that morning only: not today's water, and not the rest of the lake.",
+                      "the water at that place at the time it was taken: not today's water, and not the rest of the lake.",
     "not_claimed": ["the water now", "the water elsewhere in Windermere", "a forecast", "a bathing water rating",
                     "that water is safe to swim", "a check of SwimSignal's forecast"],
 }
 # What the sheet and the report say about each season, and what is not yet known (asked of Tim, not yet answered).
 SEASONS = {
-    2025: "Thursday mornings, analysed by Simplex Health's laboratory (the WET technical report, 17 Nov 2025).",
+    2025: "Mostly on Thursday mornings, analysed by Simplex Health's laboratory (the WET technical report, 17 Nov 2025).",
     2026: "Mondays and Tuesdays. The laboratory, method and time of day are not yet confirmed.",
 }
+# The SwimSignal spots these samples are linked from (1.1): the spot's page says where its local samples are.
+SPOTS = ["osm-windermere-waterhead"]
 OPEN = [
     "The exact sampling point at Waterhead: the sheet has no site column, and the email names Waterhead.",
     "Whether 2026 used the same laboratory and method as 2025.",
@@ -85,6 +87,7 @@ def build(xlsx: Path) -> dict:
         "claim": CLAIM,
         "seasons": [season(y, samples) for y in sorted(SEASONS)],
         "open_questions": OPEN,
+        "spots": SPOTS,
         "attribution": "Bacteria counts: Ambleside Action for a Future, Waterhead E. coli Testing (WET) project.",
         "permission": "Public domain (Tim Boden, 25 Oct 2026): may be used and forwarded with credit to Ambleside "
                       "Action for a Future.",

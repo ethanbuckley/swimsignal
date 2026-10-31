@@ -2184,6 +2184,27 @@ function lakeTempFor(d) {
     const el = document.getElementById('lt-past'), html = current && current.id === d.id && ltIndex.available ? lakeTempLine((ltIndex.spots || {})[d.id]) : '';
     if (el && html) { el.innerHTML = html; el.hidden = false; } });
 }
+// A local group's past water samples near a lake spot (waterhead.html; build_site.write_waterhead writes
+// data/research/local-samples.json, docs/WATERHEAD-WET-CONTRACT-v1.md): one link after the lake's past temperatures,
+// with who took them, how many and the latest date. Never a count here, and never in the level: it says they are past
+// samples, not today's water. Asked for only on a lake spot's page, once, like the temperatures' index.
+const LS_INDEX = 'data/research/local-samples.json';
+let lsIndex = null, lsAsked = null;
+function localSamplesLine(link) {
+  if (!link || !/^[a-z0-9-]+\.html$/.test(link.href || '') || !link.first || !link.last || !(link.samples > 0)) return '';
+  const a = String(link.first).slice(0, 4), b = String(link.last).slice(0, 4);
+  const latest = new Date(String(link.last).slice(0, 10) + 'T12:00:00Z').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
+  return `<a href="${link.href}">Local water samples, ${a === b ? a : `${a} to ${b}`}</a>: ${link.samples} samples taken at ${esc(link.place)} by ${esc(link.by)}, the latest on ${latest}. Past samples, not today's water.`;
+}
+const localSamplesHost = d => { const html = d.kind === 'lake' && lsIndex && lsIndex.available ? localSamplesLine((lsIndex.spots || {})[d.id]) : '';
+  return `<p class="lt-past" id="ls-past"${html ? '' : ' hidden'}>${html}</p>`; };
+function localSamplesFor(d) {
+  if (d.kind !== 'lake' || d.unlisted || lsIndex) return;
+  lsAsked = lsAsked || fetch(LS_INDEX).then(r => r.ok ? r.json() : null).catch(() => null);
+  lsAsked.then(x => { lsIndex = x || { available: false };
+    const el = document.getElementById('ls-past'), html = current && current.id === d.id && lsIndex.available ? localSamplesLine((lsIndex.spots || {})[d.id]) : '';
+    if (el && html) { el.innerHTML = html; el.hidden = false; } });
+}
 // ------------------------------------------------------------------------------ the answer and the tiles
 // The page as Apple Weather's (docs/DESIGN.md): the answer as one big word, what set it
 // and when, and where the week goes; a sentence over the five days, drawn as rows; then a tile for
@@ -4886,7 +4907,7 @@ function render(d) {
   const fx = facts(d), atWater = fx.filter(o => o.icon === ICON.rating).map(tile).join('')
     + (typeof measuredTile === 'function' ? measuredTile(d, Date.now()) : '')   // lab results an organisation sent (measured.js): not part of the level
     + (typeof guideTile === 'function' ? guideTile(d, serverToday) : '');
-  const tiles = dayTiles(d, DAY) + nowTiles(d) + lakeTempHost(d);   // the open day's forecast, then the readings, then a lake's past temperatures
+  const tiles = dayTiles(d, DAY) + nowTiles(d) + lakeTempHost(d) + localSamplesHost(d);   // the open day's forecast, then the readings, then a lake's past temperatures and local samples
   // The folded detail after the tiles. On a desktop it goes under the first column (col-more), which
   // is otherwise the shorter; on a phone it follows the tiles.
   const more = (typeof evidenceTile === 'function' ? evidenceTile(d, Date.now(), DATA.generated_at) : '')
@@ -4923,7 +4944,7 @@ function render(d) {
   if (REPLAY && d.detail_file) h += '<div id="replay-host"></div>';   // ?replay=1 only (mountReplay)
   h += dayTable(d, total, loc.mode === 'lake', d.ecoli_scope || {}) + '</div></div>';
   h += actions(d) + tech(d);
-  setPanel(h); bindBack(); bindSave(d); planHere(d); bindShare(d); bindShareImage(d); bindSwim(d); bindNearby(); bindDays(d); miniMap(d); reviewsFor(d); lakeTempFor(d);
+  setPanel(h); bindBack(); bindSave(d); planHere(d); bindShare(d); bindShareImage(d); bindSwim(d); bindNearby(); bindDays(d); miniMap(d); reviewsFor(d); lakeTempFor(d); localSamplesFor(d);
   const moreBtn = document.getElementById('more-contrib');
   if (moreBtn) moreBtn.addEventListener('click', () => { const t = document.getElementById('contrib'), all = t.classList.toggle('all');
     moreBtn.setAttribute('aria-expanded', String(all)); moreBtn.textContent = all ? `Show the top 3` : `Show all ${d.contributors.length}`; });
@@ -4942,7 +4963,7 @@ function render(d) {
 // Long method text keeps its own named folds (What the level rests on, Day-by-day numbers) and each tile's corner button.
 // A desktop keeps its columns. What the level counts and the water-test line join the limits section from under the five
 // days, where showDay puts them back (phoneFolds moves them again).
-const PHONE_ORDER = ['.spot-map-tile', '#overflows', '#now-tiles', '#lt-past', '#day-tiles', '#seasonal', '#scores-host, #scores', '#limits'];
+const PHONE_ORDER = ['.spot-map-tile', '#overflows', '#now-tiles', '#lt-past', '#ls-past', '#day-tiles', '#seasonal', '#scores-host, #scores', '#limits'];
 const PHONE_OPEN = ['#seasonal'];   // a chart: open on a phone. The overflows' rows run to 800 px, so they keep their fold
 function phoneFolds() {
   const stack = document.querySelector('#result .stack'), at0 = stack && stack.querySelector('#nearby-host');

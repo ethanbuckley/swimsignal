@@ -3608,7 +3608,8 @@ def write_samples(site: Path, token: str | None = None, root: str | None = None,
 # enterococci counts at Waterhead, Windermere, 2025-26, as scripts/export_waterhead_wet.py exports them from the sheet
 # Tim Boden sent on 25 Oct 2026 (public domain, credit the group). Not EA samples and never compared with a forecast
 # here. 59 samples fit in the page, so it is written whole, with no script; the file is copied to
-# data/research/waterhead_wet.json for download. A file of another schema or major version is not published: the page
+# data/research/waterhead_wet.json for download. data/research/local-samples.json says, by spot id, which spots link
+# here (the export's `spots`, 1.1), for the spot page's one historical link (index.html, localSamplesLine). A file of another schema or major version is not published: the page
 # then says none are shown.
 WET = config.ROOT / "data" / "research" / "waterhead_wet.v1.json"
 WET_SCHEMA, WET_MAJOR = "swimsignal.waterhead-wet", "1"
@@ -3616,18 +3617,22 @@ REWRITES += [('href="/waterhead"', 'href="waterhead.html"')]   # Research links 
 
 
 def wet_body(doc: dict) -> str:
-    """The page's lead, a summary of each season and its samples, oldest first."""
+    """The page's lead, the link back to the forecast, then each season with its samples, newest first, so the latest
+    sample is the first one read."""
     n = lambda v: f"{v:g}"
     day = lambda iso: pd.Timestamp(iso).strftime("%-d %b %Y")
     parts = [f'<p class="lead">{escape(doc["claim"]["public_wording"])}</p>']
-    for s in doc["seasons"]:
-        rows = [x for x in doc["samples"] if x["date"].startswith(str(s["season"]))]
+    parts += [f'<p>For the risk from sewage spills on a given day, see <a href="spot/{escape(i)}/">SwimSignal\'s forecast for '
+              'this spot</a>. The forecast is worked out from rain and overflows, not from these samples.</p>'
+              for i in doc.get("spots", [])[:1] if SPOT_ID.fullmatch(i)]
+    for s in reversed(doc["seasons"]):
+        rows = [x for x in reversed(doc["samples"]) if x["date"].startswith(str(s["season"]))]
         parts.append(
             f'<h2>{s["season"]}</h2>'
             f'<p><b>{s["samples"]} samples, {escape(day(s["first"]))} to {escape(day(s["last"]))}.</b> {escape(s["how"])}</p>'
             f'<p class="wet-sum">E. coli: middle value {n(s["ecoli"]["median"])}, highest {n(s["ecoli"]["max"])}. '
             f'Intestinal enterococci: middle value {n(s["ie"]["median"])}, highest {n(s["ie"]["max"])}. Per 100 ml.</p>'
-            f'<div class="tw"><table class="wet-samples"><caption>Each sample in {s["season"]}, per 100 ml.</caption>'
+            f'<div class="tw"><table class="wet-samples"><caption>Each sample in {s["season"]}, newest first, per 100 ml.</caption>'
             '<thead><tr><th scope="col">Date</th><th scope="col" class="num">E. coli</th>'
             '<th scope="col" class="num">Intestinal enterococci</th></tr></thead><tbody>'
             + "".join(f'<tr><th scope="row">{escape(day(x["date"]))}</th><td class="num">{x["ecoli"]}</td>'
@@ -3636,11 +3641,18 @@ def wet_body(doc: dict) -> str:
     return "\n".join(parts)
 
 
+def wet_link(doc: dict) -> dict:
+    """What a linked spot's page says of the samples (index.html, localSamplesLine): where, who, how many and when."""
+    s = doc["samples"]
+    return {"href": "waterhead.html", "place": doc["site"]["name"], "by": "Ambleside Action for a Future",
+            "samples": len(s), "first": s[0]["date"], "last": s[-1]["date"]}
+
+
 def write_waterhead(site: Path, token: str | None = None, root: str | None = None, path: Path | None = None) -> dict:
     """waterhead.html, and data/research/waterhead_wet.json, from the export (WET unless path), or the page saying
     none are shown. Returns the build's health entry."""
     path = path or WET
-    out = site / "data" / "research" / "waterhead_wet.json"
+    out, local = site / "data" / "research" / "waterhead_wet.json", site / "data" / "research" / "local-samples.json"
     out.unlink(missing_ok=True)
     why = None
     if not path.is_file():
@@ -3652,11 +3664,15 @@ def write_waterhead(site: Path, token: str | None = None, root: str | None = Non
     page = (TEMPLATE.parent / "waterhead.html").read_text()
     if why:
         body, attrib = '<p class="notice">No samples are published in this build.</p>', ""
+        local.parent.mkdir(parents=True, exist_ok=True)
+        local.write_text(json.dumps({"available": False, "why": why}))
     else:
         out.parent.mkdir(parents=True, exist_ok=True)
         out.write_text(json.dumps(doc, ensure_ascii=False, separators=(",", ":")))
         body = wet_body(doc)
         attrib = escape(doc["attribution"])
+        local.write_text(json.dumps({"available": True, "spots": {i: wet_link(doc) for i in doc.get("spots", []) if SPOT_ID.fullmatch(i)}},
+                                    separators=(",", ":")))
     for marker, text in (("<!-- WET -->", body), ("<!-- WET-ATTRIB -->", attrib)):
         if marker not in page:
             raise ValueError(f"waterhead.html has lost {marker}, which write_waterhead fills")

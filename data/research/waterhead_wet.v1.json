@@ -1,7 +1,7 @@
 {
  "schema": "swimsignal.waterhead-wet",
- "version": "1.0.0",
- "generated_at": "2026-10-31T15:11:06+00:00",
+ "version": "1.1.0",
+ "generated_at": "2026-10-31T16:05:34+00:00",
  "site": {
   "name": "Waterhead, Windermere",
   "confirmed": false,
@@ -9,7 +9,7 @@
  },
  "units": "per 100 ml, as the sheet records them (its headings say cfu/100ml)",
  "claim": {
-  "public_wording": "Weekly water samples taken at Waterhead, Windermere, by Ambleside Action for a Future's Waterhead E. coli Testing project, and the E. coli and intestinal enterococci counted in each. A sample is the water at that place on that morning only: not today's water, and not the rest of the lake.",
+  "public_wording": "Weekly water samples taken at Waterhead, Windermere, by Ambleside Action for a Future's Waterhead E. coli Testing project, and the E. coli and intestinal enterococci counted in each. A sample is the water at that place at the time it was taken: not today's water, and not the rest of the lake.",
   "not_claimed": [
    "the water now",
    "the water elsewhere in Windermere",
@@ -33,7 +33,7 @@
     "median": 12,
     "max": 154
    },
-   "how": "Thursday mornings, analysed by Simplex Health's laboratory (the WET technical report, 17 Nov 2025)."
+   "how": "Mostly on Thursday mornings, analysed by Simplex Health's laboratory (the WET technical report, 17 Nov 2025)."
   },
   {
    "season": 2026,
@@ -56,6 +56,9 @@
   "Whether 2026 used the same laboratory and method as 2025.",
   "What a recorded 0 means: most likely below the method's detection limit, not a true zero."
  ],
+ "spots": [
+  "osm-windermere-waterhead"
+ ],
  "attribution": "Bacteria counts: Ambleside Action for a Future, Waterhead E. coli Testing (WET) project.",
  "permission": "Public domain (Tim Boden, 25 Oct 2026): may be used and forwarded with credit to Ambleside Action for a Future.",
  "report": {
@@ -68,7 +71,7 @@
   "sheet_sha256": "c9f229c832eea9782b6d8874e79c8feaa430f8443549669b52778b647516d3b5",
   "received": "2026-10-25",
   "code_sha256": {
-   "scripts/export_waterhead_wet.py": "2fbdea3e77eb14e46063b1db7d516e59ae935c8b0229b6af627a73a56f7c2567"
+   "scripts/export_waterhead_wet.py": "775a216b1fef4e8aaf0f2d63f19eb0df44ebed043e9161eb0d822ffbe7e3608a"
   }
  },
  "samples": [
