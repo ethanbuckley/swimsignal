@@ -2737,13 +2737,13 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     (site / "404.html").write_text(with_counter(not_found_page(root), token))
     (site / "robots.txt").write_text(robots(root))
     (site / ".nojekyll").write_text("")
+    write_lakes(site, token, root)   # the satellite lake observations (Research): before the data page, which lists data/research/
     write_data_page(site, token, root)   # lists what is in data/, so build() writes the data files first
     write_quality_page(site, overflows, generated, token, root=root)
     write_embed(site)
     write_organisers(site, token, root)
     write_sites(site, token, root)
     write_record(site, token, root)
-    write_lakes(site, token, root)   # the satellite lake observations (Research), from the research export
     if support:
         add_support_links(site)   # last, so every page written above has its foot
     return len(ids)

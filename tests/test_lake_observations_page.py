@@ -68,3 +68,12 @@ def test_research_and_the_viewer_are_written_and_linked_from_every_page(tmp_path
                  "organisers.html", "sites.html", "lakes.html", "research.html", "404.html"):
         html = (tmp_path / page).read_text()
         assert html.count("research.html") >= 2, page
+
+
+def test_the_data_page_lists_the_lake_files_on_a_fresh_build(tmp_path):
+    # The lake files are written before the data page, which lists data/: a fresh build's research/ row has a size.
+    bs = _build_site()
+    bs.write_pages(tmp_path, [{"id": "a", "name": "A", "kind": "lake", "days": []}], root="https://example.org/")
+    row = __import__("re").search(r'<tr data-file="research/">(.*?)</tr>', (tmp_path / "data.html").read_text()).group(1)
+    assert "Not in this build" not in row
+
