@@ -931,6 +931,7 @@
      the two display rules are apart. */
   .more-menu { display:none; }
   .more-menu:popover-open { display:block; }
+  .more-menu.open { display:block; }   /* build_site.MORE_FALLBACK, where there are no popovers */
   .more-menu { position:fixed; inset:auto max(8px, env(safe-area-inset-right)) var(--nav-h, 64px) auto; margin:0 0 8px; padding:4px 0; min-width:180px;
     list-style:none; background:var(--card); color:var(--ink); border:1px solid var(--line); border-radius:var(--radius); }
   .more-menu a { display:flex; align-items:center; min-height:44px; padding:0 16px; color:var(--ink); text-decoration:none; font-weight:600; }
@@ -1379,8 +1380,8 @@
   <button type="button" id="nav-map" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 5 6-2 6 2 6-2v16l-6 2-6-2-6 2Zm6-2v16m6-14v16"/></svg>Map</button>
   <a href="plan/" id="nav-plan" aria-label="Plan a swim"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4m6-4v4"/></svg>Plan</a>
   <a href="saved/" id="nav-saved" aria-label="Saved spots"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4Z"/></svg>Saved<span class="n" id="nav-saved-n" hidden></span></a>
-  <!-- The same list as build_site.MORE_LINKS, which the prose pages' bar draws. -->
-  <button type="button" popovertarget="more-menu" aria-label="More pages"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>More</button>
+  <!-- The same list and fallback as build_site.MORE_LINKS and MORE_FALLBACK, which the prose pages' bar draws. -->
+  <button type="button" popovertarget="more-menu" aria-label="More pages" onclick="if(!('popover' in this)){this.setAttribute('aria-expanded',this.nextElementSibling.classList.toggle('open'))}"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>More</button>
   <ul class="more-menu" id="more-menu" popover><li><a href="verification.html">Accuracy</a></li><li><a href="about.html">About</a></li><li><a href="research.html">Research</a></li><li><a href="feedback.html">Feedback</a></li></ul>
 </nav>
 <!-- The built page defers every script here and serves the inline one as app.js (build_site.split_app_script),
