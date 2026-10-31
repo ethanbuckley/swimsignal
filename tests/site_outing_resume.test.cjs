@@ -36,7 +36,9 @@ test('nothing comes back without a spot or a starting place, for a day gone by, 
 test("the line is the plan's own words, and another activity is told the level is the water's", () => {
   L.setToday('2026-10-29');
   try {
-    assert.deepEqual(O.outingResumeSaid({ day: '2026-10-31', when: 'morning', act: null }, 'River Thames, Henley'),
+    // The clock is the test's 29 October: left to the real one, on 31 Oct after the morning it said the time had passed.
+    assert.deepEqual(O.outingResumeSaid({ day: '2026-10-31', when: 'morning', act: null }, 'River Thames, Henley',
+      new Date(2026, 9, 29, 9, 0).getTime()),
       ['Saturday morning, with River Thames, Henley as a backup.']);
     assert.deepEqual(O.outingResumeSaid({ day: '2026-10-29', when: '07', act: 'sup' }, null, new Date(2026, 9, 29, 6, 30).getTime()),
       ['Today at 07:00, paddleboarding.', 'The level is for the water, the same whatever you do on it.']);

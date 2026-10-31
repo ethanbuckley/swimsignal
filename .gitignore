@@ -52,6 +52,8 @@ data/raw/*
 !data/raw/wales_bathing_waters.json
 !data/raw/coastal_catalogue.json
 !data/raw/coastal_wqa_points.json
+# Each English and Welsh bathing water's sampling point, for the directories' water temperature (scripts/refresh_bathing_water_points.py; OGL v3.0).
+!data/raw/bathing_water_points.json
 !data/raw/places.json
 # The rivers and lakes the home page's search finds on the map (scripts/make_waters.py).
 !data/raw/waters.json

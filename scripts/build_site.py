@@ -1926,6 +1926,62 @@ def attach_water_temperature_estimate(results: list[dict], forecast=None, model=
     return out
 
 
+BATHING_WATER_POINTS = ROOT / "data" / "raw" / "bathing_water_points.json"   # scripts/refresh_bathing_water_points.py
+
+
+def attach_directory_water_temp(sites: list[dict], water_air: dict | None, model=None, points_file: Path | None = None,
+                                nation: str = "england") -> dict:
+    """The coastal directory's provisional water temperature (#492 stage 3, #479): at each coastal or estuary bathing
+    water, the sea curve in the 7-day air of the nearest cell the click-anywhere build cached (`water_air`, from
+    overflow_days.json: no extra request), placed by the site's sampling point (BATHING_WATER_POINTS). A site gets
+    `water_temp_est` (water_temp.sea_from_cells) or `water_temp_est_missing` with why: "point" (no sampling point on
+    file), "air" (no cached cell in its own or the eight around it) or "error". Returns the build's health entry."""
+    from dipcast.model import water_temp
+    out = {"estimated": 0, "routes": {}, "missing": {}}
+
+    def miss(s, why, day=None):
+        s["water_temp_est_missing"] = {"why": why, **({"date": day} if day else {})}
+        out["missing"][why] = out["missing"].get(why, 0) + 1
+    model = water_temp.load() if model is None else model
+    try:
+        points = json.loads((points_file or BATHING_WATER_POINTS).read_text())[nation]
+    except Exception as e:  # noqa: BLE001 - an estimate beside the directory must not sink the build
+        log.warning("bathing water points: %s", e)
+        points = {}
+    cells, day = (water_air or {}).get("cells") or {}, (water_air or {}).get("date")
+    for s in sites:
+        p = points.get(s.get("id"))
+        if model is None or not day:
+            miss(s, "air")
+            continue
+        if not p:
+            miss(s, "point", day)
+            continue
+        try:
+            est = water_temp.sea_from_cells(model, cells, day, p[0], p[1], s.get("kind", "coast"))
+        except Exception as e:  # noqa: BLE001
+            log.warning("directory water temperature for %s: %s", s.get("name"), e)
+            miss(s, "error", day)
+            continue
+        if est is None:
+            miss(s, "air", day)
+        else:
+            s["water_temp_est"] = est
+            out["estimated"] += 1
+            out["routes"][est["route"]] = out["routes"].get(est["route"], 0) + 1
+    log.info("directory water temperature (%s): %d sites %s, missing %s", nation, out["estimated"], out["routes"],
+             out["missing"])
+    return out
+
+
+def anypoint_water_air(site: Path) -> dict | None:
+    """The `water_air` this build's click-anywhere file published, or None (no file, or none in it)."""
+    try:
+        return json.loads((site / "data" / "anypoint" / "overflow_days.json").read_text()).get("water_air")
+    except Exception:  # noqa: BLE001
+        return None
+
+
 WATER_TEMP_LOG = "water_temp_estimates.parquet"   # in the state directory; the state release carries it (site.yml)
 
 
@@ -3700,10 +3756,12 @@ def build(refresh: bool = True) -> dict:
     from dipcast.coastal import fetch as fetch_coastal
     # The latest statutory sample at each site from the EA's archive, kept six hours in the cache.
     coastal = attach_samples(fetch_coastal(), cache=config.CACHE / "coastal_samples.json")
+    coastal_water = attach_directory_water_temp(coastal["sites"], anypoint_water_air(SITE))
     (SITE / "data" / "coastal.json").write_text(json.dumps(coastal))
     health["coastal"] = {"status": coastal["status"], "sites": len(coastal["sites"]),
                          "samples": coastal.get("samples", {}).get("state"),
-                         "with_sample": sum((s.get("sample") or {}).get("state") == "ok" for s in coastal["sites"])}
+                         "with_sample": sum((s.get("sample") or {}).get("state") == "ok" for s in coastal["sites"]),
+                         "water_temperature_estimate": coastal_water}
     # Welsh bathing waters: NRW's sites and latest samples, live or from the dated snapshot (wales.py).
     from dipcast.wales import fetch as fetch_wales
     wales = fetch_wales()
