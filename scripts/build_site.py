@@ -2240,6 +2240,9 @@ SHELL_SOURCES.append(TEMPLATE.parent / "replay.js")
 # The evidence map (prototype, ?evidence=1 only, docs/EVIDENCE-MAP-2026-10.md): index.html adds evmap.js itself
 # when asked, as it does replay.js, at levels.js's ?v=<stamp> (mountEvMap); the offline copy stores it (sw.js SHELL).
 SHELL_SOURCES.append(TEMPLATE.parent / "evmap.js")
+# The spill map (docs/PLUME-MAP-2026-10.md): index.html adds plume.js itself when the map's place on a spot's page
+# comes near the screen, at levels.js's ?v=<stamp> (mountPlume); the offline copy stores it (sw.js SHELL).
+SHELL_SOURCES.append(TEMPLATE.parent / "plume.js")
 
 
 def copy_app_files(site: Path, stamp: str | None = None) -> None:
@@ -2278,6 +2281,7 @@ def copy_app_files(site: Path, stamp: str | None = None) -> None:
     shutil.copy(TEMPLATE.parent / "arrive.js", site / "arrive.js")   # the arrival guide, ?arrive=1 only
     shutil.copy(TEMPLATE.parent / "replay.js", site / "replay.js")   # catchment replay, ?replay=1 only (src/dipcast/replay.py)
     shutil.copy(TEMPLATE.parent / "evmap.js", site / "evmap.js")   # evidence map, ?evidence=1 only (prototype)
+    shutil.copy(TEMPLATE.parent / "plume.js", site / "plume.js")   # the spill map on a spot's page (src/dipcast/plume.py)
     shutil.copytree(TEMPLATE.parent / "icons", site / "icons", dirs_exist_ok=True)
     # The map library, Leaflet, served from this site (vendor/leaflet/VERSION.txt) rather than a CDN.
     shutil.copytree(TEMPLATE.parent / "vendor", site / "vendor", dirs_exist_ok=True)
@@ -4123,6 +4127,22 @@ def replay_files(site: Path, results: list[dict], upstream: dict[str, list[dict]
     return out
 
 
+def plume_files(site: Path, results: list[dict], upstream: dict[str, list[dict]], generated: pd.Timestamp,
+                write=None) -> dict:
+    """data/spot/<id>-plume.json, the routes the spill map moves the replay's spills along (src/dipcast/plume.py,
+    site/plume.js): from the river network and the replay files, so no request. After replay_files. A failure is
+    announced and recorded in the build health, as the replay's is: a map must never stop the site publishing."""
+    try:
+        if write is None:
+            from dipcast.plume import write_plumes as write
+        out = write(site, results, upstream, generated.tz_convert("UTC"))
+    except Exception as e:  # noqa: BLE001
+        out = {"written": 0, "warning": f"spill map routes not written: {e}"}
+    if out.get("warning"):
+        announce(out["warning"])
+    return out
+
+
 def build(refresh: bool = True) -> dict:
     t0 = time.time()
     require_spill_model()
@@ -4296,6 +4316,7 @@ def build(refresh: bool = True) -> dict:
     write_app_data(SITE, doc)   # spots-lite.json and data/spot/<id>.json, what the app loads
     health["trace_files"] = write_traces(SITE, traces, upstream, generated, credits, cuts)   # data/spot/<id>-trace.json, after write_app_data clears data/spot/
     health["replay_files"] = replay_files(SITE, results, upstream, generated)   # ?replay=1 only; never stops the build
+    health["plume_files"] = plume_files(SITE, results, upstream, generated)   # the spill map's routes, from the replay files; never stops the build
     alerts_ok = write_alerts(SITE, site_url(), push is not None or email is not None)   # carries the credits from spots.json
     spot_cards = write_spot_cards(SITE, results, generated.isoformat(), alerts_ok)   # before the pages, which point at them
     health["spot_cards"] = len(spot_cards)
