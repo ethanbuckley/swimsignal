@@ -47,8 +47,8 @@ test('with no day open, the forecast tiles give today, under a heading that says
   assert.match(h, /^ Forecast for today /);
   assert.match(h, /Sewage spills 30 of 100/);
   assert.match(h, /About 7 of the 45 overflows upstream are expected to spill today\./);
-  assert.match(h, /Rain here 17 mm .*In the 48 h to midday today\. The most ahead: 22 mm in the 48 h to midday tomorrow\./);
-  assert.match(h, /Weather 14°/);
+  // The rain and the air are in each day's row and the conditions tiles since 31 Oct 2026 (dayWx, conditionsSummary).
+  assert.doesNotMatch(h, /Rain here|Weather/);
 });
 
 test('a picked day moves every forecast tile to that day, and names it', () => {
@@ -56,11 +56,7 @@ test('a picked day moves every forecast tile to that day, and names it', () => {
   assert.match(h, /^ Forecast for Saturday 24 October /);
   assert.match(h, /Sewage spills 39 of 100/);
   assert.match(h, /About 20 of the 45 overflows upstream are expected to spill on Saturday\./);
-  assert.match(h, /Rain here 17 mm .*In the 48 h to midday Saturday\./);
-  assert.doesNotMatch(h, /The most ahead/);   // said from today only
-  assert.match(h, /Weather 15°/);
-  assert.match(raw, /<span class="on"><i[^>]*><\/i><b>S<\/b><\/span>/);   // Saturday's rain column, in ink
-  assert.doesNotMatch(raw, /<circle[^>]*r="4.5"/);   // no "the sun is here now" dot on another day
+  assert.doesNotMatch(h, /Rain here|Weather/);   // in Saturday's row (dayWx)
   assert.doesNotMatch(h, /today/);
   // A day that has left the five days opens today's.
   assert.match(text(vm.runInContext('dayTiles(S, "2026-10-30")', ctx)), /^ Forecast for today .*Sewage spills 30 of 100/);
@@ -69,7 +65,7 @@ test('a picked day moves every forecast tile to that day, and names it', () => {
 test('the readings stay on now whichever day is open, under their own heading', () => {
   const ctx = page(), h = text(vm.runInContext('nowTiles(S)', ctx));
   assert.match(h, /^ Latest readings Measured, not forecast: they stay the same whichever day you pick\. Right now 1 /);
-  assert.match(h, /River level 2\.09 m/);
+  assert.doesNotMatch(h, /River level/);   // in the conditions tiles since 31 Oct 2026
   for (const iso of DAYS) {
     const day = text(vm.runInContext(`dayTiles(S, "${iso}")`, ctx));
     assert.doesNotMatch(day, /Right now|River level/);

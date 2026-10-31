@@ -606,7 +606,6 @@
   /* The conditions as four small tiles (conditionsSummary): a label, a figure, what kind it is and when. */
   .cond { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); gap:8px; }
   .cond .cell { padding:10px 12px 12px; }
-  .cond .t-lab { padding-right:0; }
   .cfig { margin:4px 0 0; font-size:var(--fs-level); font-weight:300; line-height:1.15; font-variant-numeric:tabular-nums; }
   .csub { margin:4px 0 0; font-size:var(--fs-meta); line-height:1.35; color:var(--muted); }
   .cond .range { margin:8px 0 0; }
@@ -705,6 +704,15 @@
   table.seasonal th[scope=row] { color:var(--ink); font-weight:400; font-size:inherit; }
   .s-bar { display:inline-block; width:56px; height:6px; margin-right:8px; vertical-align:middle; background:var(--line); }
   .s-bar > span { display:block; height:100%; background:var(--muted); }
+  /* The months as columns (seasonal.js), this month in ink; the table under "Month by month, with notes". */
+  .mchart { display:grid; grid-template-columns:repeat(12, minmax(0, 1fr)); gap:4px; margin:10px 0 0; }
+  .mchart span { display:flex; flex-direction:column; height:84px; }
+  .mchart em { position:relative; flex:1; }
+  .mchart i { position:absolute; left:0; right:0; bottom:0; background:var(--unknown); }
+  .mchart b { margin-top:4px; font-size:var(--fs-meta); font-weight:400; text-align:center; color:var(--muted); }
+  .mchart .on i { background:var(--ink); } .mchart .on b { color:var(--ink); font-weight:600; }
+  details.s-more { margin:10px 0 0; }
+  details.s-more > summary { font-size:var(--fs-note); font-weight:600; color:var(--link); cursor:pointer; }
   /* A level in a table, a log or the key: the word in its level's text colour, never a filled label. */
   .badge { font-weight:700; white-space:nowrap; color:var(--k-na); }
   .b-low { color:var(--k-low); } .b-moderate { color:var(--k-moderate); } .b-high { color:var(--k-high); } .b-veryhigh { color:var(--k-veryhigh); } .b-na { color:var(--k-na); }
@@ -1068,10 +1076,11 @@
     :root { --nav-h:calc(64px + env(safe-area-inset-bottom)); }
     html { scroll-padding-bottom:var(--nav-h); }   /* a control reached by Tab scrolls clear of the bottom bar, not under it */
     /* A spot's three folds (phoneFolds): the question as the title, what is inside in a line under it. */
-    .fold-group > summary { min-height:56px; }
-    .fold-group .fg-t { display:block; font:600 var(--fs-head)/1.3 var(--font-display); color:var(--ink); }
-    .fold-group .fg-s { display:block; margin-top:2px; font-size:var(--fs-note); font-weight:400; color:var(--muted); }
-    .fold-group[open] > summary { margin-bottom:8px; }
+    /* What it cannot see (phoneFolds): the Not known here tile inside it, flat. */
+    .limits > p { margin:8px 0 0; font-size:var(--fs-note); line-height:1.45; }
+    /* A section of one tile (the readings, now the river's level is with the conditions) gives it the full width. */
+    .tiles > .tile:only-of-type { grid-column:1 / -1; }
+    .limits #unknowns { margin:10px 0 0; padding:10px 0 0; border-radius:0; background:none; box-shadow:none; border-top:1px solid var(--hair); -webkit-backdrop-filter:none; backdrop-filter:none; }
     .fold-body > * + * { margin-top:12px; }
     .fold-body > .scope, .fold-body > .check { font-size:var(--fs-note); color:var(--ink); }
     dialog.sheet { margin:auto auto 0; border-radius:var(--radius) var(--radius) 0 0; padding-bottom:calc(20px + env(safe-area-inset-bottom)); }
@@ -4810,10 +4819,13 @@ function spotTop(d) {
 // heading of their own (nowTiles). The full-width tiles go after the half ones, which then pair up.
 const dayTiles = (d, iso = null) => { const x = iso ? (d.days || []).slice(0, 5).find(y => y.date === iso) : null;
   const on = x && x.date !== today() ? new Date(x.date + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' }) : 'today';
-  const fx = facts(d, x ? x.date : null).filter(o => o.icon !== ICON.rating && !o.live);
+  const fx = facts(d, x ? x.date : null).filter(o => o.icon !== ICON.rating && !o.live && !IN_CONDITIONS(o));
   return `<section class="tiles" id="day-tiles" aria-labelledby="day-tiles-h"><h2 class="grp-h" id="day-tiles-h">Forecast for ${on}</h2>`
     + [...fx.filter(o => !o.wide), ...fx.filter(o => o.wide)].map(tile).join('') + '</section>'; };
-const nowTiles = d => { const fx = facts(d).filter(o => o.live); if (!fx.length) return '';
+// The rain, the air, the water's temperature and the river's level are in the conditions tiles and the day rows
+// (conditionsSummary, dayWx) since 31 Oct 2026; their tiles here said the same figures a second time.
+const IN_CONDITIONS = o => o.icon === ICON.rain || o.icon === ICON.sun || o.icon === ICON.level || o.label === 'Water temperature';
+const nowTiles = d => { const fx = facts(d).filter(o => o.live && !IN_CONDITIONS(o)); if (!fx.length) return '';
   return `<section class="tiles" id="now-tiles" aria-labelledby="now-tiles-h"><h2 class="grp-h" id="now-tiles-h">Latest readings</h2>`
     + `<p class="grp-sub">Measured, not forecast: they stay the same whichever day you pick.</p>${fx.map(tile).join('')}</section>`; };
 // The spot's conditions as four small tiles, figures first: the water's temperature, the river's or lake's level on its
@@ -4827,14 +4839,15 @@ function conditionsSummary(d) {
   const lv = riverTile(rs && age !== null && age > 24 ? {...rs, stale: true, age_hours: age} : rs);
   const x0 = (d.days || []).find(x => x.date === today()), wx = ((d.weather || {}).days || []).find(x => x.date === today());
   const lake = (rs && rs.water === 'lake') || d.kind === 'lake';
-  const cell = (label, fig, sub, vis = '') => `<div class="tile cell"><h3 class="t-lab">${label}</h3><p class="cfig">${fig}</p>${vis}<p class="csub">${sub}</p></div>`;
+  const cell = (label, fig, sub, vis = '', more = '') => `<div class="tile cell"><h3 class="t-lab">${label}</h3><p class="cfig">${fig}</p>${vis}<p class="csub">${sub}</p>`
+    + (more ? `<details class="t-more"><summary><span class="sr">${label}: what this means</span></summary><p>${more}</p></details>` : '') + '</div>';
   const water = !w ? cell('Water temperature', '–', 'No reading or estimate here')
-    : w.live ? cell('Water temperature', w.fig, (w.say || '').split(/(?<=\.) /)[0])   // its first sentence: where it was measured, how long ago
-    : cell('Water temperature', w.fig, w.fig === '–' ? 'Not estimated today' : /provisional/.test(w.unit) ? 'Provisional estimate' : 'Estimate');
+    : w.live ? cell('Water temperature', w.fig, (w.say || '').split(/(?<=\.) /)[0], '', w.more)   // its first sentence: where it was measured, how long ago
+    : cell('Water temperature', w.fig, w.fig === '–' ? 'Not estimated today' : /provisional/.test(w.unit) ? 'Provisional estimate' : 'Estimate', '', w.more);
   const at = rs && rs.observed_at ? new Date(rs.observed_at).toLocaleString('en-GB', { weekday: 'short', hour: '2-digit', minute: '2-digit' }) : '';
   const level = !lv ? cell(lake ? 'Lake level' : 'River level', '–', 'No gauge here')
-    : lv.fig === '–' ? cell(lv.label || 'River level', '–', 'No current reading')
-    : cell(lv.label || 'River level', `${lv.fig}&nbsp;m`, [lv.word, rs && rs.station ? `${esc(rs.station)}, ${at}` : ''].filter(Boolean).join(' · '), lv.vis || '');
+    : lv.fig === '–' ? cell(lv.label || 'River level', '–', 'No current reading', '', [lv.say, lv.more].filter(Boolean).join(' '))
+    : cell(lv.label || 'River level', `${lv.fig}&nbsp;m`, [lv.word, rs && rs.station ? `${esc(rs.station)}, ${at}` : ''].filter(Boolean).join(' · '), lv.vis || '', [lv.say, lv.more].filter(Boolean).join(' '));
   const rain = x0 && !nil(x0.rain_48h_mm) ? cell('Rain here', `${fmt(x0.rain_48h_mm, x0.rain_48h_mm < 1 && x0.rain_48h_mm > 0 ? 1 : 0)}&nbsp;mm`, 'In the 48 hours to midday') : '';
   const air = wx && !nil(wx.tmax) ? cell('Air today', `${wx.tmax}°`, `High${wx.sunrise && wx.sunset ? ` · light ${esc(wx.sunrise)} to ${esc(wx.sunset)}` : ''}`) : '';
   return `<section class="cond" aria-labelledby="conditions-h"><h2 class="sr" id="conditions-h">Conditions at the spot</h2>${water}${level}${rain}${air}</section>`;
@@ -4907,39 +4920,34 @@ function render(d) {
   phoneFolds();
   if (ARRIVE) mountArrival(d);   // ?arrive=1 only, after the folds, so its tile stays where the guide's was
 }
-// On a phone a spot's page is the answer, the five days and the lower-risk spots nearby; the rest goes in
-// three folds named for the question each answers (29 October 2026: Waterhead had 15 headings over 8.7
-// screens of a 375 px phone; folded, 3.3). A desktop keeps its columns. What the level counts and the
-// water-test line join the limits fold from under the five days, where showDay puts them back (phoneFolds
-// moves them again). Reviews, visit notes and illness reports mount at the end of "At the water".
-const FOLDS = [
-  ['why', 'Why this level', ['.spot-map-tile', '#day-tiles']],
-  ['water', 'At the water', ['#now-tiles', '#lt-past', '.loc', '#nearby-host ~ *', '#reviews', '#visits', '#illness']],
-  ['limits', 'What this forecast cannot see', ['#unknowns', '.col-more > *']],
-];
-// The line under a fold's title: the headings of what it holds, as this spot has them, so it never promises a
-// guide, a gauge or a map the spot does not have (29 October 2026: a fixed line did). Three, then "and more".
-const foldSaid = body => { const t = [...new Set([...body.children].map(e => (e.querySelector('.t-lab span, h2, h3, summary') || {}).textContent)
-  .filter(Boolean).map(x => x.trim().replace(/\s+/g, ' ')))]; return t.slice(0, 3).join(' · ') + (t.length > 3 ? ' and more' : ''); };
+// On a phone a spot's page is one column in the order of a swimmer's questions, every section open: the answer, the
+// five days and why, the conditions, the spots nearby, then upstream (the map and the overflows that matter most), the
+// readings and the day's forecast, past spills, how the forecast has done here, what it cannot see, and at the water.
+// From 29 October 2026 three folds held all of that after the nearby spots ("Why this level", "At the water", "What this
+// forecast cannot see"); on 31 October they held 3,700 px of a 375 px phone, a tap away and named only by their headings.
+// Long method text keeps its own named folds (What the level rests on, Day-by-day numbers) and each tile's corner button.
+// A desktop keeps its columns. What the level counts and the water-test line join the limits section from under the five
+// days, where showDay puts them back (phoneFolds moves them again).
+const PHONE_ORDER = ['.spot-map-tile', '#overflows', '#now-tiles', '#lt-past', '#day-tiles', '#seasonal', '#scores-host, #scores', '#limits'];
+const PHONE_OPEN = ['#seasonal'];   // a chart: open on a phone. The overflows' rows run to 800 px, so they keep their fold
 function phoneFolds() {
   const stack = document.querySelector('#result .stack'), at0 = stack && stack.querySelector('#nearby-host');
   if (!PHONE.matches || !at0) return;
   // Where the risk comes from, in words, straight under the five days, before the conditions: it is the answer's reason.
   const src = stack.querySelector('#sources-host'), days = stack.querySelector('#days-h');
   if (src && days) days.closest('section').after(src);
+  // What it cannot see: the water-test line, what the level counts and the Not known here rows, under one heading.
+  let lim = document.getElementById('limits');
+  const parts = ['#result .stack p.check', '#answer-after .scope', '#unknowns'].map(q => document.querySelector(q)).filter(e => e && !(lim && lim.contains(e)));
+  if (!lim && parts.length) { at0.insertAdjacentHTML('afterend', `<section class="tile limits" id="limits" aria-labelledby="limits-h"><h2 class="t-lab" id="limits-h">${ICON.unknown}<span>What this forecast cannot see</span></h2></section>`);
+    lim = document.getElementById('limits'); }
+  if (lim) lim.append(...parts);
   let at = at0;
-  for (const [k, t, sels] of FOLDS) {
-    let f = document.getElementById('fold-' + k);
-    const els = sels.flatMap(q => [...stack.querySelectorAll(q)]).filter(e => !e.closest('.fold-group'));
-    if (!f) { if (!els.length) continue;
-      at.insertAdjacentHTML('afterend', `<details class="tile fold fold-group" id="fold-${k}"><summary><span><span class="fg-t">${t}</span>`
-        + `<span class="fg-s"></span></span></summary><div class="fold-body"></div></details>`);
-      f = document.getElementById('fold-' + k);
-      f.addEventListener('toggle', () => { if (k === 'why' && f.open) placeMap(); }); }   // the map, drawn at its size once shown
-    f.querySelector('.fold-body').append(...els); f.querySelector('.fg-s').textContent = foldSaid(f.querySelector('.fold-body')); at = f;
-  }
-  const lim = document.querySelector('#fold-limits .fold-body');
-  if (lim) for (const q of ['#answer-after .scope', '#result .stack p.check']) { const e = document.querySelector(q); if (e && !lim.contains(e)) lim.prepend(e); }
+  for (const q of PHONE_ORDER) { const e = stack.querySelector(q); if (e) { at.after(e); at = e; } }
+  for (const q of PHONE_OPEN) { const e = stack.querySelector(q); if (e && !e.dataset.phoneOpened) { e.open = true; e.dataset.phoneOpened = '1'; } }
+  // With the Upstream map shown, the small map of where the spot is says the same.
+  const loc = stack.querySelector('.loc'); if (loc && stack.querySelector('.spot-map-tile:not(.desk-only)')) loc.hidden = true;
+  placeMap();   // the map, drawn at its size now it is shown
 }
 PHONE.addEventListener('change', () => { if (current && document.querySelector('#result .stack')) render(current); });   // folds on, or columns back
 // The arrival guide (prototype, docs/ARRIVAL-GUIDE-2026-10.md): the practical guide as a journey, from the stop or
