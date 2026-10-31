@@ -847,6 +847,26 @@
   .plan-go .plan-from { margin:0; }
   .plan-go .plan-from input { padding-right:12px; }   /* no location pin in this field: its room cut "Starting from" at 375 px */
   .plan-go + .planner-note { margin-bottom:8px; }
+  /* Ask SwimSignal (ask.js): a question and its answer, in a tile above the plan's groups. The model's words
+     first; each spot's lines under it, hairlines between spots, each line's source and date muted under it. */
+  .ask-form { display:flex; gap:8px; }
+  .ask-form input { flex:1; min-width:0; font:inherit; font-size:var(--fs-body); color:var(--ink); padding:10px 12px; border:1px solid var(--line); border-radius:var(--radius); background:var(--field); -webkit-appearance:none; appearance:none; }
+  .ask-form input::placeholder { color:var(--faint); }
+  .ask-form .btn { flex:none; }
+  .ask-h { margin:14px 0 4px; font-size:var(--fs-body); }
+  .ask-h:focus { outline:none; }
+  .ask-summary { margin:0; }
+  .ask-spots, .ask-facts, .ask-unknown { margin:0; padding:0; list-style:none; }
+  .ask-spot { padding:10px 0; border-top:1px solid var(--line); }
+  .ask-spots { margin-top:10px; }
+  .ask-name { margin:0; font-size:var(--fs-body); }
+  .ask-meta, .ask-fit { margin:2px 0 0; font-size:var(--fs-note); }
+  .ask-meta { color:var(--muted); }
+  .ask-facts li { margin-top:6px; font-size:var(--fs-note); }
+  .ask-facts .ask-official { font-weight:600; }
+  .ask-src { display:block; color:var(--muted); font-weight:400; }
+  .ask-sub { margin:12px 0 2px; font-size:var(--fs-note); }
+  .ask-unknown li { font-size:var(--fs-note); }
   #plan-sum + .chips-row { margin-top:4px; }
   a.row .why { margin-top:4px; font-size:var(--fs-note); line-height:1.4; }
   /* How much evidence sits behind the row's level (planEvidence): outside the row's link, which it would
@@ -1464,6 +1484,7 @@
 <script src="levels.js"></script>   <!-- the levels and headlines: shared with the build and the alerts -->
 <script src="since.js"></script>   <!-- what changed at a saved spot since you last looked: uses levels.js -->
 <script src="plan.js"></script>   <!-- Plan a swim: the spots within reach on a day -->
+<script src="ask.js"></script>   <!-- Ask SwimSignal on Plan a swim, only with DATA.ask (ask/, the Worker) -->
 <script src="spotdate.js"></script>   <!-- a spot on a date: the calendar file and alerts for a date, shared with the organisers' page -->
 <script src="outing.js"></script>   <!-- a plan's outing: when, the spot and a backup, side by side; uses plan.js and spotdate.js -->
 <script src="dayplan.js"></script>   <!-- the day plan: a few options with what is known at each, and the plan as a picture to send -->
@@ -4230,7 +4251,7 @@ function renderPlan() {
     + `<p class="planner-note" id="plan-where" aria-live="polite"></p><p class="planner-note" id="plan-sum" role="status"></p>`   // the count, with Compare spots, before the kinds
     + `<div class="chips-row" role="group" aria-label="Water">${Object.entries(FILTERS).map(([k, t]) => `<button type="button" class="chip-btn" data-plan-kind="${k}" aria-pressed="${PLAN.kind === k}">${t}</button>`).join('')}</div>`
     + `<div class="planner-note" id="plan-basis"></div>` + notices() + '</div>'
-    + cols('<div id="plan-results"></div>');
+    + cols((typeof askBox === 'function' ? askBox(DATA) : '') + '<div id="plan-results"></div>');   // Ask SwimSignal's tile (ask.js), '' while off
   setPanel(h); bindBack(); bindPlan(); placeMap(); drawPlan(true);   // the map in its place before it is fitted to the plan
   planLoadWarnings();
   if (PLAN.from && PLAN.from.here && !VIEW.here) planLocate(true);

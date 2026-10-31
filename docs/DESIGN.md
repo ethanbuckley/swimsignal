@@ -1204,7 +1204,8 @@ how things look, not what the site says.
    deleting a review or a note on a visit, and asking about one of yours that is waiting (the
    reviews Worker); opening the Welsh list on the coverage page (Natural Resources Wales's
    data service); and opening "Today's EA advice" on the coverage page or a bathing water's page
-   (the Environment Agency's own panel, in a frame with scripts off). A library is copied into `src/dipcast/site/vendor/` with its licence and pinned
+   (the Environment Agency's own panel, in a frame with scripts off); and pressing Ask in Ask SwimSignal, while
+   it is on (the Ask Worker, and Anthropic behind it). A library is copied into `src/dipcast/site/vendor/` with its licence and pinned
    by hash.
 
 ## Review refinements
@@ -1718,3 +1719,21 @@ From a walk through the live site at 375 px. What was measured, and what changed
   chevron.
 - **Plan's place field** kept 52 px on its right for the location pin it does not have, and read
   "Starting fror" at 375 px.
+
+## Ask SwimSignal (31 October 2026, off until Ethan deploys it)
+
+A question in plain words on Plan a swim, answered from SwimSignal's own data (`ask/README.md`). One tile, "Ask
+SwimSignal", above the plan's groups, only while spots.json has `ask` (`DIPCAST_ASK_URL`): a field and an Ask
+button on one row, and one muted line saying an AI model answers from SwimSignal's data, that the question goes to
+SwimSignal and Anthropic, and to leave out personal details, with a link to the privacy section.
+
+- **The model's words apart from the data's.** The day as a small heading, the model's summary, then "Read as:"
+  with how it read the question, muted. Then the spots, one a row between hairlines: the name (a link to the
+  spot's page, on the day), distance, kind and area muted, the model's phrase on why it fits, then SwimSignal's lines
+  for the day, each with its source and date muted under it. The official advice line is first and in 600 weight;
+  the rest are regular. Then "Not known", a list, and the notes, muted. The last line says when the data was issued,
+  that an AI model wrote the answer, and links to Plan a swim with the same day, place and distance.
+- **No box for the answer**, no pill, no eyebrow, no callout: it is the tile's content, as the plan's groups are.
+- **Never "safe" or "clean"**, as everywhere on the site. The Worker refuses an answer whose words use them,
+  judge a spot for children, or name a condition or a number its data did not give.
+

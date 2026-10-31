@@ -111,6 +111,8 @@ jobs:
           DIPCAST_EMAIL_URL: ${{ vars.DIPCAST_EMAIL_URL }}
           # Reviews (reviews/README.md): the review Worker's address; unset = no reviews on the site.
           DIPCAST_REVIEWS_URL: ${{ vars.DIPCAST_REVIEWS_URL }}
+          # Ask SwimSignal (ask/README.md): the Ask Worker's address; unset = no question tile on Plan a swim.
+          DIPCAST_ASK_URL: ${{ vars.DIPCAST_ASK_URL }}
           # Tips (README, "Tips"): a Ko-fi page's address; unset = no support page or links.
           DIPCAST_KOFI_URL: ${{ vars.DIPCAST_KOFI_URL }}
           # Map tiles (README, "Map tiles"): a provider in build_site.TILE_PROVIDERS and its key; unset = OpenStreetMap.
