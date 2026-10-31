@@ -1454,6 +1454,7 @@
 <script src="guide.js"></script>   <!-- a spot's practical guide, from guides/ (src/dipcast/guides.py) -->
 <script src="evidence.js"></script>   <!-- what the level rests on: each item's age and source, and the gaps -->
 <script src="measured.js"></script>   <!-- lab results an organisation sent (samples/): uses evidence.js's ages -->
+<script src="timeline.js"></script>   <!-- the evidence timeline: uses evidence.js's ages, eatoday.js's and visits.js's words when opened -->
 <script src="spotscores.js"></script>   <!-- how the forecast has done here: the live scores of the spot's upstream overflows -->
 <script src="seasonal.js"></script>   <!-- past spills upstream by month: history, not a forecast -->
 <script src="eatoday.js"></script>   <!-- today's EA advice: the EA's own panel, loaded when its fold is opened -->
@@ -5011,7 +5012,8 @@ function render(d) {
   // is otherwise the shorter; on a phone it follows the tiles.
   const more = (typeof evidenceTile === 'function' ? evidenceTile(d, Date.now(), DATA.generated_at) : '')
     + (typeof scoresHost === 'function' ? scoresHost(d) : '')   // how the forecast has done here (spotscores.js), filled when its file arrives
-    + (typeof seasonalTile === 'function' ? seasonalTile(d) : '');   // past spills upstream by month (seasonal.js): history, folded
+    + (typeof seasonalTile === 'function' ? seasonalTile(d) : '')   // past spills upstream by month (seasonal.js): history, folded
+    + (typeof timelineTile === 'function' ? timelineTile(d) : '');   // every dated measurement, report and the forecast, newest first (timeline.js)
   if (d.error) {
     DAY = null;   // no days here: a day link opens the spot, and the address loses the day
     if (dayFromURL()) history.replaceState(history.state, '', location.pathname + location.search);
