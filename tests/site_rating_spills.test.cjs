@@ -8,7 +8,9 @@ const path = require('node:path');
 const app = fs.readFileSync(path.join(__dirname, '../src/dipcast/site/index.html'), 'utf8');
 
 test('each day under a poor rating also shows its own spill forecast', () => {
-  assert.match(app, /on && !gone && advisedAgainst\(d\) && hasData\(x\) && x\.label \? `<span class="lsub">spills: \$\{esc\(x\.label\)\}<\/span>` : ''/);
+  assert.match(app, /const sub = on && !gone && advisedAgainst\(d\) && hasData\(x\) && x\.label \? x\.label : null;/);
+  assert.match(app, /\$\{sub \? `<span class="lsub">spills: \$\{esc\(sub\)\}<\/span>` : ''\}/);
+  assert.match(app, /\$\{sub \? ` Sewage spills: \$\{esc\(sub\)\}\.` : ''\}/);   // and to a screen reader, in its row's sentence
 });
 test('the five days\' sentence says the spill forecast on its own beside the rating', () => {
   assert.match(app, /The sewage spill forecast on its own is \$\{known\[0\]\.label\} \$\{dayWord\(known\[0\]\.date\)\}, under each day below\. /);

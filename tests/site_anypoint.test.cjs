@@ -320,7 +320,7 @@ test('a point with no overflow upstream shows each day\'s rain in mm, from its o
   for (const f of ['experience.js', 'levels.js']) vm.runInContext(fs.readFileSync(dir + f, 'utf8'), ctx);
   vm.runInContext(`setToday('2026-10-16');\n${def('tone')}\n${def('dayWx')}\n${def('dayRows')}`, ctx);
   const d = { id: 'point-54.48000,-3.13000', unlisted: true, name: 'Langstrath Beck', kind: 'river', location: { mode: 'river' }, ...got };
-  const words = [...vm.runInContext('dayRows', ctx)(d).matchAll(/<span class="l">([^<]*)<\/span>/g)].map(m => m[1]);
+  const words = [...vm.runInContext('dayRows', ctx)(d).matchAll(/<span class="l" aria-hidden="true">([^<]*)<\/span>/g)].map(m => m[1]);
   assert.deepEqual(words, ['12 mm', '0 mm', '–', '31 mm', '8 mm']);
 });
 

@@ -579,8 +579,8 @@
   /* The five days as Apple's ten-day rows: the day, its level, and the level as a bar of four bands,
      filled into the day's band and placed in it by what set the level. Where nothing upstream can
      spill, the rain in the 48 h before, in blue. A day you can pick is a button, ringed while open. */
-  .drows { margin:6px 0 0; }
-  .drow { display:grid; grid-template-columns:56px 84px minmax(0, 1fr) auto; align-items:center; gap:10px; width:100%; min-height:46px; margin:0; padding:0 4px;
+  .drows { margin:2px 0 0; }
+  .drow, .dkey { display:grid; grid-template-columns:56px 84px minmax(0, 1fr) auto; align-items:center; gap:10px; width:100%; min-height:46px; margin:0; padding:0 4px;
           border:0; border-top:1px solid var(--hair); border-radius:0; background:transparent; font:inherit; color:var(--ink); text-align:left; -webkit-appearance:none; appearance:none; }
   .drow:first-child { border-top:0; }
   button.drow { cursor:pointer; -webkit-tap-highlight-color:transparent; }
@@ -599,6 +599,10 @@
   /* Each day's rain and air high at the row's end (dayWx), in two aligned columns; where the level is the rain, the high alone. */
   .dx { display:grid; grid-template-columns:3.6em 2.2em; gap:6px; font-size:var(--fs-meta); color:var(--muted); text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
   .drow.rain .dx { grid-template-columns:2.2em; }
+  /* The key over the columns (dayRows): the bar's scale, right-aligned to end over it, and what the figures are. */
+  .dkey { min-height:0; margin:6px 0 0; border-top:0; font-size:var(--fs-meta); line-height:1.3; color:var(--muted); }
+  .dk { grid-column:2 / 4; justify-self:end; white-space:nowrap; }
+  .dkey.rain .dx { grid-template-columns:2.2em; }
   /* The live status's counts under the rows (liveRow). */
   .live-row { margin:10px 0 0; padding-top:10px; border-top:1px solid var(--hair); font-size:var(--fs-note); line-height:1.4; }
   .plan-here-line { margin:12px 0 0; }
@@ -610,7 +614,7 @@
   .csub { margin:4px 0 0; font-size:var(--fs-meta); line-height:1.35; color:var(--muted); }
   .cond .range { margin:8px 0 0; }
   /* Yesterday's row, between midnight and the next build: grey, and its word wider than "Today". */
-  .drows.with-past .drow { grid-template-columns:76px 84px minmax(0, 1fr) auto; }
+  .drows.with-past .drow, .dkey.with-past { grid-template-columns:76px 84px minmax(0, 1fr) auto; }
   .drow.past .d, .drow.past .l { color:var(--faint); } .drow.past .dbar i { background:var(--unknown); }
   /* The gaps between the four bands cut through the fill too (a mask, not a colour). */
   .dbar.lv { -webkit-mask:linear-gradient(90deg, #000 calc(25% - 1px), transparent 0 calc(25% + 1px), #000 0 calc(50% - 1px), transparent 0 calc(50% + 1px), #000 0 calc(75% - 1px), transparent 0 calc(75% + 1px), #000 0);
@@ -1125,7 +1129,7 @@
   /* The smallest phones: one tile to a row. */
   @media (max-width: 360px) {
     .tiles { grid-template-columns:minmax(0, 1fr); }
-    .drow { grid-template-columns:48px 76px minmax(0, 1fr) auto; gap:8px; }
+    .drow, .dkey { grid-template-columns:48px 76px minmax(0, 1fr) auto; gap:8px; }
   }
   @media (max-width: 340px) {
     .toolbar .chip-btn .dot { display:none; }   /* room for "Today and tomorrow" at 17 px; iOS zooms a select under 16 */
@@ -2327,17 +2331,27 @@ const bandSaid = b => { const a = spillWord(b.low), z = spillWord(b.high);
 const dayWx = (d, x, on) => { const w = ((d.weather || {}).days || []).find(y => y.date === x.date), t = w && !nil(w.tmax) ? w.tmax : null;
   const rain = on && !nil(x.rain_48h_mm) ? fmt(x.rain_48h_mm, x.rain_48h_mm < 1 && x.rain_48h_mm > 0 ? 1 : 0) : null;
   if (rain === null && t === null) return '<span class="dx"></span>';
-  return `<span class="dx">${on ? `<span>${rain === null ? '' : `${rain}&nbsp;mm`}</span>` : ''}<span>${t === null ? '' : `${t}°`}</span>`
-    + `<span class="sr">${[rain === null ? '' : `rain ${rain} mm in the 48 hours to midday`, t === null ? '' : `high ${t} °C`].filter(Boolean).join(', ')}</span></span>`; };
-const dayRows = d => { const on = daily(d), past = (d.past || []).slice(-1);
-  return `<div class="drows${past.length ? ' with-past' : ''}"${on ? ' id="day-strip" role="group" aria-label="Pick a day"' : ''}>` + [...past, ...d.days.slice(0, 5)].map(x => {
+  return `<span class="dx">${on ? `<span aria-hidden="true">${rain === null ? '' : `${rain}&nbsp;mm`}</span>` : ''}<span aria-hidden="true">${t === null ? '' : `${t}°`}</span>`
+    + `<span class="sr">${[rain === null ? '' : `Rain ${rain} mm in the 48 hours to midday.`, t === null ? '' : `Air high ${t} °C.`].filter(Boolean).join(' ')}</span></span>`; };
+// A key over the columns, since the bar and the figures carry no words of their own (outside review, 31 Oct 2026):
+// the bar's scale, ending over the bar (too narrow on a phone for its own words), and what the two figures are. Only the columns some row fills. Hidden from screen readers,
+// which hear each row as a sentence instead: the visible words are hidden and said in full ("Today, Saturday
+// 31 October: low risk."), the figures by dayWx.
+const dayRows = d => { const on = daily(d), past = (d.past || []).slice(-1), shown = d.days.slice(0, 5);
+  const wx = shown.map(x => dayWx(d, x, on)).join(''), hasRain = /mm</.test(wx), hasAir = /°</.test(wx);
+  const key = `<div class="dkey${on ? '' : ' rain'}${past.length ? ' with-past' : ''}" aria-hidden="true"><span></span>${on ? '<span class="dk">Low to very high</span>' : '<span>Rain</span><span></span>'}`
+    + (hasRain || hasAir ? `<span class="dx">${on ? `<span>${hasRain ? 'Rain' : ''}</span>` : ''}<span>${hasAir ? 'Air' : ''}</span></span>` : '<span></span>') + '</div>';
+  return key + `<div class="drows${past.length ? ' with-past' : ''}"${on ? ' id="day-strip" role="group" aria-label="Pick a day"' : ''}>` + [...past, ...shown].map(x => {
     const gone = past.includes(x), lv = on ? risk(d, x).level : null, rain = nil(x.rain_48h_mm) ? null : x.rain_48h_mm, tag = on && !gone ? 'button' : 'div';
     const v = on ? levelPlace(d, x) : Math.min(1, (rain || 0) / 40), band = on && !gone ? bandPlace(d, x, d.days.indexOf(x)) : null;
     const attrs = tag === 'button' ? ` type="button" data-day="${x.date}" aria-pressed="false" aria-controls="day-view"` : '';
-    return `<${tag} class="drow ${on ? (lv ? tone(lv) : 'na') : 'rain'}${gone ? ' past' : ''}"${attrs}><span class="d">${gone ? 'Yesterday' : shortDay(x.date)}</span>`
-      + `<span class="l">${on ? (lv ? cap(lv) : 'No data') : rain === null ? '–' : Math.round(rain) + ' mm'}`
+    const sub = on && !gone && advisedAgainst(d) && hasData(x) && x.label ? x.label : null;
+    const when = gone ? 'Yesterday' : (x.date === today() ? 'Today, ' : '') + new Date(x.date + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+    const said = `${when}: ${on ? (lv ? `${lv} risk.` : 'no forecast.') : rain === null ? 'no rain forecast.' : `${Math.round(rain)} mm of rain in the 48 hours to midday.`}${sub ? ` Sewage spills: ${esc(sub)}.` : ''}`;
+    return `<${tag} class="drow ${on ? (lv ? tone(lv) : 'na') : 'rain'}${gone ? ' past' : ''}"${attrs}><span class="sr">${said}</span><span class="d" aria-hidden="true">${gone ? 'Yesterday' : shortDay(x.date)}</span>`
+      + `<span class="l" aria-hidden="true">${on ? (lv ? cap(lv) : 'No data') : rain === null ? '–' : Math.round(rain) + ' mm'}`
       // A poor rating keeps every day at high risk or more: the day's own sewage spill forecast under it, so it is seen apart.
-      + `${on && !gone && advisedAgainst(d) && hasData(x) && x.label ? `<span class="lsub">spills: ${esc(x.label)}</span>` : ''}</span>`
+      + `${sub ? `<span class="lsub">spills: ${esc(sub)}</span>` : ''}</span>`
       + `<span class="dbar${on ? ' lv' : ''}" aria-hidden="true"><i style="width:${Math.max(on ? 3 : 2, Math.round(v * 100))}%"></i>`
       + (band ? `<b class="band" style="left:${(band.lo * 100).toFixed(1)}%;width:${((band.hi - band.lo) * 100).toFixed(1)}%"></b>` : '')
       + `</span>${band ? `<span class="sr">${bandSaid(x.band)}</span>` : ''}${gone ? '<span class="dx"></span>' : dayWx(d, x, on)}</${tag}>`; }).join('') + '</div>'; };

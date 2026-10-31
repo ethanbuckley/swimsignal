@@ -81,8 +81,8 @@ test('at 00:30 the day after the build, a spot\'s second row is Today, and one l
   const run = page(AT, spots);
   assert.equal(run('today()'), '2026-10-17');
   const rows = run('dayRows(DATA.spots[0])');
-  assert.deepEqual([...rows.matchAll(/<span class="d">([^<]+)<\/span>/g)].map(m => m[1]), ['Yesterday', 'Today', 'Sun', 'Mon', 'Tue']);
-  assert.match(rows, /^<div class="drows with-past"[^>]*><div class="drow (very)?high past">/);   // greyed, not a button, its word given room
+  assert.deepEqual([...rows.matchAll(/<span class="d" aria-hidden="true">([^<]+)<\/span>/g)].map(m => m[1]), ['Yesterday', 'Today', 'Sun', 'Mon', 'Tue']);
+  assert.match(rows, /^<div class="dkey with-past" aria-hidden="true">.*?<\/div><div class="drows with-past"[^>]*><div class="drow (very)?high past"><span class="sr">Yesterday: (very )?high risk\.<\/span>/);   // greyed, not a button, its word given room
   assert.doesNotMatch(rows, /data-day="2026-10-16"/);
   assert.match(rows, /<button class="drow low" type="button" data-day="2026-10-17"/);
   // The line, where the list, Saved and Plan show their notices; a spot's page says it at its issue time.
@@ -100,7 +100,7 @@ test('at 00:30 the day after the build, a spot\'s second row is Today, and one l
 
 test('before midnight, and once the forecast is stale, the days are the build\'s', () => {
   const before = page(Date.parse('2026-10-16T23:50:00+01:00'), [spot('a', ['high', 'low', 'low', 'high', 'high'])]);
-  assert.deepEqual([...before('dayRows(DATA.spots[0])').matchAll(/<span class="d">([^<]+)<\/span>/g)].map(m => m[1]), ['Today', 'Sat', 'Sun', 'Mon', 'Tue']);
+  assert.deepEqual([...before('dayRows(DATA.spots[0])').matchAll(/<span class="d" aria-hidden="true">([^<]+)<\/span>/g)].map(m => m[1]), ['Today', 'Sat', 'Sun', 'Mon', 'Tue']);
   assert.doesNotMatch(before('dayRows(DATA.spots[0])'), /past/);
   assert.equal(before('freshness()'), '');
   assert.equal(before('fiveDays().length'), 5);

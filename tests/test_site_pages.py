@@ -166,7 +166,7 @@ def test_a_spots_page_carries_its_answer_and_five_days_as_the_script_draws_them(
     assert '<h1 class="spot-name" tabindex="-1">A river</h1>' in page
     assert '<h2 class="big low" id="risk-headline">Low risk from sewage spills</h2>' in page
     assert '<p class="act">Usual care: cover cuts' in page
-    assert page.count('<button class="drow low" type="button" data-day=') == 5 and '<span class="d">Today</span>' in page
+    assert page.count('<button class="drow low" type="button" data-day=') == 5 and '<span class="d" aria-hidden="true">Today</span>' in page
     assert '<a href="/swim/" class="back" id="back">All spots</a>' in page   # the script's own back link
     # Issued when, without how long ago, which would be wrong by the time the page is read.
     assert '<p class="issued">Issued Tue 08:00</p>' in page
@@ -175,7 +175,7 @@ def test_a_spots_page_carries_its_answer_and_five_days_as_the_script_draws_them(
            "\u201cright now\u201d mean then, and the levels may have changed since. With JavaScript on, the page updates it " \
            "and adds the map, the overflows upstream and the rest of the detail."
     assert f'<div id="result" data-built data-nosnippet><noscript><p class="muted">{note}</p></noscript>' in page
-    assert page.index("<noscript>") < page.index('id="risk-hero"') < page.index('<span class="d">Today</span>')
+    assert page.index("<noscript>") < page.index('id="risk-hero"') < page.index('<span class="d" aria-hidden="true">Today</span>')
     # A spot without a forecast: its answer, no five days.
     tarn = (tmp_path / "spot" / "tarn" / "index.html").read_text().split('<div id="result"', 1)[1].split('<p class="about-line"', 1)[0]
     assert 'id="risk-headline">No monitored overflow found upstream</h2>' in tarn and 'id="days-h"' not in tarn
