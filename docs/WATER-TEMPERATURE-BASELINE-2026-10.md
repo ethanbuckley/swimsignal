@@ -81,8 +81,8 @@ Live data, 31 Oct 2026.
 | Catalogue | Waters | Water types | Estimate route | State |
 |---|---|---|---|---|
 | Named spots (spot pages, list, map, planner) | 109 | 72 rivers, 37 lakes (18 of 1 km² or more, 9 smaller, 10 of unknown area; 3 isolated) | this PR: every one, all year, where the air arrives | before: 0 estimates (May–September rivers only, now November), 3 sensor readings |
-| Coastal directory (England) | 426 | 373 coast, 53 estuary | #479: sea surface; needs a source and its offshore distance said | none yet |
-| Wales directory | 114 | 107 coast, 3 estuary, 2 river, 2 lake | inland: these routes, once their cells' air is costed; coast: #479 | none yet |
+| Coastal directory (England) | 426 | 373 coast, 53 estuary | stage 3 (below): the sea curve on the nearest cached cell's 7-day air | stage 3 PR |
+| Wales directory | 114 | 107 coast, 3 estuary, 2 river, 2 lake | no cached cell nearby (2 of 114 within 15 km): needs its own air, costed first | none yet |
 | Scotland directory | 90 | not typed in the file | to classify, then by type | none yet |
 | Ireland directory | 243 | not typed in the file | to classify, then by type | none yet |
 | Northern Ireland directory | 33 | 32 coast, 1 inland | #479; inland by type | none yet |
@@ -109,6 +109,31 @@ route and a published value.
 - **Coverage.** Every river or lake point within about 15 km of a 0.1° cell with an overflow in it, that is, wherever
   the click-anywhere rain is. The cache is refreshed on a rota (`RAIN_MAX_AGE_H`); a cell without 7 whole days of air
   is left out, and that is said.
+
+## Stage 3: the English coastal directory (#479)
+
+- **Where each site is.** The directory's catalogue carries no position, so `data/raw/bathing_water_points.json` holds
+  each designated water's sampling point from the bathing-water service, England's and NRW's: three requests, made
+  off CI (`scripts/refresh_bathing_water_points.py`; the service refuses GitHub's runners).
+- **Air.** The 7-day air of the cells the click-anywhere build already caches (`water_air` in `overflow_days.json`):
+  the site's own 0.1° square, else the nearest of the eight around it, the rule a click uses (`nearest_cell_air`, the
+  Python twin of `waterAt`). **No request is added.** Every one of the 426 sites lies within 7.4 km of the centre of a
+  square with an overflow in it (median 3.6 km; overflow table of 31 Oct). Whether that square's air is in this
+  build's cache is counted at each build (`health.coastal.water_temperature_estimate`).
+- **How.** The sea curve in that air (`sea_from_cells`), never below 0 °C. It is not a sensor reading, and the air is a
+  land square's, a few km from the beach.
+- **Error.**
+  - Coasts, May to September: the curve's typical error on the test's held-out sea rows was **1.63 °C** (exploratory:
+    the sea had no gate, and that air was HadUK's at the beach).
+  - Estuaries: not in the test (estuarine samples were left out), so no error is claimed.
+  - October to April: not measured. The sea follows months of weather, so a 7-day air curve is likely to run cold in
+    autumn and warm in spring (inferred, not measured).
+- **On the page.** Each coastal card on the coverage page: "Water about N °C on <day>: estimated from the last 7 days'
+  air temperature at a point N km away, not measured. Provisional: ..." with the route's error or why none is said.
+  Dated, so a page that stops updating never passes it off as today's. A site without one says "No water temperature
+  estimate in this update".
+- **Not yet.** Wales (no cached cell near 112 of 114), Scotland and Ireland (not typed; no cells), Northern Ireland
+  (no cells). Each needs air of its own, costed against the Open-Meteo ration first, or Marine SST after D4.
 
 ## Shown where
 
