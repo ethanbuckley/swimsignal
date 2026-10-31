@@ -31,3 +31,17 @@ Written 30 October 2026, register row **3 / LAKE-CONC**, route "public research 
 | `coverage` | sites, samples, samples added from the Archive, samples with a hindsight estimate |
 
 A value with `q: "<"` is the lab's reported limit, not a measurement; a chart must show it as "below 10", never as 10.
+
+## Version 1.1 (31 October 2026): additive, at the product owner's request
+
+- **Correction:** the two reasons listed above for a missing hindsight estimate were incomplete. 101 samples at study
+  sites also have none: they are only in the Water Quality Archive, not in the cached bathing-water file the study's
+  rows were built from. 89 were taken after that file ended on 7 September 2026; 12, from June to early September,
+  were never listed in it.
+- `samples[].hindsight_reason`: null when there is an estimate, else `before_2024` (2023: no archived forecast rain),
+  `no_overflow_upstream` (the six bathing waters with no monitored overflow upstream: the three Hampstead Heath ponds,
+  the Serpentine, Henleaze Lake, Cotswold Country Park) or `archive_only`. Top-level `hindsight_reasons` gives a
+  plain sentence for each. As exported: 321, 306 and 101 samples.
+- `summary.below_limit_value`: the lab's reported limit behind `below_limit` (10 wherever it occurs), or null.
+- `warn_at_note`: 0.25 is the site's river warning line; the summaries count hindsight misses and false alarms at it
+  for lakes too, for comparison only (the site gives no E. coli warning at lakes).

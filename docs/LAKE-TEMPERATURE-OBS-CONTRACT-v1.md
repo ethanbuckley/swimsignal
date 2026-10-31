@@ -35,3 +35,10 @@ checked by `scripts/export_lake_temperature_obs.py` from the lake temperature te
 As exported on 30 October 2026: 210 lakes, 11,502 readings at 368 points; 15 lakes linked to 20 listed spots
 (Windermere's two basins, Coniston Water, Derwent Water, Rutland Water, Frensham Great Pond, Bassenthwaite, Loweswater,
 Grasmere, Rydal Water, Elter Water, Wast Water, Brothers Water, Crummock Water, Hatch Mere).
+
+## Version 1.1 (31 October 2026): additive, at the product owner's request
+
+- `claim.page_wording`: the claim for a page listing many lakes (`public_wording` says "this lake").
+- `method.public_sentence`: one plain sentence on how each monthly figure is made.
+- `points[].first`: each sampling point's first reading date, beside `last`.
+- `summary.years_list`: the years with a reading (`summary.years` stays the count).

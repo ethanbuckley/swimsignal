@@ -26,7 +26,18 @@ ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "data" / "research" / "ecoli_evidence.v1.json"
 ATLAS = ROOT / "docs" / "CONCENTRATION-STUDY-2026-11-atlas-rows.csv"
 SITES = ROOT / "data" / "raw" / "bathing_waters_inland.json"
-SCHEMA, VERSION = "swimsignal.ecoli-evidence", "1.0.0"
+SCHEMA, VERSION = "swimsignal.ecoli-evidence", "1.1.0"
+# Why a sample has no hindsight estimate (1.1). The study's rows (#466) are 2024 to 7 September 2026, at the 32
+# bathing waters with an overflow upstream, from the cached bathing-water file.
+HINDSIGHT_REASONS = {
+    "before_2024": "Taken in 2023: no archived forecast rain exists for that year, so no estimate could be rebuilt.",
+    "no_overflow_upstream": "No monitored overflow upstream of this bathing water, so the model has no spill input here.",
+    "archive_only": "Only in the Water Quality Archive, not in the cached bathing-water file the study's rows were "
+                    "built from (most were taken after that file ended on 7 September 2026; a few earlier ones were "
+                    "never listed in it).",
+}
+WARN_NOTE = ("0.25 is the site's warning line for rivers. Each summary counts hindsight misses and false alarms at it "
+             "for lakes too, for comparison only: the site gives no E. coli warning at lakes.")
 LINE = 900
 CLAIM = {
     "public_wording": "Environment Agency lab samples of E. coli at this bathing water, with the date each was taken. "
@@ -65,6 +76,7 @@ def build(wqa: Path | None = None) -> dict:
     atlas["key"] = atlas["bw_id"] + "|" + pd.to_datetime(atlas["sample_time"], utc=True).dt.strftime("%Y-%m-%dT%H:%MZ")
     hind = atlas.set_index("key")["p_loyo"].to_dict()
     sites = {s["id"]: s for s in json.loads(SITES.read_text())}
+    study_sites = set(atlas["bw_id"])
     out = []
     for bid, g in raw.groupby("bw_id"):
         s = sites.get(bid, {})
@@ -72,17 +84,21 @@ def build(wqa: Path | None = None) -> dict:
         for r in g.itertuples():
             key = f"{bid}|{pd.Timestamp(r.sample_time).tz_convert('UTC').strftime('%Y-%m-%dT%H:%MZ')}"
             p = hind.get(key)
+            has = p is not None and not pd.isna(p)
+            why = None if has else ("before_2024" if pd.Timestamp(r.sample_time).year < 2024 else
+                                    "no_overflow_upstream" if bid not in study_sites else "archive_only")
             rows.append({"t": pd.Timestamp(r.sample_time).isoformat(timespec="minutes"), "ecoli": int(r.ecoli),
                          "q": r.ecoli_qual if r.ecoli_qual in ("<", ">") else None,
                          "ie": None if pd.isna(r.ie) else int(r.ie), "ie_q": r.ie_qual if r.ie_qual in ("<", ">") else None,
                          "src": "wqa" if r.source == "Water Quality Archive" else "bwq",
                          "over": bool(r.ecoli > LINE),
-                         "hindsight": None if p is None or pd.isna(p) else round(float(p), 3)})
+                         "hindsight": round(float(p), 3) if has else None, "hindsight_reason": why})
         with_h = [x for x in rows if x["hindsight"] is not None]
         out.append({"spot_id": f"bw-{bid}", "bw_id": bid, "name": s.get("name") or g["name"].iloc[0],
                     "kind": s.get("kind") or g["kind"].iloc[0], "samples": rows,
                     "summary": {"samples": len(rows), "over_900": int(sum(x["over"] for x in rows)),
                                 "below_limit": int(sum(x["q"] == "<" for x in rows)),
+                                "below_limit_value": (sorted({x["ecoli"] for x in rows if x["q"] == "<"}) or [None])[0],
                                 "first": rows[0]["t"][:10], "last": rows[-1]["t"][:10],
                                 "with_hindsight": len(with_h),
                                 "hindsight_misses": int(sum(x["over"] and x["hindsight"] < 0.25 for x in with_h)),
@@ -91,7 +107,7 @@ def build(wqa: Path | None = None) -> dict:
     if after != before:
         raise SystemExit("an input changed during the export")
     return {"schema": SCHEMA, "version": VERSION, "generated_at": datetime.now(UTC).isoformat(timespec="seconds"),
-            "line": LINE, "warn_at": 0.25,
+            "line": LINE, "warn_at": 0.25, "warn_at_note": WARN_NOTE, "hindsight_reasons": HINDSIGHT_REASONS,
             "hindsight": {"model": "production's form (rain, upstream exposure, season, soil moisture for rivers), "
                                    "refitted leaving out each year in turn (docs/CONCENTRATION-STUDY-2026-11.md)",
                           "rain": "archived lead-0 forecast rain", "exposure": "replayed lead-0 exposure",
@@ -127,6 +143,10 @@ def check(doc: dict) -> list[str]:
                 err.append(f"{s['bw_id']}: unknown sample source")
             if x["q"] not in (None, "<", ">"):
                 err.append(f"{s['bw_id']}: qualifier {x['q']!r}")
+            if (x["hindsight"] is None) != (x.get("hindsight_reason") is not None):
+                err.append(f"{s['bw_id']}: a missing hindsight estimate needs a reason, and only then")
+            if x.get("hindsight_reason") not in (None, *HINDSIGHT_REASONS):
+                err.append(f"{s['bw_id']}: unknown hindsight reason {x.get('hindsight_reason')!r}")
             if x["hindsight"] is not None and not 0 <= x["hindsight"] <= 1:
                 err.append(f"{s['bw_id']}: hindsight out of range")
             if x["over"] != (x["ecoli"] > doc.get("line", LINE)):
