@@ -529,7 +529,7 @@ test('Not known here: a row for each gap, in the words it had, and no tile witho
   const tile = vm.runInContext('unknownTile', ctx)(longBridges);
   assert.match(tile, /^<section class="tile" id="unknowns" aria-labelledby="unknowns-h"><h2 class="t-lab" id="unknowns-h"><svg[^>]*>.*<\/svg><span>Not known here<\/span><\/h2><div class="factors">/);
   // The page puts it straight after the five days, on a failed forecast too (access is still a gap there).
-  assert.match(html, /\$\{daysTile\(d\)\}\$\{unknownTile\(d\)\}/);
+  assert.match(html, /\$\{daysTile\(d\)\}\$\{conditionsSummary\(d\)\}\$\{unknownTile\(d\)\}/);
   assert.match(html, /\$\{factors\(d\)\}\$\{check\(d\)\}<\/div>\$\{unknownTile\(d\)\}/);
 });
 
