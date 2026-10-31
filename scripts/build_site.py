@@ -392,7 +392,8 @@ PUSH_DATES_SWAPS = [
      "its spot and its backup, each with the outing's day, but not its time or where you start from), and nothing else"),
     ("with the days of lowest pollution risk ahead at those spots. ",
      "with the days of lowest pollution risk ahead at those spots, and, for each spot and date you asked about, a "
-     "notification when that day's forecast first appears and again each time its level changes. Each spot and date "
+     "notification when that day's forecast first appears and again each time its level or the official notice at "
+     "that spot changes. Each spot and date "
      "is deleted once the date has passed. "),
     ("so that an unchanged list is sent again only about once a week. ",
      "so that an unchanged list is sent again only about once a week, and of the spots and dates it asked about, "
