@@ -1929,13 +1929,30 @@ def attach_water_temperature_estimate(results: list[dict], forecast=None, model=
 BATHING_WATER_POINTS = ROOT / "data" / "raw" / "bathing_water_points.json"   # scripts/refresh_bathing_water_points.py
 
 
+def site_point(s: dict, points: dict) -> tuple[float, float] | None:
+    """A directory site's (lat, lon): its own where its source gives one (Scotland, Ireland, Northern Ireland), else
+    its sampling point on file (BATHING_WATER_POINTS: England, Wales), else None."""
+    if isinstance(s.get("lat"), (int, float)) and isinstance(s.get("lon"), (int, float)):
+        return float(s["lat"]), float(s["lon"])
+    p = points.get(s.get("id"))
+    return (float(p[0]), float(p[1])) if p else None
+
+
+def site_water_kind(s: dict) -> str:
+    """The kind the estimate takes: coast, estuary, lake or river. DAERA's one inland water, Rea's Wood on Lough
+    Neagh, is a lake (its "inland")."""
+    k = s.get("kind") or "coast"
+    return "lake" if k == "inland" else k
+
+
 def attach_directory_water_temp(sites: list[dict], water_air: dict | None, model=None, points_file: Path | None = None,
                                 nation: str = "england") -> dict:
-    """The coastal directory's provisional water temperature (#492 stage 3, #479): at each coastal or estuary bathing
-    water, the sea curve in the 7-day air of the nearest cell the click-anywhere build cached (`water_air`, from
-    overflow_days.json: no extra request), placed by the site's sampling point (BATHING_WATER_POINTS). A site gets
-    `water_temp_est` (water_temp.sea_from_cells) or `water_temp_est_missing` with why: "point" (no sampling point on
-    file), "air" (no cached cell in its own or the eight around it) or "error". Returns the build's health entry."""
+    """A directory's provisional water temperature (#492 stages 3 and 4, #479): at each bathing water, its type's curve
+    (water_temp.directory_estimate: the sea curve at a coast or estuary, the lake or river curve inland) in the 7-day
+    air of the nearest cached cell (`water_air`: {"date", "cells"}, from the click-anywhere file for England and from
+    directory_air for the other nations), placed by site_point. A site gets `water_temp_est` or
+    `water_temp_est_missing` with why: "point" (no position), "kind" (its type not known with confidence), "air" (no
+    cached cell in its own or the eight around it) or "error". Returns the build's health entry."""
     from dipcast.model import water_temp
     out = {"estimated": 0, "routes": {}, "missing": {}}
 
@@ -1944,21 +1961,25 @@ def attach_directory_water_temp(sites: list[dict], water_air: dict | None, model
         out["missing"][why] = out["missing"].get(why, 0) + 1
     model = water_temp.load() if model is None else model
     try:
-        points = json.loads((points_file or BATHING_WATER_POINTS).read_text())[nation]
+        points = json.loads((points_file or BATHING_WATER_POINTS).read_text()).get(nation) or {}
     except Exception as e:  # noqa: BLE001 - an estimate beside the directory must not sink the build
         log.warning("bathing water points: %s", e)
         points = {}
     cells, day = (water_air or {}).get("cells") or {}, (water_air or {}).get("date")
     for s in sites:
-        p = points.get(s.get("id"))
+        p = site_point(s, points)
         if model is None or not day:
             miss(s, "air")
             continue
         if not p:
             miss(s, "point", day)
             continue
+        kind = site_water_kind(s)
+        if kind not in ("coast", "estuary", "lake", "river"):
+            miss(s, "kind", day)   # not typed with confidence (ireland.water_kind): no curve is guessed
+            continue
         try:
-            est = water_temp.sea_from_cells(model, cells, day, p[0], p[1], s.get("kind", "coast"))
+            est = water_temp.directory_estimate(model, cells, day, p[0], p[1], kind)
         except Exception as e:  # noqa: BLE001
             log.warning("directory water temperature for %s: %s", s.get("name"), e)
             miss(s, "error", day)
@@ -1972,6 +1993,99 @@ def attach_directory_water_temp(sites: list[dict], water_air: dict | None, model
     log.info("directory water temperature (%s): %d sites %s, missing %s", nation, out["estimated"], out["routes"],
              out["missing"])
     return out
+
+
+# The other nations' directories (#492 stage 4): their air. Every cached forecast cell around a site is read first,
+# whoever asked for it (spots, click-anywhere, the Scottish shadow), at no cost; that covers Scotland. The sites still
+# without one get cells of their own: the fewest that reach them all (each cell reaches the sites in it and the eight
+# around it: greedy_cells), each asked for at most every DIRECTORY_AIR_REFRESH_H, at most DIRECTORY_AIR_CELLS_PER_BUILD
+# a build, and only when rainfall.spare_for says the calls are spare with the rest of the ensemble's day held back:
+# so the users the ration was planned for, and the D4 ensemble window, are never short. 31 Oct 2026: Wales 25 cells, Ireland 56, Northern Ireland
+# 10, so about 91 Open-Meteo calls a day (one a cell: forecast_weight); docs/WATER-TEMPERATURE-BASELINE-2026-10.md.
+DIRECTORY_AIR_REFRESH_H = 22.0
+DIRECTORY_AIR_MAX_AGE_H = 30.0
+DIRECTORY_AIR_CELLS_PER_BUILD = int(os.environ.get("DIPCAST_DIRECTORY_AIR_CELLS", "40"))
+
+
+def ring_cells(lat: float, lon: float, ring: int = 1) -> list[tuple[float, float]]:
+    """The 0.1 degree cells a site reaches: its own (rainfall.grid_cell) and those up to `ring` around it."""
+    a, b = rainfall.grid_cell(lat, lon)
+    return [(round(float(a) + i / 10, 3) + 0.0, round(float(b) + j / 10, 3) + 0.0)
+            for i in range(-ring, ring + 1) for j in range(-ring, ring + 1)]
+
+
+def greedy_cells(points: list[tuple[float, float]], prefer: set | None = None) -> list[tuple[float, float]]:
+    """The fewest cells, picked greedily, that reach every point: each turn the cell reaching the most points still
+    unreached; among equals a cell in `prefer` (already cached), then the one nearest the points it reaches, then the
+    lowest (lat, lon), for a fixed answer."""
+    prefer = prefer or set()
+    reach = [set(ring_cells(*p)) for p in points]
+    left, chosen = set(range(len(points))), []
+    while left:
+        count: dict = {}
+        for i in left:
+            for c in reach[i]:
+                count[c] = count.get(c, 0) + 1
+        def near(c):
+            return sum(math.hypot(c[0] - points[i][0], (c[1] - points[i][1]) * math.cos(math.radians(c[0])))
+                       for i in left if c in reach[i])
+        best = min(count, key=lambda c: (-count[c], c not in prefer, round(near(c), 6), c))
+        chosen.append(best)
+        left = {i for i in left if best not in reach[i]}
+    return chosen
+
+
+def directory_air(points: list[tuple[float, float]], now: pd.Timestamp | None = None, fetch=None,
+                  budget: int = DIRECTORY_AIR_CELLS_PER_BUILD, spare=None) -> tuple[dict, dict]:
+    """({"date", "cells"}: each cached cell's 7-day air around `points`, as water_temp.cell_air_7d), and the build's
+    health entry. Reads the rain cache for every cell a point reaches (up to DIRECTORY_AIR_MAX_AGE_H old); then for
+    the points no cell fresher than DIRECTORY_AIR_REFRESH_H reaches, picks greedy_cells and asks Open-Meteo for those
+    that are due, oldest first, up to `budget`, if `spare(weight)` (rainfall.spare_for). `fetch(cells)` is
+    rainfall.fetch_forecast unless given. Never raises."""
+    from dipcast.model import water_temp
+    now = now or pd.Timestamp.now(tz="Europe/London")
+    today = now.tz_convert("Europe/London").normalize().tz_localize(None)
+    fetch = fetch or (lambda cells: rainfall.fetch_forecast(cells, attempts=2, what="directories"))
+    # Spare after the planned users AND whatever of the ensemble's day it has not yet used: the D4 window is never short.
+    spare = spare or (lambda w: rainfall.spare_for(
+        w + max(0.0, rainfall.ENSEMBLE_DAILY_CALLS - float(rainfall.calls_today()["by"].get("ensemble", 0.0)))))
+    stats = {"points": len(points), "cells_needed": 0, "due": 0, "asked": 0, "calls": 0.0, "held": 0, "usable": 0}
+    model = water_temp.load()
+    if model is None or not points:
+        return {"date": today.date().isoformat(), "cells": {}}, stats
+    path = {c: rainfall.CACHE / f"forecast_{rainfall.cell_key(*c)}.parquet"
+            for p in points for c in ring_cells(*p)}
+
+    def age(c) -> float:
+        return time.time() - path[c].stat().st_mtime if path[c].exists() else math.inf
+    fresh = {c for c in path if age(c) < DIRECTORY_AIR_REFRESH_H * 3600}
+    unreached = [p for p in points if not fresh.intersection(ring_cells(*p))]
+    want = greedy_cells(unreached, prefer={c for c in path if age(c) <= DIRECTORY_AIR_MAX_AGE_H * 3600})
+    due = sorted((c for c in want if age(c) >= DIRECTORY_AIR_REFRESH_H * 3600), key=lambda c: -age(c))
+    take = due[:max(0, budget)]
+    stats.update(cells_needed=len(want), due=len(due))
+    if take:
+        weight = rainfall.forecast_weight(len(take))
+        if spare(weight):
+            try:
+                fetch(take)
+                stats.update(asked=len(take), calls=round(weight, 1))
+            except Exception as e:  # noqa: BLE001 - what was cached stays usable
+                stats["error"] = str(e) or type(e).__name__
+        else:
+            stats["held"] = len(take)
+    frames = []
+    for c in path:
+        if age(c) <= DIRECTORY_AIR_MAX_AGE_H * 3600:
+            try:
+                frames.append(pd.read_parquet(path[c], columns=["cell_lat", "cell_lon", "time", "air_c"]))
+            except Exception as e:  # noqa: BLE001 - a torn or older cache file counts as none
+                log.debug("directory air %s: %s", path[c].name, e)
+    hourly = pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
+    cells = water_temp.cell_air_7d(model, hourly, today) if len(hourly) else {}
+    stats["usable"] = len(cells)
+    log.info("directory air: %s", stats)
+    return {"date": today.date().isoformat(), "cells": cells}, stats
 
 
 def anypoint_water_air(site: Path) -> dict | None:
@@ -3785,28 +3899,35 @@ def build(refresh: bool = True) -> dict:
     # Welsh bathing waters: NRW's sites and latest samples, live or from the dated snapshot (wales.py).
     from dipcast.wales import fetch as fetch_wales
     wales = fetch_wales()
-    (SITE / "data" / "wales.json").write_text(json.dumps(wales))
     health["wales"] = {"state": wales["state"], "sites": len(wales["sites"]), "fetched_at": wales["fetched_at"],
                        **({"error": wales["error"]} if wales.get("error") else {})}
     # Scottish bathing waters: SEPA's points layer, names, ratings and links (scotland.py).
     from dipcast.scotland import fetch as fetch_scotland
     scotland = fetch_scotland()
-    (SITE / "data" / "scotland.json").write_text(json.dumps(scotland))
     health["scotland"] = {"state": scotland["state"], "sites": len(scotland["sites"]),
                           **({"error": scotland["error"]} if scotland.get("error") else {})}
     # The Republic of Ireland's bathing waters: the EPA's list, samples and restrictions (ireland.py).
     from dipcast.ireland import fetch as fetch_ireland
     ireland = fetch_ireland()
-    (SITE / "data" / "ireland.json").write_text(json.dumps(ireland))
     health["ireland"] = {"state": ireland["state"], "sites": len(ireland["sites"]),
                          "restrictions": sum(len(s["alerts"] or []) for s in ireland["sites"]),
                          **({"error": ireland["error"]} if ireland.get("error") else {})}
     # Northern Ireland's bathing waters: DAERA's monitoring points layer (northern_ireland.py).
     from dipcast.northern_ireland import fetch as fetch_ni
     northern_ireland = fetch_ni()
-    (SITE / "data" / "northern_ireland.json").write_text(json.dumps(northern_ireland))
     health["northern_ireland"] = {"state": northern_ireland["state"], "sites": len(northern_ireland["sites"]),
                                   **({"error": northern_ireland["error"]} if northern_ireland.get("error") else {})}
+    # Their water temperature (#492 stage 4): the cached air around them, and cells of their own where none reaches.
+    nations = {"wales": wales, "scotland": scotland, "ireland": ireland, "northern_ireland": northern_ireland}
+    try:
+        wales_points = json.loads(BATHING_WATER_POINTS.read_text()).get("wales") or {}
+    except Exception:  # noqa: BLE001
+        wales_points = {}
+    where = [p for snap in nations.values() for x in snap["sites"] if (p := site_point(x, wales_points))]
+    air, health["directory_air"] = directory_air(where)
+    for name, snap in nations.items():
+        health[name]["water_temperature_estimate"] = attach_directory_water_temp(snap["sites"], air, nation=name)
+        (SITE / "data" / f"{name}.json").write_text(json.dumps(snap))
     push, email = push_config(), email_config()
     doc = {"generated_at": generated.isoformat(), "version": __version__, "n": len(results), "build": health,
            "lead_skill": lead_skill(), "ecoli_check": ecoli_check(),

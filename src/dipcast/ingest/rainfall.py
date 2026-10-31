@@ -186,7 +186,8 @@ def planned_day(spot_cells: int, anypoint_cells: int, weather_points: int, scotl
     click-anywhere cells the spots do not share: a spot cell is never 12 hours old, so click-anywhere
     never asks for it. The weather can be asked for once more when the local day turns. The floors are
     passed in because they live with their users (scripts/build_any_point.py, scripts/build_site.py,
-    scottish_shadow, soil). The ensemble is left out: it runs on spare calls alone (spare_for)."""
+    scottish_shadow, soil). The ensemble and the directories' air (build_site.directory_air, about 91 cells
+    a day from 31 Oct 2026) are left out: they run on spare calls alone (spare_for)."""
     by = {"spots": spot_cells * 24 * 3600 / FORECAST_TTL_S, "anypoint": anypoint_cells * 24 / anypoint_refresh_h,
           "weather": weather_points * (24 / weather_refresh_h + 1), "scotland": scotland_cells * 24 / scotland_refresh_h,
           "soil": soil_cells * soil_attempts}

@@ -51,6 +51,49 @@ MAX_PAGES = 4            # in season, 2026 was about 2,200 rows: the last three 
 LOCATIONS_TTL_S, LOCATIONS_KEEP_S = 86400, 30 * 86400
 SAMPLES_TTL_S, SAMPLES_KEEP_S = 3 * 3600, 3 * 86400
 OLD_DAYS = 30            # a sample older than this says so
+# A water's kind, for its water temperature (#492). The EPA's code says it for the designated waters, its seventh
+# letter C (coastal), T (transitional: an estuary), L (lake) or R (river), as in IEWEBWC010_0000_0040 (`kind_from`
+# "epa_code"). The other waters' ids carry none. Those checked one by one are in CHECKED with what showed it
+# ("checked"); the rest go by name: a Lake is a lake and a River a river, but a Lough or Loch can be a sea inlet, so
+# without a check it gets no kind ("unknown": no estimate); anything else is the coast ("name").
+EPA_KINDS = {"C": "coast", "T": "estuary", "L": "lake", "R": "river"}
+# Checked 31 Oct 2026 (review of #548): all ten inland-named non-designated waters are in County Monaghan, which has
+# no coast, and the EPA's own description of each says lake or river.
+_MONAGHAN = "County Monaghan, inland; the EPA's description"
+CHECKED = {
+    "BPNBF240000030001": ("lake", f"Lough Muckno: {_MONAGHAN}"),
+    "BPNBF240000100001": ("lake", f"Lough Muckno: {_MONAGHAN}"),
+    "BPNBF240000110001": ("lake", f"Lough Muckno: {_MONAGHAN}"),
+    "BPNBF240000020001": ("lake", f"Hollywood Lake: {_MONAGHAN}"),
+    "BPNBF240000050001": ("lake", f"Greaghlone Lake: {_MONAGHAN}"),
+    "BPNBF240000060001": ("lake", f"Creevy Lake: {_MONAGHAN}"),
+    "BPNBF240000070001": ("lake", f"Emy Lough: {_MONAGHAN}"),
+    "BPNBF240000080001": ("lake", f"Lough Major: {_MONAGHAN}"),
+    "BPNBF240000090001": ("lake", f"Gortnawinney Lake: {_MONAGHAN}"),
+    # In the Dromore lake system, but the EPA says "several access points to river": the river route.
+    "BPNBF240000040001": ("river", f"Halton's River: {_MONAGHAN} says river"),
+}
+NAME_KINDS = ((re.compile(r"\bLake\b"), "lake"), (re.compile(r"\bRiver\b"), "river"),
+              (re.compile(r"\b(?:Lough|Loch)\b"), "unknown"))
+
+
+def water_kind(key: str, name: str) -> tuple[str, str]:
+    """(kind, kind_from) of an EPA water: from its code, else a check (CHECKED), else its name (NAME_KINDS)."""
+    if key.startswith("IE") and len(key) > 6 and key[6] in EPA_KINDS:
+        return EPA_KINDS[key[6]], "epa_code"
+    if key in CHECKED:
+        return CHECKED[key][0], "checked"
+    return next((kind for pattern, kind in NAME_KINDS if pattern.search(name)), "coast"), "name"
+
+
+def position(easting, northing) -> tuple[float, float] | tuple[None, None]:
+    """(lat, lon) of the EPA's easting and northing, which are on the Irish Grid (EPSG:29903: Loughrea Lake's
+    162397, 215167 is 53.186 N, 8.563 W), or (None, None)."""
+    if not all(isinstance(v, (int, float)) and not isinstance(v, bool) for v in (easting, northing)):
+        return None, None
+    from pyproj import Transformer
+    lon, lat = Transformer.from_crs(29903, 4326, always_xy=True).transform(easting, northing)
+    return (round(lat, 5), round(lon, 5)) if math.isfinite(lat) and math.isfinite(lon) else (None, None)
 
 
 def fold(text: str) -> str:
@@ -81,7 +124,9 @@ def parse_locations(items: list) -> list[dict]:
                     "rating": {"value": RATINGS[word], "year": year} if word in RATINGS and has_year else None,
                     "unrated_year": year if word == "Not classified" and has_year else None,
                     "season_restriction": item.get("has_all_season_bathing_restriction_in_place") == "Yes",
-                    "page": PAGE_URL.format(key)})
+                    "page": PAGE_URL.format(key),
+                    **dict(zip(("lat", "lon"), position(item.get("easting"), item.get("northing")))),
+                    **dict(zip(("kind", "kind_from"), water_kind(key, name)))})
     return sorted(out, key=lambda s: (not s["designated"], fold(s["name"]), s["id"]))
 
 
@@ -237,7 +282,10 @@ def fetch(now: datetime | None = None, client: httpx.Client | None = None, cache
             outs, _ = tail(client, OUT_SEASON, date(year, 1, 1) if year else None)
             return {"season": year, "latest": parse_samples(ins, outs)}
 
-        locations, loc_state, e1 = _part(kept, "locations", now, LOCATIONS_TTL_S, LOCATIONS_KEEP_S, read_locations)
+        # A list kept from before the waters had a kind and a point (31 Oct 2026) is read again now, and kept if that fails.
+        typed = all("kind" in s for s in (kept.get("locations") or {}).get("sites") or [])
+        locations, loc_state, e1 = _part(kept, "locations", now, LOCATIONS_TTL_S if typed else 0, LOCATIONS_KEEP_S,
+                                         read_locations)
         samples, smp_state, e2 = _part(kept, "samples", now, SAMPLES_TTL_S, SAMPLES_KEEP_S, read_samples) if locations else (None, "unavailable", None)
         alerts, alr_state, e3 = None, "unavailable", None
         if locations:
@@ -317,6 +365,7 @@ def _alert_text(a: dict) -> str:
 def render(snapshot: dict) -> str:
     """The Republic's list, server-rendered and searchable on the page. Every sample and restriction
     carries its date; the restrictions line says when they were checked, or that they were not."""
+    from dipcast.coastal import water_line
     if not snapshot or not snapshot.get("sites"):
         return (f'<p>The list for the Republic of Ireland could not be loaded for this build. Use '
                 f'<a href="{HOME}">beaches.ie</a>.</p>')
@@ -337,6 +386,9 @@ def render(snapshot: dict) -> str:
             lines.append(_alert_text(a))
             restricted.append(s["name"])
         lines.append(_sample_text(s["sample"], today, season))
+        water = water_line(s)
+        if water:
+            lines.append(escape(water))
         cards.append(f'<li class="ireland-site"><a href="{escape(s["page"], quote=True)}">{escape(s["name"])}</a>'
                      f'<p class="small">{"<br>".join(lines)}</p></li>')
     designated = sum(s["designated"] for s in snapshot["sites"])

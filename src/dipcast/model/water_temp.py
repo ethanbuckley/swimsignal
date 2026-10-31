@@ -264,17 +264,18 @@ AIR_CURVE_TYPICAL_C = {"river": 1.85, "lake": 1.93}
 SEA_CURVE_TYPICAL_C = 1.63
 
 
-def nearest_cell_air(cells: dict[str, float], lat: float, lon: float) -> tuple[float, int] | None:
-    """(7-day air, km) of the point's own 0.1 degree cell, else the nearest of the eight around it, else None: the
-    rule anypoint.js's waterAt applies to a click, so a directory site and a click there say the same."""
+def nearest_cell_air(cells: dict[str, float], lat: float, lon: float, ring: int = 1) -> tuple[float, int] | None:
+    """(7-day air, km) of the point's own 0.1 degree cell, else the nearest of the cells up to `ring` cells around it
+    (eight for 1), else None: the rule anypoint.js's waterAt applies to a click, so a directory site and a click there
+    say the same."""
     def key(a, b):
         return f"{a + 0.0:.1f},{b + 0.0:.1f}"
     c = (round(lat * 10) / 10, round(lon * 10) / 10)
     if isinstance(cells.get(key(*c)), (int, float)):
         return float(cells[key(*c)]), 0
     best = None
-    for i in (-1, 0, 1):
-        for j in (-1, 0, 1):
+    for i in range(-ring, ring + 1):
+        for j in range(-ring, ring + 1):
             a, b = round((c[0] + i / 10) * 10) / 10, round((c[1] + j / 10) * 10) / 10
             a7 = cells.get(key(a, b))
             if (i or j) and isinstance(a7, (int, float)):
@@ -318,3 +319,25 @@ def cell_air_7d(model: WaterTempModel, hourly: pd.DataFrame, today: pd.Timestamp
             continue
         out[f"{float(a) + 0.0:.1f},{float(b) + 0.0:.1f}"] = round(float((c + d * s).mean()), 2)
     return out
+
+
+def directory_estimate(model: WaterTempModel, cells: dict[str, float], day: str, lat: float, lon: float,
+                       kind: str) -> dict | None:
+    """A directory site's provisional estimate (#492, stage 4: Wales, Scotland, Ireland, Northern Ireland): a coast or
+    estuary by sea_from_cells; a lake or river by its own curve in the nearest cell's 7-day air, as a click on the map
+    gets (route `<kind>_air_curve`, `typical_c` the curve's summer test figure in May-September, else None). None for
+    another kind or without a cell nearby."""
+    if kind in ("coast", "estuary"):
+        return sea_from_cells(model, cells, day, lat, lon, kind)
+    if kind not in ("lake", "river") or kind not in model.curves:
+        return None
+    near = nearest_cell_air(cells, lat, lon)
+    if near is None:
+        return None
+    a7, km = near
+    t = float(mohseni(a7, *model.curves[kind]))
+    if not np.isfinite(t):
+        return None
+    return {"temp_c": int(round(max(0.0, t))), "date": day, "route": f"{kind}_air_curve", "tested": False,
+            "typical_c": AIR_CURVE_TYPICAL_C[kind] if int(day[5:7]) in model.months else None,
+            "air_7d_c": round(a7, 1), "air_km": km}

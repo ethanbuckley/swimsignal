@@ -317,8 +317,11 @@ const AnyPoint = (() => {
     const snap = v => Math.round(v * 10) / 10, key = (a, b) => `${(a + 0).toFixed(1)},${(b + 0).toFixed(1)}`;
     const c = [snap(lat), snap(lon)];
     let best = typeof w.cells[key(...c)] === 'number' ? { a7: w.cells[key(...c)], km: 0 } : null;
-    if (!best) for (const i of [-1, 0, 1]) for (const j of [-1, 0, 1]) {
-      const a = snap(c[0] + i / 10), b = snap(c[1] + j / 10), a7 = w.cells[key(a, b)]; if ((!i && !j) || typeof a7 !== 'number') continue;
+    // The eight squares around, else the sixteen beyond them (#492): a point in the hills, far from any overflow,
+    // takes air from up to about 25 km away, and the page says how far.
+    for (let ring = 1; ring <= 2 && !best; ring++) for (let i = -ring; i <= ring; i++) for (let j = -ring; j <= ring; j++) {
+      if (Math.max(Math.abs(i), Math.abs(j)) !== ring) continue;
+      const a = snap(c[0] + i / 10), b = snap(c[1] + j / 10), a7 = w.cells[key(a, b)]; if (typeof a7 !== 'number') continue;
       const km = Math.hypot((a - lat) * 111.2, (b - lon) * 111.2 * Math.cos(lat * RAD));
       if (!best || km < best.km) best = { a7, km: Math.round(km) };
     }

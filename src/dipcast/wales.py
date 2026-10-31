@@ -143,6 +143,13 @@ def _sample_text(sample: dict) -> str:
             + (f', intestinal enterococci {count(ent)}' if ent else '') + ' per 100 ml')
 
 
+def _water(site: dict) -> str:
+    """The site's provisional water temperature line (coastal.water_line), after a break, or nothing."""
+    from dipcast.coastal import water_line
+    line = water_line(site)
+    return f'<br>{escape(line)}' if line else ''
+
+
 def render(snapshot: dict) -> str:
     """The Welsh list, server-rendered so it works without JavaScript. Every line carries its date.
     The page's script (coverage.html) replaces the samples with NRW's current ones and fills the
@@ -158,7 +165,7 @@ def render(snapshot: dict) -> str:
                      f'<a href="{escape(s["profile"], quote=True)}">{escape(s["name"])}</a>'
                      f'<p class="small">{escape(s["kind"].title())} · {escape(rating)}<br>'
                      f'<span class="wales-advice">Current NRW forecast: open the profile</span><br>'
-                     f'<span class="wales-sample">{_sample_text(sample)}</span></p></li>')
+                     f'<span class="wales-sample">{_sample_text(sample)}</span>{_water(s)}</p></li>')
     inland = sum(s["kind"] in ("lake", "river") for s in snapshot["sites"])
     dated = (f'Snapshot of sites and samples {when(snapshot["fetched_at"])}.' if snapshot.get("state") != "live"
              else f'Sites and samples as published {when(snapshot["fetched_at"])}.')
