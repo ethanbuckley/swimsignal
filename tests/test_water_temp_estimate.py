@@ -197,3 +197,54 @@ def test_the_click_anywhere_file_carries_each_cells_7_day_air_and_the_curves():
     assert w["cells"]["54.4,-2.9"] == pytest.approx(m.bridge[0] + m.bridge[1] * 9.0, abs=0.01)
     assert w["curves"]["river"] == list(m.curves["river"]) and w["months"] == [5, 6, 7, 8, 9]
     assert w["typical_c"] == {"river": 1.85, "lake": 1.93}
+
+
+# ---- the coastal directory (#492 stage 3, #479) ---------------------------------------------------------------------
+def test_a_directory_site_takes_its_own_cell_else_the_nearest_of_the_eight_around_it():
+    cells = {"50.7,-1.3": 12.0, "50.6,-1.2": 11.0}
+    assert water_temp.nearest_cell_air(cells, 50.71, -1.29) == (12.0, 0)
+    a7, km = water_temp.nearest_cell_air({"50.6,-1.2": 11.0}, 50.68, -1.27)   # its own cell is not cached
+    assert a7 == 11.0 and km == 10
+    assert water_temp.nearest_cell_air({"50.4,-1.3": 11.0}, 50.71, -1.29) is None   # two cells away: nothing
+
+
+def test_the_sea_estimate_states_its_error_only_where_the_test_measured_one():
+    m = water_temp.load()
+    cells = {"50.7,-1.3": 15.0}
+    july = water_temp.sea_from_cells(m, cells, "2026-07-14", 50.71, -1.29)
+    assert july["route"] == "sea_air_curve" and july["tested"] is False and july["typical_c"] == 1.63
+    assert july["temp_c"] == round(float(water_temp.mohseni(15.0, *m.curves["sea"]))) and july["air_km"] == 0
+    assert water_temp.sea_from_cells(m, cells, "2026-10-31", 50.71, -1.29)["typical_c"] is None   # not measured in October
+    estuary = water_temp.sea_from_cells(m, cells, "2026-07-14", 50.71, -1.29, "estuary")
+    assert estuary["route"] == "estuary_air_curve" and estuary["typical_c"] is None   # estuaries were left out of the test
+    assert water_temp.sea_from_cells(m, {}, "2026-07-14", 50.71, -1.29) is None
+
+
+def test_every_coastal_site_gets_an_estimate_or_says_why_not(tmp_path):
+    import build_site
+    from dipcast.coastal import water_line
+    points = tmp_path / "points.json"
+    points.write_text(json.dumps({"england": {"ukj1-00001": [50.71, -1.29], "ukj1-00002": [52.9, 1.3]}}))
+    sites = [{"id": "ukj1-00001", "name": "Here", "kind": "coast"}, {"id": "ukj1-00002", "name": "Far", "kind": "estuary"},
+             {"id": "ukj1-00003", "name": "Unplaced", "kind": "coast"}]
+    air = {"date": "2026-10-31", "cells": {"50.7,-1.3": 12.0}}
+    h = build_site.attach_directory_water_temp(sites, air, model=water_temp.load(), points_file=points)
+    assert h == {"estimated": 1, "routes": {"sea_air_curve": 1}, "missing": {"air": 1, "point": 1}}
+    assert sites[1]["water_temp_est_missing"] == {"why": "air", "date": "2026-10-31"}
+    line = water_line(sites[0])
+    assert line.startswith(f'Water about {sites[0]["water_temp_est"]["temp_c"]} °C on 31 Oct: ') and "not measured" in line
+    assert "this beach's square" in line and line.endswith("not yet checked in these months")
+    assert water_line(sites[1]) == "No water temperature estimate in this update" and water_line({}) == ""
+    # No click-anywhere air in this build: every site says so, none is given an old figure.
+    again = [{"id": "ukj1-00001", "name": "Here", "kind": "coast"}]
+    assert build_site.attach_directory_water_temp(again, None, model=water_temp.load(), points_file=points)["missing"] == {"air": 1}
+    assert "water_temp_est" not in again[0]
+
+
+def test_the_points_file_places_every_english_coastal_directory_site():
+    pts = json.loads((ROOT / "data" / "raw" / "bathing_water_points.json").read_text())
+    cat = json.loads((ROOT / "data" / "raw" / "coastal_catalogue.json").read_text())["items"]
+    from dipcast.coastal import KINDS
+    ids = [i["eubwidNotation"] for i in cat if any(t.rsplit("/", 1)[-1] in KINDS for t in i["type"])]
+    assert len(ids) == 426 and all(i in pts["england"] for i in ids)
+    assert all(49.8 < la < 55.9 and -6.5 < lo < 2.0 for la, lo in pts["england"].values())
