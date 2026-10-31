@@ -1,0 +1,51 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- The model scorecard: a prose page with the shared head, header and foot, written by scripts/build_site.py
+     (write_model_scorecard) beside the app, with one section per forecast model or candidate in place of the
+     SCORECARD marker below, from data/research/model_scorecard.v1.json (scripts/export_model_scorecard.py,
+     docs/MODEL-SCORECARD-CONTRACT-v1.md). No script. A running test shows its window and read date, never a score
+     from inside its window: the export refuses one before its read date. -->
+<title>Model scorecard · SwimSignal</title>
+<meta name="description" content="Each SwimSignal forecast model and candidate: what it predicts, where and when it was tested, how it did against a simple reference, what it misses, and whether it is live, running in a test, or in the lab.">
+<meta name="theme-color" content="#3d5b5d">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="page.css">
+<link rel="preload" href="fonts/SourceSans3-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/SourceSerif4-latin.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+  /* The tokens, tables and fields are page.css's. */
+  main.doc .sc-stage { font-weight:600; margin:0 0 6px; }
+  .sc-results th[scope="row"] { color:var(--ink); font-weight:400; min-width:11em; }
+  .sc-results small { display:block; color:var(--muted); font-size:var(--fs-meta); }
+  .sc-results td.num { white-space:normal; }
+  .sc-results tbody tr:first-child th { border-bottom-color:var(--line); }   /* page.css inks a first row's th, meant for a header row */
+  main.doc .sc-list { columns:2; column-gap:24px; font-size:var(--fs-note); }
+  @media (max-width: 480px) { main.doc .sc-list { columns:1; } }
+</style>
+</head><body>
+<header class="top"><a class="brand" href="./"><svg viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" fill="#0f5a61"/><path d="M430-20C330 110 470 230 300 290S110 380 190 540" fill="none" stroke="#5CC2B5" stroke-width="70" stroke-linecap="round"/><circle cx="318" cy="138" r="38" fill="#F08A4B"/><circle cx="165" cy="358" r="46" fill="none" stroke="#fff" stroke-width="22"/></svg>SwimSignal</a>
+<nav aria-label="Site"><a href="plan/">Plan a swim</a><a href="saved/">Saved</a><a href="verification.html">Accuracy</a><a href="about.html">About</a><a class="desk-only" href="research.html">Research</a><a class="desk-only" href="feedback.html">Feedback</a></nav></header>
+<main class="doc">
+<h1>Model scorecard</h1>
+<!-- SCORECARD -->
+
+<h2>How a model reaches the forecast</h2>
+<ol>
+<li>It is tested on past data, under rules written down before the scores are seen. A test that fails stays on record.</li>
+<li>It runs beside the live forecast for a fixed window, saving its own answers before anyone knows what the overflows will do. Nobody looks at its score until the agreed read date.</li>
+<li>On that date it is scored against the live model and a simple reference. A model that cannot beat them stays in the lab.</li>
+<li>Only then can a change to the forecast be proposed, in its own change, with a way back.</li>
+</ol>
+
+<h2>Sources</h2>
+<ul>
+<li><a href="verification.html">How accurate the live forecast is, scored every day</a></li>
+<li><a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/MODEL-SCORECARD-CONTRACT-v1.md">What this page's data holds, and what it may say</a></li>
+<li><a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/RESEARCH-RECOVERY-2026-10.md">The register of every study and its next step</a></li>
+<li><a href="https://github.com/ethanbuckley/swimsignal/blob/main/scripts/export_model_scorecard.py">The script that makes the file</a></li>
+<li><a href="data/research/model_scorecard.json">The scorecard as one file</a></li>
+</ul>
+</main>
+<footer class="site-foot"><div class="rule"><p>SwimSignal is a free, non-commercial pollution risk forecast for river and lake swim spots in England, run by Ethan Buckley. A forecast, not a water test: check the signs at the water before you swim.</p>
+<p><a href="terms.html">Terms of use</a> · <a href="privacy.html">Privacy</a> · <a href="feedback.html">Feedback</a> · <a href="methods.html">Method</a> · <a href="research.html">Research</a> · <a href="terms.html#data">Data credits</a> · <a href="https://github.com/ethanbuckley/swimsignal">Source code</a> (MIT)</p></div></footer>
+</body></html>
