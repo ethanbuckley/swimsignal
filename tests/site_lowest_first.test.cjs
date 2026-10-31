@@ -38,7 +38,7 @@ test('lowest risk first: low, moderate, high, then spots with no level, then adv
   const xs = [spot('h', 'Hythe', 'high'), spot('m', 'Marlow', 'moderate'), spot('l', 'Lechlade', 'low'),
     spot('a', 'Abbey Mere', 'low', 51, -1, { official: [ADVICE] }), spot('n', 'Nidd', null)];
   assert.deepEqual(names(xs), ['Lechlade', 'Marlow', 'Hythe', 'Nidd', 'Abbey Mere']);
-  assert.equal(vm.runInContext('lowLastNote', ctx)(xs), 'Spots with an official notice come last.');
+  assert.equal(vm.runInContext('lowLastNote', ctx)(xs), 'Spots whose official notice restricts swimming are listed last.');
   assert.equal(vm.runInContext('lowLastNote', ctx)(xs.slice(0, 3)), '');
 });
 

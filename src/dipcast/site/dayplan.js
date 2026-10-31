@@ -14,6 +14,8 @@ const DP_PERMIT = { unconfirmed: 'Permission at this point not confirmed.', rest
 const dpEsc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const dpAgo = h => h < 1 ? 'under an hour ago' : h < 36 ? `${Math.round(h)} h ago` : `${Math.round(h / 24)} days ago`;
 const dpDate = iso => new Date(iso + 'T12:00:00Z').toLocaleDateString('en-GB', { timeZone: 'UTC', weekday: 'short', day: 'numeric', month: 'short' });
+// A check's date as people write it, "3 Oct 2026", not "2026-10-03"; anything else as given.
+const dpWhen = iso => /^\d{4}-\d{2}-\d{2}$/.test(String(iso)) ? new Date(iso + 'T12:00:00Z').toLocaleDateString('en-GB', { timeZone: 'UTC', day: 'numeric', month: 'short', year: 'numeric' }) : dpEsc(iso);
 
 // ------------------------------------------------------------------------------ the options
 // The plan's groups (plan.js, planSpots: low risk, nothing upstream to forecast from, moderate or higher, no level),
@@ -52,9 +54,9 @@ function dpConditions(s, day, today, act, byId = new Map(), nowMs = Date.now()) 
   const loading = s.detail_file && !s.detail_loaded && !s.detail_missing;
   const has = topics.filter(([k]) => facts.some(f => f && f.topic === k)).map(([, w]) => w);
   const lacks = topics.filter(([k]) => !facts.some(f => f && f.topic === k)).map(([, w]) => w);
-  const permit = a ? `${DP_PERMIT[a.status] || dpEsc(a.text)} <span class="muted">(desk check${a.checked_at ? ` ${dpEsc(a.checked_at)}` : ''})</span>` : '';
+  const permit = a ? `${DP_PERMIT[a.status] || dpEsc(a.text)} <span class="muted">(checked from published sources${a.checked_at ? `, ${dpWhen(a.checked_at)}` : ''})</span>` : '';
   const guide = loading ? '<span class="muted">Loading its guide…</span>'
-    : has.length ? `Its guide covers ${has.join(', ')}${g.checked ? ` <span class="muted">(checked ${dpEsc(g.checked)})</span>` : ''}.` : '';
+    : has.length ? `Its guide covers ${has.join(', ')}${g.checked ? ` <span class="muted">(checked ${dpWhen(g.checked)})</span>` : ''}.` : '';
   if (permit || guide) rows.push(['Access', [permit, guide].filter(Boolean).join(' ')]);
   if (!loading) missing.push(...(has.length ? lacks : [boat ? 'launching and access' : 'access']));
   if (boat) {
@@ -91,11 +93,13 @@ function dpOption(o, v, c, backup, i) {
 }
 
 // The tile: heading, one line on what the options are, and the options; or why there are none.
-function dpSection(on, items, actWord, boat = false) {
+function dpSection(on, items, actWord, boat = false, unforecast = false) {
   const head = `<h2 class="group-head" id="dp-h">Options ${dpEsc(on)}</h2>`;
   if (!items.length) return `<section class="group tile dp" id="dp" aria-labelledby="dp-h">${head}<p class="sub">No spot within reach is at low risk from sewage spills ${dpEsc(on)}, or has no overflow upstream to forecast from. The full list is below.</p></section>`;
   return `<section class="group tile dp" id="dp" aria-labelledby="dp-h">${head}`
-    + `<p class="sub">The nearest ${items.length === 1 ? 'spot' : `${items.length} spots`} with a low forecast for ${actWord}, and what SwimSignal knows at each. `
+    // The forecast is of pollution, whatever is done on the water: "a low forecast for paddleboarding" said otherwise
+    // (31 Oct 2026). unforecast: some options have no overflow upstream, so no level at all.
+    + `<p class="sub">The ${items.length === 1 ? 'nearest spot' : `${items.length} nearest spots`} at low risk from sewage spills${unforecast ? ' or with no monitored overflow upstream' : ''}, and what SwimSignal knows at each for ${actWord}. `
     + `${boat ? 'Spots whose guide says boats and boards are not allowed are left out. ' : ''}The forecast is for the whole day, not by the hour. Check the signs at the water before you go in.</p>`
     + `<ol class="dp-list">${items.join('')}</ol></section>`;
 }

@@ -164,16 +164,20 @@ function timelineItems(d, files, nowMs, generatedAt) {
 const TIMELINE_ICON = '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4v16"/><circle cx="6" cy="7" r="1.6"/><circle cx="6" cy="17" r="1.6"/><path d="M10 7h9M10 12h7M10 17h9"/></svg>';
 let TIMELINE_SPOT = null, TIMELINE_LOADED = null;
 
-const timelineRow = (x, nowMs) => '<div class="factor">'
+// A row's source line only where it differs from the row above: Waterhead's 59 samples repeated the same three
+// sentences of credit under each one (31 Oct 2026). The first row of a list always has it.
+const timelineRow = (x, nowMs, prev = null) => '<div class="factor">'
   + `<div class="f-l">${TIMELINE_KINDS[x.kind]} · ${timelineDate(x.day)}</div><div class="f-v">${timelineAge(x.day, nowMs)}</div>`
-  + `<div class="f-d"><b>${x.what}.</b> ${x.says}</div><div class="f-src">${x.source}. ${x.status}.</div></div>`;
+  + `<div class="f-d"><b>${x.what}.</b> ${x.says}</div>`
+  + (prev && prev.source === x.source && prev.status === x.status ? '' : `<div class="f-src">${x.source}. ${x.status}.</div>`) + '</div>';
+const timelineRows = (xs, nowMs) => xs.map((x, i) => timelineRow(x, nowMs, i ? xs[i - 1] : null)).join('');
 
 // The list once its files are in: the newest TIMELINE_SHOW, the rest behind "Show all", then what is not listed.
 function timelineBody(d, files, nowMs, generatedAt) {
   const items = timelineItems(d, files, nowMs, generatedAt), fold = items.length > TIMELINE_SHOW + 1;
   const sat = files && files.lake && Array.isArray(files.lake.series);
-  return (items.length ? `<div class="factors">${(fold ? items.slice(0, TIMELINE_SHOW) : items).map(x => timelineRow(x, nowMs)).join('')}`
-      + (fold ? `<div class="m-more" hidden>${items.slice(TIMELINE_SHOW).map(x => timelineRow(x, nowMs)).join('')}</div>` : '') + '</div>'
+  return (items.length ? `<div class="factors">${timelineRows(fold ? items.slice(0, TIMELINE_SHOW) : items, nowMs)}`
+      + (fold ? `<div class="m-more" hidden>${timelineRows(items.slice(TIMELINE_SHOW), nowMs)}</div>` : '') + '</div>'
       + (fold ? `<button type="button" class="btn quiet" id="tl-all" aria-expanded="false">Show all ${items.length}</button>` : '')
     : '<p class="t-say">Nothing dated is held for this spot yet.</p>')
     + '<div class="ev-gap"><p>Each measurement is for the moment it was taken: the water can change within hours after rain.</p>'

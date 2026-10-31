@@ -70,7 +70,7 @@ test('no guide, a guide still loading and a guide that did not arrive each say s
 test('the desk check of permission comes first, in its own words, with its date', () => {
   const access = { status: 'restricted_guidance', checked_at: '2026-10-03', text: 'Permission at this point has not been confirmed.' };
   const h = O.outingAccess(spot({ access }), TODAY);
-  assert.ok(h.startsWith('<p class="g-text">Permission at this point has not been confirmed.</p><p class="g-src">Desk check 2026-10-03; current signs not inspected.</p>'), h);
+  assert.ok(h.startsWith('<p class="g-text">Permission at this point has not been confirmed.</p><p class="g-src">Checked from published sources on 3 Oct 2026; signs at the water not inspected.</p>'), h);
   // Before every state, a guide or none.
   assert.ok(O.outingAccess(spot({ access, guide: undefined }), TODAY).startsWith('<p class="g-text">Permission'));
   assert.ok(O.outingAccess(spot({ access, detail_loaded: false, guide: undefined }), TODAY).startsWith('<p class="g-text">Permission'));

@@ -434,6 +434,9 @@
   .stack { display:flex; flex-direction:column; gap:8px; }
   .tiles { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); gap:8px; }
   .tiles > .wide { grid-column:1 / -1; }
+  /* A tile alone on its row, between a heading or a wide tile and the next, takes the row: Grantchester's "Forecast
+     for today" (31 Oct 2026) was one half-width tile of wrapped text beside an empty half. */
+  .tiles > :is(.grp-h, .wide) + .tile:not(.wide):is(:last-child, :has(+ :is(.grp-h, .wide))) { grid-column:1 / -1; }
   /* The two groups of tiles on a spot's page: the open day's forecast, then the latest readings. */
   .tiles > .grp-h { grid-column:1 / -1; margin:12px 2px 0; font:600 var(--fs-head)/1.25 var(--font-display); }
   .tiles > .grp-sub { grid-column:1 / -1; margin:-4px 2px 0; color:var(--muted); font-size:var(--fs-note); }
@@ -2107,7 +2110,7 @@ const check = d => { const url = (d.classification || {}).url;
     : url ? ` <a href="${esc(url)}">The EA's page</a> has any advice against bathing there today, which this forecast does not include.` : ''}</p>`; };
 // A desk check of access (access.py), in a row of Not known here (unknowns). Its text says what was found and
 // that permission is not confirmed.
-const accessSaid = a => `${esc(a.text)}${/^https:\/\//.test(a.url || '') ? ` <a href="${esc(a.url)}">Authority guidance</a>.` : ''} Desk check ${esc(a.checked_at)}; current signs have not been inspected.`;
+const accessSaid = a => `${esc(a.text)}${/^https:\/\//.test(a.url || '') ? ` <a href="${esc(a.url)}">Authority guidance</a>.` : ''} Checked from published sources${/^\d{4}-\d{2}-\d{2}$/.test(a.checked_at || '') ? ` on ${new Date(a.checked_at + 'T12:00:00Z').toLocaleDateString('en-GB', { timeZone: 'UTC', day: 'numeric', month: 'short', year: 'numeric' })}` : a.checked_at ? ` ${esc(a.checked_at)}` : ''}; signs at the water have not been inspected.`;
 // "; poor every year since 2021", or "; poor in 2024": the ratings before the latest.
 function ratingHistory(cl) {
   const h = (cl.history || []).filter(([y]) => y !== cl.year); if (!h.length) return '';
@@ -2322,6 +2325,10 @@ function answerParts(d, iso = null) {
 // which the rows show only as a colour.
 function daysSentence(d) {
   const total = overflows(d), known = d.days.slice(0, 5).filter(hasData), back = backToLow(d) ? ' ' + backToLow(d) : '';   // the first day back at low (levels.js)
+  // Spills that stopped lately whose water is still passing, where they and not the rain forecast set today's level:
+  // "A spill ... is possible, not expected today" under a moderate today read as though nothing had (Grantchester, 31 Oct 2026).
+  const n = d.now || {}, lately = !n.discharging_upstream && n.recent_upstream && known.length && known[0].date === today()
+    && rank(risk(d, d.now, true).level) > rank(known[0].label) ? n.recent_upstream : 0;
   if (!total) return summary(d).join(' ');
   if (!known.length || !spilling(known[0], total)) return summary(d).slice(0, 2).join(' ') + back;
   const e = known.map(x => x.expected_spilling_overflows ?? 0), most = Math.max(...e), peak = known[e.indexOf(most)];
@@ -2333,7 +2340,8 @@ function daysSentence(d) {
   return (advisedAgainst(d) ? `Rated poor, so every day is at least high risk${inBathingSeason(today()) ? ': advice against bathing applies' : ''}. `
       + (known[0].label ? `The sewage spill forecast on its own is ${known[0].label} ${dayWord(known[0].date)}, under each day below. ` : '') : '')
     + ((d.now || {}).discharging_upstream ? summary(d)[0] + ' ' : '')
-    + `${cap(spilling(known[0], total))} ${dayWord(known[0].date)}${trend}.${back}`;
+    + (lately ? `Water from ${lately === 1 ? 'a spill that stopped' : `${lately} spills that stopped`} lately is still passing, so today is ${level(d)} risk. ` : '')
+    + `${cap(lately ? spilling(known[0], total).replace(/^a spill/, 'a new spill') : spilling(known[0], total))} ${dayWord(known[0].date)}${trend}.${back}`;
 }
 // A day's place on its bar, 0 to 1: four equal bands, the day in its level's band, placed in it by
 // what set the level: the exposure index (bands at SPILL_CUTS, 15, 40 and 70 of 100), the E. coli estimate
@@ -2462,7 +2470,10 @@ const noFeedSaid = d => { const feeds = [...new Set((d.contributors || []).filte
   return feeds.length ? ` ${esc(feeds.join(' and '))} ${feeds.length === 1 ? 'has' : 'have'} no live feed SwimSignal reads.` : ''; };
 function nowTile(d, total) {
   const now = d.now || {}, n = now.discharging_upstream || 0, mon = Math.min(total, now.monitored_upstream ?? total);
-  const base = { live: true, icon: ICON.now, label: 'Right now', vis: overflowDots(d), rel: tileLine(d, 'now') };
+  // With none discharging, it is the spills that stopped lately that set the level: "0 discharging" over "This sets
+  // the level above" read as though nothing did (Grantchester, 31 Oct 2026).
+  const line = tileLine(d, 'now'), rel = line && !n && now.recent_upstream ? 'The spills that stopped lately set the level above.' : line;
+  const base = { live: true, icon: ICON.now, label: 'Right now', vis: overflowDots(d), rel };
   if (!mon && !n)
     return { ...base, fig: 'Unknown', say: `None of the ${total === 1 ? 'overflow' : `${total} overflows`} upstream ${total === 1 ? 'reports' : 'report'} live, so whether ${total === 1 ? 'it is' : 'any is'} discharging is not known.${noFeedSaid(d)}` };
   return { ...base, fig: n, unit: mon >= total ? `of ${total} discharging` : 'discharging', figTone: n ? 'hot' : '',
@@ -3299,7 +3310,7 @@ function overview(spots) {
 // (overview, less its issue time) are at the list's foot, so a phone's first screen reaches the first spot.
 function overviewTop(spots) {
   const advised = typeof eaTodayAdvice === 'function' ? spots.filter(s => eaTodayAdvice(s).length) : [];
-  return `Updated ${issued()}.` + (advised.length ? ` ${advised.length} with an official notice: ${noticeVerb(advised)}.` : '');
+  return `Updated ${issued()}.` + (advised.length ? ` ${advised.length === 1 ? '1 spot has' : `${advised.length} spots have`} an official notice: ${noticeVerb(advised)}.` : '');
 }
 // A chosen date must describe the same forecast in the list, on the map and in the detail link.
 const listHeadline = s => VIEW.day ? dayHeadline(s, VIEW.day) : headline(s);
@@ -3374,11 +3385,11 @@ function renderList() {
     // weekend's best day in a line under it). It opens on today (renderList).
     + `<div class="toolbar"><fieldset class="day-strip list-days" id="listday"><legend class="sr">When are you swimming?</legend>${fiveDays().map(iso => `<label><input type="radio" name="list-day" value="${iso}"${VIEW.day === iso ? ' checked' : ''}>`
       + `<span>${shortDay(iso)} <span class="dd"><b>${lowOn(iso)}</b> <span class="nw">low risk</span></span></span></label>`).join('')}</fieldset></div>`
-    + `<p class="small muted strip-note">Under each day: the spots at low risk, of ${DATA.spots.length}.`
+    + `<p class="small muted strip-note">Under each day: how many of the ${DATA.spots.length} spots are at low risk.`
     // A first visit (nothing saved or planned, no spot opened yet): what to do here, in the same line, so the first
     // spot moves down one line at most (30 Oct 2026). Once a spot is saved, Your places takes over.
     + `${!SAVED.size && !OPENED && !(typeof planOuting === 'function' && planOuting(stored(PLAN_KEY), planDates(), id => DATA.spots.some(x => x.id === id)))
-      ? ' Open a spot for why; save it to keep it at the top, and plan an outing with a backup.' : ''}</p>`
+      ? ' Open a spot to see why. Save the ones you use to keep them at the top.' : ''}</p>`
     + `<p class="planner-note" id="low-note-list"${VIEW.lowOnly ? '' : ' hidden'}>${lowListNote()}</p>`;
   h += notices(null, true) + '</div>';
   // Your places (29-30 Oct 2026): the next outing and the saved spots in one tile, so a returning visitor sees their
@@ -3501,7 +3512,7 @@ const bindClear = () => { const clear = document.getElementById('clear-filters')
 const listRank = s => ORDER[mapLevel(s)] ?? -1;
 const listAdvised = s => typeof eaTodayRestricts === 'function' && eaTodayRestricts(s);   // a notice that restricts swimming
 const riskOrder = (a, b) => listAdvised(b) - listAdvised(a) || listRank(b) - listRank(a) || a.name.localeCompare(b.name);
-const riskFirstNote = items => items.some(listAdvised) ? 'Spots with an official notice come first.' : '';
+const riskFirstNote = items => items.some(listAdvised) ? 'Spots whose official notice restricts swimming are listed first.' : '';
 // "Lowest risk", the list's first order since 29 October 2026, as a swimmer asks it: where can I go? Low before
 // moderate before high, then spots with no level (a plain level such as "No monitored overflow found upstream" is
 // not a forecast that found nothing), and spots whose official notice restricts swimming last of all, whatever their level;
@@ -3509,7 +3520,7 @@ const riskFirstNote = items => items.some(listAdvised) ? 'Spots with an official
 const lowRank = s => { const r = listRank(s); return r < 0 ? 99 : r; };
 const lowOrder = (a, b) => listAdvised(a) - listAdvised(b) || lowRank(a) - lowRank(b)
   || (VIEW.here ? dist(a) - dist(b) : 0) || a.name.localeCompare(b.name);
-const lowLastNote = items => items.some(listAdvised) ? 'Spots with an official notice come last.' : '';
+const lowLastNote = items => items.some(listAdvised) ? 'Spots whose official notice restricts swimming are listed last.' : '';
 // Once a place is given, the cards over the list: the lowest-risk spots within 30 miles, in that order; with
 // none so near, the three nearest. Until 29 October 2026 the three nearest of any level, which put a high-risk
 // river 13 miles from Bristol above a low one at 27.
@@ -4167,7 +4178,8 @@ function planOptions(box, groups) {
     return dpOption(o, { href: spotPath(s.id) + (daily(s) ? '#day=' + PLAN.day : ''), headline: dayHeadline(s, PLAN.day), tone: tone(o.level),
       official: outingOfficial(s), meta: [cap(milesAway(o.miles)), cap(s.kind)].join(' · '), chosen: PLAN.spot === s.id },
     dpConditions(s, PLAN.day, today(), PLAN.act, byId), other && other.s.name, i); });
-  box.insertAdjacentHTML('afterbegin', dpSection(on, items, PLAN.act && OUTING_ACT_WORDS[PLAN.act] ? OUTING_ACT_WORDS[PLAN.act][1] : 'swimming', OUTING_FINISH_ACTS.includes(PLAN.act)));
+  box.insertAdjacentHTML('afterbegin', dpSection(on, items, PLAN.act && OUTING_ACT_WORDS[PLAN.act] ? OUTING_ACT_WORDS[PLAN.act][1] : 'swimming', OUTING_FINISH_ACTS.includes(PLAN.act),
+    opts.some(o => (groups[1] || []).includes(o))));
   const tile = document.getElementById('dp');
   tile.querySelectorAll('a[data-id]').forEach(a => a.addEventListener('click', e => { if (!plainClick(e)) return; e.preventDefault(); select(a.dataset.id, true, true, PLAN.day); }));
   tile.querySelectorAll('[data-dp-go]').forEach(b => b.addEventListener('click', () => {

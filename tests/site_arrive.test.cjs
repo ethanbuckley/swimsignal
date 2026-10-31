@@ -61,7 +61,7 @@ test('permission, the way in and the water are separate parts, never one verdict
   assert.doesNotMatch(part(water, unk), /low risk|high risk|moderate|E\. coli/i, 'the forecast is linked, not restated');
   // The desk check of access (access.py) joins the rules in its own words; without either, the gap is said.
   const a = { status: 'unconfirmed', checked_at: '2026-10-03', url: 'https://lakedistrict.gov.uk/x', text: 'Access at this point has not been confirmed.' };
-  assert.match(A.arrivalPermission({ facts: [] }, { access: a }), /Access at this point has not been confirmed\..*Desk check 2026-10-03; current signs have not been inspected\./s);
+  assert.match(A.arrivalPermission({ facts: [] }, { access: a }), /Access at this point has not been confirmed\..*Checked from published sources on 3 Oct 2026; signs at the water have not been inspected\./s);
   assert.match(A.arrivalPermission({ facts: [] }, {}), /Nothing in this guide says who may swim here\./);
 });
 

@@ -39,7 +39,7 @@ test('conditions say each value\'s kind and date; the water estimate is for toda
   assert.deepEqual(today.rows.map(r => r[0]), ['Water', 'Daylight', 'Access']);
   assert.equal(today.rows[0][1], 'About 14&nbsp;°C today, a provisional estimate');
   assert.equal(today.rows[1][1], 'Sunrise 07:11, sunset 16:38');
-  assert.match(today.rows[2][1], /^Permission at this point not confirmed\. <span class="muted">\(desk check 2026-10-03\)<\/span> Its guide covers parking, getting in/);
+  assert.match(today.rows[2][1], /^Permission at this point not confirmed\. <span class="muted">\(checked from published sources, 3 Oct 2026\)<\/span> Its guide covers parking, getting in/);
   assert.deepEqual(today.missing, ['the path', 'getting out']);
   const sun = D.dpConditions(s, '2026-11-01', TODAY, null, new Map(), NOW);
   assert.equal(sun.rows[0][1], 'About 14&nbsp;°C today, a provisional estimate; none for Sun 1 Nov');
