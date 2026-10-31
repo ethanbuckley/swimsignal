@@ -28,7 +28,7 @@
     .ovt tr { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); gap:2px 12px; padding:10px 0; border-bottom:1px solid var(--line); }
     .ovt th.ov { grid-column:1 / -1; padding:0; border:0; }
     .ovt td { padding:0; border:0; text-align:left; }
-    .ovt td.num { text-align:left; }
+    .ovt td.num { text-align:left; white-space:normal; }   /* a long label wraps (the spill lengths, 31 Oct 2026) rather than push the page sideways */
     .ovt td::before { content:attr(data-l) " "; color:var(--muted); }
   }
   @page { size:A4 portrait; margin:14mm; }
