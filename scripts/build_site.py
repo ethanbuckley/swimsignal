@@ -3767,9 +3767,9 @@ def planner_body(doc: dict) -> str:
               f'about {round(100 * cov["mean_gain"] / st["COVER"]["P"])}% of equal coverage\'s error. Against random it '
               f'had lower error in {rnd["share_info_lower"] * 100:.0f}%. Nothing was adopted, and this page does not change '
               'that.</p>',
-              f'<p>Almost all of the difference was at sites never sampled before. Equal coverage and the information policy '
-              f'both went mostly there; the information policy also chose wetter days. The wettest, riskiest days caught the '
-              f'most samples over the line, but taught the model little more than random did.</p>']
+              '<p>Almost all of the difference was at sites never sampled before. Equal coverage and the information policy '
+              'both went mostly there; the information policy also chose wetter days. The wettest, riskiest days caught the '
+              'most samples over the line, but taught the model little more than random did.</p>']
     near = lambda r: {"main": f'The test: {n(r["per_site"])} per new site', "tau0": f'Check: {n(r["per_site"])} per new '
                       'site, sites truly alike', "budget120": f'Check: {n(r["per_site"])} per new site'}.get(r["run"], r["run"])
     parts.append('<div class="tw"><table class="sp-runs"><caption>The information policy against equal coverage, in '
