@@ -53,6 +53,17 @@ function samplesMatch(s, warn = SAMPLES_WARN) {
   return null;
 }
 
+// Why a sample has no hindsight estimate (1.1, `hindsight_reason`), in a few words for its table cell; the export's
+// `hindsight_reasons` says each in a sentence under the table.
+const SAMPLES_WHY = { before_2024: 'none: 2023, no archived rain', no_overflow_upstream: 'none: no overflow upstream',
+  archive_only: 'none: only in the Water Quality Archive' };
+const samplesWhy = s => SAMPLES_WHY[s && s.hindsight_reason] || 'none';
+// The reasons among some samples, each once, in the export's order, with its sentence.
+function samplesReasons(samples, doc) {
+  const said = (doc && doc.hindsight_reasons) || {}, seen = new Set((samples || []).filter(s => typeof s.hindsight !== 'number').map(s => s.hindsight_reason));
+  return Object.keys(said).filter(k => seen.has(k)).map(k => [k, said[k]]);
+}
+
 // ------------------------------------------------------------------------------ the list
 // The bathing waters in the picker: rivers, then lakes, by name within each. Each group as [heading, sites].
 function samplesGroups(index) {
@@ -95,7 +106,9 @@ function samplesOfficial(meta) {
 function samplesCounts(meta, doc) {
   const s = meta.summary || {}, line = samplesLine(doc);
   if (!s.samples) return '<p class="sm-none">No samples here in this file.</p>';
-  const below = s.below_limit ? ` ${samplesNum(s.below_limit)} ${s.below_limit === 1 ? 'was' : 'were'} given only as below the lab's limit.` : '';
+  // The limit itself where the export gives it (1.1, `below_limit_value`): "given only as below 10".
+  const lim = typeof s.below_limit_value === 'number' ? samplesNum(s.below_limit_value) : "the lab's limit";
+  const below = s.below_limit ? ` ${samplesNum(s.below_limit)} ${s.below_limit === 1 ? 'was' : 'were'} given only as below ${lim}.` : '';
   return `<p class="sm-counts"><b>${samplesPlural(s.samples, 'sample')}, ${samplesEsc(samplesDate(s.first))} to ${samplesEsc(samplesDate(s.last))}.</b> `
     + `${samplesNum(s.over_900 || 0)} ${s.over_900 === 1 ? 'was' : 'were'} over ${samplesNum(line)} E.&nbsp;coli per 100&nbsp;ml.${below}</p>`
     + `<p class="sm-note">${samplesNum(line)} per 100&nbsp;ml is the line of the inland "sufficient" standard, which the Environment Agency applies to up to four seasons of samples together, so one sample sets no rating. A sample is the water at that place and time only.</p>`;
@@ -104,13 +117,20 @@ function samplesCounts(meta, doc) {
 function samplesHindsight(meta, doc) {
   const s = meta.summary || {}, warn = samplesWarn(doc), line = samplesLine(doc), pw = ((doc && doc.claim) || {}).public_wording;
   const claim = pw ? `<p class="sm-claim">${samplesEsc(pw)}</p>` : '';
-  if (!s.with_hindsight) return `<p class="sm-hind">No hindsight estimate here: the study it comes from did not cover this bathing water.</p>` + claim;
+  if (!s.with_hindsight) {   // the export's own reason where every sample shares one (1.1), else the general one
+    // No overflow upstream outranks a year's missing rain: it holds for every sample here.
+    const why = samplesReasons((meta.site && meta.site.samples) || [], doc), one = why.find(([k]) => k === 'no_overflow_upstream') || (why.length === 1 && why[0]);
+    return `<p class="sm-hind">No hindsight estimate here: ${one ? samplesEsc(one[1].replace(/^./, c => c.toLowerCase())) : 'the study it comes from did not cover this bathing water.'}</p>` + claim;
+  }
   const m = s.hindsight_misses || 0, f = s.hindsight_false_alarms || 0, pct = `${Math.round(warn * 100)}%`;
   return `<p class="sm-hind">${samplesNum(s.with_hindsight)} of the ${samplesPlural(s.samples, 'sample')} ${s.with_hindsight === 1 ? 'has' : 'have'} a hindsight estimate: the chance a model worked out afterwards puts on the count being over ${samplesNum(line)}. `
     + `It was not shown on the site at the time and is not the forecast the site issued. `
     + `${m ? `${samplesPlural(m, 'sample')} ${m === 1 ? 'was' : 'were'} over ${samplesNum(line)} with an estimate under ${pct} (a miss)` : `No sample over ${samplesNum(line)} had an estimate under ${pct} (a miss)`}; `
     + `${f ? `${samplesPlural(f, 'sample')} ${f === 1 ? 'was' : 'were'} not over ${samplesNum(line)} with an estimate of ${pct} or more (a false alarm)` : `no sample under it had an estimate of ${pct} or more (a false alarm)`}. `
-    + `${pct} is the site's warning line for rivers.</p>` + claim;
+    + `${pct} is the site's warning line for rivers.`
+    // 1.1, `warn_at_note`: at a lake the same counts are for comparison only.
+    + (doc && doc.warn_at_note && meta.kind !== 'river' ? ' At a lake these two counts are for comparison only: the site gives no E.&nbsp;coli warning at lakes.' : '')
+    + '</p>' + claim;
 }
 // The samples as dots, one row a season on the same months, so a gap between samples shows as space. A log scale
 // from 10 to 10,000 per 100 ml (each step up is ten times more), with the 900 line drawn and labelled. A count given
@@ -168,7 +188,7 @@ function samplesTable(site, doc) {
   };
   const hind = s => {
     const p = samplesPct(s.hindsight), m = samplesMatch(s, warn);
-    return p ? `${p}${m ? ` (a ${m})` : ''}` : '<span class="sm-dash">none</span>';
+    return p ? `${p}${m ? ` (a ${m})` : ''}` : `<span class="sm-dash">${samplesEsc(samplesWhy(s))}</span>`;
   };
   return `<p class="sm-cap">Every sample here, newest first, per 100&nbsp;ml. The last column was worked out afterwards, not shown on the site at the time.</p>`
     + `<div class="tw"><table class="sm-table"><thead><tr><th scope="col">Taken</th><th scope="col">E.&nbsp;coli</th><th scope="col">Intestinal enterococci</th><th scope="col">Model in hindsight, worked out afterwards</th></tr></thead>`
@@ -178,8 +198,16 @@ function samplesTable(site, doc) {
         + g.map(s => `<tr><td>${samplesEsc(samplesDay(s.t))}${days[s.t.slice(0, 10)] > 1 ? `, ${samplesEsc(samplesClock(s.t))}` : ''}</td><td>${cell(s)}</td>`
           + `<td>${typeof s.ie === 'number' ? samplesEsc(samplesCount(s.ie, s.ie_q)) : '<span class="sm-dash">not in this file</span>'}</td><td>${hind(s)}</td></tr>`).join('') + '</tbody>';
     }).join('') + '</table></div>'
-    + (all.some(s => typeof s.hindsight !== 'number') ? '<p class="sm-note">"None" in the last column: the hindsight study did not cover that sample.</p>' : '')
-    + (all.some(s => typeof s.ie !== 'number') ? '<p class="sm-note">"Not in this file": the samples added from the Water Quality Archive carry E.&nbsp;coli only.</p>' : '');
+    + samplesReasonsNote(all, doc)
+    + (all.some(s => typeof s.ie !== 'number') ? '<p class="sm-note">"Not in this file": the samples from the Water Quality Archive carry E.&nbsp;coli only.</p>' : '');
+}
+// Under the table: why the samples without an estimate have none, each reason once in the export's words (1.1); a
+// file without reasons says the study did not cover them.
+function samplesReasonsNote(all, doc) {
+  if (!all.some(s => typeof s.hindsight !== 'number')) return '';
+  const why = samplesReasons(all, doc);
+  if (!why.length) return '<p class="sm-note">"None" in the last column: the hindsight study did not cover that sample.</p>';
+  return `<p class="sm-note">Why some samples have no estimate:</p><ul class="sm-why">${why.map(([k, t]) => `<li>${samplesEsc(SAMPLES_WHY[k].replace(/^none: /, '').replace(/^./, c => c.toUpperCase()))}: ${samplesEsc(t)}</li>`).join('')}</ul>`;
 }
 // One bathing water whole: the official word, the counts, the chart, the hindsight estimate with the export's own
 // sentence beside it, and every sample.
@@ -187,7 +215,7 @@ function samplesSite(site, meta, doc, width) {
   return `<article class="sm-site"><h2 id="sm-h">${samplesEsc(meta.name || site.name)}</h2>`
     + `<p class="sm-meta">${meta.kind === 'river' ? 'River' : 'Lake or pond'} bathing water</p>`
     + samplesOfficial(meta) + samplesCounts(meta, doc) + samplesChart(site.samples, width, samplesLine(doc))
-    + samplesHindsight(meta, doc) + samplesTable(site, doc) + '</article>';
+    + samplesHindsight({ ...meta, site }, doc) + samplesTable(site, doc) + '</article>';
 }
 
 // ------------------------------------------------------------------------------ in the page
@@ -224,5 +252,6 @@ if (typeof document === 'object' && document.getElementById) samplesMount(docume
 
 if (typeof module === 'object' && module.exports) {
   module.exports = { SAMPLES_LINE, SAMPLES_WARN, samplesCount, samplesOver, samplesPct, samplesMatch, samplesGroups, samplesPicker, samplesRange,
-    samplesSummary, samplesOfficial, samplesCounts, samplesHindsight, samplesChart, samplesTable, samplesSite, samplesDate, samplesMonth };
+    samplesSummary, samplesOfficial, samplesCounts, samplesHindsight, samplesChart, samplesTable, samplesSite, samplesDate, samplesMonth, samplesWhy,
+    samplesReasons, samplesReasonsNote };
 }

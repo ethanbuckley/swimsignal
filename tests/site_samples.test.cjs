@@ -1,6 +1,6 @@
 // Every Environment Agency E. coli sample at a bathing water (src/dipcast/site/samples.js, the viewer on samples.html):
 // what a bathing water's samples say, and only that. Four bathing waters cut whole from the research export, contract
-// 1.0 (tests/fixtures/ecoli_evidence_v1_sample.json, docs/ECOLI-EVIDENCE-CONTRACT-v1.md): Derwent Water at Crow Park
+// 1.1 (tests/fixtures/ecoli_evidence_v1_sample.json, docs/ECOLI-EVIDENCE-CONTRACT-v1.md): Derwent Water at Crow Park
 // (a "<10" sample, twelve samples over 900 that the hindsight estimate missed, Archive samples with no enterococci),
 // Wharfe at Cromwheel (a ">10000" sample, 2023 samples with no estimate, misses and false alarms), Rutland Water
 // Whitwell Creek (32 samples below 10, two on one day) and Hampstead Heath Ladies Pond (no hindsight estimate at all).
@@ -76,11 +76,17 @@ test('a high sample with a low estimate is a miss, said as a mismatch, never as 
   const t = page(DERWENT);
   assert.match(t, /12 samples were over 900 with an estimate under 25% \(a miss\); no sample under it had an estimate of 25% or more \(a false alarm\)\./);
   assert.match(page(WHARFE), /8 samples were over 900 with an estimate under 25% \(a miss\); 11 samples were not over 900 with an estimate of 25% or more \(a false alarm\)\./);
+  // At a lake the same two counts are for comparison only (1.1, warn_at_note); a river's page does not say so.
+  assert.match(DOC.warn_at_note, /no E\. coli warning at lakes/);
+  assert.match(page(DERWENT), /25% is the site's warning line for rivers\. At a lake these two counts are for comparison only: the site gives no E\. coli warning at lakes\./);
+  assert.doesNotMatch(page(WHARFE), /for comparison only/);
   assert.ok(t.includes(DOC.claim.public_wording));
   assert.match(DOC.claim.public_wording, /not evidence about any particular source/);
-  // Nothing names a cause: no overflow, company or source is said to explain a sample.
+  // Nothing names a cause: no overflow, company or source is said to explain a sample. The reasons a sample has no
+  // estimate (1.1) explain a missing estimate, not a count, so they are left out of this check.
+  const reasons = [...Object.values(DOC.hindsight_reasons), 'none: no overflow upstream', 'No overflow upstream: '];
   for (const x of DOC.sites) {
-    const body = page(x).replace(DOC.claim.public_wording, '');
+    const body = reasons.reduce((t, r) => t.split(r.replace(/^./, c => c.toLowerCase())).join('').split(r).join(''), page(x).replace(DOC.claim.public_wording, ''));
     assert.doesNotMatch(body, /\b(overflow|sewage|company|water company|caused?|because|source of)\b/i, x.name);
     assert.doesNotMatch(body, /\b(safe|unsafe|clean|polluted)\b/i, x.name);
   }
@@ -101,15 +107,28 @@ test('the date range is said first and plainly, over the file and for each bathi
   const s = plain(K.samplesSummary(INDEX));
   assert.equal(s, '3 May 2023 to 24 Sept 2026: 297 samples at 4 bathing waters. A historical record: nothing after 24 Sept 2026 is in it.');
   assert.match(plain(K.samplesSummary({ available: false, why: 'no export in this build' })), /^No samples are published in this update \(no export in this build\)\.$/);
-  assert.match(page(DERWENT), /61 samples, 2 May 2024 to 13 Sept 2026\. 12 were over 900 E\. coli per 100 ml\. 1 was given only as below the lab's limit\./);
+  assert.match(page(DERWENT), /61 samples, 2 May 2024 to 13 Sept 2026\. 12 were over 900 E\. coli per 100 ml\. 1 was given only as below 10\./);   // the export's below_limit_value (1.1)
+  assert.match(plain(K.samplesCounts({ summary: { ...DERWENT.summary, below_limit_value: undefined } }, DOC)), /1 was given only as below the lab's limit\./);
 });
 
 test('no estimate is said as none, and a bathing water without any says why', () => {
   const t = page(LADIES);
-  assert.match(t, /No hindsight estimate here: the study it comes from did not cover this bathing water\./);
-  assert.match(t, /"None" in the last column: the hindsight study did not cover that sample\./);
+  // Each missing estimate says why, in the export's words (1.1, hindsight_reason and hindsight_reasons).
+  assert.ok(t.includes(`No hindsight estimate here: ${DOC.hindsight_reasons.no_overflow_upstream.replace(/^./, c => c.toLowerCase())}`), t);
+  assert.ok(t.includes(`No overflow upstream: ${DOC.hindsight_reasons.no_overflow_upstream}`));
+  assert.ok(t.includes(`2023, no archived rain: ${DOC.hindsight_reasons.before_2024}`));
+  assert.match(t, /none: no overflow upstream/);
   assert.doesNotMatch(t, /\d+%/);
-  assert.match(page(DERWENT), /"Not in this file": the samples added from the Water Quality Archive carry E\. coli only\./);
+  const d = page(DERWENT);
+  assert.match(d, /none: only in the Water Quality Archive/);
+  assert.ok(d.includes(`Only in the Water Quality Archive: ${DOC.hindsight_reasons.archive_only}`));
+  assert.doesNotMatch(d, /added later|2023, no archived rain/);   // Derwent's samples start in 2024
+  assert.match(d, /"Not in this file": the samples from the Water Quality Archive carry E\. coli only\./);
+  // Every sample without an estimate has a reason, and only those (the export's check).
+  for (const x of DOC.sites) for (const smp of x.samples) assert.equal(smp.hindsight === null, smp.hindsight_reason !== null);
+  // A 1.0 file without reasons says the study did not cover them.
+  const old = { ...LADIES, samples: LADIES.samples.map(({ hindsight_reason, ...r }) => r) };
+  assert.match(plain(K.samplesSite(old, meta(old), { ...DOC, hindsight_reasons: undefined }, 320)), /the hindsight study did not cover that sample\./);
   assert.equal(K.samplesPct(0.004), 'under 1%');
   assert.equal(K.samplesPct(0.996), 'over 99%');
   assert.equal(K.samplesPct(null), '');

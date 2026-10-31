@@ -103,3 +103,18 @@ def test_brier_split_adds_up_and_boot_brackets_the_mean():
 def test_warn_counts_split_the_four_cells():
     c = m.warn_counts(np.array([1, 1, 0, 0]), np.array([0.3, 0.1, 0.3, 0.1]))
     assert (c["hits"], c["false_reassurance"], c["false_alarms"], c["quiet_correct"]) == (1, 1, 1, 1)
+
+
+def test_lake_sigma_recovers_two_noise_levels_and_defaults_to_one():
+    rng = np.random.default_rng(4)
+    n_sites, per = 30, 40
+    site = np.repeat([f"s{i}" for i in range(n_sites)], per)
+    lake = np.repeat((np.arange(n_sites) % 2).astype(float), per)
+    u = np.repeat(rng.normal(0, 0.4, n_sites), per)
+    sig = np.where(lake == 1, 0.9, 0.4)
+    y = 2.0 + u + rng.normal(size=len(site)) * sig
+    d = pd.DataFrame({"lake": lake, "y": y, "site": site, "cens": 0})
+    two = m.CensoredRI(["lake"], lake_sigma=True).fit(d, y, d["cens"].to_numpy(), site)
+    assert abs(two.sigma - 0.4) < 0.05 and abs(two.sigma_lake - 0.9) < 0.1
+    one = m.CensoredRI(["lake"]).fit(d, y, d["cens"].to_numpy(), site)
+    assert one.sigma == one.sigma_lake

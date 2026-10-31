@@ -22,7 +22,7 @@ def _build_site():
 def test_the_export_is_split_into_an_index_and_a_file_a_bathing_water(tmp_path):
     bs = _build_site()
     h = bs.write_ecoli_evidence(tmp_path, SAMPLE, SPOTS)
-    assert h == {"available": True, "sites": 4, "skipped_ids": 0, "version": "1.0.0"}
+    assert h == {"available": True, "sites": 4, "skipped_ids": 0, "version": "1.1.0"}
     index = json.loads((tmp_path / "data" / "research" / "ecoli.json").read_text())
     assert index["available"] is True and index["schema"] == "swimsignal.ecoli-evidence"
     # The index carries what the list, the claim and the official link need, never the samples.
@@ -90,6 +90,8 @@ def test_the_viewer_is_written_beside_the_app(tmp_path):
     data = (tmp_path / "data.html").read_text()
     row = data.split('<tr data-file="research/">', 1)[1].split("</tr>", 1)[0]
     assert "Not in this build" not in row and 'href="samples.html"' in data
+    assert "E. coli lab sample at the inland bathing waters" in row   # beside the satellite lakes in the one research/ row
+    assert '<h3><a href="samples.html">E. coli samples</a></h3>' in (tmp_path / "research.html").read_text()   # under Observations
     # The header and foot are the other prose pages' (sites.html's), exactly.
     sites = (bs.TEMPLATE.parent / "sites.html").read_text()
     src = (bs.TEMPLATE.parent / "samples.html").read_text()
