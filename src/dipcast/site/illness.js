@@ -205,11 +205,13 @@ function illnessOpenForm(sec, d, data) {
     }
     const { id, token } = await res.json();
     const kept = illnessKeep([...illnessNow(), { id, token, spot: d.id, sent_on: today }]);
+    if (typeof draftForget === 'function') draftForget(f, d.id);
     drawIllness(sec, d, data, 'Thanks. Your report is added to this spot\'s counts tomorrow.'
       + (kept ? ' You can delete it from this browser at any time.'
         : ' This browser is not keeping site data, so it cannot delete the report later: email hello@swimsignal.co.uk with the spot and the day you swam.'));
     document.getElementById('il-said')?.focus();
   });
+  if (typeof draftTrack === 'function') draftTrack(f, d.id);
   swam.focus();
 }
 

@@ -1876,41 +1876,86 @@ def attach_water_temperature(results: list[dict], fetch=None, relate=None, now=N
     return n
 
 
-def attach_water_temperature_estimate(results: list[dict], forecast=None, model=None, upstream=None, now=None) -> int:
-    """Beside the sensor (attach_water_temperature): an estimate of a river spot's water temperature today, from
-    the air temperature in the spot cell's forecast (the rain request's `air_c`, so no extra Open-Meteo call), the
-    date, the river's network length upstream and the cell's elevation (dipcast.model.water_temp). Rivers only, May
-    to September only: the model passed its test for rivers in those months (typically within 1.56 C,
-    docs/WATER-TEMPERATURE-MODEL-TEST-2026-10.md) and failed for lakes, so a lake never gets one. A spot without
-    30 whole days of air gets none. Never part of the level. Returns how many spots got one; nothing here can stop
-    a build. `forecast(cells)`, `model` and `upstream(spot)` are for the tests."""
+def attach_water_temperature_estimate(results: list[dict], forecast=None, model=None, upstream=None, now=None) -> dict:
+    """Beside the sensor (attach_water_temperature): a provisional estimate of the water near the surface at every river
+    and lake spot today, all year (issue #492; Ethan, 30 October 2026), from the air temperature in the spot cell's
+    forecast (the rain request's `air_c`: the prefetch asks for every spot's own cell with 31 past days, so no extra
+    Open-Meteo call), the date, and the river's network length upstream and the cell's elevation, or the lake's area.
+    The route, whether it was tested, and the typical error the test measured for it are in the estimate
+    (water_temp.estimate_any; docs/WATER-TEMPERATURE-BASELINE-2026-10.md): rivers May to September are the tested
+    model; lakes, and every water October to April, are provisional. A spot without all 30 days of air gets
+    `water_temp_est_missing` with why, never an old estimate. Never part of the level. Returns the build's health entry
+    (counts by route and by gap); nothing here can stop a build. `forecast(cells)`, `model` and `upstream(spot)` are
+    for the tests."""
     from dipcast.model import water_temp
     model = water_temp.load() if model is None else model
+    out = {"estimated": 0, "routes": {}, "missing": {}}
     if model is None:
-        return 0
+        out["missing"]["no model"] = sum(1 for r in results if r.get("kind") in ("river", "lake"))
+        return out
     today = (now or pd.Timestamp.now(tz="Europe/London")).tz_convert("Europe/London").normalize().tz_localize(None)
-    if today.month not in model.months:
-        return 0
     forecast = forecast or fetch_forecast
     upstream = upstream or (lambda r: water_temp.upstream_km(_net(), float(r["lon"]), float(r["lat"])))
-    n = 0
     for r in results:
-        if r.get("kind") != "river" or str(r.get("error") or "").startswith("forecast failed"):
+        kind = r.get("kind")
+        if kind not in ("river", "lake"):
             continue
+        why = None
         try:
             cell = cells_for_sites(pd.Series([r["lat"]], dtype=float), pd.Series([r["lon"]], dtype=float))
             hourly = forecast(cell)
             elev = hourly["elevation_m"].dropna() if "elevation_m" in hourly else pd.Series(dtype=float)
-            est = water_temp.estimate(model, hourly, today, upstream(r), float(elev.iloc[0]) if len(elev) else None,
-                                      kind="river")
+            area = (r.get("location") or {}).get("lake_area_km2")
+            est = water_temp.estimate_any(model, hourly, today, kind, upstream=upstream(r) if kind == "river" else None,
+                                          elevation=float(elev.iloc[0]) if len(elev) else None,
+                                          lake_area_km2=float(area) if isinstance(area, (int, float)) else None)
+            if est is None:
+                why = "air"   # not all 30 days of air temperature in this update's forecast
         except Exception as e:  # noqa: BLE001 - an estimate beside the forecast must not sink the build
             log.warning("water temperature estimate for %s: %s", r.get("name"), e)
-            continue
+            est, why = None, "error"
         if est:
             r["water_temp_est"] = est
-            n += 1
-    log.info("water temperature estimate: %d river spots", n)
-    return n
+            out["estimated"] += 1
+            out["routes"][est["route"]] = out["routes"].get(est["route"], 0) + 1
+        else:
+            r["water_temp_est_missing"] = {"why": why, "date": today.date().isoformat()}
+            out["missing"][why] = out["missing"].get(why, 0) + 1
+    log.info("water temperature estimate: %d spots %s, missing %s", out["estimated"], out["routes"], out["missing"])
+    return out
+
+
+WATER_TEMP_LOG = "water_temp_estimates.parquet"   # in the state directory; the state release carries it (site.yml)
+
+
+def log_water_temp_estimates(results: list[dict], issued_at: pd.Timestamp, path: Path | None = None) -> int:
+    """Append this build's estimates, with any sensor reading beside them, to the state log, so each one can be scored
+    later against what the EA's sensors and samples measured (issue #492: saved before the observations arrive). One
+    row a spot a build; only ever added to. Returns the rows added; nothing here can stop a build."""
+    path = path or config.STATE / WATER_TEMP_LOG
+    rows = []
+    for r in results:
+        e, w = r.get("water_temp_est"), r.get("water_temp")
+        if not e:
+            continue
+        rows.append({"issued_at": issued_at, "spot": r["id"], "kind": r.get("kind"), "date": e["date"], "route": e["route"],
+                     "temp_c": e["temp_c"], "air_7d_c": e.get("air_7d_c"),
+                     "sensor_c": (w or {}).get("temp_c"), "sensor_at": (w or {}).get("observed_at"),
+                     "sensor_km": (w or {}).get("river_km"), "sensor_dir": (w or {}).get("direction")})
+    if not rows:
+        return 0
+    new = pd.DataFrame(rows)
+    try:
+        old = pd.read_parquet(path) if path.is_file() else None
+        df = pd.concat([old, new], ignore_index=True) if old is not None else new
+        path.parent.mkdir(parents=True, exist_ok=True)
+        tmp = path.with_suffix(".parquet.tmp")
+        df.to_parquet(tmp, index=False, compression="zstd")
+        os.replace(tmp, path)
+    except Exception as e:  # noqa: BLE001 - the log beside the forecast must never stop it
+        log.warning("water temperature log not written: %s", e)
+        return 0
+    return len(rows)
 
 
 # What the offline copy (sw.js) stores, or decides what it stores: the files whose hash names its
@@ -2109,6 +2154,16 @@ PAGE_TITLE = re.compile(r"<title>(.*?)</title>")
 PAGE_DESCRIPTION = re.compile(r'<meta name="description" content="([^"]*)">\n?')
 
 
+# The prose pages share the app's phone navigation. Links are relative to the built site root.
+PHONE_NAV = (
+    '<nav class="phone-nav" aria-label="Main">'
+    '<a href="index.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/></svg>Explore</a>'
+    '<a href="index.html?map=1"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 5 6-2 6 2 6-2v16l-6 2-6-2-6 2Zm6-2v16m6-14v16"/></svg>Map</a>'
+    '<a href="plan/" aria-label="Plan a swim"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4m6-4v4"/></svg>Plan</a>'
+    '<a href="saved/" aria-label="Saved spots"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4Z"/></svg>Saved</a></nav>'
+)
+
+
 def with_share_meta(page: str, path: str, root: str) -> str:
     """A prose page with page_meta's block in place of its own <title> and description: its canonical
     link and its share preview (og: and twitter: tags, with the shared icons/og.png), in the page's own
@@ -2120,7 +2175,7 @@ def with_share_meta(page: str, path: str, root: str) -> str:
         raise ValueError(f"{path} needs one <title>, one description, and no canonical link or share tags of its own")
     head = PAGE_DESCRIPTION.sub("", head, count=1)
     head = PAGE_TITLE.sub(lambda _: page_meta(unescape(titles[0]), unescape(descriptions[0]), root + path, root), head, count=1)
-    return head + sep + rest
+    return (head + sep + rest).replace("</body>", PHONE_NAV + "</body>", 1)
 
 
 def spot_blurb(spot: dict) -> str:
@@ -3387,7 +3442,7 @@ def build(refresh: bool = True) -> dict:
     # list, two for the water temperatures.
     any_floods = asked_now(ask_flood_list) if refresh else None
     n_water_temp = attach_water_temperature(results) if refresh else 0
-    n_water_est = attach_water_temperature_estimate(results) if refresh else 0   # rivers, May-September; cached rain cells
+    water_est = attach_water_temperature_estimate(results) if refresh else {"estimated": 0, "routes": {}, "missing": {"no refresh": 1}}   # every river and lake spot, all year (#492); cached rain cells
     n_levels = attach_river_levels(results) if refresh else 0   # observations beside the forecast, network only
     n_flows = attach_flow_state(results, any_alerts=any_floods) if refresh else {}   # river high or rising, flood alerts: not part of the level
     n_weather = attach_weather(results) if refresh else 0
@@ -3450,7 +3505,9 @@ def build(refresh: bool = True) -> dict:
     health.update(n_flows)
     health["warnings"] += flood_warnings(n_flows, len(results))
     health["water_temperature"] = n_water_temp
-    health["water_temperature_estimate"] = n_water_est
+    health["water_temperature_estimate"] = water_est   # counts by route and by gap (#492)
+    if refresh:   # every estimate saved before its observations arrive, to be scored against the EA's sensors
+        health["water_temperature_estimate"]["logged"] = log_water_temp_estimates(results, pd.Timestamp.now(tz="UTC"))
     health["guides"] = guides["guides"]
     health["warnings"] += guides["warnings"]
     health["measured"] = {"spots": measured["spots"], "samples": measured["samples"]}

@@ -141,7 +141,7 @@ jobs:
           # manual run. All files go up together, so the copy is one run's snapshot.
           max_h=12
           files=(state/live_history.parquet state/live_latest.parquet state/dipcast.duckdb state/verification_live.json)
-          for f in state/live_coverage.parquet state/poll_log.parquet state/ecoli_samples.parquet state/ecoli_samples_status.json; do
+          for f in state/live_coverage.parquet state/poll_log.parquet state/ecoli_samples.parquet state/ecoli_samples_status.json state/water_temp_estimates.parquet; do
             if [ -f "$f" ]; then files+=("$f"); fi   # later additions, uploaded once the build has written them
           done
           # The files republish the water companies' feeds (CC BY 4.0) and EA samples (OGL v3), so the

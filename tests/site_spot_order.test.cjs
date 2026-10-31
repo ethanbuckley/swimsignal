@@ -18,6 +18,7 @@ test('the page puts nearby, then the water, then why, in the order a swimmer ask
   assert.match(html, /\nconst daysTile = d => `<section class="tile" aria-labelledby="days-h">[^\n]*Pollution risk, next five days/);
   const days = at('<div class="stack"><div class="col-go">${daysTile(d)}'), near = at('<div id="nearby-host">${nearby(d)}</div>${atWater}');
   const why = at('<div id="sources-host">'), map = at('<span>Upstream</span>'), tiles = at('h += tiles + `</div><div class="col-more">${more}`;'), ovs = at('h += overflowTile(d, '), table = at('dayTable(d, total');
+  assert.ok(days < render.indexOf('${conditionsSummary(d)}', days) && render.indexOf('${conditionsSummary(d)}', days) < near);
   assert.ok(days < near && near < why && why < map && map < tiles && tiles < ovs && ovs < table);
 });
 

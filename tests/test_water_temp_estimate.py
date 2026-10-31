@@ -127,30 +127,58 @@ def test_daily_air_counts_the_clock_change_day_with_its_25_hours():
 
 
 # ---- the build step ------------------------------------------------------------------------------------------------
-def test_attach_gives_river_spots_an_estimate_and_lakes_none():
+def test_attach_gives_every_river_and_lake_spot_an_estimate_all_year_with_its_route():
+    # Ethan's decision of 30 October 2026 (#492): a provisional estimate at every spot, all year, each saying its route.
     import build_site
     m = water_temp.load()
-    spots = [{"name": "A river", "kind": "river", "lat": 53.9, "lon": -1.8},
-             {"name": "A lake", "kind": "lake", "lat": 54.4, "lon": -2.9},
-             {"name": "Failed", "kind": "river", "lat": 52.0, "lon": -1.0, "error": "forecast failed: x"}]
-    fc = lambda cells: hourly_air(31).assign(elevation_m=80.0)
-    n = build_site.attach_water_temperature_estimate(spots, forecast=fc, model=m, upstream=lambda r: 50.0,
-                                                     now=pd.Timestamp("2026-07-14T09:00", tz="Europe/London"))
-    assert n == 1 and spots[0]["water_temp_est"]["date"] == "2026-07-14"
-    assert "water_temp_est" not in spots[1] and "water_temp_est" not in spots[2]
+    def spots():
+        return [{"id": "r", "name": "A river", "kind": "river", "lat": 53.9, "lon": -1.8},
+                {"id": "s", "name": "A small lake", "kind": "lake", "lat": 54.4, "lon": -2.9, "location": {"lake_area_km2": 0.4}},
+                {"id": "b", "name": "A large lake", "kind": "lake", "lat": 54.4, "lon": -2.9, "location": {"lake_area_km2": 14.8}},
+                {"id": "c", "name": "A coast", "kind": "coast", "lat": 50.0, "lon": -5.0}]
+    july = spots()
+    h = build_site.attach_water_temperature_estimate(july, forecast=lambda cells: hourly_air(31).assign(elevation_m=80.0), model=m,
+                                                     upstream=lambda r: 50.0, now=pd.Timestamp("2026-07-14T09:00", tz="Europe/London"))
+    assert h["estimated"] == 3 and h["routes"] == {"river_model": 1, "lake_model": 1, "lake_curve": 1}
+    assert [x["water_temp_est"]["route"] for x in july[:3]] == ["river_model", "lake_model", "lake_curve"]
+    r, s = july[0]["water_temp_est"], july[1]["water_temp_est"]
+    assert r["tested"] is True and r["typical_c"] == 1.56 and r["within_c"] == 2.0 and r["date"] == "2026-07-14"
+    assert s["tested"] is False and s["typical_c"] == 1.70 and "within_c" not in s   # measured, but the lake test failed
+    assert "water_temp_est" not in july[3] and "water_temp_est_missing" not in july[3]   # coasts: their own route (#479)
+    october = spots()
+    h = build_site.attach_water_temperature_estimate(october, forecast=lambda cells: hourly_air(31, end="2026-10-27"), model=m,
+                                                     upstream=lambda r: 50.0, now=pd.Timestamp("2026-10-27T09:00", tz="Europe/London"))
+    assert h["routes"] == {"river_off_season": 1, "lake_off_season": 2}
+    for x in october[:3]:
+        e = x["water_temp_est"]
+        assert e["tested"] is False and e["typical_c"] is None and e["temp_c"] >= 0   # not measured in October: no error said
 
 
-def test_attach_does_nothing_out_of_season_and_survives_a_failure():
+def test_a_spot_without_its_air_says_why_and_never_gets_an_old_estimate():
     import build_site
     m = water_temp.load()
-    spots = [{"name": "A river", "kind": "river", "lat": 53.9, "lon": -1.8}]
-    assert build_site.attach_water_temperature_estimate(
-        spots, forecast=lambda c: hourly_air(31, end="2026-10-27"), model=m, upstream=lambda r: 50.0,
-        now=pd.Timestamp("2026-10-27T09:00", tz="Europe/London")) == 0
+    spots = [{"id": "r", "name": "A river", "kind": "river", "lat": 53.9, "lon": -1.8}]
+    # The forecast ends two days early: not all 30 days to today, so no estimate, and the gap is said.
+    h = build_site.attach_water_temperature_estimate(spots, forecast=lambda c: hourly_air(31, end="2026-10-25"), model=m,
+                                                     upstream=lambda r: 50.0, now=pd.Timestamp("2026-10-27T09:00", tz="Europe/London"))
+    assert h["estimated"] == 0 and h["missing"] == {"air": 1}
+    assert spots[0]["water_temp_est_missing"] == {"why": "air", "date": "2026-10-27"} and "water_temp_est" not in spots[0]
 
     def boom(cells):
         raise RuntimeError("no rain cache")
-    assert build_site.attach_water_temperature_estimate(
-        spots, forecast=boom, model=m, upstream=lambda r: 50.0,
-        now=pd.Timestamp("2026-07-14T09:00", tz="Europe/London")) == 0
-    assert "water_temp_est" not in spots[0]
+    spots = [{"id": "r", "name": "A river", "kind": "river", "lat": 53.9, "lon": -1.8}]
+    h = build_site.attach_water_temperature_estimate(spots, forecast=boom, model=m, upstream=lambda r: 50.0,
+                                                     now=pd.Timestamp("2026-07-14T09:00", tz="Europe/London"))
+    assert h["missing"] == {"error": 1} and "water_temp_est" not in spots[0]
+
+
+def test_every_estimate_is_saved_before_its_observations_arrive(tmp_path):
+    import build_site
+    log = tmp_path / "water_temp_estimates.parquet"
+    spots = [{"id": "r", "kind": "river", "water_temp_est": {"date": "2026-10-31", "route": "river_off_season", "temp_c": 11, "air_7d_c": 9.3},
+              "water_temp": {"temp_c": 10.4, "observed_at": "2026-10-31T09:00:00Z", "river_km": 2.1, "direction": "upstream"}},
+             {"id": "l", "kind": "lake", "water_temp_est_missing": {"why": "air", "date": "2026-10-31"}}]
+    assert build_site.log_water_temp_estimates(spots, pd.Timestamp("2026-10-31T10:00Z"), log) == 1
+    assert build_site.log_water_temp_estimates(spots, pd.Timestamp("2026-10-31T10:30Z"), log) == 1   # only ever added to
+    df = pd.read_parquet(log)
+    assert len(df) == 2 and list(df["spot"]) == ["r", "r"] and df["sensor_c"].iloc[0] == 10.4 and df["route"].iloc[0] == "river_off_season"
