@@ -121,6 +121,7 @@ Dates below come from existing protocols and are not new promises of a positive 
 | River rises, [AI programme](AI-PROGRAMME-2026-10.md) / [#383](https://github.com/ethanbuckley/swimsignal/pull/383) | Review/fetch **on/after 2 Nov** | Latency matters: retrospective median lead around 1.5 h can be consumed by polling/publication delay. No untested “early warning” promise |
 | [Missing event ends](MISSING-EVENT-END-2026-10.md) | Re-measure **on/after 9 Nov** | Only change handling if the stated effect warrants it; keep unknown events distinct from confirmed stops |
 | [2027 primary](PREREGISTRATION-2027.md), [spot rulings](SPOT-SCORING-RULINGS-2026-10.md) | May–September 2027 evaluation, read after season | Preserve original issued predictions and scoring; new models are separately labelled secondaries |
+| **Model scorecard** (added 31 Oct): [/models.html](MODEL-SCORECARD-CONTRACT-v1.md), [#570](https://github.com/ethanbuckley/swimsignal/pull/570) | Public page of every model above and the live forecast: evidence, stage, window and read date | Shows no score from a window before its read; after each read, add the result with its verdict's quote (contract 1.1) |
 
 ## Useful data or new directions with a specific dependency
 
