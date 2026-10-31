@@ -44,6 +44,7 @@ const SHELL = ['./', `app.js?v=${BUILD}`, `levels.js?v=${BUILD}`, `experience.js
   `passport.js?v=${BUILD}`,   // the swim passport on Saved
   `arrive.js?v=${BUILD}`,   // the arrival guide (prototype, ?arrive=1 only); the guide is in the spot's own file
   `replay.js?v=${BUILD}`,   // the catchment replay (prototype, ?replay=1 only); its data file is stored when first opened
+  `plume.js?v=${BUILD}`,   // the spill map on a spot's page; its route file is stored when first opened
   `evmap.js?v=${BUILD}`,   // the evidence map (prototype, ?evidence=1 only); offline it draws from the spot's stored trace, or says it could not load
   `eatoday.js?v=${BUILD}`];   // today's EA advice: the script only; the EA's panel is the EA's, never stored
 
@@ -103,7 +104,7 @@ async function networkFirst(req) {
 const SPOT_FILE = /\/data\/spot\/([A-Za-z0-9_-]+)\.json$/;
 function withTrace(cache, k) {
   const u = new URL(k), m = u.pathname.match(SPOT_FILE);
-  if (!m || /-(trace|replay)$/.test(m[1])) return;   // a trace, or a replay (replay.js): neither has a trace of its own
+  if (!m || /-(trace|replay|plume)$/.test(m[1])) return;   // a trace, a replay (replay.js) or a spill map's routes (plume.js): none has a trace of its own
   u.pathname = u.pathname.replace(SPOT_FILE, '/data/spot/$1-trace.json'); u.search = '';
   fetch(u.href, { cache: 'no-cache', credentials: 'omit' }).then(res => { if (res.ok) cache.put(u.href, res); }).catch(() => {});
 }

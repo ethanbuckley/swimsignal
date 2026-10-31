@@ -4957,6 +4957,7 @@ function render(d) {
   h += tiles + `</div><div class="col-more">${more}`;
   if (d.contributors.length) h += overflowTile(d, allUpstream(d));   // the list has any too far away to count (levels.js)
   if (REPLAY && d.detail_file) h += '<div id="replay-host"></div>';   // ?replay=1 only (mountReplay)
+  if (d.detail_file && loc.mode !== 'lake') h += '<div id="plume-host"></div>';   // the spill map, drawn when near the screen (mountPlume)
   h += dayTable(d, total, loc.mode === 'lake', d.ecoli_scope || {}) + '</div></div>';
   h += actions(d) + tech(d);
   setPanel(h); bindBack(); bindSave(d); planHere(d); bindShare(d); bindShareImage(d); bindSwim(d); bindNearby(); bindDays(d); miniMap(d); reviewsFor(d); lakeTempFor(d); localSamplesFor(d);
@@ -4965,6 +4966,7 @@ function render(d) {
     moreBtn.setAttribute('aria-expanded', String(all)); moreBtn.textContent = all ? `Show the top 3` : `Show all ${d.contributors.length}`; });
   placeMap(); drawTrace();   // render cleared contribLayer, and the line with it
   if (REPLAY) mountReplay(d);
+  mountPlume(d);
   if (lastOn) mountLast(d, DATA.generated_at, document.getElementById('since-last-host'));
   if (EV_MAP) mountEvMap(d);
   phoneFolds();
@@ -4978,7 +4980,7 @@ function render(d) {
 // Long method text keeps its own named folds (What the level rests on, Day-by-day numbers) and each tile's corner button.
 // A desktop keeps its columns. What the level counts and the water-test line join the limits section from under the five
 // days, where showDay puts them back (phoneFolds moves them again).
-const PHONE_ORDER = ['.spot-map-tile', '#overflows', '#now-tiles', '#lt-past', '#ls-past', '#day-tiles', '#seasonal', '#scores-host, #scores', '#limits'];
+const PHONE_ORDER = ['.spot-map-tile', '#overflows', '#plume-host', '#now-tiles', '#lt-past', '#ls-past', '#day-tiles', '#seasonal', '#scores-host, #scores', '#limits'];
 const PHONE_OPEN = ['#seasonal'];   // a chart: open on a phone. The overflows' rows run to 800 px, so they keep their fold
 function phoneFolds() {
   const stack = document.querySelector('#result .stack'), at0 = stack && stack.querySelector('#nearby-host');
@@ -5033,6 +5035,31 @@ function mountReplay(d) {
       if (!r) return said('No replay of the last 48 hours upstream for this spot in this update.');
       replayStyle(document); host.innerHTML = replayTile(r, Date.now(), host.clientWidth - 32); })   // the tile's inner width
     .catch(() => said('The replay of the last 48 hours upstream could not be loaded.'));
+}
+// The spill map (docs/PLUME-MAP-2026-10.md): where water from the spills reported upstream in the last 48 hours may
+// be, moved at the forecast's travel time, with a slider from 48 hours before the update to 48 after. plume.js (at
+// the build's stamp, as replay.js) and the spot's replay, routes and trace (data/spot/<id>-replay.json,
+// -plume.json, -trace.json) are asked for when its place comes within a screen of view, not before. A spot with
+// no routes file (a lake, or one the build could not place) loses the place quietly.
+let plumeScript = null;
+function mountPlume(d) {
+  const host = document.getElementById('plume-host');
+  if (!host) return;
+  const go = () => {
+    const v = (document.querySelector('script[src*="levels.js?v="]') || {}).src;
+    plumeScript = plumeScript || new Promise((ok, no) => { const s = document.createElement('script');
+      s.src = `plume.js${v ? `?v=${new URL(v).searchParams.get('v')}` : ''}`; s.onload = ok; s.onerror = no; document.head.appendChild(s); });
+    const get = p => fetch(`data/${d.detail_file.replace(/\.json$/, p)}`, { cache: 'no-cache' }).then(r => (r.ok ? r.json() : null)).catch(() => null);
+    Promise.all([plumeScript, get('-plume.json'), get('-replay.json'), get('-trace.json')])
+      .then(([, doc, replay, trace]) => { if (!host.isConnected) return;
+        if (!doc || !replay) { host.remove(); return; }
+        const gen = Date.parse(replay.window && replay.window.to || doc.generated_at), now = Date.now();
+        plumeStyle(document); host.innerHTML = plumeTile(d, doc, replay, gen, now); plumeBind(host, d, doc, replay, trace, gen); })
+      .catch(() => { if (host.isConnected) host.innerHTML = '<section class="tile"><p class="t-say">The map of where spill water may be could not be loaded.</p></section>'; });
+  };
+  if (!('IntersectionObserver' in window)) return go();
+  const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { io.disconnect(); go(); } }, { rootMargin: '100% 0px' });
+  io.observe(host);
 }
 // Evidence map (prototype, docs/EVIDENCE-MAP-2026-10.md): where the forecast has evidence upstream and
 // where its knowledge ends, only with ?evidence=1 in the address, so the page is unchanged without it. As the
