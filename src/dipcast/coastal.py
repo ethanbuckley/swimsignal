@@ -316,7 +316,8 @@ def water_line(site):
         return (f'Water about {e["temp_c"]} °C on {day.day} {day:%b}: estimated from the last 7 days\' air temperature '
                 f'at {where}, not measured. Provisional: {how}')
     if miss:
-        return 'No water temperature estimate in this update'
+        return ('No water temperature estimate: what kind of water this is has not been confirmed' if miss.get("why") == "kind"
+                else 'No water temperature estimate in this update')
     return ''
 
 

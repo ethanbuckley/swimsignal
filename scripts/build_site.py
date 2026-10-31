@@ -1951,8 +1951,8 @@ def attach_directory_water_temp(sites: list[dict], water_air: dict | None, model
     (water_temp.directory_estimate: the sea curve at a coast or estuary, the lake or river curve inland) in the 7-day
     air of the nearest cached cell (`water_air`: {"date", "cells"}, from the click-anywhere file for England and from
     directory_air for the other nations), placed by site_point. A site gets `water_temp_est` or
-    `water_temp_est_missing` with why: "point" (no position), "air" (no cached cell in its own or the eight around
-    it) or "error". Returns the build's health entry."""
+    `water_temp_est_missing` with why: "point" (no position), "kind" (its type not known with confidence), "air" (no
+    cached cell in its own or the eight around it) or "error". Returns the build's health entry."""
     from dipcast.model import water_temp
     out = {"estimated": 0, "routes": {}, "missing": {}}
 
@@ -1974,8 +1974,12 @@ def attach_directory_water_temp(sites: list[dict], water_air: dict | None, model
         if not p:
             miss(s, "point", day)
             continue
+        kind = site_water_kind(s)
+        if kind not in ("coast", "estuary", "lake", "river"):
+            miss(s, "kind", day)   # not typed with confidence (ireland.water_kind): no curve is guessed
+            continue
         try:
-            est = water_temp.directory_estimate(model, cells, day, p[0], p[1], site_water_kind(s))
+            est = water_temp.directory_estimate(model, cells, day, p[0], p[1], kind)
         except Exception as e:  # noqa: BLE001
             log.warning("directory water temperature for %s: %s", s.get("name"), e)
             miss(s, "error", day)

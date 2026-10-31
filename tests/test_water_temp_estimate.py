@@ -268,17 +268,38 @@ def test_the_nations_waters_are_typed_and_placed():
     assert ireland.water_kind("IEWEBWC010_0000_0040", "Aillebrack") == ("coast", "epa_code")
     assert ireland.water_kind("IESHBWL25_191a_0300", "Lough Derg") == ("lake", "epa_code")
     assert ireland.water_kind("IESEBWT050_0000_0100", "Somewhere") == ("estuary", "epa_code")
-    assert ireland.water_kind("BPNBF31_0001", "Lough Muckno Bathing Area") == ("lake", "name")
-    assert ireland.water_kind("BPNBF31_0002", "Halton's River (Dromore Lake System)") == ("lake", "name")
+    # Checked one by one (review of #548): Monaghan's lakes, and Halton's River, a river by the EPA's own words.
+    assert ireland.water_kind("BPNBF240000030001", "Lough Muckno Bathing Area") == ("lake", "checked")
+    assert ireland.water_kind("BPNBF240000070001", "Emy Lough") == ("lake", "checked")
+    assert ireland.water_kind("BPNBF240000040001", "Halton's River (Dromore Lake System)") == ("river", "checked")
+    # Unchecked: a River is a river, a Lake a lake, and a Lough may be the sea's, so it gets no kind.
+    assert ireland.water_kind("BPNBF99_0001", "Some River Bathing Area") == ("river", "name")
+    assert ireland.water_kind("BPNBF99_0002", "New Lake") == ("lake", "name")
+    assert ireland.water_kind("BPNBF99_0003", "Lough Swilly Beach") == ("unknown", "name")
     assert ireland.water_kind("BPNBF05_0003", "Silver Strand Louisburgh") == ("coast", "name")
     assert ireland.position(162397, 215167) == (53.18591, -8.56323)   # Loughrea Lake, Irish Grid
     assert ireland.position(None, 1) == (None, None)
-    one = {"attributes": {"description": "Loch Morlich", "year": 2025, "class_description": "Excellent",
-                          "bw_url": "https://bathingwaters.sepa.org.uk/locations-and-results/results?location=100002"},
-           "geometry": {"x": -3.72, "y": 57.17}}
-    assert scotland.parse([one])[0]["kind"] == "lake"
+
+    def one(code, name):
+        return {"attributes": {"description": name, "year": 2025, "class_description": "Excellent",
+                               "bw_url": f"https://bathingwaters.sepa.org.uk/locations-and-results/results?location={code}"},
+                "geometry": {"x": -4.0, "y": 57.0}}
+    # SEPA's three inland waters (its Loch Morlich profile; the Scottish Government's list): lakes, not the sea.
+    kinds = {s["name"]: (s["kind"], s["kind_from"]) for s in scotland.parse(
+        [one("366986", "Loch Morlich"), one("200305", "Dores"), one("125079", "Luss Bay"), one("472272", "Largs")])}
+    assert kinds == {"Loch Morlich": ("lake", "sepa_list"), "Dores": ("lake", "sepa_list"),
+                     "Luss Bay": ("lake", "sepa_list"), "Largs": ("coast", "sepa_list")}
     assert northern_ireland._point({"x": -6.87562, "y": 55.16822}) == {"lat": 55.16822, "lon": -6.87562}
     assert northern_ireland._point({}) == {}
+
+
+def test_a_water_of_unconfirmed_kind_gets_no_curve_and_says_why():
+    import build_site
+    from dipcast.coastal import water_line
+    s = [{"id": "x", "lat": 55.0, "lon": -7.5, "kind": "unknown"}]
+    h = build_site.attach_directory_water_temp(s, {"date": "2026-10-31", "cells": {"55.0,-7.5": 10.0}}, nation="ireland")
+    assert h["missing"] == {"kind": 1} and "water_temp_est" not in s[0]
+    assert water_line(s[0]) == "No water temperature estimate: what kind of water this is has not been confirmed"
 
 
 def _cache_cell(tmp, lat, lon, day="2026-10-31", air=10.0, age_h=1.0):

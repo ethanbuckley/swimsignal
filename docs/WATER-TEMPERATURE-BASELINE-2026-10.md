@@ -83,8 +83,8 @@ Live data, 31 Oct 2026.
 | Named spots (spot pages, list, map, planner) | 109 | 72 rivers, 37 lakes (18 of 1 km² or more, 9 smaller, 10 of unknown area; 3 isolated) | this PR: every one, all year, where the air arrives | before: 0 estimates (May–September rivers only, now November), 3 sensor readings |
 | Coastal directory (England) | 426 | 373 coast, 53 estuary | stage 3 (below): the sea curve on the nearest cached cell's 7-day air | stage 3 PR |
 | Wales directory | 114 | 107 coast, 3 estuary, 2 river, 2 lake | stage 4: own cells (25), fetched within the ration | stage 4 PR |
-| Scotland directory | 90 | 89 coast, 1 lake (Loch Morlich), typed by name | stage 4: the Scottish shadow's cached cells, free | stage 4 PR |
-| Ireland directory | 243 | 217 coast, 6 estuary, 20 lake (EPA code; 84 by name) | stage 4: own cells (56), fetched within the ration | stage 4 PR |
+| Scotland directory | 90 | 87 coast, 3 lake (Loch Morlich, Dores on Loch Ness, Luss Bay on Loch Lomond: SEPA's three inland waters) | stage 4: the Scottish shadow's cached cells, free | stage 4 PR |
+| Ireland directory | 243 | 217 coast, 6 estuary, 19 lake, 1 river (EPA code for 159; 10 checked; 74 coast by name) | stage 4: own cells (56), fetched within the ration | stage 4 PR |
 | Northern Ireland directory | 33 | 32 coast, 1 lake (Rea's Wood, Lough Neagh) | stage 4: own cells (10), fetched within the ration | stage 4 PR |
 | Click-anywhere (any river or lake point) | any | river or lake | stage 2 (below); stage 4 adds a second ring (about 25 km) where the first has none | live (#538); ring in stage 4 PR |
 
@@ -138,11 +138,18 @@ route and a published value.
 
 **Positions and types.**
 - Wales: the NRW sampling points already in `bathing_water_points.json`; NRW types its waters.
-- Scotland: SEPA's layer gives the point but no type. Of the 90, Loch Morlich is a freshwater loch (by its name, checked
-  on the map); the rest are on the coast (`kind_from: name`).
+- Scotland: SEPA's layer gives the point but no type. SEPA's profile of Loch Morlich calls it "one of only three inland
+  bathing waters in Scotland", and the Scottish Government's list of designated bathing waters bounds three by a loch
+  edge: Loch Morlich, Dores (Loch Ness) and Luss Bay (Loch Lomond). Those three are lakes, by SEPA's location code; the
+  other 87 are on the coast (`kind_from: sepa_list`). The first version of this stage had only Loch Morlich, so Dores
+  and Luss Bay took the sea curve; review of #548 caught it before merge.
 - Ireland: the EPA gives easting and northing on the Irish Grid (EPSG:29903; Loughrea Lake checks out at 53.186 N,
-  8.563 W). The designated waters' codes say their type (C coast, T estuary, L lake, R river): 159 of 243. The other
-  84 are typed by name: a Lough, Lake or River is a lake (10), anything else the coast (74) (`kind_from`).
+  8.563 W). The designated waters' codes say their type (C coast, T estuary, L lake, R river): 159 of 243
+  (`kind_from: epa_code`). Of the other 84, the ten with Lough, Lake or River in the name were checked one by one
+  (`kind_from: checked`, `ireland.CHECKED`): all are in County Monaghan, which has no coast, so none is a sea lough.
+  Nine are lakes. Halton's River sits in the Dromore lake system, but the EPA describes it as "several access points to
+  river", so it takes the river route. The remaining 74 are the coast by name. A water added later with Lough or Loch
+  in its name and no check gets no estimate (`kind`), since a lough can be a sea inlet; an unchecked River is a river.
 - Northern Ireland: DAERA's layer, now asked for its points in the same request. Its one inland water, Rea's Wood on
   Lough Neagh, is taken as a lake.
 

@@ -51,19 +51,39 @@ MAX_PAGES = 4            # in season, 2026 was about 2,200 rows: the last three 
 LOCATIONS_TTL_S, LOCATIONS_KEEP_S = 86400, 30 * 86400
 SAMPLES_TTL_S, SAMPLES_KEEP_S = 3 * 3600, 3 * 86400
 OLD_DAYS = 30            # a sample older than this says so
-# A water's kind, for its water temperature (#492): the EPA's code says it for the designated waters, its seventh
-# letter C (coastal), T (transitional: an estuary), L (lake) or R (river), as in IEWEBWC010_0000_0040; the other
-# waters' ids carry none, so their name decides: a Lough, Lake or River is a lake (the ten of 31 Oct 2026, Halton's
-# River among them, are lakes or a lake system), anything else the coast. `kind_from` says which.
+# A water's kind, for its water temperature (#492). The EPA's code says it for the designated waters, its seventh
+# letter C (coastal), T (transitional: an estuary), L (lake) or R (river), as in IEWEBWC010_0000_0040 (`kind_from`
+# "epa_code"). The other waters' ids carry none. Those checked one by one are in CHECKED with what showed it
+# ("checked"); the rest go by name: a Lake is a lake and a River a river, but a Lough or Loch can be a sea inlet, so
+# without a check it gets no kind ("unknown": no estimate); anything else is the coast ("name").
 EPA_KINDS = {"C": "coast", "T": "estuary", "L": "lake", "R": "river"}
-INLAND_NAME = re.compile(r"\b(?:Lough|Lake|River)\b")
+# Checked 31 Oct 2026 (review of #548): all ten inland-named non-designated waters are in County Monaghan, which has
+# no coast, and the EPA's own description of each says lake or river.
+_MONAGHAN = "County Monaghan, inland; the EPA's description"
+CHECKED = {
+    "BPNBF240000030001": ("lake", f"Lough Muckno: {_MONAGHAN}"),
+    "BPNBF240000100001": ("lake", f"Lough Muckno: {_MONAGHAN}"),
+    "BPNBF240000110001": ("lake", f"Lough Muckno: {_MONAGHAN}"),
+    "BPNBF240000020001": ("lake", f"Hollywood Lake: {_MONAGHAN}"),
+    "BPNBF240000050001": ("lake", f"Greaghlone Lake: {_MONAGHAN}"),
+    "BPNBF240000060001": ("lake", f"Creevy Lake: {_MONAGHAN}"),
+    "BPNBF240000070001": ("lake", f"Emy Lough: {_MONAGHAN}"),
+    "BPNBF240000080001": ("lake", f"Lough Major: {_MONAGHAN}"),
+    "BPNBF240000090001": ("lake", f"Gortnawinney Lake: {_MONAGHAN}"),
+    # In the Dromore lake system, but the EPA says "several access points to river": the river route.
+    "BPNBF240000040001": ("river", f"Halton's River: {_MONAGHAN} says river"),
+}
+NAME_KINDS = ((re.compile(r"\bLake\b"), "lake"), (re.compile(r"\bRiver\b"), "river"),
+              (re.compile(r"\b(?:Lough|Loch)\b"), "unknown"))
 
 
 def water_kind(key: str, name: str) -> tuple[str, str]:
-    """(kind, kind_from) of an EPA water: from its code where the code has one, else from its name."""
+    """(kind, kind_from) of an EPA water: from its code, else a check (CHECKED), else its name (NAME_KINDS)."""
     if key.startswith("IE") and len(key) > 6 and key[6] in EPA_KINDS:
         return EPA_KINDS[key[6]], "epa_code"
-    return ("lake" if INLAND_NAME.search(name) else "coast"), "name"
+    if key in CHECKED:
+        return CHECKED[key][0], "checked"
+    return next((kind for pattern, kind in NAME_KINDS if pattern.search(name)), "coast"), "name"
 
 
 def position(easting, northing) -> tuple[float, float] | tuple[None, None]:
