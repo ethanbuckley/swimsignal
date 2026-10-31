@@ -247,10 +247,10 @@ def facts_table(rows: list[tuple[str, str]]) -> str:
             + "".join(f'<tr><th scope="row">{k}</th><td>{v}</td></tr>' for k, v in rows) + "</tbody></table></div>")
 
 
-def body(oid: str, o: dict, returns: pd.DataFrame | None, record: pd.DataFrame | None, actions: list[dict],
+def body(oid: str, o: dict, returns: pd.DataFrame | None, record: pd.DataFrame | None, actions: list[dict] | None,
          upgrade: dict | None, dry: dict | None, lengths: dict, url: str, as_of: str) -> str:
     """The page's main content. o: gather()'s entry; returns and record: the overflow's rows by year, or None;
-    actions: its WINEP actions; upgrade: its upgrade note's row; dry: its dry-weather row if the note's rule
+    actions: its WINEP actions, or None when the build has no WINEP file; upgrade: its upgrade note's row; dry: its dry-weather row if the note's rule
     holds; lengths: spill_lengths()."""
     from dipcast.dry_weather import noted
     row, spots = o["row"], o["spots"]
@@ -352,7 +352,7 @@ def body(oid: str, o: dict, returns: pd.DataFrame | None, record: pd.DataFrame |
         out.append('<p class="small muted">Word for word from the annual returns. The 2023 return left these columns empty. A year\'s '
                    "entry covers that year only; work under way may not show until a later return.</p>")
     else:
-        out.append("<p>The 2024 and 2025 annual returns in this build have no improvement or investigation entry for this overflow.</p>")
+        out.append("<p>No improvement or investigation entry for this overflow is in this build's 2024 and 2025 returns.</p>")
     if actions:
         items = "".join(
             f"<li>{escape(a['action_name'] or '')} ({escape(a['action_id'] or '')}, {escape(a['driver'] or '')}): "
@@ -363,6 +363,8 @@ def body(oid: str, o: dict, returns: pd.DataFrame | None, record: pd.DataFrame |
                    f"{'this action' if len(actions) == 1 else f'{len(actions)} actions'} on this overflow's permit. The date is the "
                    "date the action should be delivered, a deadline, not a record that it was:</p>"
                    f'<ul class="actions">{items}</ul>')
+    elif actions is None:
+        out.append("<p>The PR24 WINEP's deadlines are not in this build, so none is shown here.</p>")
     elif permit_ok:
         out.append("<p>The PR24 WINEP lists no storm overflow improvement action on this overflow's permit.</p>")
     if upgrade:
@@ -387,7 +389,7 @@ def body(oid: str, o: dict, returns: pd.DataFrame | None, record: pd.DataFrame |
                    "and groundwater in the sewer look alike in these records. It is not a finding that any permit was broken.</p>")
 
     # Send it on.
-    subject, text = mail_parts(plain, oid, company, str(permit) if permit_ok else None, spots, returns, record, actions, url)
+    subject, text = mail_parts(plain, oid, company, str(permit) if permit_ok else None, spots, returns, record, actions or [], url)
     contact = CONTACT.get(company)
     out.append('<h2 id="send">Send this record</h2>'
                f"<p>The button opens your own email app with a short, factual draft about this overflow and a link to this page. "
@@ -429,7 +431,7 @@ def site_page(oid: str, o: dict, mark: str, returns: pd.DataFrame | None = None,
     desc = description(plain if plain != oid else f"Overflow {oid}", company, len(o["spots"]))
     title = f"{plain} ({oid})" if plain != oid else f"{company_name(company)} overflow {oid}"
     slots = {"title": escape(title), "mark": mark, "description": escape(desc),
-             "body": body(oid, o, returns, record, actions or [], upgrade, dry, lengths or {}, url, as_of),
+             "body": body(oid, o, returns, record, actions, upgrade, dry, lengths or {}, url, as_of),
              "canonical": f'<link rel="canonical" href="{escape(url)}">' if root else "",
              "share": share_tags(f"{title} · SwimSignal", desc, url, root) if root else ""}
     html = template if template is not None else TEMPLATE.read_text()

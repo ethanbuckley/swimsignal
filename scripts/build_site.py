@@ -4046,7 +4046,7 @@ def write_overflow_pages(site: Path, spots: list[dict], token: str | None = None
             return default
     returns_by = read("the annual returns", lambda: orec.load_returns(returns or config.PROCESSED / "annual_returns.parquet", found), {})
     record_by = read("the permits and improvement activity", lambda: orec.load_record(record or orec.RECORD), {})
-    actions = read("the WINEP deadlines", lambda: orec.winep_actions(pd.read_parquet(winep or orec.WINEP), record_by), {})
+    actions = read("the WINEP deadlines", lambda: orec.winep_actions(pd.read_parquet(winep or orec.WINEP), record_by), None)
     ups = read("the upgrade notes", lambda: read_upgrades(upgrades or UPGRADES), {})
     drys = read("the dry-weather counts", lambda: read_dry_weather(dry or DRY_WEATHER), {})
     spill = orec.spill_lengths(lengths or SPILL_DURATIONS)
@@ -4058,7 +4058,7 @@ def write_overflow_pages(site: Path, spots: list[dict], token: str | None = None
         d = drys.get(oid)
         (site / "overflow" / oid).mkdir(parents=True, exist_ok=True)
         (site / "overflow" / oid / "index.html").write_text(with_counter(with_phone_nav(orec.site_page(
-            oid, o, MARK, returns=returns_by.get(oid), record=record_by.get(oid), actions=actions.get(oid),
+            oid, o, MARK, returns=returns_by.get(oid), record=record_by.get(oid), actions=None if actions is None else actions.get(oid, []),
             upgrade=u if u and u.get("company") == company else None, dry=d if d and d.get("company") == company else None,
             lengths=spill, root=root, as_of=as_of, template=template)), token))
     return sorted(found)

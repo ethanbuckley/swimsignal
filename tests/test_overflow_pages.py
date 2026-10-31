@@ -159,6 +159,7 @@ def test_missing_sources_leave_the_pages_and_say_so(tmp_path):
     words = text((tmp_path / "overflow" / "YWS00144" / "index.html").read_text())
     assert "No annual return in this build is filed under this id" in words and "Name in the company's live feed" in words
     assert "Not in the 2024 or 2025 returns this build holds." in words
+    assert "The PR24 WINEP's deadlines are not in this build" in words and "lists no storm overflow improvement action" not in words
 
 
 def test_write_pages_lists_them_in_the_sitemap_and_the_history_links_them(tmp_path):
