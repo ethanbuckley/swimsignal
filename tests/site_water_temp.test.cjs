@@ -19,7 +19,7 @@ function pageDefs(names) {
 }
 const ctx = vm.createContext({});
 vm.runInContext(fs.readFileSync(join(__dirname, '../src/dipcast/site/levels.js'), 'utf8'), ctx);
-vm.runInContext(pageDefs(['esc', 'fmt', 'glyph', 'ago', 'waterTile']), ctx);
+vm.runInContext(pageDefs(['esc', 'fmt', 'glyph', 'ago', 'WT_ROUTES', 'waterEstOk', 'waterEstHow', 'waterEstSay', 'WT_AIR', 'WT_TAIL', 'waterEstMore', 'waterTile']), ctx);
 const waterTile = vm.runInContext('waterTile', ctx);
 
 const hoursAgo = h => new Date(Date.now() - h * 3600e3).toISOString();
@@ -78,7 +78,7 @@ test('a river spot with no sensor shows the estimate, said as an estimate, with 
   assert.match(t.more, /today's forecast itself was not checked/);
   assert.doesNotMatch(t.more, /air temperature here/);
   assert.match(t.more, /Not part of the pollution level\./);
-  assert.match(t.more, /no estimate for lakes/);
+  assert.doesNotMatch(t.more, /no estimate for lakes/);   // lakes have their own provisional route since 30 Oct 2026 (#492)
   setToday(null);
 });
 
@@ -92,14 +92,53 @@ test('with a sensor, the reading comes first and the estimate after it, in the s
   setToday(null);
 });
 
-test('never on a lake or the sea, never on another day, never without its figures', () => {
+test('never on the sea, never on another day, never without its figures', () => {
   setToday('2026-07-14');
-  assert.equal(waterTile(null, est, 'lake'), null);
   assert.equal(waterTile(null, est, 'sea'), null);
   assert.equal(waterTile(null, est), null);                                        // kind unknown
   assert.equal(waterTile(null, { ...est, date: '2026-07-13' }, 'river'), null);   // a page built yesterday
   assert.equal(waterTile(null, { ...est, temp_c: null }, 'river'), null);
-  assert.equal(waterTile(null, { ...est, within_c: undefined }, 'river'), null);
+  assert.equal(waterTile(null, { ...est, within_c: undefined }, 'river'), null);   // a route-less file needs its figure
+  assert.equal(waterTile(null, { ...est, route: 'sea_model' }, 'river'), null);    // a route this page does not know
   assert.doesNotMatch(waterTile(bures, est, 'lake').say, /estimated/);             // the reading stays
   setToday(null);
 });
+
+// #492 (Ethan, 30 October 2026): every river and lake spot, all year, each route worded by what was measured for it.
+test('a lake in summer: a provisional estimate with the error its summer test measured, and that the lake test failed', () => {
+  setToday('2026-07-14');
+  const t = waterTile(null, { temp_c: 18, date: '2026-07-14', route: 'lake_model', tested: false, typical_c: 1.70 }, 'lake');
+  assert.equal(t.unit, 'C, provisional estimate');
+  assert.equal(t.say, 'About 18&nbsp;°C (provisional estimate; typical error 1.7&nbsp;°C at lakes in a summer test).');
+  assert.match(t.more, /did not pass its test/);
+  assert.match(t.more, /lakes under 1&nbsp;km² the typical error was 1\.7&nbsp;°C/);
+  const big = waterTile(null, { temp_c: 17, date: '2026-07-14', route: 'lake_curve', tested: false, typical_c: 1.98 }, 'lake');
+  assert.match(big.more, /lakes of 1&nbsp;km² or more the typical error was 2\.0&nbsp;°C/);
+  setToday(null);
+});
+
+test('October to April: a provisional estimate said to be not yet checked in these months, with no error claimed', () => {
+  setToday('2026-10-31');
+  for (const [kind, route] of [['river', 'river_off_season'], ['lake', 'lake_off_season']]) {
+    const t = waterTile(null, { temp_c: 11, date: '2026-10-31', route, tested: false, typical_c: null }, kind);
+    assert.equal(t.say, 'About 11&nbsp;°C (provisional estimate, not yet checked in these months).');
+    assert.match(t.more, /has not been checked from October to April/);
+    assert.match(t.more, /being compared with the Environment Agency's water sensors/);
+    assert.doesNotMatch(t.say + t.more, /typically within|typical error was/);   // no error said where none was measured
+  }
+  // With a sensor, the measurement first; the estimate after it, in its own words.
+  const s = waterTile(bures, { temp_c: 11, date: '2026-10-31', route: 'river_off_season' }, 'river');
+  assert.match(s.say, /^Measured at Bures Mill .* At the spot: about 11&nbsp;°C \(provisional estimate, not yet checked in these months\)\.$/);
+  setToday(null);
+});
+
+test('no estimate because its inputs did not arrive: said, not left blank, and never an old one', () => {
+  setToday('2026-10-31');
+  const t = waterTile(null, null, 'lake', { why: 'air', date: '2026-10-31' });
+  assert.equal(t.fig, '–');
+  assert.match(t.say, /^No estimate in this update/);
+  assert.equal(waterTile(null, null, 'lake', { why: 'air', date: '2026-10-30' }), null);   // a gap from another day
+  assert.equal(waterTile(null, null, 'sea', { why: 'air', date: '2026-10-31' }), null);
+  setToday(null);
+});
+
