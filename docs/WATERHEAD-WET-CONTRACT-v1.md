@@ -42,8 +42,8 @@ The total coliform column is left out, because the permission names the E. coli 
 
 ## What it may say
 
-The samples are dated measurements at one place by a local group. The page may show them, with their summaries and
-their open questions. It may not present them as:
+The samples are dated measurements at one place by a local group. The page may show them, with their summaries. The open
+questions stay in the file and this contract; the page does not list them. The page may not present the samples as:
 - the water now, or elsewhere in Windermere
 - a forecast
 - a bathing water rating, which needs many samples over four years

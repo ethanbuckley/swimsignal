@@ -3651,14 +3651,13 @@ def write_waterhead(site: Path, token: str | None = None, root: str | None = Non
             why = f"export is {doc.get('schema')} {doc.get('version')}, not {WET_SCHEMA} {WET_MAJOR}.x"
     page = (TEMPLATE.parent / "waterhead.html").read_text()
     if why:
-        body, open_q, attrib = '<p class="notice">No samples are published in this build.</p>', "", ""
+        body, attrib = '<p class="notice">No samples are published in this build.</p>', ""
     else:
         out.parent.mkdir(parents=True, exist_ok=True)
         out.write_text(json.dumps(doc, ensure_ascii=False, separators=(",", ":")))
         body = wet_body(doc)
-        open_q = "<ul>" + "".join(f"<li>{escape(q)}</li>" for q in doc.get("open_questions", [])) + "</ul>"
         attrib = escape(doc["attribution"])
-    for marker, text in (("<!-- WET -->", body), ("<!-- WET-OPEN -->", open_q), ("<!-- WET-ATTRIB -->", attrib)):
+    for marker, text in (("<!-- WET -->", body), ("<!-- WET-ATTRIB -->", attrib)):
         if marker not in page:
             raise ValueError(f"waterhead.html has lost {marker}, which write_waterhead fills")
         page = page.replace(marker, text, 1)
