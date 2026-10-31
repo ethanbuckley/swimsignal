@@ -127,7 +127,7 @@ test('the first-save action precedes secondary tools on an empty Saved page', ()
   const p = savedPage();
   p.ctx.renderSaved();
   const h = p.ctx.panel;
-  assert.ok(h.indexOf('id="find"') < h.indexOf('Activity preferences and swim journal'));
+  assert.ok(h.indexOf('id="find"') < h.indexOf('<summary>Swim journal</summary>'));
   assert.ok(h.indexOf('id="find"') < h.indexOf('Open a shared list'));
   assert.match(h, /<details class="sec tile lists"><summary>Open a shared list<\/summary>/);
 });

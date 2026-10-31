@@ -1204,7 +1204,8 @@ how things look, not what the site says.
    deleting a review or a note on a visit, and asking about one of yours that is waiting (the
    reviews Worker); opening the Welsh list on the coverage page (Natural Resources Wales's
    data service); and opening "Today's EA advice" on the coverage page or a bathing water's page
-   (the Environment Agency's own panel, in a frame with scripts off). A library is copied into `src/dipcast/site/vendor/` with its licence and pinned
+   (the Environment Agency's own panel, in a frame with scripts off); and pressing Ask in Ask SwimSignal, while
+   it is on (the Ask Worker, and Anthropic behind it). A library is copied into `src/dipcast/site/vendor/` with its licence and pinned
    by hash.
 
 ## Review refinements
@@ -1599,6 +1600,28 @@ the line says it in full.
   `levels.js`'s word for word (a test checks), each quote is word for word from a page opened on the date
   given in the page's comment, and level words carry "risk".
 
+## Each overflow's record (31 October 2026)
+
+- **`overflow/<id>/`** (`src/dipcast/overflow_record.py`, template `src/dipcast/site/overflow.html`, written by
+  `write_overflow_pages` in `scripts/build_site.py`) is a prose page with no script, one for every overflow with an
+  annual-returns id upstream of a spot with a page. In order: the plain name, then the company, its own name and the id
+  as the dateline; the caveat (not a water test; a spill count is not a finding that a permit was broken); the record
+  as label-and-value rows (stacked on a phone); the spots downstream, each linked to its page and its overflow history;
+  spills each year as the Accuracy page's table; recent spills; improvements recorded; spills in dry weather only where
+  the spot page's rule notes them, labelled as SwimSignal's inference with the method linked; "Send this record"; the
+  sources.
+- Every figure is a source's, credited on the page. What a licence does not allow is named with its reason ("not
+  published here"): the consents register (internal use only), Southern's and Yorkshire's own event files and the
+  companies' plan layers (no licence), Water UK's plan (its terms forbid reuse).
+- Words: neutral and factual. Never "breach", "illegal" or "safe"; a WINEP date is "the date the action should be
+  delivered, a deadline, not a record that it was".
+- "Send this record" is the one filled button (`.btn.primary`). It is a `mailto:` with no address: the draft names the
+  company, the overflow, its last two years' counts, the improvement entry and the WINEP date, asks one question and
+  links the page. The company's own contact page and UK Parliament's "Find your MP" are ordinary links. The draft is
+  also shown in a fold for anyone without a mail app. SwimSignal sends nothing.
+- Linked from each overflow's name in the spot page's "Overflows that matter most" and on its overflow history. In
+  the sitemap; not in the offline copy or on the data page. Printed: no nav, no send section.
+
 ## The first screen (6 October 2026)
 
 - **The first saved spot fits on a 375 x 812 phone.** Before, the Saved tile began behind the bar at
@@ -1696,3 +1719,21 @@ From a walk through the live site at 375 px. What was measured, and what changed
   chevron.
 - **Plan's place field** kept 52 px on its right for the location pin it does not have, and read
   "Starting fror" at 375 px.
+
+## Ask SwimSignal (31 October 2026, off until Ethan deploys it)
+
+A question in plain words on Plan a swim, answered from SwimSignal's own data (`ask/README.md`). One tile, "Ask
+SwimSignal", above the plan's groups, only while spots.json has `ask` (`DIPCAST_ASK_URL`): a field and an Ask
+button on one row, and one muted line saying an AI model answers from SwimSignal's data, that the question goes to
+SwimSignal and Anthropic, and to leave out personal details, with a link to the privacy section.
+
+- **The model's words apart from the data's.** The day as a small heading, the model's summary, then "Read as:"
+  with how it read the question, muted. Then the spots, one a row between hairlines: the name (a link to the
+  spot's page, on the day), distance, kind and area muted, the model's phrase on why it fits, then SwimSignal's lines
+  for the day, each with its source and date muted under it. The official advice line is first and in 600 weight;
+  the rest are regular. Then "Not known", a list, and the notes, muted. The last line says when the data was issued,
+  that an AI model wrote the answer, and links to Plan a swim with the same day, place and distance.
+- **No box for the answer**, no pill, no eyebrow, no callout: it is the tile's content, as the plan's groups are.
+- **Never "safe" or "clean"**, as everywhere on the site. The Worker refuses an answer whose words use them,
+  judge a spot for children, or name a condition or a number its data did not give.
+

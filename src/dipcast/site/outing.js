@@ -81,7 +81,8 @@ function outingChanged(plan, k) {
 // ------------------------------------------------------------------------------ what for, and where to meet
 // Fixed choices (plan.js, OUTING_ACTS and OUTING_MEETS), said in words here. The level is for the water,
 // whatever is done on it (the clubs page says the same), so an activity changes only the words.
-const OUTING_ACT_WORDS = { swim: ['Swim', 'swimming'], paddle: ['Paddle', 'paddling'], sup: ['Paddleboard', 'paddleboarding'] };
+// 'paddle' is a kayak or a canoe: said "Kayak/canoe" (31 Oct 2026), since "Paddle" read as paddleboarding too. The key stays.
+const OUTING_ACT_WORDS = { swim: ['Swim', 'swimming'], paddle: ['Kayak/canoe', 'kayaking or canoeing'], sup: ['Paddleboard', 'paddleboarding'] };
 const OUTING_MEET_WORDS = { parking: 'at the parking', entry: 'where you get in' };
 // For a paddle or a board: some waters need a licence and some do not, and SwimSignal does not know which this is.
 // Paddle UK's own pages say which bodies' waterways need one and list launches and licences river by river
@@ -297,7 +298,8 @@ function outingIcs(c, now = Date.now()) {
 // The part of the tile that keeps the outing: the alerts (filled in once this browser's push state is
 // known: outingAlert), then the calendar file.
 const outingKeep = () => '<div class="outing-keep"><div id="outing-alert"></div>'
-  + '<p class="outing-acts"><button type="button" class="btn" id="outing-ics">Add to calendar</button> <button type="button" class="btn" id="outing-share">Share this outing</button></p>'
+  + '<p class="outing-acts"><button type="button" class="btn" id="outing-ics">Add to calendar</button> <button type="button" class="btn" id="outing-share">Share this outing</button>'
+  + (typeof dpPicture === 'function' ? ' <button type="button" class="btn" id="outing-picture">Make a picture to send</button>' : '') + '</p><div id="outing-picture-box"></div>'
   + '<details class="fold"><summary>What the calendar and shared link contain</summary><p class="small muted">A calendar file made in this browser and sent nowhere: the time, the spots and links back here, without a level, which would go out of date. '
   + 'The shared link holds the day, the time, the spots, what for and where to meet, as you picked them, with the forecast\'s issue time and each spot\'s level when you share it, '
   + 'and the plan around your spot: not where you start from, and no words of yours.</p></details>'
@@ -382,6 +384,24 @@ function outingStretch(o) {
     + 'just below an overflow that is spilling, the water can be worse than at either end. These are the monitored storm overflows SwimSignal has placed on the river, '
     + 'and from side streams only those within 60 km of the finish by water: not unmonitored outfalls, or farm and road runoff. '
     + 'Nothing here is about weirs, flow, or where you can get in and out.</p></div>';
+}
+
+// ------------------------------------------------------------------------------ the plan's list, for a boat or a board
+// Under each spot on Plan a swim, for a kayak or canoe or a paddleboard (index.html, planItem): the first confirmed fact
+// its guide has for boats and boards (the lite file's boat_note, guides.py), and up to three listed spots downstream to
+// finish at (outingFinishes), each a link that puts the start and that finish in the outing (finishHref(s, id) gives
+// its address). Where SwimSignal has neither, the row says "not known": no guide is not a no. '' for a swim.
+const OUTING_FINISHES_SHOWN = 3;
+function outingActLine(s, act, byId, finishHref) {
+  if (!OUTING_BOAT.includes(act)) return '';
+  const n = s.boat_note, label = new Map(outingGuide().GUIDE_TOPICS), fins = outingFinishes(s, byId).slice(0, OUTING_FINISHES_SHOWN);
+  const note = n && label.has(n.topic)
+    ? `<b>${label.get(n.topic)}:</b> ${outEsc(n.text)} <span class="muted">(${outEsc(n.source || 'its guide')}${n.more > 0 ? `; ${n.more} more on its page` : ''})</span>`
+    : '<b>Launching and rules for boats and boards:</b> not known.';
+  const fin = fins.length
+    ? `<b>Finish downstream:</b> ${fins.map(f => `<a href="${outEsc(finishHref(s, f.id))}" data-plan-start="${outEsc(s.id)}" data-plan-finish="${outEsc(f.id)}">${outEsc(f.name)}</a> (${outingKm(f.km)})`).join(', ')}.`
+    : '<b>Finish downstream:</b> not known.';
+  return `<p class="act-line">${note}</p><p class="act-line">${fin}</p>`;
 }
 
 // ------------------------------------------------------------------------------ the tile
@@ -538,10 +558,13 @@ function drawOuting(box, shown) {
     a.download = `swimsignal-outing-${PLAN.day}.ics`; document.body.append(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   });
-  bindShareLink(document.getElementById('outing-share'), document.getElementById('outing-alert-msg'),
-    new URL(planPath() + planHash(outingShared(PLAN, pair.main, { sent: outingSent(DATA.generated_at),
-      lv: dayLevel(pair.main, PLAN.day), blv: pair.backup && dayLevel(pair.backup, PLAN.day), flv: fin && dayLevel(fin, PLAN.day) })), location.href).href,
+  const link = new URL(planPath() + planHash(outingShared(PLAN, pair.main, { sent: outingSent(DATA.generated_at),
+    lv: dayLevel(pair.main, PLAN.day), blv: pair.backup && dayLevel(pair.backup, PLAN.day), flv: fin && dayLevel(fin, PLAN.day) })), location.href).href;
+  bindShareLink(document.getElementById('outing-share'), document.getElementById('outing-alert-msg'), link,
     `${outingVerb(PLAN.act)}: ${pair.main.name} · ${BRAND}`, 'Copy link to this outing');
+  // The plan as a picture to send (index.html, planPicture; dayplan.js), with the same link.
+  const pic = document.getElementById('outing-picture');
+  if (pic && typeof planPicture === 'function') pic.addEventListener('click', () => planPicture(pair, fin, link));
   bindOutingAlert(byId);
 }
 
@@ -604,6 +627,6 @@ async function bindOutingAlert(byId) {
 }
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { outingJoined, outingJoin, outingApart, OUTING_LICENCE, OUTING_ACCESS_PADDLE, outingAccessTopics, outingResumeSaid, outingReplaces, outingOff, outingFinishes, outingStretch, outingKm, OUTING_PARTS, OUTING_HOURS, OUTING_CHECK, OUTING_ASKED_KEY, OUTING_ACT_WORDS, OUTING_MEET_WORDS, outingChanged, outingSent, outingVerb, outingOfficial, outingAccess, OUTING_ACCESS, outingPractical, outingBoth, outingPoor, outingNeither, outingShared, outingSpan, outingWhen, outingTimeNote, outingForDay, outingOptions, outingPair, outingSection,
+  module.exports = { outingActLine, outingJoined, outingJoin, outingApart, OUTING_LICENCE, OUTING_ACCESS_PADDLE, outingAccessTopics, outingResumeSaid, outingReplaces, outingOff, outingFinishes, outingStretch, outingKm, OUTING_PARTS, OUTING_HOURS, OUTING_CHECK, OUTING_ASKED_KEY, OUTING_ACT_WORDS, OUTING_MEET_WORDS, outingChanged, outingSent, outingVerb, outingOfficial, outingAccess, OUTING_ACCESS, outingPractical, outingBoth, outingPoor, outingNeither, outingShared, outingSpan, outingWhen, outingTimeNote, outingForDay, outingOptions, outingPair, outingSection,
     outingPairs, outingAsk, outingList, outingEarlier, outingAlert, outingIcs };
 }

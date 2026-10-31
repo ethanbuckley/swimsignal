@@ -48,7 +48,7 @@ def test_the_page_shows_every_sample_with_its_credit(tmp_path):
     local = json.loads((tmp_path / "data" / "research" / "local-samples.json").read_text())
     assert local == {"available": True, "spots": {"osm-windermere-waterhead": {
         "href": "waterhead.html", "place": "Waterhead, Windermere", "by": "Ambleside Action for a Future",
-        "samples": 59, "first": "2025-04-16", "last": "2026-10-12"}}}
+        "samples": 59, "first": "2025-04-16", "last": "2026-10-12", "data": "data/research/waterhead_wet.json"}}}
 
 
 def test_another_schema_is_not_published(tmp_path):

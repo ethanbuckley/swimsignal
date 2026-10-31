@@ -85,6 +85,19 @@ next step explicitly. Iteration is permitted; repeating an unchanged test until 
 must say what new evidence or changed need would justify reopening. A scheduled window is active work, not an
 abandoned idea.
 
+**Register and issue update, at every readout or handoff.** Before the chat ends, in the readout PR itself:
+
+1. Update the project's row in the [recovery register](RESEARCH-RECOVERY-2026-10.md): stage, PR, next milestone and
+   date, or the specific reason to archive and what would reopen it. Edit only that row.
+2. Add or update its entry in `data/research/research_catalogue.v1.json`
+   ([contract](RESEARCH-CATALOGUE-CONTRACT-v1.md)): the original verdict with a verbatim quote from the record, the
+   current stage kept separate, and `reopen_when` if archived. `tests/test_research_catalogue.py` fails if a record the
+   register links has no entry.
+3. Comment on the project's GitHub issue with the PR link, the result in one or two sentences, and the next step
+   with its date or blocker. Close the issue only if no next step remains.
+
+A result that exists only in a chat, a branch or a local cache is not recorded.
+
 ## Deliver visibly
 
 The product and research owners share one versioned data contract. A Research page should identify what is usable

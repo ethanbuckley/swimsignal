@@ -1,0 +1,64 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- One storm overflow's public record, overflow/<id>/: src/dipcast/overflow_record.py fills the slots in double
+     braces and scripts/build_site.py (write_overflow_pages) writes one for each overflow upstream of a spot with a page.
+     A prose page with no script, like the spot's overflow history (profile.html): it prints as it is. -->
+<base href="../../">
+<title>{{title}} · SwimSignal</title>
+<meta name="description" content="{{description}}">
+{{canonical}}
+{{share}}
+<meta name="theme-color" content="#3d5b5d">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="page.css">
+<link rel="preload" href="fonts/SourceSans3-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/SourceSerif4-latin.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+  /* The tables are page.css's, as on the Accuracy page. An overflow's name heads its row in ink, under a
+     hairline (page.css rules the first row's header in ink, meant for a header row). The number headers
+     wrap, so ten columns take less width before the box scrolls. */
+  main.doc tbody th { color:var(--ink); border-bottom-color:var(--line); }
+  main.doc tbody tr:last-child th { border-bottom:0; }
+  main.doc thead th.num { white-space:normal; }
+  /* On a phone ten columns do not fit: each overflow is a block, its name over its figures two to a line,
+     each with its label, as on the organisers' page. */
+  @media screen and (max-width: 540px) {
+    .tw:has(.ovt) { overflow:visible; border-bottom:0; }
+    .ovt thead { display:none; }
+    .ovt tr { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); gap:2px 12px; padding:10px 0; border-bottom:1px solid var(--line); }
+    .ovt th.ov { grid-column:1 / -1; padding:0; border:0; }
+    .ovt td { padding:0; border:0; text-align:left; }
+    .ovt td.num { text-align:left; white-space:normal; }   /* a long label wraps (the spill lengths, 31 Oct 2026) rather than push the page sideways */
+    .ovt td::before { content:attr(data-l) " "; color:var(--muted); }
+  }
+  /* The record's facts: a label and its value a row, the label in the muted grey, no column heads. */
+  main.doc table.facts th { width:34%; color:var(--muted); font-weight:400; white-space:normal; vertical-align:top; }
+  .spots li, .actions li { margin:0 0 6px; }
+  .send { margin:16px 0; }
+  pre.draft { font:inherit; font-size:var(--fs-note); }
+  @media screen and (max-width: 540px) {
+    table.facts, table.facts tbody, table.facts tr, table.facts th, table.facts td { display:block; width:auto; }
+    table.facts tr { padding:8px 0; border-bottom:1px solid var(--line); }
+    table.facts th, table.facts td { padding:0; border:0; }
+  }
+  @page { size:A4 portrait; margin:14mm; }
+  @media print {
+    body { background:var(--card); }
+    .top nav, .site-foot p + p, .send, #send ~ details { display:none; }
+    .top { padding:0 0 8px; background:var(--card); color:var(--ink); }
+    .top .brand { color:var(--ink); }
+    main.doc { max-width:none; padding:16px 0 0; }
+    .tw { overflow:visible; }
+    tr { break-inside:avoid; }
+    a { color:var(--ink); text-decoration:none; }
+  }
+</style>
+</head><body>
+<header class="top"><a class="brand" href="./">{{mark}}SwimSignal</a>
+<nav aria-label="Site"><a href="plan/">Plan a swim</a><a href="saved/">Saved</a><a href="verification.html">Accuracy</a><a href="about.html">About</a><a class="desk-only" href="research.html">Research</a><a class="desk-only" href="feedback.html">Feedback</a></nav></header>
+<main class="doc">
+{{body}}
+</main>
+<footer class="site-foot"><div class="rule"><p>SwimSignal is a free, non-commercial pollution risk forecast for river and lake swim spots in England, run by Ethan Buckley. A forecast, not a water test: check the signs at the water before you swim.</p>
+<p><a href="terms.html">Terms of use</a> · <a href="privacy.html">Privacy</a> · <a href="feedback.html">Feedback</a> · <a href="methods.html">Method</a> · <a href="research.html">Research</a> · <a href="terms.html#data">Data credits</a> · <a href="https://github.com/ethanbuckley/swimsignal">Source code</a> (MIT)</p></div></footer>
+</body></html>

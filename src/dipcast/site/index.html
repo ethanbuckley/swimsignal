@@ -847,12 +847,50 @@
   .plan-go .plan-from { margin:0; }
   .plan-go .plan-from input { padding-right:12px; }   /* no location pin in this field: its room cut "Starting from" at 375 px */
   .plan-go + .planner-note { margin-bottom:8px; }
+  /* Ask SwimSignal (ask.js): a question and its answer, in a tile above the plan's groups. The model's words
+     first; each spot's lines under it, hairlines between spots, each line's source and date muted under it. */
+  .ask-form { display:flex; gap:8px; }
+  .ask-form input { flex:1; min-width:0; font:inherit; font-size:var(--fs-body); color:var(--ink); padding:10px 12px; border:1px solid var(--line); border-radius:var(--radius); background:var(--field); -webkit-appearance:none; appearance:none; }
+  .ask-form input::placeholder { color:var(--faint); }
+  .ask-form .btn { flex:none; }
+  .ask-h { margin:14px 0 4px; font-size:var(--fs-body); }
+  .ask-h:focus { outline:none; }
+  .ask-summary { margin:0; }
+  .ask-spots, .ask-facts, .ask-unknown { margin:0; padding:0; list-style:none; }
+  .ask-spot { padding:10px 0; border-top:1px solid var(--line); }
+  .ask-spots { margin-top:10px; }
+  .ask-name { margin:0; font-size:var(--fs-body); }
+  .ask-meta, .ask-fit { margin:2px 0 0; font-size:var(--fs-note); }
+  .ask-meta { color:var(--muted); }
+  .ask-facts li { margin-top:6px; font-size:var(--fs-note); }
+  .ask-facts .ask-official { font-weight:600; }
+  .ask-src { display:block; color:var(--muted); font-weight:400; }
+  .ask-sub { margin:12px 0 2px; font-size:var(--fs-note); }
+  .ask-unknown li { font-size:var(--fs-note); }
   #plan-sum + .chips-row { margin-top:4px; }
   a.row .why { margin-top:4px; font-size:var(--fs-note); line-height:1.4; }
   /* How much evidence sits behind the row's level (planEvidence): outside the row's link, which it would
      otherwise sit in, so the row's padding below moves under it. Muted, the meta size. */
   a.row:has(+ .ev-line) { padding-bottom:4px; }
   .ev-line { margin:0; padding:0 0 12px; font-size:var(--fs-meta); line-height:1.4; color:var(--muted); }
+  /* For a boat or a board (planActLine): launching and finishes, outside the row's link as the evidence line is. */
+  a.row:has(~ .act-line) { padding-bottom:4px; }
+  .act-line { margin:0; padding:0 0 6px; font-size:var(--fs-meta); line-height:1.4; }
+  .act-line:last-child { padding-bottom:12px; }
+  .act-row { margin-top:12px; }
+  /* The day plan's options (dayplan.js): one list in one tile, a hairline between options; each value labelled. */
+  .dp-list { list-style:none; margin:0; padding:0; }
+  .dp-opt { padding:14px 0; border-top:1px solid var(--hair); }
+  .dp-opt:first-child { border-top:0; padding-top:4px; }
+  .dp-nm { margin:0 0 2px; font-family:var(--font-display); font-weight:600; font-size:var(--fs-head); overflow-wrap:anywhere; }
+  .dp-nm a { color:var(--ink); text-decoration:none; display:inline-block; padding:8px 0; margin:-8px 0; }
+  .dp-facts { display:grid; grid-template-columns:max-content minmax(0, 1fr); gap:6px 14px; margin:10px 0 6px; font-size:var(--fs-note); line-height:1.4; }
+  .dp-facts div { display:contents; }
+  .dp-facts dt { color:var(--muted); }
+  .dp-facts dd { margin:0; }
+  .dp-gap { margin:0 0 8px; font-size:var(--fs-meta); color:var(--muted); }
+  .dp-go { margin:10px 0 0; }
+  .dp-pic { display:block; width:100%; max-width:432px; height:auto; margin:12px 0 4px; border:1px solid var(--line); border-radius:var(--radius); }
   /* Your outing (outing.js): the choices, then the spot and its backup in two equal columns, which on a
      375 px phone are about 160 px each; one spot alone takes the width. No fills or rules beyond the tile's. */
   .outing-fields { display:grid; gap:10px; margin:14px 0; }
@@ -1436,6 +1474,7 @@
 <script src="guide.js"></script>   <!-- a spot's practical guide, from guides/ (src/dipcast/guides.py) -->
 <script src="evidence.js"></script>   <!-- what the level rests on: each item's age and source, and the gaps -->
 <script src="measured.js"></script>   <!-- lab results an organisation sent (samples/): uses evidence.js's ages -->
+<script src="timeline.js"></script>   <!-- the evidence timeline: uses evidence.js's ages, eatoday.js's and visits.js's words when opened -->
 <script src="spotscores.js"></script>   <!-- how the forecast has done here: the live scores of the spot's upstream overflows -->
 <script src="seasonal.js"></script>   <!-- past spills upstream by month: history, not a forecast -->
 <script src="eatoday.js"></script>   <!-- today's EA advice: the EA's own panel, loaded when its fold is opened -->
@@ -1445,8 +1484,10 @@
 <script src="levels.js"></script>   <!-- the levels and headlines: shared with the build and the alerts -->
 <script src="since.js"></script>   <!-- what changed at a saved spot since you last looked: uses levels.js -->
 <script src="plan.js"></script>   <!-- Plan a swim: the spots within reach on a day -->
+<script src="ask.js"></script>   <!-- Ask SwimSignal on Plan a swim, only with DATA.ask (ask/, the Worker) -->
 <script src="spotdate.js"></script>   <!-- a spot on a date: the calendar file and alerts for a date, shared with the organisers' page -->
 <script src="outing.js"></script>   <!-- a plan's outing: when, the spot and a backup, side by side; uses plan.js and spotdate.js -->
+<script src="dayplan.js"></script>   <!-- the day plan: a few options with what is known at each, and the plan as a picture to send -->
 <script src="outingwatch.js"></script>   <!-- what would change the outing, and what has since it was planned: uses since.js -->
 <script src="findwindow.js"></script>   <!-- Find a window on Saved: each spot's Low days, as ranges; uses levels.js and eatoday.js -->
 <script src="lists.js"></script>   <!-- named lists of saved spots, and the links that share a list or a plan -->
@@ -3340,11 +3381,10 @@ function renderList() {
       ? ' Open a spot for why; save it to keep it at the top, and plan an outing with a backup.' : ''}</p>`
     + `<p class="planner-note" id="low-note-list"${VIEW.lowOnly ? '' : ' hidden'}>${lowListNote()}</p>`;
   h += notices(null, true) + '</div>';
-  // What you do on the water (actsChips) at the foot of the saved spots, where a returning visitor sees it; a first look
-  // keeps the search and the list first.
   // Your places (29-30 Oct 2026): the next outing and the saved spots in one tile, so a returning visitor sees their
-  // water and their plans together; the activity choice at its foot. Before anything is saved or planned, the hint.
-  const places = outingResume() + (saved.length ? `<div class="places-part" id="saved-group"><h3 class="places-sub" id="saved-h">Saved spots</h3><ul class="places" id="saved-list">${saved.map(s => savedCard(s, false, VIEW.day)).join('')}</ul>${actsChips(undefined, true)}</div>` : '');
+  // water and their plans together. Before anything is saved or planned, the hint. What you do on the water is
+  // chosen on Plan a swim (planActRow), where it changes what is shown; on the cards it changed nothing you could see.
+  const places = outingResume() + (saved.length ? `<div class="places-part" id="saved-group"><h3 class="places-sub" id="saved-h">Saved spots</h3><ul class="places" id="saved-list">${saved.map(s => savedCard(s, false, VIEW.day)).join('')}</ul></div>` : '');
   let v = places ? `<section class="group tile" id="places-group" aria-labelledby="places-h"><h2 class="group-head" id="places-h">Your places</h2>${places}</section>`
     : OPENED ? `<p class="save-hint tile">${BOOKMARK}<span>Open a spot and press Save to keep it here.</span></p>` : '';   // not on a first look
   v += `<section class="group tile" id="near-group" aria-labelledby="near-h" hidden><h2 class="group-head" id="near-h">Near you</h2><ul class="places" id="near-list"></ul></section>`;
@@ -3368,7 +3408,7 @@ function renderList() {
     // (clubs.html says how wet each activity gets), and groups and events have their own tools.
     + `<p class="small muted after">For swimming and water sports. Forecasts, not water tests. <a href="clubs.html">Tools for clubs, centres and events</a>.</p>`;
   setPanel(h + cols(v));
-  if (saved.length) { bindItems(document.getElementById('saved-list')); bindActs(); }   // and what you do on the water (actsChips)
+  if (saved.length) bindItems(document.getElementById('saved-list'));
   document.getElementById('listday').addEventListener('change', e => setMapDay(e.target.value));
   bindBestDay();
   // Only the list redraws as you type; redrawing the box itself dropped the focus after one letter.
@@ -3691,27 +3731,6 @@ function refreshComparison() {
 }
 // Whether "Your lists" is open, and what the opening says once after a shared list is added (said).
 const LISTS_UI = { open: false, said: '' };
-// What you do on the water: optional, any of three, kept in this browser (plan.js, ACTS_KEY). It changes what is
-// offered first, never a level, and the line under the chips says so.
-const ACT_CHIPS = [['swim', 'Swim'], ['paddle', 'Paddle'], ['sup', 'Paddleboard']];
-// short: Explore's one line, under the saved spots; the Saved page says it in full.
-const actsChips = (on = typeof ACTS === 'undefined' ? [] : ACTS, short = false) => `<div class="chips-row acts-row" role="group" aria-label="What you do on the water">`
-  + ACT_CHIPS.map(([k, w]) => `<button type="button" class="chip-btn" data-act="${k}" aria-pressed="${on.includes(k)}">${w}</button>`).join('')
-  + `</div><p class="small muted acts-note${short ? ' short' : ''}">` + (short
-    ? 'What you do on the water, if you like: a boat or a board gets launching, carrying and places to finish. The level is the same for everyone.'
-    : `${on.length ? 'Kept in this browser. ' : 'Optional: what you do on the water. '}`
-      + 'For a paddle or a board, new outings start as one, a spot offers the spots downstream to finish at, and access shows launching and carrying. '
-      + 'The level is for the water, the same for everyone in it, and official advice always shows.') + '</p>';
-function bindActs() {
-  document.querySelectorAll('[data-act]').forEach(b => b.addEventListener('click', () => {
-    const k = b.dataset.act, next = ACTS.includes(k) ? ACTS.filter(a => a !== k) : [...ACTS, k];
-    ACTS = readActs(JSON.stringify(next));
-    try { if (ACTS.length) localStorage.setItem('dipcast.acts', JSON.stringify(ACTS)); else localStorage.removeItem('dipcast.acts'); } catch (e) { /* for this visit only */ }
-    document.querySelectorAll('[data-act]').forEach(x => x.setAttribute('aria-pressed', String(ACTS.includes(x.dataset.act))));
-    const row = document.querySelector('.acts-row'), note = document.querySelector('.acts-note');   // the note's first words follow the choice
-    if (row && note && !note.classList.contains('short')) { row.insertAdjacentHTML('afterend', actsChips().replace(/^[\s\S]*?<\/div>/, '')); note.remove(); }
-  }));
-}
 // Under a list of one: the spot's page for why and what is at the water, and the planner on it (planHere).
 const savedOneNext = s => `<p class="small saved-one-next">Its page has why, and what it is like at the water: <a href="${esc(spotPath(s.id))}" data-id="${esc(s.id)}">${esc(s.name)}</a>.`
   + (typeof canPlanHere === 'function' && canPlanHere(s) ? ` Going? <a href="${esc(planPath() + planHereHash(s))}" data-plan-here>Plan a swim here</a>.` : '') + '</p>';
@@ -3731,7 +3750,6 @@ function renderSaved() {
       : `The next five days at ${many ? `the ${spots.length === 1 ? 'spot' : `${spots.length} spots`} in ${named}` : spots.length === 1 ? 'your spot' : `your ${spots.length} spots`},`} `
     + `kept ${navigator.standalone ? 'in this Home Screen app, not in Safari' : 'in this browser'}.</p>`;
   if (LISTS_UI.said) { h += `<p class="planner-note" role="status">${LISTS_UI.said}</p>`; LISTS_UI.said = ''; }
-  if (spots.length || many) h += actsChips(undefined, !spots.length);
   h += notices();
   const best = spots.length ? bestDayNote(spots, true) : '';
   if (best) h += `<p class="planner-note best-day">${best}</p>`;
@@ -3751,8 +3769,7 @@ function renderSaved() {
     + `${navigator.standalone ? ` Spots saved in Safari do not appear in the Home Screen app: iPhones keep the two apart, so save them again here, or paste a list's link ${listsShown ? 'under Your lists, ' : ''}below.` : ''}</p>`
     + `<a class="btn primary" href="${esc(ROOT.pathname)}" id="find">Find a spot</a>`
     + `${many && !swimsShown(spots) ? '<p><button type="button" class="linkbtn" id="jn-show">Open swim journal</button></p>' : ''}</div>`;
-  if (!spots.length && !many) v += `<details class="sec tile"><summary>Activity preferences and swim journal</summary>${actsChips(undefined, true)}`
-    + `${swimsShown(spots) ? '' : '<p><button type="button" class="linkbtn" id="jn-show">Open swim journal</button></p>'}</details>`;
+  if (!spots.length && !many && !swimsShown(spots)) v += '<details class="sec tile"><summary>Swim journal</summary><p><button type="button" class="linkbtn" id="jn-show">Open swim journal</button></p></details>';
   // Opening a list from its link is in Your lists; with nothing saved, Your lists is not shown (a Home
   // Screen app just added, say), so it has a tile of its own.
   if (!listsShown) v += `<details class="sec tile lists"><summary>Open a shared list</summary>${importForm()}</details>`;
@@ -3790,7 +3807,6 @@ function bindToAlerts() {
   b.addEventListener('click', () => { h.tabIndex = -1; h.scrollIntoView({ block: 'start' }); h.focus({ preventScroll: true }); });
 }
 function bindSavedPage(l, spots) {
-  bindActs();   // what you do on the water (actsChips)
   if (spots.length === 1 && typeof planHere === 'function') planHere(spots[0]);   // savedOneNext's "Plan a swim here"
   const ul = document.getElementById('scards'), $ = id => document.getElementById(id), from = manyLists() ? l.name : 'saved spots';
   if (ul) ul.addEventListener('click', e => {
@@ -4122,7 +4138,86 @@ function planItem(o) {
   const meta = [cap(milesAway(o.miles)), cap(s.kind), s.source === 'designated' ? 'bathing water' : null].filter(Boolean).join(' · ');
   return `<li><a class="row" href="${esc(spotPath(s.id) + (daily(s) ? '#day=' + PLAN.day : ''))}" data-id="${esc(s.id)}"><span class="row-main"><span class="nm">${esc(s.name)}</span>`
     + `${typeof eaTodayTag === 'function' ? eaTodayTag(s) : ''}<span class="hl ${tone(o.level)}">${dayHeadline(s, PLAN.day)}</span><span class="k">${meta}</span>${why ? `<span class="why">${why}</span>` : ''}</span></a>`
-    + `<label class="cmp-pick"><input type="checkbox" data-compare-pick="${esc(s.id)}"><span>Compare<span class="sr"> ${esc(s.name)}</span></span></label>${ev}</li>`;
+    + `<label class="cmp-pick"><input type="checkbox" data-compare-pick="${esc(s.id)}"><span>Compare<span class="sr"> ${esc(s.name)}</span></span></label>${ev}${planActLine(s)}</li>`;
+}
+// What for (31 Oct 2026): swimming, a kayak or canoe, or a paddleboard, chosen here, where it changes what is shown. The
+// plan keeps it (act=, plan.js) and so does this browser (ACTS_KEY), so "Plan a swim here" on a spot starts as it.
+// For a boat or a board each row adds what is known for it (outing.js, outingActLine), and says "not known" where
+// nothing is. The levels stay as they are: they are for the water, whoever is in it. The Saved page's chips, which
+// did this from a distance and changed nothing on the cards, are gone; a choice kept there is still read (readActs).
+const PLAN_ACTS = [['', 'Swim'], ['paddle', OUTING_ACT_WORDS.paddle[0]], ['sup', OUTING_ACT_WORDS.sup[0]]];
+const planActRow = act => `<div class="chips-row act-row" role="group" aria-label="What for">`
+  + PLAN_ACTS.map(([k, w]) => `<button type="button" class="chip-btn" data-plan-act="${k}" aria-pressed="${(act || '') === k}">${w}</button>`).join('') + '</div>'
+  + `<p class="planner-note" id="plan-act-note">${planActNote(act)}</p>`;
+const planActNote = act => OUTING_FINISH_ACTS.includes(act)
+  ? 'Each spot shows launching and places to finish downstream, where SwimSignal knows them. The levels are the same: they are for the water, whoever is in it.' : '';
+let PLAN_BY_ID = null;   // the listed spots by id, made once for the finishes
+const planById = () => { if (!PLAN_BY_ID || PLAN_BY_ID.from !== DATA.spots) PLAN_BY_ID = { from: DATA.spots, map: new Map(DATA.spots.map(x => [x.id, x])) };
+  return PLAN_BY_ID.map; };
+const planActLine = s => !OUTING_FINISH_ACTS.includes(PLAN.act) ? ''
+  : outingActLine(s, PLAN.act, planById(), (d, fin) => planPath() + planFromSpot(d, PLAN, PLAN.day, fin));
+// The day plan's options (dayplan.js): the nearest few spots with a low forecast that no official notice restricts,
+// each with what is known there and what is not, and "Plan the day here", which puts it in the outing with the next
+// option as its backup. First in the results: the answer, before the full list. Each option's own file (its guide)
+// is asked for, three at most, and the tile is drawn again once they are in.
+function planOptions(box, groups) {
+  const old = document.getElementById('dp'); if (old) old.remove();
+  const opts = dpOptions(groups, planAdvised, PLAN.act), byId = planById(), on = dayWord(PLAN.day);
+  const items = opts.map((o, i) => { const s = o.s, other = opts.find(x => x !== o);
+    return dpOption(o, { href: spotPath(s.id) + (daily(s) ? '#day=' + PLAN.day : ''), headline: dayHeadline(s, PLAN.day), tone: tone(o.level),
+      official: outingOfficial(s), meta: [cap(milesAway(o.miles)), cap(s.kind)].join(' · '), chosen: PLAN.spot === s.id },
+    dpConditions(s, PLAN.day, today(), PLAN.act, byId), other && other.s.name, i); });
+  box.insertAdjacentHTML('afterbegin', dpSection(on, items, PLAN.act && OUTING_ACT_WORDS[PLAN.act] ? OUTING_ACT_WORDS[PLAN.act][1] : 'swimming', OUTING_FINISH_ACTS.includes(PLAN.act)));
+  const tile = document.getElementById('dp');
+  tile.querySelectorAll('a[data-id]').forEach(a => a.addEventListener('click', e => { if (!plainClick(e)) return; e.preventDefault(); select(a.dataset.id, true, true, PLAN.day); }));
+  tile.querySelectorAll('[data-dp-go]').forEach(b => b.addEventListener('click', () => {
+    const id = b.dataset.dpGo, other = opts.find(o => o.s.id !== id), next = outingChanged(PLAN, 'spot');
+    for (const x of Object.keys(PLAN)) if (!(x in next)) delete PLAN[x];
+    PLAN.spot = id; if (other) PLAN.backup = other.s.id; else delete PLAN.backup;
+    OUTING_OPEN = true; drawPlan();
+    const t = document.getElementById('outing'); if (t) { t.scrollIntoView({ block: 'start' }); t.querySelector('summary').focus({ preventScroll: true }); }
+  }));
+  const want = opts.map(o => o.s).filter(s => typeof spotDetail === 'function' && s.detail_file && !s.detail_loaded && !s.detail_missing);
+  if (want.length) Promise.all(want.map(spotDetail)).then(() => { const b = document.getElementById('plan-results');
+    if (b && shown === 'plan' && document.getElementById('dp')) planOptions(b, groups); });
+}
+// The plan as a picture (dayplan.js, dpPicture), from the outing's spots: made when asked, shown in the tile, then
+// shared with the phone's own share sheet where it takes a file, or saved. Drawn again without the map's images if the
+// map's provider does not allow a page to read them.
+async function planPicture(pair, fin, link) {
+  const host = document.getElementById('outing-picture-box'); if (!host) return;
+  host.innerHTML = '<p class="small muted">Drawing the picture…</p>';
+  const css = getComputedStyle(document.documentElement), v = k => css.getPropertyValue(k).trim();
+  const byId = planById(), strip = h => String(h).replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&copy;/g, '©').replace(/&amp;/g, '&');
+  const ing = PLAN.act && PLAN.act !== 'swim' && OUTING_ACT_WORDS[PLAN.act] ? OUTING_ACT_WORDS[PLAN.act][1] : '';
+  const title = dpTitle(outingWhen(PLAN.day, PLAN.when), pair.main.name, pair.backup && pair.backup.name, ing);
+  const spot = (s, role) => { const c = dpConditions(s, PLAN.day, today(), PLAN.act, byId).rows.filter(([k]) => k === 'Daylight' || (k === 'Water' && PLAN.day === today()));
+    return { role, name: s.name, lat: s.lat, lon: s.lon, level: strip(dayHeadline(s, PLAN.day)), colour: v(`--k-${tone(dayLevel(s, PLAN.day))}`) || v('--k-na'),
+      lines: [c.map(([, t]) => strip(t)).join('. ')].filter(Boolean) }; };
+  const layer = tiles();
+  const p = { title, spots: [spot(pair.main, 'Your spot'), ...(fin ? [spot(fin, 'Finish')] : []), ...(pair.backup ? [spot(pair.backup, 'Backup')] : [])],
+    from: null, issued: issued(), url: `${location.host}${planPath()}`,
+    tiles: { url: layer._url, sub: layer.options.subdomains, credit: strip(layer.options.attribution || '').replace(/^©\s*/, '© ') },
+    colours: { bar: v('--bar'), ink: v('--ink'), muted: v('--muted'), paper: v('--bg'), line: v('--map-bg'), brand: v('--brand') } };
+  let blob = await dpBlob(await dpPicture(p));
+  if (!blob) blob = await dpBlob(await dpPicture({ ...p, tiles: null }));
+  if (!blob) { host.innerHTML = '<p class="small muted">This browser could not make the picture.</p>'; return; }
+  const name = `swimsignal-plan-${PLAN.day}.png`, file = new File([blob], name, { type: 'image/png' }), url = URL.createObjectURL(blob);
+  const canShare = navigator.canShare && navigator.canShare({ files: [file] });
+  host.innerHTML = `<img class="dp-pic" src="${url}" alt="${esc(title)}: a map of the spots and each one's level for the day">`
+    + `<p class="outing-acts">${canShare ? '<button type="button" class="btn primary" id="dp-share">Share picture</button> ' : ''}<a class="btn" href="${url}" download="${esc(name)}">Save picture</a></p>`
+    + '<p class="small muted">Made in this browser. It holds the spots, their levels and when the forecast was issued, not where you start from.</p>';
+  const sh = document.getElementById('dp-share');
+  if (sh) sh.addEventListener('click', () => navigator.share({ files: [file], title, text: `${title}. ${link}` }).catch(() => {}));
+}
+function planAct(k) {
+  if (k) PLAN.act = k; else delete PLAN.act;
+  if (!OUTING_FINISH_ACTS.includes(PLAN.act)) delete PLAN.finish;   // a finish is for a boat or a board
+  ACTS = k ? [k] : [];
+  try { if (ACTS.length) localStorage.setItem(ACTS_KEY, JSON.stringify(ACTS)); else localStorage.removeItem(ACTS_KEY); } catch (e) { /* for this visit only */ }
+  document.querySelectorAll('[data-plan-act]').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.planAct === k)));
+  document.getElementById('plan-act-note').textContent = planActNote(PLAN.act);
+  drawPlan();
 }
 // Under a plan group's heading when n of its spots have official advice: the advice comes first, and the level
 // is the sewage forecast alone. '' for none.
@@ -4134,6 +4229,7 @@ function renderPlan() {
   document.title = `Plan a swim · ${BRAND}`;
   if (!PLAN_READ) { PLAN = planKept(stored(PLAN_KEY), planDates(), VIEW.day); PLAN_READ = true; }
   PLAN = readPlan(location.hash, planDates(), { ...PLAN, day: PLAN.day || VIEW.day });
+  if (location.hash.length <= 1 && !PLAN.act && actDefault(acts())) PLAN.act = actDefault(acts());   // a boat or board chosen before (planAct, or Saved's chips); never over a link's
   const keptNow = keptPlan();
   PLAN_PREVIEW = planInvited(PLAN, keptNow, location.hash.length > 1, PLAN_PREVIEW) && !(PLAN_NEW && !planHasOuting(keptNow, planDates()));
   PLAN_FRESH = PLAN_PREVIEW && (PLAN_NEW || PLAN_FRESH); PLAN_NEW = false;   // fresh: started here, not from a link (outing.js says so)
@@ -4149,13 +4245,13 @@ function renderPlan() {
   // The day, then where from and how far on one row (on a 375 px phone the first result began at 707 px
   // under a lede and the distance on a row of its own; the headings say low risk comes first).
   const h = `<div class="lead"><a href="${esc(ROOT.pathname)}" class="back" id="back">All spots</a><h1 class="page-h" tabindex="-1">Plan a swim</h1>`
-    + `<div class="plan-row">${planStrip(planDates(), PLAN.day)}</div><div class="plan-go">`
+    + `<div class="plan-row">${planStrip(planDates(), PLAN.day)}</div>${planActRow(PLAN.act)}<div class="plan-go">`
     + `<div class="search plan-from">${PIN}<label class="sr" for="plan-from">Starting from</label><input type="search" id="plan-from" list="plan-places" placeholder="Starting from" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="search" value="${esc(typed)}"><datalist id="plan-places"></datalist></div>`
     + `<label><span class="sr">How far you will go</span><select id="plan-within">${[...RADII, 0].map(r => `<option value="${r}"${r === PLAN.within ? ' selected' : ''}>${r ? `${r} miles` : 'Any distance'}</option>`).join('')}</select></label></div>`
     + `<p class="planner-note" id="plan-where" aria-live="polite"></p><p class="planner-note" id="plan-sum" role="status"></p>`   // the count, with Compare spots, before the kinds
     + `<div class="chips-row" role="group" aria-label="Water">${Object.entries(FILTERS).map(([k, t]) => `<button type="button" class="chip-btn" data-plan-kind="${k}" aria-pressed="${PLAN.kind === k}">${t}</button>`).join('')}</div>`
     + `<div class="planner-note" id="plan-basis"></div>` + notices() + '</div>'
-    + cols('<div id="plan-results"></div>');
+    + cols((typeof askBox === 'function' ? askBox(DATA) : '') + '<div id="plan-results"></div>');   // Ask SwimSignal's tile (ask.js), '' while off
   setPanel(h); bindBack(); bindPlan(); placeMap(); drawPlan(true);   // the map in its place before it is fitted to the plan
   planLoadWarnings();
   if (PLAN.from && PLAN.from.here && !VIEW.here) planLocate(true);
@@ -4217,6 +4313,7 @@ function drawPlan(fit = false) {
   box.querySelectorAll('ul.spots').forEach(bindItems);
   if (r.count) planCompare(r.groups, head);
   if (typeof drawOuting === 'function') drawOuting(box, r.groups.flat());   // outing.js: at the top of the results
+  if (r.count && typeof dpSection === 'function') planOptions(box, r.groups);   // dayplan.js: the options, above it
   planShare(r.groups[0].concat(r.groups[1]).sort((a, b) => a.miles - b.miles), on);
   // Find a window (findwindow.js): the plan's spots, its area and activity, over the five days, nearest first by distance
   // and never by level, with why each other day is not low risk and any official notice apart from the levels.
@@ -4302,6 +4399,7 @@ function bindPlan() {
   $('plan-within').addEventListener('change', e => { PLAN.within = Number(e.target.value); drawPlan(true); });
   document.querySelectorAll('[data-plan-kind]').forEach(b => b.addEventListener('click', () => { PLAN.kind = b.dataset.planKind;
     document.querySelectorAll('[data-plan-kind]').forEach(x => x.setAttribute('aria-pressed', String(x === b))); drawPlan(); }));
+  document.querySelectorAll('[data-plan-act]').forEach(b => b.addEventListener('click', () => planAct(b.dataset.planAct)));
   // Typing offers places. One picked from them, Enter, or leaving the field starts the plan there, and the
   // field is left (planType), so a phone's keyboard closes.
   input.addEventListener('focus', () => loadPlaces().catch(() => {}), { once: true });
@@ -4315,6 +4413,13 @@ function bindPlan() {
 }
 function planClick(e) {
   const $ = id => document.getElementById(id), d = e.target.closest('[data-plan-day]'), w = e.target.closest('[data-plan-within]'), a = e.target.closest('[data-plan-area]');
+  const f = e.target.closest('[data-plan-finish]');
+  if (f) { if (!plainClick(e)) return; e.preventDefault();   // a row's finish (planActLine): that start and finish in the outing, opened
+    const next = outingChanged(PLAN, 'spot'); for (const x of Object.keys(PLAN)) if (!(x in next)) delete PLAN[x];
+    PLAN.spot = f.dataset.planStart; PLAN.finish = f.dataset.planFinish; if (PLAN.backup === PLAN.spot) delete PLAN.backup;
+    OUTING_OPEN = true; drawPlan();
+    const t = $('outing'); if (t) { t.scrollIntoView({ block: 'start' }); t.querySelector('summary').focus({ preventScroll: true }); }
+    return; }
   if (a) { if (!plainClick(e)) return; e.preventDefault();   // the area's middle and distance, as its link says them
     PLAN = readPlan(new URL(a.href).hash, planDates(), PLAN); planNote = '';
     $('plan-from').value = PLAN.from ? PLAN.from.name : ''; $('plan-within').value = String(PLAN.within); drawPlan(true); }
@@ -4488,7 +4593,8 @@ function bindSave(d) {
 }
 // "Plan a swim here": Plan a swim on this spot as the outing's, for the day shown (plan.js, planFromSpot). A spot
 // the forecast cannot place (no position) has none. It is the planner as it is, with the outing tile open on the spot.
-// What you do on the water, if you said (plan.js, readActs; the Saved page's chips): a new outing starts as it.
+// What you do on the water, if you said (plan.js, readActs; Plan a swim's What for, planAct, or the Saved page's chips
+// before 31 Oct 2026): a new outing starts as it.
 let ACTS = typeof readActs === 'function' ? readActs(stored('dipcast.acts')) : [];
 const acts = () => typeof ACTS === 'undefined' ? [] : ACTS;   // a test that runs part of the page has no ACTS
 const planBase = () => { const b = PLAN_READ ? PLAN : planKept(stored(PLAN_KEY), planDates()), a = actDefault(acts());
@@ -4515,7 +4621,7 @@ const paddleFromHere = d => {
   if (!actDefault(acts()) || !Array.isArray(d.downstream) || !d.downstream.length) return '';
   const named = d.downstream.map(([id, km]) => [DATA.spots.find(s => s.id === id), km]).filter(([s]) => s).slice(0, 3);
   if (!named.length) return '';
-  return `<p class="small plan-here-line">Paddle from here, finishing at ${named.map(([s, km]) =>
+  return `<p class="small plan-here-line">From here by boat or board, finishing at ${named.map(([s, km]) =>
     `<a href="${esc(planPath() + planHereHash(d, s.id))}" data-plan-here data-finish="${esc(s.id)}">${esc(s.name)}</a> (${km < 10 ? km : Math.round(km)} km down)`).join(', ')}.</p>`;
 };
 function planHere(d) {
@@ -4723,12 +4829,14 @@ function dryWeatherNote(c) {
   if (!d || ![d.year, d.days, d.dry_days].every(Number.isInteger) || !(d.days > 0 && d.days <= d.dry_days)) return '';
   return `<div class="ov-meta">Spilled on ${d.days} of ${d.dry_days} <a href="methods.html#dry-weather">dry days</a> in ${d.year} (<a href="${EA_EVENTS}">EA records</a>).</div>`;
 }
+// Each overflow's name links its public record, overflow/<id>/ (build_site.write_overflow_pages), which the build writes
+// for every overflow with an annual-returns id upstream of a spot with a page.
 function overflowTile(d, total) {
   const SHOW = 3, n = d.contributors.length;
   const rows = d.contributors.map((c, i) => { const far = fmt(c.distance_km + c.lake_distance_km, 1), reach = Math.round(c.weight * 100), nm = overflowNames(c);
     L.circleMarker([c.lat, c.lon], { radius: 5 + 8*c.weight, color: colourFor(drawnStatus(c)), fillColor: colourFor(drawnStatus(c)), fillOpacity: .5, weight: 2 })
       .bindTooltip(`${esc(nm.plain)}: ${far} km, weight ${reach}%`).addTo(contribLayer);
-    return `<li${i >= SHOW ? ' class="extra"' : ''}><span class="sdot s${drawnStatus(c)}" aria-hidden="true"></span><div class="ov-main"><div class="ov-name">${esc(nm.plain)}</div>`
+    return `<li${i >= SHOW ? ' class="extra"' : ''}><span class="sdot s${drawnStatus(c)}" aria-hidden="true"></span><div class="ov-main"><div class="ov-name">${PAGE_ID.test(d.id) && /^[A-Z]{3}\d{5}$/.test(c.site_id) ? `<a href="overflow/${c.site_id}/">${esc(nm.plain)}</a>` : esc(nm.plain)}</div>`
       + `<div class="ov-meta">${nm.own ? esc(nm.own) + ' · ' : ''}${esc(companyName(c.company))} · ${statusSaid(c)}${c.latest_event_end ? ' · last ended ' + endedOn(c.latest_event_end) : ''}`
       + `${c.snap_confidence && c.snap_confidence !== 'high' ? ' · river match: ' + esc(c.snap_confidence) : ''} · ${overflowWhere(c)}${travelSaid(c, t => `about ${fmt(t, 0)}&nbsp;h`)}</div>${upgradeNote(c)}${dryWeatherNote(c)}</div>`
       + `<div class="ov-reach"><b>${reach}%<small> weight</small></b><span aria-hidden="true"><i style="width:${reach}%"></i></span><small>${!reach && tooFar(d) ? 'too small to count' : c.status === 1 ? 'discharging now' : `spill ${Math.round(c.p_spill_today * 100)}% today`}</small></div></li>`; }).join('');
@@ -4927,7 +5035,8 @@ function render(d) {
   // is otherwise the shorter; on a phone it follows the tiles.
   const more = (typeof evidenceTile === 'function' ? evidenceTile(d, Date.now(), DATA.generated_at) : '')
     + (typeof scoresHost === 'function' ? scoresHost(d) : '')   // how the forecast has done here (spotscores.js), filled when its file arrives
-    + (typeof seasonalTile === 'function' ? seasonalTile(d) : '');   // past spills upstream by month (seasonal.js): history, folded
+    + (typeof seasonalTile === 'function' ? seasonalTile(d) : '')   // past spills upstream by month (seasonal.js): history, folded
+    + (typeof timelineTile === 'function' ? timelineTile(d) : '');   // every dated measurement, report and the forecast, newest first (timeline.js)
   if (d.error) {
     DAY = null;   // no days here: a day link opens the spot, and the address loses the day
     if (dayFromURL()) history.replaceState(history.state, '', location.pathname + location.search);
@@ -4957,6 +5066,7 @@ function render(d) {
   h += tiles + `</div><div class="col-more">${more}`;
   if (d.contributors.length) h += overflowTile(d, allUpstream(d));   // the list has any too far away to count (levels.js)
   if (REPLAY && d.detail_file) h += '<div id="replay-host"></div>';   // ?replay=1 only (mountReplay)
+  if (d.detail_file && loc.mode !== 'lake') h += '<div id="plume-host"></div>';   // the spill map, drawn when near the screen (mountPlume)
   h += dayTable(d, total, loc.mode === 'lake', d.ecoli_scope || {}) + '</div></div>';
   h += actions(d) + tech(d);
   setPanel(h); bindBack(); bindSave(d); planHere(d); bindShare(d); bindShareImage(d); bindSwim(d); bindNearby(); bindDays(d); miniMap(d); reviewsFor(d); lakeTempFor(d); localSamplesFor(d);
@@ -4965,6 +5075,7 @@ function render(d) {
     moreBtn.setAttribute('aria-expanded', String(all)); moreBtn.textContent = all ? `Show the top 3` : `Show all ${d.contributors.length}`; });
   placeMap(); drawTrace();   // render cleared contribLayer, and the line with it
   if (REPLAY) mountReplay(d);
+  mountPlume(d);
   if (lastOn) mountLast(d, DATA.generated_at, document.getElementById('since-last-host'));
   if (EV_MAP) mountEvMap(d);
   phoneFolds();
@@ -4978,7 +5089,7 @@ function render(d) {
 // Long method text keeps its own named folds (What the level rests on, Day-by-day numbers) and each tile's corner button.
 // A desktop keeps its columns. What the level counts and the water-test line join the limits section from under the five
 // days, where showDay puts them back (phoneFolds moves them again).
-const PHONE_ORDER = ['.spot-map-tile', '#overflows', '#now-tiles', '#lt-past', '#ls-past', '#day-tiles', '#seasonal', '#scores-host, #scores', '#limits'];
+const PHONE_ORDER = ['.spot-map-tile', '#overflows', '#plume-host', '#now-tiles', '#lt-past', '#ls-past', '#day-tiles', '#seasonal', '#scores-host, #scores', '#limits'];
 const PHONE_OPEN = ['#seasonal'];   // a chart: open on a phone. The overflows' rows run to 800 px, so they keep their fold
 function phoneFolds() {
   const stack = document.querySelector('#result .stack'), at0 = stack && stack.querySelector('#nearby-host');
@@ -5033,6 +5144,31 @@ function mountReplay(d) {
       if (!r) return said('No replay of the last 48 hours upstream for this spot in this update.');
       replayStyle(document); host.innerHTML = replayTile(r, Date.now(), host.clientWidth - 32); })   // the tile's inner width
     .catch(() => said('The replay of the last 48 hours upstream could not be loaded.'));
+}
+// The spill map (docs/PLUME-MAP-2026-10.md): where water from the spills reported upstream in the last 48 hours may
+// be, moved at the forecast's travel time, with a slider from 48 hours before the update to 48 after. plume.js (at
+// the build's stamp, as replay.js) and the spot's replay, routes and trace (data/spot/<id>-replay.json,
+// -plume.json, -trace.json) are asked for when its place comes within a screen of view, not before. A spot with
+// no routes file (a lake, or one the build could not place) loses the place quietly.
+let plumeScript = null;
+function mountPlume(d) {
+  const host = document.getElementById('plume-host');
+  if (!host) return;
+  const go = () => {
+    const v = (document.querySelector('script[src*="levels.js?v="]') || {}).src;
+    plumeScript = plumeScript || new Promise((ok, no) => { const s = document.createElement('script');
+      s.src = `plume.js${v ? `?v=${new URL(v).searchParams.get('v')}` : ''}`; s.onload = ok; s.onerror = no; document.head.appendChild(s); });
+    const get = p => fetch(`data/${d.detail_file.replace(/\.json$/, p)}`, { cache: 'no-cache' }).then(r => (r.ok ? r.json() : null)).catch(() => null);
+    Promise.all([plumeScript, get('-plume.json'), get('-replay.json'), get('-trace.json')])
+      .then(([, doc, replay, trace]) => { if (!host.isConnected) return;
+        if (!doc || !replay) { host.remove(); return; }
+        const gen = Date.parse(replay.window && replay.window.to || doc.generated_at), now = Date.now();
+        plumeStyle(document); host.innerHTML = plumeTile(d, doc, replay, gen, now); plumeBind(host, d, doc, replay, trace, gen); })
+      .catch(() => { if (host.isConnected) host.innerHTML = '<section class="tile"><p class="t-say">The map of where spill water may be could not be loaded.</p></section>'; });
+  };
+  if (!('IntersectionObserver' in window)) return go();
+  const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { io.disconnect(); go(); } }, { rootMargin: '100% 0px' });
+  io.observe(host);
 }
 // Evidence map (prototype, docs/EVIDENCE-MAP-2026-10.md): where the forecast has evidence upstream and
 // where its knowledge ends, only with ?evidence=1 in the address, so the page is unchanged without it. As the
