@@ -13,6 +13,12 @@ One row a sample, in two places:
   the page shows. scripts/add_samples.py writes it from the private file, whole, every time, so a
   permission taken back in the private file takes the row out of the public one on the next run.
 
+Version 2 (31 Oct 2026, docs/PARTNER-SAMPLES-CONTRACT-v1.md) adds what a sampling partner's results need, as columns
+after the first thirteen, every one optional so a version 1 file still reads: the sampling point where it is not the
+spot's pin, whether the time is known, each count's basis (cfu or MPN) and the method's limits, how out-of-limit values
+are written, the sampler as a role, the licence and credit, and when each permission was agreed, with the kind of test
+use (holdout or exploratory). A holdout result must have been agreed before it was sampled.
+
 The build reads only the public folder (attach_measured): each spot's samples from the last
 WINDOW_DAYS, newest first, go on the spot in spots.json as ``measured``, and the spot's page draws them
 in a tile of their own (src/dipcast/site/measured.js). They are not part of the level. A row that
@@ -41,9 +47,17 @@ UK = ZoneInfo("Europe/London")
 # The private file's columns, in order; the public file's are the same less the three that are not
 # for publishing: the lab's own reference, which links a row to the report in the supplier's email,
 # and the two permissions (every public row has publish = true; evaluate is not the page's business).
-COLUMNS = ("spot_id", "sampled_at", "timezone", "ecoli_per_100ml", "enterococci_per_100ml", "lab", "ukas_accredited",
-           "method", "lab_ref", "supplier", "received", "publish", "evaluate")
-PRIVATE_ONLY = ("lab_ref", "publish", "evaluate")
+V1_COLUMNS = ("spot_id", "sampled_at", "timezone", "ecoli_per_100ml", "enterococci_per_100ml", "lab", "ukas_accredited",
+              "method", "lab_ref", "supplier", "received", "publish", "evaluate")
+# Version 2's columns, after version 1's (docs/PARTNER-SAMPLES-CONTRACT-v1.md has each). Blank is always allowed and
+# means "not stated"; the checks below say where a value needs another.
+V2_COLUMNS = ("time_known", "site_name", "site_lat", "site_lon", "site_confirmed", "ecoli_basis", "enterococci_basis",
+              "ecoli_lower_limit", "ecoli_upper_limit", "enterococci_lower_limit", "enterococci_upper_limit", "limits_written",
+              "sampler", "licence", "attribution", "publish_agreed", "evaluate_use", "evaluate_agreed")
+COLUMNS = V1_COLUMNS + V2_COLUMNS
+# Kept private as well: who took it (a role, but still the partner's business) and the dates and kind of each agreement.
+PRIVATE_ONLY = ("lab_ref", "publish", "evaluate", "sampler", "publish_agreed", "evaluate_use", "evaluate_agreed")
+V1_PUBLIC = tuple(c for c in V1_COLUMNS if c not in PRIVATE_ONLY)
 PUBLIC_COLUMNS = tuple(c for c in COLUMNS if c not in PRIVATE_ONLY)
 # The zone a supplier's times are in: UK clock time, or GMT all year, as some lab systems record it.
 # Anything else is refused rather than guessed ("BST" is not a zone: it is Europe/London in summer).
@@ -65,6 +79,12 @@ MAX_TEXT = 80
 SPOT_ID = re.compile(r"[A-Za-z0-9_-]{1,80}")   # the site's rule for a spot's id, as guides.py's
 COUNT = re.compile(r"([<>])?\s*(\d[\d,]*(?:\.\d+)?)")
 YES, NO = ("true", "yes", "y", "1"), ("false", "no", "n", "0", "")
+BASES = ("cfu", "mpn")                       # colony-forming units (a plate count) or most probable number
+LIMITS_WRITTEN = ("qualifier", "zero")       # below a limit written as <10, or as 0 (then the lower limit is needed)
+LICENCES = ("public-domain", "CC-BY-4.0", "OGL-3.0")
+CREDIT = ("CC-BY-4.0", "OGL-3.0")            # licences that need an attribution
+USES = ("holdout", "exploratory")            # evaluate_use; blank with evaluate = true is exploratory
+LAT, LON = (49.8, 61.0), (-10.7, 2.0)        # Great Britain and Ireland, loosely: a swapped or unsigned position falls outside
 
 
 class SampleError(ValueError):
@@ -147,6 +167,35 @@ def _when(v, zone: str) -> datetime:
     return a
 
 
+def _when_day(v, zone: str) -> datetime:
+    """A sampling day with no time (time_known = no): noon on that day in its zone, for ordering only. Such a sample can
+    be matched to a forecast day, never to the forecast live at the moment it was taken."""
+    s = str(v or "").strip()
+    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}|\d{2}/\d{2}/\d{4}", s):
+        raise SampleError(f"with time_known no, sampled_at is the day alone, 2026-10-17 or 17/10/2026, not {v!r}")
+    return datetime.combine(_day(s, "sampled_at"), datetime.min.time()).replace(hour=12, tzinfo=ZoneInfo(zone))
+
+
+def _limit(v, what: str) -> float | None:
+    s = str(v or "").strip().replace(",", "")
+    if not s:
+        return None
+    try:
+        n = float(s)
+    except ValueError:
+        raise SampleError(f"{what} must be a number per 100 ml, or blank, not {v!r}") from None
+    if not 0 <= n <= MAX_COUNT:
+        raise SampleError(f"{what} {n:g} is not a limit per 100 ml")
+    return n
+
+
+def _choice(v, what: str, ok: tuple[str, ...]) -> str:
+    s = str(v or "").strip()
+    if s and s not in ok:
+        raise SampleError(f"{what} must be {', '.join(ok)} or blank, not {v!r}")
+    return s
+
+
 def _count(v, what: str) -> tuple[float, str] | None:
     """'1200', '1,200', '<10', '> 24196': the count and its qualifier ('<', '>' or ''). None if blank."""
     s = str(v or "").strip()
@@ -190,7 +239,8 @@ def parse_row(raw: dict, spot_ids: set[str] | None, now: datetime | None = None,
     zone = str(raw.get("timezone") or "").strip()
     if zone not in ZONES:
         raise SampleError(f"timezone must be one of {', '.join(ZONES)}, not {zone!r}")
-    at = _when(raw.get("sampled_at"), zone)
+    time_known = _choice(raw.get("time_known"), "time_known", ("yes", "no"))
+    at = _when_day(raw.get("sampled_at"), zone) if time_known == "no" else _when(raw.get("sampled_at"), zone)
     if at > now:
         raise SampleError(f"sampled_at {at.isoformat(timespec='minutes')} is in the future")
     local_day = at.astimezone(UK).date()
@@ -212,15 +262,92 @@ def parse_row(raw: dict, spot_ids: set[str] | None, now: datetime | None = None,
     if not allow_old and (received - local_day).days > MAX_DELAY_DAYS:
         raise SampleError(f"taken {local_day}, {(received - local_day).days} days before it was received: check the year "
                           "and the order of day and month (older results need --allow-old)")
-    row = {"spot_id": sid, "sampled_at": at.isoformat(timespec="minutes"), "timezone": zone,
+    row = {"spot_id": sid, "sampled_at": at.date().isoformat() if time_known == "no" else at.isoformat(timespec="minutes"), "timezone": zone,
            "ecoli_per_100ml": _fmt_count(ecoli), "enterococci_per_100ml": _fmt_count(ent),
            "lab": _text(raw.get("lab"), "lab"), "ukas_accredited": ukas, "method": _text(raw.get("method"), "method"),
            "supplier": supplier, "received": received.isoformat()}
+    row |= _v2(raw, row, local_day, time_known, ecoli, ent, now)
     if not public:
         row |= {"lab_ref": _text(raw.get("lab_ref"), "lab_ref"), "publish": _flag(raw.get("publish"), "publish"),
                 "evaluate": _flag(raw.get("evaluate"), "evaluate")}
+        _agreements(raw, row, local_day, now)
     out = {c: row[c] for c in cols}
-    out |= {"_at": at, "_ecoli": ecoli, "_ent": ent}
+    out |= {"_at": at, "_ecoli": ecoli, "_ent": ent, "_time_known": time_known != "no"}
+    return out
+
+
+def _v2(raw: dict, row: dict, day: date, time_known: str, ecoli, ent, now: datetime) -> dict:
+    """Version 2's public columns, checked: the point, each count's basis and limits, how limits are written, licence."""
+    out = {"time_known": time_known, "site_name": _text(raw.get("site_name"), "site_name")}
+    lat, lon = (str(raw.get(k) or "").strip() for k in ("site_lat", "site_lon"))
+    if lat or lon:
+        try:
+            y, x = float(lat), float(lon)
+        except ValueError:
+            raise SampleError("site_lat and site_lon must both be decimal degrees (WGS84), or both blank") from None
+        if not (LAT[0] <= y <= LAT[1] and LON[0] <= x <= LON[1]):
+            raise SampleError(f"site_lat {lat}, site_lon {lon} is not in Great Britain or Ireland: check the order and the minus sign")
+        lat, lon = f"{y:.5f}", f"{x:.5f}"
+    out |= {"site_lat": lat, "site_lon": lon, "site_confirmed": _choice(raw.get("site_confirmed"), "site_confirmed", ("yes", "no"))}
+    written = _choice(raw.get("limits_written"), "limits_written", LIMITS_WRITTEN)
+    for name, c in (("ecoli", ecoli), ("enterococci", ent)):
+        lo, hi = _limit(raw.get(f"{name}_lower_limit"), f"{name}_lower_limit"), _limit(raw.get(f"{name}_upper_limit"), f"{name}_upper_limit")
+        if lo is not None and hi is not None and lo > hi:
+            raise SampleError(f"{name}_lower_limit {lo:g} is above {name}_upper_limit {hi:g}")
+        if c is not None and c[0] == 0 and not c[1]:
+            if written == "qualifier" and (lo or 0) > 0:
+                raise SampleError(f"{name} is 0 where below-limit values are written with <: write <{lo:g}")
+            if written == "zero" and lo is None:
+                raise SampleError(f"limits_written zero needs {name}_lower_limit, the limit a 0 stands for")
+        out |= {f"{name}_basis": _choice(raw.get(f"{name}_basis"), f"{name}_basis", BASES),
+                f"{name}_lower_limit": "" if lo is None else f"{_num(lo)}", f"{name}_upper_limit": "" if hi is None else f"{_num(hi)}"}
+    licence = _choice(raw.get("licence"), "licence", LICENCES)
+    attribution = _text(raw.get("attribution"), "attribution")
+    if licence in CREDIT and not attribution:
+        raise SampleError(f"licence {licence} needs an attribution, the credit shown beside the result")
+    return out | {"limits_written": written, "sampler": _text(raw.get("sampler"), "sampler"), "licence": licence, "attribution": attribution}
+
+
+def _agreements(raw: dict, row: dict, day: date, now: datetime) -> None:
+    """When each permission was agreed, and the kind of test use. A holdout needs an agreement made before the sample
+    was taken, and a time: nobody could then have chosen it after seeing the result, and it can be matched to the
+    forecast live when it was taken (docs/PARTNER-SAMPLES-CONTRACT-v1.md says why)."""
+    today = now.astimezone(UK).date()
+    for k in ("publish_agreed", "evaluate_agreed"):
+        v = str(raw.get(k) or "").strip()
+        if v and (d := _day(v, k)) > today:
+            raise SampleError(f"{k} {d} is in the future")
+        row[k] = _day(v, k).isoformat() if v else ""
+    use = _choice(raw.get("evaluate_use"), "evaluate_use", USES)
+    if use and row["evaluate"] != "true":
+        raise SampleError(f"evaluate_use {use} with evaluate false: the result is not to be used in a test")
+    if use == "holdout":
+        if not row["evaluate_agreed"]:
+            raise SampleError("a holdout needs evaluate_agreed, the day the test use was agreed in writing")
+        if date.fromisoformat(row["evaluate_agreed"]) >= day:
+            raise SampleError(f"holdout agreed {row['evaluate_agreed']}, on or after the sample ({day}): only an agreement made "
+                              "before sampling keeps a result held out; use exploratory")
+        if row["time_known"] == "no":
+            raise SampleError("a holdout needs the sampling time, to match it to the forecast live when it was taken")
+    row["evaluate_use"] = use
+
+
+def notes(row: dict) -> list[str]:
+    """What a checked row leaves unknown, for the person adding it to read with the sender: none of these stops a row."""
+    out = []
+    for name, c in (("E. coli", row["_ecoli"]), ("enterococci", row["_ent"])):
+        key = "ecoli" if name == "E. coli" else "enterococci"
+        if c is not None and c[0] == 0 and not c[1] and not row["limits_written"]:
+            out.append(f"{name} 0 with limits_written blank: it may be a below-limit result, not none")
+        lo, hi = row[f"{key}_lower_limit"], row[f"{key}_upper_limit"]
+        if c is not None and ((c[1] == "<" and lo and float(lo) != c[0]) or (c[1] == ">" and hi and float(hi) != c[0])):
+            out.append(f"{name} {c[1]}{_num(c[0])} is not the stated limit")
+    if row["site_confirmed"] == "no":
+        out.append("site_confirmed no: the point is approximate")
+    if not row["_time_known"]:
+        out.append("no sampling time: it can be matched to a forecast day, not to the forecast live when it was taken")
+    if row.get("publish") == "true" and not row["licence"]:
+        out.append("publish true with no licence: agree one before the result reaches the open data files")
     return out
 
 
@@ -230,9 +357,12 @@ def key(row: dict) -> tuple:
 
 
 def _read(path: Path, cols: tuple[str, ...]) -> list[dict]:
+    """A file's rows. A version 1 file (the first thirteen columns, or the public ten) reads with the new columns blank."""
+    old = V1_COLUMNS if cols == COLUMNS else V1_PUBLIC
     with path.open(newline="", encoding="utf-8") as fh:
         r = csv.DictReader(fh)
-        if tuple(r.fieldnames or ()) != cols:
+        got = tuple(r.fieldnames or ())
+        if got not in (cols, old):
             raise SampleError(f"{path.name}: the columns must be {', '.join(cols)}")
         return list(r)
 
@@ -290,11 +420,15 @@ def sync_public(private: Path, public: Path, spot_ids: set[str] | None = None, n
 def _page(row: dict) -> dict:
     """A public row in the shape the page draws (measured.js)."""
     out = {"sampled_at": row["sampled_at"]}
+    if not row["_time_known"]:
+        out["time_known"] = False   # sampled_at is a day alone
     for name, c in (("ecoli", row["_ecoli"]), ("enterococci", row["_ent"])):
         if c is not None:
             out[name] = _num(c[0])
             if c[1]:
                 out[f"{name}_qualifier"] = c[1]
+            if row[f"{name}_basis"]:
+                out[f"{name}_basis"] = row[f"{name}_basis"]
     if row["lab"]:
         out["lab"] = row["lab"]
     if row["ukas_accredited"]:

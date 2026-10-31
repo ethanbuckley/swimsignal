@@ -113,7 +113,7 @@ def test_taking_back_publish_in_the_private_file_takes_the_row_out_on_sync(tmp_p
     private, public, rows = _three(tmp_path)
     sm.write_supplier(private, public, "example-swim-club", rows)
     p = private / "example-swim-club.csv"
-    p.write_text(p.read_text().replace("true,false\n", "false,false\n"))   # the 17th's publish taken back
+    p.write_text(p.read_text().replace("true,false,", "false,false,"))   # the 17th's publish taken back
     assert sm.sync_public(private, public, {SPOT}, NOW) == {"example-swim-club": 0}
     assert not (public / "example-swim-club.csv").exists()   # nothing left to publish: no public file
     with pytest.raises(sm.SampleError, match="no private folder"):
@@ -270,3 +270,102 @@ def test_evaluation_pairs_each_sample_with_the_forecasts_issued_before_it(tmp_pa
     gap = next(r for r in got if r["sampled_at"].startswith("2026-10-15"))
     assert gap["lead"] == "" and gap["over_900"] == ""   # "<1000" does not settle it
     assert ev.over_900((900, "")) == 0 and ev.over_900((900, ">")) == 1 and ev.over_900((10, "<")) == 0
+
+
+# ---- version 2: what a sampling partner's results need (docs/PARTNER-SAMPLES-CONTRACT-v1.md) ----
+
+def test_the_template_is_the_format_s_columns_and_every_column_is_described():
+    assert (ROOT / "docs" / "samples-template-v2.csv").read_text().strip().split(",") == list(sm.COLUMNS)
+    contract = (ROOT / "docs" / "PARTNER-SAMPLES-CONTRACT-v1.md").read_text()
+    for c in sm.COLUMNS:
+        assert f"`{c}`" in contract, c
+
+
+def test_a_version_1_file_still_reads(tmp_path):
+    p = tmp_path / "private"
+    p.mkdir()
+    with (p / "example-swim-club.csv").open("w", newline="") as fh:
+        w = csv.DictWriter(fh, fieldnames=sm.V1_COLUMNS, lineterminator="\n")
+        w.writeheader()
+        w.writerow({k: v for k, v in row(publish="true").items() if k in sm.V1_COLUMNS})
+    [r] = sm.read_private(p, {SPOT}, NOW)["example-swim-club"]
+    assert r["time_known"] == "" and r["_time_known"] and r["evaluate_use"] == ""
+
+
+@pytest.mark.parametrize("kw, message", [
+    ({"site_lat": "54.4"}, "both be decimal degrees"),
+    ({"site_lat": "-2.95", "site_lon": "54.4"}, "not in Great Britain or Ireland"),
+    ({"site_confirmed": "maybe"}, "site_confirmed must be"),
+    ({"time_known": "no"}, "the day alone"),
+    ({"ecoli_basis": "cfu/100ml"}, "ecoli_basis must be cfu, mpn"),
+    ({"ecoli_lower_limit": "ten"}, "must be a number"),
+    ({"ecoli_lower_limit": "100", "ecoli_upper_limit": "10"}, "is above"),
+    ({"ecoli_per_100ml": "0", "limits_written": "qualifier", "ecoli_lower_limit": "10"}, "write <10"),
+    ({"ecoli_per_100ml": "0", "limits_written": "zero"}, "needs ecoli_lower_limit"),
+    ({"limits_written": "rounded"}, "limits_written must be"),
+    ({"licence": "CC-BY"}, "licence must be"),
+    ({"licence": "CC-BY-4.0"}, "needs an attribution"),
+    ({"publish_agreed": "2026-10-21"}, "in the future"),
+    ({"evaluate_use": "holdout"}, "with evaluate false"),
+    ({"evaluate": "true", "evaluate_use": "holdout"}, "needs evaluate_agreed"),
+    ({"evaluate": "true", "evaluate_use": "sometimes"}, "evaluate_use must be"),
+])
+def test_version_2_columns_are_checked(kw, message):
+    with pytest.raises(sm.SampleError, match=message):
+        parse(**kw)
+
+
+def test_a_holdout_needs_an_agreement_made_before_sampling_and_a_time():
+    held = dict(evaluate="true", evaluate_use="holdout")
+    for agreed in ("2026-10-17", "2026-10-19"):   # the day of sampling, or after: it could be chosen by its result
+        with pytest.raises(sm.SampleError, match="use exploratory"):
+            parse(**held, evaluate_agreed=agreed)
+    assert parse(**held, evaluate_agreed="2026-10-16")["evaluate_use"] == "holdout"
+    with pytest.raises(sm.SampleError, match="needs the sampling time"):
+        parse(**held, evaluate_agreed="2026-10-01", time_known="no", sampled_at="2026-10-17")
+    # The same late agreement is fine for exploratory use.
+    assert parse(evaluate="true", evaluate_use="exploratory", evaluate_agreed="2026-10-19")["evaluate_use"] == "exploratory"
+
+
+def test_a_day_without_a_time_is_kept_as_a_day_and_said_so_on_the_page():
+    r = parse(time_known="no", sampled_at="17/10/2026", publish="true")
+    assert r["sampled_at"] == "2026-10-17" and not r["_time_known"]
+    assert sm._page(r)["time_known"] is False and sm._page(r)["sampled_at"] == "2026-10-17"
+    assert any("not to the forecast live" in n for n in sm.notes(r))
+
+
+def test_notes_say_what_is_not_known_without_refusing_the_row():
+    assert any("may be a below-limit result" in n for n in sm.notes(parse(ecoli_per_100ml="0")))
+    assert sm.notes(parse(ecoli_per_100ml="0", limits_written="zero", ecoli_lower_limit="10", licence="OGL-3.0",
+                          attribution="Example Club", publish="true")) == []
+    assert any("not the stated limit" in n for n in sm.notes(parse(enterococci_lower_limit="1")))
+    assert any("no licence" in n for n in sm.notes(parse(publish="true")))
+
+
+def test_the_partner_columns_stay_out_of_the_public_file(tmp_path):
+    r = parse(publish="true", sampler="club coach", publish_agreed="2026-10-01", evaluate="true", evaluate_use="exploratory",
+              evaluate_agreed="2026-10-01", licence="CC-BY-4.0", attribution="Example Club", site_name="North shore",
+              site_lat="54.4", site_lon="-2.95", ecoli_basis="mpn", ecoli_lower_limit="1", ecoli_upper_limit="2419.6")
+    sm.write_supplier(tmp_path / "private", tmp_path / "public", "example-swim-club", [r])
+    head, line = (tmp_path / "public" / "example-swim-club.csv").read_text().splitlines()
+    assert head == ",".join(sm.PUBLIC_COLUMNS)
+    for word in ("club coach", "exploratory", "sampler", "evaluate"):
+        assert word not in head + line, word
+    assert "North shore,54.40000,-2.95000" in line and "mpn" in line and "2419.6" in line
+
+
+def test_waterhead_is_the_published_export_in_the_samples_format():
+    wet = _script("export_waterhead_wet")
+    doc = json.loads((ROOT / "data" / "research" / "waterhead_wet.v1.json").read_text())
+    committed = (ROOT / "data" / "research" / "partners" / "aafaf-waterhead.samples.csv").read_text()
+    assert committed == wet.samples_csv(doc)
+    rows = [sm.parse_row(r, {"osm-windermere-waterhead"}, datetime(2026, 10, 31, 12, tzinfo=sm.UK), allow_old=True) for r in csv.DictReader(committed.splitlines())]
+    assert len(rows) == 59
+    for r, x in zip(rows, doc["samples"]):   # every count unchanged, none given a < or >
+        assert (r["sampled_at"], r["_ecoli"], r["_ent"]) == (x["date"], (x["ecoli"], ""), (x["ie"], ""))
+    assert {r["evaluate_use"] for r in rows} == {"exploratory"}   # seen before any Waterhead test was designed
+    assert {r["lab"] for r in rows if r["sampled_at"] < "2026"} == {"Simplex Health"} and {r["lab"] for r in rows if r["sampled_at"] > "2026"} == {""}
+    zeros = [n for r in rows for n in sm.notes(r) if "below-limit" in n]
+    assert len(zeros) == 3   # E. coli on 8 and 15 May 2025, enterococci on 18 May 2026
+    # Not in samples/: adding it there would put its last 30 days in the spot's Measured tile, which is Ethan's call.
+    assert not (sm.PUBLIC / "ambleside-action-for-a-future.csv").exists()
