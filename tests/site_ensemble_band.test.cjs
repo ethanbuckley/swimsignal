@@ -58,7 +58,7 @@ test('no band where the three agree, where the members did not reach the day, or
   assert.deepEqual(bands(run('dayRows(DATA.spots[0])')), []);
   assert.deepEqual(bands(run('dayRows(DATA.spots[1])')), []);
   assert.deepEqual(bands(run('dayRows(DATA.spots[2])')), []);
-  assert.doesNotMatch(run('dayRows(DATA.spots[2])'), /class="sr"/);
+  assert.doesNotMatch(run('dayRows(DATA.spots[2])'), /Three Met Office rain forecasts/);
 });
 
 test('the band is drawn in ink, two pixels inside the bar, and named in the page\'s CSS once', () => {
