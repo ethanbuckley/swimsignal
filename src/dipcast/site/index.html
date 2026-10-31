@@ -1728,14 +1728,15 @@ function savedBadge() {
 }
 
 // How many of the overflows upstream are expected to spill on a day, as a clause. Under one on a
-// raised day means a nearby overflow. On a low day it says "under one": rounded to "none", it
-// would hide a real chance of a spill.
+// raised day means a nearby overflow. On a low day it says a spill is possible, not expected: under
+// half a spill expected, rounded to "none", would hide a real chance of one; "under one spill is
+// expected" (until 31 Oct 2026, #504) read as a fraction of a spill.
 const spilling = (x, total) => { const e = x.expected_spilling_overflows; if (nil(e)) return '';
   const k = Math.round(e);
   return k >= total ? (total === 1 ? 'the overflow upstream is expected to spill' : `all ${total} overflows upstream are expected to spill`)
     : k >= 1 ? `about ${k} of the ${total} overflows upstream ${k === 1 ? 'is' : 'are'} expected to spill`
     : ORDER[x.label] ? 'a spill from a nearby overflow upstream is possible'
-    : `under one spill is expected from the ${total === 1 ? 'overflow' : `${total} overflows`} upstream`; };
+    : `a spill from ${total === 1 ? 'the overflow' : `one of the ${total} overflows`} upstream is possible, not expected`; };
 // ------------------------------------------------------------------------------ alerts
 // A notification when a saved spot reaches high or very high risk (push/ sends them). Only where the build set up the
 // alert service (DATA.push), and only if asked: turning alerts on sends the push address and the
@@ -2654,14 +2655,17 @@ function dayOverflows(d, j) {
   return top.length ? `<ul class="dd-ovs">${top.map(([c, p]) => `<li><span class="sdot s${drawnStatus(c)}" aria-hidden="true"></span><span><span class="sr">${esc(statusText(c.status, c))}: </span><b>${esc(overflowNames(c).plain)}</b>${ownName(c)}: `
     + `spill chance ${share(p)}, weight ${share(c.weight)}</span></li>`).join('')}</ul>` : '';
 }
-// How good a forecast this far ahead has been, from the build's tests (lead_skill in spots.json).
-// The figures stay in view; how they were measured, and that the rain can change, are folded.
+// How good a forecast this far ahead has been, from the build's tests (lead_skill in spots.json): in words
+// first, the share of a same-day forecast's skill folded with how it was measured (#504: "85% as good as
+// same-day ones" needed the fold to be read right). The words' bands are for reading, not a test's verdict.
+const aheadSaid = f => f >= 0.8 ? 'Forecasts this far ahead have been nearly as good as same-day ones.'
+  : f >= 0.6 ? 'Forecasts this far ahead have been less reliable than same-day ones.' : 'Forecasts this far ahead have been much less reliable than same-day ones.';
 function howSure(d, j) {
   const k = DATA.lead_skill, r5 = x => Math.round(x * 20) * 5 + '%';
   if (!j || !k) return '';
-  return factorRow('How far ahead', null, `${j} day${j === 1 ? '' : 's'}`, `In tests on past years, spill forecasts this far ahead were about ${r5(k.spill[j])} as good as same-day ones`
-    + (ecoliTested(d) && !d.unlisted ? `, and water-quality ones about ${r5(k.water[j])}` : '') + '.'
-    + explain('How this was measured', 'The comparison goes by how much each beat a guess from the usual rates. The rain forecast behind it can still change.'));
+  return factorRow('How far ahead', null, `${j} day${j === 1 ? '' : 's'}`, `${aheadSaid(k.spill[j])} The rain forecast behind it can still change.`
+    + explain('How this was measured', `In tests on past years, spill forecasts this far ahead were about ${r5(k.spill[j])} as good as same-day ones`
+      + (ecoliTested(d) && !d.unlisted ? `, and water-quality ones about ${r5(k.water[j])}` : '') + '. The comparison goes by how much each beat a guess from the usual rates.'));
 }
 function dayDetail(d, x) {
   const total = overflows(d), first = x.date === today(), rows = [], j = d.days.indexOf(x);
@@ -3895,7 +3899,9 @@ let PLAN_WARNINGS = null, PLAN_SHARED = '';
 function planBasis(shown) {
   const { line, n, m } = planShared(shown.map(o => evidenceCompanyLine(o.s, PLAN_WARNINGS)));
   PLAN_SHARED = line;
-  return line ? `${planSharedWho(n, m, shown.length)}: ${line}` : '';
+  // Folded (#504): whose spills the model learned from, and a share of other companies' spills, came
+  // before the outing on every plan; it is the evidence behind the levels, not a step in choosing.
+  return line ? explain('How the spill warnings have done here', `${planSharedWho(n, m, shown.length)}: ${line}`) : '';
 }
 function planEvidence(s) {
   const own = evidenceCompanyLine(s, PLAN_WARNINGS);
@@ -3943,7 +3949,7 @@ function renderPlan() {
     + `<label><span class="sr">How far you will go</span><select id="plan-within">${[...RADII, 0].map(r => `<option value="${r}"${r === PLAN.within ? ' selected' : ''}>${r ? `${r} miles` : 'Any distance'}</option>`).join('')}</select></label></div>`
     + `<p class="planner-note" id="plan-where" aria-live="polite"></p><p class="planner-note" id="plan-sum" role="status"></p>`   // the count, with Compare spots, before the kinds
     + `<div class="chips-row" role="group" aria-label="Water">${Object.entries(FILTERS).map(([k, t]) => `<button type="button" class="chip-btn" data-plan-kind="${k}" aria-pressed="${PLAN.kind === k}">${t}</button>`).join('')}</div>`
-    + `<p class="planner-note" id="plan-basis"></p>` + notices() + '</div>'
+    + `<div class="planner-note" id="plan-basis"></div>` + notices() + '</div>'
     + cols('<div id="plan-results"></div>');
   setPanel(h); bindBack(); bindPlan(); placeMap(); drawPlan(true);   // the map in its place before it is fitted to the plan
   planLoadWarnings();
@@ -4078,8 +4084,8 @@ function planShare(open, on) {
   const low = top.filter(o => o.level === 'low').length, none = n - low;
   const which = low && none ? `: ${low} at low risk ${on} and ${none} with no monitored overflow found upstream,` : low ? ` at low risk ${on},` : ' with no monitored overflow found upstream,';
   box.insertAdjacentHTML('beforeend', `<section class="sec tile" aria-labelledby="plan-share-h"><h2 class="sec-h" id="plan-share-h">Share suggested spots</h2>`
-    + `<p class="sub">A link to the ${open.length > n ? `${n} nearest spots` : n === 1 ? 'spot' : `${n} spots`}${which} as a list called “${esc(name)}”, which a friend can add to their own lists. `
-    + `It contains the date and listed spots, not your selected outing time or meeting place.${left}${excluded}</p>`
+    + `<p class="sub">A link to the ${open.length > n ? `${n} nearest spots` : n === 1 ? 'spot' : `${n} spots`}${which} as a list, “${esc(name)}”, for a friend to add. `
+    + `It holds the date and the spots, not your selected outing time or meeting place.${left}${excluded}</p>`
     + `<details><summary>See the ${n} included ${n === 1 ? 'spot' : 'spots'}</summary><ul>${pick.map(s => `<li>${esc(s.name)}</li>`).join('')}</ul></details>`
     + `<button type="button" class="btn" id="plan-share">Share suggested spots</button><p class="small muted msg" id="plan-share-msg" aria-live="polite"></p></section>`);
   bindShareLink(document.getElementById('plan-share'), document.getElementById('plan-share-msg'),
