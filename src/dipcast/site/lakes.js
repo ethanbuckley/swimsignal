@@ -82,16 +82,41 @@ const LAKES_SELECTED = 'Images here were chosen near laboratory sample dates, so
 const LAKES_EXPERIMENTAL = 'Taken outside May to September: an experimental reading. The index was tested against chlorophyll and algae only in May to September, so nothing about either is read from it.';
 function lakesLatest(lake, doc, todayISO) {
   const L = lake.latest || {}, f = lakesFresh(L.date ? L : null, todayISO, doc.freshness_rules), sel = lakesSelected(lake);
-  // The partial series is said beside the headline; a season closed is not, where the latest is itself out of season.
-  const reasons = (L.reasons || []).filter(r => !(sel && r === 'series_partial') && !(L.experimental && r === 'season_closed'))
+  // The partial series is said beside the headline; a season closed is not, where the latest is itself out of season or
+  // the location is a pilot site, whose images are read all year (its weekly check says what it found instead).
+  const reasons = (L.reasons || []).filter(r => !(sel && r === 'series_partial') && !((L.experimental || lake.operation) && r === 'season_closed'))
     .map(r => lakesReason(r, doc, lake)).filter(Boolean);
   const scope = sel ? `<p class="lk-scope-sel">${LAKES_SELECTED}</p>` : '';
   const why = reasons.length ? `<ul class="lk-reasons">${reasons.map(r => `<li>${lakesEsc(r)}</li>`).join('')}</ul>` : '';
   if (!L.date) return `<p class="lk-none"><b>No usable satellite reading at this location.</b></p>` + scope + why;
-  return `<p class="lk-latest"><b>${sel ? 'Latest in this historical dataset' : 'Latest in this dataset'}: ${lakesEsc(lakesTime(L.datetime || L.date))}</b>, ${lakesAgeWords(f.age)} (${lakesEsc(LAKES_FRESH_WORDS[f.freshness])}).</p>`
+  return `<p class="lk-latest"><b>${sel && !lake.operation ? 'Latest in this historical dataset' : 'Latest in this dataset'}: ${lakesEsc(lakesTime(L.datetime || L.date))}</b>, ${lakesAgeWords(f.age)} (${lakesEsc(LAKES_FRESH_WORDS[f.freshness])}).</p>`
     + scope + (L.experimental ? `<p class="lk-exp">${LAKES_EXPERIMENTAL}</p>` : '')
     + `<p class="lk-value">NDCI <b>${lakesNum(L.ndci)}</b>, the median over the clear water within 300 m (${lakesPct(L.clear_share)} of it clear in that image).</p>`
     + `<p class="lk-claim">${lakesEsc((doc.claim || {}).public_wording)}</p>` + why;
+}
+// A pilot site (1.3, `operation`): when the weekly check last ran, over which days' images, and what it found. A check
+// that failed or stopped says so, with the last one that finished; one more than ten days old says none has run since.
+const LAKES_CHECK = {
+  new_reading: 'a new clear image was read.',
+  no_new_clear_image: 'there were new images, but none clear enough to read: cloud, shadow, a low sun or snow over the water.',
+  no_new_scenes: 'no new images since the check before.',
+  no_scenes: 'the satellite took no images of this water in those days.',
+  partial: 'the check reached its cost limit and stopped part-way, so only some images were read.',
+  failed: 'the check failed, so no new images were read.',
+  not_reached: 'the check stopped at its cost limit before it reached this location.',
+};
+function lakesOperation(lake, todayISO) {
+  const o = lake.operation;
+  if (!o) return '';
+  if (!o.last_run_at) return '<p class="lk-op">A pilot site, to be checked for new images weekly. No check has run yet.</p>';
+  const w = o.last_window || {}, ran = o.last_run_at.slice(0, 10), gap = lakesDays(ran, todayISO);
+  const ok = ['new_reading', 'no_new_clear_image', 'no_new_scenes', 'no_scenes'].includes(o.last_status);
+  const from = (lake.refreshes || []).filter(r => String(r.source).startsWith('refresh:pilot-')).map(r => r.from).sort()[0];
+  const every = lakesSelected(lake) && from ? ` Every image from ${lakesEsc(lakesDate(from))} is read here; before that, only images near laboratory samples.` : '';
+  return `<p class="lk-op">A pilot site, checked for new images weekly.${every} Last check ${lakesEsc(lakesTime(o.last_run_at))}`
+    + (w.from ? `, images from ${lakesEsc(lakesDate(w.from))} to ${lakesEsc(lakesDate(w.to))}` : '') + `: ${lakesEsc(LAKES_CHECK[o.last_status] || 'no result recorded.')}`
+    + (ok ? '' : o.last_success_at ? ` The last check that finished was ${lakesEsc(lakesDate(o.last_success_at))}.` : ' No check has finished yet.')
+    + (gap > 10 ? ` No check has run for ${gap} days.` : '') + '</p>';
 }
 // The seasons from the first to the last. From 1.2 the export lists every season searched, an empty one with its
 // `reason`; for a file from before, a year between with no entry is filled in here as missing, rather than left out.
@@ -156,12 +181,15 @@ function lakesQuality(doc) {
   return `<p class="lk-quality">Two readings of one location on the same date differ by ${lakesNum(q.same_date_abs_difference_median)} in the middle case, and by ${lakesNum(q.same_date_abs_difference_p90)} or more one time in ten (${q.same_date_pairs} pairs). So a small change between dates may be the measurement, not the water.</p>`;
 }
 // A refresh applied here: what was read, and the clear images not shown and why. An image left out is not an observation.
+// The pilot's weekly checks (sources refresh:pilot-<run>) are one sentence together, not one a week.
 function lakesRefreshed(lake) {
-  const rs = lake.refreshes || [], ex = lake.excluded || [];
-  if (!rs.length && !ex.length) return '';
+  const all = lake.refreshes || [], ex = lake.excluded || [];
+  if (!all.length && !ex.length) return '';
+  const pilot = all.filter(r => String(r.source).startsWith('refresh:pilot-')), rs = all.filter(r => !pilot.includes(r));
   const why = Object.entries(ex.reduce((a, e) => ({ ...a, [e.reason]: (a[e.reason] || 0) + 1 }), {}))
     .map(([r, n]) => `${n} for ${LAKES_EXCLUDED[r] || r.replace(/_/g, ' ')}`).join(', ');
-  return `<p class="lk-refresh">${rs.map(r => `Images from ${lakesEsc(lakesDate(r.from))} to ${lakesEsc(lakesDate(r.to))} were read later: ${lakesPlural(r.scenes, 'image')}, ${r.shown} shown.`).join(' ')}`
+  const weekly = pilot.length ? ` The weekly checks since ${lakesEsc(lakesDate(pilot.map(r => r.from).sort()[0]))} have read ${lakesPlural(pilot.reduce((n, r) => n + r.scenes, 0), 'new image')}, ${pilot.reduce((n, r) => n + r.shown, 0)} shown.` : '';
+  return `<p class="lk-refresh">${rs.map(r => `Images from ${lakesEsc(lakesDate(r.from))} to ${lakesEsc(lakesDate(r.to))} were read later: ${lakesPlural(r.scenes, 'image')}, ${r.shown} shown.`).join(' ')}${weekly}`
     + `${ex.length ? ` ${lakesPlural(ex.length, 'clear image')} left out (${lakesEsc(why)}): not shown, and not an observation of the water.` : ''}</p>`;
 }
 // Laboratory values, measured, apart: their own heading, unit and definition, never mixed with the index.
@@ -191,7 +219,7 @@ function lakesLake(lake, doc, todayISO, width, index = null) {
   const scope = lakesSelected(lake) ? '' : `Every image from May to September was read here${base ? `, up to ${lakesDate(base)}` : ''}.`;
   return `<article class="lk-lake"><h2 id="lk-h">${lakesEsc(lake.name)}</h2>`
     + `<p class="lk-meta">${[lake.water_body, lake.lake_type ? `${lake.lake_type} lake${lake.depth_m ? `, mean depth about ${lakesNum(lake.depth_m, 0)} m` : ''}` : '', spot].filter(Boolean).join(' · ')}</p>`
-    + lakesLatest(lake, doc, todayISO) + (scope ? `<p class="lk-scope">${lakesEsc(scope)}</p>` : '') + lakesRefreshed(lake) + lakesShares(lake, index || doc)
+    + lakesLatest(lake, doc, todayISO) + lakesOperation(lake, todayISO) + (scope ? `<p class="lk-scope">${lakesEsc(scope)}</p>` : '') + lakesRefreshed(lake) + lakesShares(lake, index || doc)
     + lakesSeasons(lake, doc) + lakesChart(lake.series, width, lakesSelected(lake)) + lakesQuality(doc) + lakesLab(lake, doc) + '</article>';
 }
 // What the file is, over the whole list: monitoring locations (each a 300 m circle of water round a point; several can
@@ -244,5 +272,5 @@ if (typeof document === 'object' && document.getElementById) lakesMount(document
 
 if (typeof module === 'object' && module.exports) {
   module.exports = { lakesYears, lakesShown, lakesQuality, lakesRefreshed, lakesShares, LAKES_SELECTED, LAKES_EXPERIMENTAL, lakesSelected, LAKES_FRESH_WORDS,
-    lakesFresh, lakesReason, lakesGroups, lakesPicker, lakesLatest, lakesSeasons, lakesChart, lakesLab, lakesLake, lakesSummary, lakesDate, lakesTime, lakesISO };
+    lakesFresh, lakesReason, lakesGroups, lakesPicker, lakesLatest, lakesOperation, LAKES_CHECK, lakesSeasons, lakesChart, lakesLab, lakesLake, lakesSummary, lakesDate, lakesTime, lakesISO };
 }
