@@ -44,6 +44,11 @@ data/processed/*
 # Each overflow's longest spill in the EA's 2024-2025 start/stop records, for the data-quality page's long_run
 # list (scripts/make_longest_events.py, 154 KB). Contains Environment Agency data, Open Government Licence v3.0.
 !data/processed/longest_events.parquet
+# Each overflow's permit and improvement activity from the annual returns (279 KB), and the WINEP's storm overflow
+# improvement deadlines (77 KB), for the overflow record pages (scripts/make_overflow_record.py). Environment Agency
+# data, Open Government Licence v3.0.
+!data/processed/overflow_record.parquet
+!data/processed/winep_overflow_actions.parquet
 !data/raw/
 data/raw/*
 !data/raw/bathing_waters_inland.json

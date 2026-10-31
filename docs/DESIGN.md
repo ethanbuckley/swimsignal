@@ -1599,6 +1599,28 @@ the line says it in full.
   `levels.js`'s word for word (a test checks), each quote is word for word from a page opened on the date
   given in the page's comment, and level words carry "risk".
 
+## Each overflow's record (31 October 2026)
+
+- **`overflow/<id>/`** (`src/dipcast/overflow_record.py`, template `src/dipcast/site/overflow.html`, written by
+  `write_overflow_pages` in `scripts/build_site.py`) is a prose page with no script, one for every overflow with an
+  annual-returns id upstream of a spot with a page. In order: the plain name, then the company, its own name and the id
+  as the dateline; the caveat (not a water test; a spill count is not a finding that a permit was broken); the record
+  as label-and-value rows (stacked on a phone); the spots downstream, each linked to its page and its overflow history;
+  spills each year as the Accuracy page's table; recent spills; improvements recorded; spills in dry weather only where
+  the spot page's rule notes them, labelled as SwimSignal's inference with the method linked; "Send this record"; the
+  sources.
+- Every figure is a source's, credited on the page. What a licence does not allow is named with its reason ("not
+  published here"): the consents register (internal use only), Southern's and Yorkshire's own event files and the
+  companies' plan layers (no licence), Water UK's plan (its terms forbid reuse).
+- Words: neutral and factual. Never "breach", "illegal" or "safe"; a WINEP date is "the date the action should be
+  delivered, a deadline, not a record that it was".
+- "Send this record" is the one filled button (`.btn.primary`). It is a `mailto:` with no address: the draft names the
+  company, the overflow, its last two years' counts, the improvement entry and the WINEP date, asks one question and
+  links the page. The company's own contact page and UK Parliament's "Find your MP" are ordinary links. The draft is
+  also shown in a fold for anyone without a mail app. SwimSignal sends nothing.
+- Linked from each overflow's name in the spot page's "Overflows that matter most" and on its overflow history. In
+  the sitemap; not in the offline copy or on the data page. Printed: no nav, no send section.
+
 ## The first screen (6 October 2026)
 
 - **The first saved spot fits on a 375 x 812 phone.** Before, the Saved tile began behind the bar at

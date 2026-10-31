@@ -2674,8 +2674,8 @@ def robots(root: str) -> str:
     return f"User-agent: *\nAllow: /\nSitemap: {root}sitemap.xml\n"
 
 
-def sitemap(root: str, spot_ids: list[str], day: str, extra: list[str] | None = None) -> str:
-    urls = [root, f"{root}plan/", f"{root}about.html", f"{root}verification.html", f"{root}methods.html", f"{root}testing.html", f"{root}coverage.html", f"{root}data.html", f"{root}organisers.html", f"{root}sites.html", f"{root}record.html", f"{root}clubs.html", f"{root}quality.html", f"{root}spots.html", f"{root}research.html", f"{root}lakes.html", f"{root}lake-temperatures.html", f"{root}durations.html", f"{root}samples.html", f"{root}waterhead.html", f"{root}research-catalogue.html", f"{root}sampling-planner.html"] +[f"{root}{x}" for x in extra or []] + [f"{root}spot/{i}/" for i in spot_ids] + [f"{root}spot/{i}/profile/" for i in spot_ids]
+def sitemap(root: str, spot_ids: list[str], day: str, extra: list[str] | None = None, overflow_ids: list[str] | None = None) -> str:
+    urls = [root, f"{root}plan/", f"{root}about.html", f"{root}verification.html", f"{root}methods.html", f"{root}testing.html", f"{root}coverage.html", f"{root}data.html", f"{root}organisers.html", f"{root}sites.html", f"{root}record.html", f"{root}clubs.html", f"{root}quality.html", f"{root}spots.html", f"{root}research.html", f"{root}lakes.html", f"{root}lake-temperatures.html", f"{root}durations.html", f"{root}samples.html", f"{root}waterhead.html", f"{root}research-catalogue.html", f"{root}sampling-planner.html"] +[f"{root}{x}" for x in extra or []] + [f"{root}spot/{i}/" for i in spot_ids] + [f"{root}spot/{i}/profile/" for i in spot_ids] + [f"{root}overflow/{i}/" for i in overflow_ids or []]
     body = "".join(f"<url><loc>{escape(u)}</loc><lastmod>{day}</lastmod></url>" for u in urls)
     return f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{body}</urlset>\n'
 
@@ -2993,10 +2993,11 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     paged = [r for r in results if r["id"] in set(ids)]
     write_spill_durations(site, paged)   # data/research/spill_durations*, before the profiles that show them and the data page
     write_profiles(site, paged, token, root=root)   # spot/<id>/profile/, from data/upstream/
+    overflow_ids = write_overflow_pages(site, paged, token, root=root, generated=generated)   # overflow/<id>/, from the same files
     write_every_spot(site, paged, root, token)   # spots.html, the spots' pages as plain links
     write_feeds(site, results, root)   # feed.xml, feed/, spot/<id>/feed.xml: after spot/ is written, before the data page lists them
     (site / "sitemap.xml").write_text(sitemap(root, ids, day or pd.Timestamp.now(tz="Europe/London").date().isoformat(),
-                                              extra=["support.html"] if support else []))
+                                              extra=["support.html"] if support else [], overflow_ids=overflow_ids))
     (site / "404.html").write_text(with_counter(with_phone_nav(not_found_page(root), root), token))
     (site / "robots.txt").write_text(robots(root))
     (site / ".nojekyll").write_text("")
@@ -4026,6 +4027,57 @@ def write_profiles(site: Path, spots: list[dict], token: str | None = None, retu
             with_counter(with_phone_nav(profile.site_page(r, t, MARK, url=f"{root}spot/{r['id']}/profile/", root=root,
                                            durations=spill_durations_for(site, r["id"]) if t is not None else None)), token))
     return n
+
+
+# One page for each monitored overflow upstream of a spot with a page, overflow/<id>/ (src/dipcast/overflow_record.py):
+# its permit, spills each year, recent spills, the improvements recorded and a draft to send on, from open sources only.
+# Written from data/upstream/ like the profiles, so they too can be written again from a downloaded data/. Prose pages
+# with no script, in the sitemap; not in the offline copy, and not on the data page.
+
+
+def write_overflow_pages(site: Path, spots: list[dict], token: str | None = None, root: str | None = None,
+                         generated: pd.Timestamp | None = None, returns: Path | None = None, record: Path | None = None,
+                         winep: Path | None = None, upgrades: Path | None = None, dry: Path | None = None,
+                         lengths: Path | None = None) -> list[str]:
+    """overflow/<id>/index.html for every overflow in a spot's data/upstream/<id>.json whose id can be a folder name.
+    A missing or unreadable source leaves its part of each page saying so; nothing here stops the build. Returns the
+    ids written, sorted, for the sitemap."""
+    from dipcast import overflow_record as orec
+    root = root or site_url()
+    shutil.rmtree(site / "overflow", ignore_errors=True)   # an overflow no longer upstream of any spot loses its page
+    upstream = {}
+    for r in spots:
+        f = site / "data" / "upstream" / f"{r['id']}.json"
+        if SPOT_ID.fullmatch(str(r["id"])) and f.is_file():
+            upstream[r["id"]] = json.loads(f.read_text()).get("overflows") or []
+    found = orec.gather(upstream, {r["id"]: str(r["name"]) for r in spots})
+    if not found:
+        return []
+
+    def read(what: str, fn, default):
+        try:
+            return fn()
+        except Exception as e:  # noqa: BLE001 - a public record beside the forecast must not stop the site
+            announce(f"overflow pages without {what}: {e}")
+            return default
+    returns_by = read("the annual returns", lambda: orec.load_returns(returns or config.PROCESSED / "annual_returns.parquet", found), {})
+    record_by = read("the permits and improvement activity", lambda: orec.load_record(record or orec.RECORD), {})
+    actions = read("the WINEP deadlines", lambda: orec.winep_actions(pd.read_parquet(winep or orec.WINEP), record_by), None)
+    ups = read("the upgrade notes", lambda: read_upgrades(upgrades or UPGRADES), {})
+    drys = read("the dry-weather counts", lambda: read_dry_weather(dry or DRY_WEATHER), {})
+    spill = orec.spill_lengths(lengths or SPILL_DURATIONS)
+    as_of = (generated or pd.Timestamp.now(tz="Europe/London")).tz_convert("Europe/London").strftime("%-d %b %Y, %H:%M")
+    template = orec.TEMPLATE.read_text()
+    for oid, o in found.items():
+        company = o["row"].get("company")
+        u = ups.get(oid)
+        d = drys.get(oid)
+        (site / "overflow" / oid).mkdir(parents=True, exist_ok=True)
+        (site / "overflow" / oid / "index.html").write_text(with_counter(with_phone_nav(orec.site_page(
+            oid, o, MARK, returns=returns_by.get(oid), record=record_by.get(oid), actions=None if actions is None else actions.get(oid, []),
+            upgrade=u if u and u.get("company") == company else None, dry=d if d and d.get("company") == company else None,
+            lengths=spill, root=root, as_of=as_of, template=template)), token))
+    return sorted(found)
 
 
 # Every spot, spots.html: the spots with a page of their own, each an ordinary link to it, by area
