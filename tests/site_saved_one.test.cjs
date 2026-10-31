@@ -11,7 +11,7 @@ test('one spot: no grid, no windows, the card with its week, then its page and t
   assert.match(app, /savedCard\(s, true, null, true, from, false, one\)/);
   assert.match(app, /\$\{unsave && !withWeek \? '' : week\(s\)\}<\/div>`/);
   assert.match(app, /\+ \(one \? savedOneNext\(spots\[0\]\) : ''\)/);
-  assert.match(app, /Going\? <a href="\$\{esc\(planPath\(\) \+ planHereHash\(s\)\)\}" data-plan-here>Plan an outing here<\/a>\./);
+  assert.match(app, /Going\? <a href="\$\{esc\(planPath\(\) \+ planHereHash\(s\)\)\}" data-plan-here>Plan a swim here<\/a>\./);
   assert.match(app, /if \(spots\.length === 1 && typeof planHere === 'function'\) planHere\(spots\[0\]\);/);
 });
 test('the grid comes back only for two or more', () => {

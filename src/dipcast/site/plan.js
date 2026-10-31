@@ -144,7 +144,7 @@ function readActs(raw) {
 // The activity a new outing starts with: the one boat or board chosen ('paddle' over 'sup' when both), else none (a swim).
 const actDefault = acts => acts.includes('paddle') ? 'paddle' : acts.includes('sup') ? 'sup' : null;
 
-// "Plan an outing here", on a spot's page (index.html, actions): the plan with that spot as the outing's, starting
+// "Plan a swim here", on a spot's page (index.html, actions): the plan with that spot as the outing's, starting
 // from the spot (as a shared outing does: outing.js, outingShared), on the day the page shows if it is one of the
 // five, else the plan's own day. How far, the kind and what the outing is for carry over from base (the plan kept).
 // The planner is the one Plan a swim already is: nothing new is drawn for it.

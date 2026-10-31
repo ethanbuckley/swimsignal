@@ -80,7 +80,8 @@ test('the answer is one block, the five days straight under it, and what to do a
   // (kind, under the issue time since 29 Oct 2026); nothing else.
   const answer = h.slice(h.indexOf('<section class="answer"'), h.indexOf('</section>', h.indexOf('<section class="answer"')));
   assert.deepEqual([...answer.matchAll(/<(?:h1|h2|p) class="([\w-]+)/g)].map(m => m[1]),
-    ['spot-name', 'live', 'big', 'why', 'next', 'issued', 'kind']);   // the live status first (review of PR #463)
+    ['spot-name', 'big', 'why', 'next', 'issued', 'kind']);   // the live status's counts are under the five days (31 Oct 2026)
+  assert.ok(h.indexOf('class="live-row"') > h.indexOf('id="day-strip"'));
   // Then the five days' tile, first in the stack: its sentence, the rows, what to do, what the level counts.
   assert.ok(h.indexOf('</section><div class="stack"><section class="tile" aria-labelledby="days-h">') > 0);
   const tile = h.slice(h.indexOf('aria-labelledby="days-h"'));

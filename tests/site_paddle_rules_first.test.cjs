@@ -12,7 +12,7 @@ test('a paddle outing\'s Access starts with the rules for boats and boards', () 
   assert.equal(O.outingAccessTopics('paddle', all)[0], 'paddle');
   assert.ok(!O.outingAccessTopics('swim', all).includes('paddle'));   // a swim's Access is as before
 });
-test('a paddler sees the first rule beside Plan an outing here, from the guide, with its source', () => {
+test('a paddler sees the first rule beside Plan a swim here, from the guide, with its source', () => {
   assert.match(app, /\+ paddleRules\(d\) \+ paddleFromHere\(d\);/);
   assert.match(app, /x\.topic === 'paddle' && x\.status === 'confirmed'/);
   assert.match(app, /<b>Paddling here:<\/b> \$\{esc\(f\.text\)\} <span class="muted">\(\$\{esc\(f\.source_name \|\| 'the guide'\)\}/);

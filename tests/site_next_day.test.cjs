@@ -68,7 +68,7 @@ const page = (nowMs, spots) => {
   vm.runInContext(fs.readFileSync(path.join(__dirname, '../src/dipcast/site/levels.js'), 'utf8'), ctx);
   vm.runInContext(`let DATA = ${JSON.stringify({generated_at: BUILT, spots})}, VIEW = {day: null}, UPDATE = '';\n`
     + pageDefs(['esc', 'tone', 'dateLabel', 'setDays', 'fiveDays', 'nextDay', 'yesterdayLine', 'lowEligible', 'lowOn',
-      'inBand', 'levelPlace', 'BAND_FROM', 'SPILL_EDGES', 'bandPlace', 'spillWord', 'bandSaid', 'dayRows', 'STALE_MIN', 'ageMin', 'ago', 'agoSpan', 'issued', 'freshness']), ctx);
+      'inBand', 'levelPlace', 'BAND_FROM', 'SPILL_EDGES', 'bandPlace', 'spillWord', 'bandSaid', 'dayWx', 'dayRows', 'STALE_MIN', 'ageMin', 'ago', 'agoSpan', 'issued', 'freshness']), ctx);
   for (const f of ['experience.js', 'since.js']) vm.runInContext(fs.readFileSync(path.join(__dirname, '../src/dipcast/site/', f), 'utf8'), ctx);
   vm.runInContext('setDays()', ctx);
   return expr => vm.runInContext(expr, ctx);
