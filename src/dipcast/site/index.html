@@ -4629,6 +4629,22 @@ const dayTiles = (d, iso = null) => { const x = iso ? (d.days || []).slice(0, 5)
 const nowTiles = d => { const fx = facts(d).filter(o => o.live); if (!fx.length) return '';
   return `<section class="tiles" id="now-tiles" aria-labelledby="now-tiles-h"><h2 class="grp-h" id="now-tiles-h">Latest readings</h2>`
     + `<p class="grp-sub">Measured, not forecast: they stay the same whichever day you pick.</p>${fx.map(tile).join('')}</section>`; };
+// A short view of the selected spot's own conditions before alternatives. Reuse the same
+// source, location, age and measured/estimated wording as the detailed tiles.
+function conditionsSummary(d) {
+  const rs = d.river_state, observed = rs && Date.parse(rs.observed_at);
+  const age = Number.isFinite(observed) ? Math.max(0, (Date.now() - observed) / 3600000) : null;
+  const water = waterTile(d.water_temp, d.water_temp_est, d.kind);
+  const level = riverTile(rs && age !== null && age > 24 ? {...rs, stale: true, age_hours: age} : rs);
+  const line = (label, item, missing) => item
+    ? `<p><b>${label}:</b> ${item.fig} ${item.unit || ''}${item.word ? `, ${item.word}` : ''}. ${item.say || ''}</p>`
+    : `<p><b>${label}:</b> ${missing}</p>`;
+  return `<section class="tile" aria-labelledby="conditions-h"><h2 class="t-lab" id="conditions-h">Water conditions</h2><p class="small muted">Sensor and gauge readings are from the Environment Agency; estimates are labelled.</p>`
+    + line('Water temperature', water, 'No recent reading or estimate available here.')
+    + (water && water.live ? '<p class="small muted">The water where you swim can be warmer or colder than at the sensor.</p>' : '')
+    + line((d.river_state && d.river_state.water === 'lake') || d.kind === 'lake' ? 'Lake level' : 'River level', level, 'No gauge reading available here.')
+    + '</section>';
+}
 const daysTile = d => `<section class="tile" aria-labelledby="days-h"><h2 class="t-lab" id="days-h">${ICON.days}<span>Pollution risk, next five days</span></h2>`
   + `<p class="t-sent">${daysSentence(d)}</p>${dayRows(d)}<div class="after" id="answer-after">${answerAfter(d)}</div><div id="day-view"></div>${check(d)}</section>`;
 function render(d) {
@@ -4658,7 +4674,7 @@ function render(d) {
   if (d.error) {
     DAY = null;   // no days here: a day link opens the spot, and the address loses the day
     if (dayFromURL()) history.replaceState(history.state, '', location.pathname + location.search);
-    h += `<div class="stack"><div class="col-go"><div class="tile">${factors(d)}${check(d)}</div>${unknownTile(d)}${where}${atWater}</div><div class="col-why">${tiles}</div><div class="col-more">${more}`
+    h += `<div class="stack"><div class="col-go"><div class="tile">${factors(d)}${check(d)}</div>${unknownTile(d)}${conditionsSummary(d)}${where}${atWater}</div><div class="col-why">${tiles}</div><div class="col-more">${more}`
       + `<div class="tile spot-map-tile"><h2 class="t-lab">${ICON.map}<span>Where it is</span></h2><div id="spot-map"></div></div></div></div>` + actions(d);
     setPanel(h); bindBack(); bindSave(d); planHere(d); bindShare(d); bindShareImage(d); bindSwim(d); placeMap(); miniMap(d); reviewsFor(d);
     if (ARRIVE) mountArrival(d); return;
@@ -4666,7 +4682,7 @@ function render(d) {
   // Two columns on a desktop (col-go: should I go, and the water; col-why: the map and why), one on a
   // phone, where they are display:contents and the order is the stack's. What the page could not see
   // (unknownTile) comes straight after the five days.
-  h += `<div class="stack"><div class="col-go">${daysTile(d)}${unknownTile(d)}${EV_MAP && d.detail_file ? '<div id="evmap-host"></div>' : ''}${where}`   // ?evidence=1 only (mountEvMap)
+  h += `<div class="stack"><div class="col-go">${daysTile(d)}${conditionsSummary(d)}${unknownTile(d)}${EV_MAP && d.detail_file ? '<div id="evmap-host"></div>' : ''}${where}`   // ?evidence=1 only (mountEvMap)
     + `<div id="nearby-host">${nearby(d)}</div>${atWater}</div><div class="col-why">`;   // Nearby after the answer, before the detail; showDay keeps it to the day
   // Why: where the risk comes from in words (showDay keeps it to the day), the map of it, then the tiles.
   h += `<div id="sources-host">${whereFrom(d)}</div>`;
