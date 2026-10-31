@@ -116,3 +116,11 @@ test("a lake spot's page has one link: past temperatures by month, the years, th
   assert.match(page, /const tiles = dayTiles\(d, DAY\) \+ nowTiles\(d\) \+ lakeTempHost\(d\);/);
   assert.match(page, /\['water', 'At the water', \['#now-tiles', '#lt-past',/);
 });
+
+test("a sampling point's years come from its own first and last dates where the export gives them (1.1)", () => {
+  const L = { points: [{ point: 'P1', label: 'NORTH END', readings: 3, first: '2004-06-01', last: '2019-08-02' }, { point: 'P2', label: 'SOUTH', readings: 1 }],
+    readings: { date: ['2010-07-01', '2004-06-01', '2019-08-02'], point: [1, 0, 0] } };
+  const t = T.ltPoints(L).replace(/<[^>]+>/g, '');
+  assert.match(t, /North End \(P1\): 3 readings, 2004 to 2019\./i);
+  assert.match(t, /South \(P2\): 1 reading, 2010\./i);   // no first and last (1.0): from its readings
+});

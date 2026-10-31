@@ -103,7 +103,11 @@ function ltChart(lake, width) {
 function ltPoints(lake) {
   const P = (lake && lake.points) || [], r = (lake && lake.readings) || {}, d = r.date || [], at = r.point || [];
   if (!P.length) return '';
-  const years = i => { const ys = d.filter((_, j) => at[j] === i).map(x => x.slice(0, 4)).sort(); return ys.length ? (ys[0] === ys[ys.length - 1] ? ys[0] : `${ys[0]} to ${ys[ys.length - 1]}`) : ''; };
+  // A point's years: from its own first and last dates (1.1), else worked out from the readings.
+  const span = (a, b) => a === b ? a : `${a} to ${b}`;
+  const years = i => { const p = P[i];
+    if (p && p.first && p.last) return span(String(p.first).slice(0, 4), String(p.last).slice(0, 4));
+    const ys = d.filter((_, j) => at[j] === i).map(x => x.slice(0, 4)).sort(); return ys.length ? span(ys[0], ys[ys.length - 1]) : ''; };
   return `<ul class="lt-points">${P.map((p, i) => `<li><b>${ltEsc(ltLabel(p.label))}</b> (${ltEsc(p.point)}): ${ltCount(p.readings)}${years(i) ? `, ${years(i)}` : ''}.`
     + (typeof p.lat === 'number' && typeof p.lon === 'number' ? ` <a href="https://www.openstreetmap.org/?mlat=${p.lat}&amp;mlon=${p.lon}#map=15/${p.lat}/${p.lon}">On a map</a>` : '') + '</li>').join('')}</ul>`;
 }
@@ -152,6 +156,10 @@ function ltMount(root) {
     const not = root.getElementById('lt-not'), attrib = root.getElementById('lt-attrib');
     if (not && index.claim && index.claim.not_claimed) not.innerHTML = index.claim.not_claimed.map(t => `<li>${ltEsc(t)}</li>`).join('');
     if (attrib && Array.isArray(index.attribution) && index.attribution.length) attrib.textContent = index.attribution.join('. ').replace(/\.?$/, '.');
+    // The export's own words for the page (1.1): a lead for any lake, and its method in one sentence, shown first.
+    const lead = root.getElementById('lt-lead'), said = root.getElementById('lt-method-said');
+    if (lead && index.claim && index.claim.page_wording) lead.textContent = index.claim.page_wording;
+    if (said && index.method && index.method.public_sentence) { said.textContent = index.method.public_sentence; said.hidden = false; }
     const pickId = () => decodeURIComponent((location.hash.match(/^#lake=([A-Za-z0-9_-]+)$/) || [])[1] || '');
     // The list once, so a keyboard keeps its place in it; the lake below it again at each pick.
     host.innerHTML = ltSummary(index) + (index.available ? ltPicker(index, pickId()) + '<div id="lt-one"></div>' : '');

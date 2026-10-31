@@ -37,7 +37,7 @@
 <nav aria-label="Site"><a href="plan/">Plan a swim</a><a href="saved/">Saved</a><a href="verification.html">Accuracy</a><a href="about.html">About</a><a class="desk-only" href="research.html">Research</a><a class="desk-only" href="feedback.html">Feedback</a></nav></header>
 <main class="doc">
 <h1>Measured lake temperatures</h1>
-<p class="lead">Water temperatures the Environment Agency measured in English lakes, on the days it visited them between May and September. A record of past measurements by month, not today's temperature.</p>
+<p class="lead" id="lt-lead">Water temperatures the Environment Agency measured in English lakes, on the days it visited them between May and September. A record of past measurements by month, not today's temperature.</p>
 <noscript><p class="notice">This page needs JavaScript to read the measurements.</p></noscript>
 <div id="lake-temps" aria-live="polite"></div>
 
@@ -50,6 +50,7 @@
 </ul>
 
 <h2>How they were measured</h2>
+<p id="lt-method-said" hidden></p>
 <p>The Environment Agency measured the water's temperature at a lake's sampling points on the days it visited them. A lake can have several sampling points; each reading here keeps its point and its date, and a point has at most one reading a day. Only readings from May to September were collected for this record, so it has no figures for October to April.</p>
 <p class="small">Source: the Environment Agency Water Quality Archive, water temperature (determinand 0076). Sampling points are matched to a lake when they lie inside its outline or on its water.</p>
 <ul>
