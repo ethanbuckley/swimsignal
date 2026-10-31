@@ -86,7 +86,7 @@ test('the compact headline: list rows, map tooltips, saved lists, the embed, ale
 test("the spot's answer: with no live status, that first and the level labelled as the modelled forecast; with some, the counts under the five days", () => {
   const ctx = page(), answer = s => vm.runInContext('answerWords', ctx)(s), row = s => vm.runInContext('liveRow', ctx)(s);
   const zero = answer(ZERO);
-  assert.match(zero, /^<p class="live live-off">Live sewage spill status unavailable: none of the 14 overflows upstream reports live, so whether any is spilling is not known\.<\/p>/);
+  assert.match(zero, /^<p class="live live-off">Live sewage spill status unavailable: none of the 14 overflows upstream reports live\.<\/p>/);
   assert.match(zero, /<\/p><p class="modelled">Modelled forecast<\/p><h2 class="big low" id="risk-headline">Low risk from sewage spills<\/h2><div class="wn"><p class="why">From the rain forecast and each overflow's past spills, not from live readings<\/p>/);
   const thin = answer(THIN);
   assert.match(thin, /^<h2 class="big low"/);   // the counts moved under the five days (31 Oct 2026); the why line still says modelled

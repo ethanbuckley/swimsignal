@@ -292,7 +292,7 @@ test('where no overflow upstream reports live, the headline does not claim a low
   // The spot's page: the live status first, then the level labelled as the modelled forecast, with its inputs.
   const ctx = page(ANSWER, { DATA: { generated_at: GEN } });
   const h = text(vm.runInContext('answerWords', ctx)(quiet));
-  assert.match(h, /^Live sewage spill status unavailable: none of the 14 overflows upstream reports live, so whether any is spilling is not known\. Modelled forecast Low risk from sewage spills From the rain forecast and each overflow's past spills, not from live readings/);
+  assert.match(h, /^Live sewage spill status unavailable: none of the 14 overflows upstream reports live\. Modelled forecast Low risk from sewage spills From the rain forecast and each overflow's past spills, not from live readings/);
   assert.match(vm.runInContext('answerWords', ctx)(quiet), /^<p class="live live-off">Live sewage spill status unavailable: .*<\/p><p class="modelled">Modelled forecast<\/p><h2 class="big low"/);
   // The embed and the sites page give the same headline.
   assert.match(text(Embed.card(quiet, { generated_at: GEN }, NOW)), /Live sewage spill status unavailable: low risk forecast/);
@@ -519,10 +519,10 @@ test('Not known here: a row for each gap, in the words it had, and no tile witho
   const ctx = page(UNKNOWN_PAGE, { DATA: { generated_at: GEN } }), rows = vm.runInContext('unknowns', ctx);
   const said = s => JSON.parse(JSON.stringify(rows(s).map(([l, v, w]) => [l, v, text(w)])));   // out of the page's realm
   assert.deepEqual(said(longBridges), [
-    ['Live readings', '1 of 45 not reporting', '44 of 45 report live; the one that does not could be spilling unseen. Each overflow\'s monitor tells its water company\'s live feed when it is discharging, and when its last spill started and ended. It does not measure how much, or what is in it. With no reading, a spill is not known either way.'],
+    ['Live readings', '1 of 45 not reporting', 'With no live reading, it could be spilling unseen. A monitor reports when it spills, not how much or what is in it.'],
     ['Access', 'Not confirmed', 'Oxford City Council lists Longbridges among places receiving water-safety signs and discourages wild swimming. Check the current signs; listing this place does not confirm permission or a maintained entry point. Authority guidance . Desk check 2026-10-03; current signs have not been inspected.']]);
   assert.deepEqual(said(hereford), [
-    ['Live readings', '14 of 14 not reporting', '0 of 14 report live; the 14 that do not could be spilling unseen. Dŵr Cymru Welsh Water has no live feed SwimSignal reads. Each overflow\'s monitor tells its water company\'s live feed when it is discharging, and when its last spill started and ended. It does not measure how much, or what is in it. With no reading, a spill is not known either way.'],
+    ['Live readings', '14 of 14 not reporting', 'With no live reading, they could be spilling unseen. Dŵr Cymru Welsh Water has no live feed SwimSignal reads. A monitor reports when it spills, not how much or what is in it.'],
     ['Overflows in Wales', 'Not counted', 'Overflows in Wales are not counted: about 29% of the river within 60 km above this spot is in Wales.']]);
   assert.deepEqual(said(frensham), [["Today's EA advice", 'Not checked', "The Environment Agency's advice for today could not be checked. Open the EA's page before you swim: it says when bathing is not advised."]]);
   // Every overflow reporting, no access note, not a bathing water: no gap, and no tile.

@@ -16,5 +16,5 @@ test('the five days\' sentence says the spill forecast on its own beside the rat
 test('the line under the level says how many reporting are spilling now, and the silent ones as unknown', () => {
   assert.match(app, /spillNow = mon \? `, \$\{k \? `\$\{k\} spilling now` : 'none spilling now'\}` : ''/);
   assert.match(app, /so could be spilling unseen`\);/);
-  assert.match(app, /With no reading, a spill is not known either way\./);
+  assert.match(app, /A monitor reports when it spills, not how much or what is in it\./);
 });

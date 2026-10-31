@@ -2341,14 +2341,15 @@ const feedDown = now => (now.feed_down || []).map(f => ` ${esc(companyName(f.com
 const feedStale = now => (now.feed_stale || []).map(f => f.records
   ? ` ${esc(companyName(f.company))} ${f.since ? `has not updated ${f.overflows === 1 ? 'one' : f.overflows} of its overflows here since ${feedTime(f.since)}`
     : `gives no update time for ${f.overflows === 1 ? 'one' : f.overflows} of its overflows here`}: ${f.overflows === 1 ? 'it' : 'they'} could be spilling unseen.`
-  : f.on_change && f.since ? ` ${esc(companyName(f.company))} changes a record in its live feed only when an overflow's status changes, and none has changed since ${feedTime(f.since)}.`
-    + ` A quiet spell looks like this, and so does a feed that has stopped: its ${f.overflows} overflow${f.overflows === 1 ? '' : 's'} here could be spilling unseen.`
+  : f.on_change && f.since ? ` ${esc(companyName(f.company))}'s feed changes only when an overflow starts or stops. Nothing has changed since ${feedTime(f.since)},`
+    + ` so a quiet spell and a stopped feed look the same: its ${f.overflows} overflow${f.overflows === 1 ? '' : 's'} here could be spilling unseen.`
   : ` ${esc(companyName(f.company))}'s live feed has ${f.since ? `not updated since ${feedTime(f.since)}` : 'given no time for its last update'}: its ${f.overflows} overflow${f.overflows === 1 ? '' : 's'} here could be spilling unseen.`).join('');
-// Which upstream overflows report live. Those on a feed that is down or stale are named with the feed,
-// not counted again in the general clause, which covers offline monitors and overflows with no feed.
+// Why the upstream overflows that do not report live do not, for the Not known here row, whose heading has the count
+// ("58 of 61 not reporting"), as the line under the five days does (liveRow): a feed that is down or stale first, named
+// with its overflows, then the rest (offline monitors and overflows with no feed), not counted twice.
 const liveSay = (now, total, mon) => { const fd = now.feed_down_upstream || 0, st = now.stale_upstream || 0, other = total - mon - fd - st;
-  if (!fd && !st) return `${mon} of ${total} report live${mon < total ? `; ${total - mon === 1 ? 'the one that does not' : `the ${total - mon} that do not`} could be spilling unseen` : ''}.`;
-  return `${mon} of ${total} report live.${other > 0 ? ` ${other === 1 ? 'One more gives' : `${other} more give`} no live reading and could be spilling unseen.` : ''}${feedDown(now)}${feedStale(now)}`; };
+  if (!fd && !st) return mon < total ? `With no live reading, ${total - mon === 1 ? 'it' : 'they'} could be spilling unseen.` : '';
+  return `${feedDown(now)}${feedStale(now)}${other > 0 ? ` ${other === 1 ? 'One more gives' : `${other} more give`} no live reading.` : ''}`.trim(); };
 // The build tells "not discharging" from stale by the feed's age when it polled (ingest.live.data_states,
 // six hours), but a page can be read hours later, and would go on saying "not discharging" until the
 // 8-hour "Stale" notice. Where the page is read, each company's quiet overflows
@@ -2377,7 +2378,10 @@ const recentSay = (rec, dis, h) => `${rec ? rec + (dis ? ' more' : '') : 'None'}
 // Where some do not report, the count alone, and the line under it says how many report. Which do not, and
 // that they could be spilling unseen, is said with the other gaps (unknowns, liveSay):
 // the tile says what is observed.
-const noFeedSaid = d => { const feeds = [...new Set((d.contributors || []).filter(c => c.data_state === 'no_feed' || c.status === -2).map(c => companyName(c.company)).filter(Boolean))];
+// By its data state where it has one: status -2 is also an offline monitor on a feed that works (ingest.live.data_states),
+// and Medway at Tonbridge said "Southern Water has no live feed SwimSignal reads" under Southern Water's feed (31 Oct 2026).
+// The status alone only for a file from before data states.
+const noFeedSaid = d => { const feeds = [...new Set((d.contributors || []).filter(c => c.data_state ? c.data_state === 'no_feed' : c.status === -2).map(c => companyName(c.company)).filter(Boolean))];
   return feeds.length ? ` ${esc(feeds.join(' and '))} ${feeds.length === 1 ? 'has' : 'have'} no live feed SwimSignal reads.` : ''; };
 function nowTile(d, total) {
   const now = d.now || {}, n = now.discharging_upstream || 0, mon = Math.min(total, now.monitored_upstream ?? total);
@@ -2522,7 +2526,7 @@ const answerWords = (d, iso = null) => { const m = answerParts(d, iso), spill = 
   return (m.live && m.blind ? `<p class="live live-off">${m.live}.</p>` : '') + (m.blind && m.word ? '<p class="modelled">Modelled forecast</p>' : '')
     + (m.word ? `<h2 class="big ${m.tone}" id="risk-headline">${m.word} ${m.noun || 'risk'}</h2>` : `<h2 class="big-head ${m.tone}" id="risk-headline">${m.head}</h2>`)
     + (m.why || m.next ? `<div class="wn">${m.why ? `<p class="why">${m.why}</p>` : ''}${m.next ? `<p class="next">${m.next}</p>` : ''}</div>` : '')
-    + (typeof eaTodayApart === 'function' ? eaTodayApart(d) : '') + (d.error && m.act ? `<p class="act">${m.act}</p>` : '')
+    + (d.error && m.act ? `<p class="act">${m.act}</p>` : '')   // that the level is apart from official advice: said once, in its block (eaTodayOfficial)
     + (spill ? `<p class="gaps">${spill}</p>` : '') + flowLine(d)
     + `<div class="ci">${coverLine(d, iso)}<p class="issued">${nextDay() ? yesterdayLine() : `Issued ${issued()}, ${agoSpan()} ago`}</p></div>`
     + (rainAgeLine(d) ? `<p class="issued">${rainAgeLine(d)}</p>` : ''); };
@@ -2585,8 +2589,9 @@ function unknowns(d) {
   const rows = [], total = overflows(d), now = d.now || {}, mon = Math.min(total, now.monitored_upstream ?? total);
   if (daily(d) && total && mon < total) rows.push(['Live readings', `${total - mon} of ${total} not reporting`, liveSay(now, total, mon) + noFeedSaid(d)
     // What a monitor tells its company's live feed, as the method page says it (methods.html: "The live feed shows any
-    // discharge its monitor records"); not how much, nor what is in it. No reading is not known to be dry (30 Oct 2026).
-    + ' Each overflow\'s monitor tells its water company\'s live feed when it is discharging, and when its last spill started and ended. It does not measure how much, or what is in it. With no reading, a spill is not known either way.']);
+    // discharge its monitor records"); not how much, nor what is in it (30 Oct 2026). "Could be spilling unseen" says
+    // that no reading is not known to be dry.
+    + ' A monitor reports when it spills, not how much or what is in it.']);
   if (walesWords(d)) rows.push(['Overflows in Wales', 'Not counted', esc(walesWords(d))]);
   const reviewed = typeof eaTodayCover === 'function' ? eaTodayCover(d) : '';
   // The answer says what was checked and when (coverLine); here only where the latest is.
@@ -2631,10 +2636,10 @@ function coverWords(d, iso = null) {
   const gone = daily(d) && !iso ? d.days.slice(0, 5).filter(x => !hasData(x)).map(x => dayName(x.date)) : [];
   if (gone.length && gone.length < 5) out.push(`No forecast for ${gone.length > 1 ? gone.slice(0, -1).join(', ') + ' or ' + gone[gone.length - 1] : gone[0]}`);
   if (walesWords(d, true)) out.push(esc(walesWords(d, true)));
-  // A reviewed notice above (eatoday.js, eaTodayCover) says when it was checked and where the latest is.
+  // A reviewed notice above (eatoday.js, eaTodayCover) has its check date and link in its own block, so the line leaves it
+  // out (31 Oct 2026: the block, a line under the level and this line each said it apart from the level).
   const reviewed = typeof eaTodayCover === 'function' ? eaTodayCover(d) : '';
-  if (reviewed) out.push(reviewed);
-  else if (eaUnchecked(d)) { const url = (d.classification || {}).url, fold = typeof eaTodayFold === 'function' && eaTodayFold(d);
+  if (!reviewed && eaUnchecked(d)) { const url = (d.classification || {}).url, fold = typeof eaTodayFold === 'function' && eaTodayFold(d);
     out.push(`Today's EA advice not checked: ${fold ? '<a href="#ea-today">open it</a>' : /^https:\/\//.test(url || '') ? `<a href="${esc(url)}">see the EA's page</a>` : "see the EA's page"} before you swim`); }
   return out;
 }

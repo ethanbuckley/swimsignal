@@ -215,7 +215,7 @@ const liveHead = s => { const c = liveCover(s); if (!c) return '';
 // as dry: the line at the top of a spot's answer, before the level, on today's view.
 const liveLine = s => { const c = liveCover(s); if (!c) return '';
   const k = Math.min(c.mon, (s.now || {}).discharging_upstream || 0), rest = c.total - c.mon;
-  if (c.kind === 'none') return `${LIVE_NONE}: ${c.total === 1 ? 'the overflow upstream does not report live' : `none of the ${c.total} overflows upstream reports live`}, so whether any is spilling is not known`;
+  if (c.kind === 'none') return `${LIVE_NONE}: ${c.total === 1 ? 'the overflow upstream does not report live' : `none of the ${c.total} overflows upstream reports live`}`;
   const said = c.total === 1 ? (k ? 'spilling at the last poll' : 'not spilling at the last poll') : `${k ? `${k} spilling` : 'none spilling'} at the last poll`;
   return `${liveHead(s)}: ${said}${rest ? `; ${rest} ${rest === 1 ? 'does' : 'do'} not report, so could be spilling unseen` : ''}`; };
 // The live status over a level on today's view, for the spot's answer (index.html, answerParts): `live`, the line at the top
