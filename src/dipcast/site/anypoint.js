@@ -306,6 +306,30 @@ const AnyPoint = (() => {
     return best;
   }
 
+  // The water near the surface at a clicked river or lake point, today (#492, stage 2): a provisional estimate from the
+  // nearest cached cell's 7-day air (overflow_days.json's water_air, build_any_point.water_air), the point's own square
+  // or the nearest of the eight around it, through the river or lake curve the listed spots' model uses
+  // (water_temp.mohseni), never below 0 C. In the months the model was tested in, the curve alone's measured typical
+  // error is given (rivers 1.85 C, lakes 1.93 C); in the others none is, as none was measured. { est } or { miss }, or
+  // {} for anything but a river or lake, or a file from before stage 2.
+  function waterAt(od, lat, lon, kind) {
+    const w = od && od.water_air; if (!w || !w.cells || !w.curves || !(kind === 'river' || kind === 'lake') || !w.curves[kind]) return {};
+    const snap = v => Math.round(v * 10) / 10, key = (a, b) => `${(a + 0).toFixed(1)},${(b + 0).toFixed(1)}`;
+    const c = [snap(lat), snap(lon)];
+    let best = typeof w.cells[key(...c)] === 'number' ? { a7: w.cells[key(...c)], km: 0 } : null;
+    if (!best) for (const i of [-1, 0, 1]) for (const j of [-1, 0, 1]) {
+      const a = snap(c[0] + i / 10), b = snap(c[1] + j / 10), a7 = w.cells[key(a, b)]; if ((!i && !j) || typeof a7 !== 'number') continue;
+      const km = Math.hypot((a - lat) * 111.2, (b - lon) * 111.2 * Math.cos(lat * RAD));
+      if (!best || km < best.km) best = { a7, km: Math.round(km) };
+    }
+    if (!best) return { miss: { why: 'air', date: w.date } };
+    const [mu, alpha, beta, gamma] = w.curves[kind], t = mu + (alpha - mu) / (1 + Math.exp(gamma * (beta - best.a7)));
+    if (!Number.isFinite(t)) return { miss: { why: 'error', date: w.date } };
+    const inSeason = (w.months || []).includes(+String(w.date).slice(5, 7));
+    return { est: { temp_c: Math.round(Math.max(0, t)), date: w.date, route: `${kind}_air_curve`, tested: false,
+      typical_c: inSeason ? ((w.typical_c || {})[kind] ?? null) : null, air_7d_c: Math.round(best.a7 * 10) / 10, air_km: best.km } };
+  }
+
   // ------------------------------------------------------------------ where a click goes
   // Metres east and north of (lat0, lon0) on a flat local frame, as the British National Grid
   // measures them (the API's distances are grid metres): the ellipsoid's radii of curvature at that
@@ -600,7 +624,9 @@ const AnyPoint = (() => {
     if (rain) f.days.forEach((x, k) => { x.rain_48h_mm = rain.mm[k] ?? null; });
     const spot = (typeof DATA !== 'undefined' && DATA && DATA.spots.find(s => s.assumptions)) || {};
     const a = od.assumptions;
+    const waterNow = waterAt(od, lat, lon, at.kind);   // a provisional water temperature (#492): the estimate, or why there is none
     return { ...base, location: at.location, ...f, ...(rain && rain.km ? { rain_km: rain.km } : {}),
+      ...(waterNow.est ? { water_temp_est: waterNow.est } : waterNow.miss ? { water_temp_est_missing: waterNow.miss } : {}),
       assumptions: { river_velocity_ms: a.river_velocity_ms, lake_velocity_ms: a.lake_velocity_ms, t90_hours: a.t90_hours,
         max_upstream_km: a.max_upstream_km, recent_spill_hours: a.recent_spill_hours, lead_calibration: Object.keys(cal).length > 0,
         model: (spot.assumptions || {}).model, version: (spot.assumptions || {}).version } };
@@ -690,7 +716,7 @@ const AnyPoint = (() => {
     open(e.latlng.lat, e.latlng.lng);
   }
 
-  return { historyDays, interp, calibrate, shiftByTravel, combineDaily, missingShare, riskLabel, rowsAt, lakeRows, transportOf, forecast, rainAt,
+  return { historyDays, interp, calibrate, shiftByTravel, combineDaily, missingShare, riskLabel, rowsAt, lakeRows, transportOf, forecast, rainAt, waterAt,
     frame, nearestOnLine, waterWay, decodeIndex, lakeName, candidates, inRing, polygonDistance, outlineDistance, nearLakes, lakePolygon, outlinesNeeded, needsSquares, outsideEngland, outsideWhere, OUTSIDE, locate, place, tileKey, squares, point, open, onMapClick, POINT_ZOOM };
 })();
 

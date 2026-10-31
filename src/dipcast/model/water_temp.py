@@ -248,3 +248,30 @@ def estimate_any(model: WaterTempModel | None, hourly: pd.DataFrame, today: pd.T
     if route == "river_model":
         out["within_c"] = model.within_c   # the page's tested wording, as before
     return out
+
+
+# ------------------------------------------------------------------------------ any point on the map (#492, stage 2)
+# A clicked river or lake point has no air of its own: the click-anywhere build caches the forecast for every overflow's
+# 0.1 degree cell, air included, and publishes each cell's bridged 7-day air (cell_air_7d); the page applies the water
+# type's curve to the nearest cell's (anypoint.js, waterAt). That is the curve alone, without the trees, so its error in
+# the 27 October test's held-out May-September rows is the curve's own (computed from the cached predictions, the same
+# rows as the routes above): rivers 1.85 C, lakes 1.93 C. October to April: not measured.
+AIR_CURVE_TYPICAL_C = {"river": 1.85, "lake": 1.93}
+
+
+def cell_air_7d(model: WaterTempModel, hourly: pd.DataFrame, today: pd.Timestamp) -> dict[str, float]:
+    """Each cell's bridged mean air over the 7 days to `today` (London days, each whole), keyed "lat,lon" by the cell's
+    centre as anypoint.js keys its rain; a cell without all 7 days is left out. `hourly` has cell_lat, cell_lon, time,
+    air_c (the forecast cache's frame)."""
+    if hourly is None or hourly.empty or "air_c" not in hourly:
+        return {}
+    today = pd.Timestamp(pd.Timestamp(today).date())
+    days = pd.date_range(today - pd.Timedelta(days=6), today, freq="D")
+    c, d = model.bridge
+    out = {}
+    for (a, b), g in hourly.groupby(["cell_lat", "cell_lon"]):
+        s = daily_air(g[["time", "air_c"]]).reindex(days)
+        if s.isna().any():
+            continue
+        out[f"{float(a) + 0.0:.1f},{float(b) + 0.0:.1f}"] = round(float((c + d * s).mean()), 2)
+    return out
