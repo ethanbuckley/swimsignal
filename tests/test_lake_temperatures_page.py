@@ -20,11 +20,14 @@ def _build_site():
 def test_the_export_is_split_into_an_index_and_a_file_a_lake(tmp_path):
     bs = _build_site()
     h = bs.write_lake_temperatures(tmp_path, SAMPLE)
-    assert h == {"available": True, "lakes": 4, "skipped_ids": 0, "spots": 4, "version": "1.0.0"}
+    assert h == {"available": True, "lakes": 4, "skipped_ids": 0, "spots": 4, "version": "1.1.0"}
     out = tmp_path / "data" / "research" / "lake-temperatures"
     index = json.loads((out / "index.json").read_text())
     assert index["available"] is True and index["schema"] == "swimsignal.lake-temperature-obs"
     assert {"claim", "period", "method", "attribution", "coverage"} <= set(index) and "sources" not in index
+    # 1.1: the page's lead and method sentence travel in the index; each lake's years list too.
+    assert index["claim"]["page_wording"] and index["method"]["public_sentence"]
+    assert all(len(x["summary"]["years_list"]) == x["summary"]["years"] for x in index["lakes"])
     # The index carries the list's names, counts and links, never the readings.
     for x in index["lakes"]:
         assert not {"readings", "points", "monthly"} & set(x) and len(x["n"]) == 5

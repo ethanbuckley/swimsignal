@@ -3,9 +3,10 @@
      (write_lake_temperatures_page) beside the app. lake-temperatures.js fills #lake-temps from
      data/research/lake-temperatures/ (the research export, docs/LAKE-TEMPERATURE-OBS-CONTRACT-v1.md, split by
      write_lake_temperatures). What it may say is the contract's: lake-temperatures.js puts the export's own approved
-     sentence beside each lake's figures, and its list of what is not claimed and its credits into #lt-not and
-     #lt-attrib; the words here are the fallback for a page without them. The method is said here in plain words: the
-     export's `method` is written for the research record (#419's rows, polygons). A lake spot's page links here (#lake=<wb_id>). -->
+     sentence beside each lake's figures, its page sentence (1.1) into #lt-lead, its method sentence (1.1) into
+     #lt-method, and its list of what is not claimed and its credits into #lt-not and #lt-attrib; the words here are
+     the fallback for a page without them. The rest of the method is said here in plain words: the export's `method`
+     is otherwise written for the research record (#419's rows, polygons). A lake spot's page links here (#lake=<wb_id>). -->
 <title>Measured lake temperatures · SwimSignal</title>
 <meta name="description" content="Water temperatures the Environment Agency measured in English lakes on visits from May to September, 2000 to 2026: the median and middle half by month, with how many readings each rests on. Past measurements, not today's temperature.">
 <meta name="theme-color" content="#3d5b5d">
@@ -37,7 +38,7 @@
 <nav aria-label="Site"><a href="plan/">Plan a swim</a><a href="saved/">Saved</a><a href="verification.html">Accuracy</a><a href="about.html">About</a><a class="desk-only" href="research.html">Research</a><a class="desk-only" href="feedback.html">Feedback</a></nav></header>
 <main class="doc">
 <h1>Measured lake temperatures</h1>
-<p class="lead">Water temperatures the Environment Agency measured in English lakes, on the days it visited them between May and September. A record of past measurements by month, not today's temperature.</p>
+<p class="lead" id="lt-lead">Water temperatures the Environment Agency measured in English lakes, on the days it visited them between May and September. A record of past measurements by month, not today's temperature.</p>
 <noscript><p class="notice">This page needs JavaScript to read the measurements.</p></noscript>
 <div id="lake-temps" aria-live="polite"></div>
 
@@ -50,6 +51,7 @@
 </ul>
 
 <h2>How they were measured</h2>
+<p id="lt-method" hidden></p>
 <p>The Environment Agency measured the water's temperature at a lake's sampling points on the days it visited them. A lake can have several sampling points; each reading here keeps its point and its date, and a point has at most one reading a day. Only readings from May to September were collected for this record, so it has no figures for October to April.</p>
 <p class="small">Source: the Environment Agency Water Quality Archive, water temperature (determinand 0076). Sampling points are matched to a lake when they lie inside its outline or on its water.</p>
 <ul>

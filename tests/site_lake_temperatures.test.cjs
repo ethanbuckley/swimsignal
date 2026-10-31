@@ -73,7 +73,30 @@ test('a linked spot says how far it is from the nearest sampling point, and that
   assert.match(plain(T.ltSpots(BRO)), /Brothers Water is 180 m from the nearest one\./);
   assert.equal(T.ltSpots(HAW), '');
   assert.equal(T.ltLabel('BROTHERSWATER - LAKES TOUR'), 'Brotherswater - Lakes Tour');
-  assert.match(plain(T.ltPoints(BRO)), /^Brotherswater \(NW-88010024\): 17 readings, 2000 to 2026\. On a map Brotherswater - Lakes Tour \(NW-88022545\): 5 readings, 2010 to 2026\./);
+  // Each point's first and last reading dates are the export's own (version 1.1); without them, the years its readings span.
+  assert.match(plain(T.ltPoints(BRO)), /^Brotherswater \(NW-88010024\): 17 readings, 11 Jul 2000 to 21 Sept 2026\. On a map Brotherswater - Lakes Tour \(NW-88022545\): 5 readings, 5 Jul 2010 to 21 Sept 2026\./);
+  const old = { ...BRO, points: BRO.points.map(({ first, ...p }) => p) };
+  assert.match(plain(T.ltPoints(old)), /^Brotherswater \(NW-88010024\): 17 readings, 2000 to 2026\. On a map Brotherswater - Lakes Tour \(NW-88022545\): 5 readings, 2010 to 2026\./);
+  const one = { ...CRU, points: [{ ...CRU.points[0], first: '2021-07-14', last: '2021-07-14', readings: 1 }] };
+  assert.match(plain(T.ltPoints(one)), /: 1 reading, on 14 Jul 2021\./);
+});
+
+test("the years listed are the export's years_list, each with its count of readings", () => {
+  assert.deepEqual(CRU.summary.years_list, [2000, 2010, 2021]);
+  assert.equal(plain(T.ltYears(CRU)), 'Readings each year: 2000 (1), 2010 (1), 2021 (1).');
+  // Without the list (a 1.0 file), the years come from the readings alone.
+  assert.equal(plain(T.ltYears({ ...CRU, summary: { ...CRU.summary, years_list: undefined } })), 'Readings each year: 2000 (1), 2010 (1), 2021 (1).');
+  for (const L of DOC.lakes) assert.equal(L.summary.years_list.length, L.summary.years, L.name);
+});
+
+test('the export carries the page-level claim and the plain method sentence the page puts in its lead and method', () => {
+  assert.match(DOC.claim.page_wording, /^Water temperatures the Environment Agency measured in lakes,/);
+  assert.doesNotMatch(DOC.claim.page_wording, /this lake/);
+  assert.match(DOC.claim.page_wording, /not today's temperature/);
+  assert.match(DOC.method.public_sentence, /May to September/);
+  const html = fs.readFileSync(path.join(__dirname, '..', 'src', 'dipcast', 'site', 'lake-temperatures.html'), 'utf8');
+  assert.match(html, /<p class="lead" id="lt-lead">/);
+  assert.match(html, /<p id="lt-method" hidden><\/p>/);
 });
 
 test('nothing reads as now, at the swim entry, a forecast or safe; the approved sentence stands beside the figures', () => {

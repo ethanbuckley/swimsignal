@@ -60,12 +60,15 @@ function ltWhen(lake) {
   const years = typeof s.years === 'number' ? ` in ${s.years} different year${s.years === 1 ? '' : 's'}` : '';
   return `<p class="lt-when"><b>Measured on visits from ${ltEsc(ltDate(s.first))} to ${ltEsc(ltDate(s.last))}${years}: ${ltCount(s.readings)}, May to September only.</b></p>`;
 }
-// Each year with readings and how many: the years are uneven, so this says which ones the figures rest on.
+// Each year with readings and how many: the years are uneven, so this says which ones the figures rest on. The years
+// are the export's own list (summary.years_list, version 1.1) where it has one; the counts come from the readings.
 function ltYears(lake) {
   const d = ((lake && lake.readings) || {}).date || [], by = new Map();
   d.forEach(x => { const y = String(x).slice(0, 4); by.set(y, (by.get(y) || 0) + 1); });
-  if (!by.size) return '';
-  return `<p class="lt-years">Readings each year: ${[...by.keys()].sort().map(y => `${y} (${by.get(y)})`).join(', ')}.</p>`;
+  const list = (((lake && lake.summary) || {}).years_list || []).map(String);
+  const years = list.length ? list : [...by.keys()].sort();
+  if (!years.length) return '';
+  return `<p class="lt-years">Readings each year: ${years.map(y => (by.has(y) ? `${y} (${by.get(y)})` : y)).join(', ')}.</p>`;
 }
 
 // ------------------------------------------------------------------------------ the chart
@@ -99,12 +102,14 @@ function ltChart(lake, width) {
 }
 
 // ------------------------------------------------------------------------------ where
-// The sampling points: name, the Archive's id, how many readings and the years they span, and where on a map.
+// The sampling points: name, the Archive's id, how many readings and the dates of the first and last (the export's
+// `first` and `last`, version 1.1; else the years its readings span), and where on a map.
 function ltPoints(lake) {
   const P = (lake && lake.points) || [], r = (lake && lake.readings) || {}, d = r.date || [], at = r.point || [];
   if (!P.length) return '';
   const years = i => { const ys = d.filter((_, j) => at[j] === i).map(x => x.slice(0, 4)).sort(); return ys.length ? (ys[0] === ys[ys.length - 1] ? ys[0] : `${ys[0]} to ${ys[ys.length - 1]}`) : ''; };
-  return `<ul class="lt-points">${P.map((p, i) => `<li><b>${ltEsc(ltLabel(p.label))}</b> (${ltEsc(p.point)}): ${ltCount(p.readings)}${years(i) ? `, ${years(i)}` : ''}.`
+  const when = (p, i) => (p.first && p.last ? (p.first === p.last ? `on ${ltDate(p.first)}` : `${ltDate(p.first)} to ${ltDate(p.last)}`) : years(i));
+  return `<ul class="lt-points">${P.map((p, i) => `<li><b>${ltEsc(ltLabel(p.label))}</b> (${ltEsc(p.point)}): ${ltCount(p.readings)}${when(p, i) ? `, ${ltEsc(when(p, i))}` : ''}.`
     + (typeof p.lat === 'number' && typeof p.lon === 'number' ? ` <a href="https://www.openstreetmap.org/?mlat=${p.lat}&amp;mlon=${p.lon}#map=15/${p.lat}/${p.lon}">On a map</a>` : '') + '</li>').join('')}</ul>`;
 }
 // The listed spots on or beside this lake, each with how far it is from the nearest sampling point.
@@ -152,6 +157,11 @@ function ltMount(root) {
     const not = root.getElementById('lt-not'), attrib = root.getElementById('lt-attrib');
     if (not && index.claim && index.claim.not_claimed) not.innerHTML = index.claim.not_claimed.map(t => `<li>${ltEsc(t)}</li>`).join('');
     if (attrib && Array.isArray(index.attribution) && index.attribution.length) attrib.textContent = index.attribution.join('. ').replace(/\.?$/, '.');
+    // Version 1.1: the export's claim for a page of many lakes in place of the page's own lead, and its one plain
+    // sentence on how each figure is made under "How they were measured".
+    const lead = root.getElementById('lt-lead'), method = root.getElementById('lt-method');
+    if (lead && index.claim && index.claim.page_wording) lead.textContent = index.claim.page_wording;
+    if (method && index.method && index.method.public_sentence) { method.textContent = index.method.public_sentence; method.hidden = false; }
     const pickId = () => decodeURIComponent((location.hash.match(/^#lake=([A-Za-z0-9_-]+)$/) || [])[1] || '');
     // The list once, so a keyboard keeps its place in it; the lake below it again at each pick.
     host.innerHTML = ltSummary(index) + (index.available ? ltPicker(index, pickId()) + '<div id="lt-one"></div>' : '');
