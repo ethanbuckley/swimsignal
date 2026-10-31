@@ -2097,7 +2097,7 @@ function waterTile(w, e = null, kind = null, miss = null) {
   }
   return { live: true, icon: wtIcon(), label: 'Water temperature',
     fig: `${Math.round(w.temp_c)}°`, unit: 'C',
-    say: `Measured ${esc(w.where)}${w.river ? ` on the ${esc(w.river)}` : ''}, ${fmt(w.river_km, 1)}&nbsp;km ${w.direction}, ${ago(Math.max(0, (Date.now() - t) / 60000))} ago.${est ? ` At the spot: ${waterEstSay(est).replace(/^About/, 'about')}` : ''}`,
+    say: `Measured ${esc(w.where)}${w.river ? ` on the ${esc(w.river)}` : ''}, ${fmt(w.river_km, 1)}&nbsp;km ${w.direction}, ${agoSpan(t)} ago.${est ? ` At the spot: ${waterEstSay(est).replace(/^About/, 'about')}` : ''}`,
     more: `The Environment Agency's water-quality sensor nearest the spot on this river, within 15&nbsp;km in a straight line, that has reported in the last day: upstream if there is one, since the water here comes from upstream.${w.quality === 'Unchecked' ? ' The EA has not yet checked the reading.' : ''} The water where you swim can be warmer or colder. Not part of the pollution level.${/^https:\/\/environment\.data\.gov\.uk\//.test(w.url || '') ? ` <a href="${esc(w.url)}">The Environment Agency's page for this sensor</a> has its record.` : ''}${est ? ` ${waterEstMore(est)}` : ''}` };
 }
 // ------------------------------------------------------------------------------ the answer and the tiles
@@ -2433,7 +2433,7 @@ const answerWords = (d, iso = null) => { const m = answerParts(d, iso), spill = 
     + (m.why || m.next ? `<div class="wn">${m.why ? `<p class="why">${m.why}</p>` : ''}${m.next ? `<p class="next">${m.next}</p>` : ''}</div>` : '')
     + (typeof eaTodayApart === 'function' ? eaTodayApart(d) : '') + (d.error && m.act ? `<p class="act">${m.act}</p>` : '')
     + (spill ? `<p class="gaps">${spill}</p>` : '') + flowLine(d)
-    + `<div class="ci">${coverLine(d, iso)}<p class="issued">${nextDay() ? yesterdayLine() : `Issued ${issued()}, ${ago(ageMin())} ago`}</p></div>`
+    + `<div class="ci">${coverLine(d, iso)}<p class="issued">${nextDay() ? yesterdayLine() : `Issued ${issued()}, ${agoSpan()} ago`}</p></div>`
     + (rainAgeLine(d) ? `<p class="issued">${rainAgeLine(d)}</p>` : ''); };
 // Under the five days, in their tile: what to do at the level, that day, and what the level counts. In the
 // answer, between the level and the week, they put the five days 739 px down a 375 px phone at Long Bridges,
@@ -2952,6 +2952,8 @@ lowCtl.addTo(map);
 const STALE_MIN = 8 * 60;
 const ageMin = () => (Date.now() - new Date(DATA.generated_at).getTime()) / 60000;
 const ago = m => { const t = Math.round(m); return t < 60 ? `${t} min` : t % 60 ? `${Math.floor(t / 60)} h ${t % 60} min` : `${t / 60} h`; };   // "6 h", not "6 h 0 min"
+// The same, from a time (ms; the forecast's issue by default), in a span the minute's check moves on (stillCurrent).
+const agoSpan = (fromMs = Date.parse(DATA.generated_at)) => `<span data-ago="${fromMs}">${ago(Math.max(0, (Date.now() - fromMs) / 60000))}</span>`;
 const issued = () => new Date(DATA.generated_at).toLocaleString('en-GB', {weekday:'short', hour:'2-digit', minute:'2-digit'});
 function freshness(spot = false) {
   const m = ageMin(); const b = DATA.build || {};
@@ -2961,6 +2963,7 @@ function freshness(spot = false) {
   if (typeof OutingPack === 'object') h += OutingPack.notice();   // a page of an outing kept for offline use, read from a stored copy
   // Opened without signal, the service worker serves the last forecast it saw: say which one.
   if (!navigator.onLine && m <= STALE_MIN) h += `<div class="notice quiet" role="status"><b>Offline.</b> This is the forecast issued ${issued()} (${ago(m)} ago); it updates when you are back online.</div>`;
+  if (UPDATE) h += `<div class="notice quiet" role="status">${UPDATE_SAY[UPDATE]} <button type="button" class="linkbtn small" data-update>Update the page</button></div>`;
   if (m > STALE_MIN) h += `<div class="notice" role="alert"><b>Stale.</b> This forecast is ${ago(m)} old (issued ${issued()}). ${navigator.onLine ? 'The automatic update has not run since' : 'You are offline, so this is the last forecast this device saw'}; treat everything below as out of date.</div>`;
   return h;
 }
@@ -2978,8 +2981,8 @@ function gaps(d, list) {
 // The notices, in a box redrawn when the connection drops or returns, or the forecast turns stale,
 // while the page stays open. Only then: the stale notice is an alert, and a screen reader reads an
 // alert out again each time it is redrawn, so a redraw every minute would repeat it every minute.
-let NOTICE = '';
-const noticeState = () => `${navigator.onLine} ${ageMin() > STALE_MIN}`;
+let NOTICE = '', UPDATE = '', FORECAST_STAMP = '';   // UPDATE: a reload on offer (stillCurrent)
+const noticeState = () => `${navigator.onLine} ${ageMin() > STALE_MIN} ${UPDATE}`;
 const notices = (d = null, list = false) => { NOTICE = noticeState(); return `<div data-notices${d ? ' data-spot' : ''}>${freshness(!!d)}</div>${gaps(d, list)}`; };
 function refreshNotices() {
   if (!DATA || noticeState() === NOTICE) return;
@@ -2987,7 +2990,6 @@ function refreshNotices() {
 }
 window.addEventListener('offline', refreshNotices);
 window.addEventListener('online', refreshNotices);
-setInterval(refreshNotices, 60 * 1000);
 // Redraw the panel. The map is parked in its column first, or replacing the HTML would destroy it.
 // The new view rises into place (#result.fresh, the day strip's own motion): the class comes off and
 // goes back on with a layout read between, so the animation runs again each time.
@@ -3429,7 +3431,7 @@ function compareTable(spots, day, meta = null) {
   // The names again, for the pin (comparePin): hidden from screen readers, which have the table's own heads.
   const pin = `<div class="compare-pin" aria-hidden="true"><div><table class="compare-table" style="--cols:${n}"><thead><tr>`
     + spots.map(s => `<th>${esc(s.name)}${meta ? `<span class="k">${esc(meta(s))}</span>` : ''}</th>`).join('') + '</tr></thead></table></div></div>';
-  return `<p class="small muted compare-note">Issued ${issued()} (${ago(ageMin())} ago). A lower forecast level does not mean safe water: check the signs at the water.</p>`
+  return `<p class="small muted compare-note">Issued ${issued()} (${agoSpan()} ago). A lower forecast level does not mean safe water: check the signs at the water.</p>`
     + pin + `<div class="compare-scroll" tabindex="0" role="region" aria-label="Spot comparison"><table class="compare-table" style="--cols:${n}">`
     + `<thead><tr>${spots.map((s, j) => `<th scope="col" id="cmp-s${j}"><a data-compare-spot="${esc(s.id)}" href="${esc(spotPath(s.id))}${daily(s) ? '#day=' + day : ''}">${esc(s.name)}</a>`
       + `${meta ? `<span class="k">${esc(meta(s))}</span>` : ''}${typeof eaTodayTag === 'function' ? eaTodayTag(s) : ''}`
@@ -3559,7 +3561,7 @@ function renderSaved() {
   let v = spots.length > 1 ? `<div id="grid-host">${savedGrid(spots)}</div>` : '<div id="grid-host"></div>';
   if (spots.length) v += `<ul class="places" id="scards">${spots.map(s => savedCard(s, true, null, true, from, false, one)).join('')}</ul>`
     + (one ? savedOneNext(spots[0]) : '')
-    + `<p class="small muted msg">Updated ${issued()} (${ago(ageMin())} ago). <a href="#levels">What the levels mean</a>. Forecasts, not water tests: check the signs at the water before you swim.</p>`;
+    + `<p class="small muted msg">Updated ${issued()} (${agoSpan()} ago). <a href="#levels">What the levels mean</a>. Forecasts, not water tests: check the signs at the water before you swim.</p>`;
   // Empty: one tile, one sentence and the way to a spot. The swim journal
   // waits behind a link until a swim is in it, or the address asks for it (saved/#journal).
   else v += `<div class="empty-saved tile"><p class="sub">Save a spot${many ? ` to ${named}` : ''} from its page and it shows here with the days ahead.`
@@ -3749,7 +3751,7 @@ function renderShared(sh) {
   let v = '';
   if (spots.length) v += `<ul class="places" id="scards">${spots.map(s => savedCard(s, false, sh.day, true)).join('')}</ul>`
     + `<p class="small muted msg">${gone ? `${gone === 1 ? 'One spot in the link is' : `${gone} spots in the link are`} not in the forecast now, so ${gone === 1 ? 'it is' : 'they are'} left out. ` : ''}`
-    + `Updated ${issued()} (${ago(ageMin())} ago). <a href="#levels">What the levels mean</a>. Forecasts, not water tests: check the signs at the water before you swim.</p>`;
+    + `Updated ${issued()} (${agoSpan()} ago). <a href="#levels">What the levels mean</a>. Forecasts, not water tests: check the signs at the water before you swim.</p>`;
   else v += `<div class="empty-saved tile"><h2 class="sec-h">No spots to show</h2><p class="sub">None of the spots in this link is in the forecast now, or the link was cut short.</p>`
     + `<a class="btn primary" href="${esc(ROOT.pathname)}" id="find">Find a spot</a></div>`;
   setPanel(h + cols(v));
@@ -4901,7 +4903,7 @@ async function main() {
   // minutes. With the offline copy on, sw.js asks the same way. The head asked already (FORECAST).
   const res = await (window.FORECAST || fetch('data/spots-lite.json', { cache: 'no-cache' }));
   if (!res.ok) throw new Error(`the forecast file answered ${res.status}`);
-  DATA = await res.json();
+  DATA = await res.json(); FORECAST_STAMP = stamp(res);
   if (typeof OutingPack === 'object') OutingPack.seen(res);   // a stored copy, which the kept outing's pages then say
   setDays();
   for (const s of DATA.spots) ageReadings(s, Date.now());   // readings over six hours old where the page is read
@@ -4958,9 +4960,48 @@ function reload() {
   try { sessionStorage.setItem(VIEW_KEY, JSON.stringify({ ...rest, sort: rest.sort === 'near' ? 'name' : rest.sort, y: shown === 'list' ? scrollPos() : 0 })); } catch (e) { /* starts afresh */ }
   location.reload();
 }
-// Not while something being written would be lost (a review: data-keep-page).
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && Date.now() - LOADED > 30 * 60 * 1000
-  && !document.querySelector('[data-keep-page]')) reload(); });
+// Not while something being written would be lost (held).
+document.addEventListener('visibilitychange', () => { if (document.visibilityState !== 'visible') return;
+  if (Date.now() - LOADED > 30 * 60 * 1000 && !held()) reload(); else stillCurrent(); });
+// While the page stays open and in view. Each minute the notices are redrawn if their state has
+// changed (refreshNotices) and each "… ago" moves on in place: a change of text outside an alert,
+// so a screen reader does not read the Stale alert out again. Three things change what the rest of the
+// page says: a company's quiet feed passing six hours (ageReadings), midnight before the next build
+// (setDays), and a newer forecast on the server, asked for with a HEAD request every 10 minutes (its
+// Last-Modified or ETag against the one the page loaded). The first two make the page wrong ("not
+// discharging", "Today"), so they reload it, which keeps the view (reload, keptView), unless something
+// written would be lost or a field is in use (held). A newer forecast does not make it wrong, and a reload
+// would move a reader halfway down a spot's page back to its top, so it is only offered. An offer is a
+// quiet notice with a button, drawn once (refreshNotices), and the reader's to press.
+let CHECKED = Date.now();
+const CHECK_MS = 10 * 60 * 1000;
+const UPDATE_SAY = { newer: 'A newer forecast is out.',
+  aged: 'Some live overflow readings on this page are now over six hours old, and may no longer be current.',
+  day: 'It is past midnight: this page still counts its days from yesterday.' };
+const stamp = r => (r.headers && (r.headers.get('last-modified') || r.headers.get('etag'))) || '';
+const editing = () => { const a = document.activeElement; return !!a && a.matches('input:not([type=checkbox]):not([type=radio]), textarea, select, [contenteditable]'); };
+const drafting = () => [...DRAFTS.values()].some(d => d.photos || d.fields.some(f => f.value || f.checked));
+const held = () => !!document.querySelector('[data-keep-page]') || drafting() || editing();
+const newerOut = () => fetch('data/spots-lite.json', { method: 'HEAD', cache: 'no-cache' })
+  .then(r => { const t = r.ok ? stamp(r) : ''; return !!t && !!FORECAST_STAMP && t !== FORECAST_STAMP; }).catch(() => false);
+async function stillCurrent(nowMs = Date.now()) {
+  if (!DATA) return;
+  refreshNotices();
+  document.querySelectorAll('[data-ago]').forEach(el => { if (!el.closest('[role=alert]')) el.textContent = ago(Math.max(0, (nowMs - Number(el.dataset.ago)) / 60000)); });
+  if (document.visibilityState !== 'visible') return;
+  const aged = s => ((s.now && s.now.aged) || []).length, before = DATA.spots.reduce((n, s) => n + aged(s), 0);
+  for (const s of DATA.spots) ageReadings(s, nowMs);
+  let why = DATA.spots.reduce((n, s) => n + aged(s), 0) > before ? 'aged'
+    : readerDay(DATA.generated_at, nowMs, STALE_MIN) > today() ? 'day' : '';
+  if (!why && !UPDATE && navigator.onLine && nowMs - CHECKED >= CHECK_MS) { CHECKED = nowMs; if (await newerOut()) why = 'newer'; }
+  if (!why || UPDATE === why) return;
+  if (why !== 'newer' && !held()) { reload(); return; }
+  UPDATE = why; refreshNotices();
+}
+setInterval(stillCurrent, 60 * 1000);
+document.addEventListener('click', e => { if (!e.target.closest('[data-update]')) return;
+  if (drafting() && !confirm('Update the page? What you started writing in a form you left will be lost.')) return;
+  reload(); });
 // Drafts live only in this page's memory, keyed by spot and form; a full reload or tab close
 // clears them. Photos are not retained and must be selected again. Nothing is submitted.
 const DRAFTS = new Map();

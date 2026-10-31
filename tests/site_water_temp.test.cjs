@@ -19,7 +19,7 @@ function pageDefs(names) {
 }
 const ctx = vm.createContext({});
 vm.runInContext(fs.readFileSync(join(__dirname, '../src/dipcast/site/levels.js'), 'utf8'), ctx);
-vm.runInContext(pageDefs(['esc', 'fmt', 'glyph', 'ago', 'WT_ROUTES', 'waterEstOk', 'waterEstHow', 'waterEstSay', 'WT_AIR', 'WT_TAIL', 'waterEstMore', 'waterTile']), ctx);
+vm.runInContext(pageDefs(['esc', 'fmt', 'glyph', 'ago', 'agoSpan', 'WT_ROUTES', 'waterEstOk', 'waterEstHow', 'waterEstSay', 'WT_AIR', 'WT_TAIL', 'waterEstMore', 'waterTile']), ctx);
 const waterTile = vm.runInContext('waterTile', ctx);
 
 const hoursAgo = h => new Date(Date.now() - h * 3600e3).toISOString();
@@ -29,11 +29,12 @@ const bures = { temp_c: 16.3, observed_at: hoursAgo(2), age_hours: 1.0, quality:
   distance_km: 8.1, direction: 'downstream', river_km: 10.9 };
 
 test('a reading is shown with where the sensor is, how far along the river and how old it is', () => {
-  const t = waterTile(bures);
+  const t = waterTile(bures), plain = x => x.replace(/<span data-ago="\d+">([^<]*)<\/span>/g, '$1');
   assert.equal(t.label, 'Water temperature');
   assert.equal(t.fig, '16°');
   assert.equal(t.unit, 'C');
-  assert.equal(t.say, 'Measured at Bures Mill on the Stour, 10.9&nbsp;km downstream, 2 h ago.');
+  assert.equal(plain(t.say), 'Measured at Bures Mill on the Stour, 10.9&nbsp;km downstream, 2 h ago.');
+  assert.match(t.say, /<span data-ago="\d+">2 h<\/span> ago\./);   // moved on while the page is open (stillCurrent)
   assert.match(t.more, /not yet checked/);
   assert.match(t.more, /href="https:\/\/environment\.data\.gov\.uk\/hydrology\/station\/E02254A"/);
   assert.match(t.more, /Not part of the pollution level\./);
@@ -42,8 +43,8 @@ test('a reading is shown with where the sensor is, how far along the river and h
 });
 
 test('the age is counted when the page is read, not when it was built', () => {
-  assert.match(waterTile({ ...bures, observed_at: hoursAgo(26) }).say, /, 26 h ago\.$/);
-  assert.match(waterTile({ ...bures, observed_at: hoursAgo(0.5) }).say, /, 30 min ago\.$/);
+  assert.match(waterTile({ ...bures, observed_at: hoursAgo(26) }).say, /, <span data-ago="\d+">26 h<\/span> ago\.$/);
+  assert.match(waterTile({ ...bures, observed_at: hoursAgo(0.5) }).say, /, <span data-ago="\d+">30 min<\/span> ago\.$/);
 });
 
 test('without a distance along the river, a direction or a time, nothing is shown', () => {
@@ -87,7 +88,7 @@ test('with a sensor, the reading comes first and the estimate after it, in the s
   const t = waterTile(bures, est, 'river');
   assert.equal(t.fig, '16°');
   assert.ok(t.live);
-  assert.match(t.say, /^Measured at Bures Mill on the Stour, 10\.9&nbsp;km downstream, 2 h ago\. At the spot: about 17&nbsp;°C \(estimated, typically within 2&nbsp;°C\)\.$/);
+  assert.match(t.say, /^Measured at Bures Mill on the Stour, 10\.9&nbsp;km downstream, <span data-ago="\d+">2 h<\/span> ago\. At the spot: about 17&nbsp;°C \(estimated, typically within 2&nbsp;°C\)\.$/);
   assert.match(t.more, /not a measurement/);
   setToday(null);
 });

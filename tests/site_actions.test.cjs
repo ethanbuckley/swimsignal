@@ -110,7 +110,7 @@ function pageContext(names, extra = {}) {
   vm.runInContext(pageDefs(names), ctx);
   return ctx;
 }
-const PAGE = ['esc', 'tone', 'headTone', 'rainSaid', 'answerParts', 'flowLine', 'ageMin', 'ago', 'issued', 'nextDay', 'yesterdayLine', 'answerWords',
+const PAGE = ['esc', 'tone', 'headTone', 'rainSaid', 'answerParts', 'flowLine', 'ageMin', 'ago', 'agoSpan', 'issued', 'nextDay', 'yesterdayLine', 'answerWords',
   'sinceTime', 'spillFor', 'overflowSaid', 'longSpillLine', 'coverWords', 'coverLine', 'answerAfter'];
 
 test('the answer puts the line under where the week goes, for today and for a picked day', () => {
