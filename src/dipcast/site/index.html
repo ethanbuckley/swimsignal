@@ -4048,20 +4048,24 @@ function planShare(open, on) {
   const out = open.filter(o => planAdvised(o.s)); open = open.filter(o => !planAdvised(o.s));
   const left = out.length ? ` ${out.length === 1 ? `${esc(out[0].s.name)} is` : `${out.length} spots are`} left out: ${out.length === 1 ? 'it has an official notice' : 'they have official notices'}.` : '';
   const top = open.slice(0, PLAN_SHARE_MAX), pick = top.map(o => o.s), box = document.getElementById('plan-results');
+  const selected = PLAN.spot && DATA.spots.find(s => s.id === PLAN.spot);
+  const excluded = selected && !pick.some(s => s.id === selected.id)
+    ? ` Your selected outing spot, ${esc(selected.name)}, is not in this list. Use Share this outing to share it.` : '';
   // Every spot that would be shared has advice: the tile says why there is nothing, rather than not being there
   // (on the phone, 27 Oct 2026, Frensham was the plan's only low spot and the share was simply missing).
-  if (!pick.length) { if (out.length) box.insertAdjacentHTML('beforeend', '<section class="sec tile" aria-labelledby="plan-share-h"><h2 class="sec-h" id="plan-share-h">Share this plan</h2>'
+  if (!pick.length) { if (out.length) box.insertAdjacentHTML('beforeend', '<section class="sec tile" aria-labelledby="plan-share-h"><h2 class="sec-h" id="plan-share-h">Share suggested spots</h2>'
     + `<p class="sub">Nothing to share ${on}: ${out.length === 1 ? `the only spot it would hold, ${esc(out[0].s.name)}, has` : `the ${out.length} spots it would hold all have`} `
-    + `${out.length === 1 ? 'an official notice' : 'official notices'}. A shared plan is a list of places to go.</p></section>`); return; }
+    + `${out.length === 1 ? 'an official notice' : 'official notices'}.${excluded} This suggested-spots list does not share your selected outing.</p></section>`); return; }
   const name = planListName(PLAN.day), n = pick.length;
   const low = top.filter(o => o.level === 'low').length, none = n - low;
   const which = low && none ? `: ${low} at low risk ${on} and ${none} with no monitored overflow found upstream,` : low ? ` at low risk ${on},` : ' with no monitored overflow found upstream,';
-  box.insertAdjacentHTML('beforeend', `<section class="sec tile" aria-labelledby="plan-share-h"><h2 class="sec-h" id="plan-share-h">Share this plan</h2>`
+  box.insertAdjacentHTML('beforeend', `<section class="sec tile" aria-labelledby="plan-share-h"><h2 class="sec-h" id="plan-share-h">Share suggested spots</h2>`
     + `<p class="sub">A link to the ${open.length > n ? `${n} nearest spots` : n === 1 ? 'spot' : `${n} spots`}${which} as a list called “${esc(name)}”, which a friend can add to their own lists. `
-    + `It holds that name, the day and which spots are in it, nothing else: not where you start from.${left}</p>`
-    + `<button type="button" class="btn" id="plan-share">Share this plan</button><p class="small muted msg" id="plan-share-msg" aria-live="polite"></p></section>`);
+    + `It contains the date and listed spots, not your selected outing time or meeting place.${left}${excluded}</p>`
+    + `<details><summary>See the ${n} included ${n === 1 ? 'spot' : 'spots'}</summary><ul>${pick.map(s => `<li>${esc(s.name)}</li>`).join('')}</ul></details>`
+    + `<button type="button" class="btn" id="plan-share">Share suggested spots</button><p class="small muted msg" id="plan-share-msg" aria-live="polite"></p></section>`);
   bindShareLink(document.getElementById('plan-share'), document.getElementById('plan-share-msg'),
-    new URL(savedPath(), location.origin).href + shareHash(name, pick.map(s => s.id), PLAN.day), `${name} · ${BRAND}`, 'Copy link to this plan');
+    new URL(savedPath(), location.origin).href + shareHash(name, pick.map(s => s.id), PLAN.day), `${name} · ${BRAND}`, 'Copy link to suggested spots');
 }
 function bindPlan() {
   const $ = id => document.getElementById(id), input = $('plan-from');
