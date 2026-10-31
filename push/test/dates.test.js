@@ -115,7 +115,7 @@ test('the day the date enters the forecast, one notice with its level and what t
   assert.deepEqual(t.pushes[0].payload, {
     title: 'Wharfe at Cromwheel, Ilkley · Saturday 12 June',
     body: `Moderate risk: sewage spills. ${WORDS[3]} This is the first forecast for this day, and it can change.`,
-    url: `${SITE}organisers.html#spot=a&date=2027-06-12`, tag: 'dipspot-a-2027-06-12-moderate' });
+    url: `${SITE}spot/a/#day=2027-06-12`, tag: 'dipspot-a-2027-06-12-moderate' });
   assert.equal(t.pushes[0].issued_at, '2027-06-08T05:00:00.000Z');
   // A later build the same day: Saturday rises to high.
   t.at(Date.parse('2027-06-08T09:10:00Z'));
@@ -125,7 +125,7 @@ test('the day the date enters the forecast, one notice with its level and what t
   assert.deepEqual(t.pushes[1].payload, {
     title: 'Wharfe at Cromwheel, Ilkley · Saturday 12 June',
     body: `High risk: sewage spills. Was moderate risk. ${WORDS[5]}`,
-    url: `${SITE}organisers.html#spot=a&date=2027-06-12`, tag: 'dipspot-a-2027-06-12-high' });
+    url: `${SITE}spot/a/#day=2027-06-12`, tag: 'dipspot-a-2027-06-12-high' });
   // Back down the next day.
   t.at(at('2027-06-09'));
   await t.deliver(build('2027-06-09', { a: ['low', 'low', 'low', 'low', 'low'] }));
@@ -215,7 +215,7 @@ test('several dates with news in one build make one notice; a pair dropped or ch
   assert.deepEqual(t.pushes.map((p) => p.to), ['ann']);
   assert.deepEqual(t.pushes[0].payload, { title: 'New forecasts for 2 of your dates',
     body: 'Wharfe at Cromwheel, Ilkley · Sat 12 Jun: Moderate risk: sewage spills.\nSemerwater · Sat 12 Jun: No sewage risk from monitored overflows.',
-    url: `${SITE}organisers.html#spot=a&date=2027-06-12`, tag: 'dipspot-dates-2027-06-08T05:00:00.000Z' });
+    url: `${SITE}spot/a/#day=2027-06-12`, tag: 'dipspot-dates-2027-06-08T05:00:00.000Z' });
   // Queued as a change, then changed back in the build that sends it: nothing to say.
   t.at(Date.parse('2027-06-08T09:10:00Z'));
   const nob = ['low', 'low', 'low', 'low', null];
