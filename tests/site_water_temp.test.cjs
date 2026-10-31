@@ -123,3 +123,11 @@ test('the conditions summary does not show an old gauge as current', () => {
   assert.equal(seen.stale, true);
   assert.ok(seen.age_hours >= 48);
 });
+
+test('the conditions summary writes a temperature as 10°C, a level as 0.35 m', () => {
+  const c = vm.createContext({waterTile: () => ({fig: '10°', unit: 'C', say: ''}), riverTile: () => ({fig: '0.35', unit: 'm', say: ''})});
+  vm.runInContext(pageDefs(['conditionsSummary']), c);
+  const h = vm.runInContext('conditionsSummary', c)({kind: 'river'});
+  assert.match(h, /Water temperature:<\/b> 10°C\./);
+  assert.match(h, /River level:<\/b> 0\.35 m\./);
+});
