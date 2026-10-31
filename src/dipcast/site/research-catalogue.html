@@ -1,0 +1,63 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- The research catalogue: a prose page with the shared head, header and foot, written by scripts/build_site.py
+     (write_research_catalogue) beside the app, with every record in place of the CATALOGUE marker below, from
+     data/research/research_catalogue.v1.json (docs/RESEARCH-CATALOGUE-CONTRACT-v1.md). Every record is in the page, so
+     it reads with scripts off; the small script below only hides the records a search or a stage leaves out. -->
+<title>Research catalogue · SwimSignal</title>
+<meta name="description" content="Every research record SwimSignal keeps: what each test found when it was run, kept as it was, and what is happening to the work now, with its record and how to reopen an archived version.">
+<meta name="theme-color" content="#3d5b5d">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="page.css">
+<link rel="preload" href="fonts/SourceSans3-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/SourceSerif4-latin.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+  /* The tokens and the prose page are page.css's. One record: its title, where it stands now, what the test found, then its links. */
+  .rc-find { display:flex; flex-wrap:wrap; gap:12px 16px; margin:16px 0 8px; }
+  .rc-find label { display:flex; flex-direction:column; gap:4px; font-size:var(--fs-note); color:var(--muted); flex:1 1 220px; }
+  .rc-find input, .rc-find select { font:inherit; font-size:var(--fs-body); color:var(--ink); min-height:44px; padding:8px; border:1px solid var(--line); border-radius:var(--radius); background:var(--field); max-width:100%; }
+  main.doc .rc-count { font-size:var(--fs-note); color:var(--muted); }
+  .rc-entry { border-top:1px solid var(--line); padding-top:4px; }
+  main.doc .rc-entry h3 { margin-top:16px; }
+  main.doc .rc-entry p { margin:0 0 8px; }
+  main.doc .rc-note, main.doc .rc-links { font-size:var(--fs-note); }
+  main.doc .rc-note { color:var(--muted); }
+</style>
+</head><body>
+<header class="top"><a class="brand" href="./"><svg viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" fill="#0f5a61"/><path d="M430-20C330 110 470 230 300 290S110 380 190 540" fill="none" stroke="#5CC2B5" stroke-width="70" stroke-linecap="round"/><circle cx="318" cy="138" r="38" fill="#F08A4B"/><circle cx="165" cy="358" r="46" fill="none" stroke="#fff" stroke-width="22"/></svg>SwimSignal</a>
+<nav aria-label="Site"><a href="plan/">Plan a swim</a><a href="saved/">Saved</a><a href="verification.html">Accuracy</a><a href="about.html">About</a><a class="desk-only" href="research.html">Research</a><a class="desk-only" href="feedback.html">Feedback</a></nav></header>
+<main class="doc" id="main">
+<h1>Research catalogue</h1>
+<p class="lead">Every research record SwimSignal keeps. Each says what its test found when it was run, kept as it was, and, apart from that, what is happening to the work now.</p>
+<p>A failed test is kept with its scope. It says that one version did not help on those data, not that the idea cannot work. An archived version says what new data, mechanism or need would reopen it. Work that is in use or waiting for a set date is not abandoned.</p>
+<!-- CATALOGUE -->
+
+<h2>Sources</h2>
+<ul>
+<li><a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/RESEARCH-RECOVERY-2026-10.md">The register this catalogue follows</a>, and <a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/RESEARCH-WORKFLOW.md">how research becomes a feature</a></li>
+<li><a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/RESEARCH-CATALOGUE-CONTRACT-v1.md">What the catalogue's file holds</a></li>
+<li><a href="data/research/research_catalogue.json">The catalogue as one file</a></li>
+</ul>
+</main>
+<footer class="site-foot"><div class="rule"><p>SwimSignal is a free, non-commercial pollution risk forecast for river and lake swim spots in England, run by Ethan Buckley. A forecast, not a water test: check the signs at the water before you swim.</p>
+<p><a href="terms.html">Terms of use</a> · <a href="privacy.html">Privacy</a> · <a href="feedback.html">Feedback</a> · <a href="methods.html">Method</a> · <a href="research.html">Research</a> · <a href="terms.html#data">Data credits</a> · <a href="https://github.com/ethanbuckley/swimsignal">Source code</a> (MIT)</p></div></footer>
+<script>
+// Search and stage: hide the records that do not match. Without this script every record shows.
+(function () {
+  var q = document.getElementById('rc-q'), st = document.getElementById('rc-stage'), n = document.getElementById('rc-count');
+  if (!q || !st || !n) return;
+  var items = [].slice.call(document.querySelectorAll('.rc-entry')), heads = [].slice.call(document.querySelectorAll('.rc-section'));
+  function run() {
+    var words = q.value.toLowerCase().split(/\s+/).filter(Boolean), stage = st.value, shown = 0;
+    items.forEach(function (el) {
+      var hay = el.getAttribute('data-text'), ok = (!stage || el.getAttribute('data-stage') === stage) && words.every(function (w) { return hay.indexOf(w) >= 0; });
+      el.hidden = !ok; if (ok) shown++;
+    });
+    heads.forEach(function (h) { h.hidden = !h.querySelector('.rc-entry:not([hidden])'); });
+    n.textContent = shown === items.length ? 'Showing all ' + shown + ' records.' : 'Showing ' + shown + ' of ' + items.length + ' records.';
+  }
+  q.addEventListener('input', run); st.addEventListener('change', run);
+  run();
+})();
+</script>
+</body></html>

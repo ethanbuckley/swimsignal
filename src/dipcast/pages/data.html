@@ -208,6 +208,10 @@
 <dl class="fields">
 <dt><code>waterhead_wet.json</code></dt><dd>The whole export: what the samples may and may not say (<code>claim</code>), the site and whether its exact point is confirmed (<code>site</code>), each season's dates, counts, middle and highest values and how it was sampled (<code>seasons</code>), what is not yet confirmed (<code>open_questions</code>), the credit and permission, the source sheet's SHA-256, and every sample (<code>samples</code>: date, E. coli and intestinal enterococci per 100 ml as the sheet records them)</dd>
 </dl>
+<p>The research records the <a href="/research-catalogue">research catalogue</a> lists (<a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/RESEARCH-CATALOGUE-CONTRACT-v1.md">its contract, version 1</a>). Edited by hand from the project's research register; not data from a measurement.</p>
+<dl class="fields">
+<dt><code>research_catalogue.json</code></dt><dd>The stage names (<code>stages</code>) and sections, every pull request named with its state and branch (<code>prs</code>), and one entry per record (<code>entries</code>): what its test found when it was run (<code>verdict</code>), kept apart from where it stands now (<code>stage</code>, <code>stage_note</code>, <code>next</code>, <code>read_on</code>), what it covers (<code>scope</code>), what would reopen an archived version (<code>reopen_when</code>), its record files with a verbatim quote of the verdict (<code>records</code>), and where the register's summary and the record differ (<code>register_note</code>)</dd>
+</dl>
 
 <h2 id="anypoint">anypoint/</h2>
 <p>The files the map uses to calculate a forecast at a point you click, on your device. The table links <code>tiles.json</code>, the index of available 0.25-degree squares, versions, distance units and probability scales; its size is the whole folder's. These files are intended to be read together by the site's <a href="https://github.com/ethanbuckley/swimsignal/blob/main/src/dipcast/site/anypoint.js">point-forecast script</a>.</p>

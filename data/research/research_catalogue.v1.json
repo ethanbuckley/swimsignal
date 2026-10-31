@@ -1,0 +1,2243 @@
+{
+ "schema": "swimsignal.research-catalogue",
+ "version": "1.0.0",
+ "written": "2026-10-31",
+ "register": "docs/RESEARCH-RECOVERY-2026-10.md",
+ "contract": "docs/RESEARCH-CATALOGUE-CONTRACT-v1.md",
+ "checked": {
+  "prs": "2026-10-31",
+  "how": "gh pr list --state all and git ls-remote --heads origin"
+ },
+ "stages": {
+  "adopted": "In the forecast",
+  "live": "Shown on the site",
+  "scheduled": "Running, read on a set date",
+  "development": "In development",
+  "waiting": "Waits on data, a source or a decision",
+  "archived": "This version archived",
+  "reference": "Reference record"
+ },
+ "sections": {
+  "satellite": "Satellite lake work",
+  "promising": "Promising work being continued",
+  "scheduled": "Active or scheduled",
+  "data": "Data and directions with a dependency",
+  "negative": "Variants with negative evidence",
+  "adopted": "Adopted, superseded and corrections"
+ },
+ "prs": {
+  "377": {
+   "n": 377,
+   "state": "merged",
+   "branch": "docs/lake-algae-satellite-test",
+   "branch_exists": true,
+   "date": "2026-10-26"
+  },
+  "386": {
+   "n": 386,
+   "state": "merged",
+   "branch": "test/lake-chlorophyll-ndci",
+   "branch_exists": true,
+   "date": "2026-10-27"
+  },
+  "407": {
+   "n": 407,
+   "state": "merged",
+   "branch": "docs/386-promising-not-validated",
+   "branch_exists": true,
+   "date": "2026-10-27"
+  },
+  "468": {
+   "n": 468,
+   "state": "merged",
+   "branch": "research/satellite-recovery",
+   "branch_exists": true,
+   "date": "2026-10-30"
+  },
+  "470": {
+   "n": 470,
+   "state": "merged",
+   "branch": "feat/research-lakes",
+   "branch_exists": true,
+   "date": "2026-10-31"
+  },
+  "537": {
+   "n": 537,
+   "state": "merged",
+   "branch": "research/satellite-pilot",
+   "branch_exists": true,
+   "date": "2026-10-31"
+  },
+  "385": {
+   "n": 385,
+   "state": "merged",
+   "branch": "test/lake-algae-incidents",
+   "branch_exists": true,
+   "date": "2026-10-27"
+  },
+  "396": {
+   "n": 396,
+   "state": "closed",
+   "branch": "docs/lake-algae-2027-forward",
+   "branch_exists": true,
+   "date": "2026-10-27"
+  },
+  "251": {
+   "n": 251,
+   "state": "merged",
+   "branch": "claude/nine-company-model",
+   "branch_exists": true,
+   "date": "2026-10-17"
+  },
+  "357": {
+   "n": 357,
+   "state": "merged",
+   "branch": "claude/nine-company-v2-statement",
+   "branch_exists": true,
+   "date": "2026-10-26"
+  },
+  "466": {
+   "n": 466,
+   "state": "merged",
+   "branch": "research/concentration-model",
+   "branch_exists": true,
+   "date": "2026-10-30"
+  },
+  "531": {
+   "n": 531,
+   "state": "merged",
+   "branch": "feat/labs-ecoli-evidence",
+   "branch_exists": true,
+   "date": "2026-10-31"
+  },
+  "459": {
+   "n": 459,
+   "state": "merged",
+   "branch": "research/spill-duration",
+   "branch_exists": true,
+   "date": "2026-10-30"
+  },
+  "461": {
+   "n": 461,
+   "state": "merged",
+   "branch": "research/spill-duration-diagnostics",
+   "branch_exists": true,
+   "date": "2026-10-30"
+  },
+  "539": {
+   "n": 539,
+   "state": "merged",
+   "branch": "research/spill-duration-replay",
+   "branch_exists": true,
+   "date": "2026-10-31"
+  },
+  "530": {
+   "n": 530,
+   "state": "merged",
+   "branch": "feat/labs-spill-durations",
+   "branch_exists": true,
+   "date": "2026-10-31"
+  },
+  "342": {
+   "n": 342,
+   "state": "merged",
+   "branch": "docs/lake-ecoli-line-test",
+   "branch_exists": true,
+   "date": "2026-10-26"
+  },
+  "419": {
+   "n": 419,
+   "state": "merged",
+   "branch": "test/lake-temperature-model",
+   "branch_exists": true,
+   "date": "2026-10-29"
+  },
+  "529": {
+   "n": 529,
+   "state": "merged",
+   "branch": "feat/labs-lake-temperatures",
+   "branch_exists": true,
+   "date": "2026-10-31"
+  },
+  "178": {
+   "n": 178,
+   "state": "merged",
+   "branch": "claude/live-recalibration-test",
+   "branch_exists": true,
+   "date": "2026-10-11"
+  },
+  "340": {
+   "n": 340,
+   "state": "merged",
+   "branch": "analysis/calibration-check",
+   "branch_exists": true,
+   "date": "2026-10-26"
+  },
+  "374": {
+   "n": 374,
+   "state": "merged",
+   "branch": "docs/calibration-test-proposal-2026-11",
+   "branch_exists": true,
+   "date": "2026-10-26"
+  },
+  "318": {
+   "n": 318,
+   "state": "merged",
+   "branch": "model/dry-spell-test",
+   "branch_exists": true,
+   "date": "2026-10-24"
+  },
+  "381": {
+   "n": 381,
+   "state": "merged",
+   "branch": "proto/sampling-priorities",
+   "branch_exists": true,
+   "date": "2026-10-26"
+  },
+  "313": {
+   "n": 313,
+   "state": "merged",
+   "branch": "waterhead/direction-rule",
+   "branch_exists": true,
+   "date": "2026-10-24"
+  },
+  "187": {
+   "n": 187,
+   "state": "closed",
+   "branch": "claude/lake-near-field",
+   "branch_exists": true,
+   "date": "2026-10-16"
+  },
+  "181": {
+   "n": 181,
+   "state": "closed",
+   "branch": "claude/outfall-channel-test",
+   "branch_exists": true,
+   "date": "2026-10-16"
+  },
+  "254": {
+   "n": 254,
+   "state": "merged",
+   "branch": "claude/live-status-feature-test",
+   "branch_exists": true,
+   "date": "2026-10-18"
+  },
+  "262": {
+   "n": 262,
+   "state": "merged",
+   "branch": "claude/live-status-shadow",
+   "branch_exists": true,
+   "date": "2026-10-20"
+  },
+  "252": {
+   "n": 252,
+   "state": "merged",
+   "branch": "claude/lead-calibration-b-test",
+   "branch_exists": true,
+   "date": "2026-10-17"
+  },
+  "333": {
+   "n": 333,
+   "state": "merged",
+   "branch": "claude/company-calibration-094b7d",
+   "branch_exists": true,
+   "date": "2026-10-25"
+  },
+  "257": {
+   "n": 257,
+   "state": "merged",
+   "branch": "claude/ensemble-rain",
+   "branch_exists": true,
+   "date": "2026-10-18"
+  },
+  "325": {
+   "n": 325,
+   "state": "merged",
+   "branch": "model/upgraded-overflows-test-b",
+   "branch_exists": true,
+   "date": "2026-10-24"
+  },
+  "349": {
+   "n": 349,
+   "state": "merged",
+   "branch": "docs/option-b-recency-note",
+   "branch_exists": true,
+   "date": "2026-10-25"
+  },
+  "383": {
+   "n": 383,
+   "state": "open",
+   "branch": "proto/river-rises-scope",
+   "branch_exists": true,
+   "date": null
+  },
+  "384": {
+   "n": 384,
+   "state": "merged",
+   "branch": "measure/missing-event-end",
+   "branch_exists": true,
+   "date": "2026-10-26"
+  },
+  "121": {
+   "n": 121,
+   "state": "merged",
+   "branch": "claude/preregister-2027",
+   "branch_exists": true,
+   "date": "2026-10-04"
+  },
+  "353": {
+   "n": 353,
+   "state": "merged",
+   "branch": "docs/spot-scoring-rulings",
+   "branch_exists": true,
+   "date": "2026-10-25"
+  },
+  "403": {
+   "n": 403,
+   "state": "merged",
+   "branch": "test/sonde-signal",
+   "branch_exists": true,
+   "date": "2026-10-27"
+  },
+  "343": {
+   "n": 343,
+   "state": "merged",
+   "branch": "model/radar-rain-check",
+   "branch_exists": true,
+   "date": "2026-10-25"
+  },
+  "255": {
+   "n": 255,
+   "state": "merged",
+   "branch": "claude/glofas-check",
+   "branch_exists": true,
+   "date": "2026-10-18"
+  },
+  "420": {
+   "n": 420,
+   "state": "merged",
+   "branch": "docs/coastal-sea-temperature-brief",
+   "branch_exists": true,
+   "date": "2026-10-29"
+  },
+  "331": {
+   "n": 331,
+   "state": "merged",
+   "branch": "claude/sea-currents-scoping",
+   "branch_exists": true,
+   "date": "2026-10-25"
+  },
+  "358": {
+   "n": 358,
+   "state": "merged",
+   "branch": "docs/overflow-data-sources",
+   "branch_exists": true,
+   "date": "2026-10-25"
+  },
+  "258": {
+   "n": 258,
+   "state": "merged",
+   "branch": "claude/optimistic-booth-013d5d",
+   "branch_exists": true,
+   "date": "2026-10-19"
+  },
+  "220": {
+   "n": 220,
+   "state": "merged",
+   "branch": "claude/pe-sources-parked",
+   "branch_exists": true,
+   "date": "2026-10-16"
+  },
+  "561": {
+   "n": 561,
+   "state": "merged",
+   "branch": "claude/tim-bowden-email-reply-449f9c",
+   "branch_exists": true,
+   "date": "2026-10-31"
+  },
+  "123": {
+   "n": 123,
+   "state": "merged",
+   "branch": "claude/wales-plan",
+   "branch_exists": true,
+   "date": "2026-10-04"
+  },
+  "117": {
+   "n": 117,
+   "state": "merged",
+   "branch": "claude/scotland-plan",
+   "branch_exists": true,
+   "date": "2026-10-04"
+  },
+  "122": {
+   "n": 122,
+   "state": "merged",
+   "branch": "claude/ireland-plan",
+   "branch_exists": true,
+   "date": "2026-10-04"
+  },
+  "228": {
+   "n": 228,
+   "state": "merged",
+   "branch": "claude/source-scottish-water",
+   "branch_exists": true,
+   "date": "2026-10-16"
+  },
+  "239": {
+   "n": 239,
+   "state": "merged",
+   "branch": "claude/neural-challenger-test",
+   "branch_exists": true,
+   "date": "2026-10-18"
+  },
+  "259": {
+   "n": 259,
+   "state": "merged",
+   "branch": "claude/multi-year-test",
+   "branch_exists": true,
+   "date": "2026-10-20"
+  },
+  "260": {
+   "n": 260,
+   "state": "merged",
+   "branch": "claude/covariate-year-test",
+   "branch_exists": true,
+   "date": "2026-10-20"
+  },
+  "404": {
+   "n": 404,
+   "state": "merged",
+   "branch": "test/flow-dilution",
+   "branch_exists": true,
+   "date": "2026-10-27"
+  },
+  "166": {
+   "n": 166,
+   "state": "merged",
+   "branch": "claude/river-velocity-dilution",
+   "branch_exists": true,
+   "date": "2026-10-11"
+  },
+  "172": {
+   "n": 172,
+   "state": "merged",
+   "branch": "claude/urban-dilution-diagnosis",
+   "branch_exists": true,
+   "date": "2026-10-13"
+  },
+  "197": {
+   "n": 197,
+   "state": "merged",
+   "branch": "claude/spill-size-test",
+   "branch_exists": true,
+   "date": "2026-10-13"
+  },
+  "210": {
+   "n": 210,
+   "state": "merged",
+   "branch": "claude/pe-size-test",
+   "branch_exists": true,
+   "date": "2026-10-13"
+  },
+  "303": {
+   "n": 303,
+   "state": "merged",
+   "branch": "claude/dieoff-weather-test",
+   "branch_exists": true,
+   "date": "2026-10-24"
+  },
+  "332": {
+   "n": 332,
+   "state": "merged",
+   "branch": "claude/farm-pressure-test-de62ed",
+   "branch_exists": true,
+   "date": "2026-10-25"
+  },
+  "345": {
+   "n": 345,
+   "state": "merged",
+   "branch": "claude/lake-wind-test",
+   "branch_exists": true,
+   "date": "2026-10-25"
+  },
+  "346": {
+   "n": 346,
+   "state": "merged",
+   "branch": "claude/dry-weather-spills-7936b5",
+   "branch_exists": true,
+   "date": "2026-10-25"
+  },
+  "249": {
+   "n": 249,
+   "state": "merged",
+   "branch": "claude/transport-fit-2",
+   "branch_exists": true,
+   "date": "2026-10-17"
+  },
+  "344": {
+   "n": 344,
+   "state": "merged",
+   "branch": "claude/soil-moisture-test-1d5133",
+   "branch_exists": true,
+   "date": "2026-10-25"
+  },
+  "360": {
+   "n": 360,
+   "state": "merged",
+   "branch": "claude/soil-moisture-leads",
+   "branch_exists": true,
+   "date": "2026-10-25"
+  },
+  "248": {
+   "n": 248,
+   "state": "merged",
+   "branch": "claude/transport-fit",
+   "branch_exists": true,
+   "date": "2026-10-17"
+  },
+  "176": {
+   "n": 176,
+   "state": "merged",
+   "branch": "claude/lake-path-option",
+   "branch_exists": true,
+   "date": "2026-10-11"
+  },
+  "211": {
+   "n": 211,
+   "state": "merged",
+   "branch": "claude/lake-residence-2026-10",
+   "branch_exists": true,
+   "date": "2026-10-13"
+  },
+  "231": {
+   "n": 231,
+   "state": "merged",
+   "branch": "claude/lake-distance",
+   "branch_exists": true,
+   "date": "2026-10-16"
+  },
+  "199": {
+   "n": 199,
+   "state": "merged",
+   "branch": "claude/eval-site-pins",
+   "branch_exists": true,
+   "date": "2026-10-12"
+  },
+  "203": {
+   "n": 203,
+   "state": "merged",
+   "branch": "claude/ecoli-refit-site-pins",
+   "branch_exists": true,
+   "date": "2026-10-12"
+  },
+  "200": {
+   "n": 200,
+   "state": "merged",
+   "branch": "claude/validate-ecoli-missing-rain",
+   "branch_exists": true,
+   "date": "2026-10-12"
+  },
+  "347": {
+   "n": 347,
+   "state": "merged",
+   "branch": "docs/soil-ecoli-adoption-plan",
+   "branch_exists": true,
+   "date": "2026-10-25"
+  },
+  "361": {
+   "n": 361,
+   "state": "merged",
+   "branch": "claude/soil-moisture-adopt",
+   "branch_exists": true,
+   "date": "2026-10-26"
+  },
+  "414": {
+   "n": 414,
+   "state": "merged",
+   "branch": "test/water-temperature-model",
+   "branch_exists": true,
+   "date": "2026-10-27"
+  },
+  "418": {
+   "n": 418,
+   "state": "merged",
+   "branch": "feat/river-water-temp-estimate",
+   "branch_exists": true,
+   "date": "2026-10-28"
+  },
+  "400": {
+   "n": 400,
+   "state": "merged",
+   "branch": "feat/water-temperature",
+   "branch_exists": true,
+   "date": "2026-10-27"
+  },
+  "536": {
+   "n": 536,
+   "state": "merged",
+   "branch": "feat/temp-baseline",
+   "branch_exists": true,
+   "date": "2026-10-31"
+  },
+  "538": {
+   "n": 538,
+   "state": "merged",
+   "branch": "feat/temp-anypoint",
+   "branch_exists": true,
+   "date": "2026-10-31"
+  },
+  "541": {
+   "n": 541,
+   "state": "merged",
+   "branch": "feat/temp-directories",
+   "branch_exists": true,
+   "date": "2026-10-31"
+  },
+  "548": {
+   "n": 548,
+   "state": "merged",
+   "branch": "feat/temp-nations",
+   "branch_exists": true,
+   "date": "2026-10-31"
+  },
+  "379": {
+   "n": 379,
+   "state": "merged",
+   "branch": "proto/advisory-finder",
+   "branch_exists": true,
+   "date": "2026-10-26"
+  },
+  "382": {
+   "n": 382,
+   "state": "merged",
+   "branch": "proto/monitoring-anomalies",
+   "branch_exists": true,
+   "date": "2026-10-26"
+  },
+  "225": {
+   "n": 225,
+   "state": "merged",
+   "branch": "claude/anypoint-full-lines",
+   "branch_exists": true,
+   "date": "2026-10-16"
+  },
+  "227": {
+   "n": 227,
+   "state": "merged",
+   "branch": "claude/anypoint-lake-shores",
+   "branch_exists": true,
+   "date": "2026-10-16"
+  },
+  "208": {
+   "n": 208,
+   "state": "closed",
+   "branch": "claude/anypoint-side-arm",
+   "branch_exists": true,
+   "date": "2026-10-15"
+  },
+  "218": {
+   "n": 218,
+   "state": "merged",
+   "branch": "claude/anypoint-side-arm-most",
+   "branch_exists": true,
+   "date": "2026-10-16"
+  },
+  "209": {
+   "n": 209,
+   "state": "merged",
+   "branch": "claude/overflow-positions-2026-10",
+   "branch_exists": true,
+   "date": "2026-10-13"
+  },
+  "214": {
+   "n": 214,
+   "state": "merged",
+   "branch": "claude/overflow-sea-outfalls",
+   "branch_exists": true,
+   "date": "2026-10-15"
+  },
+  "221": {
+   "n": 221,
+   "state": "merged",
+   "branch": "claude/overflow-spot-conflicts",
+   "branch_exists": true,
+   "date": "2026-10-15"
+  },
+  "219": {
+   "n": 219,
+   "state": "closed",
+   "branch": "claude/overflow-catchments",
+   "branch_exists": true,
+   "date": "2026-10-16"
+  },
+  "23": {
+   "n": 23,
+   "state": "merged",
+   "branch": "gpt-ux",
+   "branch_exists": true,
+   "date": "2026-09-30"
+  },
+  "277": {
+   "n": 277,
+   "state": "merged",
+   "branch": "claude/comprehension-test",
+   "branch_exists": true,
+   "date": "2026-10-20"
+  },
+  "465": {
+   "n": 465,
+   "state": "merged",
+   "branch": "docs/comprehension-task-3b",
+   "branch_exists": true,
+   "date": "2026-10-30"
+  },
+  "356": {
+   "n": 356,
+   "state": "merged",
+   "branch": "docs/noise-audit",
+   "branch_exists": true,
+   "date": "2026-10-25"
+  }
+ },
+ "entries": [
+  {
+   "id": "sat-visual-algae",
+   "title": "Satellite index against EA visual algae checks",
+   "section": "satellite",
+   "topics": [
+    "lakes",
+    "satellite",
+    "algae"
+   ],
+   "verdict": "Failed as stated. For \"algae seen\" the index's AUC was 0.604 (97.5% interval 0.394 to 0.746) against a bar of 0.65; adding it to month and the last check made the Brier score worse (−0.00465, interval −0.02282 to +0.00203). Only 404 of 1,358 checks had a usable image within 3 days. \"Objectionable\" algae had only 20 events: too few to judge.",
+   "scope": "14 of 18 English lake bathing waters on 8 water bodies, EA visual checks May to September 2020-21 and 2023-26. Small ponds had no core water pixels.",
+   "stage": "archived",
+   "stage_note": "This classifier is archived. Its image extraction and coverage work is reused by the satellite observations now shown on the Lakes page.",
+   "reopen_when": "A different, better-measured target (for example lab chlorophyll or verified bloom reports) with enough clear images, or a method that reads small ponds. Not a rerun of the same visual classifier.",
+   "records": [
+    {
+     "doc": "docs/LAKE-ALGAE-SATELLITE-TEST-2026-10.md",
+     "quote": "**Verdicts: A (algae seen) fails. B (objectionable) is too few to judge.**"
+    },
+    {
+     "doc": "docs/LAKE-ALGAE-SATELLITE-TEST-2026-10.md",
+     "quote": "| 1. AUC of the raw reading ≥ 0.65, lower end > 0.50 | 0.604 (0.394 to 0.746) | no |"
+    }
+   ],
+   "prs": [
+    377
+   ],
+   "links": [
+    {
+     "label": "Satellite lake observations",
+     "href": "lakes.html"
+    }
+   ],
+   "register_note": "The register gives the interval without saying it is a 97.5% interval, and does not mention that the within-lake placebo check passed for both outcomes."
+  },
+  {
+   "id": "sat-lab-chlorophyll",
+   "title": "Satellite index against lab chlorophyll",
+   "section": "satellite",
+   "project": "SAT-OBS",
+   "topics": [
+    "lakes",
+    "satellite",
+    "algae",
+    "chlorophyll"
+   ],
+   "verdict": "Failed as stated, by 0.0003 on one condition: the pooled Spearman correlation was 0.502 with a 95% interval of 0.2997 to 0.667, and the lower end had to be above 0.3. It beat the within-lake placebo. Overall calibration skill 0.159 (−0.058 to 0.325), too uncertain. Classified afterwards (#407) as \"promising, not validated\"; the verdict itself was not changed.",
+   "scope": "207 pairs at 38 English lake sampling points, May to September 2021 and 2023-26, satellite image within a day of the lab sample. Shallow lakes 0.301 (0.052 to 0.475), but that subgroup was singled out after the result was seen.",
+   "stage": "live",
+   "stage_note": "Dated index readings are shown as observations on the Lakes page, with a weekly pilot at five sites since 31 October 2026. They are not converted to chlorophyll, an algae warning or swimming advice.",
+   "next": "Review the draft 2027 shallow-lake protocol before 1 May 2027, then collect new readings weekly from 1 May 2027 for a fair test.",
+   "read_on": "2027-05-01",
+   "records": [
+    {
+     "doc": "docs/LAKE-CHLOROPHYLL-NDCI-TEST-2026-10.md",
+     "quote": "| 1. Pooled Spearman ≥ 0.5, interval lower end > 0.3 | ρ = 0.502, 95% interval **0.2997** to 0.667 | **no, by 0.0003 on the lower end** |"
+    },
+    {
+     "doc": "docs/LAKE-CHLOROPHYLL-NDCI-TEST-2026-10.md",
+     "quote": "**Verdict unchanged: fails as stated. Classification: promising, not validated.**"
+    },
+    {
+     "doc": "docs/SATELLITE-RECOVERY-2026-10.md"
+    },
+    {
+     "doc": "docs/SATELLITE-PILOT-2026-11.md"
+    },
+    {
+     "doc": "docs/LAKE-OBSERVATIONS-CONTRACT-v1.md"
+    }
+   ],
+   "prs": [
+    386,
+    407,
+    468,
+    470,
+    537
+   ],
+   "links": [
+    {
+     "label": "Satellite lake observations",
+     "href": "lakes.html"
+    }
+   ],
+   "register_note": "The register says the shallow subset \"was selected after results\". The shallow/deeper split was written into the test before the run; what came after the result was treating the shallow subset as the lead finding."
+  },
+  {
+   "id": "sat-algae-incidents",
+   "title": "Satellite index against harmful-algae incidents",
+   "section": "satellite",
+   "topics": [
+    "lakes",
+    "satellite",
+    "algae"
+   ],
+   "verdict": "Too few to judge. The test needed incidents at 4 or more water bodies; there were 3. As description only: a stratified score of 0.64 (95% interval 0.33 to 0.73), which did not beat a seasonal-shift placebo; season-adjusted about 0.48.",
+   "scope": "14 lake bathing waters on 8 water bodies, EA harmful-algae incidents May to September 2020-26 (2022 has no images).",
+   "stage": "archived",
+   "stage_note": "Archived as a model. Official harmful-algae notices stay on the site as their own observed record, separate from satellite readings.",
+   "reopen_when": "Better incident collection gives incidents at 4 or more water bodies with matched images, with an independent check.",
+   "records": [
+    {
+     "doc": "docs/LAKE-ALGAE-INCIDENT-TEST-2026-10.md",
+     "quote": "**Verdict: too few to judge.**"
+    },
+    {
+     "doc": "docs/LAKE-ALGAE-INCIDENT-TEST-2026-10.md",
+     "quote": "- **Primary (description):** stratified S = 0.64, 95% interval 0.33 to 0.73, label \"Too uncertain\"."
+    }
+   ],
+   "prs": [
+    385
+   ],
+   "register_note": "The register lists the figures without the verdict word or the doc's statement that they are description only and decide nothing. \"Matched imagery at only 3 waterbodies\" is loose: 13 incidents were found, 9 with a reading on an incident day, at 3 water bodies."
+  },
+  {
+   "id": "sat-forward-2027",
+   "title": "2027 forward test of the satellite index (withdrawn draft)",
+   "section": "satellite",
+   "topics": [
+    "lakes",
+    "satellite",
+    "algae"
+   ],
+   "verdict": "Never run. The draft said it would be withdrawn if #386 failed; #386 failed on 27 October 2026 and the draft was closed unmerged the same day.",
+   "scope": "A plan only. Its rules were never approved or frozen.",
+   "stage": "archived",
+   "stage_note": "Its useful parts are being recovered in a new prospective plan: the draft 2027 shallow-lake protocol in the satellite recovery record. The closed draft is not reopened or treated as adopted.",
+   "reopen_when": "Not reopened as it stands. A new prospective plan (already drafted under SAT-OBS) replaces it.",
+   "records": [
+    {
+     "doc": "docs/LAKE-ALGAE-2027-FORWARD-TEST.md",
+     "branch": "docs/lake-algae-2027-forward"
+    },
+    {
+     "doc": "docs/SATELLITE-RECOVERY-2026-10.md"
+    }
+   ],
+   "prs": [
+    396
+   ]
+  },
+  {
+   "id": "nine-company",
+   "title": "Spill model trained on all nine water companies",
+   "section": "promising",
+   "project": "REGIONAL",
+   "topics": [
+    "spills",
+    "companies",
+    "model"
+   ],
+   "verdict": "Not adopted, twice. Version 1 failed 3 of 4 conditions. Version 2's offset arm was 11 to 23% better at eight companies (pooled Brier gain −0.00550, interval −0.00883 to −0.00268) but 3.4% worse at United Utilities (+0.00007 to +0.00261), so it failed the \"no company clearly worse\" condition. The other arm failed at United Utilities too (+9.0%).",
+   "scope": "EA start/stop files for nine English companies, trained 2024-25, tested January to August 2026.",
+   "stage": "scheduled",
+   "stage_note": "A routing rule (version 2 at the eight companies, today's model at United Utilities and everywhere else) is logged in shadow beside the live forecast. It does not change any spot's level.",
+   "next": "Read the shadow window (31 October to 27 November 2026) on 28 November 2026.",
+   "read_on": "2026-11-28",
+   "records": [
+    {
+     "doc": "docs/NINE-COMPANY-MODEL-V2-TEST-2026-11.md",
+     "quote": "| 2. No company clearly worse | **fail at United Utilities**: +9.0% [+0.00185, +0.00511] | **fail at United Utilities**: +3.4% [+0.00007, +0.00261] |"
+    },
+    {
+     "doc": "docs/NINE-COMPANY-MODEL-TEST-2026-10.md"
+    },
+    {
+     "doc": "docs/NINE-COMPANY-MODEL-V2-DATA-CHECK-2026-10.md"
+    },
+    {
+     "doc": "docs/REGIONAL-ROUTING-2026-11.md",
+     "quote": "- **Window: 31 October to 27 November 2026; read on 28 November 2026.**"
+    }
+   ],
+   "prs": [
+    251,
+    357
+   ],
+   "register_note": "The register credits \"15% on Welsh set\" to the version 2 offset arm; the doc's 15.2% Welsh figure is version 2's pooled layer, with no offsets there. The register calls −0.00550 \"pooled\", but in the doc \"pooled\" names the other arm (−0.00424)."
+  },
+  {
+   "id": "concentration",
+   "title": "E. coli concentration model",
+   "section": "promising",
+   "project": "LAKE-CONC",
+   "topics": [
+    "e. coli",
+    "lakes",
+    "rivers",
+    "model"
+   ],
+   "verdict": "Not shown. On rivers the candidate's Brier score was 0.1071 against 0.1069 for today's form, difference interval −0.013 to +0.013. On lakes the ranking within a site improved (median rho 0.27 against −0.11), but its nominal 80% interval held only 65% of lake results.",
+   "scope": "Reused 2024-26 EA bathing-water samples; exploratory, not a confirmation.",
+   "stage": "development",
+   "stage_note": "Lake spread and censoring are being developed. The EA samples behind it are shown on the E. coli samples page.",
+   "next": "A lake statement judged on lake samples it has never seen, such as 2027's from May.",
+   "records": [
+    {
+     "doc": "docs/CONCENTRATION-STUDY-2026-11.md",
+     "quote": "| P1b candidate's Brier below production's form, interval below zero | **fail:** 0.1071 against 0.1069, difference [−0.013, +0.013] |"
+    },
+    {
+     "doc": "docs/CONCENTRATION-LAKE-SPREAD-2026-11.md"
+    },
+    {
+     "doc": "docs/ECOLI-EVIDENCE-CONTRACT-v1.md"
+    }
+   ],
+   "prs": [
+    466,
+    531
+   ],
+   "links": [
+    {
+     "label": "E. coli samples",
+     "href": "samples.html"
+    }
+   ],
+   "register_note": "The register gives the lake interval coverage as 64% in one row (from the lake-spread record, 64.4%) and about 65% in another (from this record)."
+  },
+  {
+   "id": "spill-duration",
+   "title": "How long a running spill goes on",
+   "section": "promising",
+   "project": "DURATION",
+   "topics": [
+    "spills",
+    "duration",
+    "model"
+   ],
+   "verdict": "Failed as stated. The candidate improved the Brier score by about 11.6% (0.1507 against 0.1705) but its probabilities were unreliable: the calibration condition failed in 24 of 45 company-horizon cells. A later calibration gate stopped at 0.027 against 0.03. A replay at the live poll timetable (31 October) and a live check against the site's own polls were descriptive only.",
+   "scope": "Nine English companies' EA spill events, trained on 2024 and scored on 2025, horizons 1 to 24 hours.",
+   "stage": "development",
+   "stage_note": "Spill lengths for 2024-25 are shown on the Spill durations page and each spot's overflow history. No \"ends by\" forecast is shown.",
+   "next": "The same live check on November's polls on 1 December 2026; a refit on live-measured elapsed time from about 28 December 2026.",
+   "read_on": "2026-12-01",
+   "records": [
+    {
+     "doc": "docs/SPILL-DURATION-TEST-2026-11.md"
+    },
+    {
+     "doc": "docs/SPILL-DURATION-DIAGNOSTICS-2026-11.md"
+    },
+    {
+     "doc": "docs/SPILL-DURATION-CALIBRATION-TEST-2026-11.md",
+     "quote": "At 24 hours, all nine, the 134,299 out-of-fold rows forecast at 0.8 or more came true **0.027** less often than"
+    },
+    {
+     "doc": "docs/SPILL-DURATION-REPLAY-2026-11.md"
+    },
+    {
+     "doc": "docs/SPILL-DURATION-LIVE-CHECK-2026-11.md",
+     "quote": "2. **1 December 2026: the same check, unchanged, on November's polls.**"
+    },
+    {
+     "doc": "docs/SPILL-DURATIONS-CONTRACT-v1.md"
+    }
+   ],
+   "prs": [
+    459,
+    461,
+    539,
+    530
+   ],
+   "links": [
+    {
+     "label": "Spill durations",
+     "href": "durations.html"
+    }
+   ]
+  },
+  {
+   "id": "lake-ecoli-lines",
+   "title": "Lower E. coli lines at lakes",
+   "section": "promising",
+   "project": "LAKE-CONC",
+   "topics": [
+    "e. coli",
+    "lakes"
+   ],
+   "verdict": "Both lines failed. Each met the gate and six of seven conditions. At 235 per 100 ml the lake AUC was 0.632 against 0.65 needed (interval lower end 0.534); at 500 it was 0.535.",
+   "scope": "11 English lake bathing waters, EA samples 2024-26. These lines are test targets, not safe-swimming cutoffs.",
+   "stage": "development",
+   "stage_note": "Its lessons are carried into the lake concentration work. The line test is not rerun with a lower line until one passes.",
+   "next": "Judged as part of the lake concentration work on new lake samples.",
+   "records": [
+    {
+     "doc": "docs/LAKE-ECOLI-LINE-TEST-2026-10.md",
+     "quote": "- 235: lake LOSO AUC 0.632, against 0.65 needed. Its interval's lower end, 0.534, is above 0.5."
+    }
+   ],
+   "prs": [
+    342
+   ],
+   "register_note": "The register says the 235 line \"passed 6/7\", which reads as if only that line did; the doc says each line met six of the seven conditions."
+  },
+  {
+   "id": "lake-temperature",
+   "title": "Lake water temperature model",
+   "section": "promising",
+   "project": "LAKE-TEMP",
+   "topics": [
+    "temperature",
+    "lakes"
+   ],
+   "verdict": "Failed: four of six conditions failed, and it was worse for large and deep lakes (bias −0.40 °C, mean absolute error 1.44 °C). A separate check on a historical buoy at Blelham Tarn (0.5 m) gave 1.38 °C against 1.77 °C for 7-day air; at Windermere the benefit disappeared when both basins were left out of training.",
+   "scope": "220 held-out English lake waters, May to September 2026, EA spot samples. The buoy check is one small lake, 2016-19, with no intervals.",
+   "stage": "live",
+   "stage_note": "Past EA lake temperature measurements are shown on the Measured lake temperatures page, never as today's temperature.",
+   "next": "A local or lake-type model with explicit depth and season, held out by whole water body and judged on 2027 readings.",
+   "records": [
+    {
+     "doc": "docs/LAKE-TEMPERATURE-TEST-2026-10.md",
+     "quote": "Candidate bias −0.40 °C (too cold), mean absolute error 1.44 °C. Four of the six conditions fail."
+    },
+    {
+     "doc": "docs/LAKE-TEMPERATURE-SENSORS-2026-10.md"
+    },
+    {
+     "doc": "docs/LAKE-TEMPERATURE-OBS-CONTRACT-v1.md"
+    }
+   ],
+   "prs": [
+    419,
+    529
+   ],
+   "links": [
+    {
+     "label": "Measured lake temperatures",
+     "href": "lake-temperatures.html"
+    }
+   ]
+  },
+  {
+   "id": "calibration",
+   "title": "Recalibrating the live spill forecast",
+   "section": "scheduled",
+   "topics": [
+    "spills",
+    "calibration"
+   ],
+   "verdict": "The first live recalibration test failed: company intercepts cut the held-out Brier score by 4.3% against a 5% bar, over 12 autumn days (an earlier 10-day run gave 3.5%). A later diagnostic found the forecast's chances run too high overall, with differences between companies.",
+   "scope": "Live spill rows from 29 September to 12 October 2026 for the test; the diagnostic used live rows to 24 October.",
+   "stage": "scheduled",
+   "stage_note": "An approved winter test is set: fit on or after 10 December 2026 to data through 6 December, judged on 14 December 2026 to 7 March 2027.",
+   "next": "Fit on or after 10 December 2026; read on or after 9 March 2027.",
+   "read_on": "2027-03-09",
+   "records": [
+    {
+     "doc": "docs/LIVE-RECALIBRATION-TEST-2026-10.md",
+     "quote": "- **B fails** condition 1 only: 4.3% lower against the 5% bar. It passes 2, 3 and 4."
+    },
+    {
+     "doc": "docs/CALIBRATION-CHECK-2026-10.md",
+     "quote": "**Overall, the forecast's chances run too high, and the higher chances run highest.**"
+    },
+    {
+     "doc": "docs/CALIBRATION-TEST-PROPOSAL-2026-11.md",
+     "quote": "- **Target days Monday 14 December 2026 to Sunday 7 March 2027.** Twelve whole ISO weeks."
+    }
+   ],
+   "prs": [
+    178,
+    340,
+    374
+   ]
+  },
+  {
+   "id": "dry-spell",
+   "title": "Dry days before rain, and 72-hour rain, in the E. coli model",
+   "section": "promising",
+   "topics": [
+    "e. coli",
+    "rain"
+   ],
+   "verdict": "Both questions failed. The dry-spell term itself failed three conditions and pointed the opposite way to the idea (gain −0.00024, interval −0.00136 to +0.00080). 72-hour rain gained +0.00049 against a 0.0005 margin, interval including zero.",
+   "scope": "The E. coli model's EA samples; a longer rain window helped rivers a little, not enough to clear the bar.",
+   "stage": "waiting",
+   "stage_note": "Kept as a reusable feature at low priority.",
+   "next": "New data or a new target that raises the expected gain. Not a rerun to move the last decimal.",
+   "records": [
+    {
+     "doc": "docs/DRY-SPELL-TEST-2026-10.md",
+     "quote": "**Verdict: both questions fail. Nothing is adopted.**"
+    },
+    {
+     "doc": "docs/DRY-SPELL-TEST-2026-10.md",
+     "quote": "1. LOYO gain +0.00049, below the 0.0005 margin, and the interval includes zero. Fails."
+    }
+   ],
+   "prs": [
+    318
+   ],
+   "register_note": "The register calls this \"Inconclusive\"; the doc's verdict is that both questions fail. The register's figures are for the 72-hour rain question only and leave out that the dry-spell question failed with the opposite sign."
+  },
+  {
+   "id": "sampling-priorities",
+   "title": "Where to sample next (simulation)",
+   "section": "promising",
+   "topics": [
+    "sampling"
+   ],
+   "verdict": "Failed. In a simulated world built to the method's own assumptions, the information-based policy beat simple coverage in 58.5% of 200 replications against a 60% condition; mean gain 0.000189 (0.000077 to 0.000306).",
+   "scope": "Synthetic data only; nothing about real waters.",
+   "stage": "waiting",
+   "stage_note": "Not wired into anything. The record says \"Not pursued\"; the register's later route is a transparent coverage planner before any automatic site choice.",
+   "next": "A coverage planner with simple coverage and wet-day references, if a sampling partner needs one.",
+   "records": [
+    {
+     "doc": "docs/SAMPLING-PRIORITIES-SIM-2026-10.md",
+     "quote": "| COVER | 58.5% | 60% | 0.000189 | 0.000077 to 0.000306 | 6.2% | condition 1 fails |"
+    }
+   ],
+   "prs": [
+    381
+   ],
+   "register_note": "The register does not give the doc's verdict (\"fail\") or its decision \"Not pursued\"; its coverage-planner route is a newer register decision, not in the doc."
+  },
+  {
+   "id": "lake-direction",
+   "title": "Lake direction rule",
+   "section": "promising",
+   "topics": [
+    "lakes",
+    "transport"
+   ],
+   "verdict": "Passed all seven stated conditions but not adopted: per-site correlations fell at every changed lake site (within-site rho 0.290 to 0.245), without intervals. The pre-stated rule would have switched it on; that step was reverted.",
+   "scope": "English lake bathing waters, about 57 samples a site. The checks show no harm to pooled scores; they do not show a gain.",
+   "stage": "waiting",
+   "stage_note": "Kept as an option, off. Today's rule stays until a supported change.",
+   "next": "A new pre-stated test on more lake samples, with paired site intervals.",
+   "records": [
+    {
+     "doc": "docs/LAKE-DIRECTION-TEST-2026-10.md",
+     "quote": "all seven conditions held. The final commit (0fc6664) is reverted in this PR, so `down` stays an option, off."
+    }
+   ],
+   "prs": [
+    313
+   ]
+  },
+  {
+   "id": "lake-near-field",
+   "title": "Lake near field: an inflow's own dilution near its mouth",
+   "section": "promising",
+   "topics": [
+    "lakes",
+    "transport"
+   ],
+   "verdict": "Failed one of six conditions, the cross-site ranking (rho 0.687 to 0.602, change −0.085, interval −0.237 to +0.006). Forward Brier was slightly better (−0.00026). The 1 km decay was a judgement, not fitted. Closed unmerged.",
+   "scope": "English lake bathing waters with overflows. Without the three Coniston sites the cross-site rho barely moved (0.678 to 0.676).",
+   "stage": "archived",
+   "stage_note": "The branch and its record are kept for a sensitivity study of near-shore plumes.",
+   "reopen_when": "Source and shore hydrodynamics, and paired samples near inflows, support a near-field rule.",
+   "records": [
+    {
+     "doc": "docs/LAKE-NEAR-FIELD-TEST-2026-10.md",
+     "branch": "claude/lake-near-field"
+    }
+   ],
+   "prs": [
+    187
+   ]
+  },
+  {
+   "id": "outfall-channel",
+   "title": "Outfalls on a side channel",
+   "section": "promising",
+   "topics": [
+    "overflows",
+    "positions",
+    "transport"
+   ],
+   "verdict": "Neither option passed. The junction option failed conditions 1 to 3: its intervals were too wide for the margins (Brier change −0.00004, interval −0.00075 to +0.00063), so it is not shown to be worse. The named-snap option passed 1 to 5 and failed 6, worsening Friars Meadow (Brier 0.0870 to 0.0885). Closed unmerged.",
+   "scope": "EA bathing waters where an overflow named as closest sits on a short side channel.",
+   "stage": "archived",
+   "stage_note": "The test is kept. Checked join corrections and source-position evidence are preferred to a national snapping rule.",
+   "reopen_when": "Specific verified cases, each with a regression example.",
+   "records": [
+    {
+     "doc": "docs/OUTFALL-CHANNEL-TEST-2026-10.md",
+     "branch": "claude/outfall-channel-test"
+    }
+   ],
+   "prs": [
+    181
+   ],
+   "register_note": "The register says the named option \"moved many joins\"; the PR reports the sites it changed and the Friars Meadow loss but this count was not checked here."
+  },
+  {
+   "id": "live-status",
+   "title": "Live spill status as a forecast input",
+   "section": "scheduled",
+   "topics": [
+    "spills",
+    "live data"
+   ],
+   "verdict": "On 2025 data the status input helped at every lead; at lead 0 Brier 0.0265 against 0.0362 (−27%, interval −0.0125 to −0.0070). About half the lead-0 gain comes from how the label is defined. With status missing the candidate is worse, so it needs a fallback.",
+   "scope": "2025 EA event data, retrospective; needs confirmation on SwimSignal's own polls.",
+   "stage": "scheduled",
+   "stage_note": "Running in shadow beside the live forecast, 25 October to 21 November 2026. Not adopted and not dropped.",
+   "next": "Read on or after 23 November 2026.",
+   "read_on": "2026-11-23",
+   "records": [
+    {
+     "doc": "docs/LIVE-STATUS-FEATURE-TEST-2026-10.md",
+     "quote": "| 0 | **0.0265** | 0.0362 | −0.0096 [−0.0125, −0.0070] | −27% | 0.960 / 0.929 | 0.003 / 0.008 |"
+    },
+    {
+     "doc": "docs/LIVE-STATUS-SHADOW-TEST-2026-10.md",
+     "quote": "- **Runs** 28 target days, 25 Oct to 21 Nov 2026. **Read** on or after 23 Nov 2026."
+    }
+   ],
+   "prs": [
+    254,
+    262
+   ]
+  },
+  {
+   "id": "lead-calibration-b",
+   "title": "Lead calibration, option B",
+   "section": "scheduled",
+   "topics": [
+    "spills",
+    "calibration"
+   ],
+   "verdict": "Not yet read. On rows before the window, B would have failed all three conditions; that was reported only and decides nothing.",
+   "scope": "A paired prospective check of an EDM-fitted lead map against today's map on live rows.",
+   "stage": "scheduled",
+   "stage_note": "Window 18 October to 14 November 2026.",
+   "next": "Read on or after 16 November 2026.",
+   "read_on": "2026-11-16",
+   "records": [
+    {
+     "doc": "docs/LEAD-CALIBRATION-B-TEST-2026-10.md",
+     "quote": "- **Window.** Target days 18 October to 14 November 2026, 28 days. Read on or after 16 November."
+    }
+   ],
+   "prs": [
+    252
+   ]
+  },
+  {
+   "id": "company-calibration-a8",
+   "title": "Company calibration (A8)",
+   "section": "scheduled",
+   "topics": [
+    "spills",
+    "calibration",
+    "companies"
+   ],
+   "verdict": "Not yet read. Per-overflow offsets outside United Utilities were fitted and frozen on 24 October 2026; the interval amendment was filed before the window opened.",
+   "scope": "Live lead-0 rows outside United Utilities.",
+   "stage": "scheduled",
+   "stage_note": "Window 26 October to 22 November 2026.",
+   "next": "Read on or after 25 November 2026.",
+   "read_on": "2026-11-25",
+   "records": [
+    {
+     "doc": "docs/COMPANY-CALIBRATION-TEST-2026-11.md",
+     "quote": "- **Read on or after 25 November 2026**, from the file published then."
+    }
+   ],
+   "prs": [
+    333
+   ]
+  },
+  {
+   "id": "ensemble-rain",
+   "title": "Ensemble rain (D4)",
+   "section": "scheduled",
+   "topics": [
+    "rain",
+    "forecast"
+   ],
+   "verdict": "Not yet read. No backtest was possible, so the test is prospective. The rain band on days 3 to 5 is display only.",
+   "scope": "Listed spots; at most 1,000 ensemble calls a day, from spare calls only.",
+   "stage": "scheduled",
+   "stage_note": "Window 23 October to 19 November 2026.",
+   "next": "Read on or after 21 November 2026.",
+   "read_on": "2026-11-21",
+   "records": [
+    {
+     "doc": "docs/ENSEMBLE-RAIN-TEST-2026-11.md",
+     "quote": "- **Runs** 28 target days, 23 Oct to 19 Nov 2026. **Read** on or after 21 Nov 2026."
+    }
+   ],
+   "prs": [
+    257
+   ]
+  },
+  {
+   "id": "upgraded-overflows-b",
+   "title": "Upgraded overflows, option B",
+   "section": "scheduled",
+   "topics": [
+    "spills",
+    "overflows"
+   ],
+   "verdict": "Not yet run. A recency note found production uses recency 0.25, not 1 as the statement said, and added a reported arm (P1).",
+   "scope": "Overflows recorded as upgraded; a pass leads only to a 28-day shadow.",
+   "stage": "scheduled",
+   "stage_note": "Run after the state release on or after 2 December 2026.",
+   "next": "Run on or after 2 December 2026.",
+   "read_on": "2026-12-02",
+   "records": [
+    {
+     "doc": "docs/UPGRADED-OVERFLOWS-TEST-B-2026-10.md",
+     "quote": "5. On or after 2 Dec 2026: the state release is downloaded."
+    },
+    {
+     "doc": "docs/UPGRADED-OVERFLOWS-TEST-B-RECENCY-NOTE-2026-10.md"
+    }
+   ],
+   "prs": [
+    325,
+    349
+   ],
+   "register_note": "The register's \"new-window decision\" and \"existing recency arm\" are not in either doc: the doc sets a run date, and P1 is a start-date arm, not a recency arm."
+  },
+  {
+   "id": "river-rises",
+   "title": "River rises from upstream gauges",
+   "section": "scheduled",
+   "topics": [
+    "rivers",
+    "gauges"
+   ],
+   "verdict": "Not yet run. The programme notes give a median arrival of 1.5 hours, which becomes about an hour of warning at most river spots once publication delay is taken off.",
+   "scope": "River spots with an upstream EA gauge. A river-rise figure is not a swimming-safety forecast.",
+   "stage": "scheduled",
+   "stage_note": "Scope and harness are in an open draft PR; fetch and scoring refuse to run before 2 November 2026.",
+   "next": "Review, then fetch, on or after 2 November 2026.",
+   "read_on": "2026-11-02",
+   "records": [
+    {
+     "doc": "docs/AI-PROGRAMME-2026-10.md",
+     "quote": "- Upstream gauges give about an hour of warning at most river spots (median arrival 1.5 h, before a 0.5 h median"
+    }
+   ],
+   "prs": [
+    383
+   ],
+   "register_note": "The register says \"median lead around 1.5 h\"; the doc says median arrival 1.5 h and about an hour of warning. The primary record is in open PR #383, not on main."
+  },
+  {
+   "id": "missing-event-end",
+   "title": "Spills with no recorded end",
+   "section": "scheduled",
+   "topics": [
+    "spills",
+    "live data"
+   ],
+   "verdict": "Measured, no change made: with the alternative rule no spot's right-now level or headline changed in the nine-day window.",
+   "scope": "Listed spots, not map clicks; the window held only 1.5 days of a large United Utilities rise.",
+   "stage": "scheduled",
+   "stage_note": "Measure again with the same script.",
+   "next": "Re-measure on or after 9 November 2026.",
+   "read_on": "2026-11-09",
+   "records": [
+    {
+     "doc": "docs/MISSING-EVENT-END-2026-10.md",
+     "quote": "- **Measure again in about two weeks** (on or after 9 November 2026)"
+    }
+   ],
+   "prs": [
+    384
+   ],
+   "register_note": "The doc's threshold for acting at the re-measure (more than 1% of spot-builds) is looser than its original pre-run threshold (0.5% or 3 headline raises); the register does not mention this."
+  },
+  {
+   "id": "primary-2027",
+   "title": "2027 primary evaluation",
+   "section": "scheduled",
+   "topics": [
+    "evaluation"
+   ],
+   "verdict": "Not run; the season has not started. Spot-level scoring rules were signed on 25 October 2026 as amendment 2.",
+   "scope": "The frozen tagged model, May to September 2027. New models are reported separately as candidates and never replace its result.",
+   "stage": "scheduled",
+   "stage_note": "Season 1 May to 30 September 2027; the model is frozen by 30 April 2027.",
+   "next": "Analysis once, on the snapshot of 31 October 2027.",
+   "read_on": "2027-10-31",
+   "records": [
+    {
+     "doc": "docs/PREREGISTRATION-2027.md",
+     "quote": "The analysis runs once, on the snapshot of 31 October 2027, over the whole season."
+    },
+    {
+     "doc": "docs/SPOT-SCORING-RULINGS-2026-10.md",
+     "quote": "**Signed by Ethan Buckley on 25 October 2026: all eleven recommendations accepted.**"
+    }
+   ],
+   "prs": [
+    121,
+    353
+   ]
+  },
+  {
+   "id": "sonde-signal",
+   "title": "River sonde readings in the E. coli estimate",
+   "section": "data",
+   "topics": [
+    "sensors",
+    "e. coli",
+    "rivers"
+   ],
+   "verdict": "Not run: it stopped at its pre-gate. At most 71 of 907 river rows at 4 sites could have a sonde reading, against a gate of 150 that was set after seeing coverage. Not a negative result.",
+   "scope": "Metadata count only; no readings were fetched or matched.",
+   "stage": "waiting",
+   "stage_note": "Parked; revisit in October 2027.",
+   "next": "More paired data, with alignment and latency checked. Correctly placed, dated sensor readings may be shown on their own.",
+   "records": [
+    {
+     "doc": "docs/SONDE-SIGNAL-TEST-2026-10.md",
+     "quote": "**The run stops at the pre-gate.**"
+    }
+   ],
+   "prs": [
+    403
+   ],
+   "register_note": "The register says \"71 matched river rows\"; the doc's 71 is an upper bound from metadata, with nothing matched."
+  },
+  {
+   "id": "radar-rain",
+   "title": "Radar rain",
+   "section": "data",
+   "topics": [
+    "rain"
+   ],
+   "verdict": "Radar passed as observed rain (Spearman 0.876 against 291 gauges). With rain known, the model was the main limit: radar against same-day forecast rain gained −0.00046 (interval −0.00095 to +0.00010). Against forecasts a day or more ahead, perfect rain would recover most of the loss.",
+   "scope": "A model trained on United Utilities applied to other companies in 2025.",
+   "stage": "waiting",
+   "stage_note": "The cached radar and extraction are kept.",
+   "next": "Reuse for river-rise and event-timing questions where resolution matters.",
+   "records": [
+    {
+     "doc": "docs/RADAR-RAIN-CHECK-2026-10.md",
+     "quote": "**Question 1 passes: the radar is fit to serve as truth. Question 3's verdict is B: the model is the main limit.**"
+    }
+   ],
+   "prs": [
+    343
+   ],
+   "register_note": "The register's \"even perfect rain added little\" holds only against same-day forecast rain; the doc says perfect rain would recover most of the loss at leads 1 to 4."
+  },
+  {
+   "id": "glofas",
+   "title": "GloFAS river flow",
+   "section": "data",
+   "topics": [
+    "rivers",
+    "flow"
+   ],
+   "verdict": "Passed narrowly: rank correlation 0.88 against 0.80 needed; the event condition passed by 0.005. GloFAS reads about a third low, matches best a day late, and its nearest cell is off the river at 20 of 42 spots.",
+   "scope": "Relative flow only, not a discharge in cubic metres a second at the swimming point.",
+   "stage": "waiting",
+   "stage_note": "Not shown as a gauge.",
+   "next": "Test relative flow inputs where they are timely and matched to the river.",
+   "records": [
+    {
+     "doc": "docs/GLOFAS-CHECK-2026-11.md",
+     "quote": "**Pre-stated verdict, rule (b): tracks.** Condition 1, rank r 0.88 (at least 0.80): pass."
+    }
+   ],
+   "prs": [
+    255
+   ]
+  },
+  {
+   "id": "coastal-sea-temperature",
+   "title": "Coastal sea temperature",
+   "section": "data",
+   "topics": [
+    "temperature",
+    "coast"
+   ],
+   "verdict": "A brief, not a test: as it stands it does not fit the free forecast budget, and one measurement decides whether a smaller version can.",
+   "scope": "Cost, terms and offshore-cell behaviour checked at 2 sites.",
+   "stage": "waiting",
+   "stage_note": "Live calls wait until at least 22 November 2026 (6 December if D4 extends).",
+   "next": "Revisit the call allowance after the D4 read, or an explicit paid-budget decision.",
+   "read_on": "2026-11-22",
+   "records": [
+    {
+     "doc": "docs/COASTAL-SEA-TEMPERATURE-BRIEF-2026-10.md",
+     "quote": "**In short: it does not fit the free budget as it stands, and one measurement decides whether a reduced version can.**"
+    }
+   ],
+   "prs": [
+    420
+   ],
+   "register_note": "The register says offline preparation \"can proceed now\"; the brief says nothing in its steps 1 to 3 is started and orders a cell-count check first."
+  },
+  {
+   "id": "sea-currents",
+   "title": "Sea currents at the coast",
+   "section": "data",
+   "topics": [
+    "coast",
+    "currents"
+   ],
+   "verdict": "Scoping only: no test can be run yet, because there is no coastal model to add currents to. 32,874 coastal samples at 404 sites are on record. The 8 km current grid does not resolve many near-shore plumes.",
+   "scope": "Scoping record and an unsent data order.",
+   "stage": "waiting",
+   "stage_note": "Account creation and outside orders are Ethan's.",
+   "next": "An auditable coastal sample and coverage explorer, then a staged coastal model.",
+   "records": [
+    {
+     "doc": "docs/SEA-CURRENTS-SCOPING-2026-10.md",
+     "quote": "**A sea-currents test cannot be run yet, because there is no coastal model to add currents to.**"
+    },
+    {
+     "doc": "docs/UKMCAS-ORDER-DRAFT-2026-10.md",
+     "quote": "Drafted 24 October 2026. Nothing has been sent."
+    }
+   ],
+   "prs": [
+    331
+   ],
+   "register_note": "The register refers to a \"weak spill-only association\"; no spill-only association was computed. The doc's staged plan says the currents test should not run if nearby spills do not rank samples."
+  },
+  {
+   "id": "overflow-sources",
+   "title": "Overflow data sources, earlier spill history and population equivalent",
+   "section": "data",
+   "topics": [
+    "overflows",
+    "sources"
+   ],
+   "verdict": "Inventories. No source gives an actual upgrade completion date per overflow; no open source gives population equivalent per overflow. Earlier event records exist openly for some companies.",
+   "scope": "Source and licence inventory; nothing trained or scored.",
+   "stage": "waiting",
+   "stage_note": "Earlier history is kept out of the live feeds.",
+   "next": "A source coverage and provenance inventory; prefer measured loads and flows over proxies. Re-check dated availability before any new fetch.",
+   "records": [
+    {
+     "doc": "docs/OVERFLOW-DATA-SOURCES-2026-10.md",
+     "quote": "**No source gives an actual completion date per overflow.**"
+    },
+    {
+     "doc": "docs/EARLIER-SPILL-HISTORY-2026-10.md"
+    },
+    {
+     "doc": "docs/PE-SOURCES-2026-10.md",
+     "quote": "No open source gives PE per overflow."
+    }
+   ],
+   "prs": [
+    358,
+    258,
+    220
+   ]
+  },
+  {
+   "id": "waterhead-wet",
+   "title": "Waterhead bacteria samples (WET)",
+   "section": "data",
+   "project": "WET",
+   "topics": [
+    "e. coli",
+    "lakes",
+    "samples"
+   ],
+   "verdict": "No test yet. 59 weekly samples at Waterhead, 2025-26, none over 900 per 100 ml, so no skill above 900 can be measured on them. Seen before any test was designed: exploratory only.",
+   "scope": "One site at the head of Windermere, sampled by Ambleside Action for a Future.",
+   "stage": "live",
+   "stage_note": "Shown on the Waterhead page since 31 October 2026.",
+   "next": "When the group's models arrive (check from 9 November 2026), reproduce them privately, then log them beside SwimSignal's in shadow for 2027.",
+   "read_on": "2026-11-09",
+   "records": [
+    {
+     "doc": "docs/WATERHEAD-WET-CONTRACT-v1.md"
+    }
+   ],
+   "prs": [
+    561
+   ],
+   "links": [
+    {
+     "label": "Waterhead bacteria samples",
+     "href": "waterhead.html"
+    }
+   ]
+  },
+  {
+   "id": "nations",
+   "title": "Wales, Scotland and Ireland",
+   "section": "data",
+   "topics": [
+    "nations"
+   ],
+   "verdict": "Plans, not tests. Wales has the data but not the permission; Scotland could be forecast with its spill records once a test passes; Ireland has no reusable spill data.",
+   "scope": "Plans only; nothing built.",
+   "stage": "waiting",
+   "stage_note": "Directories are live; forecasts wait on licences and local tests.",
+   "next": "Expand observations and evidence first, then licence and local validation before forecasting.",
+   "records": [
+    {
+     "doc": "docs/WALES-PLAN-2026-10.md",
+     "quote": "SwimSignal can reach almost everything it needs for Wales today. What it lacks is permission."
+    },
+    {
+     "doc": "docs/SCOTLAND-PLAN-2026-10.md"
+    },
+    {
+     "doc": "docs/IRELAND-PLAN-2026-10.md"
+    },
+    {
+     "doc": "docs/SOURCE-SCOTTISH-WATER-2026-10.md"
+    }
+   ],
+   "prs": [
+    123,
+    117,
+    122,
+    228
+   ]
+  },
+  {
+   "id": "neural",
+   "title": "Neural network in place of the tree model",
+   "section": "negative",
+   "topics": [
+    "spills",
+    "model"
+   ],
+   "verdict": "Not adopted. The network was worse: Brier 0.0372 against 0.0362, +0.0011 (interval +0.0005 to +0.0017), failing conditions 1 to 4. With more years it was still 1.2% worse. Most of the trees' gain came from the covariate return-year change, not from extra years (−0.00066, interval −0.00149 to +0.00013).",
+   "scope": "2025 spill verification at the tested companies; 2023 added in the multi-year test.",
+   "stage": "archived",
+   "stage_note": "Tree training and data-coverage findings are reused by the regional work.",
+   "reopen_when": "A specific new representation, data source or mechanism. A bigger network alone is not a reason.",
+   "records": [
+    {
+     "doc": "docs/NEURAL-CHALLENGER-TEST-2026-10.md",
+     "quote": "1. **A real gain overall: FAIL.** The challenger's Brier is higher, not lower: 0.0372 against"
+    },
+    {
+     "doc": "docs/MULTI-YEAR-TEST-2026-10.md",
+     "quote": "**The network does not beat the trees with more years.** It is 1.2% worse over the three companies."
+    }
+   ],
+   "prs": [
+    239,
+    259
+   ],
+   "register_note": "The register's \"did not beat trees\" understates the loss: the network was measurably worse."
+  },
+  {
+   "id": "covariate-year",
+   "title": "Covariate return-year question",
+   "section": "negative",
+   "topics": [
+    "spills",
+    "model"
+   ],
+   "verdict": "No, as stated: sub-condition 1a passed (17 of 18 pairs) and 1b failed narrowly (7 of 9 against 8 needed). The fix had a real overall gain (−0.00099, interval −0.00137 to −0.00063) but failed at Southern 2025.",
+   "scope": "EA annual-return covariates in the spill model.",
+   "stage": "waiting",
+   "stage_note": "No adoption. The question stays open for the 2026 files.",
+   "next": "F26 runs as stated once the 2026 annual-return files are published.",
+   "records": [
+    {
+     "doc": "docs/COVARIATE-YEAR-TEST-2026-10.md",
+     "quote": "1. **Do the covariates carry their return year's wetness into the forecasts? No, as stated.**"
+    }
+   ],
+   "prs": [
+    260
+   ],
+   "register_note": "The register files this with the negatives as \"leakage did not hold\"; the doc says the carry-over is not simply an error and that F26 runs once the 2026 files are out."
+  },
+  {
+   "id": "flow-dilution",
+   "title": "Dynamic flow dilution",
+   "section": "negative",
+   "topics": [
+    "rivers",
+    "flow",
+    "transport"
+   ],
+   "verdict": "Failed as stated. Overall gain +0.00011 (95% interval −0.00089 to +0.00110), too uncertain; the placebo was not beaten; with real-time gauges it was worse (about −0.0024). Archive gauges lagged badly.",
+   "scope": "River samples with a matched gauge. It did not test flow as a separate input.",
+   "stage": "archived",
+   "stage_note": "The static length-based dilution already in the forecast stays; this failure is not about it.",
+   "reopen_when": "Timely matched discharge and a different, defensible transport mechanism.",
+   "records": [
+    {
+     "doc": "docs/FLOW-DILUTION-TEST-2026-10.md",
+     "quote": "Brier gain +0.00011, 95% interval −0.00089 to +0.00110 (B 0.001, H 0.0005): **Too uncertain**"
+    }
+   ],
+   "prs": [
+    404
+   ]
+  },
+  {
+   "id": "spill-size-proxies",
+   "title": "Spill size from urban share, spill hours or consented flow",
+   "section": "negative",
+   "topics": [
+    "overflows",
+    "dilution"
+   ],
+   "verdict": "Failed. The built-up-area share failed all three conditions and pointed spill size the wrong way at the overflows that matter. Spill hours failed conditions 1 and 4 (a loss could not be ruled out). Population equivalent was not in the source; consented dry-weather flow did worse than most random reshuffles.",
+   "scope": "These proxies only. A measured per-overflow spill size from an independent source is untested.",
+   "stage": "archived",
+   "stage_note": "No conclusion that spill volume cannot matter.",
+   "reopen_when": "Measured discharge or load per overflow, correctly linked infrastructure, or credible source corrections.",
+   "records": [
+    {
+     "doc": "docs/URBAN-DILUTION-TEST-2026-10.md",
+     "quote": "**Verdict: `urban` fails all three conditions. The default stays `length`.**"
+    },
+    {
+     "doc": "docs/URBAN-DILUTION-DIAGNOSIS-2026-10.md",
+     "quote": "**The built-up-area shares point spill size the wrong way at the overflows that matter.**"
+    },
+    {
+     "doc": "docs/SPILL-SIZE-TEST-2026-10.md",
+     "quote": "Conditions 1 and 4 fail; 2, 3 and 5 hold. No model code changes."
+    },
+    {
+     "doc": "docs/PE-SIZE-TEST-2026-10.md",
+     "quote": "They also do worse than 17 to 19 of 20 random reshuffles of the same sizes, on every measure."
+    }
+   ],
+   "prs": [
+    166,
+    172,
+    197,
+    210
+   ]
+  },
+  {
+   "id": "dieoff-weather",
+   "title": "Sunlight and temperature in die-off",
+   "section": "negative",
+   "topics": [
+    "e. coli",
+    "weather"
+   ],
+   "verdict": "Both questions failed; nothing adopted. The held-out river AUC gain (+0.0072) had an interval above zero, but the deciding rho gain did not, and the pick sat at a grid corner.",
+   "scope": "EA bathing-water samples; weather proxies. Water temperature and turbidity were not tested.",
+   "stage": "archived",
+   "stage_note": "This parameterisation is archived, not the subject.",
+   "reopen_when": "Direct microbial, irradiance or flow measurements support a different model.",
+   "records": [
+    {
+     "doc": "docs/DIEOFF-WEATHER-TEST-2026-10.md",
+     "quote": "**Verdict: both questions fail. Nothing is adopted.**"
+    }
+   ],
+   "prs": [
+    303
+   ]
+  },
+  {
+   "id": "farm-pressure",
+   "title": "Farm-pressure flag",
+   "section": "negative",
+   "topics": [
+    "e. coli",
+    "farming"
+   ],
+   "verdict": "Failed conditions 1, 2, 5 and 6; nothing adopted. The flag rests on nutrient and ecology elements, not bacterial ones.",
+   "scope": "The EA reasons-for-not-achieving-good flag as an E. coli input.",
+   "stage": "archived",
+   "stage_note": "The flag's page line stays as a description.",
+   "reopen_when": "Better agricultural event labels, such as dated runoff or livestock events.",
+   "records": [
+    {
+     "doc": "docs/FARM-PRESSURE-TEST-2026-10.md",
+     "quote": "**Verdict: fails conditions 1, 2, 5 and 6. Nothing is adopted."
+    }
+   ],
+   "prs": [
+    332
+   ]
+  },
+  {
+   "id": "lake-wind",
+   "title": "Wind on lakes",
+   "section": "negative",
+   "topics": [
+    "lakes",
+    "weather"
+   ],
+   "verdict": "Failed: conditions 1, 2 and 3 failed, 4 to 6 held. No loss was shown (Brier changes under 0.0001).",
+   "scope": "Gridded wind at lake bathing waters. A smaller effect, or one below the grid scale, is not ruled out.",
+   "stage": "archived",
+   "stage_note": "This proxy is archived.",
+   "reopen_when": "Physically matched lake fetch or circulation data, such as valley wind or in-lake sensors.",
+   "records": [
+    {
+     "doc": "docs/LAKE-WIND-TEST-2026-10.md",
+     "quote": "**Verdict: the test fails. Nothing is adopted.** Conditions 1, 2 and 3 fail. Conditions 4, 5 and 6 hold."
+    }
+   ],
+   "prs": [
+    345
+   ]
+  },
+  {
+   "id": "dry-weather-spills",
+   "title": "Dry-weather spill history",
+   "section": "negative",
+   "topics": [
+    "spills",
+    "overflows"
+   ],
+   "verdict": "Question 1 is no; question 2 failed all four conditions, worse at 7 of 9 companies with intervals above zero. Not a near miss.",
+   "scope": "The models already rank dry-day spills well (AUC 0.85 to 0.89).",
+   "stage": "archived",
+   "stage_note": "An observed history note on the page is a separate, descriptive product.",
+   "reopen_when": "Changed infrastructure, longer reliable live labels, a second year of offsets, or complete 2026 files for all nine companies.",
+   "records": [
+    {
+     "doc": "docs/DRY-WEATHER-SPILLS-TEST-2026-10.md",
+     "quote": "**Verdict: Question 1 is no. Question 2 fails all four conditions. Nothing is adopted.**"
+    }
+   ],
+   "prs": [
+    346
+   ],
+   "register_note": "The doc's reopen conditions are a second year of offsets or complete 2026 files; the register's are changed infrastructure or longer live labels. Both are listed here."
+  },
+  {
+   "id": "transport-grid-2",
+   "title": "Wider transport grid",
+   "section": "negative",
+   "topics": [
+    "transport",
+    "rivers"
+   ],
+   "verdict": "Conditions 1 and 2 failed; the settings stay at #248's. River AUC was worse by 0.018, with an interval wholly below zero.",
+   "scope": "The same E. coli samples as the accepted fit.",
+   "stage": "archived",
+   "stage_note": "The accepted transport fit stays in use.",
+   "reopen_when": "New samples or a new mechanism, such as a separate test of the dilution term. Not another grid on the same outcomes.",
+   "records": [
+    {
+     "doc": "docs/TRANSPORT-FIT-2-TEST-2026-10.md",
+     "quote": "**Verdict: conditions 1 and 2 fail. The settings stay at PR #248's**"
+    }
+   ],
+   "prs": [
+    249
+   ]
+  },
+  {
+   "id": "soil-moisture-broad",
+   "title": "Soil moisture in the spill model and at lakes",
+   "section": "negative",
+   "topics": [
+    "soil moisture",
+    "spills",
+    "lakes"
+   ],
+   "verdict": "Mixed. Adding soil moisture to the spill model had a real loss at Anglian (+0.00050, interval +0.00012 to +0.00094). In the E. coli model the leads test failed on one condition: lakes were 0.00061 worse at lead 1 against a 0.0005 margin. The E. coli question on all samples passed.",
+   "scope": "These targets and populations. Rivers were adopted separately.",
+   "stage": "archived",
+   "stage_note": "Only the spill-model addition and lake use are archived. The river E. coli use is adopted.",
+   "reopen_when": "A new lake target or spill-model formulation with its own test; not a rerun of these arms.",
+   "records": [
+    {
+     "doc": "docs/SOIL-MOISTURE-TEST-2026-10.md",
+     "quote": "- **Question 1 passes.** Arm `main`, soil moisture as a main term, meets all five conditions."
+    },
+    {
+     "doc": "docs/SOIL-MOISTURE-ECOLI-LEADS-TEST-2026-11.md",
+     "quote": "**Verdict: the test fails, on condition 3 only.** At lead 1, lakes are 0.00061 worse than today's model"
+    },
+    {
+     "doc": "docs/SOIL-MOISTURE-WALES-CHECK-2026-11.md",
+     "quote": "**Reading: not clearly worse.**"
+    }
+   ],
+   "prs": [
+    344,
+    360
+   ]
+  },
+  {
+   "id": "transport-fit",
+   "title": "Transport fit",
+   "section": "adopted",
+   "topics": [
+    "transport",
+    "rivers"
+   ],
+   "verdict": "All four conditions held. Every year picked 0.2 m/s river speed and T90 72 hours, with a 0.5 dilution exponent; held-out Brier 0.0919 against 0.0938. The pick sat at a corner of the grid and lake AUC over 900 fell.",
+   "scope": "EA E. coli samples; the no-gauge default speed only.",
+   "stage": "adopted",
+   "stage_note": "In the forecast since #248.",
+   "records": [
+    {
+     "doc": "docs/TRANSPORT-FIT-TEST-2026-10.md",
+     "quote": "**Verdict: all four conditions hold.** Every year picked the same setting: river speed 0.2 m/s, T90 72 hours,"
+    }
+   ],
+   "prs": [
+    248
+   ]
+  },
+  {
+   "id": "lake-transport",
+   "title": "Lake path, residence and distance through water",
+   "section": "adopted",
+   "topics": [
+    "lakes",
+    "transport"
+   ],
+   "verdict": "Each passed its stated conditions (path five of five, residence and spill-time residence and water distance seven of seven). Each record says the samples show no harm and cannot show a gain.",
+   "scope": "English lake spots. The case for distance through water is geometric.",
+   "stage": "adopted",
+   "stage_note": "Successive accepted changes: lake path (#176) was replaced by spill-time residence (#211); distance through water became the default (#231). Residence without spill time was overtaken and kept as an option.",
+   "records": [
+    {
+     "doc": "docs/LAKE-PATH-TEST-2026-10.md",
+     "quote": "**Verdict: all five conditions hold. By the rule above, `lake` is a candidate to switch on.**"
+    },
+    {
+     "doc": "docs/LAKE-RESIDENCE-TEST-2026-10.md"
+    },
+    {
+     "doc": "docs/LAKE-RESIDENCE-SPILL-2026-10.md"
+    },
+    {
+     "doc": "docs/LAKE-DISTANCE-2026-10.md",
+     "quote": "**Verdict: all seven conditions hold. By the rule above, `water` becomes the default, in the final commit of this"
+    }
+   ],
+   "prs": [
+    176,
+    211,
+    231
+   ],
+   "register_note": "The register calls these \"improvements\"; each record says the samples show no harm and cannot show a gain."
+  },
+  {
+   "id": "eval-pins",
+   "title": "Evaluation pins, refit and missing rain",
+   "section": "adopted",
+   "topics": [
+    "evaluation",
+    "e. coli"
+   ],
+   "verdict": "Corrections. The evaluation now places bathing waters as the site does; no Brier change could be told from zero. The refit matched every reported measure (1,502 samples, LOYO Brier 0.0938). Missing rain is treated as unknown, not dry.",
+   "scope": "The E. coli evaluation and validation files.",
+   "stage": "adopted",
+   "stage_note": "In use. The refit was later replaced by the transport-fit refit.",
+   "records": [
+    {
+     "doc": "docs/EVAL-PINS-TEST-2026-10.md",
+     "quote": "**Verdict under the rule above: the recommendation stands.**"
+    },
+    {
+     "doc": "docs/ECOLI-REFIT-SITE-PINS-2026-10.md"
+    },
+    {
+     "doc": "docs/MISSING-RAIN-CHECK-2026-10.md"
+    }
+   ],
+   "prs": [
+    199,
+    203,
+    200
+   ]
+  },
+  {
+   "id": "soil-moisture-rivers",
+   "title": "Soil moisture in the river E. coli estimate",
+   "section": "adopted",
+   "topics": [
+    "soil moisture",
+    "e. coli",
+    "rivers"
+   ],
+   "verdict": "Passed on rivers: pooled gain +0.0132; the pass is narrow at the lower end, and the gain is in the estimate's level, not in how it ranks days within a site.",
+   "scope": "River bathing waters; lakes keep today's model.",
+   "stage": "adopted",
+   "stage_note": "Adopted for rivers in #361 on 26 October 2026. The 2027 samples are the prospective check.",
+   "records": [
+    {
+     "doc": "docs/SOIL-MOISTURE-RIVERS-TEST-2026-11.md",
+     "quote": "**Verdict: the test passes on (a) and (b).**"
+    },
+    {
+     "doc": "docs/SOIL-MOISTURE-ECOLI-PLAN-2026-10.md"
+    }
+   ],
+   "prs": [
+    360,
+    347,
+    361
+   ],
+   "register_note": "The register says the river adoption came \"after the broader test failed\". The broad E. coli question passed (gain +0.0071, interval +0.0027 to +0.0116); what failed was the leads test, on one lake condition."
+  },
+  {
+   "id": "river-temperature",
+   "title": "River water temperature estimate",
+   "section": "adopted",
+   "topics": [
+    "temperature",
+    "rivers"
+   ],
+   "verdict": "Rivers passed, lakes failed (river RMSE 1.56 °C). At four river sensors in 2025 the shipped estimate's typical error was well inside the 2 °C it states. Sea and winter were not judged.",
+   "scope": "Rivers May to September for the test. The year-round estimate everywhere else is labelled provisional.",
+   "stage": "live",
+   "stage_note": "River estimate shipped in #418. From 31 October 2026 a labelled provisional estimate runs all year at the named spots, clicked points and directory waters, each worded by what was measured.",
+   "next": "The winter error readout, and the sea curve's error outside England.",
+   "records": [
+    {
+     "doc": "docs/WATER-TEMPERATURE-MODEL-TEST-2026-10.md",
+     "quote": "**Verdict, primary input (bridged Open-Meteo air for 2023–25): rivers pass; lakes fail.**"
+    },
+    {
+     "doc": "docs/WATER-TEMPERATURE-SENSOR-REPLAY-2026-10.md"
+    },
+    {
+     "doc": "docs/WATER-TEMPERATURE-2026-10.md"
+    },
+    {
+     "doc": "docs/WATER-TEMPERATURE-BASELINE-2026-10.md"
+    }
+   ],
+   "prs": [
+    414,
+    418,
+    400,
+    536,
+    538,
+    541,
+    548
+   ],
+   "register_note": "The register says about 93 Open-Meteo calls a day; the baseline record says about 91."
+  },
+  {
+   "id": "advisories-anomalies",
+   "title": "Official advice finder and monitor anomalies",
+   "section": "adopted",
+   "topics": [
+    "advice",
+    "data quality"
+   ],
+   "verdict": "Deployed observation features, not models. The finder only drafts; the site shows reviewed advisories. The long-run anomaly list is on the data-quality page.",
+   "scope": "Official advice is reviewed by hand; anomalies are display only.",
+   "stage": "live",
+   "stage_note": "Both merged and live (#379, #382). The finder is run by hand weekly in season.",
+   "next": "Maintain the official-source reviews.",
+   "records": [
+    {
+     "doc": "docs/ADVISORY-FINDER-2026-10.md",
+     "quote": "Status: the finder only drafts. Nothing is sent."
+    },
+    {
+     "doc": "docs/ADVISORY-FINDER-RUN-SHEET.md"
+    },
+    {
+     "doc": "docs/MONITOR-ANOMALIES-2026-10.md"
+    }
+   ],
+   "prs": [
+    379,
+    382
+   ]
+  },
+  {
+   "id": "anypoint",
+   "title": "Map clicks: network lines and lake shores",
+   "section": "adopted",
+   "topics": [
+    "map",
+    "positions"
+   ],
+   "verdict": "Deterministic placement fixes. With simplified lines 16 of 1,588 clicks (1%) landed on the wrong river; full lines fix 15. Lake shore clicks: 600 of 600 placed, against 525 on main.",
+   "scope": "Click-anywhere placement. These are correctness checks, not noisy thresholds.",
+   "stage": "adopted",
+   "stage_note": "Full lines (#225) and lake shores (#227) are in use.",
+   "records": [
+    {
+     "doc": "docs/ANYPOINT-LINES-2026-10.md",
+     "quote": "- **Wrong place: 16 of 1,588 clicks (1%).**"
+    },
+    {
+     "doc": "docs/ANYPOINT-LAKES-2026-10.md"
+    }
+   ],
+   "prs": [
+    225,
+    227
+   ]
+  },
+  {
+   "id": "anypoint-side-arm",
+   "title": "Map clicks on a side arm",
+   "section": "adopted",
+   "topics": [
+    "map",
+    "positions"
+   ],
+   "verdict": "Five rules tried, all off. The first (#208, closed unmerged) fixed Queen Elizabeth Gardens but moved clicks elsewhere onto parallel channels, failing check 5. Later rules failed check 5 or check 3; the last failed check 3 at one spot, Windermere Lakeside.",
+   "scope": "Deterministic placement checks; do not loosen them as if they were noisy.",
+   "stage": "archived",
+   "stage_note": "Off. Its records are kept as the successors of #208.",
+   "reopen_when": "A specific misplaced click that a rule fixes while passing every check unchanged, or Ethan's decision on the last rule's one-spot failure.",
+   "records": [
+    {
+     "doc": "docs/ANYPOINT-SIDE-ARM-2026-10.md",
+     "quote": "**Outcome: the rule fails check 5 and stays off.**"
+    },
+    {
+     "doc": "docs/ANYPOINT-SIDE-ARM-MOST-2026-10.md"
+    },
+    {
+     "doc": "docs/ANYPOINT-SIDE-ARM-FLOOR-2026-10.md"
+    },
+    {
+     "doc": "docs/ANYPOINT-SIDE-ARM-LENGTH-2026-10.md"
+    },
+    {
+     "doc": "docs/ANYPOINT-SIDE-ARM-CLICKS-2026-10.md",
+     "quote": "**Outcome: checks 1, 2, 4, 5 and 6 pass. Check 3 fails as stated, on one spot, Windermere Lakeside"
+    }
+   ],
+   "prs": [
+    208,
+    218
+   ],
+   "register_note": "The register lists these under adopted and superseded work; every side-arm rule failed and is off."
+  },
+  {
+   "id": "overflow-positions",
+   "title": "Overflow positions",
+   "section": "adopted",
+   "topics": [
+    "overflows",
+    "positions"
+   ],
+   "verdict": "Verified corrections. Of 166 position conflicts, 37 were settled; 3 of 7 sea outfalls were settled; one of three spot conflicts was settled. The rest stay open.",
+   "scope": "Named cases with evidence; uncertainty is not a reason to invent a join.",
+   "stage": "adopted",
+   "stage_note": "Settled positions are in use; open cases continue one by one.",
+   "records": [
+    {
+     "doc": "docs/OVERFLOW-POSITIONS-2026-10.md",
+     "quote": "- Of the 166 position conflicts, 37 are settled: 19 at the outlet, 16 at the live position and 2 in"
+    },
+    {
+     "doc": "docs/OVERFLOW-SEA-OUTFALLS-2026-10.md"
+    },
+    {
+     "doc": "docs/OVERFLOW-SPOT-CONFLICTS-2026-10.md"
+    }
+   ],
+   "prs": [
+    209,
+    214,
+    221
+   ]
+  },
+  {
+   "id": "overflow-catchments",
+   "title": "Overflow positions by catchment",
+   "section": "adopted",
+   "topics": [
+    "overflows",
+    "positions"
+   ],
+   "verdict": "Failed its own check: it disagreed with settled positions in 6 of 16 decisive cases, against at most 2 allowed. Nothing moved. Closed unmerged.",
+   "scope": "Automatic position moves by WFD catchment.",
+   "stage": "archived",
+   "stage_note": "Its branch and record are kept for independent source checking. Its automatic move rule is not deployed.",
+   "reopen_when": "Independent source evidence for a specific overflow; not as an automatic rule.",
+   "records": [
+    {
+     "doc": "docs/OVERFLOW-CATCHMENTS-2026-10.md",
+     "branch": "claude/overflow-catchments"
+    }
+   ],
+   "prs": [
+    219
+   ]
+  },
+  {
+   "id": "comprehension",
+   "title": "Swimmer comprehension sessions",
+   "section": "adopted",
+   "topics": [
+    "wording",
+    "testing"
+   ],
+   "verdict": "A plan, not evidence: no session has been run. Task 3b (the clearing time) was added on 30 October 2026 before anyone was recruited.",
+   "scope": "8 to 10 sessions planned.",
+   "stage": "waiting",
+   "stage_note": "The earlier swimmer-testing list is replaced by this protocol.",
+   "next": "Run the sessions; merged materials are not completed sessions.",
+   "records": [
+    {
+     "doc": "docs/SWIMMER_TESTING.md"
+    },
+    {
+     "doc": "docs/COMPREHENSION-TEST-2026-10.md",
+     "quote": "It is a plan, not evidence: nothing here has been run yet."
+    },
+    {
+     "doc": "docs/CLEAR-TIME-WORDING-2026-11.md",
+     "quote": "Written 30 October 2026. A prototype for a person to test, not a change to the site. Nothing here is built."
+    }
+   ],
+   "prs": [
+    23,
+    277,
+    465
+   ],
+   "register_note": "The register says the earlier plan was \"superseded by current sessions\"; it was replaced by a protocol, and no session has run."
+  },
+  {
+   "id": "noise-audit",
+   "title": "Noise audit of earlier tests",
+   "section": "adopted",
+   "topics": [
+    "evaluation"
+   ],
+   "verdict": "An audit of tests that decided on point rules without a noise allowance. Point rules with small failures: the nine-company model and lake direction. Clear failures: neural, multi-year, covariate-year Q2, dry-weather spills Q2, urban dilution, population size, die-off Q2, farm pressure, lake wind and transport fit 2. Map-click checks are deterministic, so noise does not apply.",
+   "scope": "Tests on main to 25 October 2026, with a 30 October supplement.",
+   "stage": "reference",
+   "stage_note": "Used by the research workflow; it does not change any verdict.",
+   "records": [
+    {
+     "doc": "docs/NOISE-AUDIT-2026-10.md",
+     "quote": "- United Utilities: 0.04561 against 0.04457 (+2.3%). Log loss was worse too, so this loss looks real."
+    }
+   ],
+   "prs": [
+    356
+   ]
+  }
+ ]
+}
