@@ -3099,6 +3099,9 @@ function outingResume() {
     + (typeof eaTodayApart === 'function' ? eaTodayApart(s).replace('class="gaps o-apart"', 'class="small resume-apart"') : '')
     + `<a class="linkbtn resume-open" href="${esc(planPath() + o.hash)}" data-plan-hash="${esc(o.hash)}">Open your plan</a></div>`;
 }
+// The way on from a search with no inland spot: the official coastal, Welsh, Scottish and Irish
+// directories (coverage.html), searched for the same words. Also under the offers of a town or water (offerOnMap).
+const regionalLink = q => `<a href="coverage.html${String(q || '').trim() ? `?q=${encodeURIComponent(String(q).trim())}` : ''}#regional-results">Search official coastal and regional bathing-water information</a>, which is not a SwimSignal forecast.`;
 function renderList() {
   contribLayer.clearLayers(); selLayer.clearLayers(); current = null; shown = 'list';
   setView('list');
@@ -3310,7 +3313,7 @@ function drawSpots() {
   const groups = areaGroups(items);
   ul.innerHTML = groups ? groups.map(([a, xs]) => areaRows(a, xs, spotItem, VIEW.quiet, !words.length)).join('')
     : items.length ? items.map(spotItem).join('')
-    : `<li class="empty"><p class="below">No inland forecasts match. SwimSignal forecasts ${DATA.spots.length} river and lake spots in England. <a href="coverage.html${VIEW.q.trim() ? `?q=${encodeURIComponent(VIEW.q.trim())}` : ''}#regional-results">Search official coastal and regional bathing-water information</a>, which is not a SwimSignal forecast. Missing yours? <a href="feedback.html?type=spot">Request it</a>.</p>`
+    : `<li class="empty"><p class="below">No inland forecasts match. SwimSignal forecasts ${DATA.spots.length} river and lake spots in England. ${regionalLink(VIEW.q)} Missing yours? <a href="feedback.html?type=spot">Request it</a>.</p>`
       + `<button type="button" class="btn" id="clear-filters">Clear search and filters</button></li>`;
   document.getElementById('count').textContent = items.length === DATA.spots.length ? `${items.length} spot${items.length === 1 ? '' : 's'}.` : `Showing ${items.length} of ${DATA.spots.length} spots.`;
   bindClear();
@@ -3792,7 +3795,7 @@ async function offerOnMap() {
   const empty = document.querySelector('#spots li.empty');
   if (empty) {
     empty.innerHTML = `<p class="below">No listed spot matches.${places.length ? '' : ' Any river or lake has a forecast on the map:'}</p>`;   // a plan comes first, under its own heading
-    box.insertAdjacentHTML('beforeend', `<li class="empty"><p class="below">Missing a spot? <a href="feedback.html?type=spot">Request it</a>.</p><button type="button" class="btn" id="clear-filters">Clear search and filters</button></li>`);
+    box.insertAdjacentHTML('beforeend', `<li class="empty"><p class="below">${regionalLink(t)} Missing a spot? <a href="feedback.html?type=spot">Request it</a>.</p><button type="button" class="btn" id="clear-filters">Clear search and filters</button></li>`);
     bindClear();
   }
   box.querySelectorAll('[data-water]').forEach(b => b.addEventListener('click', () => { const w = waters[+b.dataset.water];
