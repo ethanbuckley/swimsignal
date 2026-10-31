@@ -2444,6 +2444,15 @@ function facts(d, iso = null) {
   else if (d.classification) out.push({ wide: true, icon: ICON.rating, label: 'Environment Agency rating', fig: 'Not yet rated', say: `A designated bathing water too new to have a rating.${ea}`, fold });
   if (!d.error && !total) out.push({ icon: ICON.spills, label: 'Sewage spills', fig: '0', unit: 'overflows upstream',
     say: `None monitored within ${d.assumptions.max_upstream_km}&nbsp;km upstream.`, more: 'Risk from farms, wildlife and unmonitored sources is not modelled.' });
+  else if (!d.error && x0 && first && hasData(x0) && nowSpill(d) && rank(now.label) > rank(x0.label) && !nil(now.risk)) {
+    // Today, where recent spills raise right now above the rain forecast's level, the tile gives right now's score, the
+    // one the headline's level comes from, and the rain forecast's after it (31 Oct 2026: Medway at Tonbridge showed
+    // "3 of 100, Low risk" under "High risk from sewage spills", a contradiction to read, though both were true).
+    const i = now.risk * 100, r = Math.round(x0.risk * 100), h = d.assumptions.recent_spill_hours;
+    out.push({ icon: ICON.spills, label: 'Sewage spills, right now', fig: Math.round(i), unit: 'of 100', word: `${cap(now.label)} risk`, wordTone: tone(now.label),
+      vis: scaleBar(shownRisk(now.risk), SPILL_CUTS, now.label, `Sewage spill risk right now ${Math.round(i)} of 100: ${now.label} risk`), rel: 'This sets the level above.',
+      say: `${now.discharging_upstream ? 'Spills under way upstream' : `Spills upstream in the last ${h} hours`} set it. The rain forecast alone gives ${x0.risk > 0 && r < 1 ? 'under 1' : r} of 100 for today, ${x0.label} risk.`,
+      more: `The sewage spill risk, a 0–100 score for sewage from upstream reaching the spot, after travel time, die-off and dilution. Right now's counts the spills the overflows' live feeds report, each until ${h} hours after its water has passed; a day's counts the spills the rain forecast makes likely. A score, not a probability. ${bandWords(SPILL_CUTS, c => Math.round(c * 100))}. <a href="#about-exposure">What this counts</a>` }); }
   else if (!d.error && x0 && hasData(x0)) { const i = x0.risk * 100;
     out.push({ icon: ICON.spills, label: 'Sewage spills', fig: i > 0 && i < .5 ? '&lt;1' : Math.round(i), unit: 'of 100', word: `${cap(x0.label)} risk`, wordTone: tone(x0.label),
       vis: scaleBar(shownRisk(x0.risk), SPILL_CUTS, x0.label, `Sewage spill risk ${i > 0 && i < .5 ? 'under 1' : Math.round(i)} of 100: ${x0.label} risk`), rel: tileLine(d, 'spill', iso),
