@@ -37,7 +37,8 @@ BATHING = ROOT / "data" / "raw" / "bathing_waters_inland.json"
 CHL_LAKES = ROOT / "docs" / "LAKE-CHLOROPHYLL-NDCI-TEST-2026-10-lakes.json"
 OUT = ROOT / "data" / "research" / "lake_observations.v1.json"
 
-SCHEMA, VERSION = "swimsignal.lake-observations", "1.2.0"
+SCHEMA, VERSION = "swimsignal.lake-observations", "1.3.0"
+PILOT_STATUS = ("new_reading", "no_new_clear_image", "no_new_scenes", "no_scenes", "partial", "failed", "not_reached")
 PROCESSING = "s2c1-l2a.ndci-core-median.v1"
 SEASON = (5, 6, 7, 8, 9)
 RECENT_DAYS, OLDER_DAYS = 14, 60
@@ -228,14 +229,30 @@ def lake_record(base: dict, f: pd.DataFrame, sizes: dict, meta: dict, scope: str
             shown += 1
         refreshes.append({**info, "scenes": int(len(rf)), "shown": shown})
         lake_to = max(lake_to, info["to"])
-    rows.sort(key=lambda x: (x["date"], x["item_id"]))
-    # The test's rule for one reading a date (protocol.one_per_date): the most clear core pixels, then the first id.
+    series = with_primary(rows)
+    latest = latest_block(series, passes, scope, as_of, lake_to)
+    return {**base, "water_body_key": slug(base["water_body"] or base["lake_id"]),
+            "mask": {**MASK, "tiles": tiles, "passes_size_rule": passes}, "series_scope": scope,
+            "coverage_label": COVERAGE_LABEL[scope], "processed_to": lake_to,
+            "latest": latest,
+            "seasons": seasons(f, scope, images) if passes else [], "series": series, "excluded": excluded, "refreshes": refreshes,
+            "lab": lab}
+
+
+def with_primary(rows: list[dict]) -> list[dict]:
+    """Rows in date order, each marked `primary` by the test's rule for one reading a date (protocol.one_per_date): the
+    most clear core pixels, then the first item id."""
+    rows = sorted(rows, key=lambda x: (x["date"], x["item_id"]))
     best = {}
     for x in rows:
         k = best.get(x["date"])
         if k is None or x["clear_core"] > k["clear_core"] or (x["clear_core"] == k["clear_core"] and x["item_id"] < k["item_id"]):
             best[x["date"]] = x
-    series = [{**x, "primary": best[x["date"]] is x} for x in rows]
+    return [{**x, "primary": best[x["date"]] is x} for x in rows]
+
+
+def latest_block(series: list[dict], passes: bool, scope: str, as_of: date, lake_to: str) -> dict:
+    """`latest`: the last primary reading, its age as of `as_of`, and the reasons for any gap."""
     prim = [x for x in series if x["primary"]]
     last = prim[-1] if prim else None
     age, fresh = freshness(last["date"] if last else None, as_of)
@@ -250,17 +267,63 @@ def lake_record(base: dict, f: pd.DataFrame, sizes: dict, meta: dict, scope: str
         reasons.append("not_refreshed")
     if scope == "near_lab_samples":
         reasons.append("series_partial")
-    latest = {"date": None, "datetime": None, "item_id": None, "ndci": None, "clear_share": None,
-              "season": None, "experimental": None} if last is None else {
+    block = {"date": None, "datetime": None, "item_id": None, "ndci": None, "clear_share": None,
+             "season": None, "experimental": None} if last is None else {
         "date": last["date"], "datetime": last["datetime"], "item_id": last["item_id"], "ndci": last["ndci"],
         "clear_share": round(last["clear_core"] / last["n_core"], 4), "season": last["season"],
         "experimental": last["experimental"]}
-    return {**base, "water_body_key": slug(base["water_body"] or base["lake_id"]),
-            "mask": {**MASK, "tiles": tiles, "passes_size_rule": passes}, "series_scope": scope,
-            "coverage_label": COVERAGE_LABEL[scope], "processed_to": lake_to,
-            "latest": {**latest, "scope": "latest_in_dataset", "age_days": age, "freshness": fresh, "reasons": reasons},
-            "seasons": seasons(f, scope, images) if passes else [], "series": series, "excluded": excluded, "refreshes": refreshes,
-            "lab": lab}
+    return {**block, "scope": "latest_in_dataset", "age_days": age, "freshness": fresh, "reasons": reasons}
+
+
+def refreshed_row(r, source: str) -> dict:
+    out_of = int(r.scene_date[5:7]) not in SEASON
+    return {"date": r.scene_date, "datetime": r.datetime, "item_id": r.item_id, "tile": r.tile,
+            "processing_baseline": r.processing_baseline, "clear_core": int(r.clear_core), "n_core": int(r.n_core),
+            "ndci": round(float(r.reading), 5), "season": "out_of_season" if out_of else "in_season",
+            "experimental": out_of, "source": source, "sun_elevation_deg": float(r.sun_elevation_deg),
+            "clear_water_share": round(1 - (getattr(r, "clear_core_not_water", 0) or 0) / r.clear_core, 4)}
+
+
+def apply_refresh(lk: dict, rf: pd.DataFrame, info: dict, as_of: date) -> dict:
+    """Add one refresh's scenes to a published lake record (contract 1.3): where the test caches are not at hand (the
+    weekly pilot runs in CI), the same rules as lake_record's refresh path. Idempotent: an item id already in the
+    series or excluded is skipped, and a source already listed is replaced. Returns what changed."""
+    series = [dict(x) for x in lk["series"]]
+    seen = {x["item_id"] for x in series} | {e["item_id"] for e in lk["excluded"]}
+    new = rf[~rf["item_id"].isin(seen)] if len(rf) else rf
+    shown = excl = 0
+    for r in new.itertuples():
+        why = refresh_decision(r)
+        if why:
+            if why != "not_usable":
+                lk["excluded"].append({"date": r.scene_date, "item_id": r.item_id, "reason": why, "source": info["source"]})
+                excl += 1
+            continue
+        series.append(refreshed_row(r, info["source"]))
+        shown += 1
+    lk["series"] = with_primary(series)
+    # In-season scenes count in their season, as the tests counted them.
+    if len(new):
+        months = new["scene_date"].str[5:7].astype(int)
+        for y, g in new[months.isin(SEASON).to_numpy()].groupby(new["scene_date"].str[:4]):
+            year = int(y)
+            entry = next((x for x in lk["seasons"] if x["year"] == year), None)
+            if entry is None:
+                entry = {"year": year, "scenes": 0}
+                lk["seasons"].append(entry)
+            us = [x for x in lk["series"] if x["date"][:4] == y and x["season"] == "in_season"]
+            entry.update({"scenes": int(entry.get("scenes") or 0) + len(g), "usable": len(us),
+                          "median_ndci": round(float(np.median([x["ndci"] for x in us])), 4) if us else None,
+                          "first": min((x["date"] for x in us), default=None), "last": max((x["date"] for x in us), default=None),
+                          "reason": None})
+            entry["usable_share"] = round(entry["usable"] / entry["scenes"], 4) if entry["scenes"] else None
+            entry.pop("source_images", None)
+        lk["seasons"].sort(key=lambda x: x["year"])
+    lk["refreshes"] = [x for x in lk["refreshes"] if x.get("source") != info["source"]] + [
+        {**info, "scenes": int(len(rf)), "shown": sum(x.get("source") == info["source"] for x in lk["series"])}]
+    lk["processed_to"] = max(lk["processed_to"], info["to"])
+    lk["latest"] = latest_block(lk["series"], lk["mask"]["passes_size_rule"], lk["series_scope"], as_of, lk["processed_to"])
+    return {"shown": shown, "excluded": excl, "scenes": int(len(rf)), "already_present": int(len(rf) - len(new))}
 
 
 def slug(s: str) -> str:
@@ -348,17 +411,24 @@ def build(as_of: date, refresh_dirs: list[Path] = ()) -> dict:
             "lab_definition": LAB_DEFINITION, "quality": quality(sat_f), "lakes": lakes, "coverage": coverage(lakes)}
 
 
+def release_label(historical_to: str, refreshed: list[str], pilot: list[str] = ()) -> str:
+    """The sentence the page shows first: historical unless a site is refreshed regularly, and then only for those."""
+    head = (f"Historical satellite observations, May to September 2020 to {historical_to[:4]}, with the date of every "
+            "image.")
+    if pilot:
+        return (head + f" {len(pilot)} pilot sites are refreshed weekly and show when they were last updated; every "
+                "other site is the historical record. Readings outside May to September are experimental.")
+    return head + " Not the latest images: no regular refresh runs yet." + (
+        f" {len(refreshed)} site{'s' if len(refreshed) != 1 else ''} also {'have' if len(refreshed) != 1 else 'has'} "
+        "experimental readings from a one-off refresh after the season." if refreshed else "")
+
+
 def release(lakes: list[dict], historical_to: str) -> dict:
     """What kind of release this file is (docs/RESEARCH-WORKFLOW.md: a historical release says so prominently;
     "latest observations" needs a running refresh and measured coverage)."""
     refreshed = sorted(lk["lake_id"] for lk in lakes if lk["refreshes"])
     return {"scope": "historical", "historical_to": historical_to, "refreshed_sites": refreshed,
-            "regular_refresh": False,
-            "label": "Historical satellite observations, May to September 2020 to "
-                     f"{historical_to[:4]}, with the date of every image. Not the latest images: no regular refresh "
-                     "runs yet." + (f" {len(refreshed)} site{'s' if len(refreshed) != 1 else ''} also "
-                                    f"{'have' if len(refreshed) != 1 else 'has'} experimental readings from a one-off "
-                                    "refresh after the season." if refreshed else "")}
+            "regular_refresh": False, "label": release_label(historical_to, refreshed)}
 
 
 def attribution(*frames: pd.DataFrame) -> list[str]:
@@ -485,6 +555,11 @@ def check(doc: dict) -> list[str]:
                     err.append(f"{lid}: empty season {x['year']} without a reason")
                 if x["scenes"] > 0 and x.get("reason") is not None:
                     err.append(f"{lid}: season {x['year']} has scenes and a reason")
+        opn = lk.get("operation")
+        if opn is not None and opn.get("last_status") not in (None, *PILOT_STATUS):
+            err.append(f"{lid}: operation.last_status {opn.get('last_status')!r}")
+        if opn is not None and lid not in (doc.get("pilot") or {}).get("sites", []):
+            err.append(f"{lid}: an operation block on a site that is not in the pilot")
         prim = [x for x in s if x.get("primary")]
         if s and (not prim or lt.get("item_id") != prim[-1]["item_id"]):
             err.append(f"{lid}: latest is not the last primary series reading")

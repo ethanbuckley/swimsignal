@@ -139,3 +139,34 @@ Additive, at the product owner's request: `seasons` lists every searched season 
 `season_reasons` explains each. 2022 is empty at every site because Earth Search's `sentinel-2-c1-l2a` collection
 holds no May-September image there (`docs/LAKE-ALGAE-SATELLITE-TEST-2026-10.md`); the older collection is not mixed in,
 since its processing differs. The page no longer needs to infer gaps.
+
+## Version 1.3 (31 October 2026): the weekly pilot
+
+Additive (#472, `docs/SATELLITE-PILOT-2026-11.md`). Five sites are checked for new images weekly by
+`scripts/satellite_pilot.py`, in a scheduled repository run. Its readings follow amendment 1.1's rules exactly: the
+publish step applies each run with `export_lake_observations.apply_refresh`, which gives what the export's refresh path
+gives (tested).
+
+- **`pilot`** (top level): `sites` (the five lake ids), `schedule`, `note`, `runs` (one summary per run: `run_id`,
+  `trigger`, `started`, `finished`, `seconds`, `requests`, `megabytes`, `status` ok/partial/failed, `stop_reason`,
+  `window`, `caps`, and each site's status), `code_sha256`.
+- **`operation`** (on a pilot site only; the check refuses it elsewhere): `pilot`, `schedule`, `runs`, `last_run_id`,
+  `last_run_at`, `last_window`, `last_status`, `last_error`, `last_success_at`, `newest_pilot_reading`.
+- **`last_status`** is one of:
+
+  | status | meaning |
+  |---|---|
+  | `new_reading` | a scene no earlier run had read passed every quality rule |
+  | `no_new_clear_image` | new scenes, none passing (cloud, shadow, snow, low sun, too little water) |
+  | `no_new_scenes` | every scene in the window had been read by an earlier run |
+  | `no_scenes` | no scene of the site's tiles in the window |
+  | `partial` | a cap or the time limit stopped the run at this site; what it read is applied, `processed_to` only to its last scene |
+  | `failed` | an error at this site, or an error status that stopped the run |
+  | `not_reached` | the run stopped at an earlier site |
+
+- `last_success_at` is the last run that finished at that site (the first four statuses). It is kept through failures.
+- `refreshes` gains one entry a run, `source: "refresh:pilot-<run id>"`, `set: "pilot"`.
+- `latest` is recomputed for every site on each publish, so ages are as of that day, not the last export.
+- `release.pilot_sites` lists the five; `release.label` says five sites are refreshed weekly and every other site is
+  the historical record. `release.scope` stays `historical`.
+- **Unchanged:** every rule of 1.1 and 1.2, the historical series, and the 2027 confirmation.
