@@ -1,7 +1,8 @@
 """A small reader for windows of a tiled GeoTIFF (a COG) over HTTP range requests, in numpy and zlib only.
 
-It reads what the Earth Search Sentinel-2 files need: little-endian TIFF or BigTIFF, one band, uint8 or uint16, tiled,
-no compression or deflate, horizontal predictor or none. Anything else raises Unsupported, so a file it cannot read
+It reads what the Earth Search Sentinel-2 files need: little-endian TIFF or BigTIFF, one band (uint8 or uint16) or
+three pixel-interleaved uint8 bands (the true-colour TCI, #550), tiled, no compression or deflate, horizontal predictor
+or none. Anything else raises Unsupported, so a file it cannot read
 gives no reading rather than a wrong one. Every byte comes through the caller's `fetch(start, end)` (net.Capped), so
 every byte is counted against the caps.
 """
@@ -36,6 +37,7 @@ class Cog:
     offsets: np.ndarray
     counts: np.ndarray
     nodata: float | None
+    samples: int = 1
 
     @property
     def tiles_across(self) -> int:
@@ -90,9 +92,10 @@ def parse(buf: bytes, fetch=None) -> Cog:
     t = _read_ifd(buf, fetch, ifd_at, big)
     if 322 not in t or 324 not in t:
         raise Unsupported("not tiled")
-    if t.get(277, (1,))[0] != 1:
-        raise Unsupported("more than one band")
+    samples, planar = t.get(277, (1,))[0], t.get(284, (1,))[0]
     bits, fmt = t.get(258, (8,))[0], t.get(339, (1,))[0]
+    if samples != 1 and not (samples == 3 and planar == 1 and bits == 8):
+        raise Unsupported(f"{samples} bands, planar {planar}, {bits} bits")
     if fmt != 1 or bits not in (8, 16):
         raise Unsupported(f"sample format {fmt}, {bits} bits")
     comp, pred = t.get(259, (1,))[0], t.get(317, (1,))[0]
@@ -100,22 +103,23 @@ def parse(buf: bytes, fetch=None) -> Cog:
         raise Unsupported(f"compression {comp}, predictor {pred}")
     nodata = float(t[42113][0]) if 42113 in t and t[42113][0].strip() else None
     return Cog(t[256][0], t[257][0], t[322][0], t[323][0], np.dtype("<u1" if bits == 8 else "<u2"), comp, pred,
-               np.asarray(t[324], dtype=np.int64), np.asarray(t[325], dtype=np.int64), nodata)
+               np.asarray(t[324], dtype=np.int64), np.asarray(t[325], dtype=np.int64), nodata, samples)
 
 
 def decode_tile(cog: Cog, data: bytes) -> np.ndarray:
+    shape = (cog.tile_h, cog.tile_w) + ((cog.samples,) if cog.samples > 1 else ())
     if len(data) == 0:   # a sparse tile: GDAL writes none where every pixel is nodata
-        return np.full((cog.tile_h, cog.tile_w), cog.nodata or 0, dtype=cog.dtype)
+        return np.full(shape, cog.nodata or 0, dtype=cog.dtype)
     raw = zlib.decompress(data) if cog.compression in (8, 32946) else data
-    a = np.frombuffer(raw, dtype=cog.dtype, count=cog.tile_w * cog.tile_h).reshape(cog.tile_h, cog.tile_w)
+    a = np.frombuffer(raw, dtype=cog.dtype, count=int(np.prod(shape))).reshape(shape)
     if cog.predictor == 2:
-        a = np.cumsum(a, axis=1, dtype=cog.dtype)   # wraps modulo the type, as the predictor does
+        a = np.cumsum(a, axis=1, dtype=cog.dtype)   # per band, wrapping modulo the type, as the predictor does
     return a
 
 
 def read_window(cog: Cog, fetch, row0: int, row1: int, col0: int, col1: int) -> np.ndarray:
     """Pixels [row0, row1) x [col0, col1), clipped to the image; outside it reads as nodata (or 0)."""
-    out = np.full((row1 - row0, col1 - col0), cog.nodata or 0, dtype=cog.dtype)
+    out = np.full((row1 - row0, col1 - col0) + ((cog.samples,) if cog.samples > 1 else ()), cog.nodata or 0, dtype=cog.dtype)
     r0, r1, c0, c1 = max(row0, 0), min(row1, cog.height), max(col0, 0), min(col1, cog.width)
     if r0 >= r1 or c0 >= c1:
         return out

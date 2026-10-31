@@ -44,7 +44,7 @@ jobs:
         run: uv sync --frozen
 
       - name: Tests for the pilot
-        run: uv run pytest -q tests/test_satellite_pilot.py
+        run: uv run pytest -q tests/test_satellite_pilot.py tests/test_satellite_imagery.py
 
       # Caps per run (#472): 300 requests, 100 MiB, 20 minutes. A cap stops the run where it is and is
       # recorded as a partial run; the publish and commit steps still run so the page shows it.
@@ -63,6 +63,18 @@ jobs:
         if: always()
         run: uv run python scripts/satellite_pilot.py publish
 
+      # Pictures of the usable scenes (#550, docs/LAKE-IMAGERY-CONTRACT-v1.md), within the same allocation: at most
+      # 150 requests and 60 MiB, and never more than 300 requests and 100 MiB with the readings above. New scenes
+      # first, then earlier readings as the budget allows. A cap reached before every new scene has a picture
+      # is a partial step and fails the job below; existing pictures are kept.
+      - name: Pictures of the usable scenes
+        id: imagery
+        if: always()
+        continue-on-error: true
+        run: |
+          uv run python scripts/satellite_imagery.py run --max-requests 150 --max-mb 60 --max-minutes 8 \
+            --budget-from-runs 300
+
       - name: Report the run
         if: always()
         run: |
@@ -78,6 +90,17 @@ jobs:
           for k, s in r["sites"].items():
               print(f"| {k} | {s['scenes']} | {s.get('already_read', 0)} | {s['read']} | {s['status']} |")
           EOF
+          uv run python - <<'EOF' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          r = json.load(open("data/research/lake_imagery.v1.json"))["runs"][-1:] or [None]
+          r = r[0]
+          if r:
+              print(f"\n### Pictures: {r['status']}")
+              print(f"{r['made']['current']} new scenes and {r['made']['backfill']} earlier ones; {r['requests']} requests, "
+                    f"{r['megabytes']} MiB, {r['seconds']} s; {r['backfill_remaining']} earlier scenes still to do.")
+              if r["stop_reason"]:
+                  print(f"Stopped: {r['stop_reason']}")
+          EOF
           status=$(uv run python -c 'import json; print(json.load(open("data/research/satellite/pilot_runs.json"))[-1]["status"])')
           if [ "$status" != ok ]; then echo "::warning title=Satellite pilot::run ended $status (see the summary)"; fi
 
@@ -87,7 +110,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           git config user.name "dipcast-bot"; git config user.email "bot@dipcast.invalid"
-          git add data/research/satellite/pilot_runs.json data/research/lake_observations.v1.json
+          git add data/research/satellite/pilot_runs.json data/research/lake_observations.v1.json \
+            data/research/lake_imagery.v1.json data/research/lake-img
           if git diff --cached --quiet; then echo "Nothing to commit."; exit 0; fi
           git commit -m "Satellite pilot run ${GITHUB_RUN_ID}"
           # site.yml's heartbeat can push in between; rebase onto it and try again, at most three times.
@@ -103,9 +127,14 @@ jobs:
         if: always()
         env:
           RUN_OUTCOME: ${{ steps.run.outcome }}
+          IMAGERY_OUTCOME: ${{ steps.imagery.outcome }}
         run: |
           status=$(uv run python -c 'import json; print(json.load(open("data/research/satellite/pilot_runs.json"))[-1]["status"])')
           if [ "$RUN_OUTCOME" != success ] || [ "$status" != ok ]; then
             echo "::error title=Satellite pilot::refresh did not complete (step $RUN_OUTCOME, recorded $status)"
+            exit 1
+          fi
+          if [ "$IMAGERY_OUTCOME" != success ]; then
+            echo "::error title=Satellite pilot::pictures did not complete (step $IMAGERY_OUTCOME; see the summary)"
             exit 1
           fi
