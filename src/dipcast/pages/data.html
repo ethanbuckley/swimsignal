@@ -8,7 +8,7 @@
 <link rel="preload" href="/static/fonts/SourceSans3-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/static/fonts/SourceSerif4-latin.woff2" as="font" type="font/woff2" crossorigin></head><body><a class="skip" href="#main">Skip to content</a>
 <header class="top"><a class="brand" href="/"><svg viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" fill="#0f5a61"/><path d="M430-20C330 110 470 230 300 290S110 380 190 540" fill="none" stroke="#5CC2B5" stroke-width="70" stroke-linecap="round"/><circle cx="318" cy="138" r="38" fill="#F08A4B"/><circle cx="165" cy="358" r="46" fill="none" stroke="#fff" stroke-width="22"/></svg>SwimSignal</a>
-<nav aria-label="Site"><a href="/plan/">Plan a swim</a><a href="/saved/">Saved</a><a href="/verification">Accuracy</a><a href="/about">About</a><a class="desk-only" href="/feedback">Feedback</a></nav></header>
+<nav aria-label="Site"><a href="/plan/">Plan a swim</a><a href="/saved/">Saved</a><a href="/verification">Accuracy</a><a href="/about">About</a><a class="desk-only" href="/research">Research</a><a class="desk-only" href="/feedback">Feedback</a></nav></header>
 <main class="doc" id="main">
 <h1>Data files</h1>
 <p class="lead">The files the site is built from are public: every spot's forecast, the storm overflows on the map and the accuracy scores. This page lists each one, what it holds and the licence it is under.</p>
@@ -36,6 +36,7 @@
 <tr data-file="verification_spots_live.csv"><td><a href="data/verification_spots_live.csv">verification_spots_live.csv</a></td><td>Each spot's forecast level beside the level the spills that happened would have given</td><td class="num">–</td></tr>
 <tr data-file="spot_scores.json"><td><a href="data/spot_scores.json">spot_scores.json</a></td><td>Those live spill scores summed over each spot's upstream overflows, for its page</td><td class="num">–</td></tr>
 <tr data-file="upstream/"><td>upstream/</td><td>Every monitored storm overflow upstream of each spot, one file a spot, for the organisers' page</td><td class="num">–</td></tr>
+<tr data-file="research/"><td><a href="data/research/lakes.json">research/</a></td><td>Satellite lake observations: dated Sentinel-2 index readings at lakes, and laboratory chlorophyll values where the Environment Agency has them</td><td class="num">–</td></tr>
 <tr data-file="anypoint/"><td><a href="data/anypoint/tiles.json">anypoint/</a></td><td>The river network, upstream overflows and spill probabilities for forecasts at a clicked point</td><td class="num">–</td></tr>
 <tr data-file="coastal.json"><td><a href="data/coastal.json">coastal.json</a></td><td>Official English coastal and estuary directory, historical ratings and dated advice</td><td class="num">–</td></tr>
 <tr data-file="places.json"><td><a href="data/places.json">places.json</a></td><td>The towns, villages and districts Plan a swim can start from</td><td class="num">–</td></tr>
@@ -180,6 +181,12 @@
 </dl>
 <p><b>Licence.</b> SwimSignal's upstream calculations, with the overflow records and river network under the licences in the credits.</p>
 
+<h2 id="research">research/</h2>
+<p>The satellite lake observations the <a href="/lakes">lake viewer</a> shows, split from the research export (<a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/LAKE-OBSERVATIONS-CONTRACT-v1.md">its contract, version 1</a>). The table links <code>lakes.json</code>; its size is the whole folder's. Each reading is a satellite index of how green the water looked on the image's date, not a chlorophyll measurement, not a test for harmful algae and not swimming advice. Contains modified Copernicus Sentinel data; laboratory values © Environment Agency, Open Government Licence v3.0.</p>
+<dl class="fields">
+<dt><code>lakes.json</code></dt><dd>The export without each lake's readings and laboratory values: what the readings may and may not say (<code>claim</code>), the freshness day limits, the laboratory definition, how the readings were made (<code>processing</code>, with each input's SHA-256), and every lake's latest reading, seasons and reasons for any gap. <code>available</code> is false, with <code>why</code>, when no export was published</dd>
+<dt><code>lake/&lt;lake_id&gt;.json</code></dt><dd>One lake whole: every usable reading (<code>series</code>), with its image's id and time, and its laboratory values (<code>lab</code>)</dd>
+</dl>
 <h2 id="anypoint">anypoint/</h2>
 <p>The files the map uses to calculate a forecast at a point you click, on your device. The table links <code>tiles.json</code>, the index of available 0.25-degree squares, versions, distance units and probability scales; its size is the whole folder's. These files are intended to be read together by the site's <a href="https://github.com/ethanbuckley/swimsignal/blob/main/src/dipcast/site/anypoint.js">point-forecast script</a>.</p>
 <dl class="fields">
@@ -214,5 +221,5 @@
 </ul>
 </main>
 <footer class="site-foot"><div class="rule"><p>SwimSignal is a free, non-commercial pollution risk forecast for river and lake swim spots in England, run by Ethan Buckley. A forecast, not a water test: check the signs at the water before you swim.</p>
-<p><a href="/terms">Terms of use</a> · <a href="/privacy">Privacy</a> · <a href="/feedback">Feedback</a> · <a href="/terms#data">Data credits</a> · <a href="https://github.com/ethanbuckley/swimsignal">Source code</a> (MIT)</p></div></footer>
+<p><a href="/terms">Terms of use</a> · <a href="/privacy">Privacy</a> · <a href="/feedback">Feedback</a> · <a href="/research">Research</a> · <a href="/terms#data">Data credits</a> · <a href="https://github.com/ethanbuckley/swimsignal">Source code</a> (MIT)</p></div></footer>
 </body></html>
