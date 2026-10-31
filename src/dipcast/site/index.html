@@ -2523,7 +2523,8 @@ function bestDayNote(spots, yours = false) {
 }
 // The strip's count for a day: the spots at low risk that day, as Low risk only would show them (29 October
 // 2026: it replaced the line under the day picker, "This weekend, Sunday: 66 of 109 spots at low risk").
-const lowOn = iso => DATA.spots.filter(s => dayLevel(s, iso) === 'low').length;
+const lowEligible = s => !(typeof eaTodayRestricts === 'function' && eaTodayRestricts(s));
+const lowOn = iso => DATA.spots.filter(s => dayLevel(s, iso) === 'low' && lowEligible(s)).length;
 // The button, with the dot before it, shows while another day is picked: setMapDay keeps it in step.
 const syncBestDay = () => document.querySelectorAll('[data-pick-day]').forEach(b => { b.parentElement.hidden = b.dataset.pickDay === VIEW.day; });
 // The button hides once pressed, so the focus goes to the day picker, which now shows its day.
@@ -2839,11 +2840,11 @@ const mapLevel = s => VIEW.day ? dayLevel(s, VIEW.day) : level(s);
 const mapWhen = () => VIEW.day ? dayWord(VIEW.day) : 'today and tomorrow';
 const lowLabel = () => 'Low\u00a0risk only';   // says what it does, as the map's switch does; the no-break space: see .toolbar [data-low-t]
 // The low spots with official advice (eatoday.js): still shown, as their level is low, but said here and on their rows.
-const lowAdvised = () => typeof eaTodayAdvice === 'function' ? DATA.spots.filter(s => mapLevel(s) === 'low' && eaTodayAdvice(s).length).length : 0;
+const lowAdvised = () => typeof eaTodayAdvice === 'function' ? DATA.spots.filter(s => mapLevel(s) === 'low' && lowEligible(s) && eaTodayAdvice(s).length).length : 0;
 // "Follow" only where every one counted restricts swimming (eatoday.js, eaTodayRestricts); else "read".
 const noticeVerb = spots => typeof eaTodayRestricts === 'function' && spots.every(s => eaTodayRestricts(s)) ? 'follow it first' : 'read it first';
-const lowAdviceSaid = () => { const n = lowAdvised(); return n ? ` ${n === 1 ? 'One of them has' : `${n} of them have`} an official notice: ${noticeVerb(DATA.spots.filter(s => mapLevel(s) === 'low' && eaTodayAdvice(s).length))}.` : ''; };
-const lowListNote = () => `Low risk from pollution ${mapWhen()}, going by the forecasts and the Environment Agency's ratings.${lowAdviceSaid()} Not a safety check: look at the signs at the water before you swim.`;
+const lowAdviceSaid = () => { const n = lowAdvised(); return n ? ` ${n === 1 ? 'One of them has' : `${n} of them have`} an official notice: ${noticeVerb(DATA.spots.filter(s => mapLevel(s) === 'low' && lowEligible(s) && eaTodayAdvice(s).length))}.` : ''; };
+const lowListNote = () => `Low risk from pollution ${mapWhen()}, going by the forecasts and the Environment Agency's ratings. Spots with official advice restricting swimming are excluded.${lowAdviceSaid()} Not a safety check: look at the signs at the water before you swim.`;
 // A spot with an official notice (eatoday.js) keeps its level's colour, ringed in the notice's amber: a cue
 // to open the spot and read the notice, not a level or a safety score. The map shows it before a tap: on the phone, 27 Oct 2026, Frensham was a plain green dot.
 // The key's line for the ring shows only while a spot has one.
@@ -2854,7 +2855,7 @@ const markerTip = s => { const o = typeof eaTodayBrief === 'function' ? eaTodayB
   return o ? `${esc(s.name)}: ${esc(o)}<br>${listHeadline(s)}` : `${esc(s.name)}: ${listHeadline(s)}`; };   // official advice first
 function styleMarkers() {
   for (const s of DATA.spots) {
-    const m = MARKERS.get(s.id), lv = mapLevel(s), on = !VIEW.lowOnly || lv === 'low'; if (!m) continue;
+    const m = MARKERS.get(s.id), lv = mapLevel(s), on = !VIEW.lowOnly || (lv === 'low' && lowEligible(s)); if (!m) continue;
     m.setTooltipContent(markerTip(s));
     const adv = mapAdvised(s);
     m.setStyle(on ? { color: adv ? ADVICE_RING : PAPER, weight: adv ? 3.5 : 2, fillColor: colour(lv), fillOpacity: 1 }
@@ -2866,10 +2867,10 @@ function styleMarkers() {
   document.querySelectorAll('.map-legend .advkey').forEach(k => { k.hidden = !DATA.spots.some(mapAdvised); });
   const ln = document.getElementById('low-note-list'); if (ln) { ln.hidden = !VIEW.lowOnly; ln.textContent = lowListNote(); }
   const b = document.getElementById('lowbtn');
-  if (b) { b.setAttribute('aria-pressed', String(VIEW.lowOnly)); b.querySelector('.n').textContent = DATA.spots.filter(s => mapLevel(s) === 'low').length; }
+  if (b) { b.setAttribute('aria-pressed', String(VIEW.lowOnly)); b.querySelector('.n').textContent = DATA.spots.filter(s => mapLevel(s) === 'low' && lowEligible(s)).length; }
   document.querySelectorAll('[data-low]').forEach(x => x.setAttribute('aria-pressed', String(VIEW.lowOnly)));
   document.querySelectorAll('[data-low-t]').forEach(x => { x.textContent = lowLabel(); });
-  document.getElementById('low-note').textContent = `Low risk ${mapWhen()} from pollution.${lowAdviceSaid()} Not a safety check: currents, cold water and the Environment Agency's short-term warnings are not included.`;
+  document.getElementById('low-note').textContent = `Low risk ${mapWhen()} from pollution. Spots with official advice restricting swimming are excluded.${lowAdviceSaid()} Not a safety check: currents, cold water and the Environment Agency's short-term warnings are not included.`;
 }
 function setMapDay(iso) {
   VIEW.day = iso || null;
@@ -3247,7 +3248,7 @@ function drawSpots() {
   const words = fold(VIEW.q).split(' ').filter(Boolean);
   const found = s => { const t = searchText(s); return words.every(w => t.includes(w)); };
   const keep = s => found(s) && (VIEW.filter === 'all'
-    || (VIEW.filter === 'designated' ? s.source === 'designated' : s.kind === VIEW.filter)) && (!VIEW.lowOnly || mapLevel(s) === 'low');
+    || (VIEW.filter === 'designated' ? s.source === 'designated' : s.kind === VIEW.filter)) && (!VIEW.lowOnly || (mapLevel(s) === 'low' && lowEligible(s)));
   const byRisk = VIEW.sort !== 'name' && !(VIEW.sort === 'near' && VIEW.here);
   const items = DATA.spots.filter(keep).sort((a, b) => VIEW.sort === 'near' && VIEW.here ? dist(a) - dist(b)
     // Near me before a position has arrived keeps the lowest-risk order, which a failed location returns to.
@@ -3963,10 +3964,13 @@ function drawPlan(fit = false) {
     '', 'No forecast for the day, or out of the forecast\'s reach.'].map((t, i) => [planAdviceSub(adv[i], r.groups[i].length), t].filter(Boolean).join(' '));
   const next = r.nearest ? reachFor(r.nearest.miles) : null;
   document.getElementById('plan-basis').innerHTML = r.count ? planBasis(r.groups.flat()) : '';
-  box.innerHTML = r.count ? r.groups.map((g, i) => !g.length ? '' : `<section class="group tile" aria-labelledby="plan-h${i}"><h2 class="group-head" id="plan-h${i}">${head[i]}</h2>`
+  const restrictedLow = r.groups[0].filter(o => planAdvised(o.s));
+  const displayGroups = r.groups.map((g, i) => i === 0 ? g.filter(o => !planAdvised(o.s)) : g);
+  box.innerHTML = r.count ? displayGroups.map((g, i) => !g.length ? '' : `<section class="group tile" aria-labelledby="plan-h${i}"><h2 class="group-head" id="plan-h${i}">${head[i]}</h2>`
       + `${sub[i] ? `<p class="sub">${sub[i]}</p>` : ''}<ul class="spots" id="plan-g${i}">${g.map(planItem).join('')}</ul></section>`).join('')
     : `<div class="empty-saved tile"><h2 class="sec-h">No ${planNoun(2)} ${reach}</h2>`
       + (r.nearest ? `<p class="sub">The nearest is ${esc(r.nearest.s.name)}, ${milesAway(r.nearest.miles)}.</p><button type="button" class="btn primary" data-plan-within="${next}">${next ? `Look within ${next} miles` : 'Look at any distance'}</button>` : '') + '</div>';
+  if (restrictedLow.length) box.insertAdjacentHTML('beforeend', `<section class="group tile" aria-labelledby="plan-restricted"><h2 class="group-head" id="plan-restricted">Official advice restricts swimming</h2><p class="sub">Follow the official advice. The sewage forecast is shown as separate information.</p><ul class="spots">${restrictedLow.map(planItem).join('')}</ul></section>`);
   if (r.count) box.insertAdjacentHTML('beforeend', '<p class="small muted msg">Distances are in a straight line, not by road. A forecast, not a water test: check the signs at the water before you swim. <a href="#levels">What the levels mean</a>.</p>');
   box.querySelectorAll('ul.spots').forEach(bindItems);
   if (r.count) planCompare(r.groups, head);
