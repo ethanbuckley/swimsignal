@@ -78,8 +78,11 @@ function measuredSource(s, nowMs) {
   return `Sent by ${who}${sent}. ${lab}${s.method ? ` Method: ${measuredEsc(s.method)}.` : ''}`;
 }
 
+// A result whose time the sender did not give (samples/ version 2, time_known no) is a day alone, said as one.
+const measuredDayOnly = s => s.time_known === false && /^\d{4}-\d{2}-\d{2}$/.test(s.sampled_at || '');
 const measuredRow = (s, nowMs) => '<div class="factor">'
-  + `<div class="f-l">Sampled ${measuredWhen(s.sampled_at, nowMs)}</div><div class="f-v">${measuredAge(s.sampled_at, nowMs)}</div>`
+  + `<div class="f-l">Sampled ${measuredDayOnly(s) ? `${measuredDay(Date.parse(s.sampled_at + 'T12:00:00Z'), nowMs)}, time not given` : measuredWhen(s.sampled_at, nowMs)}</div>`
+  + `<div class="f-v">${measuredAge(s.sampled_at, nowMs)}</div>`
   + `<div class="f-d">${measuredSays(s)}</div><div class="f-src">${measuredSource(s, nowMs)}</div></div>`;
 
 // The tile, in the spot's "at the water" part after the EA's rating (index.html, render). Nothing where

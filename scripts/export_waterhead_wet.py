@@ -3,6 +3,10 @@ Ambleside Action for a Future's sheet as Tim Boden sent it on 25 Oct 2026, kept 
 
     uv run --group dev python scripts/export_waterhead_wet.py export [--xlsx PATH] [--out PATH]
     uv run python scripts/export_waterhead_wet.py check [PATH]
+    uv run python scripts/export_waterhead_wet.py samples [--out PATH]
+
+`samples` writes the same counts in the samples/ format, version 2 (docs/PARTNER-SAMPLES-CONTRACT-v1.md), from the
+published export alone, as the first sampling partner's file: data/research/partners/aafaf-waterhead.samples.csv.
 
 The counts are the Waterhead E. coli Testing (WET) project's weekly samples at Waterhead, Windermere: E. coli and
 intestinal enterococci per 100 ml as the sheet records them. Tim's email of 25 Oct 2026 makes the counts public domain
@@ -26,6 +30,7 @@ XLSX = (Path.home() / "Documents" / "GitHub" / "swimsignal-private" / "tim-boden
         / "25-26 Bacteria Levels.xlsx")
 XLSX_SHA = "c9f229c832eea9782b6d8874e79c8feaa430f8443549669b52778b647516d3b5"   # as received 25 Oct 2026
 OUT = ROOT / "data" / "research" / "waterhead_wet.v1.json"
+SAMPLES_OUT = ROOT / "data" / "research" / "partners" / "aafaf-waterhead.samples.csv"
 SCHEMA, VERSION = "swimsignal.waterhead-wet", "1.1.0"
 COLS = {"Date": "date", "E-Coli (cfu/100ml)": "ecoli", "Intestinal Enterococci (cfu/100ml)": "ie"}
 CLAIM = {
@@ -123,14 +128,56 @@ def check(doc: dict) -> list[str]:
     return err
 
 
+# The samples/ format's values that are not in the export: where the spot's pin is (OpenStreetMap; the sheet has no site
+# column), the 2025 laboratory (the technical report, p. 6), and the permissions as Tim Boden's email gave them.
+WATERHEAD_PIN = ("54.41897", "-2.96235")
+LABS = {"2025": "Simplex Health", "2026": ""}   # 2026's laboratory is an open question
+AGREED = "2026-10-25"
+
+
+def samples_rows(doc: dict) -> list[dict]:
+    """One samples/ row a sample, every count as the export publishes it. The time is not known, nor the method or its
+    limits, so those say so (blank, or time_known no); the counts were seen before any test, so their test use is
+    exploratory, never a holdout."""
+    return [{
+        "spot_id": doc["spots"][0], "sampled_at": x["date"], "timezone": "Europe/London",
+        "ecoli_per_100ml": str(x["ecoli"]), "enterococci_per_100ml": str(x["ie"]),
+        "lab": LABS[x["date"][:4]], "ukas_accredited": "", "method": "", "lab_ref": "",
+        "supplier": "Ambleside Action for a Future", "received": doc["sources"]["received"], "publish": "true", "evaluate": "true",
+        "time_known": "no", "site_name": doc["site"]["name"], "site_lat": WATERHEAD_PIN[0], "site_lon": WATERHEAD_PIN[1],
+        "site_confirmed": "yes" if doc["site"]["confirmed"] else "no",
+        "ecoli_basis": "cfu", "enterococci_basis": "cfu",   # the sheet's headings say cfu/100ml
+        "ecoli_lower_limit": "", "ecoli_upper_limit": "", "enterococci_lower_limit": "", "enterococci_upper_limit": "",
+        "limits_written": "", "sampler": "Ambleside Action for a Future volunteers (WET project)",
+        "licence": "public-domain", "attribution": "Ambleside Action for a Future, Waterhead E. coli Testing (WET) project",
+        "publish_agreed": AGREED, "evaluate_use": "exploratory", "evaluate_agreed": AGREED,
+    } for x in doc["samples"]]
+
+
+def samples_csv(doc: dict) -> str:
+    import csv
+    import io
+    from dipcast import samples as sm
+    buf = io.StringIO()
+    w = csv.DictWriter(buf, fieldnames=sm.COLUMNS, lineterminator="\n")
+    w.writeheader()
+    w.writerows(samples_rows(doc))
+    return buf.getvalue()
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    ap.add_argument("step", choices=["export", "check"])
+    ap.add_argument("step", choices=["export", "check", "samples"])
     ap.add_argument("path", nargs="?")
     ap.add_argument("--xlsx", type=Path, default=XLSX)
     ap.add_argument("--out", type=Path, default=OUT)
     a = ap.parse_args()
-    if a.step == "export":
+    if a.step == "samples":
+        out = a.out if a.out != OUT else SAMPLES_OUT
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(samples_csv(json.loads(OUT.read_text())))
+        print(f"wrote {out}")
+    elif a.step == "export":
         doc = build(a.xlsx)
         if problems := check(doc):
             raise SystemExit("\n".join(problems))

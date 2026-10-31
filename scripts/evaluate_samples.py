@@ -118,6 +118,11 @@ def main(argv: list[str] | None = None) -> int:
     try:
         private = sm.private_dir(a.private)
         rows = [r for rs in sm.read_private(private, now=datetime.now(sm.UK)).values() for r in rs if r["evaluate"] == "true"]
+        # A sample with no time cannot be placed against the forecast live when it was taken: left out, and counted.
+        untimed = sum(not r["_time_known"] for r in rows)
+        rows = [r for r in rows if r["_time_known"]]
+        if untimed:
+            print(f"{untimed} sample{'' if untimed == 1 else 's'} with no sampling time left out (time_known no)")
     except sm.SampleError as e:
         print(e, file=sys.stderr)
         return 1

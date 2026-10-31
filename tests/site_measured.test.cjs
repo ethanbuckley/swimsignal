@@ -108,3 +108,9 @@ test("the spot pages' prerender does not reach the tile: it draws when the spot'
   const { reached } = require('../scripts/prerender_spots.js');
   assert.doesNotMatch(reached(fs.readFileSync(join(__dirname, '../src/dipcast/site/index.html'), 'utf8')), /measuredTile/);
 });
+
+test('a result without a time is said as its day, never as midnight', () => {
+  const html = m.measuredTile(spot([sample({ sampled_at: '2026-10-17', time_known: false })]), NOW);
+  assert.match(text(html), /Sampled 17 Oct, time not given 3 days ago/);
+  assert.doesNotMatch(html, /00:00|01:00/);
+});
