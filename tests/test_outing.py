@@ -69,3 +69,16 @@ def test_outingwatch_js_comes_after_since_js_and_the_offline_copy_keeps_it(tmp_p
     # The privacy notice names the note it keeps in this browser.
     privacy = (tmp_path / "privacy.html").read_text()
     assert "So that the outing can say what has changed since you planned it, your browser also keeps a note" in privacy
+
+
+def test_dayplan_js_is_loaded_versioned_after_outing_js_and_kept_by_the_offline_copy(tmp_path):
+    # dayplan.js: the day plan's options and its picture, on Plan a swim; it uses outing.js's words.
+    bs = _build_site()
+    bs.write_pages(tmp_path, [{"id": "a", "name": "A", "kind": "river", "days": []}], root="https://example.org/")
+    stamp = bs.shell_stamp()
+    html = (tmp_path / "plan" / "index.html").read_text()
+    assert f'<script src="dayplan.js?v={stamp}" defer></script>' in html
+    assert html.index('src="outing.js') < html.index('src="dayplan.js')
+    assert (tmp_path / "dayplan.js").read_bytes() == (bs.TEMPLATE.parent / "dayplan.js").read_bytes()
+    assert "`dayplan.js?v=${BUILD}`" in (tmp_path / "sw.js").read_text()
+    assert bs.TEMPLATE.parent / "dayplan.js" in bs.SHELL_SOURCES

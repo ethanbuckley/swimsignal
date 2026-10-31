@@ -298,7 +298,8 @@ function outingIcs(c, now = Date.now()) {
 // The part of the tile that keeps the outing: the alerts (filled in once this browser's push state is
 // known: outingAlert), then the calendar file.
 const outingKeep = () => '<div class="outing-keep"><div id="outing-alert"></div>'
-  + '<p class="outing-acts"><button type="button" class="btn" id="outing-ics">Add to calendar</button> <button type="button" class="btn" id="outing-share">Share this outing</button></p>'
+  + '<p class="outing-acts"><button type="button" class="btn" id="outing-ics">Add to calendar</button> <button type="button" class="btn" id="outing-share">Share this outing</button>'
+  + (typeof dpPicture === 'function' ? ' <button type="button" class="btn" id="outing-picture">Make a picture to send</button>' : '') + '</p><div id="outing-picture-box"></div>'
   + '<details class="fold"><summary>What the calendar and shared link contain</summary><p class="small muted">A calendar file made in this browser and sent nowhere: the time, the spots and links back here, without a level, which would go out of date. '
   + 'The shared link holds the day, the time, the spots, what for and where to meet, as you picked them, with the forecast\'s issue time and each spot\'s level when you share it, '
   + 'and the plan around your spot: not where you start from, and no words of yours.</p></details>'
@@ -557,10 +558,13 @@ function drawOuting(box, shown) {
     a.download = `swimsignal-outing-${PLAN.day}.ics`; document.body.append(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   });
-  bindShareLink(document.getElementById('outing-share'), document.getElementById('outing-alert-msg'),
-    new URL(planPath() + planHash(outingShared(PLAN, pair.main, { sent: outingSent(DATA.generated_at),
-      lv: dayLevel(pair.main, PLAN.day), blv: pair.backup && dayLevel(pair.backup, PLAN.day), flv: fin && dayLevel(fin, PLAN.day) })), location.href).href,
+  const link = new URL(planPath() + planHash(outingShared(PLAN, pair.main, { sent: outingSent(DATA.generated_at),
+    lv: dayLevel(pair.main, PLAN.day), blv: pair.backup && dayLevel(pair.backup, PLAN.day), flv: fin && dayLevel(fin, PLAN.day) })), location.href).href;
+  bindShareLink(document.getElementById('outing-share'), document.getElementById('outing-alert-msg'), link,
     `${outingVerb(PLAN.act)}: ${pair.main.name} · ${BRAND}`, 'Copy link to this outing');
+  // The plan as a picture to send (index.html, planPicture; dayplan.js), with the same link.
+  const pic = document.getElementById('outing-picture');
+  if (pic && typeof planPicture === 'function') pic.addEventListener('click', () => planPicture(pair, fin, link));
   bindOutingAlert(byId);
 }
 
