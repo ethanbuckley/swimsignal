@@ -217,3 +217,13 @@ test('a search from Explore opens only matching official directories and labels 
   assert.match(status.textContent, /1 official bathing-water site matches/);
   assert.match(status.textContent, /not SwimSignal forecasts/);
 });
+
+test('a search with no inland spot points to the official directories, also when a town matches', () => {
+  const page = fs.readFileSync('src/dipcast/site/index.html', 'utf8');
+  const offers = page.slice(page.indexOf('async function offerOnMap('), page.indexOf('const WATER_ZOOM'));
+  assert.match(offers, /<li class="empty"><p class="below">\$\{regionalLink\(t\)\} Missing a spot\?/);
+  const vm = require('node:vm'), c = vm.createContext({});
+  vm.runInContext(page.slice(page.indexOf('const regionalLink ='), page.indexOf('function renderList(')), c);
+  assert.match(vm.runInContext('regionalLink', c)(' Swansea '), /href="coverage\.html\?q=Swansea#regional-results"/);
+  assert.match(vm.runInContext('regionalLink', c)(''), /href="coverage\.html#regional-results"/);
+});
