@@ -1182,6 +1182,9 @@ def test_information_pages_offer_mobile_navigation_and_map_handoff(tmp_path):
     assert [h for h, _ in bs.MORE_LINKS] == ["verification.html", "about.html", "research.html", "feedback.html"]
     assert f'<ul class="more-menu" id="more-menu" popover>{more}</ul>' in app
     assert 'popovertarget="more-menu"' in app and 'popovertarget="more-menu"' in page
+    # Without popovers (iOS before 17) the button toggles the list itself, the same way in both bars.
+    assert f'onclick="{bs.MORE_FALLBACK}"' in app and f'onclick="{bs.MORE_FALLBACK}"' in page
+    assert ".more-menu.open { display:block; }" in app and ".more-menu.open { display:block; }" in (ROOT / "src/dipcast/pages/page.css").read_text()
     assert f'<ul class="more-menu" id="more-menu" popover>{more}</ul></nav>' in page
     # The pages that had no bar on a phone, since page.css hides their header's links there.
     spot = SPOTS[0]["id"]

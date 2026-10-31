@@ -2328,8 +2328,11 @@ PAGE_DESCRIPTION = re.compile(r'<meta name="description" content="([^"]*)">\n?')
 # The prose pages share the app's phone navigation. Links are relative to the built site root, or start
 # with r on a page that has no <base> at the root (404.html). More holds the header's links that a phone
 # hides (Accuracy, About, Research, Feedback): a popover, so a tap outside or Escape closes it with no
-# script, and a browser without popovers keeps them in the foot (31 Oct 2026). index.html's bar has the same.
+# script. A browser without popovers (iOS before 17) ignores popovertarget, so MORE_FALLBACK opens the list as a plain
+# toggle there instead of leaving a button that does nothing (found on the live site, 31 Oct 2026). index.html's bar
+# has the same.
 MORE_LINKS = (("verification.html", "Accuracy"), ("about.html", "About"), ("research.html", "Research"), ("feedback.html", "Feedback"))
+MORE_FALLBACK = "if(!('popover' in this)){this.setAttribute('aria-expanded',this.nextElementSibling.classList.toggle('open'))}"
 MORE_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>'
 
 
@@ -2342,7 +2345,7 @@ def phone_nav(r: str = "") -> str:
         f'<a href="{r}index.html?map=1"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 5 6-2 6 2 6-2v16l-6 2-6-2-6 2Zm6-2v16m6-14v16"/></svg>Map</a>'
         f'<a href="{r}plan/" aria-label="Plan a swim"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4m6-4v4"/></svg>Plan</a>'
         f'<a href="{r}saved/" aria-label="Saved spots"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4Z"/></svg>Saved</a>'
-        f'<button type="button" popovertarget="more-menu" aria-label="More pages">{MORE_ICON}More</button>'
+        f'<button type="button" popovertarget="more-menu" aria-label="More pages" onclick="{MORE_FALLBACK}">{MORE_ICON}More</button>'
         f'<ul class="more-menu" id="more-menu" popover>{more}</ul></nav>'
     )
 
