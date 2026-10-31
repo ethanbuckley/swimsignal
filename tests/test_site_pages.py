@@ -63,7 +63,7 @@ def test_every_spot_gets_its_own_page_and_preview(tmp_path):
     assert 'href="https://example.org/swim/icons/apple-touch-icon.png"' in lost
     assert (tmp_path / "robots.txt").read_text() == "User-agent: *\nAllow: /\nSitemap: https://example.org/swim/sitemap.xml\n"
     sm = (tmp_path / "sitemap.xml").read_text()
-    assert sm.count("<url>") == 21 and "<loc>https://example.org/swim/spot/tarn/</loc>" in sm   # with sites.html, record.html, clubs.html, quality.html, spots.html, research.html, lakes.html, samples.html (the EA E. coli samples) and two profiles
+    assert sm.count("<url>") == 23 and "<loc>https://example.org/swim/spot/tarn/</loc>" in sm   # with sites.html, record.html, clubs.html, quality.html, spots.html, research.html, lakes.html, lake-temperatures.html, durations.html (spill durations), samples.html and two profiles
     assert (tmp_path / "quality.html").exists()   # without an overflow table its lists say so (tests/test_quality.py)
     assert "<loc>https://example.org/swim/methods.html</loc>" in sm
     assert "<loc>https://example.org/swim/coverage.html</loc>" in sm
@@ -236,7 +236,7 @@ def test_a_spot_with_a_share_card_previews_it_and_the_rest_keep_the_shared_pictu
 
 PROSE_PAGES = ["organisers.html", "verification.html", "spots.html", "about.html", "methods.html", "clubs.html", "coverage.html",
                "privacy.html", "terms.html", "testing.html", "feedback.html", "data.html", "sites.html", "record.html",
-               "quality.html", "support.html", "samples.html"]
+               "quality.html", "support.html", "durations.html", "samples.html"]
 
 
 def test_every_prose_page_has_its_own_share_preview(tmp_path):
@@ -722,7 +722,7 @@ def test_the_data_page_lists_every_file_in_data_with_its_size(tmp_path):
     # An empty data/ (write_pages over a fresh folder): every described row says so, and nothing breaks.
     empty = tmp_path / "empty"
     empty.mkdir()
-    assert bs.write_data_page(empty) == [] and (empty / "data.html").read_text().count("Not in this build") == 20   # spot_scores.json makes 16, overflows/ 17, waters.json 18, verification_spots_live.csv 19, research/ (satellite lakes and E. coli samples) 20
+    assert bs.write_data_page(empty) == [] and (empty / "data.html").read_text().count("Not in this build") == 20   # spot_scores.json makes 16, overflows/ 17, waters.json 18, verification_spots_live.csv 19, research/ (satellite lakes, spill durations and E. coli samples) 20
 
 
 def test_the_embed_is_written_beside_the_app_with_its_scripts_versioned(tmp_path):
@@ -1165,3 +1165,16 @@ def test_the_issue_time_comes_from_the_file_the_built_answers_are_made_from(tmp_
     assert bs.built_issue_time(tmp_path) is None
     (tmp_path / "data" / "spots.json").write_text(json.dumps({"generated_at": "2026-10-25T17:48:31+00:00"}))
     assert bs.built_issue_time(tmp_path) == pd.Timestamp("2026-10-25T17:48:31+00:00")
+
+
+def test_information_pages_offer_mobile_navigation_and_map_handoff(tmp_path):
+    bs = _build_site()
+    bs.write_pages(tmp_path, SPOTS, root="https://example.org/swim/")
+    for name in ("coverage.html", "verification.html", "feedback.html"):
+        page = (tmp_path / name).read_text()
+        assert '<nav class="phone-nav" aria-label="Main">' in page
+        for href in ('index.html', 'index.html?map=1', 'plan/', 'saved/'):
+            assert f'href="{href}"' in page
+    app = (ROOT / "src/dipcast/site/index.html").read_text()
+    assert "url.searchParams.get('map') === '1'" in app
+    assert "url.searchParams.delete('map'); history.replaceState(history.state, '', url); setMapMode(true);" in app

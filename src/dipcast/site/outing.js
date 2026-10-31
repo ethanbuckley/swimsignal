@@ -18,10 +18,21 @@ const outDay = iso => outingRules().dayWord(iso).replace(/^on /, '');   // "toda
 const outEsc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 
 // ------------------------------------------------------------------------------ when
-// The parts of a day as hours on the device's clock [from, to), and the hours offered one by one.
+// The parts of a day in local UK/Ireland time [from, to), and the hours offered one by one.
 const OUTING_PARTS = { morning: [6, 12], afternoon: [12, 17], evening: [17, 21] };
 const OUTING_HOURS = Array.from({ length: 17 }, (_, i) => String(i + 5).padStart(2, '0'));   // 05:00 to 21:00
 const outingSpan = when => OUTING_PARTS[when] || (/^\d\d$/.test(when || '') ? [Number(when), Number(when) + 1] : null);
+// All currently listed swim spots use UK/Ireland civil time. Read the offset for the date,
+// including summer time, rather than the viewer's device time zone. Offered hours are 05:00
+// onwards, outside the clock-change gap and repeated hour.
+function outingUtc(day, hour) {
+  const local = Date.parse(day + 'T00:00:00Z') + hour * 3600000;
+  const part = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/London', timeZoneName: 'shortOffset' })
+    .formatToParts(new Date(local)).find(p => p.type === 'timeZoneName').value;
+  const match = /^GMT([+-])(\d{1,2})(?::(\d{2}))?$/.exec(part);
+  const offset = match ? (match[1] === '-' ? -1 : 1) * (Number(match[2]) * 60 + Number(match[3] || 0)) : 0;
+  return local - offset * 60000;
+}
 // "Saturday morning", "this evening", "tomorrow at 07:00"; the day alone with no time.
 function outingWhen(day, when) {
   const d = outDay(day);
@@ -43,9 +54,10 @@ function outingResumeSaid(o, backupName = null, nowMs = Date.now()) {
 // time already past. nowMs: the device's clock.
 function outingTimeNote(day, when, nowMs = Date.now()) {
   // The daily caveat always, with or without a time picked, so a time never reads as an hourly forecast.
-  const R = outingRules(), span = outingSpan(when);
+  const span = outingSpan(when);
   const out = [`The forecast gives one level for the whole of ${outDay(day)}; it does not change between morning and evening.`];
-  if (span && day === R.today() && new Date(nowMs).getHours() >= span[1]) out.push('That time has already passed today.');
+  const localDay = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/London', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(nowMs));
+  if (span && day === localDay && nowMs >= outingUtc(day, span[1])) out.push('That time has already passed today.');
   return out;
 }
 
@@ -254,8 +266,8 @@ function outingAlert(a) {
 
 // ------------------------------------------------------------------------------ the calendar file
 // "Add to calendar": one event for the outing, made in this browser and sent nowhere (iCalendar, RFC 5545,
-// with spotdate.js's lines, folding and escapes, as the organisers' page's file). The time is the swimmer's
-// own, on the device's clock, so it is written as a local ("floating") time; with no time picked, the
+// with spotdate.js's lines, folding and escapes, as the organisers' page's file). Timed events are
+// converted from the spot's UK/Ireland local time to UTC; with no time picked, the
 // event is the whole day. It carries the spot's name and links back to the spot's page and the plan,
 // never a forecast level, which would be out of date by the time the calendar shows it. One UID per day
 // and spot, so importing the file again after changing the time updates the event rather than adding one.
@@ -271,9 +283,9 @@ const outingPractical = s => {
 };
 const OUTING_CHECK = 'Check SwimSignal and any official notice before you go.';
 function outingIcs(c, now = Date.now()) {
-  const D = outingDates(), span = outingSpan(c.when), hh = h => String(h).padStart(2, '0') + '0000';
+  const D = outingDates(), span = outingSpan(c.when);
   const next = (() => { const d = new Date(c.day + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() + 1); return d.toISOString().slice(0, 10); })();
-  const when = span ? [`DTSTART:${D.icsDay(c.day)}T${hh(span[0])}`, `DTEND:${D.icsDay(c.day)}T${hh(span[1])}`]
+  const when = span ? [`DTSTART:${D.icsStamp(outingUtc(c.day, span[0]))}`, `DTEND:${D.icsStamp(outingUtc(c.day, span[1]))}`]
     : [`DTSTART;VALUE=DATE:${D.icsDay(c.day)}`, `DTEND;VALUE=DATE:${D.icsDay(next)}`];
   const text = [OUTING_CHECK, `Your spot: ${c.main.name}, ${c.main.url}`, ...(OUTING_MEET_WORDS[c.meet] ? [`Meet ${OUTING_MEET_WORDS[c.meet]}.`] : []), ...(c.main.practical || []),
     ...(c.finish ? [`Finish: ${c.finish.name}, ${c.finish.url}`] : []),
@@ -286,9 +298,9 @@ function outingIcs(c, now = Date.now()) {
 // known: outingAlert), then the calendar file.
 const outingKeep = () => '<div class="outing-keep"><div id="outing-alert"></div>'
   + '<p class="outing-acts"><button type="button" class="btn" id="outing-ics">Add to calendar</button> <button type="button" class="btn" id="outing-share">Share this outing</button></p>'
-  + '<p class="small muted">A calendar file made in this browser and sent nowhere: the time, the spots and links back here, without a level, which would go out of date. '
+  + '<details class="fold"><summary>What the calendar and shared link contain</summary><p class="small muted">A calendar file made in this browser and sent nowhere: the time, the spots and links back here, without a level, which would go out of date. '
   + 'The shared link holds the day, the time, the spots, what for and where to meet, as you picked them, with the forecast\'s issue time and each spot\'s level when you share it, '
-  + 'and the plan around your spot: not where you start from, and no words of yours.</p>'
+  + 'and the plan around your spot: not where you start from, and no words of yours.</p></details>'
   + '<p class="small muted msg" id="outing-alert-msg" aria-live="polite"></p></div>';
 
 // ------------------------------------------------------------------------------ access at each spot
@@ -320,12 +332,12 @@ function outingAccess(s, today, act = null) {
   const by = new Map(TOPICS.map(k => [k, facts.filter(f => f && f.topic === k)]));
   const have = TOPICS.filter(k => by.get(k).length), gaps = TOPICS.filter(k => !by.get(k).length);
   const rest = G.GUIDE_TOPICS.map(([k]) => k).filter(k => !TOPICS.includes(k) && facts.some(f => f && f.topic === k));
-  return permit + `<p class="g-src">${G.guideChecked(g, today)}</p>`
+  return permit + `<details class="fold"${OUTING_BOAT.includes(act) ? ' open' : ''}><summary>Arrival and access details</summary><p class="g-src">${G.guideChecked(g, today)}</p>`
     + (have.length ? '<dl class="g-facts">' + have.map(k => `<div class="g-row"><dt>${label.get(k)}</dt>`
       + G.guideRuns(by.get(k)).map(r => `<dd>${r.texts.map(t => `<p class="g-text">${outEsc(t)}</p>`).join('')}<p class="g-src">${r.src}</p></dd>`).join('')
       + '</div>').join('') + '</dl>' : '')
     + (gaps.length ? `<p class="g-gap">Not in this guide yet: ${gaps.map(k => label.get(k).toLowerCase()).join(', ')}.</p>` : '')
-    + (rest.length ? `<p class="small muted">Also in the guide on the spot's page: ${rest.map(k => label.get(k).toLowerCase()).join(', ')}.</p>` : '');
+    + (rest.length ? `<p class="small muted">Also in the guide on the spot's page: ${rest.map(k => label.get(k).toLowerCase()).join(', ')}.</p>` : '') + '</details>';
 }
 const outingAccessBox = (id, inner) => `<div class="outing-access" data-outing-access="${outEsc(id)}"><p class="outing-role">Access</p>${inner}</div>`;
 
@@ -400,7 +412,7 @@ function outingSection(o) {
   const said = o.main ? `${outingWhen(o.day, o.when).replace(/^./, c => c.toUpperCase())}${ing}: ${o.alt ? 'your spot and a backup, side by side' : 'your spot'}.` : '';
   const meet = o.main && OUTING_MEET_WORDS[o.meet] ? `<p class="small">Meet ${OUTING_MEET_WORDS[o.meet]} at ${outEsc(o.main.name)}: the Access part under it says what its guide knows.</p>` : '';
   const licence = o.main && o.act && o.act !== 'swim' ? OUTING_LICENCE : '';
-  const notes = [...outingTimeNote(o.day, o.when, o.nowMs), ...(ing ? ['The level is for the water, the same whatever you do on it.'] : [])];
+  const notes = [...(o.when ? ['Times are local to the swim spot (UK and Ireland time).'] : []), ...outingTimeNote(o.day, o.when, o.nowMs), ...(ing ? ['The level is for the water, the same whatever you do on it.'] : [])];
   const gone = o.missing && o.missing.length ? `<p class="small muted">${o.missing.length === 1 ? 'A spot in this outing is' : 'Spots in this outing are'} no longer listed, so ${o.missing.length === 1 ? 'it is' : 'they are'} left out.</p>` : '';
   const body = !o.main ? '<p class="sub">Choose a spot to see it here, with a backup beside it.</p>'
     : `<p class="outing-said">${said}</p>${meet}${licence}${outingBoth(o)}${outingNeither(o)}${o.alt ? `<p class="outing-join" id="outing-join">${outEsc(o.join)}</p>` : ''}`
@@ -428,7 +440,7 @@ function outingSection(o) {
     + (o.main && o.finishes ? (o.finishes.length
       ? `<label>Finish (optional)<select data-outing="finish"><option value="">Not set</option>${o.finishes.map(f => `<option value="${outEsc(f.id)}"${f.id === o.finish ? ' selected' : ''}>${outEsc(f.name)}, ${outingKm(f.km)} down</option>`).join('')}</select></label>`
       : `<p class="small muted">No listed spot downstream of ${outEsc(o.main.name)} that SwimSignal can trace the route to, so there is no finish to pick.</p>`) : '') + '</div>'
-    + gone + body + '</details>';
+    + gone + body + (o.main && !o.preview ? '<p class="small"><button type="button" class="btn" id="outing-clear">Clear outing</button> Removes the plan from this browser; shared links and offline copies are unchanged.</p>' : '') + '</details>';
 }
 
 // A link's own day that is not one of the five, said: the plan shows the outing's spots on the first day instead.
@@ -461,7 +473,7 @@ function drawOuting(box, shown) {
       headline: dayHeadline(s, PLAN.day), official: outingOfficial(s), notice: outingBrief(s), why: planWhy(s, PLAN.day), ev: planEvidence(s),
       level: dayLevel(s, PLAN.day), advised: typeof eaTodayRestricts === 'function' && eaTodayRestricts(s),   // a notice that restricts swimming
       access: outingAccess(s, today(), PLAN.act),
-      meta: [m === null ? null : cap(milesAway(m)), cap(s.kind)].filter(Boolean).join(' · '), catchment: s.catchment }; };
+      meta: [m === null ? null : cap(milesAway(m)), cap(s.kind), typeof waterEstShort === 'function' ? waterEstShort(s.water_temp_est, s.kind) : ''].filter(Boolean).join(' · '), catchment: s.catchment }; };   // today's water estimate (#492)
   const pair = outingPair(PLAN, byId), list = shown.map(o => o.s);
   // A paddle's finish, while the spot still offers it.
   const paddle = OUTING_FINISH_ACTS.includes(PLAN.act), finishes = paddle && pair.main ? outingFinishes(pair.main, byId) : null;
@@ -492,6 +504,12 @@ function drawOuting(box, shown) {
   tile.querySelectorAll('a[data-id]').forEach(a => a.addEventListener('click', e => { if (!plainClick(e)) return; e.preventDefault(); select(a.dataset.id, true, true, PLAN.day); }));
   if (typeof outingWatchDraw === 'function') outingWatchDraw(tile, PLAN, { ...pair, finish: fin }, DATA.generated_at, Date.now(), !!preview);   // outingwatch.js: what would change this plan, and what has
   if (!pair.main) return;
+  const clear = document.getElementById('outing-clear');
+  if (clear) clear.addEventListener('click', () => {
+    for (const key of ['spot', 'backup', 'when', 'meet', 'finish', 'sent', 'lv', 'blv', 'flv']) delete PLAN[key];
+    planAddress(); drawOuting(box, shown);
+    const select = document.querySelector('[data-outing="spot"]'); if (select) { select.focus(); select.insertAdjacentHTML('afterend', '<span role="status">Outing cleared from this browser.</span>'); }
+  });
   const keepIt = document.getElementById('outing-keep-it');
   if (keepIt) keepIt.addEventListener('click', () => {
     keepPlan(); drawOuting(box, shown);

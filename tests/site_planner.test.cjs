@@ -438,7 +438,7 @@ test('a plan row says what the level rests on, and why a spill expected on a low
   s.days[2].expected_spilling_overflows = 0.3;
   assert.equal(why(s, DATES[3]), '');   // no spill figure that day, and nothing else to say
   // The rating, unless the headline already gives it; access not confirmed; nothing upstream.
-  assert.equal(why({...s, classification: {class: 'excellent', year: 2025}}, DATES[2]), 'Under one spill is expected from the 3 overflows upstream. Rated excellent by the Environment Agency for 2025.');
+  assert.equal(why({...s, classification: {class: 'excellent', year: 2025}}, DATES[2]), 'A spill from one of the 3 overflows upstream is possible, not expected. Rated excellent by the Environment Agency for 2025.');
   assert.doesNotMatch(why({...s, classification: {class: 'poor', year: 2025}}, DATES[2]), /Rated poor/);
   assert.match(why({...s, access: {status: 'unconfirmed'}}, DATES[2]), /Permission to swim at this point is not confirmed\.$/);
   assert.equal(why({...clearRiver}, DATES[2]), 'No monitored storm overflow within 60\u00a0km upstream.');
@@ -483,7 +483,7 @@ test('right now raised with nothing discharging says the spills are recent', () 
 // compareTable (index.html), run beside levels.js, experience.js, evidence.js and eatoday.js, as in the page.
 test('the comparison has a column a spot, the five days first with the day picked shaded, one cell for a level that does not change, and no blank', () => {
   const dir = require('node:path').join(__dirname, '../src/dipcast/site/');
-  const ctx = pageContext(['esc', 'tone', 'dateLabel', 'PAGE_ID', 'spotPath', 'ago', 'ageMin', 'issued', 'compareTable'],
+  const ctx = pageContext(['esc', 'tone', 'dateLabel', 'PAGE_ID', 'spotPath', 'ago', 'agoSpan', 'ageMin', 'issued', 'compareTable'],
     {ROOT: {pathname: '/'}, DATA: {generated_at: '2026-09-30T06:00:00+01:00'}, fiveDays: () => DATES});
   for (const f of ['evidence.js', 'eatoday.js']) vm.runInContext(fs.readFileSync(dir + f, 'utf8'), ctx);
   const a = {...week(['low', 'high', 'low', 'low', 'low']), id: 'a', name: 'River <A>', now: {label: 'low', monitored_upstream: 2, discharging_upstream: 0}};
@@ -505,7 +505,7 @@ test('the comparison has a column a spot, the five days first with the day picke
   assert.doesNotMatch(html, /<td[^>]*>\s*<\/td>/);
   assert.equal([...html.matchAll(/<td headers="cmp-r\d cmp-s\d">/g)].length, 8 * 3);   // every fact, every spot
   assert.match(html, />River &lt;A&gt;<\/a><span class="k">a away<\/span>/);
-  assert.match(html, /^<p class="small muted compare-note">Issued [^<]*\. A lower forecast level does not mean safe water: check the signs at the water\.<\/p>/);
+  assert.match(html, /^<p class="small muted compare-note">Issued [^<]*<span data-ago="\d+">[^<]*<\/span> ago\)\. A lower forecast level does not mean safe water: check the signs at the water\.<\/p>/);
   // The question is which spots to look into further: no column is called the best or the safest.
   assert.doesNotMatch(html + pageDefs(['compareSection', 'compareTable', 'savedCompare', 'planCompare']), /\b(best|safest|safer)\b/i);
   // The names again, to pin under the header on a phone (comparePin; post-deploy QA, 20 Oct 2026): before the

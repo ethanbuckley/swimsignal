@@ -133,7 +133,7 @@ test("Plan a swim: the plan's spots nearest first by distance, never by level, c
   const h = W.fwPlanSection(items, DATES, s => `spot/${s.id}/`, 'river spots within 10 miles of Oxford', s => `${s.id} miles`);
   const at = id => h.indexOf(`data-id="${id}"`);
   assert.ok(at('near') < at('mid') && at('mid') < at('far'));   // by distance: the all-low spot is last
-  assert.match(h, /each of the river spots within 10 miles of Oxford is at low risk, nearest first: an order by distance, not a ranking\./);
+  assert.match(h, /<p class="sub">The days at low risk in the next five, nearest spot first\.<\/p><details class="more"><summary>How these windows are found<\/summary><p>For each of the river spots within 10 miles of Oxford: an order by distance, not a ranking\./);
   assert.ok(h.includes('<p class="fw-note">near miles</p>'));
   // A restricting notice shows apart from the levels, and asks to follow it; the levels are as they are.
   assert.match(h, /The official advice is not part of these levels: follow it first\./);
@@ -151,4 +151,14 @@ test("Plan a swim draws Find a window from the plan's own spots, area and activi
   assert.match(page, /fwPlanSection\(r\.groups\.flat\(\), fiveDays\(\), s => spotPath\(s\.id\), `\$\{planNoun\(2\)\} \$\{reach\}`,/);
   assert.match(page, /box\.querySelectorAll\('ul\.fw-list'\)\.forEach\(bindItems\);/);
   assert.ok(page.indexOf('planShare(r.groups[0]') < page.indexOf('fwPlanSection(r.groups.flat()'));
+});
+
+test('a restricting notice suppresses the suggested window while retaining the forecast as secondary context', () => {
+  const restricted = spot(['low', 'low', 'low', 'low', 'low'], {id: 'r', name: 'Restricted', official: [{...NOTICE, restricts: true}]});
+  const neutral = spot(['low', 'low', 'low', 'low', 'low'], {id: 'n', name: 'Neutral', official: [{...NOTICE, restricts: false}]});
+  const h = W.fwSection([restricted, neutral], DATES, s => `spot/${s.id}/`);
+  const first = h.slice(h.indexOf('data-id="r"'), h.indexOf('data-id="n"'));
+  assert.match(first, /no swimming window is suggested/);
+  assert.match(first, /<details><summary>Show the separate pollution forecast<\/summary>.*Low risk:/s);
+  assert.doesNotMatch(h.slice(h.indexOf('data-id="n"')), /no swimming window is suggested/);
 });

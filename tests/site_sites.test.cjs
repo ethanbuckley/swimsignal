@@ -62,7 +62,7 @@ test('a row gives the headline and the five days by levels.js, and the reason in
   assert.ok(strip.includes('aria-label="Pollution risk, next five days: Sun low risk, Mon high risk, Tue moderate risk, Wed moderate risk, Thu very high risk"'));
   // A low spot whose headline already names the later day: the reason is today's spills, not the headline again.
   assert.equal(L.headParts(henley)[0], 'Low risk now · Moderate risk on Tuesday');
-  assert.ok(h.includes('<p class="s-why">Under one spill is expected from the 51 overflows upstream today.</p>'));
+  assert.ok(h.includes('<p class="s-why">A spill from one of the 51 overflows upstream is possible, not expected today.</p>'));
   // No overflow upstream: the plain level, the other risks, and the rain as bars.
   assert.ok(h.includes('<p class="s-head clear">No monitored overflow found upstream</p>') && h.includes(L.OTHER_RISKS));
   assert.ok(h.includes('class="week rain"') && h.includes('Rain in the 48 hours to midday: Sun 0 mm'));
