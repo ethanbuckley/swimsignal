@@ -18,9 +18,14 @@ refused when they differ, so a record cannot be rewritten after the fact. A fore
 past time is not an issued one: append() refuses an issue time more than MAX_ISSUE_AGE before the clock, and
 any reconstruction belongs in a store of its own, never here.
 
-The comparison itself is the page's (since.js, lastSaid), from data/since-last.json: the previous successful
-issue's records, its id and time. A failed build appends nothing, so "previous" is the last issue that
-published; one more than MAX_PREVIOUS_AGE old is not compared with ("stale").
+The comparison itself is the page's (since.js, lastSaid), from data/since-last.json: the previous issue's
+records, its id and time; one more than MAX_PREVIOUS_AGE old is not compared with ("stale"). "Previous" is the
+issue the site is showing while this build runs (`published_at`, read from the live spots-lite.json), not
+merely the last one kept: a build that kept its records and then failed to deploy (a later workflow step, the
+deploy job) was never seen, and a visitor must not be told what changed since an update they could not have
+read. Where that issue is not kept (the history began after it, or its month's file was lost), there is no
+comparison ("not kept"). Only where the live site could not be read does it fall back to the last issue kept,
+and the build's health says so (`previous_checked`: "unverified").
 """
 
 from __future__ import annotations
@@ -29,6 +34,7 @@ import json
 import logging
 import os
 import subprocess
+import urllib.request
 from datetime import timedelta
 from pathlib import Path
 
@@ -102,13 +108,20 @@ def append(doc: dict, commit: str | None, now: pd.Timestamp | None = None, state
     return {"issue_id": iid, "spots": len(rows), "added": len(rows), "file": path.name, "bytes": path.stat().st_size}
 
 
-def previous(issued_at: pd.Timestamp, state: Path | None = None) -> tuple[dict, pd.DataFrame]:
-    """The last issue kept before `issued_at` (this month's file and last month's), as ({issue_id, issued_at},
-    its rows), or ({why}, empty): "first" where none is kept, "stale" where the last is over MAX_PREVIOUS_AGE old."""
+def previous(issued_at: pd.Timestamp, state: Path | None = None,
+             published_at: pd.Timestamp | None = None) -> tuple[dict, pd.DataFrame]:
+    """The issue to compare with, kept before `issued_at` (this month's file and last month's), as ({issue_id,
+    issued_at}, its rows), or ({why}, empty). With `published_at`, the issue the site is showing, that one or
+    "not kept"; without, the last one kept, or "first" where none is. "stale" where it is over MAX_PREVIOUS_AGE old."""
     at = issued_at.tz_convert("UTC")
     last_month = at.replace(day=1) - timedelta(days=1)
     df = pd.concat([_read(month_file(last_month, state)), _read(month_file(at, state))], ignore_index=True)
     df = df[df["issued_at"] < at]
+    if published_at is not None:
+        pub = published_at.tz_convert("UTC")
+        if not (df["issued_at"] == pub).any():
+            return {"why": "not kept", "published_at": pub.isoformat()}, df.iloc[0:0]
+        df = df[df["issued_at"] == pub]
     if df.empty:
         return {"why": "first"}, df
     t = df["issued_at"].max()
@@ -118,26 +131,40 @@ def previous(issued_at: pd.Timestamp, state: Path | None = None) -> tuple[dict, 
     return {"issue_id": rows["issue_id"].iloc[0], "issued_at": t.isoformat()}, rows
 
 
-def since_last(doc: dict, commit: str | None, state: Path | None = None) -> dict:
+def since_last(doc: dict, commit: str | None, state: Path | None = None, published_at: pd.Timestamp | None = None) -> dict:
     """data/since-last.json: this issue's id and time, and the previous issue's id, time and records, or why
     there is none ("first", "stale"). The page compares its own forecast with these (since.js, lastSaid)."""
     at = pd.Timestamp(doc["issued_at"]).tz_convert("UTC")
-    meta, rows = previous(at, state)
+    meta, rows = previous(at, state, published_at)
     prev = {"issue_id": meta["issue_id"], "issued_at": meta["issued_at"]} if "issue_id" in meta else None
     return {"issue_id": issue_id(commit, at), "issued_at": doc["issued_at"], "previous": prev,
             **({} if prev else {"why": meta["why"]}),
             "spots": {r.spot: json.loads(r.record) for r in rows.itertuples()}}
 
 
+def published_issue(site_url: str, timeout: float = 20) -> pd.Timestamp | None:
+    """The issue time of the forecast the live site is showing (its data/spots-lite.json), or None when it cannot be
+    read. A query string of the clock's own makes the CDN ask the host rather than serve its ten-minute copy."""
+    url = f"{site_url.rstrip('/')}/data/spots-lite.json?issued={pd.Timestamp.now(tz='UTC'):%Y%m%dT%H%M%S}"
+    try:
+        with urllib.request.urlopen(url, timeout=timeout) as r:
+            return pd.Timestamp(json.load(r)["generated_at"]).tz_convert("UTC")
+    except Exception as e:  # noqa: BLE001 - any failure means "not known", and the caller says so
+        log.warning("live issue not read from %s: %s", url, e)
+        return None
+
+
 def record_and_publish(site: Path, commit: str | None, now: pd.Timestamp | None = None, state: Path | None = None,
-                       keep: bool = True) -> dict:
+                       keep: bool = True, published_at: pd.Timestamp | None = None) -> dict:
     """The build's step: this issue's records from site/data/spots-lite.json, the previous issue's into
-    site/data/since-last.json, then (keep) this issue added to the history. The previous one is read before
-    the append, so it is never this issue. Returns the build's health entry."""
+    site/data/since-last.json (the one the site is showing, `published_at`, where it was read), then (keep) this
+    issue added to the history. The previous one is read before the append, so it is never this issue. Returns
+    the build's health entry."""
     doc = make_records(site / "data" / "spots-lite.json")
-    out = since_last(doc, commit, state)
+    out = since_last(doc, commit, state, published_at)
     (site / "data" / "since-last.json").write_text(json.dumps(out, separators=(",", ":")))
     health = {"previous": (out["previous"] or {}).get("issue_id"), **({"why": out["why"]} if "why" in out else {}),
+              "previous_checked": "live" if published_at is not None else "unverified",
               "since_last_bytes": (site / "data" / "since-last.json").stat().st_size}
     if keep:
         health |= append(doc, commit, now, state)

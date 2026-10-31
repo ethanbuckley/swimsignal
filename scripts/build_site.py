@@ -3852,10 +3852,13 @@ def build(refresh: bool = True) -> dict:
     health["cards"] = write_cards(SITE, results, generated.isoformat(), site_url(), alerts_ok)
     # The issued-forecast history (docs/ISSUED-HISTORY-2026-10.md): the previous issue into data/since-last.json
     # for the pages to compare with, then this issue kept, after everything it records has been written. Only a
-    # build that forecast (refresh) keeps one: a rebuild from cached results is not a new issue. Never stops the site.
+    # build that forecast (refresh) keeps one: a rebuild from cached results is not a new issue. "Previous" is the
+    # issue the live site shows now, so one kept by a build that then failed to deploy is never compared with.
+    # Never stops the site.
     from dipcast import issue_history
     try:
-        health["issue_history"] = issue_history.record_and_publish(SITE, doc.get("commit"), keep=refresh)
+        health["issue_history"] = issue_history.record_and_publish(
+            SITE, doc.get("commit"), keep=refresh, published_at=issue_history.published_issue(site_url()) if refresh else None)
     except Exception as e:  # noqa: BLE001 - the history beside the forecast must never stop it publishing
         health["issue_history"] = {"warning": f"issue history not kept or published this time: {e}"}
         announce(health["issue_history"]["warning"])

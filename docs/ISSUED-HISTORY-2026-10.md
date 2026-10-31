@@ -70,7 +70,9 @@ Nothing says an input caused the change.
 
 ## Missed builds, failed builds and old records
 
-- **A failed build** keeps nothing, so "previous" is always the last issue that published.
+- **A failed build** keeps nothing.
+- **"Previous" is the issue the live site shows while the build runs** (read from its `data/spots-lite.json`, past
+  the CDN's ten-minute copy), not merely the last one kept. Added 31 Oct 2026 when #467 was integrated.
 - **Builds that did not run** (GitHub's schedule is irregular) show as the gap, which is said in words: "Since the
   update issued Fri 00:41, 52 min before this one". Nothing guesses why there was a gap.
 - **A previous issue over 24 hours old** is not compared with: "No earlier update within a day to compare with."
@@ -79,11 +81,18 @@ Nothing says an input caused the change.
 - **A record missing an input** (an older shape, or a value the build did not have): that input is not compared.
 - **Pages and files that do not match:** a page from an older issue than the file says nothing. A file from a
   different issue than the page is ignored.
-- **A build that kept its record but then failed to deploy:** the next issue's "previous" is one the site never
-  showed. This is rare, and visible in `build_runs`. It is not handled here.
+- **A build that kept its record but then failed to deploy** (a later workflow step, or the deploy job): its issue
+  stays in the history as issued, but the next build compares with the issue the site was still showing, so a
+  visitor is never told what changed since an update they could not have read.
+- **The live issue is not in the history** (the first build after this shipped, or a lost month's file): no
+  comparison, "The update shown before this one is not on record, so there is nothing to compare with."
+- **The live site could not be read:** the build falls back to the last issue kept, and its health entry says
+  `previous_checked: "unverified"` (otherwise `"live"`).
 - **A month change:** the reader looks in last month's file too (tested).
 - **A cold Actions cache:** the monthly files come back from the rolling state release, uploaded with the other
-  state files (`site.yml`).
+  state files (`site.yml`). The release is refreshed only when over 12 hours old, so a cold start can lose up to
+  about 12 hours of issues; the next build then finds its live issue "not kept" and says so, rather than compare
+  with an older one.
 
 ## Retention and storage
 

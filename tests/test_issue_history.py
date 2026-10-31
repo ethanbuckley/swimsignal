@@ -92,6 +92,48 @@ def test_the_previous_issue_is_found_across_a_month_end(tmp_path):
     assert H.since_last(nov, "abc1234", tmp_path)["previous"]["issue_id"] == "746eddb-20261031T2350Z"
 
 
+def test_the_previous_issue_is_the_one_the_site_shows_not_one_kept_and_never_deployed(tmp_path):
+    # Kept 29 Oct 18:57 (published), then 30 Oct 12:00 by a build whose deploy failed: the site still shows 18:57.
+    new = H.make_records(NEW)
+    H.append(H.make_records(OLD), "92a4ebd", now=at(OLD), state=tmp_path)
+    failed = {**new, "issued_at": "2026-10-30T12:00:00+00:00"}
+    H.append(failed, "deadbee", now=pd.Timestamp("2026-10-30T12:05Z"), state=tmp_path)
+    assert H.since_last(new, "746eddb", tmp_path)["previous"]["issue_id"] == "deadbee-20261030T1200Z"   # last kept, unchecked
+    s = H.since_last(new, "746eddb", tmp_path, published_at=at(OLD))
+    assert s["previous"]["issue_id"] == "92a4ebd-20261029T1857Z"
+    # The live issue was never kept (the history began after it): no comparison, said as such.
+    s = H.since_last(new, "746eddb", tmp_path, published_at=pd.Timestamp("2026-10-30T09:00Z"))
+    assert (s["previous"], s["why"], s["spots"]) == (None, "not kept", {})
+    # The live issue kept but over a day old: stale, as before.
+    later = {**new, "issued_at": (at(OLD) + pd.Timedelta(hours=25)).isoformat()}
+    assert H.since_last(later, "746eddb", tmp_path, published_at=at(OLD))["why"] == "stale"
+
+
+def test_the_live_issue_is_read_from_the_site_and_unknown_when_it_cannot_be(tmp_path, monkeypatch):
+    class Reply:
+        def __init__(self, body): self.body = body
+        def __enter__(self): return self
+        def __exit__(self, *a): return False
+        def read(self, *a): return self.body
+    seen = []
+    def fake(url, timeout):
+        seen.append(url)
+        return Reply(b'{"generated_at": "2026-10-29T18:57:31.974830+00:00", "spots": []}')
+    monkeypatch.setattr(H.urllib.request, "urlopen", fake)
+    assert H.published_issue("https://swimsignal.co.uk/") == at(OLD)
+    assert seen[0].startswith("https://swimsignal.co.uk/data/spots-lite.json?issued=")   # past the CDN's copy
+    monkeypatch.setattr(H.urllib.request, "urlopen", lambda url, timeout: (_ for _ in ()).throw(OSError("offline")))
+    assert H.published_issue("https://swimsignal.co.uk/") is None
+    # The build step says whether "previous" was checked against the live site.
+    site, state = tmp_path / "site", tmp_path / "state"
+    (site / "data").mkdir(parents=True)
+    shutil.copy(OLD, site / "data" / "spots-lite.json")
+    assert H.record_and_publish(site, "92a4ebd", now=at(OLD), state=state)["previous_checked"] == "unverified"
+    shutil.copy(NEW, site / "data" / "spots-lite.json")
+    h = H.record_and_publish(site, "746eddb", now=at(NEW), state=state, published_at=at(OLD))
+    assert (h["previous_checked"], h["previous"]) == ("live", "92a4ebd-20261029T1857Z")
+
+
 def test_the_build_step_publishes_the_previous_issue_and_a_rebuild_keeps_nothing(tmp_path):
     site, state = tmp_path / "site", tmp_path / "state"
     (site / "data").mkdir(parents=True)

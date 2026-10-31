@@ -33,6 +33,8 @@ test('a level that moved: the day, then and now, and what changed in the inputs,
 test('nothing to compare is said, never left quiet', () => {
   assert.equal(said('medway-tonbridge', { ...META, previous: null, why: 'first', spots: {} }, null), 'No earlier update on record to compare with yet.');
   assert.equal(said('medway-tonbridge', { ...META, previous: null, why: 'stale', spots: {} }, null), 'No earlier update within a day to compare with.');
+  // The issue the site showed before is not kept (the history began after it): said, not "yet".
+  assert.equal(said('medway-tonbridge', { ...META, previous: null, why: 'not kept', spots: {} }, null), 'The update shown before this one is not on record, so there is nothing to compare with.');
   // A spot that was not in the earlier update.
   assert.match(said('medway-tonbridge', META, null), /: this spot was not in that update, so there is nothing to compare\.$/);
   // The same record: no level changed, said against the issue named.

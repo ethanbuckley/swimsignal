@@ -397,7 +397,9 @@ function lastChanges(prev, cur) {
 function lastParts(meta, prev, cur) {
   if (!meta || !cur) return null;
   const R = sinceRules(), p = meta.previous;
-  if (!p) return { head: meta.why === 'stale' ? 'No earlier update within a day to compare with.' : 'No earlier update on record to compare with yet.', days: [] };
+  if (!p) return { head: meta.why === 'stale' ? 'No earlier update within a day to compare with.'
+    : meta.why === 'not kept' ? 'The update shown before this one is not on record, so there is nothing to compare with.'
+    : 'No earlier update on record to compare with yet.', days: [] };
   if (Date.parse(p.issued_at) >= Date.parse(cur.forecast)) return null;   // an old page against a newer file: say nothing
   const head = `Since the update issued ${issuedWords(p.issued_at)}, ${lastGap(Date.parse(cur.forecast) - Date.parse(p.issued_at))} before this one:`;
   if (!prev) return { head: `${head} this spot was not in that update, so there is nothing to compare.`, days: [] };
