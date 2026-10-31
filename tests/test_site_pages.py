@@ -1176,5 +1176,19 @@ def test_information_pages_offer_mobile_navigation_and_map_handoff(tmp_path):
         for href in ('index.html', 'index.html?map=1', 'plan/', 'saved/'):
             assert f'href="{href}"' in page
     app = (ROOT / "src/dipcast/site/index.html").read_text()
+    # More holds the header's links a phone hides (Research was only in the foot, 31 Oct 2026), and the app's bar
+    # lists the same ones as the prose pages'.
+    more = "".join(f'<li><a href="{h}">{label}</a></li>' for h, label in bs.MORE_LINKS)
+    assert [h for h, _ in bs.MORE_LINKS] == ["verification.html", "about.html", "research.html", "feedback.html"]
+    assert f'<ul class="more-menu" id="more-menu" popover>{more}</ul>' in app
+    assert 'popovertarget="more-menu"' in app and 'popovertarget="more-menu"' in page
+    assert f'<ul class="more-menu" id="more-menu" popover>{more}</ul></nav>' in page
+    # The pages that had no bar on a phone, since page.css hides their header's links there.
+    spot = SPOTS[0]["id"]
+    for path in (f"spot/{spot}/profile/index.html", f"spot/{spot}/sign/index.html", "404.html"):
+        page = (tmp_path / path).read_text()
+        assert page.count('<nav class="phone-nav" aria-label="Main">') == 1, path
+    lost = (tmp_path / "404.html").read_text()   # at any depth, so its bar's links are absolute
+    assert '<a href="https://example.org/swim/research.html">Research</a>' in lost and 'href="index.html"' not in lost
     assert "url.searchParams.get('map') === '1'" in app
     assert "url.searchParams.delete('map'); history.replaceState(history.state, '', url); setMapMode(true);" in app

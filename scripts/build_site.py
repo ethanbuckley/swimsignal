@@ -2211,14 +2211,34 @@ PAGE_TITLE = re.compile(r"<title>(.*?)</title>")
 PAGE_DESCRIPTION = re.compile(r'<meta name="description" content="([^"]*)">\n?')
 
 
-# The prose pages share the app's phone navigation. Links are relative to the built site root.
-PHONE_NAV = (
-    '<nav class="phone-nav" aria-label="Main">'
-    '<a href="index.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/></svg>Explore</a>'
-    '<a href="index.html?map=1"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 5 6-2 6 2 6-2v16l-6 2-6-2-6 2Zm6-2v16m6-14v16"/></svg>Map</a>'
-    '<a href="plan/" aria-label="Plan a swim"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4m6-4v4"/></svg>Plan</a>'
-    '<a href="saved/" aria-label="Saved spots"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4Z"/></svg>Saved</a></nav>'
-)
+# The prose pages share the app's phone navigation. Links are relative to the built site root, or start
+# with r on a page that has no <base> at the root (404.html). More holds the header's links that a phone
+# hides (Accuracy, About, Research, Feedback): a popover, so a tap outside or Escape closes it with no
+# script, and a browser without popovers keeps them in the foot (31 Oct 2026). index.html's bar has the same.
+MORE_LINKS = (("verification.html", "Accuracy"), ("about.html", "About"), ("research.html", "Research"), ("feedback.html", "Feedback"))
+MORE_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>'
+
+
+def phone_nav(r: str = "") -> str:
+    """The phone's bar at the foot of a page: Explore, Map, Plan, Saved and More."""
+    more = "".join(f'<li><a href="{r}{href}">{label}</a></li>' for href, label in MORE_LINKS)
+    return (
+        '<nav class="phone-nav" aria-label="Main">'
+        f'<a href="{r}index.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/></svg>Explore</a>'
+        f'<a href="{r}index.html?map=1"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 5 6-2 6 2 6-2v16l-6 2-6-2-6 2Zm6-2v16m6-14v16"/></svg>Map</a>'
+        f'<a href="{r}plan/" aria-label="Plan a swim"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4m6-4v4"/></svg>Plan</a>'
+        f'<a href="{r}saved/" aria-label="Saved spots"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4Z"/></svg>Saved</a>'
+        f'<button type="button" popovertarget="more-menu" aria-label="More pages">{MORE_ICON}More</button>'
+        f'<ul class="more-menu" id="more-menu" popover>{more}</ul></nav>'
+    )
+
+
+PHONE_NAV = phone_nav()
+
+
+def with_phone_nav(page: str, r: str = "") -> str:
+    """The page with the phone's bar just before </body>."""
+    return page.replace("</body>", phone_nav(r) + "</body>", 1)
 
 
 def with_share_meta(page: str, path: str, root: str) -> str:
@@ -2232,7 +2252,7 @@ def with_share_meta(page: str, path: str, root: str) -> str:
         raise ValueError(f"{path} needs one <title>, one description, and no canonical link or share tags of its own")
     head = PAGE_DESCRIPTION.sub("", head, count=1)
     head = PAGE_TITLE.sub(lambda _: page_meta(unescape(titles[0]), unescape(descriptions[0]), root + path, root), head, count=1)
-    return (head + sep + rest).replace("</body>", PHONE_NAV + "</body>", 1)
+    return with_phone_nav(head + sep + rest)
 
 
 def spot_blurb(spot: dict) -> str:
@@ -2847,7 +2867,7 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     write_feeds(site, results, root)   # feed.xml, feed/, spot/<id>/feed.xml: after spot/ is written, before the data page lists them
     (site / "sitemap.xml").write_text(sitemap(root, ids, day or pd.Timestamp.now(tz="Europe/London").date().isoformat(),
                                               extra=["support.html"] if support else []))
-    (site / "404.html").write_text(with_counter(not_found_page(root), token))
+    (site / "404.html").write_text(with_counter(with_phone_nav(not_found_page(root), root), token))
     (site / "robots.txt").write_text(robots(root))
     (site / ".nojekyll").write_text("")
     write_lakes(site, token, root)   # the satellite lake observations (Research): before the data page, which lists data/research/
@@ -3526,8 +3546,8 @@ def write_profiles(site: Path, spots: list[dict], token: str | None = None, retu
         n += t is not None
         (site / "spot" / r["id"] / "profile").mkdir(parents=True, exist_ok=True)
         (site / "spot" / r["id"] / "profile" / "index.html").write_text(
-            with_counter(profile.site_page(r, t, MARK, url=f"{root}spot/{r['id']}/profile/", root=root,
-                                           durations=spill_durations_for(site, r["id"]) if t is not None else None), token))
+            with_counter(with_phone_nav(profile.site_page(r, t, MARK, url=f"{root}spot/{r['id']}/profile/", root=root,
+                                           durations=spill_durations_for(site, r["id"]) if t is not None else None)), token))
     return n
 
 
@@ -3609,7 +3629,7 @@ def write_sign(site: Path, spot: dict, root: str, token: str | None = None) -> N
     """A spot's sign, spot/<id>/sign/index.html, and its QR code as a file, spot/<id>/qr.svg."""
     from dipcast.signs import page_url, qr_file, sign_page
     (site / "spot" / spot["id"] / "sign").mkdir(parents=True, exist_ok=True)
-    (site / "spot" / spot["id"] / "sign" / "index.html").write_text(with_counter(sign_page(spot, root, MARK), token))
+    (site / "spot" / spot["id"] / "sign" / "index.html").write_text(with_counter(with_phone_nav(sign_page(spot, root, MARK)), token))
     (site / "spot" / spot["id"] / "qr.svg").write_text(qr_file(page_url(root, spot["id"])))
 
 

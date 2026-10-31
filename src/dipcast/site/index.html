@@ -927,6 +927,14 @@
   .skip:focus { top:8px; }
   #panel:focus { outline:none; border-radius:0; }
   .bottom-nav { display:none; }
+  /* More's list in the bar (the header's links that a phone hides): as page.css's .more-menu, which says why
+     the two display rules are apart. */
+  .more-menu { display:none; }
+  .more-menu:popover-open { display:block; }
+  .more-menu { position:fixed; inset:auto max(8px, env(safe-area-inset-right)) var(--nav-h, 64px) auto; margin:0 0 8px; padding:4px 0; min-width:180px;
+    list-style:none; background:var(--card); color:var(--ink); border:1px solid var(--line); border-radius:var(--radius); }
+  .more-menu a { display:flex; align-items:center; min-height:44px; padding:0 16px; color:var(--ink); text-decoration:none; font-weight:600; }
+  .more-menu li + li a { border-top:1px solid var(--line); }
 
   /* Desktop, to 1,099 px: the map fills the left, the list, Saved or Plan a swim scrolls on the right.
      From 1,100 px every view is a page under the header (below). */
@@ -1046,12 +1054,13 @@
        back to the spot it was opened from, where it reads "Back". */
     #savedbtn, #planbtn, body:not(.map-mode) #mapbtn, body:not(.view-spot) #mapbtn { display:none; }
     #panel { padding:16px calc(16px + env(safe-area-inset-right)) calc(32px + var(--nav-h)) calc(16px + env(safe-area-inset-left)); }
-    /* The thumb's reach: Explore, Map, Plan and Saved on every page, home on the left and yours on the right,
-       each icon over its label, as phone apps have them (29 October 2026; Plan was the header's one link). */
-    .bottom-nav { position:fixed; z-index:1200; left:0; right:0; bottom:0; height:var(--nav-h); display:grid; grid-template-columns:repeat(4, 1fr); gap:2px;
+    /* The thumb's reach: Explore, Map, Plan, Saved and More on every page, home on the left and yours on the right,
+       each icon over its label, as phone apps have them (29 October 2026; Plan was the header's one link). More
+       (31 Oct 2026) holds the header's links that a phone hides: Accuracy, About, Research and Feedback. */
+    .bottom-nav { position:fixed; z-index:1200; left:0; right:0; bottom:0; height:var(--nav-h); display:grid; grid-template-columns:repeat(5, 1fr); gap:2px;
       padding:8px max(8px, env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
       background:var(--card); border-top:1px solid var(--line); }
-    .bottom-nav a, .bottom-nav button { position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; min-height:48px; border:0; border-radius:var(--radius);
+    .bottom-nav > a, .bottom-nav > button { position:relative; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; min-height:48px; border:0; border-radius:var(--radius);
       font:inherit; font-size:var(--fs-meta); font-weight:600; background:none; color:var(--muted); text-decoration:none; cursor:pointer; }
     .bottom-nav svg { width:19px; height:19px; fill:none; stroke:currentColor; stroke-width:1.75; stroke-linecap:round; stroke-linejoin:round; }
     .bottom-nav [aria-current=page], .bottom-nav [aria-pressed=true] { background:var(--brand-tint); color:var(--link); }
@@ -1293,7 +1302,7 @@
 <a class="skip" href="#panel">Skip to forecasts</a>
 <header class="top" id="top">
   <a class="brand" href="./"><svg viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" fill="#0f5a61"/><path d="M430-20C330 110 470 230 300 290S110 380 190 540" fill="none" stroke="#5CC2B5" stroke-width="70" stroke-linecap="round"/><circle cx="318" cy="138" r="38" fill="#F08A4B"/><circle cx="165" cy="358" r="46" fill="none" stroke="#fff" stroke-width="22"/></svg>SwimSignal</a>
-  <!-- A phone shows none of these: Plan, Saved and Map are in the bar at the bottom, and About is linked from the list's intro. -->
+  <!-- A phone shows none of these: Plan, Saved and Map are in the bar at the bottom, and the rest under its More. -->
   <nav aria-label="Site">
     <a href="plan/" class="hbtn" id="planbtn">Plan a swim</a>
     <a href="saved/" class="hbtn" id="savedbtn" aria-label="Saved spots">Saved<span class="n" id="saved-n" hidden></span></a>
@@ -1370,6 +1379,9 @@
   <button type="button" id="nav-map" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 5 6-2 6 2 6-2v16l-6 2-6-2-6 2Zm6-2v16m6-14v16"/></svg>Map</button>
   <a href="plan/" id="nav-plan" aria-label="Plan a swim"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4m6-4v4"/></svg>Plan</a>
   <a href="saved/" id="nav-saved" aria-label="Saved spots"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4Z"/></svg>Saved<span class="n" id="nav-saved-n" hidden></span></a>
+  <!-- The same list as build_site.MORE_LINKS, which the prose pages' bar draws. -->
+  <button type="button" popovertarget="more-menu" aria-label="More pages"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>More</button>
+  <ul class="more-menu" id="more-menu" popover><li><a href="verification.html">Accuracy</a></li><li><a href="about.html">About</a></li><li><a href="research.html">Research</a></li><li><a href="feedback.html">Feedback</a></li></ul>
 </nav>
 <!-- The built page defers every script here and serves the inline one as app.js (build_site.split_app_script),
      so none holds up the first paint. Deferred scripts run in the order of their tags: keep the order. -->
