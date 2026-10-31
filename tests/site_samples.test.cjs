@@ -84,7 +84,7 @@ test('a high sample with a low estimate is a miss, said as a mismatch, never as 
   assert.match(DOC.claim.public_wording, /not evidence about any particular source/);
   // Nothing names a cause: no overflow, company or source is said to explain a sample. The reasons a sample has no
   // estimate (1.1) explain a missing estimate, not a count, so they are left out of this check.
-  const reasons = [...Object.values(DOC.hindsight_reasons), 'none: no overflow upstream', 'No overflow upstream: '];
+  const reasons = [...Object.values(DOC.hindsight_reasons), 'none: no overflow upstream'];
   for (const x of DOC.sites) {
     const body = reasons.reduce((t, r) => t.split(r.replace(/^./, c => c.toLowerCase())).join('').split(r).join(''), page(x).replace(DOC.claim.public_wording, ''));
     assert.doesNotMatch(body, /\b(overflow|sewage|company|water company|caused?|because|source of)\b/i, x.name);
@@ -115,13 +115,12 @@ test('no estimate is said as none, and a bathing water without any says why', ()
   const t = page(LADIES);
   // Each missing estimate says why, in the export's words (1.1, hindsight_reason and hindsight_reasons).
   assert.ok(t.includes(`No hindsight estimate here: ${DOC.hindsight_reasons.no_overflow_upstream.replace(/^./, c => c.toLowerCase())}`), t);
-  assert.ok(t.includes(`No overflow upstream: ${DOC.hindsight_reasons.no_overflow_upstream}`));
-  assert.ok(t.includes(`2023, no archived rain: ${DOC.hindsight_reasons.before_2024}`));
+  assert.ok(t.includes(`Why a sample has no estimate:${DOC.hindsight_reasons.before_2024}${DOC.hindsight_reasons.no_overflow_upstream}`), t);
   assert.match(t, /none: no overflow upstream/);
   assert.doesNotMatch(t, /\d+%/);
   const d = page(DERWENT);
   assert.match(d, /none: only in the Water Quality Archive/);
-  assert.ok(d.includes(`Only in the Water Quality Archive: ${DOC.hindsight_reasons.archive_only}`));
+  assert.ok(d.includes(`Why a sample has no estimate:${DOC.hindsight_reasons.archive_only}`));
   assert.doesNotMatch(d, /added later|2023, no archived rain/);   // Derwent's samples start in 2024
   assert.match(d, /"Not in this file": the samples from the Water Quality Archive carry E\. coli only\./);
   // Every sample without an estimate has a reason, and only those (the export's check).

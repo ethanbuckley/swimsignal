@@ -207,7 +207,7 @@ function samplesReasonsNote(all, doc) {
   if (!all.some(s => typeof s.hindsight !== 'number')) return '';
   const why = samplesReasons(all, doc);
   if (!why.length) return '<p class="sm-note">"None" in the last column: the hindsight study did not cover that sample.</p>';
-  return `<p class="sm-note">Why some samples have no estimate:</p><ul class="sm-why">${why.map(([k, t]) => `<li>${samplesEsc(SAMPLES_WHY[k].replace(/^none: /, '').replace(/^./, c => c.toUpperCase()))}: ${samplesEsc(t)}</li>`).join('')}</ul>`;
+  return `<p class="sm-note">Why a sample has no estimate:</p><ul class="sm-why">${why.map(([, t]) => `<li>${samplesEsc(t)}</li>`).join('')}</ul>`;
 }
 // One bathing water whole: the official word, the counts, the chart, the hindsight estimate with the export's own
 // sentence beside it, and every sample.
