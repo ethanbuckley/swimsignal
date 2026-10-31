@@ -41,7 +41,7 @@ const text = h => h.replace(/<[^>]+>/g, ' ').replace(/&nbsp;| /g, ' ').replace(
 // The helpers nearby() calls for each row's reason and the other-water rule (site_nearby_reasons.test.cjs).
 const NEAR_REASONS = ['joined', 'otherWater', 'unread', 'fewerUnread', 'nearWhy', 'otherAsWell'];
 const ANSWER = ['esc', 'tone', 'headTone', 'rainSaid', 'answerParts', 'flowLine', 'ageMin', 'ago', 'agoSpan', 'issued', 'nextDay', 'yesterdayLine', 'answerWords',
-  'sinceTime', 'spillFor', 'overflowSaid', 'longSpillLine', 'eaSaid', 'coverWords', 'coverLine', 'answerAfter'];
+  'sinceTime', 'spillFor', 'overflowSaid', 'longSpillLine', 'eaSaid', 'coverWords', 'coverLine', 'answerAfter', 'liveRow'];
 
 // ------------------------------------------------------------------------------ 1. the EA's advice for today
 // Frensham Great Pond: "Low risk for the next five days" and "Usual care", while the EA's own panel said
@@ -59,8 +59,10 @@ test('at every designated bathing water the answer says the EA advice could not 
   // Since 20 Oct 2026 a clause of the line on what the forecast could read (coverLine), just above the issue
   // time, short, with where to look; what to do follows the five days (answerAfter).
   const h = vm.runInContext('answerWords', ctx)(frensham);
-  // The live status leads the answer (levels.js, liveLine); the line on what it could read keeps the EA advice.
-  assert.match(h, /^<p class="live">Live status from the overflow upstream: not spilling at the last poll\.<\/p><h2 /);
+  // The level leads the answer; the live status's counts are under the five days (liveRow, 31 Oct 2026). The line
+  // on what it could read keeps the EA advice.
+  assert.match(h, /^<h2 /);
+  assert.equal(vm.runInContext('liveRow', ctx)(frensham), '<p class="live-row">Live status from the overflow upstream: not spilling at the last poll.</p>');
   assert.match(h, /<p class="cover">Today's EA advice not checked: <a href="https:\/\/environment\.data\.gov\.uk\/bwq\/profiles\/profile\.html\?site=ukj2310-11945">see the EA's page<\/a> before you swim\.<\/p><p class="issued">/);
   // The embed card says it under what to do, and links the EA's page.
   const card = Embed.card(frensham, { generated_at: GEN }, NOW);
@@ -219,7 +221,7 @@ test('the answer names what its level covers where the spills set it, and every 
   }
   // The rendered answer: one heading, every word at one size (the .big class), then when.
   const h = vm.runInContext('answerWords', page(ANSWER, { DATA: { generated_at: GEN } }))(spill);
-  assert.match(h, /^<p class="live">Live status from all 3 overflows upstream: none spilling at the last poll\.<\/p><h2 class="big high" id="risk-headline">High risk from sewage spills<\/h2><div class="wn"><p class="why">Tomorrow<\/p>/);
+  assert.match(h, /^<h2 class="big high" id="risk-headline">High risk from sewage spills<\/h2><div class="wn"><p class="why">Tomorrow<\/p>/);
   // A saved card keeps "High risk" beside the week, with the cause in its line, as a list row does.
   assert.equal(parts(spill).sub, 'Sewage spills tomorrow');
   // The list, the map's tooltips, Nearby and the alerts keep headline(): the cause after a colon.

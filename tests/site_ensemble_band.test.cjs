@@ -29,7 +29,7 @@ const page = spots => {
   const ctx = vm.createContext({Date: FixedDate, navigator: {onLine: true}});
   vm.runInContext(fs.readFileSync(path.join(__dirname, '../src/dipcast/site/levels.js'), 'utf8'), ctx);
   vm.runInContext(`let DATA = ${JSON.stringify({generated_at: BUILT, spots})}, VIEW = {day: null};\nsetToday('${DAYS[0]}');\n`
-    + pageDefs(['esc', 'tone', 'inBand', 'levelPlace', 'BAND_FROM', 'SPILL_EDGES', 'bandPlace', 'spillWord', 'bandSaid', 'dayRows']), ctx);
+    + pageDefs(['esc', 'tone', 'inBand', 'levelPlace', 'BAND_FROM', 'SPILL_EDGES', 'bandPlace', 'spillWord', 'bandSaid', 'dayWx', 'dayRows']), ctx);
   return expr => vm.runInContext(expr, ctx);
 };
 const bands = h => [...h.matchAll(/<b class="band" style="left:([\d.]+)%;width:([\d.]+)%"><\/b>/g)].map(m => [Number(m[1]), Number(m[2])]);

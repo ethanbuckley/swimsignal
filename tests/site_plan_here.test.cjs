@@ -1,4 +1,4 @@
-// "Plan an outing here" on a spot's page (index.html, actions and planHere; plan.js, planFromSpot): the planner as it
+// "Plan a swim here" on a spot's page (index.html, actions and planHere; plan.js, planFromSpot): the planner as it
 // is, on this spot, starting from it. Kept at once unless it would replace an outing still to come, which then waits
 // for "Keep this outing" as an outing from a link does, said as a new outing, not one from a link.
 const {test} = require('node:test');
@@ -29,9 +29,9 @@ test('it replaces nothing silently: an outing still to come keeps it waiting for
   const app = fs.readFileSync(path.join(__dirname, '../src/dipcast/site/index.html'), 'utf8');
   assert.match(app, /PLAN_PREVIEW = planInvited\(PLAN, keptNow, location\.hash\.length > 1, PLAN_PREVIEW\) && !\(PLAN_NEW && !planHasOuting\(keptNow, planDates\(\)\)\);/);
   assert.match(app, /e\.preventDefault\(\); PLAN_NEW = true; openPlan\(planHereHash\(d, a\.dataset\.finish \|\| null\)\); \}\)\);/);
-  // The page's actions: the plan first, then sharing; and a line under the five days. A spot with no position has neither.
-  assert.match(app, /<a class="btn primary" id="plan-here" href="\$\{esc\(planPath\(\) \+ planHereHash\(d\)\)\}" data-plan-here>Plan an outing here<\/a>/);
-  assert.match(app, /Going\? <a href="\$\{esc\(planPath\(\) \+ planHereHash\(d\)\)\}" data-plan-here>Plan an outing here<\/a>: a time, a backup, and a link to share\./);
+  // The page's actions: the plan first, then sharing; and a button under the five days. A spot with no position has neither.
+  assert.match(app, /<a class="btn primary" id="plan-here" href="\$\{esc\(planPath\(\) \+ planHereHash\(d\)\)\}" data-plan-here>Plan a swim here<\/a>/);
+  assert.match(app, /<p class="plan-here-line"><a class="btn primary" href="\$\{esc\(planPath\(\) \+ planHereHash\(d\)\)\}" data-plan-here>Plan a swim here<\/a><\/p>/);
   assert.match(app, /if \(days && canPlanHere\(d\) && !document\.querySelector\('\.plan-here-line'\)\) days\.closest\('section'\)\.insertAdjacentHTML\('beforeend', planHereLine\(d\)\);/);
   assert.match(app, /planHere\(d\); bindShare\(d\);/);
 });

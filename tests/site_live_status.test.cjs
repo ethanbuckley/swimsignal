@@ -37,7 +37,7 @@ function page() {
   vm.runInContext(`Date.now = () => ${NOW};`, ctx);
   for (const f of ['eatoday.js', 'experience.js', 'levels.js', 'lists.js'])
     vm.runInContext(fs.readFileSync(path.join(__dirname, '../src/dipcast/site', f), 'utf8'), ctx);
-  vm.runInContext(spots.reached(PAGE, ['answerWords', 'savedCard'], ['ROOT', 'map', 'TOUCH', 'STILL']), ctx);
+  vm.runInContext(spots.reached(PAGE, ['answerWords', 'liveRow', 'savedCard'], ['ROOT', 'map', 'TOUCH', 'STILL']), ctx);
   vm.runInContext(`setToday("${DAYS[0]}"); DATA = {generated_at: "${GEN}", spots: []};`, ctx);
   return ctx;
 }
@@ -83,24 +83,28 @@ test('the compact headline: list rows, map tooltips, saved lists, the embed, ale
   for (const s of [ZERO, THIN, MOST, FULL]) assert.doesNotMatch(L.headline(s), /\b(?:low|moderate|high)\b(?! risk)|\bsafe\b|\bclean\b/i);
 });
 
-test("the spot's answer: the live status first; with none, the level labelled as the modelled forecast and its inputs", () => {
-  const ctx = page(), answer = s => vm.runInContext('answerWords', ctx)(s);
+test("the spot's answer: with no live status, that first and the level labelled as the modelled forecast; with some, the counts under the five days", () => {
+  const ctx = page(), answer = s => vm.runInContext('answerWords', ctx)(s), row = s => vm.runInContext('liveRow', ctx)(s);
   const zero = answer(ZERO);
   assert.match(zero, /^<p class="live live-off">Live sewage spill status unavailable: none of the 14 overflows upstream reports live, so whether any is spilling is not known\.<\/p>/);
   assert.match(zero, /<\/p><p class="modelled">Modelled forecast<\/p><h2 class="big low" id="risk-headline">Low risk from sewage spills<\/h2><div class="wn"><p class="why">From the rain forecast and each overflow's past spills, not from live readings<\/p>/);
   const thin = answer(THIN);
-  assert.match(thin, /^<p class="live">Live status from 1 of 13 overflows upstream: none spilling at the last poll; 12 do not report, so could be spilling unseen\.<\/p><h2 class="big low"/);
+  assert.match(thin, /^<h2 class="big low"/);   // the counts moved under the five days (31 Oct 2026); the why line still says modelled
+  assert.equal(row(THIN), '<p class="live-row">Live status from 1 of 13 overflows upstream: none spilling at the last poll; 12 do not report, so could be spilling unseen.</p>');
+  assert.equal(row(ZERO), '');   // unavailable stays over the level
   assert.match(thin, /Modelled forecast: most of the model's weight here is on overflows that do not report live/);
   assert.doesNotMatch(thin, /class="modelled"/);
-  assert.match(answer(MOST), /^<p class="live">Live status from 13 of 16 overflows upstream: none spilling at the last poll; 3 do not report, so could be spilling unseen\.<\/p><h2 /);
-  assert.match(answer(FULL), /^<p class="live">Live status from all 45 overflows upstream: none spilling at the last poll\.<\/p><h2 /);
-  // Said once: the line by the issue time no longer repeats the counts.
-  for (const s of [ZERO, THIN, MOST, FULL]) assert.equal((text(answer(s)).match(/overflows upstream/g) || []).length, 1);
+  assert.equal(row(MOST), '<p class="live-row">Live status from 13 of 16 overflows upstream: none spilling at the last poll; 3 do not report, so could be spilling unseen.</p>');
+  assert.equal(row(FULL), '<p class="live-row">Live status from all 45 overflows upstream: none spilling at the last poll.</p>');
+  // Said once: the line by the issue time does not repeat the counts.
+  for (const s of [ZERO, THIN, MOST, FULL]) assert.equal((text(answer(s) + row(s)).match(/overflows upstream/g) || []).length, 1);
   // A later day is the rain's forecast: no live line over it.
   assert.doesNotMatch(vm.runInContext('answerWords', ctx)(ZERO, DAYS[2]), /class="live/);
   // The prerendered opening (scripts/prerender_spots.js) is the same function, so it leads the same way.
   const pre = spots.prerender({generated_at: GEN, spots: [ZERO]}, 'https://example.org/swim/').a;
   assert.ok(pre.indexOf('class="live live-off"') > 0 && pre.indexOf('class="live live-off"') < pre.indexOf('id="risk-headline"'));
+  const preThin = spots.prerender({generated_at: GEN, spots: [THIN]}, 'https://example.org/swim/').a;
+  assert.ok(preThin.indexOf('class="live-row"') > preThin.indexOf('id="day-strip"'));   // the counts under the rows
 });
 
 test('a saved card: the live status over the level where nothing reports or right now is not known', () => {
