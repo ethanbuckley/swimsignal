@@ -79,3 +79,6 @@ data/raw/*
 .claude/
 /state/
 profiles/
+
+# The Workers' npm packages (ask/: the Anthropic SDK)
+node_modules/
