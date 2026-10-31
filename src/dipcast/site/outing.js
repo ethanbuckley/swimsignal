@@ -428,7 +428,7 @@ function outingSection(o) {
     + (o.main && o.finishes ? (o.finishes.length
       ? `<label>Finish (optional)<select data-outing="finish"><option value="">Not set</option>${o.finishes.map(f => `<option value="${outEsc(f.id)}"${f.id === o.finish ? ' selected' : ''}>${outEsc(f.name)}, ${outingKm(f.km)} down</option>`).join('')}</select></label>`
       : `<p class="small muted">No listed spot downstream of ${outEsc(o.main.name)} that SwimSignal can trace the route to, so there is no finish to pick.</p>`) : '') + '</div>'
-    + gone + body + '</details>';
+    + gone + body + (o.main && !o.preview ? '<p class="small"><button type="button" class="btn" id="outing-clear">Clear outing</button> Removes the plan from this browser; shared links and offline copies are unchanged.</p>' : '') + '</details>';
 }
 
 // A link's own day that is not one of the five, said: the plan shows the outing's spots on the first day instead.
@@ -492,6 +492,12 @@ function drawOuting(box, shown) {
   tile.querySelectorAll('a[data-id]').forEach(a => a.addEventListener('click', e => { if (!plainClick(e)) return; e.preventDefault(); select(a.dataset.id, true, true, PLAN.day); }));
   if (typeof outingWatchDraw === 'function') outingWatchDraw(tile, PLAN, { ...pair, finish: fin }, DATA.generated_at, Date.now(), !!preview);   // outingwatch.js: what would change this plan, and what has
   if (!pair.main) return;
+  const clear = document.getElementById('outing-clear');
+  if (clear) clear.addEventListener('click', () => {
+    for (const key of ['spot', 'backup', 'when', 'meet', 'finish', 'sent', 'lv', 'blv', 'flv']) delete PLAN[key];
+    planAddress(); drawOuting(box, shown);
+    const select = document.querySelector('[data-outing="spot"]'); if (select) { select.focus(); select.insertAdjacentHTML('afterend', '<span role="status">Outing cleared from this browser.</span>'); }
+  });
   const keepIt = document.getElementById('outing-keep-it');
   if (keepIt) keepIt.addEventListener('click', () => {
     keepPlan(); drawOuting(box, shown);

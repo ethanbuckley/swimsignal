@@ -3706,6 +3706,7 @@ function renderShared(sh) {
     + `<p class="lede">Someone shared this list${spots.length ? ` of ${spots.length === 1 ? 'one spot' : `${spots.length} spots`}` : ''} with you.${spots.length ? ' It is not kept on this device unless you add it.' : ''}`
     + `${spots.length && !have && (DATA.push || DATA.email) ? ' Once added, it stays under Saved, where you can set up alerts for its spots.' : ''}</p>`;
   if (sh.day && spots.length) h += `<p class="planner-note">Levels for ${dayName(sh.day)}, the day of the plan.</p>`;
+  if (sh.requestedDay && spots.length) h += `<p class="planner-note" role="status">The forecast for the plan's date, ${esc(new Date(sh.requestedDay + 'T12:00:00Z').toLocaleDateString('en-GB', { timeZone: 'UTC', weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }))}, ${sh.requestedDay < planDates()[0] ? 'has expired' : 'is not available yet'}. The cards below show the available forecast for ${esc(planDates()[0])} to ${esc(planDates().at(-1))}. <a href="${esc(planPath())}">Choose a new date</a>.</p>`;
   // A link tapped in Facebook opens in Facebook's own browser: a list added there is not in Safari or
   // Chrome afterwards, and alerts cannot be had there at all. Said before the button, not after.
   if (IN_APP && spots.length && !have) h += `<p class="planner-note">You are in the ${IN_APP} app's browser. A list added here stays in the ${IN_APP} app, not in ${IOS ? 'Safari' : 'your own browser'}, and alerts cannot be turned on here. `
@@ -4815,10 +4816,12 @@ function bindBack() { const b = document.getElementById('back'); if (b) b.addEve
 // show "About these forecasts" as one line; a link into it opens it in place (about-open).
 document.addEventListener('click', e => { const a = e.target.closest('a[href^="#"]'); if (!a) return;
   const el = document.getElementById(a.getAttribute('href').slice(1)); if (!el) return;
-  e.preventDefault(); if (mapMode()) setMapMode(false); const box = el.closest('details'); if (box) box.open = true;
+  e.preventDefault(); if (mapMode()) setMapMode(false);
+  for (let box = el.closest('details'); box; box = box.parentElement && box.parentElement.closest('details')) box.open = true;
   if (el.closest('#about')) document.body.classList.add('about-open');
   el.scrollIntoView({ behavior: SCROLL(), block: 'start' });
-  if (el.hasAttribute('tabindex')) el.focus({ preventScroll: true }); });
+  const focus = el.matches('details') ? el.querySelector('summary') : el;
+  if (focus && (focus.hasAttribute('tabindex') || focus.matches('summary'))) focus.focus({ preventScroll: true }); });
 // "/" puts the focus in the search from anywhere on the list. Only where there is a search (not a
 // spot's page or the Saved page), not under the full map, and never while typing in a field.
 document.addEventListener('keydown', e => {
