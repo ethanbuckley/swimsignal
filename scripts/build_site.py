@@ -2219,6 +2219,10 @@ VERSIONED_SCRIPTS += ('<script src="passport.js"></script>',)
 # which the app reads from data/spot/<id>.json as it does the guide (DETAIL_FIELDS).
 SHELL_SOURCES.append(TEMPLATE.parent / "measured.js")
 VERSIONED_SCRIPTS += ('<script src="measured.js"></script>',)
+# The evidence timeline (timeline.js): a spot's dated measurements, reports and forecast in one list, from files the
+# site already has, fetched when its fold is opened.
+SHELL_SOURCES.append(TEMPLATE.parent / "timeline.js")
+VERSIONED_SCRIPTS += ('<script src="timeline.js"></script>',)
 # A plan's outing kept for offline use (outingpack.js): the plan's page, its spots' pages and files, and the
 # offline copy's own files, in a cache of their own that sw.js answers from and a new build leaves alone.
 SHELL_SOURCES.append(TEMPLATE.parent / "outingpack.js")
@@ -2265,6 +2269,7 @@ def copy_app_files(site: Path, stamp: str | None = None) -> None:
     shutil.copy(TEMPLATE.parent / "journal.js", site / "journal.js")   # the swim journal, on the device only
     shutil.copy(TEMPLATE.parent / "passport.js", site / "passport.js")   # the swim passport, from the journal
     shutil.copy(TEMPLATE.parent / "measured.js", site / "measured.js")   # lab results an organisation sent (samples/)
+    shutil.copy(TEMPLATE.parent / "timeline.js", site / "timeline.js")   # the evidence timeline, newest first
     shutil.copy(TEMPLATE.parent / "outingpack.js", site / "outingpack.js")   # a plan's outing kept for offline use
     shutil.copy(TEMPLATE.parent / "arrive.js", site / "arrive.js")   # the arrival guide, ?arrive=1 only
     shutil.copy(TEMPLATE.parent / "replay.js", site / "replay.js")   # catchment replay, ?replay=1 only (src/dipcast/replay.py)
@@ -3648,7 +3653,8 @@ def wet_link(doc: dict) -> dict:
     """What a linked spot's page says of the samples (index.html, localSamplesLine): where, who, how many and when."""
     s = doc["samples"]
     return {"href": "waterhead.html", "place": doc["site"]["name"], "by": "Ambleside Action for a Future",
-            "samples": len(s), "first": s[0]["date"], "last": s[-1]["date"]}
+            "samples": len(s), "first": s[0]["date"], "last": s[-1]["date"],
+            "data": "data/research/waterhead_wet.json"}   # every sample, for the spot's evidence timeline (timeline.js)
 
 
 def write_waterhead(site: Path, token: str | None = None, root: str | None = None, path: Path | None = None) -> dict:

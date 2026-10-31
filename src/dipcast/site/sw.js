@@ -40,6 +40,7 @@ const SHELL = ['./', `app.js?v=${BUILD}`, `levels.js?v=${BUILD}`, `experience.js
   `seasonal.js?v=${BUILD}`,   // past spills upstream by month; its numbers come in the spot's own file
   `outingpack.js?v=${BUILD}`,   // keeping a plan's outing for offline use (PACK, below)
   `measured.js?v=${BUILD}`,   // lab results an organisation sent (samples/)
+  `timeline.js?v=${BUILD}`,   // the evidence timeline; its files are fetched when its fold is opened
   `journal.js?v=${BUILD}`,
   `passport.js?v=${BUILD}`,   // the swim passport on Saved
   `arrive.js?v=${BUILD}`,   // the arrival guide (prototype, ?arrive=1 only); the guide is in the spot's own file

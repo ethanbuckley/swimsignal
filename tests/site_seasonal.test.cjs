@@ -75,6 +75,6 @@ test("no other script of the page defines one of seasonal.js's names; the page l
   assert.ok([...mine].every(n => /^(seasonal|SEASONAL)/.test(n)), [...mine].join(' '));
   const at = html.indexOf('src="seasonal.js"');
   assert.ok(at > html.indexOf('src="spotscores.js"') && at < html.indexOf('<script>\n'));
-  assert.match(html, /scoresHost\(d\) : ''\)[^\n]*\n\s+\+ \(typeof seasonalTile === 'function' \? seasonalTile\(d\) : ''\);/);
+  assert.match(html, /scoresHost\(d\) : ''\)[^\n]*\n\s+\+ \(typeof seasonalTile === 'function' \? seasonalTile\(d\) : ''\)/);   // the evidence timeline may follow it (timeline.js)
   assert.match(fs.readFileSync(join(site, 'sw.js'), 'utf8'), /`seasonal\.js\?v=\$\{BUILD\}`/);
 });
