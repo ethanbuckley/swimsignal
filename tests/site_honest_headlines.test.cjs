@@ -40,7 +40,7 @@ function page(names, extra = {}) {
 const text = h => h.replace(/<[^>]+>/g, ' ').replace(/&nbsp;| /g, ' ').replace(/&#39;/g, "'").replace(/\s+/g, ' ').trim();
 // The helpers nearby() calls for each row's reason and the other-water rule (site_nearby_reasons.test.cjs).
 const NEAR_REASONS = ['joined', 'otherWater', 'unread', 'fewerUnread', 'nearWhy', 'otherAsWell'];
-const ANSWER = ['esc', 'tone', 'headTone', 'rainSaid', 'answerParts', 'flowLine', 'ageMin', 'ago', 'issued', 'nextDay', 'yesterdayLine', 'answerWords',
+const ANSWER = ['esc', 'tone', 'headTone', 'rainSaid', 'answerParts', 'flowLine', 'ageMin', 'ago', 'agoSpan', 'issued', 'nextDay', 'yesterdayLine', 'answerWords',
   'sinceTime', 'spillFor', 'overflowSaid', 'longSpillLine', 'eaSaid', 'coverWords', 'coverLine', 'answerAfter'];
 
 // ------------------------------------------------------------------------------ 1. the EA's advice for today
@@ -137,7 +137,8 @@ test("today is at least right now's level, and says it comes from the spills und
   assert.equal(L.dayHeadline(calm, DATES[0]), 'No forecast for this day');
   // The week's bars and the five days' rows go by the same rule.
   const ctx = page(['esc', 'fmt', 'tone', 'initial', 'week', 'spilling', 'summary', 'daysSentence']);
-  assert.match(vm.runInContext('week', ctx)(greenholme), /^<span class="week"[^>]*><span class="wk first"><i class="veryhigh">/);
+  assert.match(vm.runInContext('week', ctx)(greenholme), /<span class="wk first"><i class="veryhigh"><\/i><span class="risk-code">VH/);
+  assert.match(vm.runInContext('week', ctx)(greenholme), /aria-label="Daily pollution risk: Sun 11 Oct: very high; Mon 12 Oct: low/);
   // Each day carries its letter and its short name; the wide list (1,200 px and up) shows the name.
   const shortName = iso => new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'short' });
   assert.deepEqual([...vm.runInContext('week', ctx)(greenholme).matchAll(/<span class="d3">([^<]+)<\/span>/g)].map(m => m[1]), DATES.slice(0, 5).map(shortName));
@@ -474,7 +475,7 @@ test('the E. coli estimate is labelled with what is true today: its season, its 
 // decision record's rows. The folded day-by-day numbers keep them, marked †.
 const ECOLI_PAGE = ['esc', 'glyph', 'ICON', 'tone', 'scaleBar', 'untested', 'explain', 'factorRow', 'ecoliName', 'ecoliFold', 'ecoliCheck', 'ecoliSaid', 'ecoliMore',
   'noFeedSaid', 'nowTile', 'feedDown', 'feedStale', 'liveSay', 'recentSay', 'overflowDots', 'runningAtLastAnswer', 'statusText', 'feedTime', 'fmt', 'riverTile', 'rangeBar',
-  'waterTile', 'weatherOn', 'spilling', 'bandWords', 'initial', 'rainCols', 'sunPath', 'facts', 'UNLISTED_ECOLI', 'water'];
+  'WT_ROUTES', 'waterEstOk', 'waterEstHow', 'waterEstSay', 'WT_AIR', 'WT_TAIL', 'waterEstMore', 'waterTile', 'weatherOn', 'spilling', 'bandWords', 'initial', 'rainCols', 'sunPath', 'facts', 'UNLISTED_ECOLI', 'water'];
 const longBridges = week(['low', 'moderate', 'moderate', 'moderate', 'high'], { id: 'osm-thames-long-bridges', name: 'River Thames, Long Bridges, Oxford',
   source: 'openstreetmap', upstream_summary: { overflows: 45 },
   now: { risk: 0.1, label: 'low', discharging_upstream: 2, recent_upstream: 0, monitored_upstream: 44 },
@@ -529,7 +530,7 @@ test('Not known here: a row for each gap, in the words it had, and no tile witho
   const tile = vm.runInContext('unknownTile', ctx)(longBridges);
   assert.match(tile, /^<section class="tile" id="unknowns" aria-labelledby="unknowns-h"><h2 class="t-lab" id="unknowns-h"><svg[^>]*>.*<\/svg><span>Not known here<\/span><\/h2><div class="factors">/);
   // The page puts it straight after the five days, on a failed forecast too (access is still a gap there).
-  assert.match(html, /\$\{daysTile\(d\)\}\$\{unknownTile\(d\)\}/);
+  assert.match(html, /\$\{daysTile\(d\)\}\$\{conditionsSummary\(d\)\}\$\{unknownTile\(d\)\}/);
   assert.match(html, /\$\{factors\(d\)\}\$\{check\(d\)\}<\/div>\$\{unknownTile\(d\)\}/);
 });
 
@@ -580,4 +581,19 @@ test('the Right now tile and the alerts say it; the five days name the first day
   assert.match(out.a.clears, /^The spills upstream should have passed and died off by (Mon|Tues|Wednes|Thurs|Fri|Satur|Sun)day \d\d:\d\d\.$/);
   assert.equal(out.b.clears, undefined);
   fs.rmSync(dir, { recursive: true });
+});
+
+test('miniature previews identify their metric and provide daily values without colour', () => {
+  const ctx = page(['esc', 'fmt', 'tone', 'initial', 'week']);
+  const draw = vm.runInContext('week', ctx);
+  const risk = draw(greenholme);
+  assert.match(risk, /Risk L\/M\/H\/VH/);
+  assert.match(risk, /class="risk-code">VH/);
+  assert.match(risk, /aria-label="Daily pollution risk:.*very high.*low/);
+  const rainSpot = {...greenholme, upstream_summary: {overflows: 0},
+    days: greenholme.days.map((day, i) => ({...day, rain_48h_mm: i === 0 ? 12 : null}))};
+  const rain = draw(rainSpot);
+  assert.match(rain, /Rain mm/);
+  assert.match(rain, /Rain in the 48 hours to midday: Sun 11 Oct: 12 mm; Mon 12 Oct: unavailable/);
+  assert.doesNotMatch(rain, /Daily pollution risk/);
 });

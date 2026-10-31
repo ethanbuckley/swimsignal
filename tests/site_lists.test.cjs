@@ -252,3 +252,13 @@ test('a shared list takes the place of a first visit’s empty "My spots", and i
   const page = fs.readFileSync(path.join(__dirname, '../src/dipcast/site/index.html'), 'utf8');
   assert.match(page, /setLists\(addSharedList\(LISTS, sh\.name, spots\.map\(s => s\.id\)\)\)/);
 });
+
+ test('shared plans preserve valid dates outside the forecast window', () => {
+  for (const date of ['2026-10-01', '2026-12-01']) {
+    const read = S.readShared(S.shareHash('Plan', ['a'], date), DATES);
+    assert.equal(read.day, null);
+    assert.equal(read.requestedDay, date);
+  }
+  for (const date of ['2026-02-30', 'tomorrow'])
+    assert.equal(S.readShared(`#spots=a&day=${date}`, DATES).requestedDay, undefined);
+});
