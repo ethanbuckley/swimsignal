@@ -185,3 +185,9 @@ test('official advice: whatever eatoday.js\'s compact line gives, above the leve
     main: {id: 'a', name: 'A', href: 'spot/a/', tone: 'low', headline: 'Low risk', official: '<p class="o-mark">MARK</p>', why: 'Why.', ev: ''}, alt: null});
   assert.match(h, /<p class="o-mark">MARK<\/p><p class="hl low">Low risk<\/p><p class="why">/);
 });
+
+ test('a kept outing has a clear action, but a shared preview does not', () => {
+  assert.match(tile(), /id="outing-clear"/);
+  assert.match(tile(), /shared links and offline copies are unchanged/);
+  assert.doesNotMatch(tile({preview: {mine: '', fresh: false}}), /id="outing-clear"/);
+});

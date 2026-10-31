@@ -152,3 +152,13 @@ test("Plan a swim draws Find a window from the plan's own spots, area and activi
   assert.match(page, /box\.querySelectorAll\('ul\.fw-list'\)\.forEach\(bindItems\);/);
   assert.ok(page.indexOf('planShare(r.groups[0]') < page.indexOf('fwPlanSection(r.groups.flat()'));
 });
+
+test('a restricting notice suppresses the suggested window while retaining the forecast as secondary context', () => {
+  const restricted = spot(['low', 'low', 'low', 'low', 'low'], {id: 'r', name: 'Restricted', official: [{...NOTICE, restricts: true}]});
+  const neutral = spot(['low', 'low', 'low', 'low', 'low'], {id: 'n', name: 'Neutral', official: [{...NOTICE, restricts: false}]});
+  const h = W.fwSection([restricted, neutral], DATES, s => `spot/${s.id}/`);
+  const first = h.slice(h.indexOf('data-id="r"'), h.indexOf('data-id="n"'));
+  assert.match(first, /no swimming window is suggested/);
+  assert.match(first, /<details><summary>Show the separate pollution forecast<\/summary>.*Low risk:/s);
+  assert.doesNotMatch(h.slice(h.indexOf('data-id="n"')), /no swimming window is suggested/);
+});

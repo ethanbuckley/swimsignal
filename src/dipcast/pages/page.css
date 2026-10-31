@@ -211,3 +211,15 @@ details.ea-today iframe { display: block; width: 100%; max-width: 343px; height:
   tr, li, dl.fields dd { break-inside: avoid; }
   h2, h3 { break-after: avoid; }
 }
+
+/* Match the app's phone navigation without taking a second header row. */
+.phone-nav { display:none; }
+@media screen and (max-width:800px) {
+  .top nav { display:none; }
+  body { padding-bottom:calc(64px + env(safe-area-inset-bottom, 0px)); }
+  .phone-nav { position:fixed; z-index:1200; left:0; right:0; bottom:0; display:grid; grid-template-columns:repeat(4, 1fr);
+    padding:4px 4px env(safe-area-inset-bottom, 0px); background:var(--card); box-shadow:var(--lift); }
+  .phone-nav a { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:48px;
+    color:var(--ink); text-decoration:none; font-size:var(--fs-meta); font-weight:600; }
+  .phone-nav svg { width:19px; height:19px; fill:none; stroke:currentColor; stroke-width:1.75; stroke-linecap:round; stroke-linejoin:round; }
+}

@@ -58,7 +58,7 @@ test('with nothing saved, the Saved page has the form on a tile of its own, and 
   const p = savedPage();
   p.ctx.renderSaved();
   const h = p.ctx.panel;
-  assert.match(h, /<\/div><section class="sec tile lists"><form class="lists-form" id="ls-import"><label for="ls-import-link">Open a list from a link<\/label>/);
+  assert.match(h, /<details class="sec tile lists"><summary>Open a shared list<\/summary><form class="lists-form" id="ls-import"><label for="ls-import-link">Open a list from a link<\/label>/);
   assert.equal(h.match(/id="ls-import"/g).length, 1);
   assert.match(page, /\.tile > \.lists-form:first-child \{ margin:0; padding:0; border-top:0; \}/);   // no rule above it on its own tile
   assert.doesNotMatch(h, /id="lists"/);   // Your lists waits for something to put in a list
@@ -121,4 +121,13 @@ test('a list\'s link opens the shared list, which adds it once and then says it 
 
 test('the form is bound with the Saved page\'s other parts', () => {
   assert.match(between('function renderSaved(', 'function bindToAlerts('), /bindLists\(l\); bindImport\(\);/);
+});
+
+test('the first-save action precedes secondary tools on an empty Saved page', () => {
+  const p = savedPage();
+  p.ctx.renderSaved();
+  const h = p.ctx.panel;
+  assert.ok(h.indexOf('id="find"') < h.indexOf('Activity preferences and swim journal'));
+  assert.ok(h.indexOf('id="find"') < h.indexOf('Open a shared list'));
+  assert.match(h, /<details class="sec tile lists"><summary>Open a shared list<\/summary>/);
 });
