@@ -2468,7 +2468,7 @@ def robots(root: str) -> str:
 
 
 def sitemap(root: str, spot_ids: list[str], day: str, extra: list[str] | None = None) -> str:
-    urls = [root, f"{root}plan/", f"{root}about.html", f"{root}verification.html", f"{root}methods.html", f"{root}testing.html", f"{root}coverage.html", f"{root}data.html", f"{root}organisers.html", f"{root}sites.html", f"{root}record.html", f"{root}clubs.html", f"{root}quality.html", f"{root}spots.html", f"{root}research.html", f"{root}lakes.html", f"{root}lake-temperatures.html"] +[f"{root}{x}" for x in extra or []] + [f"{root}spot/{i}/" for i in spot_ids] + [f"{root}spot/{i}/profile/" for i in spot_ids]
+    urls = [root, f"{root}plan/", f"{root}about.html", f"{root}verification.html", f"{root}methods.html", f"{root}testing.html", f"{root}coverage.html", f"{root}data.html", f"{root}organisers.html", f"{root}sites.html", f"{root}record.html", f"{root}clubs.html", f"{root}quality.html", f"{root}spots.html", f"{root}research.html", f"{root}lakes.html", f"{root}lake-temperatures.html", f"{root}durations.html"] +[f"{root}{x}" for x in extra or []] + [f"{root}spot/{i}/" for i in spot_ids] + [f"{root}spot/{i}/profile/" for i in spot_ids]
     body = "".join(f"<url><loc>{escape(u)}</loc><lastmod>{day}</lastmod></url>" for u in urls)
     return f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{body}</urlset>\n'
 
@@ -2784,6 +2784,7 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
         write_sign(site, r, root, token)   # spot/<id>/sign/, and the QR code the live sign shows
         ids.append(r["id"])
     paged = [r for r in results if r["id"] in set(ids)]
+    write_spill_durations(site, paged)   # data/research/spill_durations*, before the profiles that show them and the data page
     write_profiles(site, paged, token, root=root)   # spot/<id>/profile/, from data/upstream/
     write_every_spot(site, paged, root, token)   # spots.html, the spots' pages as plain links
     write_feeds(site, results, root)   # feed.xml, feed/, spot/<id>/feed.xml: after spot/ is written, before the data page lists them
@@ -2801,6 +2802,7 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     write_sites(site, token, root)
     write_record(site, token, root)
     write_lake_temperatures_page(site, token, root)   # measured lake temperatures (research): the viewer
+    write_durations(site, token, root)   # the spill durations viewer, from the files written before the profiles
     if support:
         add_support_links(site)   # last, so every page written above has its foot
     return len(ids)
@@ -3214,6 +3216,100 @@ def write_lake_temperatures_page(site: Path, token: str | None = None, root: str
     return write_scripted_page(site, "lake-temperatures.html", ("lake-temperatures.js",), ("lake-temperatures.js",), token, root)
 
 
+# Spill durations (docs/SPILL-DURATIONS-CONTRACT-v1.md): how long each storm overflow's spills lasted in 2024 and 2025,
+# and, per company, how often a spill already running was still running hours later, from the Environment Agency's
+# start/stop records. The research side exports one file, data/research/spill_durations.v1.json
+# (scripts/export_spill_durations.py; about 600 kB, 12,908 overflows). A record of the past, never a forecast: it is
+# shown on durations.html and on each spot's overflow history, never on the spot's page or beside its "if it stops
+# now" line. The site splits it: data/research/spill_durations.json, the export without its overflows, with the spots
+# that have a file; data/research/spill_durations/<spot id>.json, the overflows in the spot's data/upstream/<id>.json
+# that the export has, which the viewer fetches when a spot is picked and write_profiles puts on spot/<id>/profile/.
+# Per spot, not per company or map tile, because both readers start from a spot: over the live 30 Oct 2026 data, 81 spot
+# files, the largest 36 kB (6 kB gzipped; Avon at Warleigh Weir) and the median 3 kB, 407 kB in all, and the index 22 kB
+# (5 kB gzipped), where one company's file would hold up to 2,192 overflows. An overflow upstream of no spot has no file of
+# its own. A file of another schema, or another major version, is not published: the index then says why, and the pages
+# say nothing is published. Only this dataset's files under data/research/ are replaced, so another research dataset
+# can share the folder.
+SPILL_DURATIONS = config.ROOT / "data" / "research" / "spill_durations.v1.json"
+DURATIONS_SCHEMA, DURATIONS_MAJOR = "swimsignal.spill-durations", "1"
+REWRITES += [('href="/durations"', 'href="durations.html"')]   # the Research page links the viewer
+DURATIONS_FIELDS = ("spills_2024", "spills_2025", "median_h", "p90_h", "longest_h", "share_over_6h", "few")
+DURATIONS_OUT = "spill_durations"   # data/research/<this>.json and data/research/<this>/
+
+
+def write_spill_durations(site: Path, spots: list[dict], path: Path | None = None) -> dict:
+    """data/research/spill_durations.json and data/research/spill_durations/<spot id>.json for each spot in `spots`
+    with a data/upstream/<id>.json, from the research export; or the index alone, saying none are published
+    (`available` false, with why). Only this dataset's own files are replaced. Returns the build's health entry."""
+    from dipcast.overflow_names import overflow_names
+    out = site / "data" / "research"
+    shutil.rmtree(out / DURATIONS_OUT, ignore_errors=True)   # a spot that lost its overflows loses its file
+    (out / DURATIONS_OUT).mkdir(parents=True)
+    why, doc, path = None, {}, path or SPILL_DURATIONS   # read at call time, so a test can point it elsewhere
+    if not path.is_file():
+        why = "no export in this build"
+    else:
+        try:
+            doc = json.loads(path.read_text())
+        except ValueError:
+            why = "export is not JSON"
+        else:
+            if doc.get("schema") != DURATIONS_SCHEMA or str(doc.get("version", "")).split(".")[0] != DURATIONS_MAJOR:
+                why = f"export is {doc.get('schema')} {doc.get('version')}, not {DURATIONS_SCHEMA} {DURATIONS_MAJOR}.x"
+    cols = doc.get("overflows") or {}
+    n = len(cols.get("site_id") or [])
+    if not why and any(len(cols.get(k) or []) != n for k in ("company", *DURATIONS_FIELDS)):
+        why = "export's overflow columns differ in length"
+    if why:
+        (out / f"{DURATIONS_OUT}.json").write_text(json.dumps({"schema": DURATIONS_SCHEMA, "available": False, "why": why}))
+        return {"available": False, "why": why}
+    companies, row_of = doc.get("companies") or [], {sid: i for i, sid in enumerate(cols["site_id"])}
+    listed = []
+    for s in spots:
+        f = site / "data" / "upstream" / f"{s['id']}.json"
+        if not SPOT_ID.fullmatch(str(s["id"])) or not f.is_file():
+            continue
+        rows, absent = [], []
+        for u in json.loads(f.read_text()).get("overflows") or []:   # the upstream file's order: largest weight first
+            plain, own = overflow_names(u.get("site_name"), u["site_id"])
+            named = {"site_id": u["site_id"], "name": plain, "own": own}
+            i = row_of.get(u["site_id"])
+            if i is None:
+                absent.append(named | {"company": u.get("company")})
+                continue
+            c = cols["company"][i]
+            rows.append(named | {"company": companies[c] if isinstance(c, int) and 0 <= c < len(companies) else None}
+                        | {k: cols[k][i] for k in DURATIONS_FIELDS})
+        (out / DURATIONS_OUT / f"{s['id']}.json").write_text(json.dumps(
+            {"id": s["id"], "name": s.get("name"), "period": doc.get("period"), "overflows": rows, "absent": absent},
+            separators=(",", ":"), ensure_ascii=False))
+        listed.append({"id": s["id"], "name": s.get("name"), "overflows": len(rows), "absent": len(absent)})
+    index = {k: v for k, v in doc.items() if k != "overflows"} | {"available": True, "spots": listed}
+    (out / f"{DURATIONS_OUT}.json").write_text(json.dumps(index, separators=(",", ":"), ensure_ascii=False))
+    return {"available": True, "version": doc.get("version"), "overflows": n, "spots": len(listed),
+            "spot_overflows": sum(x["overflows"] for x in listed)}
+
+
+def spill_durations_for(site: Path, spot_id: str) -> dict | None:
+    """What write_spill_durations wrote for one spot, with the export's claim, attribution and period, for its
+    overflow history page; None when no export is published or the spot has no file."""
+    try:
+        index = json.loads((site / "data" / "research" / f"{DURATIONS_OUT}.json").read_text())
+        if not index.get("available"):
+            return None
+        one = json.loads((site / "data" / "research" / DURATIONS_OUT / f"{spot_id}.json").read_text())
+    except (OSError, ValueError):
+        return None
+    return {"claim": index.get("claim") or {}, "attribution": index.get("attribution") or [], "period": index.get("period") or {},
+            "method": index.get("method") or {}, "overflows": one.get("overflows") or [], "absent": one.get("absent") or []}
+
+
+def write_durations(site: Path, token: str | None = None, root: str | None = None) -> str:
+    """durations.html and durations.js beside the app; write_spill_durations has written the files they read.
+    Returns the script's version."""
+    return write_scripted_page(site, "durations.html", ("durations.js",), ("durations.js",), token, root)
+
+
 # A spot's overflow history, spot/<id>/profile/ (docs/MARKETS-2026-10.md): every monitored overflow
 # upstream with its spills and spill hours each year 2021-2025, from the Environment Agency's annual returns
 # (data/processed/annual_returns.parquet, OGL v3, credited in the terms). The list is the spot's
@@ -3295,7 +3391,8 @@ def write_profiles(site: Path, spots: list[dict], token: str | None = None, retu
         n += t is not None
         (site / "spot" / r["id"] / "profile").mkdir(parents=True, exist_ok=True)
         (site / "spot" / r["id"] / "profile" / "index.html").write_text(
-            with_counter(profile.site_page(r, t, MARK, url=f"{root}spot/{r['id']}/profile/", root=root), token))
+            with_counter(profile.site_page(r, t, MARK, url=f"{root}spot/{r['id']}/profile/", root=root,
+                                           durations=spill_durations_for(site, r["id"]) if t is not None else None), token))
     return n
 
 

@@ -1,0 +1,90 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Spill durations: a prose page with the shared head, header and foot, written by scripts/build_site.py (write_durations)
+     beside the app. durations.js fills #durations, #du-companies, #du-still and #du-spot from data/research/ (the research
+     export, docs/SPILL-DURATIONS-CONTRACT-v1.md, split by write_spill_durations). What it may say is the contract's:
+     durations.js puts the export's own sentence beside a spot's figures and its list of what is not claimed into #du-not;
+     the words here are the fallback for a page without them. History only: nothing here is about a spill running now. -->
+<title>Spill durations · SwimSignal</title>
+<meta name="description" content="How long storm overflow spills lasted in 2024 and 2025, overflow by overflow and company by company, from the water companies' monitor records published by the Environment Agency. A record of the past, not a forecast.">
+<meta name="theme-color" content="#3d5b5d">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="page.css">
+<link rel="preload" href="fonts/SourceSans3-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/SourceSerif4-latin.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+  /* The tokens, the prose page and the tables are page.css's. Pickers as on the lake viewer; a row's name heads it. */
+  .du-pick { display:flex; flex-direction:column; gap:4px; margin:12px 0 12px; font-size:var(--fs-note); color:var(--muted); }
+  .du-pick select { font:inherit; font-size:var(--fs-body); color:var(--ink); max-width:100%; padding:8px; border:1px solid var(--line); border-radius:var(--radius); background:var(--field); }
+  main.doc .du-sum, main.doc .du-more, main.doc .du-absent { font-size:var(--fs-note); }
+  main.doc .du-claim { font-size:var(--fs-note); border-left:3px solid var(--line); padding-left:8px; }
+  main.doc .dut tbody th { color:var(--ink); border-bottom-color:var(--line); font-weight:400; }
+  main.doc .dut tbody tr:last-child th { border-bottom:0; }
+  main.doc .dut thead th.num { white-space:normal; }
+  main.doc dl.du-read dt { font-weight:600; margin-top:8px; }
+  main.doc dl.du-read dd { margin:0 0 4px; }
+  /* On a phone the tables do not fit: each row is a block, its name over its figures two to a line, each with its
+     label, as on a spot's overflow history (profile.html). */
+  @media screen and (max-width: 540px) {
+    .tw:has(.dut) { overflow:visible; border-bottom:0; }
+    .dut thead { display:none; }
+    .dut tr { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); gap:2px 12px; padding:10px 0; border-bottom:1px solid var(--line); }
+    .dut th.ov { grid-column:1 / -1; padding:0; border:0; }
+    .dut td { padding:0; border:0; text-align:left; }
+    .dut td.num { text-align:left; white-space:normal; }
+    .dut td::before { content:attr(data-l) " "; color:var(--muted); }
+  }
+</style>
+</head><body>
+<header class="top"><a class="brand" href="./"><svg viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" fill="#0f5a61"/><path d="M430-20C330 110 470 230 300 290S110 380 190 540" fill="none" stroke="#5CC2B5" stroke-width="70" stroke-linecap="round"/><circle cx="318" cy="138" r="38" fill="#F08A4B"/><circle cx="165" cy="358" r="46" fill="none" stroke="#fff" stroke-width="22"/></svg>SwimSignal</a>
+<nav aria-label="Site"><a href="plan/">Plan a swim</a><a href="saved/">Saved</a><a href="verification.html">Accuracy</a><a href="about.html">About</a><a class="desk-only" href="research.html">Research</a><a class="desk-only" href="feedback.html">Feedback</a></nav></header>
+<main class="doc">
+<h1>Spill durations</h1>
+<p class="lead">How long storm overflow spills lasted in <span data-years>2024 and 2025</span>, from the water companies' monitor records published by the Environment Agency. A record of the past, not a forecast.</p>
+<noscript><p class="notice">This page needs JavaScript to read the records.</p></noscript>
+<div id="durations" aria-live="polite"></div>
+
+<h2>Company by company</h2>
+<p>Each company's spills in <span data-years>2024 and 2025</span>: the typical spill (half were shorter, half longer), the long end (one spill in ten lasted longer), and how many lasted over 6 and over 24 hours. Companies do not record spills the same way: United Utilities changed how it records them in 2026, and typical lengths differ several-fold between companies. So a difference between two companies may be in the recording, not in the overflows.</p>
+<div id="du-companies"></div>
+
+<h2>Spills already running</h2>
+<p>How often a spill that had already run some hours was still running some hours later, across each company's overflows in <span data-years>2024 and 2025</span>. Every whole hour a spill was running, in its first 72 hours, is one hour checked. Each figure is the share of those hours at which the spill was still running that many hours on, and the hours checked are the count behind it.</p>
+<p>These figures describe <span data-years>2024 and 2025</span>. They are not a forecast: they do not say when any spill will end, here or anywhere.</p>
+<div id="du-still"></div>
+
+<h2>A spot's overflows</h2>
+<p>Pick a spot to see how long the spills lasted at each storm overflow upstream of it, in <span data-years>2024 and 2025</span>. Each spot's overflow history page has the same figures, under each year's annual return.</p>
+<dl class="du-read">
+<dt>Typical spill</dt><dd>Half of the overflow's spills in those years were shorter, half longer.</dd>
+<dt>Long end</dt><dd>One spill in ten lasted longer than this.</dd>
+<dt>Longest</dt><dd>Its longest spill in the two years.</dd>
+<dt>Spills</dt><dd>The monitor's events, joined into one spill when they overlap or one starts less than an hour after the last ended. So the counts differ from the annual returns', which count by the Environment Agency's 12/24 method.</dd>
+<dt>Few spills</dt><dd>Fewer than 5 spills in the two years, so its typical length rests on little.</dd>
+<dt>No row</dt><dd>No recorded spill in those years, or no record. That is not the same as no spills: the annual returns on the overflow history page give each year's count.</dd>
+</dl>
+<div id="du-spot"></div>
+
+<h2>What these records do not say</h2>
+<ul id="du-not">
+<li>a forecast of when a spill will end</li>
+<li>the volume or strength of a discharge</li>
+<li>that a short spill was harmless</li>
+<li>that companies record events the same way</li>
+</ul>
+<p>For what the overflows upstream of a spot are doing now, and the forecast, see the spot's own page.</p>
+
+<h2>How the figures are made</h2>
+<p>From each company's storm overflow start and stop records for 2024 and 2025, as the Environment Agency publishes them. An overflow's events are joined into one spill when they overlap or one starts less than an hour after the last ended. An overflow with no recorded spill in those years, or with no record, is not in them. Nine English companies are in them; Dŵr Cymru Welsh Water is not.</p>
+<ul>
+<li><a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/SPILL-DURATIONS-CONTRACT-v1.md">What this page's data holds, and what it may say</a></li>
+<li><a href="data.html#research">The files</a></li>
+</ul>
+
+<h2>Sources</h2>
+<p><span id="du-attrib">Environment Agency, storm overflow EDM start/stop data 2024 and 2025, Open Government Licence v3.0.</span> Joined into spills and summarised by SwimSignal. <a href="terms.html#data">Data credits</a>.</p>
+</main>
+<footer class="site-foot"><div class="rule"><p>SwimSignal is a free, non-commercial pollution risk forecast for river and lake swim spots in England, run by Ethan Buckley. A forecast, not a water test: check the signs at the water before you swim.</p>
+<p><a href="terms.html">Terms of use</a> · <a href="privacy.html">Privacy</a> · <a href="feedback.html">Feedback</a> · <a href="methods.html">Method</a> · <a href="research.html">Research</a> · <a href="terms.html#data">Data credits</a> · <a href="https://github.com/ethanbuckley/swimsignal">Source code</a> (MIT)</p></div></footer>
+<script src="durations.js"></script>
+</body></html>

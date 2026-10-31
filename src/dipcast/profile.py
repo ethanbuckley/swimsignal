@@ -150,7 +150,7 @@ def _table(head: list[tuple[str, bool]], rows: list[list[str]], label: str) -> s
     """A table as the Accuracy page draws them, numbers right, in a box that scrolls sideways if it must. The
     overflows' table (class ovt, as on the organisers' page) has each overflow's name as its row's header,
     and each cell carries its column's name (data-l) for the phone layout in profile.html: a block an overflow."""
-    ovt = label == "overflows"
+    ovt = label in ("overflows", "spill lengths")   # the spill lengths (durations_section) take the same phone layout
     num = ' class="num"'
 
     def cell(i: int, c: str) -> str:
@@ -165,9 +165,91 @@ def _table(head: list[tuple[str, bool]], rows: list[list[str]], label: str) -> s
             f"<table{cls}><thead><tr>{th}</tr></thead><tbody>{body}</tbody></table></div>")
 
 
-def body(spot: dict, t: pd.DataFrame | None) -> str:
+def _named(site_name, site_id) -> str:
+    """The plain name, then the company's own and the id, as the site's other pages give them."""
+    plain, own = overflow_names(None if site_name is None or pd.isna(site_name) else site_name, site_id)
+    return f'{escape(plain)}<br><span class="muted">{escape(own) + " · " if own else ""}{escape(str(site_id))}</span>'
+
+
+# ------------------------------------------------------------------ spill lengths, 2024-25 (history)
+# From the research export (docs/SPILL-DURATIONS-CONTRACT-v1.md), split per spot by build_site.write_spill_durations.
+# What it may say is the contract's: how long each overflow's spills lasted in 2024 and 2025. Never when a running
+# spill will end (it is not a forecast), how much was discharged, that a short spill was harmless, or that companies
+# record events alike. The export's own sentence (claim.public_wording) stands beside the figures, and every figure
+# names its years. An overflow with no row is not said to have had no spills: the annual returns above give its count.
+# durations.js (durationsHours) says a length the same way; the tests hold both to the same cases.
+def hours_said(h) -> str:
+    """A spill's length in words: minutes under an hour, hours to two days, days beyond, the number and its unit joined
+    by a no-break space so a narrow cell does not split them."""
+    if h is None or pd.isna(h):
+        return "–"
+    if h < 1:
+        m = round(h * 60)
+        return "under\u00a01\u00a0min" if m < 1 else f"{m}\u00a0min"
+    if h < 10:
+        return f"{h:.1f}".removesuffix(".0") + "\u00a0h"
+    if h < 48:
+        return f"{round(h)}\u00a0h"
+    d = h / 24
+    return (f"{d:.1f}".removesuffix(".0") if d < 10 else f"{round(d)}") + "\u00a0days"
+
+
+def zero_said(rows: list[dict], method: dict) -> str:
+    """When a typical length shows as under a minute (the export's 0.0 hours), what that means, from the export's
+    method.zero_length_note and events_same_start_stop (1.1); durations.js (durationsZero) says the same. Else ''."""
+    if not method.get("zero_length_note") or not any(
+            isinstance(r.get("median_h"), (int, float)) and r["median_h"] * 60 < 0.5 for r in rows):
+        return ""
+    n = method.get("events_same_start_stop")
+    events = f" ({n:,} such events in these records, mostly at Wessex Water and South West Water)" if isinstance(n, int) else ""
+    return (" A typical spill shown as under 1\u00a0min means most of that overflow's spills lasted under a minute as recorded, "
+            f"or were recorded with the same start and stop time{events}. It does not mean nothing was discharged.")
+
+
+def durations_section(d: dict) -> str:
+    """The spot's overflows' spill lengths in 2024 and 2025: a heading and the years first, the export's own sentence,
+    then the figures in a fold, after the annual returns. d: build_site.spill_durations_for."""
+    rows, absent = d.get("overflows") or [], d.get("absent") or []
+    period = d.get("period") or {}
+    y0, y1 = str(period.get("from") or "2024")[:4], str(period.get("to") or "2025")[:4]
+    wording = (d.get("claim") or {}).get("public_wording") or ""
+    # The export's sentence goes beside figures; with none to show, the years alone.
+    out = [f'<h2 id="spill-lengths">How long their spills lasted, {y0} and {y1}</h2>',
+           f"<p><b>History: {y0} and {y1}.</b>{' ' + escape(wording) if rows else ''}</p>"]
+    if rows:
+        n = len(rows)
+        table = _table([("Overflow and id", False), (f"Typical spill, {y0}-{y1[2:]}", True), ("Long end", True),
+                        ("Longest", True), (f"Spills {y0}", True), (f"Spills {y1}", True)],   # counted as the note below says, not as the annual returns count
+                       [[f'{escape(r.get("name") or str(r["site_id"]))}<br><span class="muted">'
+                         f'{escape(r["own"]) + " · " if r.get("own") else ""}{escape(str(r["site_id"]))}</span>',
+                         hours_said(r.get("median_h")) + (", few spills" if r.get("few") else ""), hours_said(r.get("p90_h")),
+                         hours_said(r.get("longest_h")), f"{r.get('spills_2024') or 0:,}", f"{r.get('spills_2025') or 0:,}"] for r in rows],
+                       "spill lengths")
+        out.append(f'<details class="fold"><summary>Spill lengths at {n} of the {n + len(absent)} overflows, {y0}-{y1[2:]}</summary>{table}'
+                   f"<p class=\"small muted\">Typical: half of the overflow's spills in {y0} and {y1} were shorter, half longer. Long end: "
+                   "one spill in ten lasted longer. Longest: its longest in the two years. A spill here is the monitor's events joined "
+                   "when they overlap or start less than an hour apart, so these counts differ from the annual returns' counts above. "
+                   "Few spills: fewer than 5 in the two years, so its typical length rests on little. Companies do not record spills "
+                   "the same way, so compare overflows of different companies with care."
+                   + zero_said(rows, d.get("method") or {}) + "</p></details>")
+    if absent:
+        welsh = any("cymru" in str(a.get("company") or "").lower() for a in absent)
+        k = len(absent)
+        lead = (f"{k} of the overflows upstream {'has' if k == 1 else 'have'} no spill" if rows
+                else f"None of the {k} overflows upstream has a spill")   # as durations.js says it
+        out.append(f"<p>{lead} in these {y0}-{y1[2:]} records: none was "
+                   "recorded, or there is no record" + (" (Dŵr Cymru Welsh Water's overflows are not in them)" if welsh else "")
+                   + ". That is not the same as no spills: the annual returns above give each year's count.</p>")
+    credit = " ".join(escape(a) for a in d.get("attribution") or [])
+    out.append(f'<p class="small muted">{credit + ". " if credit else ""}How to read these, and how long spills already '
+               'running went on, company by company: <a href="durations.html">Spill durations</a>.</p>')
+    return "\n".join(out)
+
+
+def body(spot: dict, t: pd.DataFrame | None, durations: dict | None = None) -> str:
     """The page's main content. t is with_returns() of the spot's overflows, or None when the build has no
-    list for it (no file in data/upstream/)."""
+    list for it (no file in data/upstream/). durations: build_site.spill_durations_for, or None for no spill
+    lengths section."""
     sid, name = escape(str(spot["id"])), escape(str(spot["name"]))
     total = (spot.get("upstream_summary") or {}).get("overflows") or 0
     km = (spot.get("assumptions") or {}).get("max_upstream_km") or config.MAX_UPSTREAM_KM
@@ -204,12 +286,8 @@ def body(spot: dict, t: pd.DataFrame | None) -> str:
                    "km away is along the river network, through any lake on the way, or across the lake for one that drains "
                    "into the same lake. Hours away is how long sewage takes to arrive, at the model's river speed, and "
                    "across a lake at its slower lake speed.</p>")
-        def named(r) -> str:   # the plain name, then the company's own and the id, as the site's other pages give them
-            plain, own = overflow_names(r["site_name"] if pd.notna(r.get("site_name")) else None, r["site_id"])
-            return (f'{escape(plain)}<br><span class="muted">{escape(own) + " · " if own else ""}'
-                    f'{escape(str(r["site_id"]))}</span>')
         lake = in_lake(t)
-        rows = [[named(r),
+        rows = [[_named(r.get("site_name"), r["site_id"]),
                  escape(company_name(r.get("company"))), fmt(r["km"], 1) + (" across the lake" if on_lake else ""),
                  hours_away(r.get("travel_h")), escape(reach(r.get("weight"))),
                  fmt(r.get("spills_2023")), fmt(r.get("spills_2024")), fmt(r.get("spills_2025")),
@@ -218,6 +296,8 @@ def body(spot: dict, t: pd.DataFrame | None) -> str:
                            ("Weight", True), ("Spills 2023", True), ("Spills 2024", True), ("Spills 2025", True),
                            ("Spill hours 2025", True), ("Monitor uptime 2025", True)], rows, "overflows"))
         out.append('<p class="small muted">A dash: no annual return for that overflow in that year.</p>')
+        if durations:
+            out.append(durations_section(durations))
     out.append(f'<h2>Sources and credits</h2><p>{escape(CREDITS)} <a href="terms.html#data">All credits and licences</a>.</p>')
     return "\n".join(out)
 
@@ -242,14 +322,14 @@ def share_tags(title: str, description: str, url: str, root: str) -> str:
 
 
 def site_page(spot: dict, t: pd.DataFrame | None, mark: str, template: str | None = None, url: str | None = None,
-              root: str | None = None) -> str:
+              root: str | None = None, durations: dict | None = None) -> str:
     """spot/<id>/profile/index.html for one spot. `mark` is the brand mark's inline SVG (build_site.MARK);
     `url` the page's own published address, for its canonical link, and with `root` (the site's published
     address) its link preview (none without them)."""
     name = escape(str(spot["name"]))
     description = (f"The monitored storm overflows upstream of {spot['name']} and how often each "
                    "spilled in each year from 2021 to 2025, from the Environment Agency's annual returns.")
-    slots = {"name": name, "mark": mark, "body": body(spot, t),
+    slots = {"name": name, "mark": mark, "body": body(spot, t, durations),
              "canonical": f'<link rel="canonical" href="{escape(url)}">' if url else "",
              "share": share_tags(f"Overflow history: {spot['name']} · SwimSignal", description, url, root) if url and root else "",
              "description": escape(description)}
