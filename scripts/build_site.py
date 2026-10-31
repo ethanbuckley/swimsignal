@@ -3342,9 +3342,33 @@ def write_lake_observations(site: Path, path: Path = LAKE_OBSERVATIONS) -> dict:
             "processing": (doc.get("processing") or {}).get("version")}
 
 
+# Real Sentinel-2 pictures of the pilot sites' usable scenes (#550, docs/LAKE-IMAGERY-CONTRACT-v1.md), made by
+# scripts/satellite_imagery.py in the satellite pilot workflow: the manifest and its PNGs, copied as they are.
+LAKE_IMAGERY = config.ROOT / "data" / "research" / "lake_imagery.v1.json"
+LAKE_IMAGERY_DIR = config.ROOT / "data" / "research" / "lake-img"
+LAKE_IMAGERY_SCHEMA = "swimsignal.lake-imagery"
+
+
+def write_lake_imagery(site: Path, path: Path = LAKE_IMAGERY, images: Path = LAKE_IMAGERY_DIR) -> dict:
+    """data/research/lake_imagery.json and data/research/lake-img/, or the manifest saying none are published."""
+    out = site / "data" / "research"
+    out.mkdir(parents=True, exist_ok=True)
+    shutil.rmtree(out / "lake-img", ignore_errors=True)
+    doc = json.loads(path.read_text()) if path.is_file() else None
+    if doc is None or doc.get("schema") != LAKE_IMAGERY_SCHEMA or str(doc.get("version", "")).split(".")[0] != "1":
+        why = "no imagery in this build" if doc is None else f"manifest is {doc.get('schema')} {doc.get('version')}"
+        (out / "lake_imagery.json").write_text(json.dumps({"schema": LAKE_IMAGERY_SCHEMA, "available": False, "why": why}))
+        return {"available": False, "why": why}
+    if images.is_dir():
+        shutil.copytree(images, out / "lake-img")
+    (out / "lake_imagery.json").write_text(json.dumps({**doc, "available": True}, separators=(",", ":")))
+    return {"available": True, "scenes": sum(len(x["scenes"]) for x in doc["sites"]), "version": doc["version"]}
+
+
 def write_lakes(site: Path, token: str | None = None, root: str | None = None) -> str:
     """lakes.html and lakes.js beside the app, and the observations they read. Returns the scripts' version."""
     write_lake_observations(site)
+    write_lake_imagery(site)
     return write_scripted_page(site, "lakes.html", ("lakes.js",), ("lakes.js",), token, root)
 
 
