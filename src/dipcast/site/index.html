@@ -4745,7 +4745,11 @@ function conditionsSummary(d) {
   const age = Number.isFinite(observed) ? Math.max(0, (Date.now() - observed) / 3600000) : null;
   const water = waterTile(d.water_temp, d.water_temp_est, d.kind);
   const level = riverTile(rs && age !== null && age > 24 ? {...rs, stale: true, age_hours: age} : rs);
-  const line = (label, item, missing) => item
+  // An estimate's own sentence already gives its figure and what kind it is ("About 12 °C (provisional
+  // estimate, ...)"), so it stands alone; a reading or a gauge gives its figure, then where it was measured.
+  const line = (label, item, missing) => item && item.fig && !item.live && /^About /.test(item.say || '')
+    ? `<p><b>${label}:</b> ${item.say}</p>`
+    : item
     ? `<p><b>${label}:</b> ${item.fig}${item.unit ? (String(item.fig).endsWith('°') ? '' : ' ') + item.unit : ''}${item.word ? `, ${item.word}` : ''}. ${item.say || ''}</p>`
     : `<p><b>${label}:</b> ${missing}</p>`;
   return `<section class="tile" aria-labelledby="conditions-h"><h2 class="t-lab" id="conditions-h">Water conditions</h2><p class="small muted">Sensor and gauge readings are from the Environment Agency; estimates are labelled.</p>`
