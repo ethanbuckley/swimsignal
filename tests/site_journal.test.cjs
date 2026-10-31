@@ -262,7 +262,7 @@ test('an empty Saved page shows the journal once a swim exists, or once asked; w
   const empty = page.slice(page.indexOf("  else v += `<div class=\"empty-saved tile\"><p class=\"sub\">Save a spot"), page.indexOf("  if (gone) v +="));
   assert.match(empty, /Save a spot\$\{many \? ` to \$\{named\}` : ''\} from its page and it shows here with the days ahead\./);
   assert.match(empty, /id="find">Find a spot<\/a>/);
-  assert.match(empty, /swimsShown\(spots\) \? '' : '<p class="empty-more"><button type="button" class="linkbtn" id="jn-show">Swim journal<\/button><\/p>'/);
+  assert.match(empty, /Activity preferences and swim journal<\/summary>/);
   assert.doesNotMatch(empty, /<h2/, 'one sentence, no heading over it');
   assert.match(page, /\+ \(swimsShown\(spots\) \? swimsCard\(\) : ''\);/);
   // With a swim, the journal's controls are the same as ever.
