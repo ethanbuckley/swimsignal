@@ -202,3 +202,13 @@ test('a clicked point on the page: said as a provisional estimate for an unliste
   assert.match(s.more, /typically 1\.9&nbsp;°C out/);
   setToday(null);
 });
+
+test('a clicked point in the hills, two squares from any cached air: its estimate, the distance, and that it may be colder', () => {
+  const far = A.waterAt({ water_air: WA }, 54.6, -2.7, 'river').est;   // two squares up and across from 54.4,-2.9
+  assert.equal(far.route, 'river_air_curve'); assert.equal(far.air_km, 26);
+  assert.deepEqual(A.waterAt({ water_air: WA }, 54.7, -2.9, 'river'), { miss: { why: 'air', date: '2026-10-31' } });   // three away: none
+  setToday('2026-10-31');
+  assert.match(waterTile(null, { ...far }, 'river').more, /farther away than usual: .*likely to be colder than this/);
+  assert.doesNotMatch(waterTile(null, { ...far, air_km: 13 }, 'river').more, /farther away than usual/);
+  setToday(null);
+});

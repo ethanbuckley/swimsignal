@@ -248,3 +248,120 @@ def test_the_points_file_places_every_english_coastal_directory_site():
     ids = [i["eubwidNotation"] for i in cat if any(t.rsplit("/", 1)[-1] in KINDS for t in i["type"])]
     assert len(ids) == 426 and all(i in pts["england"] for i in ids)
     assert all(49.8 < la < 55.9 and -6.5 < lo < 2.0 for la, lo in pts["england"].values())
+
+
+# ---- Wales, Scotland, Ireland and Northern Ireland (#492 stage 4) ----------------------------------------------------
+def test_an_inland_directory_water_takes_its_own_curve_and_the_error_measured_for_it():
+    m = water_temp.load()
+    cells = {"53.2,-8.6": 9.0}
+    lake = water_temp.directory_estimate(m, cells, "2026-10-31", 53.19, -8.56, "lake")
+    assert lake["route"] == "lake_air_curve" and lake["typical_c"] is None and lake["air_km"] == 0
+    assert water_temp.directory_estimate(m, cells, "2026-07-14", 53.19, -8.56, "river")["typical_c"] == 1.85
+    assert water_temp.directory_estimate(m, cells, "2026-07-14", 53.19, -8.56, "coast")["route"] == "sea_air_curve"
+    assert water_temp.directory_estimate(m, cells, "2026-07-14", 53.19, -8.56, "canal") is None
+    assert water_temp.nearest_cell_air({"53.4,-8.6": 9.0}, 53.19, -8.56) is None            # two squares away
+    assert water_temp.nearest_cell_air({"53.4,-8.6": 9.0}, 53.19, -8.56, ring=2)[1] == 24
+
+
+def test_the_nations_waters_are_typed_and_placed():
+    from dipcast import ireland, northern_ireland, scotland
+    assert ireland.water_kind("IEWEBWC010_0000_0040", "Aillebrack") == ("coast", "epa_code")
+    assert ireland.water_kind("IESHBWL25_191a_0300", "Lough Derg") == ("lake", "epa_code")
+    assert ireland.water_kind("IESEBWT050_0000_0100", "Somewhere") == ("estuary", "epa_code")
+    # Checked one by one (review of #548): Monaghan's lakes, and Halton's River, a river by the EPA's own words.
+    assert ireland.water_kind("BPNBF240000030001", "Lough Muckno Bathing Area") == ("lake", "checked")
+    assert ireland.water_kind("BPNBF240000070001", "Emy Lough") == ("lake", "checked")
+    assert ireland.water_kind("BPNBF240000040001", "Halton's River (Dromore Lake System)") == ("river", "checked")
+    # Unchecked: a River is a river, a Lake a lake, and a Lough may be the sea's, so it gets no kind.
+    assert ireland.water_kind("BPNBF99_0001", "Some River Bathing Area") == ("river", "name")
+    assert ireland.water_kind("BPNBF99_0002", "New Lake") == ("lake", "name")
+    assert ireland.water_kind("BPNBF99_0003", "Lough Swilly Beach") == ("unknown", "name")
+    assert ireland.water_kind("BPNBF05_0003", "Silver Strand Louisburgh") == ("coast", "name")
+    assert ireland.position(162397, 215167) == (53.18591, -8.56323)   # Loughrea Lake, Irish Grid
+    assert ireland.position(None, 1) == (None, None)
+
+    def one(code, name):
+        return {"attributes": {"description": name, "year": 2025, "class_description": "Excellent",
+                               "bw_url": f"https://bathingwaters.sepa.org.uk/locations-and-results/results?location={code}"},
+                "geometry": {"x": -4.0, "y": 57.0}}
+    # SEPA's three inland waters (its Loch Morlich profile; the Scottish Government's list): lakes, not the sea.
+    kinds = {s["name"]: (s["kind"], s["kind_from"]) for s in scotland.parse(
+        [one("366986", "Loch Morlich"), one("200305", "Dores"), one("125079", "Luss Bay"), one("472272", "Largs")])}
+    assert kinds == {"Loch Morlich": ("lake", "sepa_list"), "Dores": ("lake", "sepa_list"),
+                     "Luss Bay": ("lake", "sepa_list"), "Largs": ("coast", "sepa_list")}
+    assert northern_ireland._point({"x": -6.87562, "y": 55.16822}) == {"lat": 55.16822, "lon": -6.87562}
+    assert northern_ireland._point({}) == {}
+
+
+def test_a_water_of_unconfirmed_kind_gets_no_curve_and_says_why():
+    import build_site
+    from dipcast.coastal import water_line
+    s = [{"id": "x", "lat": 55.0, "lon": -7.5, "kind": "unknown"}]
+    h = build_site.attach_directory_water_temp(s, {"date": "2026-10-31", "cells": {"55.0,-7.5": 10.0}}, nation="ireland")
+    assert h["missing"] == {"kind": 1} and "water_temp_est" not in s[0]
+    assert water_line(s[0]) == "No water temperature estimate: what kind of water this is has not been confirmed"
+
+
+def _cache_cell(tmp, lat, lon, day="2026-10-31", air=10.0, age_h=1.0):
+    t = pd.date_range(pd.Timestamp(day) - pd.Timedelta(days=9), pd.Timestamp(day) + pd.Timedelta(days=1), freq="h", tz="UTC")
+    p = tmp / f"forecast_{rainfall.cell_key(lat, lon)}.parquet"
+    pd.DataFrame({"cell_lat": lat, "cell_lon": lon, "time": t, "precip_mm": 0.0, "air_c": air}).to_parquet(p)
+    import os
+    import time as _t
+    os.utime(p, (_t.time() - age_h * 3600,) * 2)
+    return p
+
+
+def test_directory_air_reads_cached_cells_free_and_asks_only_for_the_fewest_missing(tmp_path, monkeypatch):
+    import build_site
+    monkeypatch.setattr(rainfall, "CACHE", tmp_path)
+    now = pd.Timestamp("2026-10-31T12:00", tz="Europe/London")
+    _cache_cell(tmp_path, 57.1, -2.1)                      # a Scottish shadow cell, fresh: free
+    points = [(57.12, -2.08), (52.41, -4.09), (52.43, -4.12), (52.6, -4.1)]   # Aberdeen; three Welsh sites
+    asked = []
+
+    def fetch(cells):
+        asked.append(list(cells))
+        for c in cells:
+            _cache_cell(tmp_path, *c, age_h=0)
+    air, h = build_site.directory_air(points, now=now, fetch=fetch, spare=lambda w: True)
+    assert asked == [[(52.5, -4.1)]] and h["asked"] == h["cells_needed"] == 1   # one cell reaches all three Welsh sites
+    assert h["calls"] == 1.0 and h["held"] == 0 and "57.1,-2.1" in air["cells"]
+    sites = [{"id": str(i), "lat": a, "lon": b, "kind": "coast"} for i, (a, b) in enumerate(points)]
+    assert build_site.attach_directory_water_temp(sites, air, nation="wales")["estimated"] == 4
+    # The next build: everything is fresh, so nothing is asked for.
+    air, h = build_site.directory_air(points, now=now, fetch=fetch, spare=lambda w: True)
+    assert len(asked) == 1 and h["asked"] == 0 and h["cells_needed"] == 0
+    # No spare calls: nothing asked, the gap said, and an old cell past its age is not used.
+    for p in tmp_path.glob("forecast_52*.parquet"):
+        p.unlink()
+    air, h = build_site.directory_air(points, now=now, fetch=fetch, spare=lambda w: False)
+    assert h["held"] == 1 and h["asked"] == 0 and len(asked) == 1
+    s = [{"id": "w", "lat": 52.41, "lon": -4.09, "kind": "coast"}]
+    assert build_site.attach_directory_water_temp(s, air, nation="wales")["missing"] == {"air": 1}
+
+
+def test_directory_air_keeps_the_ensembles_day_back():
+    import build_site
+    # The default rule asks spare_for for the cells and the ensemble's unspent day together.
+    import inspect
+    src = inspect.getsource(build_site.directory_air)
+    assert "ENSEMBLE_DAILY_CALLS" in src and "spare_for" in src
+    assert build_site.greedy_cells([(52.41, -4.09), (52.43, -4.12)]) == [(52.4, -4.1)]   # their own, the nearest
+    assert build_site.site_water_kind({"kind": "inland"}) == "lake" and build_site.site_water_kind({}) == "coast"
+    assert build_site.site_point({"lat": 1.0, "lon": 2.0}, {}) == (1.0, 2.0)
+    assert build_site.site_point({"id": "x"}, {"x": [3, 4]}) == (3.0, 4.0) and build_site.site_point({"id": "y"}, {}) is None
+
+
+def test_each_nations_card_says_the_estimate():
+    from dipcast import ireland, northern_ireland, scotland, wales
+    est = {"temp_c": 12, "date": "2026-10-31", "route": "lake_air_curve", "tested": False, "typical_c": None,
+           "air_7d_c": 9.0, "air_km": 0}
+    from dipcast.coastal import water_line
+    assert water_line({"water_temp_est": est}).endswith("at this water's square, not measured. Provisional: not yet checked in these months")
+    summer = {**est, "date": "2026-07-14", "typical_c": 1.93}
+    assert "typical error 1.9 °C at lakes in a summer test" in water_line({"water_temp_est": summer})
+    assert wales._water({"water_temp_est": est}).startswith("<br>Water about 12 °C on 31 Oct")
+    assert scotland._water({}) == ""
+    for mod in (ireland, northern_ireland):
+        assert "from dipcast.coastal import water_line" in __import__("inspect").getsource(mod.render)
