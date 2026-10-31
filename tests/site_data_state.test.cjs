@@ -17,8 +17,8 @@ const between = (from, to) => { const a = page.indexOf(from), b = page.indexOf(t
 const ctx = vm.createContext({ esc: s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;'), companyName });
 vm.runInContext(between("// An overflow's live status in words.", '\nconst initial = ')
   + between('// A company feed that did not answer the last poll', '\n// Every overflow upstream as a dot')
-  + '\nthis.statusText = statusText; this.drawnStatus = drawnStatus; this.liveSay = liveSay; this.ageReadings = ageReadings;', ctx);
-const { statusText, drawnStatus, liveSay, ageReadings } = ctx;
+  + '\nthis.statusText = statusText; this.drawnStatus = drawnStatus; this.liveSay = liveSay; this.ageReadings = ageReadings; this.noFeedSaid = noFeedSaid;', ctx);
+const { statusText, drawnStatus, liveSay, ageReadings, noFeedSaid } = ctx;
 
 test('a reading that is not current says when its feed last updated, never "not discharging"', () => {
   const since = '2026-10-02T13:00:00+00:00';
@@ -45,16 +45,16 @@ test('a quiet overflow that is not current is drawn in the grey of unknown; a di
 });
 
 test('Right now names a stale feed beside a feed that is down, and counts neither as reporting', () => {
-  assert.equal(liveSay({}, 22, 22), '22 of 22 report live.');
-  assert.equal(liveSay({}, 22, 20), '20 of 22 report live; the 2 that do not could be spilling unseen.');
+  // The count is in the Not known here row's heading and under the five days (31 Oct 2026): here, why.
+  assert.equal(liveSay({}, 22, 22), '');
+  assert.equal(liveSay({}, 22, 20), 'With no live reading, they could be spilling unseen.');
   const stale = { stale_upstream: 14, feed_stale: [{ company: 'Northumbrian Water', overflows: 14, since: '2026-10-02T13:00:00+00:00' }] };
-  assert.equal(liveSay(stale, 20, 5), '5 of 20 report live. One more gives no live reading and could be spilling unseen.'
-    + " Northumbrian Water's live feed has not updated since 2 Oct, 14:00: its 14 overflows here could be spilling unseen.");
+  assert.equal(liveSay(stale, 20, 5), "Northumbrian Water's live feed has not updated since 2 Oct, 14:00: its 14 overflows here could be spilling unseen."
+    + ' One more gives no live reading.');
   assert.equal(liveSay({ stale_upstream: 3, feed_stale: [{ company: 'South West Water', overflows: 3, since: null }] }, 3, 0),
-    "0 of 3 report live. South West Water's live feed has given no time for its last update: its 3 overflows here could be spilling unseen.");
+    "South West Water's live feed has given no time for its last update: its 3 overflows here could be spilling unseen.");
   const both = { ...stale, feed_down_upstream: 2, feed_down: [{ company: 'Yorkshire Water', overflows: 2, since: null }] };
-  assert.equal(liveSay(both, 20, 4), '4 of 20 report live.'
-    + " Yorkshire Water's live feed is down: its 2 overflows here could be spilling unseen."
+  assert.equal(liveSay(both, 20, 4), "Yorkshire Water's live feed is down: its 2 overflows here could be spilling unseen."
     + " Northumbrian Water's live feed has not updated since 2 Oct, 14:00: its 14 overflows here could be spilling unseen.");
 });
 
@@ -142,10 +142,10 @@ test('a spill running when its feed last answered says so and is drawn as discha
 
 test('records that stopped updating are named apart from a stale feed', () => {
   const now = { stale_upstream: 2, feed_stale: [{ company: 'Wessex Water', overflows: 2, since: '2026-03-31T14:23:00+00:00', records: true }] };
-  assert.equal(liveSay(now, 38, 35), '35 of 38 report live. One more gives no live reading and could be spilling unseen.'
-    + ' Wessex Water has not updated 2 of its overflows here since 31 Mar, 15:23: they could be spilling unseen.');
+  assert.equal(liveSay(now, 38, 35), 'Wessex Water has not updated 2 of its overflows here since 31 Mar, 15:23: they could be spilling unseen.'
+    + ' One more gives no live reading.');
   const one = { stale_upstream: 1, feed_stale: [{ company: 'Anglian Water', overflows: 1, since: null, records: true }] };
-  assert.equal(liveSay(one, 16, 15), '15 of 16 report live. Anglian Water gives no update time for one of its overflows here: it could be spilling unseen.');
+  assert.equal(liveSay(one, 16, 15), 'Anglian Water gives no update time for one of its overflows here: it could be spilling unseen.');
 });
 
 test('a quiet reading over six hours old where the page is read stops counting as reporting', () => {
@@ -196,8 +196,8 @@ test('click anywhere counts a carried spill and a frozen record as forecast.live
 test('a feed that stamps a record only when it changes says so, quiet or stopped', () => {
   // Northumbrian Water at the Coquet, Rothbury, 11 Oct 2026 23:11 UTC: no record changed after 16:57.
   const now = { stale_upstream: 8, feed_stale: [{ company: 'Northumbrian Water', overflows: 8, since: '2026-10-11T16:57:08+00:00', on_change: true }] };
-  assert.equal(liveSay(now, 8, 0), '0 of 8 report live. Northumbrian Water changes a record in its live feed only when an overflow\'s status changes,'
-    + ' and none has changed since 11 Oct, 17:57. A quiet spell looks like this, and so does a feed that has stopped: its 8 overflows here could be spilling unseen.');
+  assert.equal(liveSay(now, 8, 0), "Northumbrian Water's feed changes only when an overflow starts or stops. Nothing has changed since 11 Oct, 17:57,"
+    + ' so a quiet spell and a stopped feed look the same: its 8 overflows here could be spilling unseen.');
   // Without the flag (an every-record feed, or a forecast from before it), as before.
   const old = { stale_upstream: 8, feed_stale: [{ company: 'Northumbrian Water', overflows: 8, since: '2026-10-11T16:57:08+00:00' }] };
   assert.match(liveSay(old, 8, 0), /Northumbrian Water's live feed has not updated since 11 Oct, 17:57: its 8 overflows here could be spilling unseen\.$/);
@@ -212,4 +212,12 @@ test('a feed that stamps a record only when it changes says so, quiet or stopped
     feeds_on_change: ['Northumbrian Water'], quiet_by_feed: [{ company: 'Northumbrian Water', overflows: 8, updated_at: '2026-10-11T16:57:08+00:00' }] },
     contributors: [] }, built + 6 * 3600e3);
   assert.equal(JSON.parse(JSON.stringify(s.now.feed_stale))[0].on_change, true);
+});
+
+test('an offline monitor on a working feed is not a company with no live feed', () => {
+  // River Medway at Tonbridge, 31 Oct 2026: Leigh Road, Hildenborough, offline (-2) on Southern Water's feed, read as
+  // "Southern Water has no live feed SwimSignal reads" under the sentence about Southern Water's feed.
+  assert.equal(noFeedSaid({ contributors: [{ company: 'SWS', status: -2, data_state: 'offline' }, { company: 'SWS', status: 0, data_state: 'stale' }] }), '');
+  assert.match(noFeedSaid({ contributors: [{ company: 'DCWW', status: -2, data_state: 'no_feed' }] }), /has no live feed SwimSignal reads\.$/);
+  assert.match(noFeedSaid({ contributors: [{ company: 'DCWW', status: -2 }] }), /has no live feed SwimSignal reads\.$/);   // a file from before data states
 });

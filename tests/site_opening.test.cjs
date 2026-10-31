@@ -52,7 +52,7 @@ test('the line on what the forecast could read: live readings, days with no fore
   // None reports: unavailable, at any level, and never as dry.
   const none = {label: null, discharging_upstream: 0, monitored_upstream: 0, no_feed_upstream: 45};
   for (const days of [['low', 'moderate', 'low', 'low', 'low'], ['low', 'low', 'low', 'low', 'low']]) {
-    assert.equal(live(spot(days, {now: none})), 'Live sewage spill status unavailable: none of the 45 overflows upstream reports live, so whether any is spilling is not known');
+    assert.equal(live(spot(days, {now: none})), 'Live sewage spill status unavailable: none of the 45 overflows upstream reports live');
     assert.deepEqual(words(spot(days, {now: none})), []);
   }
   // An update with no count keeps the old clause here (no live line to replace it).

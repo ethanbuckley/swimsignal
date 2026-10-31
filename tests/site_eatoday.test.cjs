@@ -292,3 +292,12 @@ test('official advice: gone from the open list, or changed since review, stays u
   }
 });
 
+
+test('on a spot page the level is said apart from official advice once, in its block', () => {
+  // 31 Oct 2026: Frensham said it three times (the block, a line under the level, the coverage line).
+  const app = require('node:fs').readFileSync(require('node:path').join(__dirname, '../src/dipcast/site/index.html'), 'utf8');
+  const answer = app.slice(app.indexOf('const answerWords = '), app.indexOf('\n// The live status', app.indexOf('const answerWords = ')));
+  assert.doesNotMatch(answer, /eaTodayApart/);
+  assert.match(app, /const reviewed = typeof eaTodayCover === 'function' \? eaTodayCover\(d\) : '';\n  if \(!reviewed && eaUnchecked\(d\)\) \{/);
+  assert.match(ea.eaTodayOfficial(frensham({ official: [item()] })), /It is not SwimSignal's, and the forecast below does not include it\./);
+});

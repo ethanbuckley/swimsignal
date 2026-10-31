@@ -202,13 +202,11 @@ def test_the_build_writes_the_advice_into_spots_json_and_the_built_page(tmp_path
              'Last checked 26 Oct 2026.</p></li></ul><p class="o-sep">Follow this advice first. It is not SwimSignal\'s, '
              'and the forecast below does not include it.</p></section>')
     assert block in page
-    # Above the level, which keeps its own words and is said to be SwimSignal's forecast, apart from it.
+    # Above the level, which keeps its own words. That the level is apart from the advice is said once, in the block
+    # (31 Oct 2026: a line under the level and the coverage line said it again), with its check date and link.
     assert page.index('<h1 class="spot-name"') < page.index(block) < page.index('id="risk-headline">Low risk')
-    assert '<p class="gaps o-apart">This level is SwimSignal\'s forecast. The official advice above is separate.</p>' in page
-    # The coverage line says what was checked and when, not "not checked"; a bathing water without a
-    # reviewed notice keeps the old line.
-    assert ("The Environment Agency's notice above was last checked 26 Oct. Open <a href=\"#ea-today\">today's EA advice</a> "
-            "for the latest.") in page
+    assert "o-apart" not in page and "notice above was last checked" not in page
+    # A bathing water without a reviewed notice keeps the old line.
     assert "Today's EA advice not checked" not in page.split('id="answer-words"', 1)[1].split("</section>", 1)[0]
     # Nothing the build writes into the page says the advice was not checked. (The "Not known here" tile
     # is drawn by the script, not built; tests/site_official_tags.test.cjs checks its row.)
