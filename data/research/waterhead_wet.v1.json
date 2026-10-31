@@ -1,0 +1,371 @@
+{
+ "schema": "swimsignal.waterhead-wet",
+ "version": "1.0.0",
+ "generated_at": "2026-10-31T15:11:06+00:00",
+ "site": {
+  "name": "Waterhead, Windermere",
+  "confirmed": false,
+  "note": "Named in Tim Boden's email of 25 Oct 2026; the sheet itself has no site column."
+ },
+ "units": "per 100 ml, as the sheet records them (its headings say cfu/100ml)",
+ "claim": {
+  "public_wording": "Weekly water samples taken at Waterhead, Windermere, by Ambleside Action for a Future's Waterhead E. coli Testing project, and the E. coli and intestinal enterococci counted in each. A sample is the water at that place on that morning only: not today's water, and not the rest of the lake.",
+  "not_claimed": [
+   "the water now",
+   "the water elsewhere in Windermere",
+   "a forecast",
+   "a bathing water rating",
+   "that water is safe to swim",
+   "a check of SwimSignal's forecast"
+  ]
+ },
+ "seasons": [
+  {
+   "season": 2025,
+   "first": "2025-04-16",
+   "last": "2025-10-30",
+   "samples": 29,
+   "ecoli": {
+    "median": 24,
+    "max": 388
+   },
+   "ie": {
+    "median": 12,
+    "max": 154
+   },
+   "how": "Thursday mornings, analysed by Simplex Health's laboratory (the WET technical report, 17 Nov 2025)."
+  },
+  {
+   "season": 2026,
+   "first": "2026-03-23",
+   "last": "2026-10-12",
+   "samples": 30,
+   "ecoli": {
+    "median": 31.5,
+    "max": 649
+   },
+   "ie": {
+    "median": 10.0,
+    "max": 386
+   },
+   "how": "Mondays and Tuesdays. The laboratory, method and time of day are not yet confirmed."
+  }
+ ],
+ "open_questions": [
+  "The exact sampling point at Waterhead: the sheet has no site column, and the email names Waterhead.",
+  "Whether 2026 used the same laboratory and method as 2025.",
+  "What a recorded 0 means: most likely below the method's detection limit, not a true zero."
+ ],
+ "attribution": "Bacteria counts: Ambleside Action for a Future, Waterhead E. coli Testing (WET) project.",
+ "permission": "Public domain (Tim Boden, 25 Oct 2026): may be used and forwarded with credit to Ambleside Action for a Future.",
+ "report": {
+  "title": "Waterhead E.coli Testing (WET) Project Technical Report",
+  "author": "Tim Boden",
+  "date": "2025-11-17"
+ },
+ "sources": {
+  "sheet": "25-26 Bacteria Levels.xlsx",
+  "sheet_sha256": "c9f229c832eea9782b6d8874e79c8feaa430f8443549669b52778b647516d3b5",
+  "received": "2026-10-25",
+  "code_sha256": {
+   "scripts/export_waterhead_wet.py": "2fbdea3e77eb14e46063b1db7d516e59ae935c8b0229b6af627a73a56f7c2567"
+  }
+ },
+ "samples": [
+  {
+   "date": "2025-04-16",
+   "ecoli": 1,
+   "ie": 3
+  },
+  {
+   "date": "2025-04-24",
+   "ecoli": 30,
+   "ie": 7
+  },
+  {
+   "date": "2025-05-01",
+   "ecoli": 8,
+   "ie": 30
+  },
+  {
+   "date": "2025-05-08",
+   "ecoli": 0,
+   "ie": 1
+  },
+  {
+   "date": "2025-05-15",
+   "ecoli": 0,
+   "ie": 4
+  },
+  {
+   "date": "2025-05-22",
+   "ecoli": 4,
+   "ie": 8
+  },
+  {
+   "date": "2025-05-29",
+   "ecoli": 108,
+   "ie": 69
+  },
+  {
+   "date": "2025-06-05",
+   "ecoli": 30,
+   "ie": 9
+  },
+  {
+   "date": "2025-06-12",
+   "ecoli": 84,
+   "ie": 1
+  },
+  {
+   "date": "2025-06-19",
+   "ecoli": 22,
+   "ie": 5
+  },
+  {
+   "date": "2025-06-26",
+   "ecoli": 132,
+   "ie": 75
+  },
+  {
+   "date": "2025-07-03",
+   "ecoli": 32,
+   "ie": 6
+  },
+  {
+   "date": "2025-07-10",
+   "ecoli": 11,
+   "ie": 6
+  },
+  {
+   "date": "2025-07-17",
+   "ecoli": 388,
+   "ie": 38
+  },
+  {
+   "date": "2025-07-24",
+   "ecoli": 16,
+   "ie": 2
+  },
+  {
+   "date": "2025-07-31",
+   "ecoli": 22,
+   "ie": 12
+  },
+  {
+   "date": "2025-08-07",
+   "ecoli": 388,
+   "ie": 103
+  },
+  {
+   "date": "2025-08-14",
+   "ecoli": 62,
+   "ie": 55
+  },
+  {
+   "date": "2025-08-21",
+   "ecoli": 13,
+   "ie": 18
+  },
+  {
+   "date": "2025-08-28",
+   "ecoli": 143,
+   "ie": 154
+  },
+  {
+   "date": "2025-09-04",
+   "ecoli": 58,
+   "ie": 52
+  },
+  {
+   "date": "2025-09-11",
+   "ecoli": 24,
+   "ie": 18
+  },
+  {
+   "date": "2025-09-18",
+   "ecoli": 77,
+   "ie": 28
+  },
+  {
+   "date": "2025-09-25",
+   "ecoli": 31,
+   "ie": 9
+  },
+  {
+   "date": "2025-10-02",
+   "ecoli": 6,
+   "ie": 4
+  },
+  {
+   "date": "2025-10-09",
+   "ecoli": 149,
+   "ie": 25
+  },
+  {
+   "date": "2025-10-16",
+   "ecoli": 18,
+   "ie": 4
+  },
+  {
+   "date": "2025-10-23",
+   "ecoli": 19,
+   "ie": 133
+  },
+  {
+   "date": "2025-10-30",
+   "ecoli": 10,
+   "ie": 64
+  },
+  {
+   "date": "2026-03-23",
+   "ecoli": 8,
+   "ie": 2
+  },
+  {
+   "date": "2026-03-30",
+   "ecoli": 99,
+   "ie": 57
+  },
+  {
+   "date": "2026-04-07",
+   "ecoli": 34,
+   "ie": 13
+  },
+  {
+   "date": "2026-04-13",
+   "ecoli": 489,
+   "ie": 50
+  },
+  {
+   "date": "2026-04-20",
+   "ecoli": 27,
+   "ie": 3
+  },
+  {
+   "date": "2026-04-27",
+   "ecoli": 262,
+   "ie": 65
+  },
+  {
+   "date": "2026-05-05",
+   "ecoli": 54,
+   "ie": 10
+  },
+  {
+   "date": "2026-05-11",
+   "ecoli": 5,
+   "ie": 3
+  },
+  {
+   "date": "2026-05-18",
+   "ecoli": 18,
+   "ie": 0
+  },
+  {
+   "date": "2026-05-26",
+   "ecoli": 13,
+   "ie": 1
+  },
+  {
+   "date": "2026-06-01",
+   "ecoli": 649,
+   "ie": 267
+  },
+  {
+   "date": "2026-06-08",
+   "ecoli": 89,
+   "ie": 10
+  },
+  {
+   "date": "2026-06-15",
+   "ecoli": 29,
+   "ie": 7
+  },
+  {
+   "date": "2026-06-22",
+   "ecoli": 35,
+   "ie": 3
+  },
+  {
+   "date": "2026-06-29",
+   "ecoli": 15,
+   "ie": 1
+  },
+  {
+   "date": "2026-07-06",
+   "ecoli": 26,
+   "ie": 11
+  },
+  {
+   "date": "2026-07-13",
+   "ecoli": 27,
+   "ie": 1
+  },
+  {
+   "date": "2026-07-20",
+   "ecoli": 15,
+   "ie": 2
+  },
+  {
+   "date": "2026-07-27",
+   "ecoli": 173,
+   "ie": 25
+  },
+  {
+   "date": "2026-08-04",
+   "ecoli": 411,
+   "ie": 386
+  },
+  {
+   "date": "2026-08-10",
+   "ecoli": 11,
+   "ie": 4
+  },
+  {
+   "date": "2026-08-17",
+   "ecoli": 3,
+   "ie": 11
+  },
+  {
+   "date": "2026-08-24",
+   "ecoli": 19,
+   "ie": 6
+  },
+  {
+   "date": "2026-09-01",
+   "ecoli": 111,
+   "ie": 58
+  },
+  {
+   "date": "2026-09-08",
+   "ecoli": 147,
+   "ie": 47
+  },
+  {
+   "date": "2026-09-14",
+   "ecoli": 125,
+   "ie": 60
+  },
+  {
+   "date": "2026-09-21",
+   "ecoli": 70,
+   "ie": 8
+  },
+  {
+   "date": "2026-09-28",
+   "ecoli": 18,
+   "ie": 10
+  },
+  {
+   "date": "2026-10-05",
+   "ecoli": 462,
+   "ie": 104
+  },
+  {
+   "date": "2026-10-12",
+   "ecoli": 16,
+   "ie": 8
+  }
+ ]
+}

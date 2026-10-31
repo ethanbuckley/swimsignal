@@ -1,0 +1,53 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Waterhead bacteria samples: a prose page with the shared head, header and foot, written by scripts/build_site.py
+     (write_waterhead) beside the app, with the seasons and samples in place of the WET marker below, from
+     data/research/waterhead_wet.v1.json (scripts/export_waterhead_wet.py, docs/WATERHEAD-WET-CONTRACT-v1.md). No script:
+     59 samples fit in the page. What it may say is the export's claim, which write_waterhead puts in the lead. -->
+<title>Waterhead bacteria samples · SwimSignal</title>
+<meta name="description" content="Weekly E. coli and intestinal enterococci samples at Waterhead, Windermere, in 2025 and 2026, from Ambleside Action for a Future's Waterhead E. coli Testing project. Past samples, not today's water.">
+<meta name="theme-color" content="#3d5b5d">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="page.css">
+<link rel="preload" href="fonts/SourceSans3-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/SourceSerif4-latin.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+  /* The tokens, tables and the prose page are page.css's. */
+  main.doc .wet-sum { font-size:var(--fs-note); }
+  .wet-samples th[scope="row"] { color:var(--ink); font-weight:400; }
+  .wet-samples tbody tr:first-child th { border-bottom-color:var(--line); }   /* page.css inks a first row's th, meant for a header row */
+</style>
+</head><body>
+<header class="top"><a class="brand" href="./"><svg viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" fill="#0f5a61"/><path d="M430-20C330 110 470 230 300 290S110 380 190 540" fill="none" stroke="#5CC2B5" stroke-width="70" stroke-linecap="round"/><circle cx="318" cy="138" r="38" fill="#F08A4B"/><circle cx="165" cy="358" r="46" fill="none" stroke="#fff" stroke-width="22"/></svg>SwimSignal</a>
+<nav aria-label="Site"><a href="plan/">Plan a swim</a><a href="saved/">Saved</a><a href="verification.html">Accuracy</a><a href="about.html">About</a><a class="desk-only" href="research.html">Research</a><a class="desk-only" href="feedback.html">Feedback</a></nav></header>
+<main class="doc">
+<h1>Waterhead bacteria samples</h1>
+<!-- WET -->
+
+<h2>What these samples do not tell you</h2>
+<ul>
+<li>what the water is like now</li>
+<li>what the water is like elsewhere in Windermere</li>
+<li>a forecast</li>
+<li>a bathing water rating, which is worked out from many samples over four years, never from one</li>
+<li>that the water is safe to swim</li>
+<li>how well SwimSignal's forecast did: these samples have not been compared with it</li>
+</ul>
+
+<h2>How they were taken</h2>
+<p>Volunteers from Ambleside Action for a Future sampled the water at Waterhead, at the head of Windermere, about once a week from spring to autumn. Waterhead is not a designated bathing water, so the Environment Agency does not sample it. Each count is what the sheet records, per 100 ml.</p>
+<p>Some things are not yet confirmed, and this page will change when they are:</p>
+<!-- WET-OPEN -->
+<p class="small">The sheet also has total coliforms, which are not shown here.</p>
+
+<h2>Sources</h2>
+<p><!-- WET-ATTRIB --> The counts are public domain and are shown here with the project's permission. The project's own write-up is Tim Boden's <i>Waterhead E.coli Testing (WET) Project Technical Report</i> (17 November 2025).</p>
+<ul>
+<li><a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/WATERHEAD-WET-CONTRACT-v1.md">What this page's data holds, and what it may say</a></li>
+<li><a href="https://github.com/ethanbuckley/swimsignal/blob/main/scripts/export_waterhead_wet.py">The script that makes the file</a></li>
+<li><a href="data/research/waterhead_wet.json">The samples as one file</a></li>
+</ul>
+</main>
+<footer class="site-foot"><div class="rule"><p>SwimSignal is a free, non-commercial pollution risk forecast for river and lake swim spots in England, run by Ethan Buckley. A forecast, not a water test: check the signs at the water before you swim.</p>
+<p><a href="terms.html">Terms of use</a> · <a href="privacy.html">Privacy</a> · <a href="feedback.html">Feedback</a> · <a href="methods.html">Method</a> · <a href="research.html">Research</a> · <a href="terms.html#data">Data credits</a> · <a href="https://github.com/ethanbuckley/swimsignal">Source code</a> (MIT)</p></div></footer>
+</body></html>
