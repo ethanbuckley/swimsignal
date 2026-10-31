@@ -31,6 +31,20 @@ def test_the_export_is_split_into_an_index_and_a_file_a_location(tmp_path):
     assert one == whole   # one location, exactly as exported
 
 
+def test_only_its_own_files_are_replaced_in_the_shared_research_folder(tmp_path):
+    # data/research/ also holds the other research observations (spill durations, E. coli evidence, lake temperatures):
+    # writing the lake files must leave theirs alone, whichever is written first.
+    bs = _build_site()
+    other = tmp_path / "data" / "research" / "lake-temperatures"
+    other.mkdir(parents=True)
+    (other / "index.json").write_text("{}")
+    (tmp_path / "data" / "research" / "lake").mkdir()
+    (tmp_path / "data" / "research" / "lake" / "gone.json").write_text("{}")   # from an earlier build: replaced
+    bs.write_lake_observations(tmp_path, SAMPLE)
+    assert (other / "index.json").read_text() == "{}"
+    assert not (tmp_path / "data" / "research" / "lake" / "gone.json").exists()
+
+
 def test_nothing_is_published_from_a_missing_or_foreign_export(tmp_path):
     bs = _build_site()
     assert bs.write_lake_observations(tmp_path, tmp_path / "none.json") == {"available": False, "why": "no export in this build"}

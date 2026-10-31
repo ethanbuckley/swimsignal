@@ -3067,8 +3067,8 @@ LAKE_HEAVY = ("series", "lab")   # per lake, only in its own file
 def write_lake_observations(site: Path, path: Path = LAKE_OBSERVATIONS) -> dict:
     """data/research/lakes.json and data/research/lake/<id>.json from the research export, or lakes.json saying
     none are published (`available` false, with why). Returns the build's health entry."""
-    out = site / "data" / "research"
-    shutil.rmtree(out, ignore_errors=True)
+    out = site / "data" / "research"   # shared with the other research observations: only this file's own are replaced
+    shutil.rmtree(out / "lake", ignore_errors=True)
     (out / "lake").mkdir(parents=True)
     why = None
     if not path.is_file():
