@@ -2059,22 +2059,47 @@ const weatherRow = (d, iso) => { const w = weatherOn(d, iso); if (!w) return '';
 // an estimate for the spot today: after the reading where there is a sensor, on its own where there is none. It
 // is shown only on the day it is for, so an old page never offers yesterday's. Rivers only: the model passed its
 // test for rivers and failed for lakes (docs/WATER-TEMPERATURE-MODEL-TEST-2026-10.md), so a lake never shows one.
-function waterTile(w, e = null, kind = null) {
-  const waterEstOk = x => !!x && kind === 'river' && typeof x.temp_c === 'number' && typeof x.within_c === 'number'
-    && x.date === today();
-  const waterEstSay = x => `About ${x.temp_c}&nbsp;°C (estimated, typically within ${fmt(x.within_c, 0)}&nbsp;°C).`;
+// Water temperature (#492; Ethan, 30 October 2026: a clearly labelled provisional estimate at every river and lake spot,
+// all year). The build's estimate says its route (water_temp.estimate_any): the tested river model, May to September; a
+// lake route whose summer test error is measured but which failed the lake test; or any water October to April, not yet
+// checked in those months. Each route is worded by what was measured for it and nothing more: no error is said where
+// none was measured. A sensor reading is a measurement, said as one, apart from the estimate. Only today's estimate shows.
+const WT_ROUTES = new Set(['river_model', 'lake_model', 'lake_curve', 'river_off_season', 'lake_off_season']);
+const waterEstOk = (x, kind) => !!x && (kind === 'river' || kind === 'lake') && typeof x.temp_c === 'number' && x.date === today()
+  && (WT_ROUTES.has(x.route) || (!x.route && kind === 'river' && typeof x.within_c === 'number'));   // a file from before routes: the river model, rivers only
+const waterEstHow = x => !x.route || x.route === 'river_model' ? `estimated, typically within ${fmt(x.within_c ?? 2, 0)}&nbsp;°C`
+  : x.route.endsWith('_off_season') ? 'provisional estimate, not yet checked in these months'
+  : `provisional estimate; typical error ${fmt(x.typical_c, 1)}&nbsp;°C at lakes in a summer test`;
+const waterEstSay = x => `About ${x.temp_c}&nbsp;°C (${waterEstHow(x)}).`;
+// For a line elsewhere (the planner's columns): "water about 11 °C today, estimated", or ''.
+function waterEstShort(e, kind) { return waterEstOk(e, kind) ? `water about ${e.temp_c} °C today, ${!e.route || e.route === 'river_model' ? 'estimated' : 'provisional estimate'}` : ''; }
+const WT_AIR = 'It comes from a weather model\'s air temperature for this area over the last 30 days, today\'s forecast included, with the date';
+const WT_TAIL = ' It is the water near the surface: it changes through the day and can be warmer or colder where you swim. Not part of the pollution level.';
+function waterEstMore(x) {
+  const r = x.route || 'river_model';
+  if (r === 'river_model') return `The estimate is not a measurement. ${WT_AIR}, the size of the river and the height of the land. The model was tested on 3,798 rivers it had not seen, against the Environment Agency's own samples from May to September 2023 to 2025, using archived air: its typical error there was 1.6&nbsp;°C, and 1 time in 10 it was 2.5&nbsp;°C or more out. The forecast air used here was checked against that archive twice and ran 0.25 to 0.5&nbsp;°C cooler; today's forecast itself was not checked.${WT_TAIL}`;
+  if (r === 'lake_model' || r === 'lake_curve') return `A provisional estimate, not a measurement. ${WT_AIR}${r === 'lake_model' ? ' and the size of the lake' : ' alone, as for large lakes the fuller model did worse'}. The lake model did not pass its test: against the Environment Agency's samples at 307 lakes it had not seen, May to September 2023 to 2025, its typical error was 1.8&nbsp;°C, too cold early in the season and a little warm in September. For ${r === 'lake_model' ? 'lakes under 1&nbsp;km²' : 'lakes of 1&nbsp;km² or more'} the typical error was ${fmt(x.typical_c, 1)}&nbsp;°C. A deep lake's surface can lag the air by more than a month.${WT_TAIL}`;
+  return `A provisional estimate, not a measurement. ${WT_AIR}, through a relation between the air and the ${r === 'lake_off_season' ? 'lake' : 'river'} fitted on May to September samples. It has not been checked from October to April: no test so far had samples from those months, so how far out it is in winter is not known yet. Each estimate is saved and is being compared with the Environment Agency's water sensors as the winter goes on.${WT_TAIL}`;
+}
+function waterTile(w, e = null, kind = null, miss = null) {
   const wtIcon = () => glyph('<path d="M10 14.6V5a2 2 0 0 1 4 0v9.6a3.6 3.6 0 1 1-4 0Z"/><path d="M12 9.5v8"/>');
-  const WT_EST_MORE = 'The estimate is not a measurement. It comes from a weather model\'s air temperature for this area over the last 30 days, today\'s forecast included, with the date, the size of the river and the height of the land. The model was tested on 3,798 rivers it had not seen, against the Environment Agency\'s own samples from May to September 2023 to 2025, using archived air: its typical error there was 1.6&nbsp;°C, and 1 time in 10 it was 2.5&nbsp;°C or more out. The forecast air used here was checked against that archive twice and ran 0.25 to 0.5&nbsp;°C cooler; today\'s forecast itself was not checked. The water changes through the day and can be warmer or colder where you swim. Not part of the pollution level. There is no estimate for lakes: the same test failed for them.';
   const t = w ? Date.parse(w.observed_at) : NaN;
-  const est = waterEstOk(e) ? e : null;
+  const est = waterEstOk(e, kind) ? e : null;
   if (!w || nil(w.temp_c) || isNaN(t) || nil(w.river_km) || !['upstream', 'downstream'].includes(w.direction)) {
-    if (!est) return null;
-    return { icon: wtIcon(), label: 'Water temperature', fig: `${est.temp_c}°`, unit: 'C, estimated', say: waterEstSay(est), more: WT_EST_MORE };
+    if (!est) {
+      // No estimate today because its inputs did not arrive: said, rather than an empty space read as "none needed".
+      if (miss && miss.date === today() && (kind === 'river' || kind === 'lake'))
+        return { icon: wtIcon(), label: 'Water temperature', fig: '–', unit: 'not estimated today',
+          say: 'No estimate in this update: the air temperatures it is worked out from did not all arrive.', more: 'The next update will try again. An older estimate is not shown as today\'s.' };
+      return null;
+    }
+    return { icon: wtIcon(), label: 'Water temperature', fig: `${est.temp_c}°`, unit: est.route && est.route !== 'river_model' ? 'C, provisional estimate' : 'C, estimated',
+      say: waterEstSay(est), more: waterEstMore(est) };
   }
   return { live: true, icon: wtIcon(), label: 'Water temperature',
     fig: `${Math.round(w.temp_c)}°`, unit: 'C',
-    say: `Measured ${esc(w.where)}${w.river ? ` on the ${esc(w.river)}` : ''}, ${fmt(w.river_km, 1)}&nbsp;km ${w.direction}, ${ago(Math.max(0, (Date.now() - t) / 60000))} ago.${est ? ` At the spot: ${waterEstSay(est).replace(/^About/, 'about')}` : ''}`,
-    more: `The Environment Agency's water-quality sensor nearest the spot on this river, within 15&nbsp;km in a straight line, that has reported in the last day: upstream if there is one, since the water here comes from upstream.${w.quality === 'Unchecked' ? ' The EA has not yet checked the reading.' : ''} The water where you swim can be warmer or colder. Not part of the pollution level.${/^https:\/\/environment\.data\.gov\.uk\//.test(w.url || '') ? ` <a href="${esc(w.url)}">The Environment Agency's page for this sensor</a> has its record.` : ''}${est ? ` ${WT_EST_MORE}` : ''}` };
+    say: `Measured ${esc(w.where)}${w.river ? ` on the ${esc(w.river)}` : ''}, ${fmt(w.river_km, 1)}&nbsp;km ${w.direction}, ${agoSpan(t)} ago.${est ? ` At the spot: ${waterEstSay(est).replace(/^About/, 'about')}` : ''}`,
+    more: `The Environment Agency's water-quality sensor nearest the spot on this river, within 15&nbsp;km in a straight line, that has reported in the last day: upstream if there is one, since the water here comes from upstream.${w.quality === 'Unchecked' ? ' The EA has not yet checked the reading.' : ''} The water where you swim can be warmer or colder. Not part of the pollution level.${/^https:\/\/environment\.data\.gov\.uk\//.test(w.url || '') ? ` <a href="${esc(w.url)}">The Environment Agency's page for this sensor</a> has its record.` : ''}${est ? ` ${waterEstMore(est)}` : ''}` };
 }
 // ------------------------------------------------------------------------------ the answer and the tiles
 // The page as Apple Weather's (docs/DESIGN.md): the answer as one big word, what set it
@@ -2361,7 +2386,7 @@ function facts(d, iso = null) {
   if (!d.error && total && x0 && !nil(x0.rain_48h_mm)) { const wet = d.days.slice(0, 5).reduce((p, q) => (q.rain_48h_mm || 0) > (p.rain_48h_mm || 0) ? q : p);
     out.push({ icon: ICON.rain, label: 'Rain here', fig: Math.round(x0.rain_48h_mm), unit: 'mm', vis: rainCols(d, x0.date),
       say: `In the 48&nbsp;h to midday ${first ? 'today' : dayName(x0.date)}.${first && wet !== x0 && wet.rain_48h_mm >= 1 ? ` The most ahead: ${Math.round(wet.rain_48h_mm)}&nbsp;mm in the 48&nbsp;h to midday ${dayName(wet.date)}.` : ''}` }); }
-  const wt = waterTile(d.water_temp, d.water_temp_est, d.kind); if (wt) out.push(wt);
+  const wt = waterTile(d.water_temp, d.water_temp_est, d.kind, d.water_temp_est_missing); if (wt) out.push(wt);
   const wx = weatherOn(d, first || !x0 ? today() : x0.date);
   if (wx) out.push({ icon: ICON.sun, label: 'Weather', fig: nil(wx.tmax) ? '–' : `${wx.tmax}°`, unit: nil(wx.tmax) ? '' : 'C high', vis: sunPath(wx, first),
     say: `Sunrise ${esc(wx.sunrise)}, sunset ${esc(wx.sunset)}.`, credit: true });
@@ -2409,7 +2434,7 @@ const answerWords = (d, iso = null) => { const m = answerParts(d, iso), spill = 
     + (m.why || m.next ? `<div class="wn">${m.why ? `<p class="why">${m.why}</p>` : ''}${m.next ? `<p class="next">${m.next}</p>` : ''}</div>` : '')
     + (typeof eaTodayApart === 'function' ? eaTodayApart(d) : '') + (d.error && m.act ? `<p class="act">${m.act}</p>` : '')
     + (spill ? `<p class="gaps">${spill}</p>` : '') + flowLine(d)
-    + `<div class="ci">${coverLine(d, iso)}<p class="issued">${nextDay() ? yesterdayLine() : `Issued ${issued()}, ${ago(ageMin())} ago`}</p></div>`
+    + `<div class="ci">${coverLine(d, iso)}<p class="issued">${nextDay() ? yesterdayLine() : `Issued ${issued()}, ${agoSpan()} ago`}</p></div>`
     + (rainAgeLine(d) ? `<p class="issued">${rainAgeLine(d)}</p>` : ''); };
 // Under the five days, in their tile: what to do at the level, that day, and what the level counts. In the
 // answer, between the level and the week, they put the five days 739 px down a 375 px phone at Long Bridges,
@@ -2931,6 +2956,8 @@ lowCtl.addTo(map);
 const STALE_MIN = 8 * 60;
 const ageMin = () => (Date.now() - new Date(DATA.generated_at).getTime()) / 60000;
 const ago = m => { const t = Math.round(m); return t < 60 ? `${t} min` : t % 60 ? `${Math.floor(t / 60)} h ${t % 60} min` : `${t / 60} h`; };   // "6 h", not "6 h 0 min"
+// The same, from a time (ms; the forecast's issue by default), in a span the minute's check moves on (stillCurrent).
+const agoSpan = (fromMs = Date.parse(DATA.generated_at)) => `<span data-ago="${fromMs}">${ago(Math.max(0, (Date.now() - fromMs) / 60000))}</span>`;
 const issued = () => new Date(DATA.generated_at).toLocaleString('en-GB', {weekday:'short', hour:'2-digit', minute:'2-digit'});
 function freshness(spot = false) {
   const m = ageMin(); const b = DATA.build || {};
@@ -2940,6 +2967,7 @@ function freshness(spot = false) {
   if (typeof OutingPack === 'object') h += OutingPack.notice();   // a page of an outing kept for offline use, read from a stored copy
   // Opened without signal, the service worker serves the last forecast it saw: say which one.
   if (!navigator.onLine && m <= STALE_MIN) h += `<div class="notice quiet" role="status"><b>Offline.</b> This is the forecast issued ${issued()} (${ago(m)} ago); it updates when you are back online.</div>`;
+  if (UPDATE) h += `<div class="notice quiet" role="status">${UPDATE_SAY[UPDATE]} <button type="button" class="linkbtn small" data-update>Update the page</button></div>`;
   if (m > STALE_MIN) h += `<div class="notice" role="alert"><b>Stale.</b> This forecast is ${ago(m)} old (issued ${issued()}). ${navigator.onLine ? 'The automatic update has not run since' : 'You are offline, so this is the last forecast this device saw'}; treat everything below as out of date.</div>`;
   return h;
 }
@@ -2957,8 +2985,8 @@ function gaps(d, list) {
 // The notices, in a box redrawn when the connection drops or returns, or the forecast turns stale,
 // while the page stays open. Only then: the stale notice is an alert, and a screen reader reads an
 // alert out again each time it is redrawn, so a redraw every minute would repeat it every minute.
-let NOTICE = '';
-const noticeState = () => `${navigator.onLine} ${ageMin() > STALE_MIN}`;
+let NOTICE = '', UPDATE = '', FORECAST_STAMP = '';   // UPDATE: a reload on offer (stillCurrent)
+const noticeState = () => `${navigator.onLine} ${ageMin() > STALE_MIN} ${UPDATE}`;
 const notices = (d = null, list = false) => { NOTICE = noticeState(); return `<div data-notices${d ? ' data-spot' : ''}>${freshness(!!d)}</div>${gaps(d, list)}`; };
 function refreshNotices() {
   if (!DATA || noticeState() === NOTICE) return;
@@ -2966,7 +2994,6 @@ function refreshNotices() {
 }
 window.addEventListener('offline', refreshNotices);
 window.addEventListener('online', refreshNotices);
-setInterval(refreshNotices, 60 * 1000);
 // Redraw the panel. The map is parked in its column first, or replacing the HTML would destroy it.
 // The new view rises into place (#result.fresh, the day strip's own motion): the class comes off and
 // goes back on with a layout read between, so the animation runs again each time.
@@ -3408,7 +3435,7 @@ function compareTable(spots, day, meta = null) {
   // The names again, for the pin (comparePin): hidden from screen readers, which have the table's own heads.
   const pin = `<div class="compare-pin" aria-hidden="true"><div><table class="compare-table" style="--cols:${n}"><thead><tr>`
     + spots.map(s => `<th>${esc(s.name)}${meta ? `<span class="k">${esc(meta(s))}</span>` : ''}</th>`).join('') + '</tr></thead></table></div></div>';
-  return `<p class="small muted compare-note">Issued ${issued()} (${ago(ageMin())} ago). A lower forecast level does not mean safe water: check the signs at the water.</p>`
+  return `<p class="small muted compare-note">Issued ${issued()} (${agoSpan()} ago). A lower forecast level does not mean safe water: check the signs at the water.</p>`
     + pin + `<div class="compare-scroll" tabindex="0" role="region" aria-label="Spot comparison"><table class="compare-table" style="--cols:${n}">`
     + `<thead><tr>${spots.map((s, j) => `<th scope="col" id="cmp-s${j}"><a data-compare-spot="${esc(s.id)}" href="${esc(spotPath(s.id))}${daily(s) ? '#day=' + day : ''}">${esc(s.name)}</a>`
       + `${meta ? `<span class="k">${esc(meta(s))}</span>` : ''}${typeof eaTodayTag === 'function' ? eaTodayTag(s) : ''}`
@@ -3538,7 +3565,7 @@ function renderSaved() {
   let v = spots.length > 1 ? `<div id="grid-host">${savedGrid(spots)}</div>` : '<div id="grid-host"></div>';
   if (spots.length) v += `<ul class="places" id="scards">${spots.map(s => savedCard(s, true, null, true, from, false, one)).join('')}</ul>`
     + (one ? savedOneNext(spots[0]) : '')
-    + `<p class="small muted msg">Updated ${issued()} (${ago(ageMin())} ago). <a href="#levels">What the levels mean</a>. Forecasts, not water tests: check the signs at the water before you swim.</p>`;
+    + `<p class="small muted msg">Updated ${issued()} (${agoSpan()} ago). <a href="#levels">What the levels mean</a>. Forecasts, not water tests: check the signs at the water before you swim.</p>`;
   // Empty: one tile, one sentence and the way to a spot. The swim journal
   // waits behind a link until a swim is in it, or the address asks for it (saved/#journal).
   else v += `<div class="empty-saved tile"><p class="sub">Save a spot${many ? ` to ${named}` : ''} from its page and it shows here with the days ahead.`
@@ -3728,7 +3755,7 @@ function renderShared(sh) {
   let v = '';
   if (spots.length) v += `<ul class="places" id="scards">${spots.map(s => savedCard(s, false, sh.day, true)).join('')}</ul>`
     + `<p class="small muted msg">${gone ? `${gone === 1 ? 'One spot in the link is' : `${gone} spots in the link are`} not in the forecast now, so ${gone === 1 ? 'it is' : 'they are'} left out. ` : ''}`
-    + `Updated ${issued()} (${ago(ageMin())} ago). <a href="#levels">What the levels mean</a>. Forecasts, not water tests: check the signs at the water before you swim.</p>`;
+    + `Updated ${issued()} (${agoSpan()} ago). <a href="#levels">What the levels mean</a>. Forecasts, not water tests: check the signs at the water before you swim.</p>`;
   else v += `<div class="empty-saved tile"><h2 class="sec-h">No spots to show</h2><p class="sub">None of the spots in this link is in the forecast now, or the link was cut short.</p>`
     + `<a class="btn primary" href="${esc(ROOT.pathname)}" id="find">Find a spot</a></div>`;
   setPanel(h + cols(v));
@@ -4882,7 +4909,7 @@ async function main() {
   // minutes. With the offline copy on, sw.js asks the same way. The head asked already (FORECAST).
   const res = await (window.FORECAST || fetch('data/spots-lite.json', { cache: 'no-cache' }));
   if (!res.ok) throw new Error(`the forecast file answered ${res.status}`);
-  DATA = await res.json();
+  DATA = await res.json(); FORECAST_STAMP = stamp(res);
   if (typeof OutingPack === 'object') OutingPack.seen(res);   // a stored copy, which the kept outing's pages then say
   setDays();
   for (const s of DATA.spots) ageReadings(s, Date.now());   // readings over six hours old where the page is read
@@ -4939,9 +4966,48 @@ function reload() {
   try { sessionStorage.setItem(VIEW_KEY, JSON.stringify({ ...rest, sort: rest.sort === 'near' ? 'name' : rest.sort, y: shown === 'list' ? scrollPos() : 0 })); } catch (e) { /* starts afresh */ }
   location.reload();
 }
-// Not while something being written would be lost (a review: data-keep-page).
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && Date.now() - LOADED > 30 * 60 * 1000
-  && !document.querySelector('[data-keep-page]')) reload(); });
+// Not while something being written would be lost (held).
+document.addEventListener('visibilitychange', () => { if (document.visibilityState !== 'visible') return;
+  if (Date.now() - LOADED > 30 * 60 * 1000 && !held()) reload(); else stillCurrent(); });
+// While the page stays open and in view. Each minute the notices are redrawn if their state has
+// changed (refreshNotices) and each "… ago" moves on in place: a change of text outside an alert,
+// so a screen reader does not read the Stale alert out again. Three things change what the rest of the
+// page says: a company's quiet feed passing six hours (ageReadings), midnight before the next build
+// (setDays), and a newer forecast on the server, asked for with a HEAD request every 10 minutes (its
+// Last-Modified or ETag against the one the page loaded). The first two make the page wrong ("not
+// discharging", "Today"), so they reload it, which keeps the view (reload, keptView), unless something
+// written would be lost or a field is in use (held). A newer forecast does not make it wrong, and a reload
+// would move a reader halfway down a spot's page back to its top, so it is only offered. An offer is a
+// quiet notice with a button, drawn once (refreshNotices), and the reader's to press.
+let CHECKED = Date.now();
+const CHECK_MS = 10 * 60 * 1000;
+const UPDATE_SAY = { newer: 'A newer forecast is out.',
+  aged: 'Some live overflow readings on this page are now over six hours old, and may no longer be current.',
+  day: 'It is past midnight: this page still counts its days from yesterday.' };
+const stamp = r => (r.headers && (r.headers.get('last-modified') || r.headers.get('etag'))) || '';
+const editing = () => { const a = document.activeElement; return !!a && a.matches('input:not([type=checkbox]):not([type=radio]), textarea, select, [contenteditable]'); };
+const drafting = () => [...DRAFTS.values()].some(d => d.photos || d.fields.some(f => f.value || f.checked));
+const held = () => !!document.querySelector('[data-keep-page]') || drafting() || editing();
+const newerOut = () => fetch('data/spots-lite.json', { method: 'HEAD', cache: 'no-cache' })
+  .then(r => { const t = r.ok ? stamp(r) : ''; return !!t && !!FORECAST_STAMP && t !== FORECAST_STAMP; }).catch(() => false);
+async function stillCurrent(nowMs = Date.now()) {
+  if (!DATA) return;
+  refreshNotices();
+  document.querySelectorAll('[data-ago]').forEach(el => { if (!el.closest('[role=alert]')) el.textContent = ago(Math.max(0, (nowMs - Number(el.dataset.ago)) / 60000)); });
+  if (document.visibilityState !== 'visible') return;
+  const aged = s => ((s.now && s.now.aged) || []).length, before = DATA.spots.reduce((n, s) => n + aged(s), 0);
+  for (const s of DATA.spots) ageReadings(s, nowMs);
+  let why = DATA.spots.reduce((n, s) => n + aged(s), 0) > before ? 'aged'
+    : readerDay(DATA.generated_at, nowMs, STALE_MIN) > today() ? 'day' : '';
+  if (!why && !UPDATE && navigator.onLine && nowMs - CHECKED >= CHECK_MS) { CHECKED = nowMs; if (await newerOut()) why = 'newer'; }
+  if (!why || UPDATE === why) return;
+  if (why !== 'newer' && !held()) { reload(); return; }
+  UPDATE = why; refreshNotices();
+}
+setInterval(stillCurrent, 60 * 1000);
+document.addEventListener('click', e => { if (!e.target.closest('[data-update]')) return;
+  if (drafting() && !confirm('Update the page? What you started writing in a form you left will be lost.')) return;
+  reload(); });
 // Drafts live only in this page's memory, keyed by spot and form; a full reload or tab close
 // clears them. Photos are not retained and must be selected again. Nothing is submitted.
 const DRAFTS = new Map();

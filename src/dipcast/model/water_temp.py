@@ -184,3 +184,67 @@ def estimate(model: WaterTempModel | None, hourly: pd.DataFrame, today: pd.Times
     if not np.isfinite(t):
         return None
     return {"temp_c": int(round(t)), "within_c": model.within_c, "date": today.date().isoformat()}
+
+
+# ------------------------------------------------------------------------------ every spot, every month (#492)
+# Ethan's decision of 30 October 2026 (issue #492): a clearly labelled provisional estimate at every spot, all year, while
+# the error is measured and reduced; the river test's verdict is unchanged. `estimate_any` picks a route by water type,
+# month and lake size, and says which, whether that route was tested, and the typical error the test measured for it,
+# never one it did not measure (docs/WATER-TEMPERATURE-BASELINE-2026-10.md):
+#   river_model   rivers, May to September: the tested model above (passed: 1.56 C typical error, rounded to "within 2")
+#   lake_model    lakes under 1 km2 or of unknown size, May to September: the same model as a lake. Lakes failed the test
+#                 as a whole (1.82 C); at these lakes its typical error there was 1.70 C (exploratory, seen data)
+#   lake_curve    lakes of 1 km2 or more, May to September: the lake curve in the 7-day air alone, which beat the full
+#                 model at large lakes in that test (1.98 C against 2.18; exploratory, seen data)
+#   *_off_season  any water, October to April: its type's curve in the 7-day air. Not measured in those months at all:
+#                 every test row was May to September. The saved estimates (build_site.log_water_temp_estimates) are
+#                 compared with the EA's sensors as the winter goes on.
+# Water is never estimated below 0 C. The air needs all 30 days, as before; without them, None, and the build says so.
+TYPICAL_C = {"river_model": 1.56, "lake_model": 1.70, "lake_curve": 1.98}
+LARGE_LAKE_KM2 = 1.0
+
+
+def air_features(model: WaterTempModel, hourly: pd.DataFrame, today: pd.Timestamp) -> dict | None:
+    """The bridged daily air means the model reads (a1, a7, a30) for the 30 days to `today`, or None without all 30."""
+    day = daily_air(hourly)
+    days = pd.date_range(today - pd.Timedelta(days=29), today, freq="D")
+    s = day.reindex(days)
+    if s.isna().any():
+        return None
+    c, d = model.bridge
+    s = c + d * s
+    return {"a1": float(s.iloc[-1]), "a7": float(s.iloc[-7:].mean()), "a30": float(s.mean())}
+
+
+def estimate_any(model: WaterTempModel | None, hourly: pd.DataFrame, today: pd.Timestamp, kind: str,
+                 upstream: float | None = None, elevation: float | None = None, lake_area_km2: float | None = None) -> dict | None:
+    """A provisional estimate of the water near the surface at a river or lake spot today, any month, or None (no
+    model, not a river or lake, or not all 30 days of air). `route` says how it was made; `tested` whether that route
+    was scored for this water and season; `typical_c` the test's typical error for the route, else None."""
+    if model is None or kind not in ("river", "lake") or kind not in model.curves:
+        return None
+    today = pd.Timestamp(pd.Timestamp(today).date())
+    air = air_features(model, hourly, today)
+    if air is None:
+        return None
+    in_season = today.month in model.months
+    large = lake_area_km2 is not None and lake_area_km2 >= LARGE_LAKE_KM2
+    if not in_season:
+        route, t = f"{kind}_off_season", float(mohseni(air["a7"], *model.curves[kind]))
+    elif kind == "lake" and large:
+        route, t = "lake_curve", float(mohseni(air["a7"], *model.curves["lake"]))
+    else:
+        route = f"{kind}_model"
+        ang = 2 * np.pi * today.day_of_year / 365.25
+        feats = {**air, "doy_sin": np.sin(ang), "doy_cos": np.cos(ang), "type_code": model.type_code[kind],
+                 "log_lake_area": np.log10(lake_area_km2) if kind == "lake" and lake_area_km2 and lake_area_km2 > 0 else np.nan,
+                 "log_upstream_km": np.log10(upstream) if kind == "river" and upstream and upstream > 0 else np.nan,
+                 "elevation": np.nan if elevation is None else float(elevation)}
+        t = float(model.predict_rows(pd.DataFrame([{**feats, "type": kind}]))[0])
+    if not np.isfinite(t):
+        return None
+    out = {"temp_c": int(round(max(0.0, t))), "date": today.date().isoformat(), "route": route,
+           "tested": route == "river_model", "typical_c": TYPICAL_C.get(route), "air_7d_c": round(air["a7"], 1)}
+    if route == "river_model":
+        out["within_c"] = model.within_c   # the page's tested wording, as before
+    return out

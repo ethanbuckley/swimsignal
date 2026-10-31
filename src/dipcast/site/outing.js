@@ -473,7 +473,7 @@ function drawOuting(box, shown) {
       headline: dayHeadline(s, PLAN.day), official: outingOfficial(s), notice: outingBrief(s), why: planWhy(s, PLAN.day), ev: planEvidence(s),
       level: dayLevel(s, PLAN.day), advised: typeof eaTodayRestricts === 'function' && eaTodayRestricts(s),   // a notice that restricts swimming
       access: outingAccess(s, today(), PLAN.act),
-      meta: [m === null ? null : cap(milesAway(m)), cap(s.kind)].filter(Boolean).join(' · '), catchment: s.catchment }; };
+      meta: [m === null ? null : cap(milesAway(m)), cap(s.kind), typeof waterEstShort === 'function' ? waterEstShort(s.water_temp_est, s.kind) : ''].filter(Boolean).join(' · '), catchment: s.catchment }; };   // today's water estimate (#492)
   const pair = outingPair(PLAN, byId), list = shown.map(o => o.s);
   // A paddle's finish, while the spot still offers it.
   const paddle = OUTING_FINISH_ACTS.includes(PLAN.act), finishes = paddle && pair.main ? outingFinishes(pair.main, byId) : null;

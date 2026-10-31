@@ -38,7 +38,7 @@ function savedPage({standalone = true} = {}) {
     const listSpots = l => l.spots.map(id => DATA.spots.find(s => s.id === id)).filter(Boolean);
     const none = () => '', nothing = () => {}, contribLayer = {clearLayers: nothing}, selLayer = contribLayer;
     const L = {circleMarker: () => ({addTo: nothing}), latLngBounds: nothing}, map = {fitBounds: nothing}, PHONE = {matches: true};
-    const setView = nothing, planDates = () => [], notices = none, bestDayNote = none, savedGrid = none, issued = none, ago = none, ageMin = none;
+    const setView = nothing, planDates = () => [], notices = none, bestDayNote = none, savedGrid = none, issued = none, ago = none, agoSpan = none, ageMin = none;
     const swimsShown = () => false, compareSection = none, savedCompare = none, alertsCard = none, swimsCard = none, cols = h => h, solo = h => h;
     const bindBack = nothing, bindSavedPage = nothing, bindLists = nothing, bindAlerts = nothing, bindComparison = nothing, bindBestDay = nothing;
     const bindSwims = nothing, bindToAlerts = nothing, bindFind = nothing, placeMap = nothing, plainClick = () => true, select = nothing;
