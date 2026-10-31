@@ -187,12 +187,21 @@
   .map-legend > summary { cursor:pointer; min-height:44px; display:flex; align-items:center; font-weight:600; }
   .map-help { display:none; }
   @media (max-width:800px) {
-    body.map-mode .map-help { display:flex; flex-wrap:wrap; gap:4px; margin:0 0 8px 10px; }
-    .map-help button { min-height:44px; border:0; border-radius:var(--radius); padding:8px 10px; background:var(--float); color:var(--ink); box-shadow:var(--lift); font:600 var(--fs-meta)/1.2 var(--font-text); }
+    .map-legend .map-help { display:flex; flex-wrap:wrap; gap:6px; margin:6px 0 4px; padding-top:6px; border-top:1px solid var(--line); }
+    .map-help button { min-height:44px; border:1px solid var(--line); border-radius:var(--radius); padding:8px 10px; background:var(--field); color:var(--ink); font:600 var(--fs-meta)/1.2 var(--font-text); cursor:pointer; }
   }
   /* What to do next on the map (mapSay), above the colour key and in its style. */
   .map-say { max-width:260px; margin:0 0 8px; background:var(--float); border-radius:var(--radius); padding:8px 12px; font-size:var(--fs-note); font-weight:600; line-height:1.35; box-shadow:var(--lift); color:var(--ink); }
   .map-say[hidden] { display:none; }
+  /* The spots under a tap (pickSpots): on the map's foot, over its controls, the list's own rows. */
+  .map-pick { position:absolute; left:10px; right:10px; bottom:10px; z-index:1000; max-height:60%; overflow-y:auto; overscroll-behavior:contain;
+              padding:4px 12px 0; background:var(--float); border-radius:var(--radius); box-shadow:var(--lift); }
+  .map-pick[hidden] { display:none; }
+  .map-pick .mp-head { display:flex; align-items:center; justify-content:space-between; gap:8px; min-height:44px; font-size:var(--fs-note); font-weight:600; }
+  .map-pick .mp-head > span { flex:1; }
+  .map-pick .mp-zoom { min-height:36px; padding:6px 12px; border:1px solid var(--line); border-radius:var(--radius); background:var(--field); color:var(--link); font:600 var(--fs-note)/1.2 var(--font-text); cursor:pointer; }
+  .map-pick .mp-x { flex:none; width:44px; height:44px; margin-right:-12px; border:0; background:none; color:var(--muted); font-size:var(--fs-head); line-height:1; cursor:pointer; }
+  .map-pick ul.spots { border-bottom:0; }
   .map-legend .ovkey { margin-top:4px; padding-top:4px; border-top:1px solid var(--line); color:var(--muted); }
   .map-legend .ovkey[hidden] { display:none; }
   .map-legend .advkey[hidden] { display:none; }
@@ -342,8 +351,11 @@
   .k { font-size:var(--fs-meta); color:var(--muted); line-height:1.35; }
   /* What a headline cannot count, under it in a row (headNote): ink, the meta size, never a level's colour. */
   .hl-note { font-size:var(--fs-meta); color:var(--ink); line-height:1.35; }
-  .week-preview { flex:none; display:flex; flex-direction:column; align-items:center; gap:3px; }
+  .week-preview { flex:none; display:flex; flex-direction:column; align-items:flex-end; gap:3px; }   /* to the row's edge: with the key on the first row only, centred bars stood 12 px apart */
   .week-label { color:var(--muted); font-size:var(--fs-meta); line-height:1; }
+  /* The key once, on the list's first row with risk bars: on all 109 it was a third line of small letters in every
+     row (31 Oct 2026). Rain rows keep "Rain mm", the exception; cards elsewhere keep theirs. Without :has, all show. */
+  #spots li:has(.week-label.risk) ~ li .week-label.risk, .map-pick li:has(.week-label.risk) ~ li .week-label.risk { display:none; }
   .week { flex:none; display:flex; gap:4px; }
   .wk .risk-code { font-size:var(--fs-meta); line-height:1; color:var(--ink); font-weight:700; }
   .wk { display:flex; flex-direction:column; align-items:center; gap:3px; }
@@ -662,10 +674,10 @@
   .actions .btn { text-align:center; line-height:1.2; }   /* a label in two lines stays centred and compact */
   /* Folds: a chevron, not a text marker, and a 44 px target. A section that folds keeps its heading
      where an open section's sits: the target reaches up into the section's padding. */
-  details.fold > summary, details.more > summary, details.comparison > summary, details.outing > summary, details.lists > summary { cursor:pointer; list-style:none; display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:44px; }
-  details.fold > summary::-webkit-details-marker, details.more > summary::-webkit-details-marker, details.comparison > summary::-webkit-details-marker, details.outing > summary::-webkit-details-marker, details.lists > summary::-webkit-details-marker { display:none; }
-  details.fold > summary::after, details.more > summary::after, details.comparison > summary::after, details.outing > summary::after, details.lists > summary::after { content:""; flex:none; width:8px; height:8px; margin-right:5px; border-right:1.75px solid var(--muted); border-bottom:1.75px solid var(--muted); transform:rotate(45deg); transition:transform .15s; }
-  details[open].fold > summary::after, details[open].more > summary::after, details[open].comparison > summary::after, details[open].outing > summary::after, details[open].lists > summary::after { transform:rotate(-135deg); }
+  details.fold > summary, details.more > summary, details.comparison > summary, details.outing > summary, details.lists > summary, details.sec.tile > summary { cursor:pointer; list-style:none; display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:44px; }
+  details.fold > summary::-webkit-details-marker, details.more > summary::-webkit-details-marker, details.comparison > summary::-webkit-details-marker, details.outing > summary::-webkit-details-marker, details.lists > summary::-webkit-details-marker, details.sec.tile > summary::-webkit-details-marker { display:none; }
+  details.fold > summary::after, details.more > summary::after, details.comparison > summary::after, details.outing > summary::after, details.lists > summary::after, details.sec.tile > summary::after { content:""; flex:none; width:8px; height:8px; margin-right:5px; border-right:1.75px solid var(--muted); border-bottom:1.75px solid var(--muted); transform:rotate(45deg); transition:transform .15s; }
+  details[open].fold > summary::after, details[open].more > summary::after, details[open].comparison > summary::after, details[open].outing > summary::after, details[open].lists > summary::after, details[open].sec.tile > summary::after { transform:rotate(-135deg); }
   details.sec > summary { margin:-10px 0 0; }
   details.sec[open] > summary { margin-bottom:4px; }
   details.more > summary { justify-content:flex-start; gap:8px; color:var(--link); font-size:var(--fs-note); font-weight:600; }
@@ -807,6 +819,7 @@
   .day-strip input:checked + span .dd { color:var(--on-fill); }
   .day-strip input:focus-visible + span { outline:2px solid var(--focus); outline-offset:2px; }
   .plan-go .plan-from { margin:0; }
+  .plan-go .plan-from input { padding-right:12px; }   /* no location pin in this field: its room cut "Starting from" at 375 px */
   .plan-go + .planner-note { margin-bottom:8px; }
   #plan-sum + .chips-row { margin-top:4px; }
   a.row .why { margin-top:4px; font-size:var(--fs-note); line-height:1.4; }
@@ -909,7 +922,9 @@
   }
   .compare-note { margin:0; padding:0 0 10px; }
   details.comparison { scroll-margin-top:calc(var(--header-h) + 8px); }
-  .comparison > summary, .outing > summary, .lists > summary { font:600 var(--fs-head)/1.25 var(--font-display); }
+  /* Every folded tile (Saved's activity choices and Water-wise too, which had the browser's triangle in the
+     text face beside "Open a shared list") opens on its name in the display face with the folds' chevron. */
+  .comparison > summary, .outing > summary, .lists > summary, details.sec.tile > summary { font:600 var(--fs-head)/1.25 var(--font-display); }
 
   .about, .about-line { margin-top:40px; padding-top:16px; border-top:1px solid var(--line); font-size:var(--fs-note); }
   /* "About these forecasts" in full on the list. A spot's page and the Saved page give it one line,
@@ -1566,6 +1581,7 @@ const setHeaderHeight = () => document.documentElement.style.setProperty('--head
 // is kept (PLACE), since the hidden page cannot hold its scroll, and found again when it closes.
 function setMapMode(on, view = null) {
   const was = mapMode();
+  if (on !== was) closePick();
   if (on && !was) keepPlace();
   document.body.classList.toggle('map-mode', on);
   // Its label says what it does (Map, Back, List), so it is not a toggle: "Back, pressed" said both.
@@ -2051,7 +2067,7 @@ const week = s => {
   const levels = days.map(x => risk(s, x).level);
   const summary = 'Daily pollution risk: ' + days.map((x, i) => `${date(x.date)}: ${levels[i] || 'no forecast'}`).join('; ');
   const codes = {low: 'L', moderate: 'M', high: 'H', 'very high': 'VH'};
-  return `<span class="week-preview" role="img" aria-label="${esc(summary)}"><span class="week-label" aria-hidden="true">Risk L/M/H/VH</span><span class="week" aria-hidden="true">${days.map((x, i) => { const lv = levels[i];
+  return `<span class="week-preview" role="img" aria-label="${esc(summary)}"><span class="week-label risk" aria-hidden="true">Risk L/M/H/VH</span><span class="week" aria-hidden="true">${days.map((x, i) => { const lv = levels[i];
     return `<span class="wk${i ? '' : ' first'}"><i class="${lv ? tone(lv) : ''}"></i><span class="risk-code">${codes[lv] || '–'}</span><b>${day(x.date)}</b></span>`; }).join('')}</span></span>`; };
 // A row's second line, where there is no level: the rain, which is what there is to go by.
 const rainMeta = s => { if (daily(s) || !s.days || !s.days.length) return '';
@@ -2861,10 +2877,15 @@ map.on('moveend', () => loadOverflows().catch(() => { ovLayer.clearLayers(); ovK
 const KEY = [['low','Low'], ['moderate','Moderate'], ['high','High'], ['very high','Very high'], [NO_OVERFLOWS, COVER[NO_OVERFLOWS]], ['', 'No level']];
 const legend = L.control({ position: 'bottomleft' });
 legend.onAdd = () => { const el = L.DomUtil.create('details', 'map-legend'); el.open = !PHONE.matches;
-  el.innerHTML = `<summary>Map key and official notices</summary><div class="keys"><b>Pollution risk</b>${KEY.map(([l, t]) => `<span><span class="dot" style="background:${colour(l)}"></span>${t}</span>`).join('')}`
+  el.innerHTML = `<summary>Map key, notices and help</summary><div class="keys"><b>Pollution risk</b>${KEY.map(([l, t]) => `<span><span class="dot" style="background:${colour(l)}"></span>${t}</span>`).join('')}`
     + '<span class="advkey" hidden><span class="dot adv"></span>Ringed: an official notice; open the spot to read it</span></div>'
     + `<div class="ovkey" hidden>Storm overflows: <span class="dot sm" style="background:${colourFor(1)}"></span>discharging<span class="dot sm" style="background:${colourFor(0)}"></span>not discharging<span class="dot sm" style="background:${colourFor(-1)}"></span>no current reading</div>`
-    + `<div class="trkey" hidden><span class="trline"></span>The water that reaches this spot</div>`;
+    + `<div class="trkey" hidden><span class="trline"></span>The water that reaches this spot</div>`
+    // A phone's two ways on, in the key since 31 Oct 2026: as buttons of their own they were two more
+    // floats over the map's foot, with the key and the first-visit line.
+    + '<div class="map-help"><button type="button" id="map-help-water">Forecast for any water</button><button type="button" id="map-help-search">Search an area</button></div>';
+  el.querySelector('#map-help-water').addEventListener('click', () => mapSay(`${TAP()} the river or lake. If the map is zoomed out, it will zoom in first: then ${TAP().toLowerCase()} the water again. Coverage and missing data are explained in the result.`, true));
+  el.querySelector('#map-help-search').addEventListener('click', () => { openList(); const q = document.getElementById('q'); if (q) q.focus(); });
   L.DomEvent.disableClickPropagation(el); return el; };
 legend.addTo(map);
 // A line over the map saying what to do next, after the search or "where you are" has moved it, or after a
@@ -2888,15 +2909,6 @@ const TAP = () => TOUCH ? 'Tap' : 'Click';
 const TAPPED_KEY = 'dipcast.tapped';
 const mapTapped = () => { try { localStorage.setItem(TAPPED_KEY, '1'); } catch (e) { /* asked again next visit */ } };
 if (stored(TAPPED_KEY) !== '1') mapSay(`${TAP()} any river or lake for its forecast.`, true);
-// Returning users can rediscover selecting an unlisted water or return to the place search.
-const mapHelp = L.control({ position: 'bottomleft' });
-mapHelp.onAdd = () => { const el = L.DomUtil.create('div', 'map-help');
-  el.innerHTML = '<button type="button" id="map-help-water">Forecast for any water</button><button type="button" id="map-help-search">Search an area</button>';
-  L.DomEvent.disableClickPropagation(el);
-  el.querySelector('#map-help-water').addEventListener('click', () => mapSay(`${TAP()} the river or lake. If the map is zoomed out, it will zoom in first: then ${TAP().toLowerCase()} the water again. Coverage and missing data are explained in the result.`, true));
-  el.querySelector('#map-help-search').addEventListener('click', () => { openList(); const q = document.getElementById('q'); if (q) q.focus(); });
-  return el; };
-mapHelp.addTo(map);
 function ovKey(on) { const k = document.querySelector('.map-legend .ovkey'); if (k) k.hidden = !on; }
 // The river the forecast traced upstream of the open spot (build_site.write_traces, data/spot/<id>-trace.json;
 // docs/REVIEW-2026-10-16.md): the water that reaches the spot, every river and stream within 60 km
@@ -2949,6 +2961,44 @@ const mapAdvised = s => typeof eaTodayAdvice === 'function' && eaTodayAdvice(s).
 // With official advice, its compact form on a line of its own (eatoday.js), as under the row's level.
 const markerTip = s => { const o = typeof eaTodayBrief === 'function' ? eaTodayBrief(s) : '';
   return o ? `${esc(s.name)}: ${esc(o)}<br>${listHeadline(s)}` : `${esc(s.name)}: ${listHeadline(s)}`; };   // official advice first
+// A tap on a spot's dot. Out at the zoom a phone opens on, most dots lie on others (31 Oct 2026: 100 of 109
+// overlapped, the nearest a median 4 px away, each 18 px across), and a tap opened whichever was drawn last.
+// So every dot within a fingertip of the tap is listed at the map's foot, as the list's rows, and a row opens
+// its spot; on a phone even one, so you see what you hit before the map goes. With a mouse, which can hover
+// for the name, a single dot opens at once. The colours stay on the map: grouping dots under a count would
+// hide a high one among lows.
+const PICK_PX = 20;
+function tapSpot(s, e) {
+  L.DomEvent.stopPropagation(e);   // not the map's own click, which would close the card it opens
+  const at = map.latLngToContainerPoint(e.latlng);
+  const near = DATA.spots.map(x => [x, map.latLngToContainerPoint([x.lat, x.lon]).distanceTo(at)])
+    .filter(([, d]) => d <= PICK_PX).sort((a, b) => a[1] - b[1]).map(([x]) => x);
+  const spots = near.length ? near : [s];
+  if (spots.length < 2 && !TOUCH && !PHONE.matches) { select(s.id, false, true, openDay()); return; }
+  pickSpots(spots);
+}
+function pickSpots(spots) {
+  let el = document.getElementById('map-pick');
+  if (!el) { el = L.DomUtil.create('div', 'map-pick', map.getContainer()); el.id = 'map-pick';
+    el.setAttribute('role', 'region'); el.setAttribute('aria-label', 'Spots where you tapped');
+    L.DomEvent.disableClickPropagation(el); L.DomEvent.disableScrollPropagation(el);
+    el.addEventListener('keydown', e => { if (e.key === 'Escape') closePick(); }); }
+  // Past three, the way to tell them apart on the map too: zoomed in to them, where they stand apart.
+  const zoom = spots.length > 3 ? '<button type="button" class="mp-zoom">Zoom in</button>' : '';
+  el.innerHTML = `<div class="mp-head"><span>${spots.length > 1 ? `${spots.length} spots here` : ''}</span>${zoom}<button type="button" class="mp-x" aria-label="Close">×</button></div>`
+    + `<ul class="spots">${spots.map(spotItem).join('')}</ul>`;
+  el.hidden = false;
+  el.querySelector('.mp-x').addEventListener('click', closePick);
+  const z = el.querySelector('.mp-zoom');
+  if (z) z.addEventListener('click', () => { closePick(); map.fitBounds(L.latLngBounds(spots.map(x => [x.lat, x.lon])), { padding: [32, 32], maxZoom: 12, ...MOTION() }); });
+  el.querySelectorAll('a[data-id]').forEach(a => a.addEventListener('click', e => {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+    e.preventDefault(); closePick(); select(a.dataset.id, false, true, openDay()); }));
+}
+// Hidden, not emptied: a press inside it is still on its way up, and Leaflet takes a target no longer in the
+// card for a tap on the map ("Zoomed in. Now tap a river" after Zoom in). The next tap's rows replace it.
+function closePick() { const el = document.getElementById('map-pick'); if (el) el.hidden = true; }
+map.on('click', closePick);
 function styleMarkers() {
   for (const s of DATA.spots) {
     const m = MARKERS.get(s.id), lv = mapLevel(s), on = !VIEW.lowOnly || (lv === 'low' && lowEligible(s)); if (!m) continue;
@@ -4285,7 +4335,7 @@ function spotDetail(s) {
   return DETAILS.get(s.id);
 }
 function openSpot(s, fly, push, day) {
-  const id = s.id; current = s; DAY = day;
+  const id = s.id; current = s; DAY = day; closePick();
   const fromMap = mapMode();
   if (push) {
     keepPlace();
@@ -4967,7 +5017,7 @@ async function main() {
   for (const s of DATA.spots) ageReadings(s, Date.now());   // readings over six hours old where the page is read
   for (const s of DATA.spots) {
     MARKERS.set(s.id, L.circleMarker([s.lat, s.lon], { radius: 9 })
-      .bindTooltip('').on('click', () => select(s.id, false, true, openDay())).addTo(spotLayer));
+      .bindTooltip('').on('click', e => tapSpot(s, e)).addTo(spotLayer));
   }
   const kept = keptView();
   // Words typed into the built home page's search while the forecast came (home_lead) carry over.
