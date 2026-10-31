@@ -1,0 +1,55 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Sampling planner: a prose page with the shared head, header and foot, written by scripts/build_site.py
+     (write_sampling_planner) beside the app, with the coverage and the simulation's results in place of the SP marker,
+     from data/research/sampling_planner.v1.json (scripts/export_sampling_planner.py, docs/SAMPLING-PLANNER-CONTRACT-v1.md).
+     sampling-planner.js only works out the cost lines from the form; every other figure is in the page. It suggests
+     nothing to a sampler and allocates no sample: keep the "not a plan" section and the failed verdict. -->
+<title>Sampling planner · SwimSignal</title>
+<meta name="description" content="Where the E. coli lab samples behind SwimSignal's model are thin, by place, month and rain, and what a simulation found for simple ways of spending a sampling budget. A planning aid, not a sampling plan; not tested in real water.">
+<meta name="theme-color" content="#3d5b5d">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="page.css">
+<link rel="preload" href="fonts/SourceSans3-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/SourceSerif4-latin.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+  /* The tokens, tables, fields and the prose page are page.css's. */
+  .sp-sites th[scope="row"], .sp-runs th[scope="row"], .sp-areas th[scope="row"] { color:var(--ink); font-weight:400; }
+  .sp-sites tbody tr:first-child th, .sp-runs tbody tr:first-child th, .sp-areas tbody tr:first-child th { border-bottom-color:var(--line); }   /* page.css inks a first row's th, meant for a header row */
+  .sp-calc { display:grid; grid-template-columns:repeat(auto-fit, minmax(160px, 1fr)); gap:12px; margin:12px 0; }
+  .sp-calc label { display:flex; flex-direction:column; justify-content:space-between; gap:4px; font-size:var(--fs-note); color:var(--muted); }
+  main.doc .sp-note { font-size:var(--fs-note); color:var(--muted); }
+</style>
+</head><body>
+<header class="top"><a class="brand" href="./"><svg viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" fill="#0f5a61"/><path d="M430-20C330 110 470 230 300 290S110 380 190 540" fill="none" stroke="#5CC2B5" stroke-width="70" stroke-linecap="round"/><circle cx="318" cy="138" r="38" fill="#F08A4B"/><circle cx="165" cy="358" r="46" fill="none" stroke="#fff" stroke-width="22"/></svg>SwimSignal</a>
+<nav aria-label="Site"><a href="plan/">Plan a swim</a><a href="saved/">Saved</a><a href="verification.html">Accuracy</a><a href="about.html">About</a><a class="desk-only" href="research.html">Research</a><a class="desk-only" href="feedback.html">Feedback</a></nav></header>
+<main class="doc">
+<h1>Sampling planner</h1>
+<!-- SP -->
+
+<h2>What this rests on</h2>
+<ul>
+<li>The simulation's world was made up to match the model's own form. Real counts, real differences between sites and real rain forecasts do not follow it, so a real test would be harder.</li>
+<li>No policy here has been tried in the field. Nobody has sampled to any of these rules and compared the result.</li>
+<li>The cost is the lab's price per sample only, and you set it. Travel between scattered sites, and staff on call to sample at short notice after rain, are not counted.</li>
+<li>"After rain" means more than 10 mm in the 48 hours before the sample, from archived forecast rain, not a rain gauge. Another line would give other counts.</li>
+<li>The samples are the Environment Agency's routine ones, on days it fixed in advance. They show where the model's data are thin, not where the water is worse.</li>
+</ul>
+
+<h2>What would show a policy works</h2>
+<p>Only a field study. A sampler with a budget would take samples by one rule in some weeks and by their usual schedule in others, with each week's rule drawn at random before the season. The models updated with each set of samples would then be scored on later samples that neither rule chose. The test, its pass rule and its size would be written down before the first sample. Until then, no policy here can be called more efficient. <a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/SAMPLING-PLANNER-CONTRACT-v1.md#the-field-study-an-efficiency-claim-would-need">The study in full</a>.</p>
+
+<h2>Sources</h2>
+<p><!-- SP-ATTRIB --></p>
+<ul>
+<li><a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/SAMPLING-PRIORITIES-SIM-2026-10.md">The simulation and its result</a>, written before it was run</li>
+<li><a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/SAMPLING-PLANNER-CONTRACT-v1.md">What this page's data holds, and what it may say</a></li>
+<li><a href="https://github.com/ethanbuckley/swimsignal/blob/main/scripts/export_sampling_planner.py">The script that makes the file</a></li>
+<li><a href="https://github.com/ethanbuckley/swimsignal/blob/main/data/research/sampling_planner.v1.json">The figures as one file</a></li>
+<li><a href="samples.html">Every E. coli sample at the bathing waters</a></li>
+</ul>
+</main>
+<footer class="site-foot"><div class="rule"><p>SwimSignal is a free, non-commercial pollution risk forecast for river and lake swim spots in England, run by Ethan Buckley. A forecast, not a water test: check the signs at the water before you swim.</p>
+<p><a href="terms.html">Terms of use</a> · <a href="privacy.html">Privacy</a> · <a href="feedback.html">Feedback</a> · <a href="methods.html">Method</a> · <a href="research.html">Research</a> · <a href="terms.html#data">Data credits</a> · <a href="https://github.com/ethanbuckley/swimsignal">Source code</a> (MIT)</p></div></footer>
+<script src="sampling-planner.js"></script>
+</body></html>
