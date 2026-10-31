@@ -901,6 +901,7 @@
   .dp-facts dt { color:var(--muted); }
   .dp-facts dd { margin:0; }
   .dp-gap { margin:0 0 8px; font-size:var(--fs-meta); color:var(--muted); }
+  .dp-unk { font-weight:600; color:var(--ink); }   /* "Not known" in a boat's row: a fact, as plain as the others */
   .dp-go { margin:10px 0 0; }
   .dp-pic { display:block; width:100%; max-width:432px; height:auto; margin:12px 0 4px; border:1px solid var(--line); border-radius:var(--radius); }
   /* Your outing (outing.js): the choices, then the spot and its backup in two equal columns, which on a
@@ -2774,6 +2775,11 @@ function bestDayNote(spots, yours = false) {
 // 2026: it replaced the line under the day picker, "This weekend, Sunday: 66 of 109 spots at low risk").
 const lowEligible = s => !(typeof eaTodayRestricts === 'function' && eaTodayRestricts(s));
 const lowOn = iso => DATA.spots.filter(s => dayLevel(s, iso) === 'low' && lowEligible(s)).length;
+// Every count of spots "at low risk" that helps choose a place goes by this one rule, as the day strip (lowOn), the
+// map's "Low risk only" and the plan's areas already did: low on the day shown, and no official advice restricting
+// swimming. On 31 Oct 2026 the strip said 54 and the areas and the summary 55: Frensham Great Pond, low for sewage but
+// under the EA's advice against bathing (harmful algae), was counted in one and not the other.
+const lowToChoose = xs => xs.filter(s => mapLevel(s) === 'low' && lowEligible(s)).length;
 // The button, with the dot before it, shows while another day is picked: setMapDay keeps it in step.
 const syncBestDay = () => document.querySelectorAll('[data-pick-day]').forEach(b => { b.parentElement.hidden = b.dataset.pickDay === VIEW.day; });
 // The button hides once pressed, so the focus goes to the day picker, which now shows its day.
@@ -3314,7 +3320,10 @@ function overview(spots) {
   // Official advice (eatoday.js) never changes a count above; the spots with it are counted on their own, and
   // the counts are then named for what they are, the sewage forecast's.
   const advised = typeof eaTodayAdvice === 'function' ? spots.filter(s => eaTodayAdvice(s).length).length : 0;
-  return `Updated ${issued()} · ${advised ? 'Sewage pollution risk' : 'Pollution risk'}: ${low} low · ${rated.length - low - high} moderate · ${high} high or very high`
+  // The forecast's own tally, which counts a spot under advice restricting swimming by its sewage level; how many of its
+  // low spots that is, so it can be read beside the day strip's count, which leaves them out (lowToChoose).
+  const lowBarred = rated.filter(s => mapLevel(s) === 'low' && typeof lowEligible === 'function' && !lowEligible(s)).length;
+  return `Updated ${issued()} · ${advised ? 'Sewage pollution risk' : 'Pollution risk'}: ${low} low${lowBarred ? ` (${lowBarred} of them under official advice restricting swimming)` : ''} · ${rated.length - low - high} moderate · ${high} high or very high`
     + `${clear ? ` · ${clear} with no monitored overflow found upstream` : ''}${none ? ` · ${none} without a level` : ''}`
     + `${none ? ': ' + Object.entries(why).sort((a, b) => b[1] - a[1]).map(([w, n]) => `${n} ${w}`).join(', ') : ''}. ${cap(mapWhen())}.`
     + (advised ? ` ${advised} with an official notice: ${noticeVerb(spots.filter(s => eaTodayAdvice(s).length))}.` : '');
@@ -3398,7 +3407,7 @@ function renderList() {
     // weekend's best day in a line under it). It opens on today (renderList).
     + `<div class="toolbar"><fieldset class="day-strip list-days" id="listday"><legend class="sr">When are you swimming?</legend>${fiveDays().map(iso => `<label><input type="radio" name="list-day" value="${iso}"${VIEW.day === iso ? ' checked' : ''}>`
       + `<span>${shortDay(iso)} <span class="dd"><b>${lowOn(iso)}</b> <span class="nw">low risk</span></span></span></label>`).join('')}</fieldset></div>`
-    + `<p class="small muted strip-note">Under each day: how many of the ${DATA.spots.length} spots are at low risk.`
+    + `<p class="small muted strip-note">Under each day: how many of the ${DATA.spots.length} spots are at low risk${DATA.spots.some(s => !lowEligible(s)) ? ', not counting any under official advice restricting swimming' : ''}.`
     // A first visit (nothing saved or planned, no spot opened yet): what to do here, in the same line, so the first
     // spot moves down one line at most (30 Oct 2026). Once a spot is saved, Your places takes over.
     + `${!SAVED.size && !OPENED && !(typeof planOuting === 'function' && planOuting(stored(PLAN_KEY), planDates(), id => DATA.spots.some(x => x.id === id)))
@@ -3502,7 +3511,7 @@ function areaGroups(items) {
   const lat = a => { const xs = DATA.spots.filter(s => s.area === a); return xs.reduce((t, s) => t + s.lat, 0) / xs.length; };
   return [...by.entries()].sort(([a], [b]) => lat(b) - lat(a));
 }
-const areaHead = (a, xs) => { const low = xs.filter(s => mapLevel(s) === 'low').length;
+const areaHead = (a, xs) => { const low = lowToChoose(xs);
   return `<li class="area-head"><h3>${esc(a)} <span>· ${xs.length} spot${xs.length === 1 ? '' : 's'}, ${low || 'none'} at low risk</span></h3></li>`; };
 // The spots with no monitored overflow upstream have only rain to say, and their rows read like a
 // forecast (24 of 105 rows, 16 Oct 2026). In A–Z they go at the end of their area, behind
@@ -3511,7 +3520,7 @@ const areaHead = (a, xs) => { const low = xs.filter(s => mapLevel(s) === 'low').
 const QUIET_NAMES = 3;
 // An area of the folded list (byArea): its line as a button, then its spots, lowest risk first, only while it is open.
 function areaFold(a, xs, item) {
-  const on = VIEW.areas.has(a), low = xs.filter(s => mapLevel(s) === 'low').length;
+  const on = VIEW.areas.has(a), low = lowToChoose(xs);
   const head = `<li class="area-head"><h3><button type="button" class="area-btn" data-area="${esc(a)}" aria-expanded="${on}">${esc(a)}`
     + ` <span>${low} of ${xs.length} at low risk</span></button></h3></li>`;
   return on ? head + areaRows(a, xs, item, VIEW.quiet).replace(areaHead(a, xs), '') : head;
@@ -3761,7 +3770,7 @@ const COMPARE = { ids: null, open: false };
 function savedCompare(spots) {
   const ids = planCompareIds(COMPARE.ids, spots), dates = fiveDays();
   COMPARE.ids = ids;
-  return { title: 'Compare your spots', sub: 'Up to three saved spots side by side: the next five days, and what each level rests on. A lower forecast level does not mean safe water.',
+  return { title: 'Compare your spots', sub: 'Up to three saved spots side by side: the next five days, and what each level rests on.',
     groups: [['', spots]], ids, day: dates.includes(VIEW.day) ? VIEW.day : dates[0], open: COMPARE.open, meta: null,
     chose: x => { COMPARE.ids = x; }, toggled: o => { COMPARE.open = o; } };
 }
@@ -4190,7 +4199,7 @@ const planActRow = act => `<div class="chips-row act-row" role="group" aria-labe
   + PLAN_ACTS.map(([k, w]) => `<button type="button" class="chip-btn" data-plan-act="${k}" aria-pressed="${(act || '') === k}">${w}</button>`).join('') + '</div>'
   + `<p class="planner-note" id="plan-act-note">${planActNote(act)}</p>`;
 const planActNote = act => OUTING_FINISH_ACTS.includes(act)
-  ? 'Each spot shows launching and places to finish downstream, where SwimSignal knows them. The levels are the same: they are for the water, whoever is in it.' : '';
+  ? 'Each option shows launching, rules and finishes where known, and says "Not known" where not. Pollution levels are the same whoever is on the water.' : '';
 let PLAN_BY_ID = null;   // the listed spots by id, made once for the finishes
 const planById = () => { if (!PLAN_BY_ID || PLAN_BY_ID.from !== DATA.spots) PLAN_BY_ID = { from: DATA.spots, map: new Map(DATA.spots.map(x => [x.id, x])) };
   return PLAN_BY_ID.map; };
@@ -4298,8 +4307,10 @@ function renderPlan() {
     + `<label><span class="sr">How far you will go</span><select id="plan-within">${[...RADII, 0].map(r => `<option value="${r}"${r === PLAN.within ? ' selected' : ''}>${r ? `${r} miles` : 'Any distance'}</option>`).join('')}</select></label></div>`
     + `<p class="planner-note" id="plan-where" aria-live="polite"></p><p class="planner-note" id="plan-sum" role="status"></p>`   // the count, with Compare spots, before the kinds
     + `<div class="chips-row" role="group" aria-label="Water">${Object.entries(FILTERS).map(([k, t]) => `<button type="button" class="chip-btn" data-plan-kind="${k}" aria-pressed="${PLAN.kind === k}">${t}</button>`).join('')}</div>`
-    + `<div class="planner-note" id="plan-basis"></div>` + notices() + '</div>'
-    + cols((typeof askBox === 'function' ? askBox(DATA) : '') + '<div id="plan-results"></div>');   // Ask SwimSignal's tile (ask.js), '' while off
+    + notices() + '</div>'
+    // How the spill warnings have done (planBasis) after the results: the evidence behind the levels, not a control, it
+    // came between the controls and the first option (31 Oct 2026).
+    + cols((typeof askBox === 'function' ? askBox(DATA) : '') + '<div id="plan-results"></div><div class="planner-note" id="plan-basis"></div>');   // Ask SwimSignal's tile (ask.js), '' while off
   setPanel(h); bindBack(); bindPlan(); placeMap(); drawPlan(true);   // the map in its place before it is fitted to the plan
   planLoadWarnings();
   if (PLAN.from && PLAN.from.here && !VIEW.here) planLocate(true);
@@ -4395,7 +4406,7 @@ const planPicks = ids => document.querySelectorAll('[data-compare-pick]').forEac
 function planCompare(groups, heads) {
   const shown = groups.flat(), miles = new Map(shown.map(o => [o.s.id, o.miles])), box = document.getElementById('plan-results');
   const c = { title: 'Compare these spots', ids: planCompareIds(PLAN.compare, shown.map(o => o.s)), day: PLAN.day, open: !!PLAN.compare,
-    sub: `Up to three of these spots side by side: the five days, ${dayName(PLAN.day)} shaded, and what each level rests on. Tick them in the list, or choose them here. A lower forecast level does not mean safe water.`,
+    sub: `Up to three of these spots side by side: the five days, ${dayName(PLAN.day)} shaded, and what each level rests on. Tick them in the list, or choose them here.`,
     groups: groups.map((g, i) => [heads[i], g.map(o => o.s)]).filter(([, g]) => g.length), meta: s => cap(milesAway(miles.get(s.id))),
     chose: x => { c.ids = x; planPicks(x); if (PLAN.compare) { PLAN.compare = x; planAddress(); } },
     toggled: o => { box.classList.toggle('comparing', o); if (o) PLAN.compare = c.ids; else delete PLAN.compare; planAddress();

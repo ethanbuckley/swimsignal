@@ -39,7 +39,7 @@ test('conditions say each value\'s kind and date; the water estimate is for toda
   assert.deepEqual(today.rows.map(r => r[0]), ['Water', 'Daylight', 'Access']);
   assert.equal(today.rows[0][1], 'About 14&nbsp;°C today, a provisional estimate');
   assert.equal(today.rows[1][1], 'Sunrise 07:11, sunset 16:38');
-  assert.match(today.rows[2][1], /^Permission at this point not confirmed\. <span class="muted">\(checked from published sources, 3 Oct 2026\)<\/span> Its guide covers parking, getting in/);
+  assert.match(today.rows[2][1], /^Permission at this point not confirmed <span class="muted">\(checked from published sources, 3 Oct 2026\)<\/span>\. Its guide covers parking, getting in/);
   assert.deepEqual(today.missing, ['the path', 'getting out']);
   const sun = D.dpConditions(s, '2026-11-01', TODAY, null, new Map(), NOW);
   assert.equal(sun.rows[0][1], 'About 14&nbsp;°C today, a provisional estimate; none for Sun 1 Nov');
@@ -112,4 +112,19 @@ test('the picture\'s map is shorter with a third spot, so the blocks and the foo
   assert.equal(D.dpMap(3).h, 340);
   // Last block's line: map bottom + 80 + (n - 1) steps + 128, above the footer's first line at DP_H - 92 (24 px type).
   for (const [n, step] of [[2, 172], [3, 166]]) { const m = D.dpMap(n); assert.ok(m.y + m.h + 80 + (n - 1) * step + 128 < D.DP_H - 92 - 24, String(n)); }
+});
+
+// 31 Oct 2026: for a boat or a board, what is not known is a row of its own, "Not known", as plain as the facts, not
+// only a grey line under them; and the grey line does not say it again.
+test('for a boat or a board, launching, rules, river level, finish and wind each have a row, "Not known" where nothing is', () => {
+  const bare = D.dpConditions({id: 'z', name: 'Z', kind: 'river'}, TODAY, TODAY, 'paddle', new Map(), NOW);
+  const rows = Object.fromEntries(bare.rows);
+  for (const k of ['Rules', 'Launching', 'River level', 'Finish']) assert.equal(rows[k], '<span class="dp-unk">Not known</span>', k);
+  assert.match(rows.Wind, /^<span class="dp-unk">Not known<\/span> <span class="muted">\(SwimSignal has no wind forecast\)<\/span>$/);
+  const h = D.dpOption(row(bare.rows && {id: 'z', name: 'Z', kind: 'river'}), {href: '/spot/z/', headline: 'Low risk', tone: 'low', meta: '1 mile away · River'}, bare, null, 0);
+  assert.doesNotMatch(h, /Not known here:[^<]*\b(wind|rules for boats|launching|a finish downstream|river level)\b/);
+  // A lake has no river rows; a swim has none of these rows at all.
+  const lakeRows = D.dpConditions(lake('l'), TODAY, TODAY, 'sup', new Map(), NOW).rows.map(r => r[0]);
+  assert.ok(!lakeRows.includes('River level') && !lakeRows.includes('Finish') && lakeRows.includes('Wind'));
+  assert.deepEqual(D.dpConditions(lake('l'), TODAY, TODAY, null, new Map(), NOW).rows.filter(r => ['Rules', 'Launching', 'Wind'].includes(r[0])), []);
 });

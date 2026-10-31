@@ -185,7 +185,7 @@ function listPage(spots) {
   const dir = path.join(__dirname, '../src/dipcast/site/');
   const ctx = vm.createContext({ console, DATA: { generated_at: GEN, spots } });
   for (const f of ['experience.js', 'levels.js']) vm.runInContext(fs.readFileSync(dir + f, 'utf8'), ctx, { filename: f });
-  vm.runInContext(`setToday('2026-10-16');\n` + pageDefs(['esc', 'VIEW', 'mapLevel', 'mapWhen', 'listHeadline', 'issued', 'overview', 'areaHead', 'QUIET_NAMES', 'areaRows']), ctx);
+  vm.runInContext(`setToday('2026-10-16');\n` + pageDefs(['esc', 'VIEW', 'mapLevel', 'mapWhen', 'listHeadline', 'issued', 'overview', 'lowEligible', 'lowToChoose', 'areaHead', 'QUIET_NAMES', 'areaRows']), ctx);
   return ctx;
 }
 const DAYS = ['2026-10-16', '2026-10-17', '2026-10-18', '2026-10-19', '2026-10-20'];
