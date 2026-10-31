@@ -65,6 +65,7 @@ test('spills already running: the all-nine sentence names its years, its count a
   // Only spills reaching a whole hour count (1.1): "any spill already running" rests on 580,213 of the 802,781.
   assert.match(plain(D.durationsStill(INDEX, 0)), /these figures rest on 580,213 of the 802,781 spills; the shortest never reach one\./);
   assert.match(D.durationsStill(INDEX, 0), /aria-label="Still running, any spill already running, 2024-25, scrolls sideways"/);
+  assert.doesNotMatch(D.durationsStill(INDEX, 3), /whole hour mark/);   // only for "any": a longer length selects by itself
   assert.equal(D.durationsStill(INDEX, 7), '');   // no such rows: nothing drawn
   // The export's own words for each length (1.1, label); without them, the page's.
   assert.match(D.durationsAtPicker(INDEX, 3), /<option value="3" selected>Spills already running at least 3 hours<\/option>/);

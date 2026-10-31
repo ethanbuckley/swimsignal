@@ -100,7 +100,7 @@ function durationsStillSentence(row, at, later, period) {
     + `of the ${durationsCount(row.hours)} hours checked${typeof row.spills === 'number' ? `, in ${durationsPlural(row.spills, 'spill')}` : ''}.`;
 }
 // Only spills still running at a whole hour count (1.1, `spills`): the shortest never reach a figure. Said under the
-// table, with how many of all the spills the row for all nine rests on.
+// table for "any spill already running", with how many of all the spills the row for all nine rests on.
 function durationsReach(index, row) {
   const all = ((index && index.coverage) || {}).spills;
   if (!row || typeof row.spills !== 'number' || typeof all !== 'number') return '';
@@ -122,7 +122,7 @@ function durationsStill(index, at, later = 6) {
       rows.map(r => [r.company === DURATIONS_ALL ? '<b>All nine</b>' : durationsEsc(durationsCompany(r.company)), durationsCount(r.spills), durationsCount(r.hours),
         ...DURATIONS_LATER.map(h => durationsPct(r[`still_after_${h}h`]))]),
       `Still running, ${(all && all.label) || `spills that ${durationsAtSaid(at)}`}, ${durationsRowYears(rows, y)}`)
-    + durationsReach(index, all);
+    + (at === 0 ? durationsReach(index, all) : '');   // a longer "already running" leaves out more by its own choice
 }
 
 // ------------------------------------------------------------------------------ one spot's overflows
