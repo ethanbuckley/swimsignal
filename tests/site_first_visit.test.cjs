@@ -8,5 +8,5 @@ const app = fs.readFileSync(path.join(__dirname, '../src/dipcast/site/index.html
 
 test('the strip note says what to do, on a first visit only', () => {
   assert.match(app, /!SAVED\.size && !OPENED && !\(typeof planOuting === 'function' && planOuting\(stored\(PLAN_KEY\), planDates\(\)/);
-  assert.match(app, /' Open a spot for why; save it to keep it at the top, and plan an outing with a backup\.' : ''\}<\/p>`/);
+  assert.match(app, /' Open a spot to see why\. Save the ones you use to keep them at the top\.' : ''\}<\/p>`/);
 });

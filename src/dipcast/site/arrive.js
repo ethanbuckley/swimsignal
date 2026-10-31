@@ -20,6 +20,8 @@
 // page's own arriveSentence), it uses guide.js's helpers, which the page has already loaded, and in Node the last
 // lines export them (tests/site_arrive.test.cjs).
 
+// A check's date as people write it, "3 Oct 2026", not "2026-10-03"; anything else as given.
+const arrivalWhen = (d => /^\d{4}-\d{2}-\d{2}$/.test(String(d)) ? new Date(d + 'T12:00:00Z').toLocaleDateString('en-GB', { timeZone: 'UTC', day: 'numeric', month: 'short', year: 'numeric' }) : d);
 const arrivalGuide = () => (typeof guideRuns === 'function'
   ? { guideRuns, guideChecked, guidePhoto, GUIDE_TOPICS } : require('./guide.js'));
 const arrivalEsc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
@@ -159,7 +161,7 @@ function arrivalPermission(g, d = {}) {
   const pics = signs.map((p, n) => arrivalGuide().guidePhoto(p, n)).join('');
   const a = d && d.access && typeof d.access.text === 'string' && d.access.text ? d.access : null;
   const desk = a ? `<dd><p class="g-text">${arrivalEsc(a.text)}</p><p class="g-src">${/^https:\/\//.test(a.url || '') ? `<a href="${arrivalEsc(a.url)}">Authority guidance</a>. ` : ''}`
-    + `Desk check ${arrivalEsc(a.checked_at || '')}; current signs have not been inspected.</p></dd>` : '';
+    + `Checked from published sources${a.checked_at ? ` on ${arrivalEsc(arrivalWhen(a.checked_at))}` : ''}; signs at the water have not been inspected.</p></dd>` : '';
   const body = rules.length || desk ? `<dl class="g-facts arr-facts"><div class="arr-part">${desk}${rules.length ? arrivalRuns(rules) : ''}</div></dl>`
     : arrivalNone('Nothing in this guide says who may swim here.');
   return '<section class="arr-sec" aria-labelledby="arr-who-h"><h3 class="arr-h" id="arr-who-h">Who can swim here</h3>'

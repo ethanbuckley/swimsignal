@@ -1,6 +1,8 @@
 // Plain, testable evidence summaries. No invented measurements or confidence scores.
 // The level rules (levels.js): the page loads them after this file, so they are looked up when a
 // summary is made; Node requires them.
+// A check's date as people write it, "3 Oct 2026", not "2026-10-03"; anything else as given.
+const experienceWhen = (d => /^\d{4}-\d{2}-\d{2}$/.test(String(d)) ? new Date(d + 'T12:00:00Z').toLocaleDateString('en-GB', { timeZone: 'UTC', day: 'numeric', month: 'short', year: 'numeric' }) : d);
 const rules = () => typeof headParts === 'function'
   ? { coverage, FOUND_NONE, daily, dayLevel, dayHeadline, nowUnknown, nowUnknownWhy, eaUnchecked, EA_UNCHECKED, rank, liveHead } : require('./levels.js');
 const dayMonthYear = iso => new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', {day: 'numeric', month: 'short', year: 'numeric'});
@@ -106,7 +108,7 @@ function compareAccess(s) {
   const a = s.access;
   if (!a) return 'No access information.';
   return htmlText(a.text || ACCESS_WORDS[a.status] || 'Not known whether swimming is allowed at this point.') + ' '
-    + htmlText(a.checked_at ? `Desk check ${a.checked_at}; current signs not inspected.` : 'Not known when it was checked.')
+    + htmlText(a.checked_at ? `Checked from published sources on ${experienceWhen(a.checked_at)}; signs at the water not inspected.` : 'Not known when it was checked.')
     + (/^https:\/\//.test(a.url || '') ? ` <a href="${htmlText(a.url)}">Authority guidance</a>.` : '');
 }
 // The rows under the five days, as [label, HTML], for one spot; iso is the day picked, whose E. coli

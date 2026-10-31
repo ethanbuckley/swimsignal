@@ -32,10 +32,10 @@ test('below ten spill days: the counts, no share, and the minimum said', () => {
 test('ten spill days or more: the share, as the Accuracy page words it, with its counts and the days', () => {
   const w = words(counts({ overflows: 65, scored_overflows: 65, overflow_days: 440, spill_days: 50, hits: 65, misses: 185, false_alarms: 69 }));
   assert.match(w, /all 65 overflows upstream: 440 overflow-days, 50 with a spill\./);
-  assert.match(w, /It warned of 26% of those spills: 65 of the 250 forecasts for them reached the High risk line\. It gave 69 false alarms/);
+  assert.match(w, /Of the 250 forecasts made for those spills, 65 \(26%\) reached the High risk line\. It gave 69 false alarms/);
   assert.match(w, /That is 7 days so far, too few to judge across different weather\.$/);
   assert.doesNotMatch(words(counts({ spill_days: 10, hits: 1, misses: 49, days: 14 })), /too few to judge/);
-  assert.match(words(counts({ spill_days: 19, hits: 0, misses: 95 })), /It warned of 0% of those spills: none of the 95 forecasts/);
+  assert.match(words(counts({ spill_days: 19, hits: 0, misses: 95 })), /Of the 95 forecasts made for those spills, none \(0%\) reached/);
 });
 
 test('overflows that cannot be scored are counted, and none scored says so', () => {

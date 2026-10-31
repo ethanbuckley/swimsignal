@@ -520,7 +520,7 @@ test('Not known here: a row for each gap, in the words it had, and no tile witho
   const said = s => JSON.parse(JSON.stringify(rows(s).map(([l, v, w]) => [l, v, text(w)])));   // out of the page's realm
   assert.deepEqual(said(longBridges), [
     ['Live readings', '1 of 45 not reporting', 'With no live reading, it could be spilling unseen. A monitor reports when it spills, not how much or what is in it.'],
-    ['Access', 'Not confirmed', 'Oxford City Council lists Longbridges among places receiving water-safety signs and discourages wild swimming. Check the current signs; listing this place does not confirm permission or a maintained entry point. Authority guidance . Desk check 2026-10-03; current signs have not been inspected.']]);
+    ['Access', 'Not confirmed', 'Oxford City Council lists Longbridges among places receiving water-safety signs and discourages wild swimming. Check the current signs; listing this place does not confirm permission or a maintained entry point. Authority guidance . Checked from published sources on 3 Oct 2026; signs at the water have not been inspected.']]);
   assert.deepEqual(said(hereford), [
     ['Live readings', '14 of 14 not reporting', 'With no live reading, they could be spilling unseen. Dŵr Cymru Welsh Water has no live feed SwimSignal reads. A monitor reports when it spills, not how much or what is in it.'],
     ['Overflows in Wales', 'Not counted', 'Overflows in Wales are not counted: about 29% of the river within 60 km above this spot is in Wales.']]);

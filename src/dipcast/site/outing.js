@@ -9,6 +9,8 @@
 // the tile says so, and it says when the time has already passed today.
 //
 // A plain script, as plan.js: globals in the page, exports in Node.
+// A check's date as people write it, "3 Oct 2026", not "2026-10-03"; anything else as given.
+const outWhen = (d => /^\d{4}-\d{2}-\d{2}$/.test(String(d)) ? new Date(d + 'T12:00:00Z').toLocaleDateString('en-GB', { timeZone: 'UTC', day: 'numeric', month: 'short', year: 'numeric' }) : d);
 const outingRules = () => typeof dayLevel === 'function' ? { dayWord, today } : require('./levels.js');
 // eatoday.js's compact official-advice line (eaTodayTag, #379), the one every list, card and row uses.
 const outingTag = () => typeof eaTodayTag === 'function' ? eaTodayTag : require('./eatoday.js').eaTodayTag;
@@ -326,7 +328,7 @@ function outingAccess(s, today, act = null) {
   if (!s) return '';
   const G = outingGuide(), label = new Map(G.GUIDE_TOPICS), TOPICS = outingAccessTopics(act, new Set(label.keys()));
   const a = s.access && typeof s.access.text === 'string' && s.access.text ? s.access : null;
-  const permit = a ? `<p class="g-text">${outEsc(a.text)}</p><p class="g-src">${a.checked_at ? `Desk check ${outEsc(a.checked_at)}; current signs not inspected.` : 'Not known when it was checked.'}</p>` : '';
+  const permit = a ? `<p class="g-text">${outEsc(a.text)}</p><p class="g-src">${a.checked_at ? `Checked from published sources on ${outEsc(outWhen(a.checked_at))}; signs at the water not inspected.` : 'Not known when it was checked.'}</p>` : '';
   if (s.detail_missing) return permit + '<p class="small muted">The access guide could not be loaded here. The spot\'s page has it, if there is one.</p>';
   if (s.detail_file && !s.detail_loaded) return permit + '<p class="small muted">Loading the access guide…</p>';
   const g = s.guide, facts = g && Array.isArray(g.facts) ? g.facts : [];
