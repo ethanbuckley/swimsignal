@@ -18,6 +18,7 @@ import subprocess
 import sys
 import time
 from collections import Counter
+from datetime import date
 from html import escape, unescape
 from pathlib import Path
 
@@ -2724,7 +2725,7 @@ def robots(root: str) -> str:
 
 
 def sitemap(root: str, spot_ids: list[str], day: str, extra: list[str] | None = None, overflow_ids: list[str] | None = None) -> str:
-    urls = [root, f"{root}plan/", f"{root}about.html", f"{root}verification.html", f"{root}methods.html", f"{root}testing.html", f"{root}coverage.html", f"{root}data.html", f"{root}organisers.html", f"{root}sites.html", f"{root}record.html", f"{root}clubs.html", f"{root}quality.html", f"{root}spots.html", f"{root}research.html", f"{root}lakes.html", f"{root}lake-temperatures.html", f"{root}durations.html", f"{root}samples.html", f"{root}waterhead.html", f"{root}research-catalogue.html", f"{root}sampling-planner.html", f"{root}partners.html"] +[f"{root}{x}" for x in extra or []] + [f"{root}spot/{i}/" for i in spot_ids] + [f"{root}spot/{i}/profile/" for i in spot_ids] + [f"{root}overflow/{i}/" for i in overflow_ids or []]
+    urls = [root, f"{root}plan/", f"{root}about.html", f"{root}verification.html", f"{root}methods.html", f"{root}testing.html", f"{root}coverage.html", f"{root}data.html", f"{root}organisers.html", f"{root}sites.html", f"{root}record.html", f"{root}clubs.html", f"{root}quality.html", f"{root}spots.html", f"{root}research.html", f"{root}lakes.html", f"{root}lake-temperatures.html", f"{root}durations.html", f"{root}samples.html", f"{root}waterhead.html", f"{root}research-catalogue.html", f"{root}sampling-planner.html", f"{root}partners.html", f"{root}models.html"] +[f"{root}{x}" for x in extra or []] + [f"{root}spot/{i}/" for i in spot_ids] + [f"{root}spot/{i}/profile/" for i in spot_ids] + [f"{root}overflow/{i}/" for i in overflow_ids or []]
     body = "".join(f"<url><loc>{escape(u)}</loc><lastmod>{day}</lastmod></url>" for u in urls)
     return f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{body}</urlset>\n'
 
@@ -3058,6 +3059,7 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     write_waterhead(site, token, root)   # Ambleside Action for a Future's Waterhead samples: before the data page lists data/research/
     write_research_catalogue(site, token, root)   # every research record, its verdict and stage: before the data page lists data/research/
     write_sampling_planner(site, token, root)   # where samples are thin, and the sampling simulation's results (Research)
+    write_model_scorecard(site, token, root)   # each model's test record and stage: before the data page lists data/research/
     write_lake_temperatures(site)   # data/research/lake-temperatures/, before the data page lists data/
     write_data_page(site, token, root)   # lists what is in data/, so build() writes the data files first
     write_quality_page(site, overflows, generated, token, root=root)
@@ -3993,6 +3995,120 @@ def write_sampling_planner(site: Path, token: str | None = None, root: str | Non
     shutil.copy(js, site / "sampling-planner.js")
     (site / "sampling-planner.html").write_text(with_counter(with_share_meta(page, "sampling-planner.html", root or site_url()), token))
     return {"available": False, "why": why} if why else {"available": True, "version": doc["version"]}
+# The model scorecard (docs/MODEL-SCORECARD-CONTRACT-v1.md): each forecast model or candidate, its test record against
+# a simple reference, and its stage, as scripts/export_model_scorecard.py exports it from the test records in docs/.
+# A prose page with no script, models.html, one section a model; the file is copied to data/research/model_scorecard.json.
+# The stage line is worked out from the build's own date, so a window that has closed says so without a new export,
+# and a score from inside a window is never shown before its read date, whatever the file holds.
+SCORECARD = config.ROOT / "data" / "research" / "model_scorecard.v1.json"
+SCORECARD_SCHEMA, SCORECARD_MAJOR = "swimsignal.model-scorecard", "1"
+REWRITES += [('href="/models"', 'href="models.html"')]   # Research links the page
+SCORECARD_DATA = {"held_out": "Held out", "seen": "Seen: a direction only", "live": "Live record",
+                  "pre_window": "Before its window: not deciding", "prospective": "In its window"}
+
+
+def scorecard_stage(m: dict, today: date) -> str:
+    """The model's stage in one sentence, as at the build's date."""
+    day = lambda iso: pd.Timestamp(iso).strftime("%-d %b %Y")
+    w, nxt = m.get("window"), m.get("milestones") or []
+    later = [x for x in nxt if date.fromisoformat(x["date"]) >= today]
+    tail = f' Next, {day(later[0]["date"])}: {later[0]["what"]}.' if later else ""
+    if m["stage"] == "live":
+        return "Live: this is the forecast the site shows."
+    if m["stage"] == "lab":
+        return "In the lab: not good enough yet to run beside the forecast." + tail
+    if m["stage"] == "not_started":
+        return "Not started." + tail
+    start, end, read = (date.fromisoformat(w[k]) for k in ("start", "end", "read_on"))
+    span = f"{day(w['start'])} to {day(w['end'])}"
+    if today < start:
+        return f"Scheduled: its window runs {span}, read on or after {day(w['read_on'])}."
+    if today <= end:
+        return f"Running test: window {span}. Read on or after {day(w['read_on'])}; no score from the window is shown before then."
+    if today < read:
+        return f"Window closed on {day(w['end'])}. Read on or after {day(w['read_on'])}."
+    return (f"Window closed on {day(w['end'])}. The read was due on or after {day(w['read_on'])}; "
+            "its result is not on this page yet.")
+
+
+def scorecard_section(m: dict, doc: dict, today: date) -> str:
+    """One model: its stage, then each of the scorecard's questions as a field, with its results as a table."""
+    n = lambda v: "" if v is None else f"{v:.6f}".rstrip("0").rstrip(".").replace("-", "−")   # 0.00007, never 7e-05
+    day = lambda iso: pd.Timestamp(iso).strftime("%-d %b %Y")
+    w = m.get("window")
+    results = [x for x in m.get("results", [])
+               if x["data"] != "prospective" or (w and today >= date.fromisoformat(w["read_on"]))]
+    fields = [("What it predicts", escape(m["predicts"])), ("Where and when it was tested", escape(m["tested"])),
+              ("Compared with", escape(m["reference"]))]
+    if results:
+        rows = "".join(
+            f'<tr><th scope="row">{escape(x["label"])}<small>{escape(x["measure"])}, {escape(SCORECARD_DATA[x["data"]].lower())}.'
+            f'{" " + escape(x["note"]) if x.get("note") else ""}</small></th>'
+            f'<td class="num">{n(x["model"])}</td>'
+            f'<td>{n(x["reference"]) + " " if x["reference"] is not None else ""}<small>{escape(x["reference_name"])}</small></td>'
+            f'<td class="num">{n(x.get("difference"))}{" " if x.get("difference") is not None and x.get("interval") else ""}'
+            f'{f"[{n(x["interval"][0])}, {n(x["interval"][1])}]" if x.get("interval") else ""}</td></tr>' for x in results)
+        table = ('<div class="tw"><table class="sc-results"><thead><tr><th scope="col">Result</th>'
+                 '<th scope="col" class="num">This model</th><th scope="col">Reference</th>'
+                 f'<th scope="col" class="num">Difference [95% interval]</th></tr></thead><tbody>{rows}</tbody></table></div>')
+    else:
+        table = "No score yet."
+    verdict = m.get("verdict")
+    fields.append(("How it did", (f"<p>{escape(verdict['plain'])}</p>" if verdict else "") + table))
+    fields += [("What it misses", escape(m["misses"])), ("How often it was wrong", escape(m["wrong"])),
+               ("Is a result shown?", f'{"Yes" if m["show"]["shown"] else "No"}. {escape(m["show"]["why"])}')]
+    if (lg := m.get("log")) and lg.get("rows") is not None:
+        fields.append(("Rows logged so far", f'{lg["rows"]:,} rows from {escape(day(lg["first"]))} to '
+                                             f'{escape(day(lg["last"]))}. A count only: no score is worked out from them before the read.'))
+    elif m.get("how"):
+        fields.append(("What is logged", escape(m["how"])))
+    if w:
+        fields.append(("The rule at the read", escape(w["rule"]) + (f" {escape(w['extension'])}" if w.get("extension") else "")))
+    fields.append(("Records", ", ".join(f'<a href="{escape(x["href"])}">{escape(x["title"])}</a>' for x in m["records"])))
+    return (f'<h2 id="{escape(m["id"])}">{escape(m["name"])}</h2>\n<p class="sc-stage">{escape(scorecard_stage(m, today))}</p>\n'
+            '<dl class="fields">' + "".join(f"<dt>{k}</dt><dd>{v}</dd>" for k, v in fields) + "</dl>")
+
+
+def scorecard_body(doc: dict, today: date) -> str:
+    """The lead, the list of models with their stages, the measures in words, then a section for each model."""
+    ms = doc["models"]
+    return "\n".join(
+        [f'<p class="lead">{escape(doc["claim"]["public_wording"])}</p>',
+         '<ul class="sc-list">' + "".join(f'<li><a href="#{escape(m["id"])}">{escape(m["name"])}</a>: '
+                                          f'{escape(scorecard_stage(m, today).split(":")[0].split(".")[0])}</li>' for m in ms) + "</ul>",
+         "<p>" + " ".join(escape(v) for v in doc["measures"].values()) + " A 95% interval is the range the difference "
+         "would fall in 95 times in 100 if the rows were drawn again. When it does not include zero, the difference is "
+         "unlikely to be chance alone.</p>",
+         *(scorecard_section(m, doc, today) for m in ms)])
+
+
+def write_model_scorecard(site: Path, token: str | None = None, root: str | None = None, path: Path | None = None,
+                          today: date | None = None) -> dict:
+    """models.html, and data/research/model_scorecard.json, from the export (SCORECARD unless path), or the page saying
+    none is shown. Returns the build's health entry."""
+    path, today = path or SCORECARD, today or pd.Timestamp.now(tz="Europe/London").date()
+    out = site / "data" / "research" / "model_scorecard.json"
+    out.unlink(missing_ok=True)
+    why = None
+    if not path.is_file():
+        why = "no export in this build"
+    else:
+        doc = json.loads(path.read_text())
+        if doc.get("schema") != SCORECARD_SCHEMA or str(doc.get("version", "")).split(".")[0] != SCORECARD_MAJOR:
+            why = f"export is {doc.get('schema')} {doc.get('version')}, not {SCORECARD_SCHEMA} {SCORECARD_MAJOR}.x"
+    page = (TEMPLATE.parent / "models.html").read_text()
+    if why:
+        body = '<p class="notice">No scorecard is published in this build.</p>'
+    else:
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(json.dumps(doc, ensure_ascii=False, separators=(",", ":")))
+        body = scorecard_body(doc, today)
+    if "<!-- SCORECARD -->" not in page:
+        raise ValueError("models.html has lost <!-- SCORECARD -->, which write_model_scorecard fills")
+    page = page.replace("<!-- SCORECARD -->", body, 1)
+    (site / "models.html").write_text(with_counter(with_share_meta(page, "models.html", root or site_url()), token))
+    return {"available": False, "why": why} if why else {"available": True, "models": len(doc["models"]),
+                                                          "version": doc["version"]}
 
 
 # A spot's overflow history, spot/<id>/profile/ (docs/MARKETS-2026-10.md): every monitored overflow
