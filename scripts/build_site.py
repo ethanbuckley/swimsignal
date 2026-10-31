@@ -339,6 +339,51 @@ def email_config() -> dict | None:
     return {"url": url}
 
 
+# Ask SwimSignal (ask/, the Worker): on when DIPCAST_ASK_URL is set to the Worker's address. It puts
+# "ask": {"url": ...} in spots.json, which shows the question tile on Plan a swim (ask.js), and adds the
+# privacy notice's section. Set it only once the Worker is deployed and answering (ask/README.md).
+ASK_URL_ENV = "DIPCAST_ASK_URL"
+
+
+def ask_config() -> dict | None:
+    url = os.environ.get(ASK_URL_ENV, "").strip()
+    if not url:
+        return None
+    if not re.fullmatch(r"https://[A-Za-z0-9.-]+(:\d+)?/", url):
+        log.warning("%s must be https://host/: Ask SwimSignal left off", ASK_URL_ENV)
+        return None
+    return {"url": url}
+
+
+# With Ask on, the privacy notice gains this section before "The server version", and "(Ask SwimSignal)"
+# after its date. What it says is what ask/src/index.js does: the question goes to the Worker and to
+# Anthropic; the Worker keeps a keyed hash of the connection and the day, deleted the day after, and the
+# day's total spend, and logs no question. Anthropic's own retention is its, under its commercial terms.
+ASK_PRIVACY = (
+    '<h2 id="ask">Ask SwimSignal</h2>\n<p>On Plan a swim you can ask a question in your own words. When you press Ask, '
+    "your question is sent to SwimSignal's Ask service, which runs on Cloudflare Workers, and from there to Anthropic, "
+    "whose AI model, Claude, reads SwimSignal's published data to answer it. Nothing else is sent: not your location, "
+    "your saved spots or your plan. Do not put your name or other personal details in a question. SwimSignal does not "
+    "keep your question or its answer. To limit how many questions one connection can ask in a day, the service keeps "
+    "a count under a keyed hash of your IP address and the day, never the address itself, and deletes it the day "
+    "after. It also keeps each day's total number of questions and what they cost, with nothing that links them to "
+    "anyone. Anthropic processes the question for SwimSignal and keeps it for a limited time under its own terms; "
+    '<a href="https://www.anthropic.com/legal/privacy">Anthropic\'s privacy policy</a> applies to that. Cloudflare '
+    "sees your IP address when you press Ask, as any web server would; "
+    '<a href="https://www.cloudflare.com/privacypolicy/">Cloudflare\'s privacy policy</a> applies to that. Either '
+    "may handle the question outside the UK under its own safeguards. The basis is SwimSignal's legitimate interest "
+    "in answering the question you chose to ask. The answer is written by an AI model from SwimSignal's data and can "
+    "be wrong: check a spot's page and the signs at the water.</p>\n")
+
+
+def with_ask(html: str) -> str:
+    """The privacy notice with Ask SwimSignal on: its section before "The server version", and its name after the date."""
+    if "<h2>The server version</h2>" not in html:
+        raise ValueError("privacy.html has lost its heading The server version, before which Ask's section goes")
+    html = html.replace("<h2>The server version</h2>", ASK_PRIVACY + "<h2>The server version</h2>", 1)
+    return privacy_updated(html, "Ask SwimSignal")
+
+
 def with_push(html: str, on: bool, email: bool = False, dates: bool = False) -> str:
     """The privacy page: the alerts section when alerts are on (in the browser, by email or both),
     else the planned-feature note. dates: alerts for a date are on too (DIPCAST_PUSH_DATES)."""
@@ -2178,6 +2223,9 @@ VERSIONED_SCRIPTS += ('<script src="guide.js"></script>',)
 # first time one is typed (PLACES, below).
 SHELL_SOURCES.append(TEMPLATE.parent / "plan.js")
 VERSIONED_SCRIPTS += ('<script src="plan.js"></script>',)
+# Ask SwimSignal on Plan a swim (ask.js): the question tile, shown only with DIPCAST_ASK_URL set (ask_config).
+SHELL_SOURCES.append(TEMPLATE.parent / "ask.js")
+VERSIONED_SCRIPTS += ('<script src="ask.js"></script>',)
 # A plan's outing (plan/): outing.js, when, the spot and a backup side by side; it uses plan.js.
 SHELL_SOURCES.append(TEMPLATE.parent / "outing.js")
 VERSIONED_SCRIPTS += ('<script src="outing.js"></script>',)
@@ -2252,6 +2300,7 @@ def copy_app_files(site: Path, stamp: str | None = None) -> None:
     shutil.copy(TEMPLATE.parent / "levels.js", site / "levels.js")   # the level rules, which the page loads
     shutil.copy(TEMPLATE.parent / "anypoint.js", site / "anypoint.js")   # a forecast for any point clicked on the map
     shutil.copy(TEMPLATE.parent / "plan.js", site / "plan.js")   # Plan a swim
+    shutil.copy(TEMPLATE.parent / "ask.js", site / "ask.js")   # Ask SwimSignal, on Plan a swim when on
     shutil.copy(TEMPLATE.parent / "outing.js", site / "outing.js")   # a plan's outing and its backup
     shutil.copy(TEMPLATE.parent / "spotdate.js", site / "spotdate.js")   # the calendar file and alerts for a date
     shutil.copy(TEMPLATE.parent / "since.js", site / "since.js")   # what changed since you last looked
@@ -2894,14 +2943,15 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
                 scotland: dict | None = None, email: bool = False, ireland: dict | None = None,
                 northern_ireland: dict | None = None, support: str | None = None, tiles: dict | None = None,
                 push_dates: bool = False, spot_cards: dict[str, str] | None = None, cards_v: str = "",
-                overflows: pd.DataFrame | None = None, generated: pd.Timestamp | None = None) -> int:
+                overflows: pd.DataFrame | None = None, generated: pd.Timestamp | None = None, ask: bool = False) -> int:
     """Every HTML page, the sitemap and the app files. Returns the number of spot pages. A spot
     whose id is not letters, digits and hyphens gets no page of its own and keeps ?spot=.
     support is the Ko-fi page tips go to (support_url), or None for no tips; tiles the map tile
     provider (tile_config), or None for OpenStreetMap's. spot_cards: {id: alt} for the spots with a share
     card in cards/spot/ (write_spot_cards); cards_v goes on its address, so a preview fetched again
     gets this build's card rather than a cached one. overflows: this build's overflow table, for the
-    data-quality page (write_quality_page); generated: the forecast's issue time, which that page gives."""
+    data-quality page (write_quality_page); generated: the forecast's issue time, which that page gives.
+    ask: Ask SwimSignal is on (ask_config), which adds its section to the privacy notice."""
     root = root or site_url()
     stamp = shell_stamp()
     template = with_tiles(with_build(TEMPLATE.read_text(), stamp), "index.html", tiles)
@@ -2936,6 +2986,8 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
             from dipcast.northern_ireland import render as render_ni
             s = re.sub(r'<!-- NI_DIRECTORY -->.*?<!-- END_NI_DIRECTORY -->',
                        lambda _: render_ni(northern_ireland), s, flags=re.S)
+        if name == "privacy.html" and ask:
+            s = with_ask(s)
         s = with_counter(with_push(s, push, email, push_dates) if name == "privacy.html" else s, token)
         s = with_share_meta(with_tiles(s, name, tiles), name, root)
         (site / name).write_text(with_support(s, name) if support else s)
@@ -4124,10 +4176,10 @@ def build(refresh: bool = True) -> dict:
     for name, snap in nations.items():
         health[name]["water_temperature_estimate"] = attach_directory_water_temp(snap["sites"], air, nation=name)
         (SITE / "data" / f"{name}.json").write_text(json.dumps(snap))
-    push, email = push_config(), email_config()
+    push, email, ask = push_config(), email_config(), ask_config()
     doc = {"generated_at": generated.isoformat(), "version": __version__, "n": len(results), "build": health,
            "lead_skill": lead_skill(), "ecoli_check": ecoli_check(),
-           **({"push": push} if push else {}), **({"email": email} if email else {}),
+           **({"push": push} if push else {}), **({"email": email} if email else {}), **({"ask": ask} if ask else {}),
            "commit": code_commit(), "credits": credits, "spots": results}
     (SITE / "data" / "spots.json").write_text(json.dumps(doc, default=str))
     write_app_data(SITE, doc)   # spots-lite.json and data/spot/<id>.json, what the app loads
@@ -4154,7 +4206,7 @@ def build(refresh: bool = True) -> dict:
     health["spot_pages"] = write_pages(SITE, results, token, day=generated.date().isoformat(), push=push is not None,
                                        coastal=coastal, wales=wales, scotland=scotland, email=email is not None,
                                        ireland=ireland, northern_ireland=northern_ireland, support=support_url(), tiles=tile_config(),
-                                       push_dates=bool(push and push.get("dates")),
+                                       push_dates=bool(push and push.get("dates")), ask=ask is not None,
                                        spot_cards=spot_cards, cards_v=generated.strftime("%Y%m%d%H%M"),
                                        overflows=_overflows(), generated=generated)
     # Swimmers' reviews: the published ones into site/reviews/, and their sections into the pages just written.
