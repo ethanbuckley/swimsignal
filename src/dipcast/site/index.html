@@ -1288,6 +1288,7 @@
     <button type="button" class="hbtn phone-only" id="mapbtn">Map</button>
     <a href="verification.html" class="desk-only">Accuracy</a>
     <a href="about.html" class="desk-only">About</a>
+    <a href="research.html" class="desk-only">Research</a>
     <a href="feedback.html" class="desk-only">Feedback</a>
   </nav>
 </header>
@@ -1347,7 +1348,7 @@
       </details>
     </section>
     <footer class="fine">
-      <p><a href="about.html">About SwimSignal</a> · <a href="verification.html">How accurate is it?</a> · <a href="methods.html">Method</a> · <a href="spots.html">Every spot</a> · <a href="coverage.html">Coasts, Wales, Scotland, Ireland and algae</a> · <a href="organisers.html">For event organisers</a> · <a href="clubs.html">For clubs, centres and leaders</a> · <a href="feedback.html">Feedback</a> · <a href="feedback.html?type=spot">Request a spot</a> · <a href="terms.html">Terms of use</a> · <a href="privacy.html">Privacy</a> · <a href="https://github.com/ethanbuckley/swimsignal">Source code</a> (MIT)</p>
+      <p><a href="about.html">About SwimSignal</a> · <a href="verification.html">How accurate is it?</a> · <a href="methods.html">Method</a> · <a href="spots.html">Every spot</a> · <a href="research.html">Research</a> · <a href="coverage.html">Coasts, Wales, Scotland, Ireland and algae</a> · <a href="organisers.html">For event organisers</a> · <a href="clubs.html">For clubs, centres and leaders</a> · <a href="feedback.html">Feedback</a> · <a href="feedback.html?type=spot">Request a spot</a> · <a href="terms.html">Terms of use</a> · <a href="privacy.html">Privacy</a> · <a href="https://github.com/ethanbuckley/swimsignal">Source code</a> (MIT)</p>
       <p>Data: storm overflow status from Anglian, Northumbrian, Severn Trent, South West, Southern, Thames, United Utilities, Wessex and Yorkshire Water via the National Storm Overflow Hub (<a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>; combined and modelled by SwimSignal) · Environment Agency data © Environment Agency copyright and/or database right (<a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/">OGL v3.0</a>); river levels: this uses Environment Agency flood and river level data from the real-time data API (Beta) · Contains OS data © Crown copyright and database right 2026 · <a href="https://open-meteo.com/">Weather data by Open-Meteo.com</a> (CC BY 4.0), from Met Office forecasts © Crown copyright (<a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>) · Map © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors. None of these bodies endorses SwimSignal. <a href="terms.html#data">All credits and licences</a>.</p>
     </footer>
   </main>
@@ -2043,22 +2044,47 @@ const weatherRow = (d, iso) => { const w = weatherOn(d, iso); if (!w) return '';
 // an estimate for the spot today: after the reading where there is a sensor, on its own where there is none. It
 // is shown only on the day it is for, so an old page never offers yesterday's. Rivers only: the model passed its
 // test for rivers and failed for lakes (docs/WATER-TEMPERATURE-MODEL-TEST-2026-10.md), so a lake never shows one.
-function waterTile(w, e = null, kind = null) {
-  const waterEstOk = x => !!x && kind === 'river' && typeof x.temp_c === 'number' && typeof x.within_c === 'number'
-    && x.date === today();
-  const waterEstSay = x => `About ${x.temp_c}&nbsp;°C (estimated, typically within ${fmt(x.within_c, 0)}&nbsp;°C).`;
+// Water temperature (#492; Ethan, 30 October 2026: a clearly labelled provisional estimate at every river and lake spot,
+// all year). The build's estimate says its route (water_temp.estimate_any): the tested river model, May to September; a
+// lake route whose summer test error is measured but which failed the lake test; or any water October to April, not yet
+// checked in those months. Each route is worded by what was measured for it and nothing more: no error is said where
+// none was measured. A sensor reading is a measurement, said as one, apart from the estimate. Only today's estimate shows.
+const WT_ROUTES = new Set(['river_model', 'lake_model', 'lake_curve', 'river_off_season', 'lake_off_season']);
+const waterEstOk = (x, kind) => !!x && (kind === 'river' || kind === 'lake') && typeof x.temp_c === 'number' && x.date === today()
+  && (WT_ROUTES.has(x.route) || (!x.route && kind === 'river' && typeof x.within_c === 'number'));   // a file from before routes: the river model, rivers only
+const waterEstHow = x => !x.route || x.route === 'river_model' ? `estimated, typically within ${fmt(x.within_c ?? 2, 0)}&nbsp;°C`
+  : x.route.endsWith('_off_season') ? 'provisional estimate, not yet checked in these months'
+  : `provisional estimate; typical error ${fmt(x.typical_c, 1)}&nbsp;°C at lakes in a summer test`;
+const waterEstSay = x => `About ${x.temp_c}&nbsp;°C (${waterEstHow(x)}).`;
+// For a line elsewhere (the planner's columns): "water about 11 °C today, estimated", or ''.
+function waterEstShort(e, kind) { return waterEstOk(e, kind) ? `water about ${e.temp_c} °C today, ${!e.route || e.route === 'river_model' ? 'estimated' : 'provisional estimate'}` : ''; }
+const WT_AIR = 'It comes from a weather model\'s air temperature for this area over the last 30 days, today\'s forecast included, with the date';
+const WT_TAIL = ' It is the water near the surface: it changes through the day and can be warmer or colder where you swim. Not part of the pollution level.';
+function waterEstMore(x) {
+  const r = x.route || 'river_model';
+  if (r === 'river_model') return `The estimate is not a measurement. ${WT_AIR}, the size of the river and the height of the land. The model was tested on 3,798 rivers it had not seen, against the Environment Agency's own samples from May to September 2023 to 2025, using archived air: its typical error there was 1.6&nbsp;°C, and 1 time in 10 it was 2.5&nbsp;°C or more out. The forecast air used here was checked against that archive twice and ran 0.25 to 0.5&nbsp;°C cooler; today's forecast itself was not checked.${WT_TAIL}`;
+  if (r === 'lake_model' || r === 'lake_curve') return `A provisional estimate, not a measurement. ${WT_AIR}${r === 'lake_model' ? ' and the size of the lake' : ' alone, as for large lakes the fuller model did worse'}. The lake model did not pass its test: against the Environment Agency's samples at 307 lakes it had not seen, May to September 2023 to 2025, its typical error was 1.8&nbsp;°C, too cold early in the season and a little warm in September. For ${r === 'lake_model' ? 'lakes under 1&nbsp;km²' : 'lakes of 1&nbsp;km² or more'} the typical error was ${fmt(x.typical_c, 1)}&nbsp;°C. A deep lake's surface can lag the air by more than a month.${WT_TAIL}`;
+  return `A provisional estimate, not a measurement. ${WT_AIR}, through a relation between the air and the ${r === 'lake_off_season' ? 'lake' : 'river'} fitted on May to September samples. It has not been checked from October to April: no test so far had samples from those months, so how far out it is in winter is not known yet. Each estimate is saved and is being compared with the Environment Agency's water sensors as the winter goes on.${WT_TAIL}`;
+}
+function waterTile(w, e = null, kind = null, miss = null) {
   const wtIcon = () => glyph('<path d="M10 14.6V5a2 2 0 0 1 4 0v9.6a3.6 3.6 0 1 1-4 0Z"/><path d="M12 9.5v8"/>');
-  const WT_EST_MORE = 'The estimate is not a measurement. It comes from a weather model\'s air temperature for this area over the last 30 days, today\'s forecast included, with the date, the size of the river and the height of the land. The model was tested on 3,798 rivers it had not seen, against the Environment Agency\'s own samples from May to September 2023 to 2025, using archived air: its typical error there was 1.6&nbsp;°C, and 1 time in 10 it was 2.5&nbsp;°C or more out. The forecast air used here was checked against that archive twice and ran 0.25 to 0.5&nbsp;°C cooler; today\'s forecast itself was not checked. The water changes through the day and can be warmer or colder where you swim. Not part of the pollution level. There is no estimate for lakes: the same test failed for them.';
   const t = w ? Date.parse(w.observed_at) : NaN;
-  const est = waterEstOk(e) ? e : null;
+  const est = waterEstOk(e, kind) ? e : null;
   if (!w || nil(w.temp_c) || isNaN(t) || nil(w.river_km) || !['upstream', 'downstream'].includes(w.direction)) {
-    if (!est) return null;
-    return { icon: wtIcon(), label: 'Water temperature', fig: `${est.temp_c}°`, unit: 'C, estimated', say: waterEstSay(est), more: WT_EST_MORE };
+    if (!est) {
+      // No estimate today because its inputs did not arrive: said, rather than an empty space read as "none needed".
+      if (miss && miss.date === today() && (kind === 'river' || kind === 'lake'))
+        return { icon: wtIcon(), label: 'Water temperature', fig: '–', unit: 'not estimated today',
+          say: 'No estimate in this update: the air temperatures it is worked out from did not all arrive.', more: 'The next update will try again. An older estimate is not shown as today\'s.' };
+      return null;
+    }
+    return { icon: wtIcon(), label: 'Water temperature', fig: `${est.temp_c}°`, unit: est.route && est.route !== 'river_model' ? 'C, provisional estimate' : 'C, estimated',
+      say: waterEstSay(est), more: waterEstMore(est) };
   }
   return { live: true, icon: wtIcon(), label: 'Water temperature',
     fig: `${Math.round(w.temp_c)}°`, unit: 'C',
     say: `Measured ${esc(w.where)}${w.river ? ` on the ${esc(w.river)}` : ''}, ${fmt(w.river_km, 1)}&nbsp;km ${w.direction}, ${ago(Math.max(0, (Date.now() - t) / 60000))} ago.${est ? ` At the spot: ${waterEstSay(est).replace(/^About/, 'about')}` : ''}`,
-    more: `The Environment Agency's water-quality sensor nearest the spot on this river, within 15&nbsp;km in a straight line, that has reported in the last day: upstream if there is one, since the water here comes from upstream.${w.quality === 'Unchecked' ? ' The EA has not yet checked the reading.' : ''} The water where you swim can be warmer or colder. Not part of the pollution level.${/^https:\/\/environment\.data\.gov\.uk\//.test(w.url || '') ? ` <a href="${esc(w.url)}">The Environment Agency's page for this sensor</a> has its record.` : ''}${est ? ` ${WT_EST_MORE}` : ''}` };
+    more: `The Environment Agency's water-quality sensor nearest the spot on this river, within 15&nbsp;km in a straight line, that has reported in the last day: upstream if there is one, since the water here comes from upstream.${w.quality === 'Unchecked' ? ' The EA has not yet checked the reading.' : ''} The water where you swim can be warmer or colder. Not part of the pollution level.${/^https:\/\/environment\.data\.gov\.uk\//.test(w.url || '') ? ` <a href="${esc(w.url)}">The Environment Agency's page for this sensor</a> has its record.` : ''}${est ? ` ${waterEstMore(est)}` : ''}` };
 }
 // ------------------------------------------------------------------------------ the answer and the tiles
 // The page as Apple Weather's (docs/DESIGN.md): the answer as one big word, what set it
@@ -2345,7 +2371,7 @@ function facts(d, iso = null) {
   if (!d.error && total && x0 && !nil(x0.rain_48h_mm)) { const wet = d.days.slice(0, 5).reduce((p, q) => (q.rain_48h_mm || 0) > (p.rain_48h_mm || 0) ? q : p);
     out.push({ icon: ICON.rain, label: 'Rain here', fig: Math.round(x0.rain_48h_mm), unit: 'mm', vis: rainCols(d, x0.date),
       say: `In the 48&nbsp;h to midday ${first ? 'today' : dayName(x0.date)}.${first && wet !== x0 && wet.rain_48h_mm >= 1 ? ` The most ahead: ${Math.round(wet.rain_48h_mm)}&nbsp;mm in the 48&nbsp;h to midday ${dayName(wet.date)}.` : ''}` }); }
-  const wt = waterTile(d.water_temp, d.water_temp_est, d.kind); if (wt) out.push(wt);
+  const wt = waterTile(d.water_temp, d.water_temp_est, d.kind, d.water_temp_est_missing); if (wt) out.push(wt);
   const wx = weatherOn(d, first || !x0 ? today() : x0.date);
   if (wx) out.push({ icon: ICON.sun, label: 'Weather', fig: nil(wx.tmax) ? '–' : `${wx.tmax}°`, unit: nil(wx.tmax) ? '' : 'C high', vis: sunPath(wx, first),
     say: `Sunrise ${esc(wx.sunrise)}, sunset ${esc(wx.sunset)}.`, credit: true });
@@ -2522,7 +2548,8 @@ function bestDayNote(spots, yours = false) {
 }
 // The strip's count for a day: the spots at low risk that day, as Low risk only would show them (29 October
 // 2026: it replaced the line under the day picker, "This weekend, Sunday: 66 of 109 spots at low risk").
-const lowOn = iso => DATA.spots.filter(s => dayLevel(s, iso) === 'low').length;
+const lowEligible = s => !(typeof eaTodayRestricts === 'function' && eaTodayRestricts(s));
+const lowOn = iso => DATA.spots.filter(s => dayLevel(s, iso) === 'low' && lowEligible(s)).length;
 // The button, with the dot before it, shows while another day is picked: setMapDay keeps it in step.
 const syncBestDay = () => document.querySelectorAll('[data-pick-day]').forEach(b => { b.parentElement.hidden = b.dataset.pickDay === VIEW.day; });
 // The button hides once pressed, so the focus goes to the day picker, which now shows its day.
@@ -2838,11 +2865,11 @@ const mapLevel = s => VIEW.day ? dayLevel(s, VIEW.day) : level(s);
 const mapWhen = () => VIEW.day ? dayWord(VIEW.day) : 'today and tomorrow';
 const lowLabel = () => 'Low\u00a0risk only';   // says what it does, as the map's switch does; the no-break space: see .toolbar [data-low-t]
 // The low spots with official advice (eatoday.js): still shown, as their level is low, but said here and on their rows.
-const lowAdvised = () => typeof eaTodayAdvice === 'function' ? DATA.spots.filter(s => mapLevel(s) === 'low' && eaTodayAdvice(s).length).length : 0;
+const lowAdvised = () => typeof eaTodayAdvice === 'function' ? DATA.spots.filter(s => mapLevel(s) === 'low' && lowEligible(s) && eaTodayAdvice(s).length).length : 0;
 // "Follow" only where every one counted restricts swimming (eatoday.js, eaTodayRestricts); else "read".
 const noticeVerb = spots => typeof eaTodayRestricts === 'function' && spots.every(s => eaTodayRestricts(s)) ? 'follow it first' : 'read it first';
-const lowAdviceSaid = () => { const n = lowAdvised(); return n ? ` ${n === 1 ? 'One of them has' : `${n} of them have`} an official notice: ${noticeVerb(DATA.spots.filter(s => mapLevel(s) === 'low' && eaTodayAdvice(s).length))}.` : ''; };
-const lowListNote = () => `Low risk from pollution ${mapWhen()}, going by the forecasts and the Environment Agency's ratings.${lowAdviceSaid()} Not a safety check: look at the signs at the water before you swim.`;
+const lowAdviceSaid = () => { const n = lowAdvised(); return n ? ` ${n === 1 ? 'One of them has' : `${n} of them have`} an official notice: ${noticeVerb(DATA.spots.filter(s => mapLevel(s) === 'low' && lowEligible(s) && eaTodayAdvice(s).length))}.` : ''; };
+const lowListNote = () => `Low risk from pollution ${mapWhen()}, going by the forecasts and the Environment Agency's ratings. Spots with official advice restricting swimming are excluded.${lowAdviceSaid()} Not a safety check: look at the signs at the water before you swim.`;
 // A spot with an official notice (eatoday.js) keeps its level's colour, ringed in the notice's amber: a cue
 // to open the spot and read the notice, not a level or a safety score. The map shows it before a tap: on the phone, 27 Oct 2026, Frensham was a plain green dot.
 // The key's line for the ring shows only while a spot has one.
@@ -2853,7 +2880,7 @@ const markerTip = s => { const o = typeof eaTodayBrief === 'function' ? eaTodayB
   return o ? `${esc(s.name)}: ${esc(o)}<br>${listHeadline(s)}` : `${esc(s.name)}: ${listHeadline(s)}`; };   // official advice first
 function styleMarkers() {
   for (const s of DATA.spots) {
-    const m = MARKERS.get(s.id), lv = mapLevel(s), on = !VIEW.lowOnly || lv === 'low'; if (!m) continue;
+    const m = MARKERS.get(s.id), lv = mapLevel(s), on = !VIEW.lowOnly || (lv === 'low' && lowEligible(s)); if (!m) continue;
     m.setTooltipContent(markerTip(s));
     const adv = mapAdvised(s);
     m.setStyle(on ? { color: adv ? ADVICE_RING : PAPER, weight: adv ? 3.5 : 2, fillColor: colour(lv), fillOpacity: 1 }
@@ -2865,10 +2892,10 @@ function styleMarkers() {
   document.querySelectorAll('.map-legend .advkey').forEach(k => { k.hidden = !DATA.spots.some(mapAdvised); });
   const ln = document.getElementById('low-note-list'); if (ln) { ln.hidden = !VIEW.lowOnly; ln.textContent = lowListNote(); }
   const b = document.getElementById('lowbtn');
-  if (b) { b.setAttribute('aria-pressed', String(VIEW.lowOnly)); b.querySelector('.n').textContent = DATA.spots.filter(s => mapLevel(s) === 'low').length; }
+  if (b) { b.setAttribute('aria-pressed', String(VIEW.lowOnly)); b.querySelector('.n').textContent = DATA.spots.filter(s => mapLevel(s) === 'low' && lowEligible(s)).length; }
   document.querySelectorAll('[data-low]').forEach(x => x.setAttribute('aria-pressed', String(VIEW.lowOnly)));
   document.querySelectorAll('[data-low-t]').forEach(x => { x.textContent = lowLabel(); });
-  document.getElementById('low-note').textContent = `Low risk ${mapWhen()} from pollution.${lowAdviceSaid()} Not a safety check: currents, cold water and the Environment Agency's short-term warnings are not included.`;
+  document.getElementById('low-note').textContent = `Low risk ${mapWhen()} from pollution. Spots with official advice restricting swimming are excluded.${lowAdviceSaid()} Not a safety check: currents, cold water and the Environment Agency's short-term warnings are not included.`;
 }
 function setMapDay(iso) {
   VIEW.day = iso || null;
@@ -3074,6 +3101,9 @@ function outingResume() {
     + (typeof eaTodayApart === 'function' ? eaTodayApart(s).replace('class="gaps o-apart"', 'class="small resume-apart"') : '')
     + `<a class="linkbtn resume-open" href="${esc(planPath() + o.hash)}" data-plan-hash="${esc(o.hash)}">Open your plan</a></div>`;
 }
+// The way on from a search with no inland spot: the official coastal, Welsh, Scottish and Irish
+// directories (coverage.html), searched for the same words. Also under the offers of a town or water (offerOnMap).
+const regionalLink = q => `<a href="coverage.html${String(q || '').trim() ? `?q=${encodeURIComponent(String(q).trim())}` : ''}#regional-results">Search official coastal and regional bathing-water information</a>, which is not a SwimSignal forecast.`;
 function renderList() {
   contribLayer.clearLayers(); selLayer.clearLayers(); current = null; shown = 'list';
   setView('list');
@@ -3246,7 +3276,7 @@ function drawSpots() {
   const words = fold(VIEW.q).split(' ').filter(Boolean);
   const found = s => { const t = searchText(s); return words.every(w => t.includes(w)); };
   const keep = s => found(s) && (VIEW.filter === 'all'
-    || (VIEW.filter === 'designated' ? s.source === 'designated' : s.kind === VIEW.filter)) && (!VIEW.lowOnly || mapLevel(s) === 'low');
+    || (VIEW.filter === 'designated' ? s.source === 'designated' : s.kind === VIEW.filter)) && (!VIEW.lowOnly || (mapLevel(s) === 'low' && lowEligible(s)));
   const byRisk = VIEW.sort !== 'name' && !(VIEW.sort === 'near' && VIEW.here);
   const items = DATA.spots.filter(keep).sort((a, b) => VIEW.sort === 'near' && VIEW.here ? dist(a) - dist(b)
     // Near me before a position has arrived keeps the lowest-risk order, which a failed location returns to.
@@ -3285,7 +3315,7 @@ function drawSpots() {
   const groups = areaGroups(items);
   ul.innerHTML = groups ? groups.map(([a, xs]) => areaRows(a, xs, spotItem, VIEW.quiet, !words.length)).join('')
     : items.length ? items.map(spotItem).join('')
-    : `<li class="empty"><p class="below">No spots match. SwimSignal covers ${DATA.spots.length} river and lake spots in England. Missing yours? <a href="feedback.html?type=spot">Request it</a>.</p>`
+    : `<li class="empty"><p class="below">No inland forecasts match. SwimSignal forecasts ${DATA.spots.length} river and lake spots in England. ${regionalLink(VIEW.q)} Missing yours? <a href="feedback.html?type=spot">Request it</a>.</p>`
       + `<button type="button" class="btn" id="clear-filters">Clear search and filters</button></li>`;
   document.getElementById('count').textContent = items.length === DATA.spots.length ? `${items.length} spot${items.length === 1 ? '' : 's'}.` : `Showing ${items.length} of ${DATA.spots.length} spots.`;
   bindClear();
@@ -3680,6 +3710,7 @@ function renderShared(sh) {
     + `<p class="lede">Someone shared this list${spots.length ? ` of ${spots.length === 1 ? 'one spot' : `${spots.length} spots`}` : ''} with you.${spots.length ? ' It is not kept on this device unless you add it.' : ''}`
     + `${spots.length && !have && (DATA.push || DATA.email) ? ' Once added, it stays under Saved, where you can set up alerts for its spots.' : ''}</p>`;
   if (sh.day && spots.length) h += `<p class="planner-note">Levels for ${dayName(sh.day)}, the day of the plan.</p>`;
+  if (sh.requestedDay && spots.length) h += `<p class="planner-note" role="status">The forecast for the plan's date, ${esc(new Date(sh.requestedDay + 'T12:00:00Z').toLocaleDateString('en-GB', { timeZone: 'UTC', weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }))}, ${sh.requestedDay < planDates()[0] ? 'has expired' : 'is not available yet'}. The cards below show the available forecast for ${esc(planDates()[0])} to ${esc(planDates().at(-1))}. <a href="${esc(planPath())}">Choose a new date</a>.</p>`;
   // A link tapped in Facebook opens in Facebook's own browser: a list added there is not in Safari or
   // Chrome afterwards, and alerts cannot be had there at all. Said before the button, not after.
   if (IN_APP && spots.length && !have) h += `<p class="planner-note">You are in the ${IN_APP} app's browser. A list added here stays in the ${IN_APP} app, not in ${IOS ? 'Safari' : 'your own browser'}, and alerts cannot be turned on here. `
@@ -3761,7 +3792,7 @@ async function offerOnMap() {
   const empty = document.querySelector('#spots li.empty');
   if (empty) {
     empty.innerHTML = `<p class="below">No listed spot matches.${places.length ? '' : ' Any river or lake has a forecast on the map:'}</p>`;   // a plan comes first, under its own heading
-    box.insertAdjacentHTML('beforeend', `<li class="empty"><p class="below">Missing a spot? <a href="feedback.html?type=spot">Request it</a>.</p><button type="button" class="btn" id="clear-filters">Clear search and filters</button></li>`);
+    box.insertAdjacentHTML('beforeend', `<li class="empty"><p class="below">${regionalLink(t)} Missing a spot? <a href="feedback.html?type=spot">Request it</a>.</p><button type="button" class="btn" id="clear-filters">Clear search and filters</button></li>`);
     bindClear();
   }
   box.querySelectorAll('[data-water]').forEach(b => b.addEventListener('click', () => { const w = waters[+b.dataset.water];
@@ -3961,10 +3992,13 @@ function drawPlan(fit = false) {
     '', 'No forecast for the day, or out of the forecast\'s reach.'].map((t, i) => [planAdviceSub(adv[i], r.groups[i].length), t].filter(Boolean).join(' '));
   const next = r.nearest ? reachFor(r.nearest.miles) : null;
   document.getElementById('plan-basis').innerHTML = r.count ? planBasis(r.groups.flat()) : '';
-  box.innerHTML = r.count ? r.groups.map((g, i) => !g.length ? '' : `<section class="group tile" aria-labelledby="plan-h${i}"><h2 class="group-head" id="plan-h${i}">${head[i]}</h2>`
+  const restrictedLow = r.groups[0].filter(o => planAdvised(o.s));
+  const displayGroups = r.groups.map((g, i) => i === 0 ? g.filter(o => !planAdvised(o.s)) : g);
+  box.innerHTML = r.count ? displayGroups.map((g, i) => !g.length ? '' : `<section class="group tile" aria-labelledby="plan-h${i}"><h2 class="group-head" id="plan-h${i}">${head[i]}</h2>`
       + `${sub[i] ? `<p class="sub">${sub[i]}</p>` : ''}<ul class="spots" id="plan-g${i}">${g.map(planItem).join('')}</ul></section>`).join('')
     : `<div class="empty-saved tile"><h2 class="sec-h">No ${planNoun(2)} ${reach}</h2>`
       + (r.nearest ? `<p class="sub">The nearest is ${esc(r.nearest.s.name)}, ${milesAway(r.nearest.miles)}.</p><button type="button" class="btn primary" data-plan-within="${next}">${next ? `Look within ${next} miles` : 'Look at any distance'}</button>` : '') + '</div>';
+  if (restrictedLow.length) box.insertAdjacentHTML('beforeend', `<section class="group tile" aria-labelledby="plan-restricted"><h2 class="group-head" id="plan-restricted">Official advice restricts swimming</h2><p class="sub">Follow the official advice. The sewage forecast is shown as separate information.</p><ul class="spots">${restrictedLow.map(planItem).join('')}</ul></section>`);
   if (r.count) box.insertAdjacentHTML('beforeend', '<p class="small muted msg">Distances are in a straight line, not by road. A forecast, not a water test: check the signs at the water before you swim. <a href="#levels">What the levels mean</a>.</p>');
   box.querySelectorAll('ul.spots').forEach(bindItems);
   if (r.count) planCompare(r.groups, head);
@@ -4805,10 +4839,12 @@ function bindBack() { const b = document.getElementById('back'); if (b) b.addEve
 // show "About these forecasts" as one line; a link into it opens it in place (about-open).
 document.addEventListener('click', e => { const a = e.target.closest('a[href^="#"]'); if (!a) return;
   const el = document.getElementById(a.getAttribute('href').slice(1)); if (!el) return;
-  e.preventDefault(); if (mapMode()) setMapMode(false); const box = el.closest('details'); if (box) box.open = true;
+  e.preventDefault(); if (mapMode()) setMapMode(false);
+  for (let box = el.closest('details'); box; box = box.parentElement && box.parentElement.closest('details')) box.open = true;
   if (el.closest('#about')) document.body.classList.add('about-open');
   el.scrollIntoView({ behavior: SCROLL(), block: 'start' });
-  if (el.hasAttribute('tabindex')) el.focus({ preventScroll: true }); });
+  const focus = el.matches('details') ? el.querySelector('summary') : el;
+  if (focus && (focus.hasAttribute('tabindex') || focus.matches('summary'))) focus.focus({ preventScroll: true }); });
 // "/" puts the focus in the search from anywhere on the list. Only where there is a search (not a
 // spot's page or the Saved page), not under the full map, and never while typing in a field.
 document.addEventListener('keydown', e => {
@@ -4887,12 +4923,36 @@ function reload() {
 // Not while something being written would be lost (a review: data-keep-page).
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && Date.now() - LOADED > 30 * 60 * 1000
   && !document.querySelector('[data-keep-page]')) reload(); });
+// Drafts live only in this page's memory, keyed by spot and form; a full reload or tab close
+// clears them. Photos are not retained and must be selected again. Nothing is submitted.
+const DRAFTS = new Map();
+const draftKey = (form, spot) => `${spot}:${form.id}`;
+const draftFields = form => [...form.querySelectorAll('textarea, input:not([type=file]), select')]
+  .filter(el => el.name !== 'website' && el.name !== 'consent');
+function draftTrack(form, spot) {
+  const key = draftKey(form, spot), fields = draftFields(form), saved = DRAFTS.get(key);
+  const restored = saved && saved.fields.length === fields.length;
+  if (restored) {
+    fields.forEach((el, i) => { const v = saved.fields[i]; if (el.type === 'checkbox' || el.type === 'radio') el.checked = v.checked; else el.value = v.value; });
+    fields.forEach(el => el.dispatchEvent(new Event('change', {bubbles: true})));
+  }
+  form.insertAdjacentHTML('afterbegin', `<p class="small muted" role="status">${restored ? `Draft restored.${saved.photos ? ' Please add photos again.' : ''} ` : ''}Unsent answers stay in this tab's memory until it is closed or reloaded. Photos must be added again after leaving the page.</p>`);
+  let photos = !!(saved && saved.photos);
+  const save = () => DRAFTS.set(key, {photos, fields: fields.map(el => ({value: el.value, checked: !!el.checked}))});
+  form.addEventListener('input', save);
+  form.addEventListener('change', e => { if (e.target.type === 'file' && e.target.files && e.target.files.length) photos = true; save(); }, true);
+  form.addEventListener('click', e => { if (e.target.closest('button[id$="-cancel"]')) DRAFTS.delete(key); }, true);
+}
+const draftForget = (form, spot) => DRAFTS.delete(draftKey(form, spot));
 // Words typed into a review, a visit note, a journal entry or an illness report (data-keep-page) are lost by
 // leaving, so the page asks first: the browser's own question for closing, reloading or another page, and
 // this one for the controls that change the view in the page (Back, the header, the bottom bar, another
 // spot). The browser's Back button is not asked about: a popstate cannot be held.
 const unsent = () => [...document.querySelectorAll('form[data-keep-page]')].some(f =>
-  [...f.querySelectorAll('textarea, input[type=text]')].some(e => e.value.trim() && e.value !== e.defaultValue));
+  [...f.querySelectorAll('textarea, input, select')].some(e => e.type === 'checkbox' || e.type === 'radio'
+    ? e.checked !== e.defaultChecked : e.tagName === 'SELECT'
+      ? e.value !== ((e.querySelector('option[selected]') || e.options[0]) || {}).value
+      : e.type !== 'file' && e.value !== e.defaultValue) || !!f.querySelector('.rv-previews img'));
 let leaving = false;   // asked once already: a link to another page is not asked about again on unload
 document.addEventListener('input', () => { leaving = false; });   // typing again after a move in the page asks again
 window.addEventListener('beforeunload', e => { if (!leaving && unsent()) { e.preventDefault(); e.returnValue = ''; } });

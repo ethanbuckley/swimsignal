@@ -354,11 +354,13 @@ function visitOpenForm(sec, d, data) {
     const kept = visitsKeep([...visitsNow(), { id, token, spot: d.id, kinds: draft.kinds, seen_on: seenOn, text: draft.text,
       photos: photo ? 1 : 0, published: Boolean(published), sent_at: new Date().toISOString() }]);
     if (photo) URL.revokeObjectURL(photo.url);
+    if (typeof draftForget === 'function') draftForget(f, d.id);
     drawVisits(sec, d, data, (published ? 'Thanks. Your note is on this page for everyone at the site\'s next update, within a few hours.'
       : 'Thanks. Your note appears here once it has been checked, usually within a day.')
       + (kept ? '' : ' This browser is not keeping site data, so it cannot show you the note before then.'));
     document.getElementById('vn-said')?.focus();
   });
+  if (typeof draftTrack === 'function') draftTrack(f, d.id);
   f.querySelector('input[name=kind]').focus();
 }
 

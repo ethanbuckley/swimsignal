@@ -87,7 +87,8 @@ REWRITES = [('href="/feedback"', 'href="feedback.html"'), ('href="/feedback?type
             ("fetch('/api/verification')", "fetch('data/verification.json')"),
             ('href="/methods"', 'href="methods.html"'), ('href="/methods#', 'href="methods.html#'),
             ('href="/verification#', 'href="verification.html#'), ('href="/coverage"', 'href="coverage.html"'),
-            ('href="/plan/"', 'href="plan/"'), ('href="/saved/"', 'href="saved/"')]   # the header's links, as the app's (29 Oct 2026)
+            ('href="/plan/"', 'href="plan/"'), ('href="/saved/"', 'href="saved/"'),   # the header's links, as the app's (29 Oct 2026)
+            ('href="/research"', 'href="research.html"'), ('href="/lakes"', 'href="lakes.html"')]   # Research and its lake viewer (31 Oct 2026)
 BRAND = "SwimSignal"
 # The home page leads with the name, for search; every other page is "Page · SwimSignal" (docs/DESIGN.md, Words).
 HOME_TITLE = f"{BRAND} · pollution risk forecasts for swim spots"
@@ -1875,41 +1876,86 @@ def attach_water_temperature(results: list[dict], fetch=None, relate=None, now=N
     return n
 
 
-def attach_water_temperature_estimate(results: list[dict], forecast=None, model=None, upstream=None, now=None) -> int:
-    """Beside the sensor (attach_water_temperature): an estimate of a river spot's water temperature today, from
-    the air temperature in the spot cell's forecast (the rain request's `air_c`, so no extra Open-Meteo call), the
-    date, the river's network length upstream and the cell's elevation (dipcast.model.water_temp). Rivers only, May
-    to September only: the model passed its test for rivers in those months (typically within 1.56 C,
-    docs/WATER-TEMPERATURE-MODEL-TEST-2026-10.md) and failed for lakes, so a lake never gets one. A spot without
-    30 whole days of air gets none. Never part of the level. Returns how many spots got one; nothing here can stop
-    a build. `forecast(cells)`, `model` and `upstream(spot)` are for the tests."""
+def attach_water_temperature_estimate(results: list[dict], forecast=None, model=None, upstream=None, now=None) -> dict:
+    """Beside the sensor (attach_water_temperature): a provisional estimate of the water near the surface at every river
+    and lake spot today, all year (issue #492; Ethan, 30 October 2026), from the air temperature in the spot cell's
+    forecast (the rain request's `air_c`: the prefetch asks for every spot's own cell with 31 past days, so no extra
+    Open-Meteo call), the date, and the river's network length upstream and the cell's elevation, or the lake's area.
+    The route, whether it was tested, and the typical error the test measured for it are in the estimate
+    (water_temp.estimate_any; docs/WATER-TEMPERATURE-BASELINE-2026-10.md): rivers May to September are the tested
+    model; lakes, and every water October to April, are provisional. A spot without all 30 days of air gets
+    `water_temp_est_missing` with why, never an old estimate. Never part of the level. Returns the build's health entry
+    (counts by route and by gap); nothing here can stop a build. `forecast(cells)`, `model` and `upstream(spot)` are
+    for the tests."""
     from dipcast.model import water_temp
     model = water_temp.load() if model is None else model
+    out = {"estimated": 0, "routes": {}, "missing": {}}
     if model is None:
-        return 0
+        out["missing"]["no model"] = sum(1 for r in results if r.get("kind") in ("river", "lake"))
+        return out
     today = (now or pd.Timestamp.now(tz="Europe/London")).tz_convert("Europe/London").normalize().tz_localize(None)
-    if today.month not in model.months:
-        return 0
     forecast = forecast or fetch_forecast
     upstream = upstream or (lambda r: water_temp.upstream_km(_net(), float(r["lon"]), float(r["lat"])))
-    n = 0
     for r in results:
-        if r.get("kind") != "river" or str(r.get("error") or "").startswith("forecast failed"):
+        kind = r.get("kind")
+        if kind not in ("river", "lake"):
             continue
+        why = None
         try:
             cell = cells_for_sites(pd.Series([r["lat"]], dtype=float), pd.Series([r["lon"]], dtype=float))
             hourly = forecast(cell)
             elev = hourly["elevation_m"].dropna() if "elevation_m" in hourly else pd.Series(dtype=float)
-            est = water_temp.estimate(model, hourly, today, upstream(r), float(elev.iloc[0]) if len(elev) else None,
-                                      kind="river")
+            area = (r.get("location") or {}).get("lake_area_km2")
+            est = water_temp.estimate_any(model, hourly, today, kind, upstream=upstream(r) if kind == "river" else None,
+                                          elevation=float(elev.iloc[0]) if len(elev) else None,
+                                          lake_area_km2=float(area) if isinstance(area, (int, float)) else None)
+            if est is None:
+                why = "air"   # not all 30 days of air temperature in this update's forecast
         except Exception as e:  # noqa: BLE001 - an estimate beside the forecast must not sink the build
             log.warning("water temperature estimate for %s: %s", r.get("name"), e)
-            continue
+            est, why = None, "error"
         if est:
             r["water_temp_est"] = est
-            n += 1
-    log.info("water temperature estimate: %d river spots", n)
-    return n
+            out["estimated"] += 1
+            out["routes"][est["route"]] = out["routes"].get(est["route"], 0) + 1
+        else:
+            r["water_temp_est_missing"] = {"why": why, "date": today.date().isoformat()}
+            out["missing"][why] = out["missing"].get(why, 0) + 1
+    log.info("water temperature estimate: %d spots %s, missing %s", out["estimated"], out["routes"], out["missing"])
+    return out
+
+
+WATER_TEMP_LOG = "water_temp_estimates.parquet"   # in the state directory; the state release carries it (site.yml)
+
+
+def log_water_temp_estimates(results: list[dict], issued_at: pd.Timestamp, path: Path | None = None) -> int:
+    """Append this build's estimates, with any sensor reading beside them, to the state log, so each one can be scored
+    later against what the EA's sensors and samples measured (issue #492: saved before the observations arrive). One
+    row a spot a build; only ever added to. Returns the rows added; nothing here can stop a build."""
+    path = path or config.STATE / WATER_TEMP_LOG
+    rows = []
+    for r in results:
+        e, w = r.get("water_temp_est"), r.get("water_temp")
+        if not e:
+            continue
+        rows.append({"issued_at": issued_at, "spot": r["id"], "kind": r.get("kind"), "date": e["date"], "route": e["route"],
+                     "temp_c": e["temp_c"], "air_7d_c": e.get("air_7d_c"),
+                     "sensor_c": (w or {}).get("temp_c"), "sensor_at": (w or {}).get("observed_at"),
+                     "sensor_km": (w or {}).get("river_km"), "sensor_dir": (w or {}).get("direction")})
+    if not rows:
+        return 0
+    new = pd.DataFrame(rows)
+    try:
+        old = pd.read_parquet(path) if path.is_file() else None
+        df = pd.concat([old, new], ignore_index=True) if old is not None else new
+        path.parent.mkdir(parents=True, exist_ok=True)
+        tmp = path.with_suffix(".parquet.tmp")
+        df.to_parquet(tmp, index=False, compression="zstd")
+        os.replace(tmp, path)
+    except Exception as e:  # noqa: BLE001 - the log beside the forecast must never stop it
+        log.warning("water temperature log not written: %s", e)
+        return 0
+    return len(rows)
 
 
 # What the offline copy (sw.js) stores, or decides what it stores: the files whose hash names its
@@ -2398,13 +2444,13 @@ def not_found_page(root: str) -> str:
         f'<link rel="preload" href="{r}fonts/SourceSans3-latin.woff2" as="font" type="font/woff2" crossorigin>'
         f'<link rel="preload" href="{r}fonts/SourceSerif4-latin.woff2" as="font" type="font/woff2" crossorigin>\n'
         f'</head><body>\n<header class="top"><a class="brand" href="{r}">{MARK}{BRAND}</a>'
-        f'<nav aria-label="Site"><a href="{r}plan/">Plan a swim</a><a href="{r}saved/">Saved</a><a href="{r}verification.html">Accuracy</a><a href="{r}about.html">About</a><a class="desk-only" href="{r}feedback.html">Feedback</a></nav></header>\n'
+        f'<nav aria-label="Site"><a href="{r}plan/">Plan a swim</a><a href="{r}saved/">Saved</a><a href="{r}verification.html">Accuracy</a><a href="{r}about.html">About</a><a class="desk-only" href="{r}research.html">Research</a><a class="desk-only" href="{r}feedback.html">Feedback</a></nav></header>\n'
         '<main class="doc"><h1>No page at this address</h1>\n'
         '<p class="lead">A spot changes address when it is renamed or removed, and a link can be copied or typed wrongly.</p>\n'
         f'<ul><li><a href="{r}">All spots</a>, each with its five-day forecast</li><li><a href="{r}saved/">Your saved spots</a></li>'
         f'<li><a href="{r}feedback.html?type=spot">Ask for a spot to be added</a></li></ul></main>\n'
         f'<footer class="site-foot"><div class="rule"><p>{BRAND} is a free, non-commercial pollution risk forecast for river and lake swim spots in England, run by Ethan Buckley. A forecast, not a water test.</p>'
-        f'<p><a href="{r}terms.html">Terms of use</a> · <a href="{r}privacy.html">Privacy</a> · <a href="{r}feedback.html">Feedback</a></p></div></footer></body></html>\n')
+        f'<p><a href="{r}terms.html">Terms of use</a> · <a href="{r}privacy.html">Privacy</a> · <a href="{r}feedback.html">Feedback</a> · <a href="{r}research.html">Research</a></p></div></footer></body></html>\n')
 
 
 def robots(root: str) -> str:
@@ -2412,7 +2458,7 @@ def robots(root: str) -> str:
 
 
 def sitemap(root: str, spot_ids: list[str], day: str, extra: list[str] | None = None) -> str:
-    urls = [root, f"{root}plan/", f"{root}about.html", f"{root}verification.html", f"{root}methods.html", f"{root}testing.html", f"{root}coverage.html", f"{root}data.html", f"{root}organisers.html", f"{root}sites.html", f"{root}record.html", f"{root}clubs.html", f"{root}quality.html", f"{root}spots.html"] +[f"{root}{x}" for x in extra or []] + [f"{root}spot/{i}/" for i in spot_ids] + [f"{root}spot/{i}/profile/" for i in spot_ids]
+    urls = [root, f"{root}plan/", f"{root}about.html", f"{root}verification.html", f"{root}methods.html", f"{root}testing.html", f"{root}coverage.html", f"{root}data.html", f"{root}organisers.html", f"{root}sites.html", f"{root}record.html", f"{root}clubs.html", f"{root}quality.html", f"{root}spots.html", f"{root}research.html", f"{root}lakes.html"] +[f"{root}{x}" for x in extra or []] + [f"{root}spot/{i}/" for i in spot_ids] + [f"{root}spot/{i}/profile/" for i in spot_ids]
     body = "".join(f"<url><loc>{escape(u)}</loc><lastmod>{day}</lastmod></url>" for u in urls)
     return f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{body}</urlset>\n'
 
@@ -2659,7 +2705,8 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
         raise ValueError("index.html has lost its page-meta block or its loading placeholder")
     template = lean_page(template)   # its CSS comments and comment-only script lines: the source keeps them
     template, app_js = split_app_script(template, stamp)   # the page's own script, deferred, as app.js
-    for name in ["about.html", "verification.html", "terms.html", "privacy.html", "feedback.html", "testing.html", "methods.html", "coverage.html", "clubs.html"]:
+    for name in ["about.html", "verification.html", "terms.html", "privacy.html", "feedback.html", "testing.html", "methods.html", "coverage.html", "clubs.html",
+                 "research.html"]:
         s = (STATIC / name).read_text()
         if name == "verification.html":   # before REWRITES, which then reach the links the figures carry
             s = with_verification_figures(s, site / "data" / "verification.json")   # build() writes it before the pages
@@ -2735,6 +2782,7 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     (site / "404.html").write_text(with_counter(not_found_page(root), token))
     (site / "robots.txt").write_text(robots(root))
     (site / ".nojekyll").write_text("")
+    write_lakes(site, token, root)   # the satellite lake observations (Research): before the data page, which lists data/research/
     write_data_page(site, token, root)   # lists what is in data/, so build() writes the data files first
     write_quality_page(site, overflows, generated, token, root=root)
     write_embed(site)
@@ -3050,6 +3098,50 @@ def write_sites(site: Path, token: str | None = None, root: str | None = None) -
     return write_scripted_page(site, "sites.html", SITES_SCRIPTS, ("organisers.js", "printed.js", "sites.js"), token, root)
 
 
+# Satellite lake observations (docs/LAKE-OBSERVATIONS-CONTRACT-v1.md; the Research page links to the viewer). The
+# research side exports one file, data/research/lake_observations.v1.json (scripts/export_lake_observations.py, from
+# the satellite tests' caches: no imagery is fetched by the build). The site splits it: data/research/lakes.json, every
+# lake without its readings and lab values, for the viewer's list; data/research/lake/<lake_id>.json, one lake whole,
+# fetched when it is picked. A file of another schema, or another major version, is not published: the viewer then
+# says no observations are published, rather than read fields it does not know.
+LAKE_OBSERVATIONS = config.ROOT / "data" / "research" / "lake_observations.v1.json"
+LAKE_SCHEMA, LAKE_MAJOR = "swimsignal.lake-observations", "1"
+LAKE_HEAVY = ("series", "lab")   # per lake, only in its own file
+
+
+def write_lake_observations(site: Path, path: Path = LAKE_OBSERVATIONS) -> dict:
+    """data/research/lakes.json and data/research/lake/<id>.json from the research export, or lakes.json saying
+    none are published (`available` false, with why). Returns the build's health entry."""
+    out = site / "data" / "research"   # shared with the other research observations: only this file's own are replaced
+    shutil.rmtree(out / "lake", ignore_errors=True)
+    (out / "lake").mkdir(parents=True)
+    why = None
+    if not path.is_file():
+        why = "no export in this build"
+    else:
+        doc = json.loads(path.read_text())
+        if doc.get("schema") != LAKE_SCHEMA or str(doc.get("version", "")).split(".")[0] != LAKE_MAJOR:
+            why = f"export is {doc.get('schema')} {doc.get('version')}, not {LAKE_SCHEMA} {LAKE_MAJOR}.x"
+    if why:
+        (out / "lakes.json").write_text(json.dumps({"schema": LAKE_SCHEMA, "available": False, "why": why}))
+        return {"available": False, "why": why}
+    lakes = [x for x in doc["lakes"] if SPOT_ID.fullmatch(str(x.get("lake_id", "")))]
+    for x in lakes:
+        (out / "lake" / f"{x['lake_id']}.json").write_text(json.dumps(x, separators=(",", ":")))
+    index = {**{k: v for k, v in doc.items() if k != "lakes"}, "available": True,
+             "lakes": [{k: v for k, v in x.items() if k not in LAKE_HEAVY} | {"n_series": len(x.get("series") or []), "n_lab": len(x.get("lab") or [])}
+                       for x in lakes]}
+    (out / "lakes.json").write_text(json.dumps(index, separators=(",", ":")))
+    return {"available": True, "lakes": len(lakes), "skipped_ids": len(doc["lakes"]) - len(lakes), "version": doc["version"],
+            "processing": (doc.get("processing") or {}).get("version")}
+
+
+def write_lakes(site: Path, token: str | None = None, root: str | None = None) -> str:
+    """lakes.html and lakes.js beside the app, and the observations they read. Returns the scripts' version."""
+    write_lake_observations(site)
+    return write_scripted_page(site, "lakes.html", ("lakes.js",), ("lakes.js",), token, root)
+
+
 def write_record(site: Path, token: str | None = None, root: str | None = None) -> str:
     return write_scripted_page(site, "record.html", RECORD_SCRIPTS, ("organisers.js", "printed.js", "brief.js", "record.js"), token, root)
 
@@ -3282,7 +3374,7 @@ def build(refresh: bool = True) -> dict:
     # list, two for the water temperatures.
     any_floods = asked_now(ask_flood_list) if refresh else None
     n_water_temp = attach_water_temperature(results) if refresh else 0
-    n_water_est = attach_water_temperature_estimate(results) if refresh else 0   # rivers, May-September; cached rain cells
+    water_est = attach_water_temperature_estimate(results) if refresh else {"estimated": 0, "routes": {}, "missing": {"no refresh": 1}}   # every river and lake spot, all year (#492); cached rain cells
     n_levels = attach_river_levels(results) if refresh else 0   # observations beside the forecast, network only
     n_flows = attach_flow_state(results, any_alerts=any_floods) if refresh else {}   # river high or rising, flood alerts: not part of the level
     n_weather = attach_weather(results) if refresh else 0
@@ -3345,7 +3437,9 @@ def build(refresh: bool = True) -> dict:
     health.update(n_flows)
     health["warnings"] += flood_warnings(n_flows, len(results))
     health["water_temperature"] = n_water_temp
-    health["water_temperature_estimate"] = n_water_est
+    health["water_temperature_estimate"] = water_est   # counts by route and by gap (#492)
+    if refresh:   # every estimate saved before its observations arrive, to be scored against the EA's sensors
+        health["water_temperature_estimate"]["logged"] = log_water_temp_estimates(results, pd.Timestamp.now(tz="UTC"))
     health["guides"] = guides["guides"]
     health["warnings"] += guides["warnings"]
     health["measured"] = {"spots": measured["spots"], "samples": measured["samples"]}
