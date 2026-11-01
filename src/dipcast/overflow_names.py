@@ -19,7 +19,7 @@ KINDS = [
      r"stw|(?:sewage |waste ?water |water )?treatment works|sewage (?:disposal )?works|water recycling centre"),
     ("pumping station overflow", r"SPS|SPST|TPS|IPS|SWPS|PS|SP|P\.STN|PSCSOEO|PSCSO|CEO",
      r"(?:sewage |terminal |storm water |surface water )?pumping station"),
-    ("storm sewage overflow", r"SSO|SSTO", r"storm sew(?:age|er) overflow"),
+    ("storm sewage overflow", r"SSO|SSTO|SSSO", r"storm sew(?:age|er) overflow"),   # SSSO: Scottish Water's settled storm sewage overflow
     ("storm overflow", r"CSO|CSOs|CSOEO|SO|OV", r"combined sew(?:er|age) overflow|storm overflow"),
     ("emergency overflow", r"EO|FEEO", r"emergency overflow"),
     ("overflow", r"OVERFLOW", r"overflow"),
@@ -47,7 +47,7 @@ HELD = "∕"   # a "/" that is not a separator ("O/S", "95/97"), until the end
 
 
 # Codes that stay in capitals in a name in normal case: the kinds' codes in capitals, and the technical ones.
-KEEP = frozenset("STW WTW WRC WRW SPS SPST TPS IPS SWPS PS SP PSCSOEO PSCSO CEO SSO SSTO CSO CSOEO SO OV EO FEEO "
+KEEP = frozenset("STW WTW WRC WRW SPS SPST TPS IPS SWPS PS SP PSCSOEO PSCSO CEO SSO SSTO SSSO CSO CSOEO SO OV EO FEEO "
                  "DWF XDWF FFT OOS NWL ESO EMO SWO HLR SCC SDC ICI RAF IOW".split())
 SHOUTY = re.compile(r"\b(?:WwTW|Wwtw|STWs|CSOs)\b", A)
 
