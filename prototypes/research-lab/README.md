@@ -1,12 +1,14 @@
-# SwimSignal Research Lab (prototype)
+# SwimSignal Research Lab
 
-Local prototypes for review. Not built by `site.yml`, not linked from the site, and they change nothing in the forecast.
+Exploratory exhibits on data already read. They change nothing in the forecast. The site build copies this folder to
+`lab/` (`scripts/build_site.py` `write_lab`, record `docs/RESEARCH-LAB-LIVE-2026-11.md`), with a frozen copy of the
+research files it reads. Run from the repository root, as below, the exhibits read `data/research/` as committed.
 
 | Exhibit | Folder | State | Record |
 |---|---|---|---|
-| 1. The lake from space | `lake-from-space/` | prototype | `docs/LAKE-FROM-SPACE-EXPLORATION-2026-11.md` |
-| 2. Where does the pollution go? | `pollution/` | prototype | `docs/POLLUTION-PATHS-EXHIBIT-2026-11.md` |
-| 3. How good are the forecasts? | `forecasts/` | prototype | `docs/FORECAST-RECORD-EXPLORATION-2026-11.md` |
+| 1. The lake from space | `lake-from-space/` | live, exploratory | `docs/LAKE-FROM-SPACE-EXPLORATION-2026-11.md` |
+| 2. Where does the pollution go? | `pollution/` | live, exploratory | `docs/POLLUTION-PATHS-EXHIBIT-2026-11.md` |
+| 3. How good are the forecasts? | `forecasts/` | live, exploratory | `docs/FORECAST-RECORD-EXPLORATION-2026-11.md` |
 
 ## Run it
 
