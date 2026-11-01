@@ -3,16 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- Research Lab exhibit 1, "The lake from space": a local prototype, not built by site.yml and not linked from the
-     site. Serve the repository root (README.md beside this file) so the page can read data/research/ as committed. -->
+<!-- Research Lab exhibit 1, "The lake from space". Built into the site at lab/ by scripts/build_site.py write_lab, which points the data reads at
+     lab/data/ and the fonts at the site's own; served from the repository root, it reads data/research/ as committed. -->
 <title>The lake from space · SwimSignal Research Lab</title>
-<meta name="robots" content="noindex">
+<meta name="description" content="Sentinel-2 satellite pictures of English lakes beside lab chlorophyll samples, with cloudy days left blank. An index of how green the water looked, not a toxin measurement.">
 <link rel="stylesheet" href="../lab.css?v=9">
 </head>
 <body>
 <header class="top"><div class="wrap">
   <a class="brand" href="https://swimsignal.co.uk/">SwimSignal</a>
-  <span class="crumb"><a href="../">Research Lab</a> · Exhibit 1 of 3 · prototype</span>
+  <span class="crumb"><a href="../">Research Lab</a> · Exhibit 1 of 4 · exploratory</span>
   <a href="https://swimsignal.co.uk/research.html">Research</a>
 </div></header>
 
@@ -104,7 +104,7 @@
      Data: <a href="../../../data/research/lake_observations.v1.json">lake_observations.v1.json</a>,
      <a href="../../../data/research/lake_imagery.v1.json">lake_imagery.v1.json</a>,
      <a href="exploration.json">exploration.json</a>.</p>
-  <p>A prototype for review. It changes nothing on swimsignal.co.uk and nothing in the forecast.</p>
+  <p>Exploratory work on data already read. It changes nothing in the forecast. Each spot's own page gives the forecast and official advice.</p>
 </div></footer>
 
 <script src="../lab.js?v=3"></script>
