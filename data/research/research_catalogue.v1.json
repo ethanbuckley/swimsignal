@@ -697,6 +697,13 @@
    "branch": "docs/noise-audit",
    "branch_exists": true,
    "date": "2026-10-25"
+  },
+  "588": {
+   "n": 588,
+   "state": "open",
+   "branch": "research/ambitious-scoping-2026-11",
+   "branch_exists": true,
+   "date": "2026-11-01"
   }
  },
  "entries": [
@@ -2240,6 +2247,126 @@
    ],
    "prs": [
     356
+   ]
+  },
+  {
+   "id": "catch-sim",
+   "title": "Catchment experiment simulator",
+   "section": "data",
+   "topics": [
+    "model",
+    "overflows",
+    "rain"
+   ],
+   "verdict": "Not yet run. A scoping record from an outside review of 1 November 2026: no data fetched, nothing fitted or scored. An upgrade scenario made by lowering lta_spills would be an artefact: #298 found the model's response to it is not monotone.",
+   "scope": "A sensitivity of the production model at two spots; not a prediction of any real scheme, and no mechanism for wetlands or restoration.",
+   "stage": "development",
+   "stage_note": "Bounded exploration: offline rain and \"remove an overflow\" scenarios at Cromwheel and Waterhead, as a mode of the catchment workspace.",
+   "next": "Record by 15 December 2026.",
+   "records": [
+    {
+     "doc": "docs/AMBITIOUS-RESEARCH-SCOPING-2026-11.md",
+     "quote": "**Stop or narrow if.** More than 10% of overflows at the two spots respond non-monotonically to scaled rain. Then rain"
+    }
+   ],
+   "prs": [
+    588
+   ]
+  },
+  {
+   "id": "source-id",
+   "title": "Pollution source investigation",
+   "section": "data",
+   "topics": [
+    "e. coli",
+    "sources",
+    "farming"
+   ],
+   "verdict": "Not yet run. A scoping record from an outside review of 1 November 2026: no data fetched, nothing fitted or scored. Earlier related work: the farm-pressure flag test failed (#332); no microbial source tracking exists in the project.",
+   "scope": "An exploratory table of open explanations for high samples at five bathing waters; it attributes no sample to a source.",
+   "stage": "development",
+   "stage_note": "Bounded exploration on seen 2023-26 samples, with a plan of measurements that would separate sources.",
+   "next": "Record by 31 January 2027.",
+   "records": [
+    {
+     "doc": "docs/AMBITIOUS-RESEARCH-SCOPING-2026-11.md",
+     "quote": "**Stop if.** Fewer than 20 high samples across the five sites have a known spill status. Then the table is too thin to"
+    }
+   ],
+   "prs": [
+    588
+   ]
+  },
+  {
+   "id": "lake-eco",
+   "title": "Lake ecosystem observatory",
+   "section": "data",
+   "topics": [
+    "lakes",
+    "chlorophyll",
+    "sensors"
+   ],
+   "verdict": "Not yet run. A scoping record from an outside review of 1 November 2026: no data fetched, nothing fitted or scored.",
+   "scope": "A coverage inventory of measured lake nutrients, oxygen, temperature and chlorophyll; no model until a lake meets a rule fixed before 2027 data.",
+   "stage": "development",
+   "stage_note": "Inventory first, as a minor version of the lake-observations contract.",
+   "next": "Inventory by 31 January 2027; eligibility rule before 1 May 2027.",
+   "records": [
+    {
+     "doc": "docs/AMBITIOUS-RESEARCH-SCOPING-2026-11.md",
+     "quote": "**Stop if.** Fewer than 5 lakes meet the rule. Then no chlorophyll or oxygen model: the observatory stays observations"
+    }
+   ],
+   "prs": [
+    588
+   ]
+  },
+  {
+   "id": "restore",
+   "title": "\"Did the restoration work?\" studies",
+   "section": "data",
+   "topics": [
+    "overflows",
+    "spills",
+    "weather"
+   ],
+   "verdict": "Not yet run. A scoping record from an outside review of 1 November 2026: no data fetched, nothing fitted or scored. A weather-adjusted comparison already exists for Ilkley (#298); option B's frozen test runs on or after 2 December 2026.",
+   "scope": "Observed against expected spill days at overflows with a cited completion date; not a claim that a river or bathing water is cleaner.",
+   "stage": "waiting",
+   "stage_note": "Waits on option B's read so that nothing pre-empts it.",
+   "next": "Start on or after 2 December 2026; record by 31 January 2027.",
+   "records": [
+    {
+     "doc": "docs/AMBITIOUS-RESEARCH-SCOPING-2026-11.md",
+     "quote": "**Stop if.** Fewer than 10 overflows have a cited completion date with 6 months after it and monitor uptime of 90% or"
+    }
+   ],
+   "prs": [
+    588
+   ]
+  },
+  {
+   "id": "bench",
+   "title": "Open water-quality benchmark",
+   "section": "data",
+   "topics": [
+    "evaluation",
+    "e. coli",
+    "sources"
+   ],
+   "verdict": "Not yet run. A scoping record from an outside review of 1 November 2026: no data fetched, nothing fitted or scored.",
+   "scope": "One frozen task on published 2023-26 inland bathing-water samples, from publishable sources only; no 2027 outcomes before the primary is read.",
+   "stage": "development",
+   "stage_note": "Licence manifest, three baselines and a scoring script.",
+   "next": "Release candidate by 28 February 2027.",
+   "records": [
+    {
+     "doc": "docs/AMBITIOUS-RESEARCH-SCOPING-2026-11.md",
+     "quote": "**Stop if.** A required input column has an unresolved licence. Drop the column; if the task is then meaningless,"
+    }
+   ],
+   "prs": [
+    588
    ]
   }
  ]
