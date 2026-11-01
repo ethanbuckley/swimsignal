@@ -3,17 +3,17 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- Research Lab exhibit 2, "Where does the pollution go?": a local prototype, not built by site.yml and not linked from
-     the site. Serve the repository root (README.md in the Research Lab folder). -->
+<!-- Research Lab exhibit 2, "Where does the pollution go?". Built into the site at lab/ by scripts/build_site.py write_lab, which points the data reads at
+     lab/data/ and the fonts at the site's own; served from the repository root, it reads data/research/ as committed. -->
 <title>Where does the pollution go? · SwimSignal Research Lab</title>
-<meta name="robots" content="noindex">
+<meta name="description" content="Every monitored storm overflow upstream of a swim spot, the mapped rivers joining them, and the forecast model's settings for travel time and weight.">
 <link rel="stylesheet" href="../lab.css?v=10">
 <link rel="stylesheet" href="pollution.css?v=1">
 </head>
 <body>
 <header class="top"><div class="wrap">
   <a class="brand" href="https://swimsignal.co.uk/">SwimSignal</a>
-  <span class="crumb"><a href="../">Research Lab</a> · Exhibit 2 of 3 · prototype</span>
+  <span class="crumb"><a href="../">Research Lab</a> · Exhibit 2 of 3 · exploratory</span>
   <a href="https://swimsignal.co.uk/methods.html">Methods</a>
 </div></header>
 
@@ -34,6 +34,7 @@
   <section class="sec" id="s-pick"><div class="wrap">
     <div class="sec-head"><span class="no">1</span><h2>Choose a swim spot</h2><span class="aside" id="pick-aside"></span></div>
     <div class="picker always"><label for="spot-select">Swim spot</label><select id="spot-select"></select></div>
+    <p class="note" id="pick-note" role="status"></p>
   </div></section>
 
   <section class="sec" id="s-net"><div class="wrap">
@@ -81,9 +82,9 @@
      <a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/TRANSPORT-FIT-TEST-2026-10.md">the transport fit</a>,
      <a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/RESEARCH-RECOVERY-2026-10.md">the research register</a>.
      Data: <a href="../assets/paths/index.json">paths/index.json</a> and one file per spot, made by <code>scripts/lab_pollution_paths.py</code>.</p>
-  <p>A prototype for review. It changes nothing on swimsignal.co.uk and nothing in the forecast.</p>
+  <p>Exploratory work on data already read. It changes nothing in the forecast. Each spot's own page gives the forecast and official advice.</p>
 </div></footer>
 <script src="../lab.js?v=3"></script>
-<script src="pollution.js?v=3"></script>
+<script src="pollution.js?v=4"></script>
 </body>
 </html>

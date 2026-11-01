@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- The Research Lab's front page: a local prototype, not built by site.yml. Serve the repository root (README.md).
-     Each cover is drawn from that exhibit's own data: a real satellite picture, the real dot record, the real outline. -->
+<!-- The Research Lab's front page. Built into the site at lab/ by scripts/build_site.py write_lab, which points the data reads at
+     lab/data/ and the fonts at the site's own; served from the repository root, it reads data/research/ as committed. -->
 <title>Research Lab · SwimSignal</title>
-<meta name="robots" content="noindex">
+<meta name="description" content="SwimSignal's Research Lab: exploratory exhibits on satellite pictures of lakes, the rivers joining sewage overflows to swim spots, and how past E. coli estimates did.">
 <link rel="stylesheet" href="lab.css?v=10">
 <link rel="stylesheet" href="pollution/pollution.css?v=1">
 <style>
@@ -41,7 +41,7 @@
 <body>
 <header class="top"><div class="wrap">
   <a class="brand" href="https://swimsignal.co.uk/">SwimSignal</a>
-  <span class="crumb">Research Lab · prototype</span>
+  <span class="crumb">Research Lab · exploratory</span>
   <a href="https://swimsignal.co.uk/research.html">Research</a>
 </div></header>
 <div class="front"><div class="wrap" style="display:block">
@@ -52,17 +52,17 @@
 <main><section class="sec"><div class="wrap">
   <div class="gallery">
     <a class="ex" href="lake-from-space/">
-      <div class="cover"><img src="assets/wide/wqa-SW-50900003.jpg" alt="Sentinel-2 picture of Little Sea and Studland, 30 October 2026"><span class="no">1</span><span class="tag">prototype</span></div>
+      <div class="cover"><img src="assets/wide/wqa-SW-50900003.jpg" alt="Sentinel-2 picture of Little Sea and Studland, 30 October 2026"><span class="no">1</span><span class="tag">exploratory</span></div>
       <h2>The lake from space</h2>
       <p>Can changes seen from space tell us anything useful about algae in English lakes? Satellite pictures, an index and lab chlorophyll, cloud included.</p>
     </a>
     <a class="ex" href="pollution/">
-      <div class="cover"><div class="map-cover dark"><div class="drawn-map dark" id="map-cover"></div></div><span class="no">2</span><span class="tag">prototype</span></div>
+      <div class="cover"><div class="map-cover dark"><div class="drawn-map dark" id="map-cover"></div></div><span class="no">2</span><span class="tag">exploratory</span></div>
       <h2>Where does the pollution go?</h2>
       <p>Every overflow upstream of a swim spot, the rivers that join them, and the questions the research has tested about the journey.</p>
     </a>
     <a class="ex" href="forecasts/">
-      <div class="cover"><div class="ledger-cover" id="ledger-cover"></div><span class="no">3</span><span class="tag">prototype</span></div>
+      <div class="cover"><div class="ledger-cover" id="ledger-cover"></div><span class="no">3</span><span class="tag">exploratory</span></div>
       <h2>How good are the forecasts?</h2>
       <p>What the model said against what the samples found: catches, misses and false alarms at every bathing water, beside simple alternatives.</p>
     </a>
@@ -70,7 +70,7 @@
 </div></section></main>
 <footer class="foot"><div class="wrap">
   <p>Covers: Contains modified Copernicus Sentinel data [2026]. <span id="map-credit"></span> Exhibit 2's cover: the mapped rivers joining every spot's overflows to it (OS Open Rivers). Exhibit 3's cover is one dot per sample over 900 and per false alarm, rivers and lakes, 2024–2026, in date order.</p>
-  <p>A prototype for review. It changes nothing on swimsignal.co.uk and nothing in the forecast.</p>
+  <p>Exploratory work on data already read. It changes nothing in the forecast. Each spot's own page gives the forecast and official advice.</p>
 </div></footer>
 <script src="lab.js?v=3"></script>
 <script>

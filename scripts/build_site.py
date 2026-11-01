@@ -3100,11 +3100,12 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     write_every_spot(site, paged, root, token)   # spots.html, the spots' pages as plain links
     write_feeds(site, results, root)   # feed.xml, feed/, spot/<id>/feed.xml: after spot/ is written, before the data page lists them
     (site / "sitemap.xml").write_text(sitemap(root, ids, day or pd.Timestamp.now(tz="Europe/London").date().isoformat(),
-                                              extra=["support.html"] if support else [], overflow_ids=overflow_ids))
+                                              extra=(["support.html"] if support else []) + lab_pages(), overflow_ids=overflow_ids))
     (site / "404.html").write_text(with_counter(with_phone_nav(not_found_page(root), root), token))
     (site / "robots.txt").write_text(robots(root))
     (site / ".nojekyll").write_text("")
     write_lakes(site, token, root)   # the satellite lake observations (Research): before the data page, which lists data/research/
+    write_lab(site, token)   # the Research Lab's exhibits at lab/, with their own frozen copy of what they read
     write_samples(site, token, root, results)   # every EA E. coli sample at a bathing water, from the research export: before the data page lists data/research/
     write_waterhead(site, token, root)   # Ambleside Action for a Future's Waterhead samples: before the data page lists data/research/
     write_research_catalogue(site, token, root)   # every research record, its verdict and stage: before the data page lists data/research/
@@ -3498,6 +3499,56 @@ def write_lakes(site: Path, token: str | None = None, root: str | None = None) -
     write_lake_observations(site)
     write_lake_imagery(site)
     return write_scripted_page(site, "lakes.html", ("lakes.js",), ("lakes.js",), token, root)
+
+
+# The Research Lab (docs/RESEARCH-LAB-LIVE-2026-11.md): exploratory exhibits on data already read, written and run
+# from prototypes/research-lab/, where they read data/research/ as committed. Here the whole folder goes to lab/ as
+# it is, less its screenshots and notes, with a frozen copy of the research files it reads in lab/data/; the build
+# fetches nothing. Search engines may list the pages (Ethan, 1 Nov 2026): any "noindex" left in an exhibit is
+# dropped here, and lab_pages puts every page in the sitemap.
+LAB = ROOT / "prototypes" / "research-lab"
+LAB_DATA = ("ecoli_evidence.v1.json", "lake_observations.v1.json", "lake_imagery.v1.json",
+            "satellite/pilot_runs.json", "research_catalogue.v1.json", "lake-img")
+LAB_REWRITES = (("../../../data/research/", "../data/"),            # an exhibit's reads, one folder down
+                ("../../src/dipcast/pages/fonts/", "../fonts/"))     # lab.css: the site's own fonts
+
+
+def lab_pages(lab: Path = LAB) -> list[str]:
+    """The Lab's pages as the sitemap gives them, relative to the site's root: lab/ and each exhibit's folder."""
+    if not (lab / "index.html").is_file():
+        return []
+    return ["lab/"] + sorted(f"lab/{d.name}/" for d in lab.iterdir() if (d / "index.html").is_file())
+
+
+def write_lab(site: Path, token: str | None = None, lab: Path = LAB, research: Path = ROOT / "data" / "research") -> int:
+    """lab/: the Research Lab's pages, scripts and exported data, and lab/data/, the research files they read.
+    Returns the number of pages, 0 when there is no Lab."""
+    out = site / "lab"
+    shutil.rmtree(out, ignore_errors=True)
+    if not (lab / "index.html").is_file():
+        return 0
+    shutil.copytree(lab, out, ignore=shutil.ignore_patterns("shots", "*.md"))
+    for name in LAB_DATA:
+        src, dst = research / name, out / "data" / name
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        if src.is_dir():
+            shutil.copytree(src, dst)
+        elif src.is_file():
+            shutil.copy(src, dst)
+    pages = 0
+    for f in sorted(out.rglob("*")):
+        if f.suffix not in (".html", ".js", ".css") or (out / "data") in f.parents:
+            continue
+        s = f.read_text()
+        for a, b in LAB_REWRITES:
+            s = s.replace(a, b)
+        if f.suffix == ".html":
+            up = "../" * len(f.relative_to(site).parts[:-1])   # the site's root, so a preview build links to itself
+            s = s.replace('href="https://swimsignal.co.uk/"', f'href="{up}"').replace('<meta name="robots" content="noindex">\n', '')
+            s = with_counter(s, token)
+            pages += 1
+        f.write_text(s)
+    return pages
 
 
 def write_record(site: Path, token: str | None = None, root: str | None = None) -> str:

@@ -1,4 +1,4 @@
-// Shared by the Research Lab exhibits (prototype): the drawn map of Great Britain and the dot-and-interval chart.
+// Shared by the Research Lab exhibits: the drawn map of Great Britain and the dot-and-interval chart.
 // Plain script; its one global is LAB. Each exhibit loads it before its own script.
 
 const LAB = (() => {

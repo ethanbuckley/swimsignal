@@ -1,4 +1,4 @@
-// Where does the pollution go? Research Lab exhibit 2 (prototype). Reads:
+// Where does the pollution go? Research Lab exhibit 2. Reads:
 //   ../assets/paths/index.json, <spot>.json, overview.json   scripts/lab_pollution_paths.py: each spot's upstream overflows
 //        with the forecast's own distance, travel time and weight, and the mapped rivers that join them to the spot
 //   data/research/research_catalogue.v1.json                the recorded verdicts of the transport studies
@@ -41,7 +41,7 @@ function renderPicker() {
   $('#pick-aside').textContent = `${IDX.spots.length} spots`;
   $('#spot-select').innerHTML = Object.keys(by).sort().map(a => `<optgroup label="${esc(a)}">${by[a].sort((x, y) => x.name.localeCompare(y.name)).map(s =>
     `<option value="${s.id}">${esc(s.name)}${s.note ? ' (off the river network)' : s.overflows ? ` (${s.overflows} upstream)` : ' (none upstream)'}</option>`).join('')}</optgroup>`).join('');
-  $('#spot-select').onchange = e => selectSpot(e.target.value);
+  $('#spot-select').onchange = e => { $('#pick-note').textContent = ''; selectSpot(e.target.value); };
 }
 
 async function selectSpot(id) {
@@ -204,8 +204,10 @@ Promise.all([PATHS + 'index.json', PATHS + 'overview.json', DATA + 'research_cat
     await LAB.loadOutline('../');
     $('#attrib').textContent = [...IDX.credit, 'Map: ' + LAB.credit()].join('. ') + '.';
     renderFront(ov); renderPicker(); renderJourney(); renderQuestions();
-    const h = new URLSearchParams(location.hash.slice(1)).get('spot');
-    await selectSpot(IDX.spots.some(s => s.id === h) ? h : 'bw-uke4100-08901');
+    const h = new URLSearchParams(location.hash.slice(1)).get('spot'), known = IDX.spots.some(s => s.id === h);
+    // a spot added to the site after this export has no paths here: say so, rather than quietly showing another
+    if (h && !known) $('#pick-note').textContent = `That spot is not in this export, made ${new Date(IDX.made).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}. Showing Ilkley instead; choose another below.`;
+    await selectSpot(known ? h : 'bw-uke4100-08901');
     window.addEventListener('hashchange', () => { const k = new URLSearchParams(location.hash.slice(1)).get('spot'); if (k && k !== SPOT?.id) selectSpot(k); });
     let rz, w = innerWidth;
     window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (innerWidth === w) return; w = innerWidth; drawNet(); }, 200); });

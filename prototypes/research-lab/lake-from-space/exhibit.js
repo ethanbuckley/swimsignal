@@ -1,4 +1,4 @@
-// The lake from space: Research Lab exhibit 1 (prototype). Reads the committed research files as they are:
+// The lake from space: Research Lab exhibit 1. Reads the committed research files as they are:
 //   data/research/lake_observations.v1.json  readings and lab values (docs/LAKE-OBSERVATIONS-CONTRACT-v1.md)
 //   data/research/lake_imagery.v1.json       real Sentinel-2 pictures of the pilot sites (docs/LAKE-IMAGERY-CONTRACT-v1.md)
 //   exploration.json                         scripts/lake_from_space_explore.py (exploratory, on seen data)

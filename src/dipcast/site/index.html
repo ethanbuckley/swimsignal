@@ -5125,7 +5125,7 @@ function render(d) {
   // Why: where the risk comes from in words (showDay keeps it to the day), the map of it, then the tiles.
   h += `<div id="sources-host">${whereFrom(d)}</div>`;
   if (total) h += `<div class="tile spot-map-tile"><h2 class="t-lab">${ICON.map}<span>Upstream</span></h2><div id="spot-map"></div>`
-    + `<p class="t-say">The spot, ringed, and the overflows that matter most: a bigger circle means a larger model weight here.</p>`
+    + `<p class="t-say">The spot, ringed, and the overflows that matter most: a bigger circle means a larger model weight here.${PAGE_ID.test(d.id) ? ` <a href="lab/pollution/#spot=${encodeURIComponent(d.id)}">The rivers joining each one, in the Research Lab</a>.` : ''}</p>`
     + `<p class="t-key"><span class="dot sm" style="background:${colourFor(1)}"></span>discharging<span class="dot sm" style="background:${colourFor(0)}"></span>not discharging<span class="dot sm" style="background:${colourFor(-1)}"></span>no current reading</p>`
     + `<p class="t-key trkey" hidden><span class="trline"></span>the water that reaches this spot</p></div>`;   // drawTrace shows it
   // With no overflow upstream there is no Upstream map, and a desktop's spot page has no map column:
