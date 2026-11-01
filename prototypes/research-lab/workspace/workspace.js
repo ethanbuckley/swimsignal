@@ -48,6 +48,7 @@ function readHash() {
     day: ok(h.get('day')) ? h.get('day') : null,
     off: new Set((h.get('off') || '').split(',').filter(x => LAYERS.some(l => l.id === x))),
     spot: h.get('spot') || null,
+    asked: h.get('c'),   // what the link asked for, so a catchment or spot the workspace lacks is said, not swapped silently
   };
 }
 function writeHash() {
@@ -66,7 +67,13 @@ async function load(id) {
 async function choose(id, keep) {
   C = await load(id);
   S.c = id;
+  const askedSpot = S.spot;
   if (!C.spots.some(s => s.id === S.spot)) S.spot = C.spots.find(s => C.layers.ecoli.rows.some(r => r.spot === s.id))?.id || C.spots[0].id;
+  const names = IDX.catchments.map(c => c.name).join(' and ');
+  $('#ws-note').textContent = S.asked && S.asked !== id
+    ? `The workspace has no catchment called “${S.asked}”: it holds ${names} only. Showing ${C.name}; choose the other above.`
+    : askedSpot && askedSpot !== S.spot ? `That spot is not in ${C.name}'s workspace. Showing ${C.spots.find(s => s.id === S.spot).name} in focus instead; choose another below the map.` : '';
+  S.asked = null;
   if (!keep || !S.from) { S.from = '2025-05-01'; S.to = '2025-09-30'; }
   if (!keep || !S.day || S.day < S.from || S.day > S.to) S.day = highestDay();
   renderAll();
@@ -110,13 +117,16 @@ function renderFront() {
   }
   const pct = ([a, n]) => (n ? Math.round(100 * a / n) + '%' : '–');
   const lead = `${esc(C.name)}, 2024–25: `;
-  $('#front-answer').innerHTML = !tally.over[1]
-    ? lead + `no sample over 900 E. coli per 100 ml at its ${C.spots.length} spots. <b>${tally.under[0]} of ${tally.under[1]}</b> samples (${pct(tally.under)}) followed a recorded spill at an overflow upstream within 48 hours, and none came back high. The workspace shows what the overflows and the rain did around each one.`
-    : lead + `of ${plural(tally.over[1], 'sample')} over 900 E. coli per 100 ml, <b>${tally.over[0]}</b> (${pct(tally.over)}) followed a recorded spill at an overflow upstream within 48 hours. ` +
-      `So did <b>${tally.under[0]} of ${tally.under[1]}</b> samples under 900 (${pct(tally.under)}). ` +
-      (tally.over[0] / tally.over[1] > tally.under[0] / Math.max(1, tally.under[1]) + 0.1
-        ? 'High samples followed spills more often, but low ones often did too: a spill alone does not explain a high sample.'
-        : 'High and low samples followed spills about as often: spills alone do not separate them here.');
+  const rate = k => tally[k][0] / Math.max(1, tally[k][1]);
+  if (!tally.over[1]) LAB.answer($('#front-answer'),
+    `${esc(C.name)}, 2024–25: no sample came back over 900 E. coli per 100 ml, so this catchment cannot answer it yet.`,
+    `<b>${tally.under[0]} of ${tally.under[1]}</b> samples (${pct(tally.under)}) at its ${C.spots.length} spots followed a recorded spill at an overflow upstream within 48 hours, and none came back high. The workspace shows what the overflows and the rain did around each one.`, 'The counts');
+  else LAB.answer($('#front-answer'),
+    `${esc(C.name)}, 2024–25: ` + (rate('over') > rate('under') + 0.1
+      ? 'high samples followed a spill upstream more often than low ones, but low ones often did too. A spill alone does not explain a high sample.'
+      : 'high and low samples followed a spill upstream about as often. Spills alone do not separate them here.'),
+    `Of ${plural(tally.over[1], 'sample')} over 900 E. coli per 100 ml, <b>${tally.over[0]}</b> (${pct(tally.over)}) followed a recorded spill at an overflow upstream within 48 hours. ` +
+    `So did <b>${tally.under[0]} of ${tally.under[1]}</b> samples under 900 (${pct(tally.under)}).`, 'The counts');
   $('#front-status').innerHTML = `<b>Exploratory, on outcomes already read.</b> A count, not a test. 2026 is left out because its spill records are not imported here. Nothing after 30 Sep 2026.`;
   const pts = IDX.catchments.map(c => ({ id: c.id, lat: c.lat, lon: c.lon, name: c.name, mark: '<circle r="6" class="cm"/>' }));
   LAB.drawMap($('#overview'), pts, { box: { w: -4.6, e: -0.4, s: 53.2, n: 55.2 }, selected: C.id, label: C.short, maxH: 460, aria: 'The two catchments', onPick: id => { S.from = null; choose(id); } });
@@ -309,7 +319,8 @@ function renderDay() {
     `<span>size: the model's weight at the spot in focus</span>` + (on('temp') && C.temp_points.length ? `<span><i class="tpt"></i>EA temperature point</span>` : '');
 
   // readings
-  let h = `<label class="focus-pick">Spot in focus (weights and samples)<select id="spot-sel">${C.spots.map(s => `<option value="${s.id}" ${s.id === S.spot ? 'selected' : ''}>${esc(s.name)}</option>`).join('')}</select></label>`;
+  let h = `<label class="focus-pick">Spot in focus (weights and samples)<select id="spot-sel">${C.spots.map(s => `<option value="${s.id}" ${s.id === S.spot ? 'selected' : ''}>${esc(s.name)}</option>`).join('')}</select></label>`
+    + `<p class="tolive"><a href="${LAB.spotURL(S.spot)}">Today's forecast for ${esc(sp.name)}</a></p>`;   // back to the live forecast for the spot in focus
   if (on('rain')) {
     const by = Object.fromEntries(L.rain.rows.map(r => [r.date, r.mm]));
     h += `<h3>Rain</h3><div class="rainrow">` + [3, 2, 1, 0].map(k => { const dd = iso(dn(d) - k), v = by[dd]; return `<div>${k ? `${k} day${k > 1 ? 's' : ''} before` : 'the day'}<b class="${v == null ? 'gap' : ''}">${v == null ? 'no record' : num(v) + ' mm'}</b></div>`; }).join('') + `</div>`;
@@ -429,7 +440,7 @@ async function init() {
   try {
     [IDX] = await Promise.all([fetch('data/index.json').then(r => r.json()), LAB.loadOutline('../')]);
   } catch (e) {
-    $('#front-answer').textContent = 'Could not read the workspace files. Start the server in the repository root (see the Research Lab README).';
+    LAB.failed($('#front-answer'), e);
     return;
   }
   S = readHash();

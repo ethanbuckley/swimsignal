@@ -80,7 +80,9 @@ const LAB = (() => {
     for (const pt of order) {
       const cx = p.x(pt.lon), cy = p.y(pt.lat), on = pt.id === opts.selected;
       const mark = pt.mark ? pt.mark : pt.kind === 'pilot' ? `<circle r="5" class="pt-pilot"/>` : pt.kind === 'small' ? `<circle r="3.5" class="pt-small"/>` : `<circle r="3.5" class="pt-hist"/>`;
-      g += `<g class="pt${on ? ' on' : ''}" transform="translate(${cx.toFixed(1)},${cy.toFixed(1)})" data-id="${pt.id}" tabindex="0" role="button" aria-label="${esc(pt.name)}"><title>${esc(pt.name)}</title>${on ? '<circle r="10" class="pt-ring"/>' : ''}${mark}<circle r="11" fill="transparent"/></g>`;
+      g += opts.inert   // a cover inside a link: drawn, never a control of its own
+        ? `<g transform="translate(${cx.toFixed(1)},${cy.toFixed(1)})">${mark}</g>`
+        : `<g class="pt${on ? ' on' : ''}" transform="translate(${cx.toFixed(1)},${cy.toFixed(1)})" data-id="${pt.id}" tabindex="0" role="button" aria-label="${esc(pt.name)}"><title>${esc(pt.name)}</title>${on ? '<circle r="10" class="pt-ring"/>' : ''}${mark}<circle r="11" fill="transparent"/></g>`;
     }
     const sel = points.find(pt => pt.id === opts.selected);
     if (sel) {
@@ -92,7 +94,9 @@ const LAB = (() => {
       else { x = Math.min(W - 4 - tw / 2, Math.max(4 + tw / 2, cx)); y = cy + (cy > H - 40 ? -16 : 24); anchor = 'middle'; }
       g += `<text x="${x}" y="${y}" text-anchor="${anchor}" class="pt-label">${esc(text)}</text>`;
     }
-    el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="group" aria-label="${esc(opts.aria || 'Map of the sites')}">${g}</svg>`;
+    el.innerHTML = opts.inert
+      ? `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" aria-hidden="true" focusable="false">${g}</svg>`
+      : `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="group" aria-label="${esc(opts.aria || 'Map of the sites')}">${g}</svg>`;
     el.querySelectorAll('.pt').forEach(n => {
       n.onclick = () => opts.onPick && opts.onPick(n.dataset.id);
       if (opts.onHover) { n.onmouseenter = () => opts.onHover(n.dataset.id); n.onmouseleave = () => opts.onHover(null); }
@@ -102,22 +106,49 @@ const LAB = (() => {
 
   // ---------------------------------------------------------------- "Data as of"
   // The element with data-asof names the parts this page draws on; refresh.json (build_site.write_lab_refresh) says
-  // when each was made and how it is refreshed. Only a site build writes that file: run from the repository there is
-  // none, and the line stays empty. A part older than its refresh should leave it is named, not hidden.
+  // when each was made and how it is refreshed. Folded: the dates in one line, how each part is refreshed and when the
+  // page was built inside. A part older than its refresh should leave it is said outside the fold, never hidden. Only
+  // a site build writes refresh.json: run from the repository there is none, and nothing is shown.
+  const day = d => new Date(d.slice(0, 10) + 'T12:00:00Z').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
   async function asOf() {
     const el = document.querySelector('[data-asof]');
     if (!el) return;
     let doc;
     try { const r = await fetch((el.dataset.base || '') + 'refresh.json'); if (!r.ok) return; doc = await r.json(); } catch { return; }
-    const day = d => new Date(d.slice(0, 10) + 'T12:00:00Z').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
     const items = el.dataset.asof.split(',').map(k => doc.parts[k]).filter(Boolean);
     if (!items.length) return;
     const age = p => (Date.now() - Date.parse(p.as_of.slice(0, 10) + 'T00:00:00Z')) / 864e5;
     const old = items.filter(p => p.stale_days && age(p) > p.stale_days);
-    el.innerHTML = '<b>Data as of.</b> ' + items.map(p => `${esc(p.label)}: ${day(p.as_of)}${p.outcomes_to ? `, outcomes to ${day(p.outcomes_to)}` : ''} (${esc(p.refresh)})`).join('; ') + '.'
-      + (old.length ? ` <b>Older than its refresh should leave it:</b> ${old.map(p => `${esc(p.label)}, ${Math.floor(age(p))} days`).join('; ')}.` : '');
+    const built = doc.built ? new Date(doc.built).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' }) : '';
+    const det = document.createElement('details');
+    det.className = 'asof';
+    det.innerHTML = `<summary><b>Data as of</b> ${items.map(p => `${esc(p.short || p.label)} ${day(p.as_of)}`).join(' · ')}</summary>`
+      + `<dl>${items.map(p => `<dt>${esc(p.label)}</dt><dd>${day(p.as_of)}${p.outcomes_to ? `, outcomes to ${day(p.outcomes_to)}` : ''}; ${esc(p.refresh)}${p.stale_days ? `, called old after ${p.stale_days} days` : ''}</dd>`).join('')}</dl>`
+      + (built ? `<p>This page was built ${built} (UK time). The dates above are when each part's data was made, not this page.</p>` : '');
+    el.replaceWith(det);
+    if (old.length) det.insertAdjacentHTML('beforebegin', `<p class="stale" role="status"><b>Older than its refresh should leave it:</b> ${old.map(p => `${esc(p.label)}, ${Math.floor(age(p))} days`).join('; ')}.</p>`);
   }
   asOf();
 
-  return { esc, noteW, dots, loadOutline, drawMap, credit: () => OUTLINE && OUTLINE.credit };
+  // ---------------------------------------------------------------- the opening's answer
+  // A sentence or two that answers the question; the figures behind it folded under it, one tap away.
+  function answer(el, say, more, label = 'The figures behind it') {
+    el.innerHTML = `<p class="say">${say}</p>` + (more ? `<details><summary>${label}</summary><p>${more}</p></details>` : '');
+  }
+
+  // A file that would not load: said in the opening, in place of the answer, never a blank page. From the repository the
+  // usual cause is a server started in the wrong folder (README.md beside this page).
+  function failed(el, err) {
+    el.innerHTML = `<p class="say">This exhibit's data could not be loaded${err && err.message ? ` (${esc(err.message)})` : ''}.</p><p>Reload the page to try again. The parts below that need it stay empty.</p>`;
+  }
+
+  // The site's root, from the header's brand link: relative in a site build, the live site from the repository.
+  const site = () => (document.querySelector('.top .brand') || {}).href || 'https://swimsignal.co.uk/';
+  const spotURL = id => new URL(`spot/${encodeURIComponent(id)}/`, site()).href;
+
+  // The Lab's own bar: on a phone it scrolls sideways, so the page you are on is brought into view.
+  const cur = document.querySelector('.labnav [aria-current=page]');
+  if (cur && cur.parentElement.scrollWidth > cur.parentElement.clientWidth) cur.parentElement.scrollLeft = cur.offsetLeft - 16;
+
+  return { esc, day, noteW, dots, loadOutline, drawMap, answer, failed, spotURL, credit: () => OUTLINE && OUTLINE.credit };
 })();

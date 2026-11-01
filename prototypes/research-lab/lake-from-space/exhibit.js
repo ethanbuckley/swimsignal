@@ -70,19 +70,20 @@ function writeHash() {
 // ------------------------------------------------------------------ frontispiece
 function renderFront() {
   const r = EXP.reproduction, w = EXP.within_season, cal = EXP.direction.calendar;
-  $('#front-answer').innerHTML =
-    `A little, and less than it first appears. Across ${r.record_386.lakes} lakes the satellite index ranks lab chlorophyll ` +
+  LAB.answer($('#front-answer'),
+    `A little, and less than it first appears. It cannot tell harmful algae from harmless, and cloud leaves gaps of weeks.`,
+    `Across ${r.record_386.lakes} lakes the satellite index ranks lab chlorophyll ` +
     `moderately well (rank correlation ${num(r.record_386.rho)}). Within one lake's summer it moves with the lab values ` +
     `only weakly once the time of year is taken out (${num(w.month_removed.rho)}), and it calls the direction of a change ` +
-    `no better than the calendar does (${pct(cal.index_same_direction)} against ${pct(cal.calendar_same_direction)}). ` +
-    `It cannot tell harmful algae from harmless, and cloud leaves gaps of weeks.`;
+    `no better than the calendar does (${pct(cal.index_same_direction)} against ${pct(cal.calendar_same_direction)}).`);
   const pics = IMG.sites.flatMap(s => s.scenes.filter(c => c.quality === 'shown')).map(c => c.datetime).sort();
   $('#front-status').innerHTML =
     `<b>Exploratory.</b> Historical record May–September 2020–2026, ${plural(OBS.coverage.usable, 'clear reading')} at ` +
     `${OBS.coverage.with_reading} sites. Five lakes checked weekly since 31 October 2026; newest picture ${fmt(pics[pics.length - 1])}.`;
 
   renderHero();
-  $('#contact').addEventListener('click', e => { const b = e.target.closest('button[data-hero]'); if (b) { heroLake = b.dataset.hero; renderHero(); } });
+  // A thumbnail opens its lake: the picture above and the lake below are always the same one where it has a picture.
+  $('#contact').addEventListener('click', e => { const b = e.target.closest('button[data-hero]'); if (b) selectLake(b.dataset.hero); });
 }
 
 // A wide picture: 4 km of the real scene, the 800 m plate window and the reading's 300 m circle marked on it.
@@ -99,8 +100,10 @@ function renderHero() {
   $('#contact').innerHTML = OBS.pilot.sites.map(id => {
     const w = WPIC[id], l = LAKES[id];
     return `<button type="button" data-hero="${id}" aria-current="${id === heroLake}"><span class="im">${w ? `<img src="../${w.file}" alt="">` : ''}</span><span class="cap"><b>${esc(l.water_body.replace(' Great Pond', ''))}</b>${w ? fmt(w.datetime) : ''}</span></button>`;
-  }).join('') + `<p class="contact-note"><a href="#lake=${heroLake}" style="color:var(--deep-ink)" id="hero-open">Open ${esc(LAKES[heroLake].water_body)} below</a>. The five lakes checked weekly, each on its newest picture.</p>`;
-  $('#hero-open').onclick = e => { e.preventDefault(); selectLake(heroLake); $('#s-lake').scrollIntoView({ behavior: 'smooth' }); };
+  }).join('') + `<p class="contact-note">${S.lake && S.lake !== heroLake
+      ? `${esc(LAKES[S.lake].water_body)}, open below, has no wide picture; this is ${esc(LAKES[heroLake].water_body)}. `
+      : `This is ${esc(LAKES[heroLake].water_body)}, the lake open below. `}<a href="#s-lake" style="color:var(--deep-ink)" id="hero-open">Go to it</a>. The five lakes checked weekly, each on its newest picture.</p>`;
+  $('#hero-open').onclick = e => { e.preventDefault(); $('#s-lake').scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); };
 }
 
 // ------------------------------------------------------------------ atlas: index, picker, map
@@ -129,6 +132,8 @@ function selectLake(id, date) {
   const l = LAKES[id];
   if (!l) return;
   S.lake = id; S.compare = null;
+  if (WPIC[id]) heroLake = id;
+  if (OBS.pilot) renderHero();
   document.querySelectorAll('#lake-index [data-lake]').forEach(b => b.setAttribute('aria-current', b.dataset.lake === id));
   $('#lake-select').value = id;
   const ps = primaries(l);
@@ -154,7 +159,8 @@ function renderLakeHead() {
   $('#lk-name').textContent = l.name;
   const share = l.shares_water_body_with?.length ? ` · shares ${esc(l.water_body)} with ${plural(l.shares_water_body_with.length, 'other site')}` : '';
   $('#lk-meta').innerHTML = `${kind(l)} · ${region(l)} · ${l.lat.toFixed(4)}°N ${Math.abs(l.lon).toFixed(4)}°${l.lon < 0 ? 'W' : 'E'}${share}`;
-  $('#lk-link').innerHTML = isPilot(l) ? `Checked weekly · last check ${fmt(l.operation.last_run_at)}` : 'Historical record only';
+  $('#lk-link').innerHTML = (isPilot(l) ? `Checked weekly · last check ${fmt(l.operation.last_run_at)}` : 'Historical record only')
+    + (l.site_ids && l.site_ids.bathing_water ? `<br><a href="${LAB.spotURL(l.lake_id)}">Today's forecast for ${esc(l.name)}</a>` : '');   // a bathing water is a spot
   const lab = l.lab.map(x => x.value);
   const latest = l.latest;
   const age = latest ? daysBetween(latest.date, todayISO) : null;
@@ -482,8 +488,10 @@ Promise.all([DATA + 'lake_observations.v1.json', DATA + 'lake_imagery.v1.json', 
     $('#attrib').textContent = [...new Set([...OBS.attribution, ...IMG.attribution])].join('. ') + '. Map: ' + LAB.credit() + '.';
     renderFront(); renderAtlas(); renderNotes(); renderQuestions();
     const h = readHash();
+    // a lake this record lacks is said, not swapped for another quietly
+    if (h.lake && !LAKES[h.lake]) $('#lake-note').textContent = `That lake is not in this record. Showing ${LAKES[OBS.pilot.sites[0]].water_body} instead; choose another below.`;
     selectLake(LAKES[h.lake] ? h.lake : OBS.pilot.sites[0], h.date);
     let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { renderChart(); renderNotes(); drawAtlasMap(); }, 150); });
     window.addEventListener('hashchange', () => { const k = readHash(); if (k.lake && (k.lake !== S.lake || k.date !== S.date)) selectLake(k.lake, k.date); });
   })
-  .catch(err => { $('#front-answer').textContent = `Could not read the research files (${err.message}). Serve the repository root: see README.md beside this page.`; });
+  .catch(err => { LAB.failed($('#front-answer'), err); });

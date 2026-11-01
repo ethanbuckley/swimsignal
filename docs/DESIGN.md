@@ -1182,7 +1182,9 @@ how things look, not what the site says.
 1. Add a colour, size or radius only as a token in `page.css`, and mirror it in `index.html`. A
    font size is one of the six `--fs-*` tokens, or it is a seventh size. The two sets must stay
    equal (`tests/test_design_tokens.py`); only the app's layout and filter tokens (`--tile-filter`,
-   `--header-h`, `--nav-h`) live in `index.html` alone.
+   `--header-h`, `--nav-h`) live in `index.html` alone. The Research Lab's editorial variant (a warmer paper,
+   the deep frontispiece, the selected rust, the gap hatching) lives in `lab.css` alone, over `page.css`
+   ("The Research Lab", below); a Lab token never redefines the site's radius, ink, brand or type sizes.
 2. Place names, page titles and section headings in the serif, 600; risk levels, a row's headline,
    controls and numbers in the sans. No uppercase labels, no tracking.
 3. No new radius, shadow or gradient. In the app the answer is unboxed and everything after it is a
@@ -1737,3 +1739,70 @@ SwimSignal and Anthropic, and to leave out personal details, with a link to the 
 - **Never "safe" or "clean"**, as everywhere on the site. The Worker refuses an answer whose words use them,
   judge a spot for children, or name a condition or a number its data did not give.
 
+
+## The Research Lab, and its manner on the rest of the site (1 November 2026)
+
+Ethan chose the Research Lab's look as the reference for the deeper evidence: real satellite plates, drawn
+catchments, ink on paper, serif headings, numbered figures with captions, and gaps drawn as gaps. This pass made the
+Lab part of the same product and carried a restrained share of that manner into the forecast pages. The forecast
+answer, the five days and official advice keep their place and their look.
+
+**One shell.** Every Lab page loads `page.css` and then `prototypes/research-lab/lab.css`. The build puts the site's
+own header (`build_site.site_header`, with Research Lab as the current page) and the phone bar in place of the
+stand-in a repository preview shows. So the fonts, header, phone bar, fields, select arrows, tables and type sizes
+are the site's, written once. `lab.css` resets the few prose-page defaults that would otherwise reach its controls
+(labels, check boxes, range sliders, `.note`), each with `:where(.lab)` so any Lab class still wins.
+
+**The Lab's editorial variant.** These tokens differ from the site's on purpose, in `lab.css` alone:
+- a warmer paper (`--paper`, `--paper-2`) with its grain, and a warmer `--card`, `--line` and `--rule`;
+- the deep frontispiece (`--deep-2`, `--deep-ink`, `--deep-muted`; `--deep` itself is a shared token, since the
+  covers on the forecast pages sit on it while they load);
+- `--pick`, the selected state's rust, and `--gap`, the hatching for missing data;
+- `--fs-title` 44 px (32 on phones), an exhibit's one large line.
+
+Radius, ink, brand, bar and the six type sizes are the site's. The Lab's old 6 px radius and its 21 px heading
+size are gone.
+
+**Navigation.** The header's desktop links gained "Research Lab" (`lab/`) and renamed "Research" to "Research &amp;
+data" (`research.html`, now titled "Research and data"). The phone's More menu has both. The four primary phone
+destinations are unchanged. Under the header each Lab page has its own bar: "Research Lab", then the four exhibits
+numbered. The page you are on is in white with a rule under it, so colour is not the only sign. On a phone the bar
+scrolls sideways, and the current one is scrolled into view. Each exhibit ends with the previous and next exhibit by
+name, the overview at either end, and "Back to the forecasts".
+
+**An exhibit's opening.** The order is the title, the question, then the answer in a sentence or two. "The figures
+behind it" are folded under the answer. Then one scope line (exploratory, the outcome cutoff), then "Data as of": the
+dates in one line, with how each part is refreshed and when the page was built inside the fold. A part past its
+refresh limit is said outside the fold, in amber, never hidden. A file that fails to load replaces the answer with a
+plain sentence. The repository-only advice ("serve the repository root") is in the README, not on the site.
+
+**Places.** A spot's page has "Explore the evidence" after its detail tiles, never above the answer. It lists only
+the exhibits that hold that spot's own record, each opened on it: its lake (`#lake=`), its overflows (`#spot=`), its
+bathing water (`#bw=`), and its workspace catchment with the spot in focus (`#c=…&spot=`). The keys come from
+`build_site.attach_lab_links`, in the spot's own file. A spot no exhibit holds is told so, with a link to all four.
+Each exhibit links back to "Today's forecast for" the place it shows. A link to a lake, bathing water, catchment or
+spot an exhibit lacks says so in a status line and names what is shown instead. It never swaps one in quietly. In
+exhibit 1 the wide picture follows the selected lake. Where that lake has no wide picture, the line under the
+pictures says which lake the picture is.
+
+**Covers.** The four exhibit covers are pictures (`prototypes/research-lab/assets/covers/*.jpg`, 320 px), taken from
+the Lab front page's own drawn covers. They appear on the Research page, on Accuracy (exhibit 3), in the spot page's
+tile and in the home page's invitation. On the Lab's front page each card is one link. Its cover is drawn inert
+(`drawMap({inert: true})`: no focusable points, `aria-hidden`), with `pointer-events: none` inside, so nothing in a
+card is a control of its own.
+
+**The manner on the forecast pages:**
+- **Routes** (`.routes`, in `page.css`, repeated in `index.html` as the tokens are): the cover in the plate's ink
+  hairline, "Exhibit n" in the monospaced face of a figure label, the name in the serif, one line, between hairlines.
+  There is no card.
+- **The home page:** one compact "Research Lab" block after the list and its footnotes, below the task of finding a
+  spot. It shows the four routes, two columns from 541 px.
+- **A spot's Upstream map:** a figure in the Lab's manner. The map is square-cornered in an ink hairline with the
+  plate's corner ticks, and its caption opens with its name in the serif ("Upstream of …"). Only this map: the small
+  phone map and the full map are unchanged.
+- **Accuracy:** one route to exhibit 3 under the lede, in place of a link in the lede's last sentence.
+
+**Words.** The Lab's pages say "exploratory" and keep their distinctions: a satellite index is not a toxin
+measurement; a hindsight estimate "would have flagged", it did not warn; the model's weight is a factor from 0 to 1,
+not a share arriving; the lake coverage is pooled over five sites. The spot page's tile says the Lab changes nothing
+in the forecast.

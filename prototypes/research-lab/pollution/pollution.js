@@ -24,10 +24,11 @@ function renderFront(ov) {
   const sp = IDX.spots, withOv = sp.filter(s => s.overflows > 0), none = sp.filter(s => s.overflows === 0 && !s.note), off = sp.filter(s => s.note);
   const set = IDX.settings, kmDay = set.river_velocity_ms * 86.4;
   const total = sp.reduce((a, s) => a + (s.overflows || 0), 0);
-  $('#front-answer').innerHTML =
+  LAB.answer($('#front-answer'),
+    `Along the mapped rivers, at about ${Math.round(kmDay)} km a day, fading as it goes. Those are the model's fitted settings: no spill's actual path has been measured.`,
     `SwimSignal traces every monitored overflow on the mapped rivers within ${set.max_upstream_km} km upstream of a spot: ${plural(total, 'link')} from overflow to spot across ${withOv.length} of ${sp.length} spots. ` +
-    `It assumes river water moves at ${set.river_velocity_ms} m/s (about ${Math.round(kmDay)} km a day), that bacteria fall tenfold every ${set.t90_h} hours, and that a bigger river dilutes more. ` +
-    `Those settings were fitted to Environment Agency samples and passed their test. Attempts to refine them with river flow, wind, sunlight and near-shore mixing did not. No spill's actual path has been measured.`;
+    `It assumes river water moves at ${set.river_velocity_ms} m/s, that bacteria fall tenfold every ${set.t90_h} hours, and that a bigger river dilutes more. ` +
+    `Those settings were fitted to Environment Agency samples and passed their test. Attempts to refine them with river flow, wind, sunlight and near-shore mixing did not.`);
   $('#front-status').innerHTML = `<b>Model geometry, not tracking.</b> ${none.length} spots have no monitored overflow upstream within ${set.max_upstream_km} km; ${off.length} sit off the mapped river network. Network and overflows as the forecast uses them, exported ${new Date(IDX.made).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}.`;
   LAB.drawMap($('#overview'), sp.map(s => ({ id: s.id, lat: s.lat, lon: s.lon, name: s.name, kind: 'hist', mark: '<circle r="2.2" class="pt-hist"/>' })),
     { lines: ov.lines.map(c => ({ coords: c })), maxH: 560, aria: 'Every swim spot and the rivers joining its overflows', onPick: id => { selectSpot(id); $('#s-net').scrollIntoView({ behavior: 'smooth' }); } });
@@ -60,6 +61,7 @@ async function selectSpot(id) {
 function renderHead() {
   const s = SPOT, o = s.overflows, m = s.meta;
   $('#sp-name').textContent = s.name;
+  $('#sp-link').innerHTML = `<a href="${LAB.spotURL(m.id)}">Today's forecast for ${esc(s.name)}</a>`;   // back to the live forecast
   $('#sp-meta').innerHTML = `${m.kind === 'lake' ? 'Lake' : 'River'} spot${s.area ? ' · ' + esc(s.area) : ''} · ${s.pin ? (s.pin.mode === 'lake' ? 'traced from the lake\'s outlet, through the lake' : 'placed on the mapped river') : 'not on the mapped river network'}`;
   const strongest = o[0];
   const nearest = [...o].sort((a, b) => (a.travel_h ?? 1e9) - (b.travel_h ?? 1e9))[0];
@@ -158,10 +160,10 @@ function renderTable() {
   const rows = showAll ? o : o.slice(0, 15);
   $('#list-intro').innerHTML = `The model's weight is how strongly it counts a spill from that overflow at this spot, from 0 to 1: the survival factor for the journey (${IDX.settings.t90_h} h for a tenfold fall) times a dilution factor that is lower when the overflow joins a much smaller river than the one at the spot. Dilution lowers concentration by mixing; it removes no bacteria. So the weight is not the share of a spill that arrives, and without each spill's volume it cannot say what share of the spot's pollution an overflow causes. Its settings were fitted to samples; nothing was measured at this spot. Hover a row to find it on the map.`;
   $('#ovtable').innerHTML = `<table><thead><tr><th>Overflow</th><th>Into</th><th>Along the rivers</th><th>Model travel</th><th>Survival × dilution</th><th>Spills a year</th><th>Model weight</th></tr></thead><tbody>${rows.map(x =>
-    `<tr data-id="${esc(x.id)}"><td><span class="nm">${esc(nice(x.name))}</span><span class="sub">${esc(x.company || '')} · ${esc(x.id)}</span></td><td>${esc(nice(x.water) || '–')}</td>
-     <td class="n">${num(x.distance_km)} km${x.lake_km ? `<span class="sub">${num(x.lake_km)} km of it in a lake</span>` : ''}</td><td class="n">${hours(x.travel_h)}</td>
-     <td class="n">${x.decay != null ? fmtW(x.decay) : '–'} × ${x.dilution != null ? fmtW(x.dilution) : '–'}</td><td class="n">${num(x.spills_a_year, 0)}</td>
-     <td class="n"><span class="w" style="width:${Math.max(2, 70 * (x.weight || 0) / maxW)}px"></span>${fmtW(x.weight || 0)}</td></tr>`).join('')}</tbody></table>
+    `<tr data-id="${esc(x.id)}"><td><span class="nm">${esc(nice(x.name))}</span><span class="sub">${esc(x.company || '')} · ${esc(x.id)}</span></td><td data-l="Into">${esc(nice(x.water) || '–')}</td>
+     <td class="n" data-l="Along the rivers">${num(x.distance_km)} km${x.lake_km ? `<span class="sub">${num(x.lake_km)} km of it in a lake</span>` : ''}</td><td class="n" data-l="Model travel">${hours(x.travel_h)}</td>
+     <td class="n" data-l="Survival × dilution">${x.decay != null ? fmtW(x.decay) : '–'} × ${x.dilution != null ? fmtW(x.dilution) : '–'}</td><td class="n" data-l="Spills a year">${num(x.spills_a_year, 0)}</td>
+     <td class="n" data-l="Model weight"><span class="w" style="width:${Math.max(2, 70 * (x.weight || 0) / maxW)}px"></span>${fmtW(x.weight || 0)}</td></tr>`).join('')}</tbody></table>
     ${o.length > 15 ? `<div class="more"><button type="button" id="more">${showAll ? 'Show the first 15' : `Show all ${o.length}`}</button></div>` : ''}`;
   $('#ovtable').querySelectorAll('tr[data-id]').forEach(r => { r.onmouseenter = () => hl(r.dataset.id); r.onmouseleave = () => hl(null); });
   const m = $('#more'); if (m) m.onclick = () => { showAll = !showAll; renderTable(); };
@@ -212,4 +214,4 @@ Promise.all([PATHS + 'index.json', PATHS + 'overview.json', DATA + 'research_cat
     let rz, w = innerWidth;
     window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (innerWidth === w) return; w = innerWidth; drawNet(); }, 200); });
   })
-  .catch(err => { $('#front-answer').textContent = `Could not read the research files (${err.message}). Serve the repository root: see README.md in the Research Lab folder.`; });
+  .catch(err => { LAB.failed($('#front-answer'), err); });

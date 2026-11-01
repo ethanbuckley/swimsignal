@@ -7,20 +7,25 @@
      lab/data/ and the fonts at the site's own; served from the repository root, it reads data/research/ as committed. -->
 <title>The lake from space · SwimSignal Research Lab</title>
 <meta name="description" content="Sentinel-2 satellite pictures of English lakes beside lab chlorophyll samples, with cloudy days left blank. An index of how green the water looked, not a toxin measurement.">
-<link rel="stylesheet" href="../lab.css?v=9">
+<link rel="stylesheet" href="../../../src/dipcast/pages/page.css">
+<link rel="stylesheet" href="../lab.css?v=11">
 </head>
-<body>
-<header class="top"><div class="wrap">
-  <a class="brand" href="https://swimsignal.co.uk/">SwimSignal</a>
-  <span class="crumb"><a href="../">Research Lab</a> · Exhibit 1 of 4 · exploratory</span>
-  <a href="https://swimsignal.co.uk/research.html">Research</a>
-</div></header>
+<body class="lab">
+<!-- A stand-in for a repository preview: the site build puts the site's own header here (build_site.site_header). -->
+<header class="top"><a class="brand" href="https://swimsignal.co.uk/">SwimSignal</a></header>
+<nav class="labnav" aria-label="Research Lab"><div class="wrap">
+  <a href="../">Research Lab</a>
+  <a href="../lake-from-space/" aria-current="page"><span class="n">1</span>Lake from space</a>
+  <a href="../pollution/"><span class="n">2</span>Where pollution goes</a>
+  <a href="../forecasts/"><span class="n">3</span>Forecast record</a>
+  <a href="../workspace/"><span class="n">4</span>Catchment workspace</a>
+</div></nav>
 
 <div class="front"><div class="wrap">
   <div>
     <h1>The lake from space</h1>
     <p class="q">Can changes seen from space tell us anything useful about algae in English lakes?</p>
-    <p class="answer" id="front-answer">Loading the record…</p>
+    <div class="answer" id="front-answer">Loading the record…</div>
     <p class="status" id="front-status"></p>
     <p class="status" data-asof="satellite,wide,lake-analysis" data-base="../"></p>
   </div>
@@ -33,6 +38,7 @@
 <main>
   <section class="sec" id="s-atlas"><div class="wrap">
     <div class="sec-head"><span class="no">1</span><h2>Choose a lake</h2><span class="aside" id="atlas-aside"></span></div>
+    <p class="note" id="lake-note" role="status"></p>
     <div class="atlas">
       <div>
         <div class="picker"><label for="lake-select">Lake</label><select id="lake-select"></select></div>
@@ -94,6 +100,13 @@
     <div class="sec-head"><span class="no">6</span><h2>Questions worth asking next</h2><span class="aside">proposed, not started</span></div>
     <ol class="qs" id="qs"></ol>
   </div></section>
+  <section class="sec"><div class="wrap">
+    <nav class="pager" aria-label="Exhibits">
+      <a class="prev" href="../"><small>&larr; All four exhibits</small><b>Research Lab</b></a>
+      <a class="next" href="../pollution/"><small>Exhibit 2 &rarr;</small><b>Where does the pollution go?</b></a>
+    </nav>
+    <p class="back"><a href="https://swimsignal.co.uk/">Back to the forecasts</a> · <a href="https://swimsignal.co.uk/research.html">Research &amp; data</a></p>
+  </div></section>
 </main>
 
 <footer class="foot"><div class="wrap">
@@ -106,9 +119,10 @@
      <a href="../../../data/research/lake_imagery.v1.json">lake_imagery.v1.json</a>,
      <a href="exploration.json">exploration.json</a>.</p>
   <p>Exploratory work on data already read. It changes nothing in the forecast. Each spot's own page gives the forecast and official advice.</p>
+  <p class="site-links"><a href="https://swimsignal.co.uk/terms.html">Terms of use</a> · <a href="https://swimsignal.co.uk/privacy.html">Privacy</a> · <a href="https://swimsignal.co.uk/feedback.html">Feedback</a> · <a href="https://swimsignal.co.uk/research.html">Research &amp; data</a></p>
 </div></footer>
 
-<script src="../lab.js?v=4"></script>
-<script src="exhibit.js?v=9"></script>
+<script src="../lab.js?v=5"></script>
+<script src="exhibit.js?v=10"></script>
 </body>
 </html>
