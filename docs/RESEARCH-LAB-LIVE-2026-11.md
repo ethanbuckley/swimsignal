@@ -47,7 +47,11 @@ stay:
 - hindsight estimates "would have flagged";
 - the lake coverage is pooled.
 
-The pages keep `noindex` and stay out of the sitemap. Whether search engines may list them is Ethan's call.
+Search engines may list the pages (Ethan, 1 November 2026). Each page has a description for search results and
+is in the sitemap (`lab_pages`, every exhibit folder with a page). The build drops any `noindex` left in an exhibit.
+The risks, accepted: a visitor from a search lands without the spot page's forecast and advice, and the frozen data
+ages until a refresh exists. Each page says it is exploratory and gives its export date. **Next:** a way to refresh
+the data.
 
 ## Checks
 
@@ -57,7 +61,8 @@ The pages keep `noindex` and stay out of the sitemap. Whether search engines may
   - fonts resolve to the site's;
   - nothing points back into the repository;
   - screenshots and notes are left out;
-  - pages keep `noindex` and say no "prototype".
+  - pages have a search description, no `noindex`, and say no "prototype";
+  - every page is in the sitemap.
 - Full suites on this branch: Python 1940 passed, 4 skipped, 1 xfailed; site JS 964 passed; ruff clean.
 - The Lab written by `write_lab` into a scratch site and served:
   - every request returned 200 (fonts, data, pictures, path files) and there were no console errors;
@@ -68,8 +73,8 @@ The pages keep `noindex` and stay out of the sitemap. Whether search engines may
 
 ## Left for later
 
-- **Refreshing the copy.** The data is frozen at its export date, which each exhibit shows. A refresh means rerunning
-  the export scripts, then rebuilding.
+- **Refreshing the copy (next).** The data is frozen at its export date, which each exhibit shows. Today a refresh
+  means rerunning the export scripts by hand, then rebuilding.
 - **Percentages elsewhere on the site.** The site's own pages show the model weight as a percentage ("model weight
   98%"): the spot overflow list, the map tooltip, the organisers and record pages. The Lab now shows it as a 0-to-1
   factor. Making the site match is a wording decision for Ethan.

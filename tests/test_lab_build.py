@@ -77,9 +77,17 @@ def test_left_out(site):
     assert not list(lab.rglob("shots")) and not list(lab.rglob("*.md"))
     for f in _files(site, ".html"):
         s = f.read_text()
-        assert 'name="robots" content="noindex"' in s and "prototype" not in s.lower(), f
+        assert "noindex" not in s and 'name="description"' in s and "prototype" not in s.lower(), f
+
+
+def test_every_page_is_in_the_sitemap(site):
+    pages = build_site.lab_pages()
+    assert pages[0] == "lab/" and {"lab/lake-from-space/", "lab/pollution/", "lab/forecasts/"} <= set(pages)
+    assert all((site / p / "index.html").is_file() for p in pages)
+    assert all(f"<loc>https://example.org/{p}</loc>" in build_site.sitemap("https://example.org/", [], "2026-11-01", extra=pages) for p in pages)
 
 
 def test_no_lab_no_folder(tmp_path):
     (tmp_path / "lab").mkdir()
     assert build_site.write_lab(tmp_path, lab=tmp_path / "missing") == 0 and not (tmp_path / "lab").exists()
+    assert build_site.lab_pages(tmp_path / "missing") == []

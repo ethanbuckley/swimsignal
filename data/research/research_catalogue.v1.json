@@ -2317,7 +2317,7 @@
    "verdict": "A display, not a test: three exploratory exhibits on data already read, the lake from space, where the pollution goes, and how good the forecasts are, with gaps drawn as gaps and hindsight estimates said to be rebuilt afterwards.",
    "scope": "Frozen copies of the satellite, E. coli sample, overflow path and research files as exported on 1 November 2026. Outcomes to 30 September 2026 only.",
    "stage": "live",
-   "stage_note": "On the site at lab/ once PR 592 merges, linked from the Research and Accuracy pages, the lake viewer and each spot's Upstream tile. Not indexed by search engines. Changes nothing in the forecast.",
+   "stage_note": "On the site at lab/ once PR 592 merges, linked from the Research and Accuracy pages, the lake viewer and each spot's Upstream tile. Changes nothing in the forecast. The data is a frozen copy; a repeatable refresh is next.",
    "records": [
     {
      "doc": "docs/RESEARCH-LAB-LIVE-2026-11.md",
