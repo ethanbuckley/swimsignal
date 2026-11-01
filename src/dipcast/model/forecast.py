@@ -16,7 +16,7 @@ from dipcast.ingest.flows import nearest_level_station, reading_fields
 from dipcast.ingest.live import with_data_states
 from dipcast.ingest import soil
 from dipcast.ingest.rainfall import cells_for_sites, fetch_forecast, forecast_age
-from dipcast import shadow_regional
+from dipcast import shadow_lake_range, shadow_regional
 from dipcast.model import ecoli, live_status
 from dipcast.model.features import (
     ALL_FEATURES,
@@ -199,6 +199,7 @@ def reload_caches() -> None:
         ecoli.load_sm.cache_clear()
         model_version.cache_clear(); code_commit.cache_clear(); live_status.clear_cache()
         shadow_regional.clear_cache()
+        shadow_lake_range.clear_cache()
         # the network itself is immutable at runtime; keep it loaded
 
 
@@ -523,7 +524,7 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
 
     # E. coli exceedance: rain at the spot itself (not at the overflows) plus the day's exposure.
     em = ecoli.load()
-    p_ec = r48 = spot_rain = None
+    p_ec = r48 = spot_rain = lake_range = None
     if em is not None:
         try:
             spot_rain = fetch_forecast(cells_for_sites(pd.Series([lat]), pd.Series([lon])))
@@ -533,6 +534,15 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
             X = ecoli.features(r48, r24, risk, np.full(len(days), 1.0 if pin.mode == "lake" else 0.0), days)
             p_ec = em.predict(X)
             p_ec, soil_state = river_ecoli(pin.mode, lat, lon, X, p_ec, now)
+            # The lake range shadow (docs/LAKE-RANGE-WORDING-2026-11.md): lake-range-v1's likely reading and range
+            # from the same inputs, for its own table only. Nothing below reads it but its logger.
+            if pin.mode == "lake" and log_to_store:
+                try:
+                    lake_range = shadow_lake_range.ranges(lat, lon, X)
+                    if lake_range is not None:
+                        lake_range["inputs"] = (r48, r24, risk)
+                except Exception as e:  # noqa: BLE001 - a shadow must never fail the forecast
+                    log.warning("lake range shadow skipped: %s", e)
             for row in day_rows:
                 j = days.get_loc(pd.Timestamp(row["date"], tz=LOCAL_TZ))
                 ok = not (np.isnan(r48[j]) or np.isnan(p_ec[j]))
@@ -639,6 +649,11 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
                 shadow_regional.log_shadow(now, lat, lon, days, ov, p_raw, p, regional, model_version())
             except Exception as e:  # noqa: BLE001 - a shadow must never fail a forecast
                 log.warning("regional shadow log failed: %s", e)
+        if lake_range is not None:
+            try:
+                shadow_lake_range.log_shadow(now, lat, lon, days, *lake_range["inputs"], lake_range, model_version())
+            except Exception as e:  # noqa: BLE001 - a shadow must never fail a forecast
+                log.warning("lake range shadow log failed: %s", e)
     return out
 
 
