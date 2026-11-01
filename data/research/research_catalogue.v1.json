@@ -704,6 +704,13 @@
    "branch": "research/scotland-gate-a",
    "branch_exists": true,
    "date": "2026-11-01"
+  },
+  "591": {
+   "n": 591,
+   "state": "open",
+   "branch": "research/scotland-trial",
+   "branch_exists": true,
+   "date": "2026-11-01"
   }
  },
  "entries": [
@@ -1650,7 +1657,8 @@
     }
    ],
    "prs": [
-    587
+    587,
+    591
    ]
   },
   {
