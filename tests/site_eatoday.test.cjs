@@ -143,7 +143,7 @@ function pageWith(withScript) {
   vm.runInContext(fs.readFileSync(join(SITE, 'levels.js'), 'utf8') + '\nsetToday("2026-10-04");', ctx);
   if (withScript) vm.runInContext(SRC, ctx);
   vm.runInContext(pageDefs(['esc', 'glyph', 'ICON', 'tone', 'tile', 'factorRow', 'explain', 'poorLine', 'ratingHistory',
-    'riverTile', 'WT_ROUTES', 'waterEstOk', 'waterEstHow', 'waterEstSay', 'WT_AIR', 'WT_TAIL', 'waterEstMore', 'waterTile', 'weatherOn', 'facts', 'standing', 'check', 'nowTile', 'noFeedSaid', 'ecoliName', 'ecoliFold', 'ecoliCheck', 'ecoliSaid', 'ecoliMore',
+    'riverTile', 'WT_ROUTES', 'waterEstOk', 'waterEstHow', 'waterEstSay', 'WT_AIR', 'WT_TAIL', 'waterEstMore', 'waterTile', 'weatherOn', 'facts', 'standing', 'check', 'nowTile', 'noFeedSaid', 'ecoliName', 'ecoliFold', 'ecoliCheck', 'ecoliSaid', 'ecoliMore', 'lakeRanged', 'rangeOf', 'ecoliReading', 'likely', 'rangeLine', 'RANGE_BASIS', 'rangeBasis', 'RANGE_MORE', 'RANGE_OFF_SAID', 'rangeFold', 'typicalLine', 'TYPICAL_SAID', 'TYPICAL_MORE',
     'sinceTime', 'spillFor', 'overflowSaid', 'longSpillLine', 'eaSaid', 'coverWords', 'coverLine', 'answerAfter']), ctx);
   return ctx;
 }

@@ -51,6 +51,8 @@ from dipcast.overflows import duplicate_site_ids
 from dipcast.spot_links import attach as attach_spot_links
 from dipcast.stretches import attach as attach_stretches
 from dipcast.trace import SIMPLIFY_M, spot_trace_parts
+from dipcast.typical import attach as attach_typical
+from dipcast.typical import typical_readings
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 logging.getLogger("httpx").setLevel(logging.WARNING)
@@ -3776,6 +3778,24 @@ def attach_sample_history(results: list[dict], path: Path = ECOLI_EVIDENCE) -> i
     return n
 
 
+def attach_typical_readings(results: list[dict], path: Path = ECOLI_EVIDENCE) -> int | None:
+    """On each bathing water in the export, `ecoli_typical` (typical.typical_readings, over-900 counted): the page gives it where the spot has no
+    daily E. coli figure, a lake or river with no monitored overflow upstream. Past samples, not a forecast. Returns how
+    many spots got it, None without a publishable export."""
+    doc, why = read_ecoli_evidence(path)
+    if why:
+        return None
+    by = {x["spot_id"]: x for x in ecoli_sites(doc)}
+    n = 0
+    for r in results:
+        x = by.get(str(r["id"]))
+        t = typical_readings(x.get("samples"), 900) if x else None
+        if t:
+            r["ecoli_typical"] = t
+            n += 1
+    return n
+
+
 def write_samples(site: Path, token: str | None = None, root: str | None = None, results: list[dict] | None = None) -> str:
     """samples.html and samples.js beside the app, and the samples they read. Returns the script's version."""
     write_ecoli_evidence(site, results=results)
@@ -4513,6 +4533,7 @@ def build(refresh: bool = True) -> dict:
     n_algae = attach_algae(results, fetch=refresh)
     n_lab = attach_lab_samples(results)   # read from the samples refresh_all's scoring fetched: no request
     n_history = attach_sample_history(results)   # from the research export, a file: no request
+    n_typical = attach_typical_readings(results)   # the same export: typical readings where no daily figure is
     measured = attach_measured(results)   # lab results organisations sent, from samples/: not part of the level
     n_classified = attach_classifications(results)
     water_body = attach_water_body(results)   # the EA's reasons for not reaching good status, from a file: no request
@@ -4545,6 +4566,7 @@ def build(refresh: bool = True) -> dict:
     health["warnings"] += dry["warnings"]
     health["lab_samples"] = n_lab
     health["sample_history"] = n_history
+    health["typical_readings"] = n_typical
     if water_body is None:
         health["warnings"].append("data/raw/rnags.json is missing or unreadable: no spot says what the Environment Agency lists on its water body")
     else:
@@ -4603,18 +4625,21 @@ def build(refresh: bool = True) -> dict:
     health["anypoint"] = write_any_point(SITE, credits, health["warnings"])   # its warning is announced there
     health["guide_photos"] = copy_photos(SITE, results)
     from dipcast.coastal import attach_samples
+    from dipcast.coastal import attach_typical as attach_coastal_typical
     from dipcast.coastal import fetch as fetch_coastal
     # The latest statutory sample at each site from the EA's archive, kept six hours in the cache.
     coastal = attach_samples(fetch_coastal(), cache=config.CACHE / "coastal_samples.json")
+    n_coastal_typical = attach_coastal_typical(coastal)   # a committed export: no request
     coastal_water = attach_directory_water_temp(coastal["sites"], anypoint_water_air(SITE))
     (SITE / "data" / "coastal.json").write_text(json.dumps(coastal))
     health["coastal"] = {"status": coastal["status"], "sites": len(coastal["sites"]),
                          "samples": coastal.get("samples", {}).get("state"),
                          "with_sample": sum((s.get("sample") or {}).get("state") == "ok" for s in coastal["sites"]),
-                         "water_temperature_estimate": coastal_water}
+                         "water_temperature_estimate": coastal_water, "typical_readings": n_coastal_typical}
     # Welsh bathing waters: NRW's sites and latest samples, live or from the dated snapshot (wales.py).
     from dipcast.wales import fetch as fetch_wales
     wales = fetch_wales()
+    attach_typical(wales, "wales")   # committed past samples (scripts/export_typical_readings.py): no request
     health["wales"] = {"state": wales["state"], "sites": len(wales["sites"]), "fetched_at": wales["fetched_at"],
                        **({"error": wales["error"]} if wales.get("error") else {})}
     # Scottish bathing waters: SEPA's points layer, names, ratings and links (scotland.py).
@@ -4626,12 +4651,14 @@ def build(refresh: bool = True) -> dict:
     # The Republic of Ireland's bathing waters: the EPA's list, samples and restrictions (ireland.py).
     from dipcast.ireland import fetch as fetch_ireland
     ireland = fetch_ireland()
+    attach_typical(ireland, "ireland")
     health["ireland"] = {"state": ireland["state"], "sites": len(ireland["sites"]),
                          "restrictions": sum(len(s["alerts"] or []) for s in ireland["sites"]),
                          **({"error": ireland["error"]} if ireland.get("error") else {})}
     # Northern Ireland's bathing waters: DAERA's monitoring points layer (northern_ireland.py).
     from dipcast.northern_ireland import fetch as fetch_ni
     northern_ireland = fetch_ni()
+    attach_typical(northern_ireland, "northern_ireland")
     health["northern_ireland"] = {"state": northern_ireland["state"], "sites": len(northern_ireland["sites"]),
                                   **({"error": northern_ireland["error"]} if northern_ireland.get("error") else {})}
     # Their water temperature (#492 stage 4): the cached air around them, and cells of their own where none reaches.

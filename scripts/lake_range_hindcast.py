@@ -385,6 +385,66 @@ def stage_extra() -> None:
     print(json.dumps(res, indent=1, default=float))
 
 
+def background(tr: pd.DataFrame, lakes: list[str]) -> dict:
+    m = CensoredRI(BACKGROUND, lake_sigma=True).fit(tr, tr["y"].to_numpy(), tr["cens"].to_numpy(), tr["bw_id"].to_numpy())
+    assert m.converged
+    post = m.train_post - logsumexp(m.train_post, axis=1, keepdims=True)
+    return {"cols": BACKGROUND, "mean": {c: float(tr[c].mean()) for c in BACKGROUND},
+            "sd": {c: float(tr[c].std(ddof=0)) or 1.0 for c in BACKGROUND}, "beta": m.theta[:m.p].tolist(),
+            "sigma_lake": m.sigma_lake, "tau": m.tau,
+            "log_weights": {bw: np.round(post[m.sites.get_loc(bw)], 6).tolist() for bw in lakes}}
+
+
+def stage_export() -> None:
+    """Freeze the tested candidate for the lake range (src/dipcast/lake_range.py): the same fit as `run`, on
+    every training row, written to data/processed/ecoli_lake_range.json with each lake site's intercept weights and
+    check values the site's own code must reproduce (tests/test_lake_range.py)."""
+    import hashlib
+
+    from dipcast.model.ecoli import features
+    tr = prepare(pd.read_parquet(OUT / "rows_train.parquet"))
+    m = CensoredRI(CAND, lake_sigma=True).fit(tr, tr["y"].to_numpy(), tr["cens"].to_numpy(), tr["bw_id"].to_numpy())
+    assert m.converged
+    spots = pd.read_csv(HERE.parent / "spots.csv").set_index("id")
+    post = m.train_post - logsumexp(m.train_post, axis=1, keepdims=True)   # each site's normalised node weights
+    lakes = sorted(tr.loc[tr["lake"] == 1, "bw_id"].unique())
+    sites = {}
+    for bw in lakes:
+        r = spots.loc[f"bw-{bw}"]
+        sites[bw] = {"name": str(r["name"]), "lat": round(float(r["lat"]), 6), "lon": round(float(r["lon"]), 6),
+                     "log_weights": np.round(post[m.sites.get_loc(bw)], 6).tolist()}
+    ref = tr[CAND]
+    checks = []
+    when = pd.Series(pd.Timestamp("2026-07-01 12:00", tz=TZ), index=range(2))
+    for bw in (lakes[0], lakes[-1], "unsampled"):
+        X = features([0.0, 25.0], [0.0, 15.0], [0.002, 0.08], [1.0, 1.0], when)
+        site = np.array([bw, bw])
+        q = {k: (10 ** quantile_from(m, X, site, k)).tolist() for k in (0.1, 0.5, 0.9)}
+        for i in range(2):
+            checks.append({"site": bw, "rain_48h": float([0.0, 25.0][i]), "rain_24h": float([0.0, 15.0][i]),
+                           "risk": [0.002, 0.08][i], "day": "2026-07-01", "low": q[0.1][i], "median": q[0.5][i],
+                           "high": q[0.9][i]})
+    rows_sha = hashlib.sha256(pd.util.hash_pandas_object(tr[["bw_id", "sample_time", "ecoli", "qual", *CAND]],
+                                                         index=False).to_numpy().tobytes()).hexdigest()
+    out = {"rule": "lake-range-v1",
+           "target": "log10 E. coli per 100 ml in a lake sample: the median and the central 80% range",
+           "record": "docs/LAKE-RANGE-HINDCAST-TEST-2026-11.md", "pr": 584,
+           "fitted_on": {"rows": len(tr), "sites": int(tr["bw_id"].nunique()), "lake_rows": int((tr["lake"] == 1).sum()),
+                         "first": str(tr["sample_time"].min().date()), "last": str(tr["sample_time"].max().date()),
+                         "rows_sha256": rows_sha},
+           "cols": CAND, "mean": {c: float(ref[c].mean()) for c in CAND},
+           "sd": {c: float(ref[c].std(ddof=0)) or 1.0 for c in CAND},
+           "beta": m.theta[:m.p].tolist(), "sigma_lake": m.sigma_lake, "sigma_river": m.sigma, "tau": m.tau,
+           "nodes": m.x.tolist(), "log_prior": m.logw.tolist(), "sites": sites, "checks": checks,
+           # The reference for the prospective read (docs/LAKE-RANGE-WORDING-2026-11.md): the lake's typical range with
+           # no weather (the test's background), frozen with the candidate so the read never refits it.
+           "background": background(tr, lakes)}
+    path = HERE.parent / "data" / "processed" / "ecoli_lake_range.json"
+    path.write_text(json.dumps(out, indent=1) + "\n")
+    print(path, hashlib.sha256(path.read_bytes()).hexdigest())
+    print(json.dumps(checks, indent=1))
+
+
 if __name__ == "__main__":
     {"samples": stage_samples, "rain": stage_rain, "rows": stage_rows, "run": stage_run,
-     "extra": stage_extra}[sys.argv[1]]()
+     "extra": stage_extra, "export": stage_export}[sys.argv[1]]()
