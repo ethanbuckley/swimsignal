@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- The Research Lab's front page: a local prototype, not built by site.yml. Serve the repository root (README.md). -->
+<title>Research Lab · SwimSignal</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="lab.css?v=8">
+<style>
+  .exhibits { list-style: none; padding: 0; margin: 0; }
+  .exhibits li { border-top: 1px solid var(--line); padding: 22px 0; display: grid; grid-template-columns: 60px minmax(0, 1fr) 180px; gap: 4px 20px; align-items: baseline; }
+  @media (max-width: 760px) { .exhibits li { grid-template-columns: 40px minmax(0, 1fr); } .exhibits .st { grid-column: 2; } }
+  .exhibits .n { font: 600 var(--fs-note)/1 var(--font-mono); color: var(--muted); }
+  .exhibits h2 { font: 600 26px/1.15 var(--font-display); margin: 0 0 6px; }
+  .exhibits p { margin: 0; max-width: 62ch; }
+  .exhibits .st { font-size: var(--fs-note); color: var(--muted); }
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <a class="brand" href="https://swimsignal.co.uk/">SwimSignal</a>
+  <span class="crumb">Research Lab · prototype</span>
+  <a href="https://swimsignal.co.uk/research.html">Research</a>
+</div></header>
+<div class="front"><div class="wrap" style="display:block">
+  <h1>Research Lab</h1>
+  <p class="q">What SwimSignal is investigating, the evidence so far, and what it does not yet show.</p>
+  <p>Each exhibit asks one question, shows the real data behind the answer, and keeps exploratory findings apart from results that were stated in advance. Missing data is drawn as missing.</p>
+</div></div>
+<main><section class="sec"><div class="wrap">
+  <ol class="exhibits">
+    <li><span class="n">1</span><div><h2><a href="lake-from-space/">The lake from space</a></h2><p>Can changes seen from space tell us anything useful about algae in English lakes? Sentinel-2 pictures, a satellite index and lab chlorophyll, gaps included.</p></div><span class="st">Prototype for review</span></li>
+    <li><span class="n">2</span><div><h2>Where does the pollution go?</h2><p>The overflows upstream of a swim spot, and how rain, river flow and the lake itself might change what arrives. Connections first; any movement drawn will be labelled as illustration.</p></div><span class="st">Not started</span></li>
+    <li><span class="n">3</span><div><h2><a href="forecasts/">How good are the forecasts?</a></h2><p>What the model said against what the samples found, at every bathing water: hits, misses and false alarms, beside simple alternatives and the Environment Agency's own forecast.</p></div><span class="st">Prototype for review</span></li>
+  </ol>
+</div></section></main>
+<footer class="foot"><div class="wrap"><p>A prototype for review. It changes nothing on swimsignal.co.uk and nothing in the forecast.</p></div></footer>
+</body>
+</html>

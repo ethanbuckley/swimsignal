@@ -2,11 +2,11 @@
    set as a field journal: paper, hairlines, plates with captions, a monospaced log for anything measured. One radius,
    no shadows, no gradients except the paper's own grain. */
 @font-face { font-family: "Source Sans 3"; font-style: normal; font-weight: 200 900; font-display: swap;
-  src: url("../../../src/dipcast/pages/fonts/SourceSans3-latin.woff2") format("woff2"); }
+  src: url("../../src/dipcast/pages/fonts/SourceSans3-latin.woff2") format("woff2"); }
 @font-face { font-family: "Source Sans 3"; font-style: italic; font-weight: 400 700; font-display: swap;
-  src: url("../../../src/dipcast/pages/fonts/SourceSans3-italic-latin.woff2") format("woff2"); }
+  src: url("../../src/dipcast/pages/fonts/SourceSans3-italic-latin.woff2") format("woff2"); }
 @font-face { font-family: "Source Serif 4"; font-style: normal; font-weight: 600; font-display: swap;
-  src: url("../../../src/dipcast/pages/fonts/SourceSerif4-latin.woff2") format("woff2"); }
+  src: url("../../src/dipcast/pages/fonts/SourceSerif4-latin.woff2") format("woff2"); }
 
 :root {
   --font-text: "Source Sans 3", Georgia, serif;

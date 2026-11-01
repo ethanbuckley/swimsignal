@@ -28,7 +28,7 @@ SwimSignal service worker on that port, will show the main app instead. Pick an 
 
 ## Files
 
-- `index.html`, `lab.css`, `exhibit.js`: the exhibit.
+- `index.html`, `exhibit.js`: the exhibit; the shared stylesheet is `../lab.css`.
 - `exploration.json`: the analysis output.
 - `shots/`: 1440 × 900 and 375 × 812 screenshots, clock fixed at 1 Nov 2026 14:00 UTC.
 

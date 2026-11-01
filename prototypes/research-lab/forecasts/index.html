@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Research Lab exhibit 3, "How good are the forecasts?": a local prototype, not built by site.yml and not linked from
+     the site. Serve the repository root (README.md beside this file). -->
+<title>How good are the forecasts? · SwimSignal Research Lab</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="../lab.css?v=8">
+<link rel="stylesheet" href="forecasts.css?v=2">
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <a class="brand" href="https://swimsignal.co.uk/">SwimSignal</a>
+  <span class="crumb"><a href="../">Research Lab</a> · Exhibit 3 of 3 · prototype</span>
+  <a href="https://swimsignal.co.uk/verification.html">Accuracy</a>
+</div></header>
+
+<div class="front"><div class="wrap">
+  <div>
+    <h1>How good are the forecasts?</h1>
+    <p class="q">When SwimSignal says the water is likely to be polluted, how often is it right, and what does it miss?</p>
+    <p class="answer" id="front-answer">Loading the record…</p>
+    <p class="status" id="front-status"></p>
+  </div>
+  <figure class="ledger" id="ledger" aria-label="Every river sample over 900, and every false alarm, as dots"></figure>
+</div></div>
+
+<main>
+  <section class="sec" id="s-pick"><div class="wrap">
+    <div class="sec-head"><span class="no">1</span><h2>Choose a bathing water</h2><span class="aside" id="pick-aside"></span></div>
+    <div class="picker always"><label for="bw-select">Bathing water</label><select id="bw-select"></select></div>
+    <nav class="bwlist" id="bw-list" aria-label="Bathing waters"></nav>
+  </div></section>
+
+  <section class="sec" id="s-site"><div class="wrap">
+    <div class="sec-head"><span class="no">2</span><h2>Forecast against sample, one bathing water</h2><span class="aside">E. coli, May–September 2024–2026</span></div>
+    <div class="lakehead"><div><h2 id="bw-name">…</h2><div class="meta" id="bw-meta"></div></div></div>
+    <dl class="facts" id="bw-facts"></dl>
+    <div class="years" id="seasons" role="group" aria-label="Seasons"></div>
+    <div class="chart" id="chart"></div>
+    <div class="chart-note" id="chart-note"></div>
+    <div class="sample" id="sample"></div>
+  </div></section>
+
+  <section class="sec" id="s-refs"><div class="wrap">
+    <div class="sec-head"><span class="no">3</span><h2>Against the simple alternatives</h2><span class="aside">all 32 bathing waters with an estimate</span></div>
+    <div class="notes" id="refs"></div>
+  </div></section>
+
+  <section class="sec" id="s-spill"><div class="wrap">
+    <div class="sec-head"><span class="no">4</span><h2>Spill forecasts, a year held out</h2><span class="aside">United Utilities overflows, 2025</span></div>
+    <div class="notes" id="spill"></div>
+  </div></section>
+
+  <section class="sec" id="s-ea"><div class="wrap">
+    <div class="sec-head"><span class="no">5</span><h2>Beside the Environment Agency's own forecast</h2><span class="aside">16–28 September 2026</span></div>
+    <div id="ea"></div>
+  </div></section>
+
+  <section class="sec" id="s-not"><div class="wrap">
+    <div class="sec-head"><span class="no">6</span><h2>What it cannot tell you</h2></div>
+    <ul class="lim">
+      <li><b>These are not the forecasts the site showed.</b> The E. coli estimates were rebuilt afterwards, leaving out each year in turn, with the weather forecasts as archived. The site has logged its own issued estimates only since 15 September 2026.</li>
+      <li><b>A sample is one bottle at one time.</b> A miss means the model and that bottle disagreed. It does not say which overflow, farm or bird was responsible.</li>
+      <li><b>Nothing after 30 September 2026 is shown.</b> Several forecast changes are being tested on autumn data now. Their results are read on agreed dates and stay closed until then.</li>
+      <li><b>The spill test covers one company.</b> It held out 2025 at United Utilities overflows. The other eight English companies' scores are on the Accuracy page, from live data.</li>
+      <li><b>Over 900 is a line, not a safety boundary.</b> It is the inland "sufficient" threshold for E. coli per 100 ml. Water under it can still make someone ill.</li>
+      <li><b>Official advice comes first.</b> Environment Agency notices and signs at the water are shown on each spot page.</li>
+    </ul>
+  </div></section>
+
+  <section class="sec" id="s-next"><div class="wrap">
+    <div class="sec-head"><span class="no">7</span><h2>Questions worth asking next</h2><span class="aside">proposed, not started</span></div>
+    <ol class="qs" id="qs"></ol>
+  </div></section>
+</main>
+
+<footer class="foot"><div class="wrap">
+  <p id="attrib"></p>
+  <p>Method: <a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/FORECAST-RECORD-EXPLORATION-2026-11.md">the exploration</a>,
+     <a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/ECOLI-EVIDENCE-CONTRACT-v1.md">the E. coli evidence contract</a>,
+     <a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/CONCENTRATION-STUDY-2026-11.md">the concentration study</a>.
+     Data: <a href="../../../data/research/ecoli_evidence.v1.json">ecoli_evidence.v1.json</a>, <a href="exploration.json">exploration.json</a>.</p>
+  <p>A prototype for review. It changes nothing on swimsignal.co.uk and nothing in the forecast.</p>
+</div></footer>
+<script src="forecasts.js?v=2"></script>
+</body>
+</html>

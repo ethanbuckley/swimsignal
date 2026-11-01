@@ -898,7 +898,7 @@
    "verdict": "Not shown. On rivers the candidate's Brier score was 0.1071 against 0.1069 for today's form, difference interval −0.013 to +0.013. On lakes the ranking within a site improved (median rho 0.27 against −0.11), but its nominal 80% interval held only 65% of lake results.",
    "scope": "Reused 2024-26 EA bathing-water samples; exploratory, not a confirmation.",
    "stage": "development",
-   "stage_note": "Lake spread and censoring are being developed. The EA samples behind it are shown on the E. coli samples page.",
+   "stage_note": "Lake spread and censoring are being developed. The EA samples behind it are shown on the E. coli samples page. Exploration of 1 November 2026 (already-read outcomes, hindsight estimates): at rivers the estimate beat three simple alternatives (Brier 0.123 against 0.166 at best); at lakes no better than the usual rate, and each lake's own past rate ranked samples better (AUC 0.81 against 0.47).",
    "next": "A lake statement judged on lake samples it has never seen, such as 2027's from May.",
    "records": [
     {
@@ -910,6 +910,10 @@
     },
     {
      "doc": "docs/ECOLI-EVIDENCE-CONTRACT-v1.md"
+    },
+    {
+     "doc": "docs/FORECAST-RECORD-EXPLORATION-2026-11.md",
+     "quote": "- **Lakes: no better than the usual rate.**"
     }
    ],
    "prs": [
