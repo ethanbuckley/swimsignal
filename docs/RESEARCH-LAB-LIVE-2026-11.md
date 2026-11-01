@@ -71,10 +71,36 @@ the data.
 - Not checked: a real phone, a screen reader, the full site build (it needs live sources; the Lab step is offline
   and is called beside `write_lakes`).
 
+## Refresh (1 November 2026, steps 1 and 2 of the plan)
+
+How each part stays current:
+
+| Part | How it is refreshed | Called old after |
+|---|---|---|
+| Satellite pictures, readings and the weekly log (exhibit 1) | `satellite-pilot.yml` commits them each Monday; `write_lab` copies them at every build | 14 days |
+| Overflows and the rivers joining them (exhibit 2) | Made at every site build by `write_lab_paths`, from the build's own network and overflow table (`scripts/lab_pollution_paths.py` `export`) | 2 days |
+| Research records | Copied at every build | never |
+| Wide cover pictures | By hand, `scripts/lab_wide_pictures.py` | 120 days |
+| Catchment workspace | By hand, `scripts/lab_catchment_workspace.py` | 90 days |
+| Analysis of the satellite readings; forecast record | Dated analyses on outcomes already read. A new season brings a new version; the old one is kept | never |
+
+- **`lab/refresh.json`** (`write_lab_refresh`) holds each part's date, taken from the file itself, and how it is
+  refreshed.
+- **"Data as of" line.** Every exhibit shows one under its opening, for the parts it draws on. A part older than its
+  limit is named with its age.
+- **Exhibit 2 at build time.** The build makes it after the pages, about 8 seconds offline, and never stops the site:
+  on a failure the repository's copy stays and its date shows.
+- **Checks.** Run against the cached network and overflows in a scratch root (caches hashed before and after,
+  unchanged), the build-made files match the committed copy: the same 109 spots and settings, and the same lines
+  once order is ignored. The lines are now sorted, so each build writes the same file.
+
 ## Left for later
 
-- **Refreshing the copy (next).** The data is frozen at its export date, which each exhibit shows. Today a refresh
-  means rerunning the export scripts by hand, then rebuilding.
+- **The rest of the refresh plan.**
+  - A local `scripts/refresh_lab.py` that reruns the by-hand exports in a scratch folder and opens a PR, monthly.
+  - After the evaluation windows are read (by 2 December 2026): import the EA's 2026 spill file and move the
+    workspace's outcome date forward.
+  - Each season: new versions of the two analyses.
 - **Percentages elsewhere on the site.** The site's own pages show the model weight as a percentage ("model weight
   98%"): the spot overflow list, the map tooltip, the organisers and record pages. The Lab now shows it as a 0-to-1
   factor. Making the site match is a wording decision for Ethan.
