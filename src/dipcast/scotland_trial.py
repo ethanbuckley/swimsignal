@@ -103,8 +103,12 @@ def overflow_rows(net) -> pd.DataFrame:
     if not path.exists():
         log.warning("Scotland trial: no Scottish Water snapshot (%s), so no Scottish overflows", path.name)
         return pd.DataFrame()
-    snap = pd.read_parquet(path).drop_duplicates("site_id")
-    table, arm = scottish_shadow.overflow_table(net, snap)
+    from dipcast.overflows import apply_joins
+    # England's checked joins apply here too (data/raw/overflow_joins.csv): a Scottish outfall settled there
+    # is placed at its checked point and marked "join", which build_site.unsure_joins then leaves alone.
+    snap = apply_joins(pd.read_parquet(path).drop_duplicates("site_id").reset_index(drop=True))
+    joined = set(snap.loc[snap.get("position_source", pd.Series(dtype=object)).eq("join"), "site_id"]) if len(snap) else set()
+    table, arm = scottish_shadow.overflow_table(net, snap.drop(columns="position_source", errors="ignore"))
     t = table[table["forecast"]].drop(columns=["status", "data_state", "forecast", "abstain", "marine"])
     live = snap.set_index("site_id")
     for c in ("status", "data_state", "latest_event_start", "latest_event_end", "fetched_at", "feed_updated_at"):
@@ -116,7 +120,7 @@ def overflow_rows(net) -> pd.DataFrame:
     t["record_stale"] = False
     t["feed_on_change"] = False
     t["trial"] = TRIAL
-    t["position_source"] = "scottish_water_api"
+    t["position_source"] = np.where(t["site_id"].isin(joined), "join", "scottish_water_api")
     links = net.links.loc[t["link_id"]]
     t["start_node"] = links["start_node"].to_numpy()
     t["end_node"] = links["end_node"].to_numpy()
