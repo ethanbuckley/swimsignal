@@ -697,6 +697,13 @@
    "branch": "docs/noise-audit",
    "branch_exists": true,
    "date": "2026-10-25"
+  },
+  "584": {
+   "n": 584,
+   "state": "open",
+   "branch": "claude/ecoli-estimate-lakes-078fcb",
+   "branch_exists": true,
+   "date": null
   }
  },
  "entries": [
@@ -919,6 +926,31 @@
     }
    ],
    "register_note": "The register gives the lake interval coverage as 64% in one row (from the lake-spread record, 64.4%) and about 65% in another (from this record)."
+  },
+  {
+   "id": "lake-range-hindcast",
+   "title": "A likely E. coli reading and range for lakes",
+   "section": "promising",
+   "project": "LAKE-CONC",
+   "topics": [
+    "e. coli",
+    "lakes",
+    "model"
+   ],
+   "verdict": "All three stated conditions passed on 962 lake samples from 2012-2022 that the model never read: 78.9% of results inside the stated 80% range, a log score above the lake's typical range of +0.033 [+0.011, +0.055], and 79.3% (Windermere) and 77.5% (Frensham) inside at each water body. The weather gain came from three Windermere sites; at Fellfoot and Frensham it added nothing measurable.",
+   "scope": "Five lake bathing waters on two water bodies (Windermere, Frensham), May-September 2012-2022, hindcast exposure from archive rain using today's overflow list. Other lakes are not tested; the over-900 chance is still unjudgeable at lakes (9 results over 900).",
+   "stage": "development",
+   "stage_note": "No model or shown value changed. The over-900 chance stays off lakes.",
+   "next": "A wording proposal for Ethan, a shadow log at lake spots, and the 2027 lake samples as the prospective check.",
+   "records": [
+    {
+     "doc": "docs/LAKE-RANGE-HINDCAST-TEST-2026-11.md",
+     "quote": "| 1. Central 80% range holds 70-90% of results | **78.9%** (10% band below: 11.5%, above: 9.6%) | pass |"
+    }
+   ],
+   "prs": [
+    584
+   ]
   },
   {
    "id": "spill-duration",
