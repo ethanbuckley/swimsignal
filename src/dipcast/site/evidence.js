@@ -149,6 +149,10 @@ function evidenceItems(d, nowMs, generatedAt) {
   if (rain) rows.push(rain);
   const dry = (d.days || []).slice(0, 5).filter(x => evidenceNil(x.rain_48h_mm)).map(x => x.date === evidenceISO(nowMs) ? 'today' : evidenceDayName(x.date));
   if (dry.length) gaps.push(`No rain forecast arrived for ${dry.length > 1 ? dry.slice(0, -1).join(', ') + ' or ' + dry[dry.length - 1] : dry[0]}.`);
+  const sepa = d.source === 'sepa' ? d.sepa || {} : null, sepaSrc = sepa && /^https:\/\//.test(sepa.page || '') ? `<a href="${evidenceEsc(sepa.page)}">SEPA</a>` : 'SEPA';
+  if (sepa && sepa.rating && sepa.rating.value) rows.push({ what: 'SEPA rating', age: String(sepa.rating.year ?? ''),
+    say: `${evidenceCap(evidenceEsc(sepa.rating.value))}.`, src: `${sepaSrc}, from its lab samples over up to four seasons` });
+  if (sepa) gaps.push(`SEPA's lab samples are not in this forecast's data: ${sepaSrc}'s page has them.`);
   if (cl && cl.class) rows.push({ what: 'Environment Agency rating', age: String(cl.year ?? ''),
     say: `${evidenceCap(cl.class)}.`, src: `${ea}, from its lab samples over up to four seasons` });
   else if (cl) gaps.push('No Environment Agency rating yet: this bathing water is too new to have one.');
@@ -163,7 +167,7 @@ function evidenceItems(d, nowMs, generatedAt) {
   else if (designated && s === null) gaps.push('No lab sample here this season.');
   else if (designated) gaps.push(`The latest lab sample is not in this forecast's data${cl && /^https:\/\//.test(cl.url || '') ? `: <a href="${evidenceEsc(cl.url)}">the Environment Agency's page</a> has it` : ''}.`);
   // The facts only: the line under the five days (check, in index.html) already says why.
-  if (!designated) gaps.push('No lab samples, algae checks or rating here.');
+  if (!designated && !sepa) gaps.push('No lab samples, algae checks or rating here.');
   for (const r of rows) if (r.at) r.age = evidenceAge(r.at, nowMs);
   return { rows, gaps };
 }

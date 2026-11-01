@@ -190,7 +190,9 @@ const Record = (() => {
     if (x && !nil(x.rain_48h_mm)) add('Rain forecast', `${Math.round(x.rain_48h_mm)} mm in the 48 hours to midday on ${esc(longDate(iso))}.`, `Read with the forecast, ${at(data.generated_at)}`,
       'Open-Meteo.com, from Met Office forecasts');
     const cl = s.classification, ea = cl && /^https:\/\//.test(cl.url || '') ? `the <a href="${esc(cl.url)}">Environment Agency</a>` : 'the Environment Agency';
-    if (cl && cl.class) add('Environment Agency rating', `${cap(String(cl.class).toLowerCase())}, for ${esc(cl.year)}. ${String(cl.class).toLowerCase() === 'poor' ? R.poorAdvice(iso) : 'From its lab samples over up to four seasons.'}`, '', ea);
+    const sr = (s.sepa || {}).rating, sepaSrc = /^https:\/\//.test((s.sepa || {}).page || '') ? `<a href="${esc(s.sepa.page)}">SEPA</a>` : 'SEPA';
+    if (s.source === 'sepa') add('SEPA rating', sr?.value ? `${esc(sr.value)}, for ${esc(sr.year)}. From its lab samples over up to four seasons.` : 'None in this update.', '', sepaSrc);
+    else if (cl && cl.class) add('Environment Agency rating', `${cap(String(cl.class).toLowerCase())}, for ${esc(cl.year)}. ${String(cl.class).toLowerCase() === 'poor' ? R.poorAdvice(iso) : 'From its lab samples over up to four seasons.'}`, '', ea);
     else if (cl) add('Environment Agency rating', 'None yet: this bathing water is too new to have one.', '', ea);
     else add('Environment Agency rating', 'Not a designated bathing water, so the Environment Agency does not test it for bathing.', '', 'the Environment Agency\'s list of bathing waters');
     if (s.algae && s.algae.date) add('Algae at the last check', `${cap(esc(s.algae.phrase))}.`, when(s.algae.date), 'the Environment Agency\'s sampler, by eye, not a lab test');
@@ -235,7 +237,7 @@ const Record = (() => {
     if (!s) return first + `<p class="notice">${id ? `No spot with the id <b>${esc(id)}</b> is in this forecast: it may have been renamed or removed.` : 'Choose a spot.'}</p>`;
     iso = iso && ISO.test(iso) ? iso : R.today();
     const loc = s.location || {};
-    const meta = [cap(s.kind || 'river'), s.source === 'designated' ? 'Environment Agency designated bathing water' : null, loc.watercourse || null].filter(Boolean).map(esc).join(' · ');
+    const meta = [cap(s.kind || 'river'), s.source === 'designated' ? 'Environment Agency designated bathing water' : s.source === 'sepa' ? 'SEPA designated bathing water' : null, loc.watercourse || null].filter(Boolean).map(esc).join(' · ');
     let h = first + `<h2 class="r-spot">${esc(s.name)}</h2><p class="r-meta">${meta} · <a href="${esc(spotHref(s.id))}">${esc(base)}${esc(spotHref(s.id))}</a></p>`
       + `<p class="r-day">${esc(longDate(iso))}</p>`;
     const w = O.when(s, iso);

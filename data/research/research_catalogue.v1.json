@@ -697,6 +697,13 @@
    "branch": "docs/noise-audit",
    "branch_exists": true,
    "date": "2026-10-25"
+  },
+  "587": {
+   "n": 587,
+   "state": "open",
+   "branch": "research/scotland-gate-a",
+   "branch_exists": true,
+   "date": "2026-11-01"
   }
  },
  "entries": [
@@ -1620,6 +1627,30 @@
     117,
     122,
     228
+   ]
+  },
+  {
+   "id": "scotland-trial",
+   "title": "Scotland trial",
+   "section": "data",
+   "topics": [
+    "nations",
+    "scotland",
+    "calibration"
+   ],
+   "verdict": "Gate A passed on Scottish Water's 2022-25 records. A calibration map fitted on 2022-24 brought the forecast's level from 0.62-0.67 to 0.98-1.03 on 2025 at leads 0 to 3, passing all 12 parts of its rule; exploratory, since 2025 had been seen in aggregate. Live scores (Gate B) have not passed.",
+   "scope": "Three SEPA inland bathing waters (Dores, Loch Morlich, Luss Bay), 1,485 Scottish Water overflows, the production spill model (808da63d) only.",
+   "stage": "development",
+   "stage_note": "Built behind DIPCAST_SCOTLAND_TRIAL, off until the owner switches it on; labelled a trial on every page it reaches.",
+   "next": "A shadow arm with Scotland's map, Gate B after November to January, Scottish river spots, click-anywhere in Scotland, outside review.",
+   "records": [
+    {
+     "doc": "docs/SCOTLAND-TRIAL-2026-11.md",
+     "quote": "Built behind `DIPCAST_SCOTLAND_TRIAL`, off by default."
+    }
+   ],
+   "prs": [
+    587
    ]
   },
   {

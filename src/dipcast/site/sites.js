@@ -22,7 +22,7 @@
 const Sites = (() => {
   const node = typeof module === 'object' && module.exports;
   const R = node ? require('./levels.js')
-    : { ORDER, COVER, NO_FORECAST, NO_OVERFLOWS, NO_RIVER, OTHER_RISKS, setToday, today, rank, risk, level, dayLevel, headParts, dayHeadline, weekNext, daily, walesWords, eaUnchecked };   // levels.js's globals
+    : { ORDER, COVER, NO_FORECAST, NO_OVERFLOWS, NO_RIVER, OTHER_RISKS, setToday, today, rank, risk, level, dayLevel, headParts, dayHeadline, weekNext, daily, walesWords, trialWords, eaUnchecked };   // levels.js's globals
   const Li = node ? require('./lists.js') : { listName, listIds, sitesHash, LINK_SPOTS_MAX };
   const O = node ? require('./organisers.js') : Organisers;
   const P = node ? require('./printed.js') : typeof Printed === 'undefined' ? null : Printed;
@@ -93,7 +93,7 @@ const Sites = (() => {
   // Then what it cannot count or check, short, as under the list's rows: the overflows in Wales, and at a
   // bathing water the EA's advice for today (levels.js, walesWords and eaUnchecked).
   // A reviewed notice on the row (brief) says when it was checked, so "not checked" is left out there.
-  const gaps = (s, onDay = false) => [R.walesWords(s, true), R.eaUnchecked(s) && !brief(s) ?`${onDay ? 'EA advice on the day' : "Today's EA advice"} not checked: see the EA's page` : ''].filter(Boolean).map(w => w + '.').join(' ');
+  const gaps = (s, onDay = false) => [R.walesWords(s, true), R.trialWords(s, true), R.eaUnchecked(s) && !brief(s) ?`${onDay ? 'EA advice on the day' : "Today's EA advice"} not checked: see the EA's page` : ''].filter(Boolean).map(w => w + '.').join(' ');
   function words(s) {
     const lv = R.level(s), [head, why] = R.headParts(s), g = gaps(s);
     if (R.COVER[lv]) return { head, tone: tone(lv), why: [lv === R.NO_OVERFLOWS || lv === R.NO_RIVER ? R.OTHER_RISKS : '', g].filter(Boolean).join(' ') };
@@ -119,7 +119,7 @@ const Sites = (() => {
   }
   function row(s) {
     const w = DAY ? dayWords(s, DAY) : words(s), loc = s.location || {};
-    const meta = [cap(s.kind || 'river'), s.source === 'designated' ? 'bathing water' : null, loc.watercourse || null].filter(Boolean).map(esc).join(' · ');
+    const meta = [cap(s.kind || 'river'), s.source === 'designated' || s.source === 'sepa' ? 'bathing water' : null, loc.watercourse || null].filter(Boolean).map(esc).join(' · ');
     const days = DAY ? [DAY] : (s.days || []).slice(0, 2).map(x => x.date), t = R.today();
     const rec = days.length ? days.map(iso => `<a href="${esc(recordHref(s.id, iso))}">${DAY ? dated(iso) : iso === t ? 'today' : 'tomorrow'}</a>`).join(' · ')
       : `<a href="${esc(recordHref(s.id, t))}">today</a>`;

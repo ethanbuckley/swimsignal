@@ -320,6 +320,16 @@ function walesWords(s, short = false) {
   if (short) return `Overflows in Wales not counted (${walesPct(s)}% of the river above)`;
   return `Overflows in Wales are not counted: about ${walesPct(s)}% of the river within ${((s.assumptions || {}).max_upstream_km) ?? 60} km above this ${s.unlisted ? 'point' : 'spot'} is in Wales.`;   // a clicked point too (anypoint.js)
 }
+// The Scotland trial (scotland_trial.py): Scottish Water's overflows are forecast by the English spill model with
+// Scotland's own calibration map. It beat each overflow's own history on Scottish Water's 2022-25 records, and the map
+// was checked on 2025 (docs/SCOTLAND-HINDCAST-2026-11.md); live scores have not yet confirmed it and no outside review
+// has taken place. Said wherever walesWords is, beside it.
+const trialShare = s => (s || {}).trial === 'scotland';
+function trialWords(s, short = false) {
+  if (!trialShare(s)) return '';
+  if (short) return 'Scotland: trial forecast';
+  return "Scotland trial: Scottish Water's overflows, checked against their 2022 to 2025 records and calibrated for Scotland. Not yet confirmed on live data.";
+}
 // What the E. coli estimate is, said wherever it shows on a spot's page (all year, labelled with what
 // is true today). check is spots.json's ecoli_check (build_site.ecoli_check): its record on live
 // samples, read from the scores in each build, and the test on Welsh river samples
@@ -664,7 +674,7 @@ function weekendWords(spots, dates, yours = false) {
 // Overflow names that arrive in capitals ("LITTLE SALKELD WwTW") in normal case: words of four or more
 // capitals, and of three in a name all in capitals ("BEN RHYDDING/STW" is "Ben Rhydding/STW", not "BEN
 // Rhydding/STW"). Codes (KEEP_CAPS) and a reference that runs into a number ("DER096") stay as written.
-const KEEP_CAPS = new Set(('STW WTW WRC WRW SPS SPST TPS IPS SWPS PS SP PSCSOEO PSCSO CEO SSO SSTO CSO CSOEO SO OV EO FEEO '
+const KEEP_CAPS = new Set(('STW WTW WRC WRW SPS SPST TPS IPS SWPS PS SP PSCSOEO PSCSO CEO SSO SSTO SSSO CSO CSOEO SO OV EO FEEO '
   + 'DWF XDWF FFT OOS NWL ESO EMO SWO HLR SCC SDC ICI RAF IOW').split(' '));
 const nameCase = s => {
   const t = String(s ?? ''), shouty = !/[a-z]/.test(t.replace(/\b(?:WwTW|Wwtw|STWs|CSOs)\b/g, ''));
@@ -699,7 +709,7 @@ const plainName = (() => {
       'stw|(?:sewage |waste ?water |water )?treatment works|sewage (?:disposal )?works|water recycling centre'],
     ['pumping station overflow', 'SPS|SPST|TPS|IPS|SWPS|PS|SP|P\\.STN|PSCSOEO|PSCSO|CEO',
       '(?:sewage |terminal |storm water |surface water )?pumping station'],
-    ['storm sewage overflow', 'SSO|SSTO', 'storm sew(?:age|er) overflow'],
+    ['storm sewage overflow', 'SSO|SSTO|SSSO', 'storm sew(?:age|er) overflow'],   // SSSO: Scottish Water's settled storm sewage overflow
     ['storm overflow', 'CSO|CSOs|CSOEO|SO|OV', 'combined sew(?:er|age) overflow|storm overflow'],
     ['emergency overflow', 'EO|FEEO', 'emergency overflow'],
     ['overflow', 'OVERFLOW', 'overflow'],
@@ -829,7 +839,7 @@ const LONG_SPILL = 'A spill this long is unusual and may be a monitor fault. It 
 if (typeof module === 'object' && module.exports) {
   module.exports = { nameCase, plainName, overflowNames, ORDER, NOT_COVERED, NO_FORECAST, NO_OVERFLOWS, NO_RIVER, OTHER_RISKS, SPILL_CUTS, ECOLI_CUTS, spillLevel, shownRisk, tooFar, allUpstream, tooFarSaid, WEIGHT_SAID, setToday, today, dayWord, readerDay, fromDay, rank, risk, nowUnknown, nowUnknownWhy, nowWatched, NOW_WATCHED_SHARE, LIVE_NONE, liveCover, liveHead, liveLine, liveParts, MODELLED_FROM, level, dayLevel, headParts, headline, levelScope, nowBecause, dayBecause, dayHeadline, tileLine, weekNext, laterWords, coverage, COVER, FOUND_NONE, ISOLATED_WHY, plainLevel, inBathingSeason, poorReason, poorAdvice, daily, ecoliBand, ecoliLevel, ecoliUntested, bestDay, weekendWords, yoursLevelled, lowAnswerDay, lowAnswerWords, mostWords, clockWords, clearWords, RAIN_OLD_H, rainAgeLine, backToLow,
     ACTION, POOR_ACTION, ALGAE_ACTION, PLAIN_ACTION, actionFor, levelAction, dayAction, HEAD_SCOPE, spillSet, worstNear,
-    SAMPLE_LINE, SAMPLE_DAYS, sampleLevel, standingLevel, eaUnchecked, EA_UNCHECKED, walesShare, walesWords, ecoliNotes,
+    SAMPLE_LINE, SAMPLE_DAYS, sampleLevel, standingLevel, eaUnchecked, EA_UNCHECKED, walesShare, walesWords, trialWords, ecoliNotes,
     ECOLI_OFF, ECOLI_EXPERIMENTAL, ECOLI_FOLD, ECOLI_OFF_SAID,
     companyName, atSpot, overflowWhere, travelSaid, SPILL_LONG_H, spillStart, longSpill, LONG_SPILL, isolated };
 }
