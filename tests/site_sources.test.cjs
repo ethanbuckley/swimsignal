@@ -190,7 +190,10 @@ test('an overflow in the same lake is across it, a spill under way says since wh
 
 test('the page draws the tile before the overflows and fills it again for a picked day', () => {
   const at = s => { const i = html.indexOf(s); assert.ok(i >= 0, s); return i; };
-  assert.ok(at('h += `<div id="sources-host">${whereFrom(d)}</div>`;') < at('if (d.contributors.length) h += overflowTile(d, allUpstream(d));'));
+  // the phone's stack writes the host before the overflows; a desktop's forecast section holds it, the evidence the list
+  assert.ok(at('h += `<div id="sources-host">${whereFrom(d)}</div>`;') < at('h += ovs + replay + plume;'));
+  assert.ok(at("sources: `<div id=\"sources-host\">${whereFrom(d)}</div>`") > 0);
+  assert.ok(at("h += two('r-forecast', o.lead, (o.map || '') + (o.sources || ''));") < at("ev = (o.more || '') + (o.ovs || '')"));
   assert.ok(at("if (src) src.innerHTML = whereFrom(d);") > at('function showDay(d, iso) {'));
   assert.ok(at('#sources-host:empty { display:none; }') > 0);
   assert.ok(at('function whereFrom(d) {') < at('function overflowTile(d, total) {'));

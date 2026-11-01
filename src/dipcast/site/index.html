@@ -543,7 +543,7 @@
   .routes small { display:block; font:600 var(--fs-meta)/1.3 var(--font-mono); color:var(--muted); }
   .routes b { display:block; margin:1px 0 2px; font:600 var(--fs-body)/1.3 var(--font-display); color:var(--link); }
   .routes a:hover b { text-decoration:underline; text-decoration-thickness:1px; text-underline-offset:2px; }
-  .lab-invite { margin-top:24px; }
+  .lab-invite { margin-top:28px; padding-top:10px; border-top:1px solid var(--ink); }   /* a section in the Lab's manner: an ink rule over its name */
   .lab-invite .routes { grid-template-columns:repeat(2, minmax(0, 1fr)); gap:0 20px; }
   @media (max-width:540px) { .lab-invite .routes { grid-template-columns:minmax(0, 1fr); } }
   .lab-invite h2 { margin:0; font:600 var(--fs-head)/1.25 var(--font-display); }
@@ -1080,17 +1080,30 @@
        With a scrollbar that takes room (Windows; a Mac set to show them) 100cqw still counts it, and
        the sky hangs 8 px past the edge at 1,440 px: clipped, so there is nothing to scroll to sideways. */
     body.view-spot #panel { border-left:0; padding:24px 32px 48px; container-type:inline-size; overflow-x:hidden; }
-    body.view-spot #result { max-width:1180px; margin:0 auto; }
-    body.view-spot .answer { margin-bottom:48px; }   /* the list's band: the first tiles start on the fells */
+    body.view-spot #result { max-width:1320px; margin:0 auto; }
+    body.view-spot #panel > :is(.about-line, .about, footer.fine) { max-width:1320px; }   /* the foot on the sections' edges */   /* 1,180 px until 1 Nov 2026: wider for the sections below, prose capped inside them */
+    body.view-spot .answer { margin-bottom:32px; }   /* the first tiles start on the fells; the picture no longer takes the first screen */
     body.view-spot .answer::before { left:calc((100% - 100cqw) / 2 - 32px); right:calc((100% - 100cqw) / 2 - 32px);
       background-image:url(icons/fells-wide.webp); background-size:max(100%, 1500px) 600px; }
-    /* The right column spans both rows; the second row is the flexible one, so a taller right column
-       leaves its space at the foot of the left one, not between the five days and the detail. */
-    body.view-spot .stack { display:grid; grid-template-columns:minmax(0, 5fr) minmax(0, 7fr); grid-template-rows:auto 1fr;
-      grid-template-areas:"go why" "more why"; gap:8px 24px; align-items:start; }
-    body.view-spot .col-go, body.view-spot .col-why, body.view-spot .col-more { display:flex; flex-direction:column; gap:8px; min-width:0; }
-    body.view-spot .col-go { grid-area:go; } body.view-spot .col-why { grid-area:why; } body.view-spot .col-more { grid-area:more; }
-    body.view-spot .col-why > .spot-map-tile { order:-1; }   /* the map first, beside the five days */
+    /* The spot page's sections (deskSections; docs/DESIGN.md, "The spot page on a desktop"): one after another down
+       the page, each across its width, so no column runs on alone. Here each is one column; from 1,000 px the
+       sections with two halves set them side by side (below). */
+    .stack.desk { display:flex; flex-direction:column; gap:28px; }
+    .stack.desk .row, .stack.desk .col-a, .stack.desk .col-b { display:flex; flex-direction:column; gap:8px; min-width:0; }
+    .stack.desk .row.r-forecast, .stack.desk .row.r-today { gap:8px; }
+    .stack.desk .sec-h { margin:0; font:600 var(--fs-head)/1.25 var(--font-display); }
+    .stack.desk .sec-sub { margin:2px 0 4px; color:var(--muted); font-size:var(--fs-note); max-width:68ch; }
+    .stack.desk .r-cond .cond { grid-template-columns:repeat(2, minmax(0, 1fr)); }
+    /* Evidence, and the water and nearby: one paper surface each, with its tiles as sections inside it between
+       hairlines, in place of a column of separate white boxes. Long paragraphs keep a readable measure. */
+    .stack.desk :is(.r-evidence, .r-visit) { padding:18px 24px 20px; border-radius:var(--radius); background:var(--card); }
+    .stack.desk :is(.r-evidence, .r-visit) .tile { padding:12px 0 14px; border-radius:0; background:none; border-top:1px solid var(--line);
+      -webkit-backdrop-filter:none; backdrop-filter:none; }
+    .stack.desk :is(.r-evidence, .r-visit) :is(.col-a, .col-b) { gap:0; }
+    .stack.desk :is(.r-evidence, .r-visit) :is(p, li, dd) { max-width:68ch; }
+    .stack.desk .r-visit > .wide { grid-column:1 / -1; display:flex; flex-direction:column; min-width:0; }
+    .stack.desk .r-visit .wide:empty { display:none; }
+    .stack.desk .r-lab .routes { grid-template-columns:repeat(auto-fit, minmax(230px, 1fr)); gap:0 24px; }
     body.view-spot #spot-map { height:400px; }
     body.view-spot #spot-map .map-say { display:none; }   /* "Click any river or lake" is the full map's line; here it covered the tile's corner */
   }
@@ -1113,7 +1126,7 @@
     #app { grid-template-columns:minmax(0, 1fr); }
     #app > #map-wrap { display:none; }   /* between views, and on a page with no map tile (a point loading) */
     #panel { border-left:0; padding:24px 32px 48px; container-type:inline-size; overflow-x:hidden; }
-    #result, #panel > .about-line, #panel > .about, #panel > footer.fine { max-width:1180px; margin-left:auto; margin-right:auto; }
+    #result, #panel > .about-line, #panel > .about, #panel > footer.fine { max-width:1320px; margin-left:auto; margin-right:auto; }   /* 1,180 px until 1 Nov 2026; the spot page's width */
     .about > * { max-width:720px; }   /* a prose column, as the prose pages' */
     /* The opening on the tiles' left edge, not centred over them (29 October 2026): a centred block over
        left-aligned columns gave a wide screen four left edges. Phones keep the centred answer. */
@@ -1144,12 +1157,27 @@
   /* A desktop too narrow for two readable columns: the spot's page is one, 720 px wide. The list, Saved
      and Plan a swim keep the map column: as one 720 px column the map came between the opening and the
      first spot (docs/DESIGN.md). */
-  @media (min-width: 801px) and (max-width: 1099px) {
+  @media (min-width: 801px) and (max-width: 999px) {
     body.view-spot #result { max-width:720px; }
-    body.view-spot .stack { grid-template-columns:minmax(0, 1fr); grid-template-rows:none; grid-template-areas:none; }
-    body.view-spot .col-go, body.view-spot .col-why, body.view-spot .col-more { display:contents; }
-    body.view-spot .col-why > .spot-map-tile { order:0; }
     body.view-spot #spot-map { height:320px; }
+  }
+  /* From 1,000 px a section's two halves sit side by side: the five days beside the Upstream map (5 to 7), the open
+     day's forecast beside the readings, the evidence beside the spill map and the water beside the nearby spots
+     (7 to 5), and the four conditions in one row. A section with one half (.one) keeps the width. */
+  @media (min-width: 1000px) {
+    .stack.desk .row:not(.one) { display:grid; gap:8px 24px; align-items:start; }
+    .stack.desk .r-forecast:not(.one) { grid-template-columns:minmax(0, 5fr) minmax(0, 7fr); }
+    .stack.desk :is(.r-today, .r-evidence, .r-visit):not(.one) { grid-template-columns:minmax(0, 7fr) minmax(0, 5fr); column-gap:32px; }
+    .stack.desk .row > :is(.sec-h, .sec-sub) { grid-column:1 / -1; }
+    .stack.desk .row:has(> .col-b:empty) { grid-template-columns:minmax(0, 1fr); }   /* a spill map with no file removes its host: the evidence takes the width */
+    /* The practical guide across the section in two columns of its sections and pictures, each kept whole. */
+    .stack.desk .r-visit #guide.g-tile { column-count:2; column-gap:40px; }
+    .stack.desk .r-visit #guide.g-tile > :is(h2, .t-say:first-of-type) { column-span:all; }
+    .stack.desk .r-visit #guide.g-tile :is(.g-row, figure, .g-gap, p) { break-inside:avoid; }
+    .stack.desk .r-visit #guide.g-tile :is(h3, h4, dt) { break-after:avoid; }
+    .stack.desk .r-cond .cond { grid-template-columns:repeat(4, minmax(0, 1fr)); }
+    .stack.desk .r-cond .cond:has(> .cell:nth-child(4):last-child) { grid-template-columns:repeat(3, minmax(0, 1fr)); }   /* three readings: the h2 is the first child */
+    .stack.desk .r-cond .cond:has(> .cell:nth-child(3):last-child) { grid-template-columns:repeat(2, minmax(0, 1fr)); }
   }
   /* Phones: the list first, the map one tap away; a spot's page carries its own small map. */
   @media (max-width: 800px) {
@@ -5162,6 +5190,51 @@ function conditionsSummary(d) {
   const air = wx && !nil(wx.tmax) ? cell('Air today', `${wx.tmax}°`, `High${wx.sunrise && wx.sunset ? ` · light ${esc(wx.sunrise)} to ${esc(wx.sunset)}` : ''}`) : '';
   return `<section class="cond" aria-labelledby="conditions-h"><h2 class="sr" id="conditions-h">Conditions at the spot</h2>${water}${level}${rain}${air}</section>`;
 }
+// The Upstream map, a figure in the Research Lab's manner. With no overflow upstream there is no Upstream map, and a
+// desktop's spot page has no map column: the map goes in a tile of its own, so the spot (or a clicked point) is still
+// shown on it. A phone has its small map of where it is (where, .loc) already.
+function upstreamTile(d, total) {
+  if (!total) return `<div class="tile spot-map-tile desk-only"><h2 class="t-lab">${ICON.map}<span>Where it is</span></h2><div id="spot-map"></div></div>`;
+  return `<div class="tile spot-map-tile"><h2 class="t-lab">${ICON.map}<span>Upstream</span></h2><div class="plate"><div id="spot-map"></div></div>`
+    + `<p class="t-say"><b class="fig-no">Upstream of ${esc(d.name)}.</b> The spot, ringed, and the overflows that matter most: a bigger circle means a larger model weight here.${PAGE_ID.test(d.id) ? ` <a href="lab/pollution/#spot=${encodeURIComponent(d.id)}">The rivers joining each one, in the Research Lab</a>.` : ''}</p>`
+    + `<p class="t-key"><span class="dot sm" style="background:${colourFor(1)}"></span>discharging<span class="dot sm" style="background:${colourFor(0)}"></span>not discharging<span class="dot sm" style="background:${colourFor(-1)}"></span>no current reading</p>`
+    + `<p class="t-key trkey" hidden><span class="trline"></span>the water that reaches this spot</p></div>`;   // drawTrace shows it
+}
+// A desktop's spot page (docs/DESIGN.md, "The spot page on a desktop", 1 November 2026): sections that each take the
+// page's width, in the order a swimmer reads them, so no column runs on alone below another. Until then the page was
+// two independent columns, and the left (the detail, the history, the spill map) ran 3,000 px past the right on a
+// 1,440 px screen. Each section's halves are about the same height or the shorter one is the section's own end.
+//   1. forecast: the five days | the Upstream map, where the risk comes from and what the level cannot see
+//   2. conditions: water, level, rain and air in one row of four
+//   3. the open day: its forecast | the latest readings, measured (one row when there are none)
+//   4. evidence and history: the folds, the overflows and the numbers | the spill map, a model estimate
+//   5. at the water and nearby: the rating, lab results, the guide, then the notes and reviews | nearby spots
+//   6. the Research Lab's exhibits on this spot
+// The mount points (#sources-host, #nearby-host, #plume-host, #replay-host, #since-last-host, #evmap-host, #scores-host)
+// and the tiles' ids are the phone's, so every later fill and showDay find them as before.
+function deskSections(d, o) {
+  const two = (cls, a, b, head = '') => b ? `<div class="row ${cls}">${head}<div class="col-a">${a}</div><div class="col-b">${b}</div></div>` : `<div class="row ${cls} one">${head}${a}</div>`;
+  const h2 = (id, t, sub = '') => `<h2 class="sec-h" id="${id}">${t}</h2>${sub ? `<p class="sec-sub">${sub}</p>` : ''}`;
+  let h = '<div class="stack desk">';
+  h += two('r-forecast', o.lead, (o.map || '') + (o.sources || ''));
+  h += `<div class="row r-cond">${o.cond}</div>`;
+  h += two('r-today', o.today, o.now || '');
+  // The spill map beside the evidence where overflows are upstream; with none, its tile is short of anything to draw
+  // and much shorter than its frame, so it follows the evidence across the width instead of standing beside it.
+  const side = o.plume && o.plumeBeside, ev = (o.more || '') + (o.ovs || '') + (o.replay || '') + (o.table || '') + (o.plume && !side ? o.plume : '');
+  if (ev || side) h += `<section class="row r-evidence${side ? '' : ' one'}" aria-labelledby="evidence-h">${h2('evidence-h', 'Evidence and history', 'Measurements, records and model estimates behind this forecast, each named as what it is.')}`
+    + `<div class="col-a">${ev}</div>${side ? `<div class="col-b">${o.plume}</div>` : ''}</section>`;
+  // The rating and any lab results beside the nearby spots, both short; then the practical guide across the width,
+  // its sections in two columns, and the notes and reviews that mount after it (reviews.js, visits.js).
+  // With no rating or lab results, the nearby spots pair with the guide when it is the short "Know this spot?" tile.
+  const near = o.nearby && !/<div id="nearby-host"><\/div>/.test(o.nearby), short = o.guide && !/class="tile g-tile"/.test(o.guide);
+  const top = o.waterTop || (near && short ? o.guide : ''), wide = top === o.guide ? '' : o.guide || '';
+  h += `<section class="row r-visit${top && near ? '' : ' one'}" aria-labelledby="visit-h">${h2('visit-h', 'At the water' + (near ? ' and nearby' : ''))}`
+    + (top && near ? `<div class="col-a">${top}</div><div class="col-b">${o.nearby}</div>` : top + (o.nearby || ''))
+    + `<div class="wide">${wide}</div></section>`;
+  if (o.lab) h += `<div class="row r-lab">${o.lab}</div>`;
+  return h + (o.where || '') + '</div>';
+}
 // "Explore the evidence": the Research Lab's exhibits that hold this spot's own record, each opened on it (build_site.
 // attach_lab_links gives the keys; exhibit 2 holds every spot with an overflow upstream). After the forecast and the
 // detail, never above them. A spot no exhibit holds is told so, with the way to the rest: nothing stands in for it.
@@ -5195,9 +5268,9 @@ function render(d) {
   // like at the water, and why. At the water: the EA's rating with today's advice at its foot, since an
   // advice sentence stays in view, then the practical guide (guide.js), after which the notes on a visit
   // and the reviews mount. Why: the forecast's tiles, then what the level rests on (evidence.js).
-  const fx = facts(d), atWater = fx.filter(o => o.icon === ICON.rating).map(tile).join('')
-    + (typeof measuredTile === 'function' ? measuredTile(d, Date.now()) : '')   // lab results an organisation sent (measured.js): not part of the level
-    + (typeof guideTile === 'function' ? guideTile(d, serverToday) : '');
+  const fx = facts(d), waterTop = fx.filter(o => o.icon === ICON.rating).map(tile).join('')
+    + (typeof measuredTile === 'function' ? measuredTile(d, Date.now()) : '');   // lab results an organisation sent (measured.js): not part of the level
+  const guide = typeof guideTile === 'function' ? guideTile(d, serverToday) : '', atWater = waterTop + guide;
   const tiles = dayTiles(d, DAY) + nowTiles(d) + lakeTempHost(d) + localSamplesHost(d);   // the open day's forecast, then the readings, then a lake's past temperatures and local samples
   // The folded detail after the tiles. On a desktop it goes under the first column (col-more), which
   // is otherwise the shorter; on a phone it follows the tiles.
@@ -5208,8 +5281,13 @@ function render(d) {
   if (d.error) {
     DAY = null;   // no days here: a day link opens the spot, and the address loses the day
     if (dayFromURL()) history.replaceState(history.state, '', location.pathname + location.search);
-    h += `<div class="stack"><div class="col-go"><div class="tile">${factors(d)}${check(d)}</div>${unknownTile(d)}${conditionsSummary(d)}${where}${atWater}</div><div class="col-why">${tiles}</div><div class="col-more">${more}`
-      + `<div class="tile spot-map-tile"><h2 class="t-lab">${ICON.map}<span>Where it is</span></h2><div id="spot-map"></div></div></div></div>` + actions(d);
+    const here = `<div class="tile spot-map-tile"><h2 class="t-lab">${ICON.map}<span>Where it is</span></h2><div id="spot-map"></div></div>`;
+    h += PHONE.matches
+      ? `<div class="stack"><div class="col-go"><div class="tile">${factors(d)}${check(d)}</div>${unknownTile(d)}${conditionsSummary(d)}${where}${atWater}</div><div class="col-why">${tiles}</div><div class="col-more">${more}`
+        + `${here}</div></div>`
+      : deskSections(d, { lead: `<div class="tile">${factors(d)}${check(d)}</div>${unknownTile(d)}`, map: here, cond: conditionsSummary(d),
+          today: tiles, more, waterTop, guide, where });
+    h += actions(d);
     setPanel(h); bindBack(); bindSave(d); planHere(d); bindShare(d); bindShareImage(d); bindSwim(d); placeMap(); miniMap(d); reviewsFor(d);
     if (ARRIVE) mountArrival(d); return;
   }
@@ -5219,23 +5297,27 @@ function render(d) {
   // Since the last update (since.js, mountLast; ?why=1 only): under the five days it compares (and what is not known there),
   // once the previous issue's file is in.
   const lastOn = !DAY && typeof mountLast === 'function' && typeof sinceWhyOn === 'function' && sinceWhyOn();
+  const mapTile = upstreamTile(d, total), extras = (lastOn ? '<div id="since-last-host"></div>' : '') + (EV_MAP && d.detail_file ? '<div id="evmap-host"></div>' : '');
+  const ovs = d.contributors.length ? overflowTile(d, allUpstream(d)) : '', replay = REPLAY && d.detail_file ? '<div id="replay-host"></div>' : '',
+    plume = d.detail_file && loc.mode !== 'lake' ? '<div id="plume-host"></div>' : '', table = dayTable(d, total, loc.mode === 'lake', d.ecoli_scope || {});
+  // A desktop: sections across the page's width in place of two columns (deskSections). A phone: the one stack,
+  // in the order below, which phoneFolds then sets.
+  // What the level cannot see goes under the map, so the five days and the map end near each other; with no
+  // readings, the lake's and local samples' links follow the day's forecast rather than hold an empty half.
+  const nowT = nowTiles(d), hosts = lakeTempHost(d) + localSamplesHost(d);
+  if (!PHONE.matches) h += deskSections(d, { lead: daysTile(d) + extras, map: mapTile, sources: `<div id="sources-host">${whereFrom(d)}</div>` + unknownTile(d),
+    cond: conditionsSummary(d), today: dayTiles(d, DAY) + (nowT ? '' : hosts), now: nowT ? nowT + hosts : '', more, ovs, replay, plume, plumeBeside: total > 0, table,
+    waterTop, guide, nearby: `<div id="nearby-host">${nearby(d)}</div>`, lab: labTile(d), where });
+  else {
   h += `<div class="stack"><div class="col-go">${daysTile(d)}${conditionsSummary(d)}${unknownTile(d)}${lastOn ? '<div id="since-last-host"></div>' : ''}${EV_MAP && d.detail_file ? '<div id="evmap-host"></div>' : ''}${where}`   // ?evidence=1 only (mountEvMap)
     + `<div id="nearby-host">${nearby(d)}</div>${atWater}</div><div class="col-why">`;   // Nearby after the answer, before the detail; showDay keeps it to the day
   // Why: where the risk comes from in words (showDay keeps it to the day), the map of it, then the tiles.
   h += `<div id="sources-host">${whereFrom(d)}</div>`;
-  if (total) h += `<div class="tile spot-map-tile"><h2 class="t-lab">${ICON.map}<span>Upstream</span></h2><div class="plate"><div id="spot-map"></div></div>`
-    + `<p class="t-say"><b class="fig-no">Upstream of ${esc(d.name)}.</b> The spot, ringed, and the overflows that matter most: a bigger circle means a larger model weight here.${PAGE_ID.test(d.id) ? ` <a href="lab/pollution/#spot=${encodeURIComponent(d.id)}">The rivers joining each one, in the Research Lab</a>.` : ''}</p>`
-    + `<p class="t-key"><span class="dot sm" style="background:${colourFor(1)}"></span>discharging<span class="dot sm" style="background:${colourFor(0)}"></span>not discharging<span class="dot sm" style="background:${colourFor(-1)}"></span>no current reading</p>`
-    + `<p class="t-key trkey" hidden><span class="trline"></span>the water that reaches this spot</p></div>`;   // drawTrace shows it
-  // With no overflow upstream there is no Upstream map, and a desktop's spot page has no map column:
-  // the map goes in a tile of its own, so the spot (or a clicked point) is still shown on it. A phone has its
-  // small map of where it is (where, .loc) already.
-  else h += `<div class="tile spot-map-tile desk-only"><h2 class="t-lab">${ICON.map}<span>Where it is</span></h2><div id="spot-map"></div></div>`;
+  h += mapTile;
   h += tiles + `</div><div class="col-more">${more}${labTile(d)}`;
-  if (d.contributors.length) h += overflowTile(d, allUpstream(d));   // the list has any too far away to count (levels.js)
-  if (REPLAY && d.detail_file) h += '<div id="replay-host"></div>';   // ?replay=1 only (mountReplay)
-  if (d.detail_file && loc.mode !== 'lake') h += '<div id="plume-host"></div>';   // the spill map, drawn when near the screen (mountPlume)
-  h += dayTable(d, total, loc.mode === 'lake', d.ecoli_scope || {}) + '</div></div>';
+  h += ovs + replay + plume;   // the list has any too far away to count (levels.js); ?replay=1 only (mountReplay); the spill map, drawn when near the screen (mountPlume)
+  h += table + '</div></div>';
+  }
   h += actions(d) + tech(d);
   setPanel(h); bindBack(); bindSave(d); planHere(d); bindShare(d); bindShareImage(d); bindSwim(d); bindNearby(); bindDays(d); miniMap(d); reviewsFor(d); lakeTempFor(d); localSamplesFor(d);
   const moreBtn = document.getElementById('more-contrib');
@@ -5247,6 +5329,8 @@ function render(d) {
   if (lastOn) mountLast(d, DATA.generated_at, document.getElementById('since-last-host'));
   if (EV_MAP) mountEvMap(d);
   phoneFolds();
+  // A desktop: past spills by month, a chart, open beside the spill map, as on a phone (PHONE_OPEN).
+  if (!PHONE.matches) { const e = document.querySelector('.stack.desk #seasonal'); if (e && !e.dataset.deskOpened) { e.open = true; e.dataset.deskOpened = '1'; } }
   if (ARRIVE) mountArrival(d);   // ?arrive=1 only, after the folds, so its tile stays where the guide's was
 }
 // On a phone a spot's page is one column in the order of a swimmer's questions, every section open: the answer, the

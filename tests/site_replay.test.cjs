@@ -132,7 +132,7 @@ test('the page is unchanged without ?replay=1: no script tag, a host only behind
   const page = fs.readFileSync(path.join(__dirname, '..', 'src', 'dipcast', 'site', 'index.html'), 'utf8');
   assert.doesNotMatch(page, /<script src="replay\.js/);
   assert.match(page, /const REPLAY = new URLSearchParams\(location\.search\)\.get\('replay'\) === '1';/);
-  assert.match(page, /if \(REPLAY && d\.detail_file\) h \+= '<div id="replay-host"><\/div>';/);
+  assert.match(page, /replay = REPLAY && d\.detail_file \? '<div id="replay-host"><\/div>' : ''/);   // a phone's stack or a desktop's evidence section
   assert.match(page, /if \(REPLAY\) mountReplay\(d\);/);
   assert.match(page, /document\.querySelector\('script\[src\*="levels\.js\?v="\]'\)/, 'at the build stamp, read off levels.js');
   assert.match(page, /s\.src = `replay\.js\$\{v \? `\?v=\$\{new URL\(v\)\.searchParams\.get\('v'\)\}` : ''\}`;/);
