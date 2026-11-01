@@ -86,9 +86,12 @@ Checked at 1440 × 900 and 375 × 812 in headless Chrome and the app's browser: 
 errors, layer toggles, compare, stepper, year rows, chart dots by mouse and keyboard, and deep links. Not checked:
 Safari, a real phone, screen readers.
 
-**Decision before any publication:** the observation contract's release checklist (item 7) bans algae wording on the
-lakes page. This exhibit asks the algae question in its title. Publishing it means either rewording to chlorophyll or
-treating a Research Lab exhibit as a different kind of page from the observation viewer. That is Ethan's call.
+**Wording scope, decided by Ethan on 1 November 2026:** a Research Lab exhibit is a different kind of page from the
+observation viewer. It may ask a research question about algae, as this one does in its title. The observation
+contract's release checklist (item 7: no algae, toxin, safety or swimming wording) still applies in full to
+`/lakes.html` and to the observation files. On a Lab page the question may name algae, but no reading, figure or
+caption may claim to detect, measure or rule out algae or toxins, and the page must say plainly that the index is not
+a harmful-algae test and not swimming advice (section 5 of the exhibit does).
 
 ## Readout
 
