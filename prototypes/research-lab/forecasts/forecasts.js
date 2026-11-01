@@ -1,4 +1,4 @@
-// How good are the forecasts? Research Lab exhibit 3 (prototype). Reads the committed files as they are:
+// How good are the forecasts? Research Lab exhibit 3. Reads the committed files as they are:
 //   data/research/ecoli_evidence.v1.json   EA samples beside hindsight estimates (docs/ECOLI-EVIDENCE-CONTRACT-v1.md)
 //   exploration.json                       scripts/forecast_record_explore.py (outcomes to 30 Sep 2026 only)
 // A hindsight estimate is never called the forecast the site issued. Misses and false alarms are shown as plainly as

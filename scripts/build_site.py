@@ -645,7 +645,10 @@ SPOT_FILES = [ROOT / "spots.csv", ROOT / "spots-osm.csv"]
 def load_spots(files: list[Path] | None = None) -> pd.DataFrame:
     """Every spot from spots.csv and spots-osm.csv; a file that is not there adds none. A row whose
     id an earlier row already has is left out with a warning, so two spots never share a page."""
-    frames = [pd.read_csv(p) for p in (files or SPOT_FILES) if p.exists()]
+    from dipcast import scotland_trial
+    if files is None:   # the Scotland trial's spots only while it is on (scotland_trial.py)
+        files = SPOT_FILES + ([ROOT / scotland_trial.SPOTS_FILE] if scotland_trial.enabled() else [])
+    frames = [pd.read_csv(p) for p in files if p.exists()]
     spots = pd.concat(frames, ignore_index=True).fillna("")
     dup = spots["id"].duplicated()
     for i in spots.loc[dup, "id"]:
@@ -1063,9 +1066,32 @@ CREDIT_SOURCES = [
 ]
 
 
+# The Scotland trial's source (scotland_trial.py), credited only while the trial is on. The live feed names no
+# licence; Scottish Water's page says "an open license for reuse".
+SCOTLAND_CREDIT = {"use": "always", "credit": "Contains Scottish Water data: overflow event history (OGL v3.0) and live "
+                   "overflow status from Scottish Water's near-real-time API", "licence": "OGL v3.0; live status under "
+                   "Scottish Water's stated open licence", "changed": "SwimSignal matched and modelled them (Scotland trial)."}
+
+
+FOOTER_COMPANIES = "and Yorkshire Water via the National Storm Overflow Hub"
+
+
+def with_scotland_credit(html: str) -> str:
+    """The page's footer credit with Scottish Water's data added while the Scotland trial is on."""
+    from dipcast import scotland_trial
+    if not scotland_trial.enabled():
+        return html
+    if html.count(FOOTER_COMPANIES) != 1:
+        raise ValueError(f"index.html's footer has lost {FOOTER_COMPANIES!r}, where the Scotland trial's credit goes")
+    return html.replace(FOOTER_COMPANIES, FOOTER_COMPANIES + ", and Scottish Water's overflow status and event history "
+                        "(OGL v3.0 and Scottish Water's stated open licence; Scotland trial)")
+
+
 def data_credits(root: str) -> dict:
+    from dipcast import scotland_trial
+    trial = scotland_trial.enabled()
     return {
-        "attribution": (
+        "attribution": ((SCOTLAND_CREDIT["credit"] + ". " if trial else "") + 
             "Storm overflow status from Anglian Water Services, Northumbrian Water, Severn Trent Water, South West Water, "
             "Southern Water (© 2026), Thames Water, United Utilities, Wessex Water (© 2024) and Yorkshire Water, via the "
             "National Storm Overflow Hub, CC BY 4.0; overflow identifiers matched with the Stream ID lookup, via Stream, "
@@ -1083,7 +1109,7 @@ def data_credits(root: str) -> dict:
         "modified": ("Combined, filtered and modelled by SwimSignal. The forecasts, levels and scores are SwimSignal's own "
                      "estimates, not the data providers'. None of the providers endorses SwimSignal."),
         "spot_locations": OSM_CREDIT,
-        "sources": CREDIT_SOURCES,   # one a line, each saying what SwimSignal changed, so the printed pages close with this alone:
+        "sources": CREDIT_SOURCES + ([SCOTLAND_CREDIT] if trial else []),   # one a line, each saying what SwimSignal changed, so the printed pages close with this alone:
         "endorsement": "None of the providers endorses SwimSignal.",
         "companies": CREDITED_COMPANIES,
         "licences": LICENCES,
@@ -1221,6 +1247,20 @@ def publish_spots_csv(site: Path, credits: dict, root: str) -> int | None:
 
 
 CLASSIFICATIONS = config.RAW / "bathing_water_classifications.json"
+
+
+def attach_sepa(results: list[dict], scotland: dict) -> int:
+    """`sepa` on each SEPA-designated spot of the Scotland trial (spots-scotland.csv, source "sepa"): its rating
+    and page from SEPA's points layer (scotland.py, OGL v2), as the directory shows them. SEPA's samples are not
+    read (their terms forbid republishing), so the page links to them. Returns how many were matched."""
+    by_id = {s["id"]: s for s in (scotland or {}).get("sites") or []}
+    n = 0
+    for r in results:
+        site = by_id.get(r["id"]) if r.get("source") == "sepa" else None
+        if site:
+            r["sepa"] = {"rating": site.get("rating"), "page": site.get("page")}
+            n += 1
+    return n
 
 
 def attach_classifications(results: list[dict], path: Path = CLASSIFICATIONS) -> int:
@@ -2466,7 +2506,16 @@ NEAR_PIN = ('<button type="button" class="search-loc" data-near-cta aria-label="
 SKELETON_TILE = '<div class="skel tile" aria-hidden="true">' + '<span class="skel-r"></span>' * 4 + '</div>'
 
 
-def home_lead(n: int, days: list[str] | None = None) -> str:
+# Where the listed spots are, as the list's opening says it (index.html, spotsWhere): England, and Scotland while
+# the Scotland trial lists its spots.
+ENGLAND_ONLY_WHERE, WITH_SCOTLAND_WHERE = "in England", "in England, and in Scotland as a trial"
+
+
+def spots_where(results: list[dict]) -> str:
+    return WITH_SCOTLAND_WHERE if any(r.get("trial") == "scotland" for r in results) else ENGLAND_ONLY_WHERE
+
+
+def home_lead(n: int, days: list[str] | None = None, where: str = ENGLAND_ONLY_WHERE) -> str:
     """The list's opening as index.html's renderList draws it, down to the row of controls, for n spots,
     then the list's shape in hairline grey until the forecast comes. The search works at once: what is
     typed carries over.
@@ -2477,7 +2526,7 @@ def home_lead(n: int, days: list[str] | None = None) -> str:
     days: the forecast's five dates, for the strip of days (index.html's list-days), today checked; its
     counts wait for the forecast."""
     return ('<div id="result" data-built data-nosnippet><div class="lead"><section class="intro"><h1>Check the water before you go</h1>'
-            f'<p class="lede">Five-day pollution risk forecasts for {n} swim spots in England<span class="lede-map">, and for any river or lake you '
+            f'<p class="lede">Five-day pollution risk forecasts for {n} swim spots {where}<span class="lede-map">, and for any river or lake you '
             '<span class="w-touch">tap</span><span class="w-click">click</span> on the map</span>. <a href="#about">How it works</a></p>'
             f'<div class="search">{SEARCH_ICON}<label class="sr" for="q">Find a spot</label><input type="search" id="q" '
             f'placeholder="River, lake or town" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" value="">{NEAR_PIN}</div>'
@@ -2969,6 +3018,7 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     root = root or site_url()
     stamp = shell_stamp()
     template = with_tiles(with_build(TEMPLATE.read_text(), stamp), "index.html", tiles)
+    template = with_scotland_credit(template)
     if not (PAGE_META.search(template) and LOADING in template):
         raise ValueError("index.html has lost its page-meta block or its loading placeholder")
     template = lean_page(template)   # its CSS comments and comment-only script lines: the source keeps them
@@ -3020,7 +3070,7 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     home = PAGE_META.sub(lambda m: page_meta(HOME_TITLE, DESCRIPTION, root, root, base="./",
                                              feed=("feed.xml", f"{BRAND} · every spot") if feeds else None), template, count=1)
     five = [(pd.Timestamp(day) + pd.Timedelta(days=i)).date().isoformat() for i in range(5)] if day else None
-    home = home.replace(LOADING, home_lead(len(results), five), 1)
+    home = home.replace(LOADING, home_lead(len(results), five, spots_where(results)), 1)
     (site / "index.html").write_text(with_counter(home, token))
     (site / "saved").mkdir(exist_ok=True)
     (site / "saved" / "index.html").write_text(with_counter(saved_page(template, root), token))
@@ -3050,11 +3100,12 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     write_every_spot(site, paged, root, token)   # spots.html, the spots' pages as plain links
     write_feeds(site, results, root)   # feed.xml, feed/, spot/<id>/feed.xml: after spot/ is written, before the data page lists them
     (site / "sitemap.xml").write_text(sitemap(root, ids, day or pd.Timestamp.now(tz="Europe/London").date().isoformat(),
-                                              extra=["support.html"] if support else [], overflow_ids=overflow_ids))
+                                              extra=(["support.html"] if support else []) + lab_pages(), overflow_ids=overflow_ids))
     (site / "404.html").write_text(with_counter(with_phone_nav(not_found_page(root), root), token))
     (site / "robots.txt").write_text(robots(root))
     (site / ".nojekyll").write_text("")
     write_lakes(site, token, root)   # the satellite lake observations (Research): before the data page, which lists data/research/
+    write_lab(site, token)   # the Research Lab's exhibits at lab/, with their own frozen copy of what they read
     write_samples(site, token, root, results)   # every EA E. coli sample at a bathing water, from the research export: before the data page lists data/research/
     write_waterhead(site, token, root)   # Ambleside Action for a Future's Waterhead samples: before the data page lists data/research/
     write_research_catalogue(site, token, root)   # every research record, its verdict and stage: before the data page lists data/research/
@@ -3089,7 +3140,9 @@ def write_any_point(site: Path, credits: dict, warnings: list[str] | None = None
         mod = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(mod)
         model = _model()
-        return mod.build(site, _net(), _overflows(), lambda ov, days, rain: spill_probabilities(ov, days, model, rain=rain),
+        from dipcast.scotland_trial import england_only
+        return mod.build(site, _net(), england_only(_overflows()),   # click-anywhere stays England only
+                         lambda ov, days, rain: spill_probabilities(ov, days, model, rain=rain),
                          credits)
     except Exception as e:  # noqa: BLE001 - an addition beside the spots must not sink the site
         warning = f"click-anywhere data not written: {e}"
@@ -3446,6 +3499,56 @@ def write_lakes(site: Path, token: str | None = None, root: str | None = None) -
     write_lake_observations(site)
     write_lake_imagery(site)
     return write_scripted_page(site, "lakes.html", ("lakes.js",), ("lakes.js",), token, root)
+
+
+# The Research Lab (docs/RESEARCH-LAB-LIVE-2026-11.md): exploratory exhibits on data already read, written and run
+# from prototypes/research-lab/, where they read data/research/ as committed. Here the whole folder goes to lab/ as
+# it is, less its screenshots and notes, with a frozen copy of the research files it reads in lab/data/; the build
+# fetches nothing. Search engines may list the pages (Ethan, 1 Nov 2026): any "noindex" left in an exhibit is
+# dropped here, and lab_pages puts every page in the sitemap.
+LAB = ROOT / "prototypes" / "research-lab"
+LAB_DATA = ("ecoli_evidence.v1.json", "lake_observations.v1.json", "lake_imagery.v1.json",
+            "satellite/pilot_runs.json", "research_catalogue.v1.json", "lake-img")
+LAB_REWRITES = (("../../../data/research/", "../data/"),            # an exhibit's reads, one folder down
+                ("../../src/dipcast/pages/fonts/", "../fonts/"))     # lab.css: the site's own fonts
+
+
+def lab_pages(lab: Path = LAB) -> list[str]:
+    """The Lab's pages as the sitemap gives them, relative to the site's root: lab/ and each exhibit's folder."""
+    if not (lab / "index.html").is_file():
+        return []
+    return ["lab/"] + sorted(f"lab/{d.name}/" for d in lab.iterdir() if (d / "index.html").is_file())
+
+
+def write_lab(site: Path, token: str | None = None, lab: Path = LAB, research: Path = ROOT / "data" / "research") -> int:
+    """lab/: the Research Lab's pages, scripts and exported data, and lab/data/, the research files they read.
+    Returns the number of pages, 0 when there is no Lab."""
+    out = site / "lab"
+    shutil.rmtree(out, ignore_errors=True)
+    if not (lab / "index.html").is_file():
+        return 0
+    shutil.copytree(lab, out, ignore=shutil.ignore_patterns("shots", "*.md"))
+    for name in LAB_DATA:
+        src, dst = research / name, out / "data" / name
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        if src.is_dir():
+            shutil.copytree(src, dst)
+        elif src.is_file():
+            shutil.copy(src, dst)
+    pages = 0
+    for f in sorted(out.rglob("*")):
+        if f.suffix not in (".html", ".js", ".css") or (out / "data") in f.parents:
+            continue
+        s = f.read_text()
+        for a, b in LAB_REWRITES:
+            s = s.replace(a, b)
+        if f.suffix == ".html":
+            up = "../" * len(f.relative_to(site).parts[:-1])   # the site's root, so a preview build links to itself
+            s = s.replace('href="https://swimsignal.co.uk/"', f'href="{up}"').replace('<meta name="robots" content="noindex">\n', '')
+            s = with_counter(s, token)
+            pages += 1
+        f.write_text(s)
+    return pages
 
 
 def write_record(site: Path, token: str | None = None, root: str | None = None) -> str:
@@ -4391,7 +4494,19 @@ def build(refresh: bool = True) -> dict:
         results.append({"id": r.id, "name": r.name, "kind": r.kind, "river": _river_of(r), "source": r.source,
                         "notes": r.notes, "lat": float(r.lat), "lon": float(r.lon),
                         **({"area": r.area} if getattr(r, "area", "") else {}),   # the list's groups in A-Z
-                        **({"osm_id": r.osm_id} if getattr(r, "osm_id", "") else {}), **f})
+                        **({"osm_id": r.osm_id} if getattr(r, "osm_id", "") else {}),
+                        **({"trial": r.trial} if getattr(r, "trial", "") else {}), **f})
+    for r, row in zip(results, spots.itertuples(index=False), strict=True):   # the Scotland trial
+        if r.get("trial") != "scotland":
+            continue
+        # No loch outline is loaded for Scotland, so a lake's water is named by its link, which can be a burn
+        # running into it (Dores: "Allt a' Mhinisteir"): the spot's own loch from spots-scotland.csv instead.
+        if r.get("kind") == "lake" and str(row.river or "").strip() and isinstance(r.get("location"), dict):
+            r["location"] = {**r["location"], "watercourse": str(row.river).strip()}
+        if isinstance(r.get("ecoli_scope"), dict):   # the E. coli model was fitted on English samples only
+            note = r["ecoli_scope"].get("note") or ""
+            r["ecoli_scope"] = {**r["ecoli_scope"], "water_body_validated": False,
+                                "note": ("Not validated in Scotland: fitted on English samples only. " + note).strip()}
     attach_companies(results, upstream)
     attach_access(results)
     guides = attach_guides(results)   # practical guides from guides/: parking, paths, entry and exit
@@ -4505,7 +4620,8 @@ def build(refresh: bool = True) -> dict:
     # Scottish bathing waters: SEPA's points layer, names, ratings and links (scotland.py).
     from dipcast.scotland import fetch as fetch_scotland
     scotland = fetch_scotland()
-    health["scotland"] = {"state": scotland["state"], "sites": len(scotland["sites"]),
+    n_sepa = attach_sepa(results, scotland)   # the Scotland trial's spots: SEPA's rating and page
+    health["scotland"] = {"state": scotland["state"], "sites": len(scotland["sites"]), "trial_spots_rated": n_sepa,
                           **({"error": scotland["error"]} if scotland.get("error") else {})}
     # The Republic of Ireland's bathing waters: the EPA's list, samples and restrictions (ireland.py).
     from dipcast.ireland import fetch as fetch_ireland

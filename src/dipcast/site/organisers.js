@@ -79,6 +79,8 @@ const Organisers = (() => {
   // The Environment Agency's rating, on the event day: advice against bathing is named as levels.js
   // words it for that day (poorAdvice), in or out of the bathing season.
   function rating(s, iso) {
+    const sr = (s.sepa || {}).rating;
+    if (s.source === 'sepa') return row('SEPA rating', sr?.value ? `${esc(sr.value)}, for ${esc(sr.year)}. SEPA's page has its samples and any advice against bathing, which SwimSignal does not include.` : 'A SEPA designated bathing water; no rating in this update.');
     const cl = s.classification; if (!cl) return s.source === 'designated' ? '' : row('Bathing water', 'Not a designated bathing water, so the Environment Agency does not test it for bathing.');
     const page = cl.url ? ` <a href="${esc(cl.url)}">The Environment Agency's page</a> has its samples and any advice against bathing after pollution or algae, which SwimSignal does not include.` : '';
     if (!cl.class) return row('Environment Agency rating', `A designated bathing water too new to have a rating.${page}`);
@@ -307,7 +309,7 @@ const Organisers = (() => {
   function view(s, iso, data, base, now = Date.now(), full) {
     R.setToday(String(data.generated_at).slice(0, 10));
     const loc = s.location || {}, page = spotHref(s.id), own = PAGE_ID.test(s.id);
-    const meta = [cap(s.kind || 'river'), s.source === 'designated' ? 'Environment Agency designated bathing water' : null, loc.watercourse ? esc(loc.watercourse) : null].filter(Boolean);
+    const meta = [cap(s.kind || 'river'), s.source === 'designated' ? 'Environment Agency designated bathing water' : s.source === 'sepa' ? 'SEPA designated bathing water' : null, loc.watercourse ? esc(loc.watercourse) : null].filter(Boolean);
     const links = [`<a href="${esc(page)}">The spot's forecast</a>`, ...(own ? [`<a href="spot/${esc(s.id)}/sign/">A sign to print</a>`] : []),
       `<a href="embed.html?spot=${esc(encodeURIComponent(s.id))}&amp;screen">A live sign for a screen</a>`];
     const total = (s.upstream_summary || {}).overflows || 0, n = (s.contributors || []).length;

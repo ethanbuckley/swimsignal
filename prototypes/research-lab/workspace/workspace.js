@@ -1,4 +1,4 @@
-// The catchment workspace, Research Lab exhibit 4 (prototype). Reads data/index.json and data/<catchment>.json, made by
+// The catchment workspace, Research Lab exhibit 4. Reads data/index.json and data/<catchment>.json, made by
 // scripts/lab_catchment_workspace.py from committed research files and the forecast's own caches.
 // Every layer is drawn on one date axis. A stretch with no record is hatched and never drawn as zero. Hindsight estimates
 // say "would have flagged", never "warned"; a weight is a factor from 0 to 1, never a share arriving; NDCI is an index.
@@ -371,7 +371,7 @@ function csv() {
     on('sat') && (L.sat.meta.applies ? 'satellite: clear images only; cloud is not a reading' : 'satellite: not processed for rivers'),
   ].filter(Boolean);
   const head = [
-    'SwimSignal Research Lab, catchment workspace (prototype). A record of the past: not a forecast and not swimming advice.',
+    'SwimSignal Research Lab, catchment workspace (exploratory). A record of the past: not a forecast and not swimming advice.',
     `Investigation: ${location.href}`,
     `Catchment: ${C.name}; dates ${S.from} to ${S.to} (UK dates; a spill is listed if any part of it falls in these dates, under the date it started); layers: ${used.map(l => l.name).join(', ')}; spot in focus: ${spotById(S.spot).name}`,
     `Data: prototypes/research-lab/workspace/data/${C.id}.json, exported at commit ${C.commit} on ${C.made} by scripts/lab_catchment_workspace.py (sha256 ${C.code_sha256.slice(0, 16)}...)`,
