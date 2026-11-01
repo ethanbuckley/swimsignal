@@ -281,43 +281,10 @@ def attach_samples(snapshot, now=None, points_file=None, cache=None, fetch=None)
     return snapshot
 
 
-TYPICAL = Path(__file__).resolve().parents[2] / "data" / "research" / "coastal_typical.v1.json"
-TYPICAL_SCHEMA = "swimsignal.coastal-typical"
-
-
 def attach_typical(snapshot, path=None):
-    """Each site's `typical`: what its own EA samples read, May to September 2023-2026 (scripts/export_coastal_typical.py,
-    a committed file: no request). The snapshot's `typical` says the period and when it was exported. A file of another
-    schema or major version, or none, adds nothing. Returns how many sites got one."""
-    try:
-        doc = json.loads(Path(path or TYPICAL).read_text())
-    except (OSError, ValueError):
-        return 0
-    if doc.get("schema") != TYPICAL_SCHEMA or str(doc.get("version", "")).split(".")[0] != "1" or not snapshot:
-        return 0
-    n = 0
-    for site in snapshot.get("sites") or []:
-        t = (doc.get("sites") or {}).get(site.get("id"))
-        if t:
-            site["typical"] = t
-            n += 1
-    snapshot["typical"] = {"period": doc.get("period"), "generated_at": doc.get("generated_at"), "line": doc.get("line")}
-    return n
-
-
-def _reading(v):
-    """A count as the coverage page gives it: "under 10" for the lab's "<10", "over 10,000" for ">10000"."""
-    if isinstance(v, str):
-        return f'{"under" if v[:1] == "<" else "over"} {float(v[1:]):,.0f}'
-    return f"{v:,.0f}" if v >= 10 else f"{v:g}"
-
-
-def typical_line(t):
-    """One line under a site: what its own past samples read. Never a forecast."""
-    years = f'{t["first_year"]}–{t["last_year"]}' if t["first_year"] != t["last_year"] else str(t["first_year"])
-    over = f'{t["over_line"]} over {t["line"]}' if t["over_line"] else f'none over {t["line"]}'
-    return (f'Past EA samples, May–September {years}: the middle of {t["samples"]} read {_reading(t["median"])} E. coli '
-            f'per 100 ml, the middle 8 in 10 {_reading(t["low"])} to {_reading(t["high"])}; {over}. Not a forecast')
+    """Each site's `typical`: what its own EA samples read (typical.attach, a committed file: no request)."""
+    from dipcast import typical
+    return typical.attach(snapshot, "england_coast", path)
 
 
 def _count(r):
@@ -373,6 +340,7 @@ def when(iso):
 
 def render(snapshot):
     """Server-rendered list works without JavaScript; dates are always visible."""
+    from dipcast import typical
     if not snapshot or not snapshot.get("sites"):
         return '<p>The official directory could not be loaded for this build. Use the EA link above.</p>'
     messages = {"increased": "EA: increased pollution risk",
@@ -392,7 +360,7 @@ def render(snapshot):
             stamp = f'<br>Issued {when(advice["published_at"])}; expires {when(advice["expires_at"])}'
         expiry = f' data-advice-expires="{escape(advice["expires_at"], quote=True)}"' if advice.get("expires_at") else ''
         sample = f'<br>{sample_line(site["sample"], (snapshot.get("samples") or {}).get("since"))}' if "sample" in site else ''
-        sample += f'<br>{escape(typical_line(site["typical"]))}' if site.get("typical") else ''
+        sample += f'<br>{escape(typical.line(site["typical"]))}' if site.get("typical") else ''
         water = water_line(site)
         sample += f'<br>{escape(water)}' if water else ''
         profile = escape(site["profile"], quote=True)
@@ -417,12 +385,7 @@ def render(snapshot):
                 + (f', checked {when(snapshot["samples"]["fetched_at"])}' if snapshot["samples"].get("fetched_at") else '')
                 + '. The archive can lag the official profile by several days. A sample describes the water when '
                 'it was taken, not today. The rating uses four seasons of samples.</p>') if snapshot.get("samples") else '')
-            + (('<p class="small">"Past EA samples" are each site\'s own statutory samples, '
-                f'{escape(snapshot["typical"]["period"] or "")}, from the same archive: the middle sample and the range the '
-                'middle 8 in 10 fell in. They describe past seasons, not today. For comparison, England rates a coastal '
-                'bathing water Excellent when about 95 in 100 of its samples, over four seasons, are under 250 E. coli per '
-                '100 ml; its rating also counts intestinal enterococci. 500 is the minimum standard\'s E. coli line.</p>')
-               if snapshot.get("typical") else '') +
+            + typical.note(snapshot) +
             '<label for="coastal-search">Find a beach or estuary</label> '
             '<input type="search" id="coastal-search" placeholder="Bathing-water name">'
             f'<p id="coastal-count" class="small" aria-live="polite">{len(cards)} sites</p>'

@@ -51,6 +51,7 @@ from dipcast.overflows import duplicate_site_ids
 from dipcast.spot_links import attach as attach_spot_links
 from dipcast.stretches import attach as attach_stretches
 from dipcast.trace import SIMPLIFY_M, spot_trace_parts
+from dipcast.typical import attach as attach_typical
 from dipcast.typical import typical_readings
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
@@ -4523,6 +4524,7 @@ def build(refresh: bool = True) -> dict:
     # Welsh bathing waters: NRW's sites and latest samples, live or from the dated snapshot (wales.py).
     from dipcast.wales import fetch as fetch_wales
     wales = fetch_wales()
+    attach_typical(wales, "wales")   # committed past samples (scripts/export_typical_readings.py): no request
     health["wales"] = {"state": wales["state"], "sites": len(wales["sites"]), "fetched_at": wales["fetched_at"],
                        **({"error": wales["error"]} if wales.get("error") else {})}
     # Scottish bathing waters: SEPA's points layer, names, ratings and links (scotland.py).
@@ -4533,12 +4535,14 @@ def build(refresh: bool = True) -> dict:
     # The Republic of Ireland's bathing waters: the EPA's list, samples and restrictions (ireland.py).
     from dipcast.ireland import fetch as fetch_ireland
     ireland = fetch_ireland()
+    attach_typical(ireland, "ireland")
     health["ireland"] = {"state": ireland["state"], "sites": len(ireland["sites"]),
                          "restrictions": sum(len(s["alerts"] or []) for s in ireland["sites"]),
                          **({"error": ireland["error"]} if ireland.get("error") else {})}
     # Northern Ireland's bathing waters: DAERA's monitoring points layer (northern_ireland.py).
     from dipcast.northern_ireland import fetch as fetch_ni
     northern_ireland = fetch_ni()
+    attach_typical(northern_ireland, "northern_ireland")
     health["northern_ireland"] = {"state": northern_ireland["state"], "sites": len(northern_ireland["sites"]),
                                   **({"error": northern_ireland["error"]} if northern_ireland.get("error") else {})}
     # Their water temperature (#492 stage 4): the cached air around them, and cells of their own where none reaches.

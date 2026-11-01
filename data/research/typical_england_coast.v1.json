@@ -1,27 +1,29 @@
 {
- "schema": "swimsignal.coastal-typical",
+ "schema": "swimsignal.typical-readings",
  "version": "1.0.0",
+ "directory": "england_coast",
  "generated_at": "2026-11-01T13:32:43+00:00",
+ "period": "May to September, 2023 to 2026",
+ "requests": 132,
+ "samples": 26113,
+ "sites_with_readings": 404,
  "source": "https://environment.data.gov.uk/water-quality",
+ "licence": "Open Government Licence v3.0",
+ "credit": "Contains Environment Agency data, © Environment Agency copyright and/or database right, Open Government Licence v3.0.",
+ "how": "E. coli (determinand 2348), statutory bathing samples (purpose MS), at each site's archive sampling point (data/raw/coastal_wqa_points.json)",
  "determinand": "2348 (E. coli, confirmed, membrane filtration)",
  "purpose": "MS (statutory bathing water samples)",
- "period": "May to September, 2023 to 2026",
  "line": 500,
  "line_note": "The coastal 'sufficient' E. coli line, per 100 ml (Bathing Water Regulations 2013)",
  "points_file": "data/raw/coastal_wqa_points.json",
  "points_checked_at": "2026-10-03T22:26:37+01:00",
- "requests": 132,
  "results": 26113,
- "samples": 26113,
  "skipped": {
   "unreadable": 0,
   "out_of_season": 0,
   "repeats": 0
  },
- "sites_mapped": 407,
- "sites_with_readings": 404,
- "licence": "Open Government Licence v3.0",
- "credit": "Contains Environment Agency data, \u00a9 Environment Agency copyright and/or database right.",
+ "sites_with_samples": 404,
  "sites": {
   "ukc1101-06000": {
    "samples": 79,
@@ -32,7 +34,8 @@
    "high": 55,
    "line": 500,
    "over_line": 2,
-   "point": "NE-45400490"
+   "point": "NE-45400490",
+   "months": "May–September"
   },
   "ukc1101-06100": {
    "samples": 79,
@@ -43,7 +46,8 @@
    "high": 55,
    "line": 500,
    "over_line": 0,
-   "point": "NE-45400489"
+   "point": "NE-45400489",
+   "months": "May–September"
   },
   "ukc1101-06200": {
    "samples": 54,
@@ -54,7 +58,8 @@
    "high": 27,
    "line": 500,
    "over_line": 0,
-   "point": "NE-45400488"
+   "point": "NE-45400488",
+   "months": "May–September"
   },
   "ukc1202-06300": {
    "samples": 80,
@@ -65,7 +70,8 @@
    "high": 55,
    "line": 500,
    "over_line": 2,
-   "point": "NE-45600064"
+   "point": "NE-45600064",
+   "months": "May–September"
   },
   "ukc1202-06400": {
    "samples": 69,
@@ -76,7 +82,8 @@
    "high": 64,
    "line": 500,
    "over_line": 0,
-   "point": "NE-45600063"
+   "point": "NE-45600063",
+   "months": "May–September"
   },
   "ukc1202-06500": {
    "samples": 74,
@@ -87,7 +94,8 @@
    "high": 100,
    "line": 500,
    "over_line": 3,
-   "point": "NE-45600062"
+   "point": "NE-45600062",
+   "months": "May–September"
   },
   "ukc1202-06600": {
    "samples": 60,
@@ -98,7 +106,8 @@
    "high": 18,
    "line": 500,
    "over_line": 0,
-   "point": "NE-45600061"
+   "point": "NE-45600061",
+   "months": "May–September"
   },
   "ukc1202-06650": {
    "samples": 64,
@@ -109,7 +118,8 @@
    "high": 27,
    "line": 500,
    "over_line": 1,
-   "point": "NE-45600058"
+   "point": "NE-45600058",
+   "months": "May–September"
   },
   "ukc1202-06700": {
    "samples": 80,
@@ -120,7 +130,8 @@
    "high": 91,
    "line": 500,
    "over_line": 2,
-   "point": "NE-45600059"
+   "point": "NE-45600059",
+   "months": "May–September"
   },
   "ukc1404-05700": {
    "samples": 77,
@@ -131,7 +142,8 @@
    "high": 55,
    "line": 500,
    "over_line": 1,
-   "point": "NE-45500112"
+   "point": "NE-45500112",
+   "months": "May–September"
   },
   "ukc1404-05800": {
    "samples": 77,
@@ -142,7 +154,8 @@
    "high": 45,
    "line": 500,
    "over_line": 2,
-   "point": "NE-45500111"
+   "point": "NE-45500111",
+   "months": "May–September"
   },
   "ukc1404-05900": {
    "samples": 78,
@@ -153,7 +166,8 @@
    "high": 55,
    "line": 500,
    "over_line": 1,
-   "point": "NE-45500109"
+   "point": "NE-45500109",
+   "months": "May–September"
   },
   "ukc2100-04220": {
    "samples": 20,
@@ -164,7 +178,8 @@
    "high": 55,
    "line": 500,
    "over_line": 0,
-   "point": "NE-42300243"
+   "point": "NE-42300243",
+   "months": "May–September"
   },
   "ukc2101-04000": {
    "samples": 45,
@@ -175,7 +190,8 @@
    "high": 27,
    "line": 500,
    "over_line": 0,
-   "point": "NE-42100092"
+   "point": "NE-42100092",
+   "months": "May–September"
   },
   "ukc2101-04200": {
    "samples": 50,
@@ -186,7 +202,8 @@
    "high": "<10",
    "line": 500,
    "over_line": 0,
-   "point": "NE-42300050"
+   "point": "NE-42300050",
+   "months": "May–September"
   },
   "ukc2101-04250": {
    "samples": 65,
@@ -197,7 +214,8 @@
    "high": 64,
    "line": 500,
    "over_line": 1,
-   "point": "NE-42400066"
+   "point": "NE-42400066",
+   "months": "May–September"
   },
   "ukc2102-03600": {
    "samples": 80,
@@ -208,7 +226,8 @@
    "high": 290,
    "line": 500,
    "over_line": 5,
-   "point": "NE-41000219"
+   "point": "NE-41000219",
+   "months": "May–September"
   },
   "ukc2102-03700": {
    "samples": 50,
@@ -219,7 +238,8 @@
    "high": "<10",
    "line": 500,
    "over_line": 0,
-   "point": "NE-42100093"
+   "point": "NE-42100093",
+   "months": "May–September"
   },
   "ukc2102-03800": {
    "samples": 50,
@@ -230,7 +250,8 @@
    "high": 36,
    "line": 500,
    "over_line": 0,
-   "point": "NE-42100094"
+   "point": "NE-42100094",
+   "months": "May–September"
   },
   "ukc2102-03900": {
    "samples": 60,
@@ -241,7 +262,8 @@
    "high": 140,
    "line": 500,
    "over_line": 2,
-   "point": "NE-42100095"
+   "point": "NE-42100095",
+   "months": "May–September"
   },
   "ukc2103-04600": {
    "samples": 60,
@@ -252,7 +274,8 @@
    "high": 45,
    "line": 500,
    "over_line": 0,
-   "point": "NE-42600260"
+   "point": "NE-42600260",
+   "months": "May–September"
   },
   "ukc2103-04700": {
    "samples": 69,
@@ -263,7 +286,8 @@
    "high": 64,
    "line": 500,
    "over_line": 1,
-   "point": "NE-42600261"
+   "point": "NE-42600261",
+   "months": "May–September"
   },
   "ukc2104-04280": {
    "samples": 60,
@@ -274,7 +298,8 @@
    "high": 27,
    "line": 500,
    "over_line": 1,
-   "point": "NE-42400196"
+   "point": "NE-42400196",
+   "months": "May–September"
   },
   "ukc2104-04300": {
    "samples": 45,
@@ -285,7 +310,8 @@
    "high": 27,
    "line": 500,
    "over_line": 0,
-   "point": "NE-42400197"
+   "point": "NE-42400197",
+   "months": "May–September"
   },
   "ukc2106-04400": {
    "samples": 70,
@@ -296,7 +322,8 @@
    "high": 45,
    "line": 500,
    "over_line": 1,
-   "point": "NE-42400052"
+   "point": "NE-42400052",
+   "months": "May–September"
   },
   "ukc2106-04500": {
    "samples": 70,
@@ -307,7 +334,8 @@
    "high": 27,
    "line": 500,
    "over_line": 1,
-   "point": "NE-42400053"
+   "point": "NE-42400053",
+   "months": "May–September"
   },
   "ukc2203-04800": {
    "samples": 55,
@@ -318,7 +346,8 @@
    "high": 82,
    "line": 500,
    "over_line": 1,
-   "point": "NE-43500689"
+   "point": "NE-43500689",
+   "months": "May–September"
   },
   "ukc2203-04900": {
    "samples": 74,
@@ -329,7 +358,8 @@
    "high": 230,
    "line": 500,
    "over_line": 2,
-   "point": "NE-43500297"
+   "point": "NE-43500297",
+   "months": "May–September"
   },
   "ukc2203-05000": {
    "samples": 55,
@@ -340,7 +370,8 @@
    "high": 64,
    "line": 500,
    "over_line": 1,
-   "point": "NE-43500298"
+   "point": "NE-43500298",
+   "months": "May–September"
   },
   "ukc2203-05100": {
    "samples": 45,
@@ -351,7 +382,8 @@
    "high": 55,
    "line": 500,
    "over_line": 0,
-   "point": "NE-43500299"
+   "point": "NE-43500299",
+   "months": "May–September"
   },
   "ukc2203-05200": {
    "samples": 45,
@@ -362,7 +394,8 @@
    "high": 36,
    "line": 500,
    "over_line": 0,
-   "point": "NE-43500300"
+   "point": "NE-43500300",
+   "months": "May–September"
   },
   "ukc2204-05300": {
    "samples": 79,
@@ -373,7 +406,8 @@
    "high": 82,
    "line": 500,
    "over_line": 1,
-   "point": "NE-43500316"
+   "point": "NE-43500316",
+   "months": "May–September"
   },
   "ukc2204-05400": {
    "samples": 75,
@@ -384,7 +418,8 @@
    "high": 210,
    "line": 500,
    "over_line": 2,
-   "point": "NE-43500315"
+   "point": "NE-43500315",
+   "months": "May–September"
   },
   "ukc2300-05500": {
    "samples": 80,
@@ -395,7 +430,8 @@
    "high": 82,
    "line": 500,
    "over_line": 3,
-   "point": "NE-43500314"
+   "point": "NE-43500314",
+   "months": "May–September"
   },
   "ukc2300-05600": {
    "samples": 75,
@@ -406,7 +442,8 @@
    "high": 110,
    "line": 500,
    "over_line": 2,
-   "point": "NE-43500313"
+   "point": "NE-43500313",
+   "months": "May–September"
   },
   "ukd1101-46100": {
    "samples": 74,
@@ -417,7 +454,8 @@
    "high": 280,
    "line": 500,
    "over_line": 5,
-   "point": "NW-88009873"
+   "point": "NW-88009873",
+   "months": "May–September"
   },
   "ukd1102-44200": {
    "samples": 80,
@@ -428,7 +466,8 @@
    "high": 380,
    "line": 500,
    "over_line": 7,
-   "point": "NW-88009869"
+   "point": "NW-88009869",
+   "months": "May–September"
   },
   "ukd1102-44300": {
    "samples": 80,
@@ -439,7 +478,8 @@
    "high": 170,
    "line": 500,
    "over_line": 6,
-   "point": "NW-88009870"
+   "point": "NW-88009870",
+   "months": "May–September"
   },
   "ukd1102-44400": {
    "samples": 80,
@@ -450,7 +490,8 @@
    "high": 500,
    "line": 500,
    "over_line": 8,
-   "point": "NW-88009871"
+   "point": "NW-88009871",
+   "months": "May–September"
   },
   "ukd1103-44800": {
    "samples": 73,
@@ -461,7 +502,8 @@
    "high": 590,
    "line": 500,
    "over_line": 10,
-   "point": "NW-88009866"
+   "point": "NW-88009866",
+   "months": "May–September"
   },
   "ukd1103-45200": {
    "samples": 60,
@@ -472,7 +514,8 @@
    "high": 170,
    "line": 500,
    "over_line": 2,
-   "point": "NW-88009863"
+   "point": "NW-88009863",
+   "months": "May–September"
   },
   "ukd1103-45600": {
    "samples": 80,
@@ -483,7 +526,8 @@
    "high": 350,
    "line": 500,
    "over_line": 6,
-   "point": "NW-88009864"
+   "point": "NW-88009864",
+   "months": "May–September"
   },
   "ukd1103-45920": {
    "samples": 70,
@@ -494,7 +538,8 @@
    "high": 170,
    "line": 500,
    "over_line": 2,
-   "point": "NW-88009865"
+   "point": "NW-88009865",
+   "months": "May–September"
   },
   "ukd4200-42100": {
    "samples": 71,
@@ -505,7 +550,8 @@
    "high": 240,
    "line": 500,
    "over_line": 2,
-   "point": "NW-88020957"
+   "point": "NW-88020957",
+   "months": "May–September"
   },
   "ukd4200-42300": {
    "samples": 71,
@@ -516,7 +562,8 @@
    "high": 310,
    "line": 500,
    "over_line": 2,
-   "point": "NW-88020958"
+   "point": "NW-88020958",
+   "months": "May–September"
   },
   "ukd4200-42500": {
    "samples": 71,
@@ -527,7 +574,8 @@
    "high": 430,
    "line": 500,
    "over_line": 6,
-   "point": "NW-88020959"
+   "point": "NW-88020959",
+   "months": "May–September"
   },
   "ukd4200-42600": {
    "samples": 74,
@@ -538,7 +586,8 @@
    "high": 160,
    "line": 500,
    "over_line": 1,
-   "point": "NW-88009854"
+   "point": "NW-88009854",
+   "months": "May–September"
   },
   "ukd4303-41800": {
    "samples": 72,
@@ -549,7 +598,8 @@
    "high": 380,
    "line": 500,
    "over_line": 5,
-   "point": "NW-88009849"
+   "point": "NW-88009849",
+   "months": "May–September"
   },
   "ukd4303-41900": {
    "samples": 72,
@@ -560,7 +610,8 @@
    "high": 530,
    "line": 500,
    "over_line": 8,
-   "point": "NW-88023519"
+   "point": "NW-88023519",
+   "months": "May–September"
   },
   "ukd4305-43260": {
    "samples": 77,
@@ -571,7 +622,8 @@
    "high": 210,
    "line": 500,
    "over_line": 3,
-   "point": "NW-88022606"
+   "point": "NW-88022606",
+   "months": "May–September"
   },
   "ukd4305-43550": {
    "samples": 75,
@@ -582,7 +634,8 @@
    "high": 180,
    "line": 500,
    "over_line": 4,
-   "point": "NW-88009859"
+   "point": "NW-88009859",
+   "months": "May–September"
   },
   "ukd4312-42800": {
    "samples": 80,
@@ -593,7 +646,8 @@
    "high": 300,
    "line": 500,
    "over_line": 3,
-   "point": "NW-88009855"
+   "point": "NW-88009855",
+   "months": "May–September"
   },
   "ukd4312-43000": {
    "samples": 76,
@@ -604,7 +658,8 @@
    "high": 260,
    "line": 500,
    "over_line": 2,
-   "point": "NW-88009856"
+   "point": "NW-88009856",
+   "months": "May–September"
   },
   "ukd5300-41200": {
    "samples": 60,
@@ -615,7 +670,8 @@
    "high": 73,
    "line": 500,
    "over_line": 0,
-   "point": "NW-88009846"
+   "point": "NW-88009846",
+   "months": "May–September"
   },
   "ukd5300-41300": {
    "samples": 80,
@@ -626,7 +682,8 @@
    "high": 250,
    "line": 500,
    "over_line": 5,
-   "point": "NW-88009847"
+   "point": "NW-88009847",
+   "months": "May–September"
   },
   "ukd5300-41500": {
    "samples": 76,
@@ -637,7 +694,8 @@
    "high": 320,
    "line": 500,
    "over_line": 5,
-   "point": "NW-88009848"
+   "point": "NW-88009848",
+   "months": "May–September"
   },
   "ukd5400-40750": {
    "samples": 80,
@@ -648,7 +706,8 @@
    "high": 280,
    "line": 500,
    "over_line": 6,
-   "point": "NW-88010483"
+   "point": "NW-88010483",
+   "months": "May–September"
   },
   "ukd5400-40800": {
    "samples": 81,
@@ -659,7 +718,8 @@
    "high": 110,
    "line": 500,
    "over_line": 1,
-   "point": "NW-88009843"
+   "point": "NW-88009843",
+   "months": "May–September"
   },
   "ukd5400-40900": {
    "samples": 76,
@@ -670,7 +730,8 @@
    "high": 150,
    "line": 500,
    "over_line": 0,
-   "point": "NW-88009844"
+   "point": "NW-88009844",
+   "months": "May–September"
   },
   "ukd5400-41000": {
    "samples": 81,
@@ -681,7 +742,8 @@
    "high": 190,
    "line": 500,
    "over_line": 2,
-   "point": "NW-88009845"
+   "point": "NW-88009845",
+   "months": "May–September"
   },
   "uke1200-07900": {
    "samples": 79,
@@ -692,7 +754,8 @@
    "high": 160,
    "line": 500,
    "over_line": 0,
-   "point": "NE-49000144"
+   "point": "NE-49000144",
+   "months": "May–September"
   },
   "uke1200-07950": {
    "samples": 55,
@@ -703,7 +766,8 @@
    "high": 82,
    "line": 500,
    "over_line": 0,
-   "point": "NE-49000087"
+   "point": "NE-49000087",
+   "months": "May–September"
   },
   "uke1200-08000": {
    "samples": 80,
@@ -714,7 +778,8 @@
    "high": 160,
    "line": 500,
    "over_line": 3,
-   "point": "NE-49000030"
+   "point": "NE-49000030",
+   "months": "May–September"
   },
   "uke1200-08100": {
    "samples": 79,
@@ -725,7 +790,8 @@
    "high": 120,
    "line": 500,
    "over_line": 0,
-   "point": "NE-49000037"
+   "point": "NE-49000037",
+   "months": "May–September"
   },
   "uke1200-08200": {
    "samples": 78,
@@ -736,7 +802,8 @@
    "high": 82,
    "line": 500,
    "over_line": 2,
-   "point": "NE-49000277"
+   "point": "NE-49000277",
+   "months": "May–September"
   },
   "uke1200-08300": {
    "samples": 80,
@@ -747,7 +814,8 @@
    "high": 100,
    "line": 500,
    "over_line": 4,
-   "point": "NE-49000148"
+   "point": "NE-49000148",
+   "months": "May–September"
   },
   "uke1200-08600": {
    "samples": 36,
@@ -758,7 +826,8 @@
    "high": 73,
    "line": 500,
    "over_line": 1,
-   "point": "NE-49000392"
+   "point": "NE-49000392",
+   "months": "May–September"
   },
   "uke1200-08700": {
    "samples": 80,
@@ -769,7 +838,8 @@
    "high": 55,
    "line": 500,
    "over_line": 0,
-   "point": "NE-49000176"
+   "point": "NE-49000176",
+   "months": "May–September"
   },
   "uke1200-08900": {
    "samples": 75,
@@ -780,7 +850,8 @@
    "high": 36,
    "line": 500,
    "over_line": 0,
-   "point": "NE-49000278"
+   "point": "NE-49000278",
+   "months": "May–September"
   },
   "uke1301-09000": {
    "samples": 76,
@@ -791,7 +862,8 @@
    "high": 230,
    "line": 500,
    "over_line": 0,
-   "point": "AN-CLEEN001"
+   "point": "AN-CLEEN001",
+   "months": "May–September"
   },
   "uke1301-09020": {
    "samples": 80,
@@ -802,7 +874,8 @@
    "high": 110,
    "line": 500,
    "over_line": 2,
-   "point": "AN-HUMBN003"
+   "point": "AN-HUMBN003",
+   "months": "May–September"
   },
   "uke2206-06900": {
    "samples": 80,
@@ -813,7 +886,8 @@
    "high": 120,
    "line": 500,
    "over_line": 2,
-   "point": "NE-49000237"
+   "point": "NE-49000237",
+   "months": "May–September"
   },
   "uke2206-07000": {
    "samples": 78,
@@ -824,7 +898,8 @@
    "high": 55,
    "line": 500,
    "over_line": 1,
-   "point": "NE-49000240"
+   "point": "NE-49000240",
+   "months": "May–September"
   },
   "uke2206-07100": {
    "samples": 80,
@@ -835,7 +910,8 @@
    "high": 64,
    "line": 500,
    "over_line": 1,
-   "point": "NE-49000275"
+   "point": "NE-49000275",
+   "months": "May–September"
   },
   "uke2206-07200": {
    "samples": 71,
@@ -846,7 +922,8 @@
    "high": 230,
    "line": 500,
    "over_line": 4,
-   "point": "NE-49000232"
+   "point": "NE-49000232",
+   "months": "May–September"
   },
   "uke2206-07300": {
    "samples": 79,
@@ -857,7 +934,8 @@
    "high": 330,
    "line": 500,
    "over_line": 6,
-   "point": "NE-49000252"
+   "point": "NE-49000252",
+   "months": "May–September"
   },
   "uke2206-07400": {
    "samples": 78,
@@ -868,7 +946,8 @@
    "high": 180,
    "line": 500,
    "over_line": 2,
-   "point": "NE-49000253"
+   "point": "NE-49000253",
+   "months": "May–September"
   },
   "uke2206-07500": {
    "samples": 39,
@@ -879,7 +958,8 @@
    "high": 18,
    "line": 500,
    "over_line": 0,
-   "point": "NE-49000064"
+   "point": "NE-49000064",
+   "months": "May–September"
   },
   "uke2206-07600": {
    "samples": 77,
@@ -890,7 +970,8 @@
    "high": 160,
    "line": 500,
    "over_line": 1,
-   "point": "NE-49000125"
+   "point": "NE-49000125",
+   "months": "May–September"
   },
   "uke2206-07700": {
    "samples": 74,
@@ -901,7 +982,8 @@
    "high": 55,
    "line": 500,
    "over_line": 3,
-   "point": "NE-49000230"
+   "point": "NE-49000230",
+   "months": "May–September"
   },
   "ukf3102-09100": {
    "samples": 70,
@@ -912,7 +994,8 @@
    "high": 55,
    "line": 500,
    "over_line": 0,
-   "point": "AN-MABLN001"
+   "point": "AN-MABLN001",
+   "months": "May–September"
   },
   "ukf3102-09200": {
    "samples": 49,
@@ -923,7 +1006,8 @@
    "high": 45,
    "line": 500,
    "over_line": 0,
-   "point": "AN-SUTTN001"
+   "point": "AN-SUTTN001",
+   "months": "May–September"
   },
   "ukf3102-09300": {
    "samples": 44,
@@ -934,7 +1018,8 @@
    "high": 18,
    "line": 500,
    "over_line": 0,
-   "point": "AN-HUTTN001"
+   "point": "AN-HUTTN001",
+   "months": "May–September"
   },
   "ukf3102-09400": {
    "samples": 50,
@@ -945,7 +1030,8 @@
    "high": 18,
    "line": 500,
    "over_line": 0,
-   "point": "AN-ANDBN001"
+   "point": "AN-ANDBN001",
+   "months": "May–September"
   },
   "ukf3102-09500": {
    "samples": 60,
@@ -956,7 +1042,8 @@
    "high": 27,
    "line": 500,
    "over_line": 0,
-   "point": "AN-CSLEN001"
+   "point": "AN-CSLEN001",
+   "months": "May–September"
   },
   "ukf3102-09700": {
    "samples": 60,
@@ -967,7 +1054,8 @@
    "high": 27,
    "line": 500,
    "over_line": 0,
-   "point": "AN-SKEGN001"
+   "point": "AN-SKEGN001",
+   "months": "May–September"
   },
   "ukh1303-10325": {
    "samples": 60,
@@ -978,7 +1066,8 @@
    "high": 45,
    "line": 500,
    "over_line": 0,
-   "point": "AN-GY509174"
+   "point": "AN-GY509174",
+   "months": "May–September"
   },
   "ukh1303-10350": {
    "samples": 80,
@@ -989,7 +1078,8 @@
    "high": 36,
    "line": 500,
    "over_line": 0,
-   "point": "AN-GY530120"
+   "point": "AN-GY530120",
+   "months": "May–September"
   },
   "ukh1303-10400": {
    "samples": 59,
@@ -1000,7 +1090,8 @@
    "high": 18,
    "line": 500,
    "over_line": 0,
-   "point": "AN-GY535105"
+   "point": "AN-GY535105",
+   "months": "May–September"
   },
   "ukh1303-10500": {
    "samples": 58,
@@ -1011,7 +1102,8 @@
    "high": 82,
    "line": 500,
    "over_line": 1,
-   "point": "AN-GY533074"
+   "point": "AN-GY533074",
+   "months": "May–September"
   },
   "ukh1303-10600": {
    "samples": 59,
@@ -1022,7 +1114,8 @@
    "high": 45,
    "line": 500,
    "over_line": 0,
-   "point": "AN-GY533064"
+   "point": "AN-GY533064",
+   "months": "May–September"
   },
   "ukh1303-10650": {
    "samples": 55,
@@ -1033,7 +1126,8 @@
    "high": 18,
    "line": 500,
    "over_line": 0,
-   "point": "AN-GY532031"
+   "point": "AN-GY532031",
+   "months": "May–September"
   },
   "ukh1304-09800": {
    "samples": 77,
@@ -1044,7 +1138,8 @@
    "high": 120,
    "line": 500,
    "over_line": 1,
-   "point": "AN-66M11"
+   "point": "AN-66M11",
+   "months": "May–September"
   },
   "ukh1304-09850": {
    "samples": 76,
@@ -1055,7 +1150,8 @@
    "high": 150,
    "line": 500,
    "over_line": 3,
-   "point": "AN-66M23"
+   "point": "AN-66M23",
+   "months": "May–September"
   },
   "ukh1304-09900": {
    "samples": 79,
@@ -1066,7 +1162,8 @@
    "high": 280,
    "line": 500,
    "over_line": 4,
-   "point": "AN-66M07"
+   "point": "AN-66M07",
+   "months": "May–September"
   },
   "ukh1305-10000": {
    "samples": 79,
@@ -1077,7 +1174,8 @@
    "high": 27,
    "line": 500,
    "over_line": 0,
-   "point": "AN-WL914456"
+   "point": "AN-WL914456",
+   "months": "May–September"
   },
   "ukh1305-10100": {
    "samples": 65,
@@ -1088,7 +1186,8 @@
    "high": 36,
    "line": 500,
    "over_line": 0,
-   "point": "AN-SH155436"
+   "point": "AN-SH155436",
+   "months": "May–September"
   },
   "ukh1305-10125": {
    "samples": 65,
@@ -1099,7 +1198,8 @@
    "high": 82,
    "line": 500,
    "over_line": 0,
-   "point": "AN-WR186432"
+   "point": "AN-WR186432",
+   "months": "May–September"
   },
   "ukh1305-10150": {
    "samples": 55,
@@ -1110,7 +1210,8 @@
    "high": 64,
    "line": 500,
    "over_line": 0,
-   "point": "AN-ER202427"
+   "point": "AN-ER202427",
+   "months": "May–September"
   },
   "ukh1305-10200": {
    "samples": 75,
@@ -1121,7 +1222,8 @@
    "high": 73,
    "line": 500,
    "over_line": 1,
-   "point": "AN-CR220423"
+   "point": "AN-CR220423",
+   "months": "May–September"
   },
   "ukh1305-10300": {
    "samples": 64,
@@ -1132,7 +1234,8 @@
    "high": 64,
    "line": 500,
    "over_line": 0,
-   "point": "AN-MU317366"
+   "point": "AN-MU317366",
+   "months": "May–September"
   },
   "ukh1305-10310": {
    "samples": 65,
@@ -1143,7 +1246,8 @@
    "high": 27,
    "line": 500,
    "over_line": 0,
-   "point": "AN-SP430275"
+   "point": "AN-SP430275",
+   "months": "May–September"
   },
   "ukh1406-10900": {
    "samples": 60,
@@ -1154,7 +1258,8 @@
    "high": 45,
    "line": 500,
    "over_line": 0,
-   "point": "AN-FE305343"
+   "point": "AN-FE305343",
+   "months": "May–September"
   },
   "ukh1406-11000": {
    "samples": 55,
@@ -1165,7 +1270,8 @@
    "high": 55,
    "line": 500,
    "over_line": 0,
-   "point": "AN-FE297337"
+   "point": "AN-FE297337",
+   "months": "May–September"
   },
   "ukh1407-10750": {
    "samples": 70,
@@ -1176,7 +1282,8 @@
    "high": 73,
    "line": 500,
    "over_line": 0,
-   "point": "AN-LO546923"
+   "point": "AN-LO546923",
+   "months": "May–September"
   },
   "ukh1407-10800": {
    "samples": 75,
@@ -1187,7 +1294,8 @@
    "high": 73,
    "line": 500,
    "over_line": 1,
-   "point": "AN-LO543910"
+   "point": "AN-LO543910",
+   "months": "May–September"
   },
   "ukh1407-10830": {
    "samples": 64,
@@ -1198,7 +1306,8 @@
    "high": 55,
    "line": 500,
    "over_line": 0,
-   "point": "AN-SO513767"
+   "point": "AN-SO513767",
+   "months": "May–September"
   },
   "ukh1407-10850": {
    "samples": 69,
@@ -1209,7 +1318,8 @@
    "high": 82,
    "line": 500,
    "over_line": 0,
-   "point": "AN-SO508754"
+   "point": "AN-SO508754",
+   "months": "May–September"
   },
   "ukh3100-11770": {
    "samples": 78,
@@ -1220,7 +1330,8 @@
    "high": 100,
    "line": 500,
    "over_line": 0,
-   "point": "TH-PTTB0008"
+   "point": "TH-PTTB0008",
+   "months": "May–September"
   },
   "ukh3100-11780": {
    "samples": 78,
@@ -1231,7 +1342,8 @@
    "high": 73,
    "line": 500,
    "over_line": 2,
-   "point": "TH-PTTB0001"
+   "point": "TH-PTTB0001",
+   "months": "May–September"
   },
   "ukh3100-11800": {
    "samples": 80,
@@ -1242,7 +1354,8 @@
    "high": 150,
    "line": 500,
    "over_line": 0,
-   "point": "TH-PTTB0002"
+   "point": "TH-PTTB0002",
+   "months": "May–September"
   },
   "ukh3100-11830": {
    "samples": 73,
@@ -1253,7 +1366,8 @@
    "high": 100,
    "line": 500,
    "over_line": 2,
-   "point": "TH-PTTB0025"
+   "point": "TH-PTTB0025",
+   "months": "May–September"
   },
   "ukh3100-11850": {
    "samples": 80,
@@ -1264,7 +1378,8 @@
    "high": 91,
    "line": 500,
    "over_line": 1,
-   "point": "TH-PTTB0012"
+   "point": "TH-PTTB0012",
+   "months": "May–September"
   },
   "ukh3100-11900": {
    "samples": 70,
@@ -1275,7 +1390,8 @@
    "high": 170,
    "line": 500,
    "over_line": 4,
-   "point": "TH-PTTB0004"
+   "point": "TH-PTTB0004",
+   "months": "May–September"
   },
   "ukh3100-11902": {
    "samples": 79,
@@ -1286,7 +1402,8 @@
    "high": 220,
    "line": 500,
    "over_line": 2,
-   "point": "TH-PTTB0023"
+   "point": "TH-PTTB0023",
+   "months": "May–September"
   },
   "ukh3100-11904": {
    "samples": 79,
@@ -1297,7 +1414,8 @@
    "high": 130,
    "line": 500,
    "over_line": 1,
-   "point": "TH-PTTB0005"
+   "point": "TH-PTTB0005",
+   "months": "May–September"
   },
   "ukh3306-11750": {
    "samples": 80,
@@ -1308,7 +1426,8 @@
    "high": 55,
    "line": 500,
    "over_line": 1,
-   "point": "AN-BE0235"
+   "point": "AN-BE0235",
+   "months": "May–September"
   },
   "ukh3311-11100": {
    "samples": 56,
@@ -1319,7 +1438,8 @@
    "high": 45,
    "line": 500,
    "over_line": 0,
-   "point": "AN-HW0010"
+   "point": "AN-HW0010",
+   "months": "May–September"
   },
   "ukh3311-11250": {
    "samples": 69,
@@ -1330,7 +1450,8 @@
    "high": 82,
    "line": 500,
    "over_line": 0,
-   "point": "AN-CW2200"
+   "point": "AN-CW2200",
+   "months": "May–September"
   },
   "ukh3311-11300": {
    "samples": 50,
@@ -1341,7 +1462,8 @@
    "high": 55,
    "line": 500,
    "over_line": 0,
-   "point": "AN-CW1850"
+   "point": "AN-CW1850",
+   "months": "May–September"
   },
   "ukh3311-11350": {
    "samples": 75,
@@ -1352,7 +1474,8 @@
    "high": 36,
    "line": 500,
    "over_line": 0,
-   "point": "AN-CW1765"
+   "point": "AN-CW1765",
+   "months": "May–September"
   },
   "ukh3311-11500": {
    "samples": 68,
@@ -1363,7 +1486,8 @@
    "high": 64,
    "line": 500,
    "over_line": 0,
-   "point": "AN-CW1520"
+   "point": "AN-CW1520",
+   "months": "May–September"
   },
   "ukh3311-11600": {
    "samples": 70,
@@ -1374,7 +1498,8 @@
    "high": 36,
    "line": 500,
    "over_line": 0,
-   "point": "AN-CW1280"
+   "point": "AN-CW1280",
+   "months": "May–September"
   },
   "ukh3311-11650": {
    "samples": 79,
@@ -1385,7 +1510,8 @@
    "high": 73,
    "line": 500,
    "over_line": 1,
-   "point": "AN-CW616213"
+   "point": "AN-CW616213",
+   "months": "May–September"
   },
   "ukh3311-11700": {
    "samples": 55,
@@ -1396,7 +1522,8 @@
    "high": 82,
    "line": 500,
    "over_line": 1,
-   "point": "AN-NE0450"
+   "point": "AN-NE0450",
+   "months": "May–September"
   },
   "ukj2100-14800": {
    "samples": 39,
@@ -1407,7 +1534,8 @@
    "high": 73,
    "line": 500,
    "over_line": 1,
-   "point": "SO-F0001870"
+   "point": "SO-F0001870",
+   "months": "May–September"
   },
   "ukj2100-14900": {
    "samples": 62,
@@ -1418,7 +1546,8 @@
    "high": 45,
    "line": 500,
    "over_line": 0,
-   "point": "SO-F0001874"
+   "point": "SO-F0001874",
+   "months": "May–September"
   },
   "ukj2100-14950": {
    "samples": 67,
@@ -1429,7 +1558,8 @@
    "high": 120,
    "line": 500,
    "over_line": 0,
-   "point": "SO-F0002801"
+   "point": "SO-F0002801",
+   "months": "May–September"
   },
   "ukj2100-15000": {
    "samples": 57,
@@ -1440,7 +1570,8 @@
    "high": 36,
    "line": 500,
    "over_line": 2,
-   "point": "SO-F0002786"
+   "point": "SO-F0002786",
+   "months": "May–September"
   },
   "ukj2201-14400": {
    "samples": 78,
@@ -1451,7 +1582,8 @@
    "high": 73,
    "line": 500,
    "over_line": 0,
-   "point": "SO-F0001828"
+   "point": "SO-F0001828",
+   "months": "May–September"
   },
   "ukj2201-14550": {
    "samples": 38,
@@ -1462,7 +1594,8 @@
    "high": 64,
    "line": 500,
    "over_line": 0,
-   "point": "SO-F0001843"
+   "point": "SO-F0001843",
+   "months": "May–September"
   },
   "ukj2202-14100": {
    "samples": 68,
@@ -1473,7 +1606,8 @@
    "high": 110,
    "line": 500,
    "over_line": 0,
-   "point": "SO-F0017484"
+   "point": "SO-F0017484",
+   "months": "May–September"
   },
   "ukj2202-14150": {
    "samples": 75,
@@ -1484,7 +1618,8 @@
    "high": 100,
    "line": 500,
    "over_line": 0,
-   "point": "SO-F0001813"
+   "point": "SO-F0001813",
+   "months": "May–September"
   },
   "ukj2203-14600": {
    "samples": 54,
@@ -1495,7 +1630,8 @@
    "high": 36,
    "line": 500,
    "over_line": 0,
-   "point": "SO-F0001854"
+   "point": "SO-F0001854",
+   "months": "May–September"
   },
   "ukj2204-13900": {
    "samples": 81,
@@ -1506,7 +1642,8 @@
    "high": 200,
    "line": 500,
    "over_line": 1,
-   "point": "SO-E0000109"
+   "point": "SO-E0000109",
+   "months": "May–September"
   },
   "ukj2204-14000": {
    "samples": 80,
@@ -1517,7 +1654,8 @@
    "high": 150,
    "line": 500,
    "over_line": 1,
-   "point": "SO-E0000111"
+   "point": "SO-E0000111",
+   "months": "May–September"
   },
   "ukj2205-14200": {
    "samples": 69,
@@ -1528,7 +1666,8 @@
    "high": 180,
    "line": 500,
    "over_line": 3,
-   "point": "SO-E0004787"
+   "point": "SO-E0004787",
+   "months": "May–September"
   },
   "ukj2205-14300": {
    "samples": 57,
@@ -1539,7 +1678,8 @@
    "high": 82,
    "line": 500,
    "over_line": 0,
-   "point": "SO-F0001822"
+   "point": "SO-F0001822",
+   "months": "May–September"
   },
   "ukj2401-15100": {
    "samples": 38,
@@ -1550,7 +1690,8 @@
    "high": 18,
    "line": 500,
    "over_line": 0,
-   "point": "SO-F0001885"
+   "point": "SO-F0001885",
+   "months": "May–September"
   },
   "ukj2401-15200": {
    "samples": 60,
@@ -1561,7 +1702,8 @@
    "high": 27,
    "line": 500,
    "over_line": 1,
-   "point": "SO-F0017474"
+   "point": "SO-F0017474",
+   "months": "May–September"
   },
   "ukj2401-15300": {
    "samples": 77,
@@ -1572,7 +1714,8 @@
    "high": 130,
    "line": 500,
    "over_line": 1,
-   "point": "SO-F0001892"
+   "point": "SO-F0001892",
+   "months": "May–September"
   },
   "ukj2402-15500": {
    "samples": 81,
@@ -1583,7 +1726,8 @@
    "high": 100,
    "line": 500,
    "over_line": 3,
-   "point": "SO-F0017446"
+   "point": "SO-F0017446",
+   "months": "May–September"
   },
   "ukj2402-15600": {
    "samples": 55,
@@ -1594,7 +1738,8 @@
    "high": 27,
    "line": 500,
    "over_line": 0,
-   "point": "SO-F0001919"
+   "point": "SO-F0001919",
+   "months": "May–September"
   },
   "ukj2402-15650": {
    "samples": 77,
@@ -1605,7 +1750,8 @@
    "high": 260,
    "line": 500,
    "over_line": 4,
-   "point": "SO-F0001920"
+   "point": "SO-F0001920",
+   "months": "May–September"
   },
   "ukj2402-15680": {
    "samples": 74,
@@ -1616,7 +1762,8 @@
    "high": 120,
    "line": 500,
    "over_line": 3,
-   "point": "SO-F0017448"
+   "point": "SO-F0017448",
+   "months": "May–September"
   },
   "ukj2402-15700": {
    "samples": 76,
@@ -1627,7 +1774,8 @@
    "high": 130,
    "line": 500,
    "over_line": 2,
-   "point": "SO-F0001925"
+   "point": "SO-F0001925",
+   "months": "May–September"
   },
   "ukj2402-15800": {
    "samples": 79,
@@ -1638,7 +1786,8 @@
    "high": 55,
    "line": 500,
    "over_line": 1,
-   "point": "SO-F0001927"
+   "point": "SO-F0001927",
+   "months": "May–September"
   },
   "ukj2403-15900": {
    "samples": 55,
@@ -1649,7 +1798,8 @@
    "high": "<10",
    "line": 500,
    "over_line": 0,
-   "point": "SO-F0001928"
+   "point": "SO-F0001928",
+   "months": "May–September"
   },
   "ukj2403-16000": {
    "samples": 40,
@@ -1660,7 +1810,8 @@
    "high": 18,
    "line": 500,
    "over_line": 0,
-   "point": "SO-F0001934"
+   "point": "SO-F0001934",
+   "months": "May–September"
   },
   "ukj2403-16100": {
    "samples": 39,
@@ -1671,7 +1822,8 @@
    "high": "<10",
    "line": 500,
    "over_line": 0,
-   "point": "SO-F0001936"
+   "point": "SO-F0001936",
+   "months": "May–September"
   },
   "ukj2407-15400": {
    "samples": 73,
@@ -1682,7 +1834,8 @@
    "high": 150,
    "line": 500,
    "over_line": 3,
-   "point": "SO-F0001903"
+   "point": "SO-F0001903",
+   "months": "May–September"
   },
   "ukj3100-16500": {
    "samples": 70,
@@ -1693,7 +1846,8 @@
    "high": 73,
    "line": 500,
    "over_line": 1,
-   "point": "SO-G0003490"
+   "point": "SO-G0003490",
+   "months": "May–September"
   },
   "ukj3100-16600": {
    "samples": 76,
@@ -1704,7 +1858,8 @@
    "high": 740,
    "line": 500,
    "over_line": 10,
-   "point": "SO-G0017029"
+   "point": "SO-G0017029",
+   "months": "May–September"
   },
   "ukj3304-16850": {
    "samples": 80,
@@ -1715,7 +1870,8 @@
    "high": 130,
    "line": 500,
    "over_line": 1,
-   "point": "SO-G0003531"
+   "point": "SO-G0003531",
+   "months": "May–September"
   },
   "ukj3305-16700": {
    "samples": 80,
@@ -1726,7 +1882,8 @@
    "high": 64,
    "line": 500,
    "over_line": 0,
-   "point": "SO-G0003516"
+   "point": "SO-G0003516",
+   "months": "May–September"
   },
   "ukj3305-16800": {
    "samples": 40,
@@ -1737,7 +1894,8 @@
    "high": 64,
    "line": 500,
    "over_line": 0,
-   "point": "SO-G0003530"
+   "point": "SO-G0003530",
+   "months": "May–September"
   },
   "ukj3307-16300": {
    "samples": 40,
@@ -1748,7 +1906,8 @@
    "high": "<10",
    "line": 500,
    "over_line": 0,
-   "point": "SO-G0003460"
+   "point": "SO-G0003460",
+   "months": "May–September"
   },
   "ukj3307-16350": {
    "samples": 40,
@@ -1759,7 +1918,8 @@
    "high": 55,
    "line": 500,
    "over_line": 0,
-   "point": "SO-G0017367"
+   "point": "SO-G0017367",
+   "months": "May–September"
   },
   "ukj3307-16400": {
    "samples": 40,
@@ -1770,7 +1930,8 @@
    "high": "<10",
    "line": 500,
    "over_line": 1,
-   "point": "SO-G0003461"
+   "point": "SO-G0003461",
+   "months": "May–September"
   },
   "ukj3308-16900": {
    "samples": 40,
@@ -1781,7 +1942,8 @@
    "high": 18,
    "line": 500,
    "over_line": 0,
-   "point": "SO-G0003588"
+   "point": "SO-G0003588",
+   "months": "May–September"
   },
   "ukj3308-17000": {
    "samples": 40,
@@ -1792,7 +1954,8 @@
    "high": "<10",
    "line": 500,
    "over_line": 0,
-   "point": "SO-G0003591"
+   "point": "SO-G0003591",
+   "months": "May–September"
   },
   "ukj3308-17100": {
    "samples": 40,
@@ -1803,7 +1966,8 @@
    "high": "<10",
    "line": 500,
    "over_line": 0,
-   "point": "SO-G0006417"
+   "point": "SO-G0006417",
+   "months": "May–September"
   },
   "ukj3400-17400": {
    "samples": 41,
@@ -1814,7 +1978,8 @@
    "high": "<10",
    "line": 500,
    "over_line": 0,
-   "point": "SO-Y0004255"
+   "point": "SO-Y0004255",
+   "months": "May–September"
   },
   "ukj3400-17500": {
    "samples": 56,
@@ -1825,7 +1990,8 @@
    "high": 18,
    "line": 500,
    "over_line": 0,
-   "point": "SO-Y0004257"
+   "point": "SO-Y0004257",
+   "months": "May–September"
   },
   "ukj3400-17600": {
    "samples": 56,
@@ -1836,7 +2002,8 @@
    "high": 36,
    "line": 500,
    "over_line": 0,
-   "point": "SO-Y0004259"
+   "point": "SO-Y0004259",
+   "months": "May–September"
   },
   "ukj3400-17700": {
    "samples": 77,
@@ -1847,7 +2014,8 @@
    "high": 45,
    "line": 500,
    "over_line": 0,
-   "point": "SO-Y0004269"
+   "point": "SO-Y0004269",
+   "months": "May–September"
   },
   "ukj3400-17800": {
    "samples": 66,
@@ -1858,7 +2026,8 @@
    "high": 55,
    "line": 500,
    "over_line": 0,
-   "point": "SO-Y0004270"
+   "point": "SO-Y0004270",
+   "months": "May–September"
   },
   "ukj3400-17850": {
    "samples": 76,
@@ -1869,7 +2038,8 @@
    "high": 27,
    "line": 500,
    "over_line": 0,
-   "point": "SO-Y0004516"
+   "point": "SO-Y0004516",
+   "months": "May–September"
   },
   "ukj3400-17900": {
    "samples": 80,
@@ -1880,7 +2050,8 @@
    "high": 55,
    "line": 500,
    "over_line": 0,
-   "point": "SO-Y0004283"
+   "point": "SO-Y0004283",
+   "months": "May–September"
   },
   "ukj3400-18000": {
    "samples": 59,
@@ -1891,7 +2062,8 @@
    "high": 73,
    "line": 500,
    "over_line": 0,
-   "point": "SO-Y0004286"
+   "point": "SO-Y0004286",
+   "months": "May–September"
   },
   "ukj3400-18100": {
    "samples": 65,
@@ -1902,7 +2074,8 @@
    "high": 18,
    "line": 500,
    "over_line": 0,
-   "point": "SO-Y0004288"
+   "point": "SO-Y0004288",
+   "months": "May–September"
   },
   "ukj3400-18200": {
    "samples": 80,
@@ -1913,7 +2086,8 @@
    "high": 64,
    "line": 500,
    "over_line": 3,
-   "point": "SO-Y0004456"
+   "point": "SO-Y0004456",
+   "months": "May–September"
   },
   "ukj3400-18300": {
    "samples": 65,
@@ -1924,7 +2098,8 @@
    "high": 27,
    "line": 500,
    "over_line": 1,
-   "point": "SO-Y0004293"
+   "point": "SO-Y0004293",
+   "months": "May–September"
   },
   "ukj3400-18350": {
    "samples": 80,
@@ -1935,7 +2110,8 @@
    "high": 55,
    "line": 500,
    "over_line": 1,
-   "point": "SO-Y0004297"
+   "point": "SO-Y0004297",
+   "months": "May–September"
   },
   "ukj3400-18400": {
    "samples": 79,
@@ -1946,7 +2122,8 @@
    "high": 160,
    "line": 500,
    "over_line": 2,
-   "point": "SO-Y0004298"
+   "point": "SO-Y0004298",
+   "months": "May–September"
   },
   "ukj3400-18500": {
    "samples": 79,
@@ -1957,7 +2134,8 @@
    "high": 91,
    "line": 500,
    "over_line": 1,
-   "point": "SO-Y0004300"
+   "point": "SO-Y0004300",
+   "months": "May–September"
   },
   "ukj3400-18600": {
    "samples": 65,
@@ -1968,7 +2146,8 @@
    "high": 18,
    "line": 500,
    "over_line": 0,
-   "point": "SO-Y0004304"
+   "point": "SO-Y0004304",
+   "months": "May–September"
   },
   "ukj4202-12100": {
    "samples": 75,
@@ -1979,7 +2158,8 @@
    "high": 100,
    "line": 500,
    "over_line": 1,
-   "point": "SO-E0000015"
+   "point": "SO-E0000015",
+   "months": "May–September"
   },
   "ukj4202-12120": {
    "samples": 64,
@@ -1990,7 +2170,8 @@
    "high": 55,
    "line": 500,
    "over_line": 0,
-   "point": "SO-E0004744"
+   "point": "SO-E0004744",
+   "months": "May–September"
   },
   "ukj4202-12150": {
    "samples": 77,
@@ -2001,7 +2182,8 @@
    "high": 130,
    "line": 500,
    "over_line": 1,
-   "point": "SO-E0017452"
+   "point": "SO-E0017452",
+   "months": "May–September"
   },
   "ukj4202-12200": {
    "samples": 77,
@@ -2012,7 +2194,8 @@
    "high": 55,
    "line": 500,
    "over_line": 0,
-   "point": "SO-E0000021"
+   "point": "SO-E0000021",
+   "months": "May–September"
   },
   "ukj4204-13000": {
    "samples": 75,
@@ -2023,7 +2206,8 @@
    "high": 130,
    "line": 500,
    "over_line": 1,
-   "point": "SO-E0000059"
+   "point": "SO-E0000059",
+   "months": "May–September"
   },
   "ukj4204-13100": {
    "samples": 75,
@@ -2034,7 +2218,8 @@
    "high": 200,
    "line": 500,
    "over_line": 2,
-   "point": "SO-E0000063"
+   "point": "SO-E0000063",
+   "months": "May–September"
   },
   "ukj4204-13200": {
    "samples": 55,
@@ -2045,7 +2230,8 @@
    "high": 73,
    "line": 500,
    "over_line": 0,
-   "point": "SO-E0000071"
+   "point": "SO-E0000071",
+   "months": "May–September"
   },
   "ukj4208-13300": {
    "samples": 80,
@@ -2056,7 +2242,8 @@
    "high": 280,
    "line": 500,
    "over_line": 2,
-   "point": "SO-E0000086"
+   "point": "SO-E0000086",
+   "months": "May–September"
   },
   "ukj4208-13400": {
    "samples": 65,
@@ -2067,7 +2254,8 @@
    "high": 73,
    "line": 500,
    "over_line": 0,
-   "point": "SO-E0000092"
+   "point": "SO-E0000092",
+   "months": "May–September"
   },
   "ukj4208-13500": {
    "samples": 55,
@@ -2078,7 +2266,8 @@
    "high": 55,
    "line": 500,
    "over_line": 0,
-   "point": "SO-E0000093"
+   "point": "SO-E0000093",
+   "months": "May–September"
   },
   "ukj4208-13600": {
    "samples": 80,
@@ -2089,7 +2278,8 @@
    "high": 540,
    "line": 500,
    "over_line": 9,
-   "point": "SO-E0004745"
+   "point": "SO-E0004745",
+   "months": "May–September"
   },
   "ukj4208-13700": {
    "samples": 80,
@@ -2100,7 +2290,8 @@
    "high": 290,
    "line": 500,
    "over_line": 1,
-   "point": "SO-E0000101"
+   "point": "SO-E0000101",
+   "months": "May–September"
   },
   "ukj4208-13800": {
    "samples": 80,
@@ -2111,7 +2302,8 @@
    "high": 470,
    "line": 500,
    "over_line": 8,
-   "point": "SO-E0000102"
+   "point": "SO-E0000102",
+   "months": "May–September"
   },
   "ukj4209-11950": {
    "samples": 60,
@@ -2122,7 +2314,8 @@
    "high": 64,
    "line": 500,
    "over_line": 0,
-   "point": "SO-E0000007"
+   "point": "SO-E0000007",
+   "months": "May–September"
   },
   "ukj4209-11975": {
    "samples": 55,
@@ -2133,7 +2326,8 @@
    "high": 100,
    "line": 500,
    "over_line": 1,
-   "point": "SO-E0004879"
+   "point": "SO-E0004879",
+   "months": "May–September"
   },
   "ukj4209-12000": {
    "samples": 80,
@@ -2144,7 +2338,8 @@
    "high": 100,
    "line": 500,
    "over_line": 0,
-   "point": "SO-E0000011"
+   "point": "SO-E0000011",
+   "months": "May–September"
   },
   "ukj4210-12300": {
    "samples": 60,
@@ -2155,7 +2350,8 @@
    "high": 64,
    "line": 500,
    "over_line": 0,
-   "point": "SO-E0000024"
+   "point": "SO-E0000024",
+   "months": "May–September"
   },
   "ukj4210-12350": {
    "samples": 80,
@@ -2166,7 +2362,8 @@
    "high": 140,
    "line": 500,
    "over_line": 3,
-   "point": "SO-E0000025"
+   "point": "SO-E0000025",
+   "months": "May–September"
   },
   "ukj4210-12400": {
    "samples": 75,
@@ -2177,7 +2374,8 @@
    "high": 150,
    "line": 500,
    "over_line": 2,
-   "point": "SO-E0000026"
+   "point": "SO-E0000026",
+   "months": "May–September"
   },
   "ukj4210-12450": {
    "samples": 55,
@@ -2188,7 +2386,8 @@
    "high": 110,
    "line": 500,
    "over_line": 1,
-   "point": "SO-E0000028"
+   "point": "SO-E0000028",
+   "months": "May–September"
   },
   "ukj4210-12500": {
    "samples": 80,
@@ -2199,7 +2398,8 @@
    "high": 140,
    "line": 500,
    "over_line": 2,
-   "point": "SO-E0000029"
+   "point": "SO-E0000029",
+   "months": "May–September"
   },
   "ukj4210-12600": {
    "samples": 75,
@@ -2210,7 +2410,8 @@
    "high": 45,
    "line": 500,
    "over_line": 0,
-   "point": "SO-E0000030"
+   "point": "SO-E0000030",
+   "months": "May–September"
   },
   "ukj4210-12630": {
    "samples": 80,
@@ -2221,7 +2422,8 @@
    "high": 170,
    "line": 500,
    "over_line": 3,
-   "point": "SO-E0000031"
+   "point": "SO-E0000031",
+   "months": "May–September"
   },
   "ukj4210-12660": {
    "samples": 65,
@@ -2232,7 +2434,8 @@
    "high": 73,
    "line": 500,
    "over_line": 0,
-   "point": "SO-E0000037"
+   "point": "SO-E0000037",
+   "months": "May–September"
   },
   "ukj4210-12700": {
    "samples": 65,
@@ -2243,7 +2446,8 @@
    "high": 150,
    "line": 500,
    "over_line": 1,
-   "point": "SO-E0000038"
+   "point": "SO-E0000038",
+   "months": "May–September"
   },
   "ukj4210-12750": {
    "samples": 75,
@@ -2254,7 +2458,8 @@
    "high": 91,
    "line": 500,
    "over_line": 1,
-   "point": "SO-E0000042"
+   "point": "SO-E0000042",
+   "months": "May–September"
   },
   "ukj4210-12800": {
    "samples": 79,
@@ -2265,7 +2470,8 @@
    "high": 260,
    "line": 500,
    "over_line": 3,
-   "point": "SO-E0000051"
+   "point": "SO-E0000051",
+   "months": "May–September"
   },
   "ukj4210-12850": {
    "samples": 60,
@@ -2276,7 +2482,8 @@
    "high": 64,
    "line": 500,
    "over_line": 3,
-   "point": "SO-E0000053"
+   "point": "SO-E0000053",
+   "months": "May–September"
   },
   "ukj4210-12900": {
    "samples": 75,
@@ -2287,7 +2494,8 @@
    "high": 140,
    "line": 500,
    "over_line": 2,
-   "point": "SO-E0000057"
+   "point": "SO-E0000057",
+   "months": "May–September"
   },
   "ukk1202-35700": {
    "samples": 74,
@@ -2298,7 +2506,8 @@
    "high": 250,
    "line": 500,
    "over_line": 1,
-   "point": "SW-E8900900"
+   "point": "SW-E8900900",
+   "months": "May–September"
   },
   "ukk1202-35800": {
    "samples": 73,
@@ -2309,7 +2518,8 @@
    "high": 250,
    "line": 500,
    "over_line": 1,
-   "point": "SW-E8901210"
+   "point": "SW-E8901210",
+   "months": "May–September"
   },
   "ukk1202-35900": {
    "samples": 80,
@@ -2320,7 +2530,8 @@
    "high": 260,
    "line": 500,
    "over_line": 2,
-   "point": "SW-E8901600"
+   "point": "SW-E8901600",
+   "months": "May–September"
   },
   "ukk2101-19000": {
    "samples": 40,
@@ -2331,7 +2542,8 @@
    "high": "<10",
    "line": 500,
    "over_line": 0,
-   "point": "SW-C2621000"
+   "point": "SW-C2621000",
+   "months": "May–September"
   },
   "ukk2101-19020": {
    "samples": 40,
@@ -2342,7 +2554,8 @@
    "high": 18,
    "line": 500,
    "over_line": 0,
-   "point": "SW-50374425"
+   "point": "SW-50374425",
+   "months": "May–September"
   },
   "ukk2101-19030": {
    "samples": 40,
@@ -2353,7 +2566,8 @@
    "high": 45,
    "line": 500,
    "over_line": 0,
-   "point": "SW-50024410"
+   "point": "SW-50024410",
+   "months": "May–September"
   },
   "ukk2101-19050": {
    "samples": 60,
@@ -2364,7 +2578,8 @@
    "high": 64,
    "line": 500,
    "over_line": 0,
-   "point": "SW-50024440"
+   "point": "SW-50024440",
+   "months": "May–September"
   },
   "ukk2101-19060": {
    "samples": 65,
@@ -2375,7 +2590,8 @@
    "high": 73,
    "line": 500,
    "over_line": 0,
-   "point": "SW-50024445"
+   "point": "SW-50024445",
+   "months": "May–September"
   },
   "ukk2101-19100": {
    "samples": 65,
@@ -2386,7 +2602,8 @@
    "high": 64,
    "line": 500,
    "over_line": 0,
-   "point": "SW-50024483"
+   "point": "SW-50024483",
+   "months": "May–September"
   },
   "ukk2101-19150": {
    "samples": 60,
@@ -2397,7 +2614,8 @@
    "high": 27,
    "line": 500,
    "over_line": 0,
-   "point": "SW-50024507"
+   "point": "SW-50024507",
+   "months": "May–September"
   },
   "ukk2101-19160": {
    "samples": 55,
@@ -2408,7 +2626,8 @@
    "high": 18,
    "line": 500,
    "over_line": 0,
-   "point": "SW-50024515"
+   "point": "SW-50024515",
+   "months": "May–September"
   },
   "ukk2102-19170": {
    "samples": 40,
@@ -2419,7 +2638,8 @@
    "high": 36,
    "line": 500,
    "over_line": 0,
-   "point": "SW-50024527"
+   "point": "SW-50024527",
+   "months": "May–September"
   },
   "ukk2102-19190": {
    "samples": 40,
@@ -2430,7 +2650,8 @@
    "high": 18,
    "line": 500,
    "over_line": 0,
-   "point": "SW-50024545"
+   "point": "SW-50024545",
+   "months": "May–September"
   },
   "ukk2102-19200": {
    "samples": 40,
@@ -2441,7 +2662,8 @@
    "high": 36,
    "line": 500,
    "over_line": 0,
-   "point": "SW-50024558"
+   "point": "SW-50024558",
+   "months": "May–September"
   },
   "ukk2102-19350": {
    "samples": 40,
@@ -2452,7 +2674,8 @@
    "high": 27,
    "line": 500,
    "over_line": 0,
-   "point": "SW-50024575"
+   "point": "SW-50024575",
+   "months": "May–September"
   },
   "ukk2102-19400": {
    "samples": 65,
@@ -2463,7 +2686,8 @@
    "high": 160,
    "line": 500,
    "over_line": 2,
-   "point": "SW-50950270"
+   "point": "SW-50950270",
+   "months": "May–September"
   },
   "ukk2102-19450": {
    "samples": 75,
@@ -2474,7 +2698,8 @@
    "high": 91,
    "line": 500,
    "over_line": 0,
-   "point": "SW-50950300"
+   "point": "SW-50950300",
+   "months": "May–September"
   },
   "ukk2201-17200": {
    "samples": 40,
@@ -2485,7 +2710,8 @@
    "high": 18,
    "line": 500,
    "over_line": 0,
-   "point": "SO-G0003607"
+   "point": "SO-G0003607",
+   "months": "May–September"
   },
   "ukk2201-17300": {
    "samples": 60,
@@ -2496,7 +2722,8 @@
    "high": 27,
    "line": 500,
    "over_line": 1,
-   "point": "SO-G0003608"
+   "point": "SO-G0003608",
+   "months": "May–September"
   },
   "ukk2201-18700": {
    "samples": 65,
@@ -2507,7 +2734,8 @@
    "high": 45,
    "line": 500,
    "over_line": 0,
-   "point": "SW-C2710000"
+   "point": "SW-C2710000",
+   "months": "May–September"
   },
   "ukk2201-18750": {
    "samples": 70,
@@ -2518,7 +2746,8 @@
    "high": 73,
    "line": 500,
    "over_line": 1,
-   "point": "SW-52804344"
+   "point": "SW-52804344",
+   "months": "May–September"
   },
   "ukk2201-18800": {
    "samples": 70,
@@ -2529,7 +2758,8 @@
    "high": 100,
    "line": 500,
    "over_line": 3,
-   "point": "SW-52804350"
+   "point": "SW-52804350",
+   "months": "May–September"
   },
   "ukk2201-18900": {
    "samples": 55,
@@ -2540,7 +2770,8 @@
    "high": 27,
    "line": 500,
    "over_line": 0,
-   "point": "SW-52800124"
+   "point": "SW-52800124",
+   "months": "May–September"
   },
   "ukk2204-19600": {
    "samples": 40,
@@ -2551,7 +2782,8 @@
    "high": "<10",
    "line": 500,
    "over_line": 0,
-   "point": "SW-50904420"
+   "point": "SW-50904420",
+   "months": "May–September"
   },
   "ukk2204-19700": {
    "samples": 40,
@@ -2562,7 +2794,8 @@
    "high": "<10",
    "line": 500,
    "over_line": 0,
-   "point": "SW-50034420"
+   "point": "SW-50034420",
+   "months": "May–September"
   },
   "ukk2204-19800": {
    "samples": 60,
@@ -2573,7 +2806,8 @@
    "high": 55,
    "line": 500,
    "over_line": 0,
-   "point": "SW-50034485"
+   "point": "SW-50034485",
+   "months": "May–September"
   },
   "ukk2204-19900": {
    "samples": 41,
@@ -2584,7 +2818,8 @@
    "high": 64,
    "line": 500,
    "over_line": 0,
-   "point": "SW-50034589"
+   "point": "SW-50034589",
+   "months": "May–September"
   },
   "ukk2204-20000": {
    "samples": 55,
@@ -2595,7 +2830,8 @@
    "high": 36,
    "line": 500,
    "over_line": 0,
-   "point": "SW-50034611"
+   "point": "SW-50034611",
+   "months": "May–September"
   },
   "ukk2204-20100": {
    "samples": 41,
@@ -2606,7 +2842,8 @@
    "high": "<10",
    "line": 500,
    "over_line": 0,
-   "point": "SW-50034638"
+   "point": "SW-50034638",
+   "months": "May–September"
   },
   "ukk2204-20200": {
    "samples": 41,
@@ -2617,7 +2854,8 @@
    "high": "<10",
    "line": 500,
    "over_line": 0,
-   "point": "SW-50034643"
+   "point": "SW-50034643",
+   "months": "May–September"
   },
   "ukk2205-20970": {
    "samples": 39,
@@ -2628,7 +2866,8 @@
    "high": 36,
    "line": 500,
    "over_line": 0,
-   "point": "SW-50704424"
+   "point": "SW-50704424",
+   "months": "May–September"
   },
   "ukk2205-21000": {
    "samples": 60,
@@ -2639,7 +2878,8 @@
    "high": 18,
    "line": 500,
    "over_line": 0,
-   "point": "SW-50704479"
+   "point": "SW-50704479",
+   "months": "May–September"
   },
   "ukk2205-21100": {
    "samples": 39,
@@ -2650,7 +2890,8 @@
    "high": 27,
    "line": 500,
    "over_line": 0,
-   "point": "SW-50704511"
+   "point": "SW-50704511",
+   "months": "May–September"
   },
   "ukk2205-21200": {
    "samples": 39,
@@ -2661,7 +2902,8 @@
    "high": 18,
    "line": 500,
    "over_line": 0,
-   "point": "SW-50054425"
+   "point": "SW-50054425",
+   "months": "May–September"
   },
   "ukk2205-21300": {
    "samples": 69,
@@ -2672,7 +2914,8 @@
    "high": 64,
    "line": 500,
    "over_line": 0,
-   "point": "SW-50054566"
+   "point": "SW-50054566",
+   "months": "May–September"
   },
   "ukk2205-21500": {
    "samples": 80,
@@ -2683,7 +2926,8 @@
    "high": 91,
    "line": 500,
    "over_line": 1,
-   "point": "SW-70114448"
+   "point": "SW-70114448",
+   "months": "May–September"
   },
   "ukk2206-20300": {
    "samples": 41,
@@ -2694,7 +2938,8 @@
    "high": 18,
    "line": 500,
    "over_line": 0,
-   "point": "SW-50034659"
+   "point": "SW-50034659",
+   "months": "May–September"
   },
   "ukk2206-20400": {
    "samples": 80,
@@ -2705,7 +2950,8 @@
    "high": 45,
    "line": 500,
    "over_line": 1,
-   "point": "SW-50034689"
+   "point": "SW-50034689",
+   "months": "May–September"
   },
   "ukk2206-20500": {
    "samples": 40,
@@ -2716,7 +2962,8 @@
    "high": "<10",
    "line": 500,
    "over_line": 0,
-   "point": "SW-50044589"
+   "point": "SW-50044589",
+   "months": "May–September"
   },
   "ukk2206-20600": {
    "samples": 50,
@@ -2727,7 +2974,8 @@
    "high": 18,
    "line": 500,
    "over_line": 0,
-   "point": "SW-50600151"
+   "point": "SW-50600151",
+   "months": "May–September"
   },
   "ukk2206-20700": {
    "samples": 70,
@@ -2738,7 +2986,8 @@
    "high": 82,
    "line": 500,
    "over_line": 1,
-   "point": "SW-50604435"
+   "point": "SW-50604435",
+   "months": "May–September"
   },
   "ukk2206-20800": {
    "samples": 55,
@@ -2749,7 +2998,8 @@
    "high": 82,
    "line": 500,
    "over_line": 0,
-   "point": "SW-50044442"
+   "point": "SW-50044442",
+   "months": "May–September"
   },
   "ukk2206-20900": {
    "samples": 60,
@@ -2760,7 +3010,8 @@
    "high": 64,
    "line": 500,
    "over_line": 0,
-   "point": "SW-50044448"
+   "point": "SW-50044448",
+   "months": "May–September"
   },
   "ukk2302-35500": {
    "samples": 79,
@@ -2771,7 +3022,8 @@
    "high": 91,
    "line": 500,
    "over_line": 1,
-   "point": "SW-E8900500"
+   "point": "SW-E8900500",
+   "months": "May–September"
   },
   "ukk2302-35600": {
    "samples": 80,
@@ -2782,7 +3034,8 @@
    "high": 130,
    "line": 500,
    "over_line": 1,
-   "point": "SW-E8900600"
+   "point": "SW-E8900600",
+   "months": "May–September"
   },
   "ukk2305-34900": {
    "samples": 40,
@@ -2793,7 +3046,8 @@
    "high": "<10",
    "line": 500,
    "over_line": 0,
-   "point": "SW-E0900100"
+   "point": "SW-E0900100",
+   "months": "May–September"
   },
   "ukk2305-35000": {
    "samples": 79,
@@ -2804,7 +3058,8 @@
    "high": 150,
    "line": 500,
    "over_line": 0,
-   "point": "SW-E0900400"
+   "point": "SW-E0900400",
+   "months": "May–September"
   },
   "ukk2305-35200": {
    "samples": 80,
@@ -2815,7 +3070,8 @@
    "high": 220,
    "line": 500,
    "over_line": 2,
-   "point": "SW-E0900700"
+   "point": "SW-E0900700",
+   "months": "May–September"
   },
   "ukk3008-27080": {
    "samples": 20,
@@ -2826,7 +3082,8 @@
    "high": 1300,
    "line": 500,
    "over_line": 4,
-   "point": "SW-81510965"
+   "point": "SW-81510965",
+   "months": "May–September"
   },
   "ukk3101-26520": {
    "samples": 81,
@@ -2837,7 +3094,8 @@
    "high": 55,
    "line": 500,
    "over_line": 2,
-   "point": "SW-81210102"
+   "point": "SW-81210102",
+   "months": "May–September"
   },
   "ukk3101-26530": {
    "samples": 65,
@@ -2848,7 +3106,8 @@
    "high": 55,
    "line": 500,
    "over_line": 0,
-   "point": "SW-81210110"
+   "point": "SW-81210110",
+   "months": "May–September"
   },
   "ukk3101-26560": {
    "samples": 55,
@@ -2859,7 +3118,8 @@
    "high": "<10",
    "line": 500,
    "over_line": 0,
-   "point": "SW-81214745"
+   "point": "SW-81214745",
+   "months": "May–September"
   },
   "ukk3101-26570": {
    "samples": 50,
@@ -2870,7 +3130,8 @@
    "high": "<10",
    "line": 500,
    "over_line": 0,
-   "point": "SW-81214752"
+   "point": "SW-81214752",
+   "months": "May–September"
   },
   "ukk3101-26600": {
    "samples": 55,
@@ -2881,7 +3142,8 @@
    "high": "<10",
    "line": 500,
    "over_line": 0,
-   "point": "SW-81214760"
+   "point": "SW-81214760",
+   "months": "May–September"
   },
   "ukk3101-26700": {
    "samples": 55,
@@ -2892,7 +3154,8 @@
    "high": 18,
    "line": 500,
    "over_line": 0,
-   "point": "SW-81314810"
+   "point": "SW-81314810",
+   "months": "May–September"
   },
   "ukk3101-26800": {
    "samples": 70,
@@ -2903,7 +3166,8 @@
    "high": 64,
    "line": 500,
    "over_line": 0,
-   "point": "SW-H1314870"
+   "point": "SW-H1314870",
+   "months": "May–September"
   },
   "ukk3101-26900": {
    "samples": 81,
@@ -2914,7 +3178,8 @@
    "high": 82,
    "line": 500,
    "over_line": 1,
-   "point": "SW-81414810"
+   "point": "SW-81414810",
+   "months": "May–September"
   },
   "ukk3101-27000": {
    "samples": 79,
@@ -2925,7 +3190,8 @@
    "high": 140,
    "line": 500,
    "over_line": 2,
-   "point": "SW-81414820"
+   "point": "SW-81414820",
+   "months": "May–September"
   },
   "ukk3102-28500": {
    "samples": 55,
@@ -2936,7 +3202,8 @@
    "high": 18,
    "line": 500,
    "over_line": 0,
-   "point": "SW-81814989"
+   "point": "SW-81814989",
+   "months": "May–September"
   },
   "ukk3102-28550": {
    "samples": 55,
@@ -2947,7 +3214,8 @@
    "high": 27,
    "line": 500,
    "over_line": 0,
-   "point": "SW-81914802"
+   "point": "SW-81914802",
+   "months": "May–September"
   },
   "ukk3102-28600": {
    "samples": 60,
@@ -2958,7 +3226,8 @@
    "high": 18,
    "line": 500,
    "over_line": 0,
-   "point": "SW-81914840"
+   "point": "SW-81914840",
+   "months": "May–September"
   },
   "ukk3102-28700": {
    "samples": 80,
@@ -2969,7 +3238,8 @@
    "high": 27,
    "line": 500,
    "over_line": 1,
-   "point": "SW-81914861"
+   "point": "SW-81914861",
+   "months": "May–September"
   },
   "ukk3102-28800": {
    "samples": 75,
@@ -2980,7 +3250,8 @@
    "high": 64,
    "line": 500,
    "over_line": 1,
-   "point": "SW-81914873"
+   "point": "SW-81914873",
+   "months": "May–September"
   },
   "ukk3102-31600": {
    "samples": 59,
@@ -2991,7 +3262,8 @@
    "high": 18,
    "line": 500,
    "over_line": 0,
-   "point": "SW-82315083"
+   "point": "SW-82315083",
+   "months": "May–September"
   },
   "ukk3102-31650": {
    "samples": 50,
@@ -3002,7 +3274,8 @@
    "high": "<10",
    "line": 500,
    "over_line": 0,
-   "point": "SW-82315106"
+   "point": "SW-82315106",
+   "months": "May–September"
   },
   "ukk3102-31700": {
    "samples": 80,
@@ -3013,7 +3286,8 @@
    "high": 27,
    "line": 500,
    "over_line": 1,
-   "point": "SW-82315140"
+   "point": "SW-82315140",
+   "months": "May–September"
   },
   "ukk3102-31800": {
    "samples": 75,
@@ -3024,7 +3298,8 @@
    "high": 45,
    "line": 500,
    "over_line": 2,
-   "point": "SW-82315201"
+   "point": "SW-82315201",
+   "months": "May–September"
   },
   "ukk3102-31900": {
    "samples": 50,
@@ -3035,7 +3310,8 @@
    "high": "<10",
    "line": 500,
    "over_line": 0,
-   "point": "SW-82315220"
+   "point": "SW-82315220",
+   "months": "May–September"
   },
   "ukk3102-32000": {
    "samples": 70,
@@ -3046,7 +3322,8 @@
    "high": 18,
    "line": 500,
    "over_line": 0,
-   "point": "SW-82514923"
+   "point": "SW-82514923",
+   "months": "May–September"
   },
   "ukk3103-28900": {
    "samples": 60,
@@ -3057,7 +3334,8 @@
    "high": 27,
    "line": 500,
    "over_line": 0,
-   "point": "SW-81914914"
+   "point": "SW-81914914",
+   "months": "May–September"
   },
   "ukk3103-29000": {
    "samples": 55,
@@ -3068,7 +3346,8 @@
    "high": "<10",
    "line": 500,
    "over_line": 0,
-   "point": "SW-81914925"
+   "point": "SW-81914925",
+   "months": "May–September"
   },
   "ukk3103-29100": {
    "samples": 55,
@@ -3079,7 +3358,8 @@
    "high": 18,
    "line": 500,
    "over_line": 1,
-   "point": "SW-81914940"
+   "point": "SW-81914940",
+   "months": "May–September"
   },
   "ukk3103-29200": {
    "samples": 55,
@@ -3090,7 +3370,8 @@
    "high": "<10",
    "line": 500,
    "over_line": 0,
-   "point": "SW-81914953"
+   "point": "SW-81914953",
+   "months": "May–September"
   },
   "ukk3103-29400": {
    "samples": 55,
@@ -3101,7 +3382,8 @@
    "high": "<10",
    "line": 500,
    "over_line": 0,
-   "point": "SW-81915022"
+   "point": "SW-81915022",
+   "months": "May–September"
   },
   "ukk3103-29500": {
    "samples": 60,
@@ -3112,7 +3394,8 @@
    "high": 27,
    "line": 500,
    "over_line": 3,
-   "point": "SW-81915046"
+   "point": "SW-81915046",
+   "months": "May–September"
   },
   "ukk3103-29501": {
    "samples": 50,
@@ -3123,7 +3406,8 @@
    "high": "<10",
    "line": 500,
    "over_line": 0,
-   "point": "SW-81915062"
+   "point": "SW-81915062",
+   "months": "May–September"
   },
   "ukk3103-29800": {
    "samples": 55,
@@ -3134,7 +3418,8 @@
    "high": 18,
    "line": 500,
    "over_line": 1,
-   "point": "SW-82014856"
+   "point": "SW-82014856",
+   "months": "May–September"
   },
   "ukk3103-29900": {
    "samples": 55,
@@ -3145,7 +3430,8 @@
    "high": "<10",
    "line": 500,
    "over_line": 0,
-   "point": "SW-82114824"
+   "point": "SW-82114824",
+   "months": "May–September"
   },
   "ukk3103-30000": {
    "samples": 50,
@@ -3156,7 +3442,8 @@
    "high": "<10",
    "line": 500,
    "over_line": 0,
-   "point": "SW-82114828"
+   "point": "SW-82114828",
+   "months": "May–September"
   },
   "ukk3103-31500": {
    "samples": 60,
@@ -3167,7 +3454,8 @@
    "high": 27,
    "line": 500,
    "over_line": 0,
-   "point": "SW-82315032"
+   "point": "SW-82315032",
+   "months": "May–September"
   },
   "ukk3104-32550": {
    "samples": 59,
@@ -3178,7 +3466,8 @@
    "high": 64,
    "line": 500,
    "over_line": 0,
-   "point": "SW-82515105"
+   "point": "SW-82515105",
+   "months": "May–September"
   },
   "ukk3104-32600": {
    "samples": 60,
@@ -3189,7 +3478,8 @@
    "high": "<10",
    "line": 500,
    "over_line": 0,
-   "point": "SW-82515133"
+   "point": "SW-82515133",
+   "months": "May–September"
   },
   "ukk3104-32700": {
    "samples": 50,
@@ -3200,7 +3490,8 @@
    "high": "<10",
    "line": 500,
    "over_line": 0,
-   "point": "SW-82515145"
+   "point": "SW-82515145",
+   "months": "May–September"
   },
   "ukk3104-32750": {
    "samples": 55,
@@ -3211,7 +3502,8 @@
    "high": "<10",
    "line": 500,
    "over_line": 0,
-   "point": "SW-82515155"
+   "point": "SW-82515155",
+   "months": "May–September"
   },
   "ukk3104-32800": {
    "samples": 55,
@@ -3222,7 +3514,8 @@
    "high": "<10",
    "line": 500,
    "over_line": 0,
-   "point": "SW-82515179"
+   "point": "SW-82515179",
+   "months": "May–September"
   },
   "ukk3104-32900": {
    "samples": 75,
@@ -3233,7 +3526,8 @@
    "high": 18,
    "line": 500,
    "over_line": 0,
-   "point": "SW-82515216"
+   "point": "SW-82515216",
+   "months": "May–September"
   },
   "ukk3104-33000": {
    "samples": 80,
@@ -3244,7 +3538,8 @@
    "high": 64,
    "line": 500,
    "over_line": 1,
-   "point": "SW-82515237"
+   "point": "SW-82515237",
+   "months": "May–September"
   },
   "ukk3104-33200": {
    "samples": 65,
@@ -3255,7 +3550,8 @@
    "high": 55,
    "line": 500,
    "over_line": 0,
-   "point": "SW-82518034"
+   "point": "SW-82518034",
+   "months": "May–September"
   },
   "ukk3104-33300": {
    "samples": 80,
@@ -3266,7 +3562,8 @@
    "high": 27,
    "line": 500,
    "over_line": 0,
-   "point": "SW-82515254"
+   "point": "SW-82515254",
+   "months": "May–September"
   },
   "ukk3104-33350": {
    "samples": 75,
@@ -3277,7 +3574,8 @@
    "high": 110,
    "line": 500,
    "over_line": 2,
-   "point": "SW-82614940"
+   "point": "SW-82614940",
+   "months": "May–September"
   },
   "ukk3104-33360": {
    "samples": 68,
@@ -3288,7 +3586,8 @@
    "high": 36,
    "line": 500,
    "over_line": 0,
-   "point": "SW-82615122"
+   "point": "SW-82615122",
+   "months": "May–September"
   },
   "ukk3104-33400": {
    "samples": 60,
@@ -3299,7 +3598,8 @@
    "high": "<10",
    "line": 500,
    "over_line": 0,
-   "point": "SW-82615153"
+   "point": "SW-82615153",
+   "months": "May–September"
   },
   "ukk3104-33500": {
    "samples": 79,
@@ -3310,7 +3610,8 @@
    "high": 55,
    "line": 500,
    "over_line": 1,
-   "point": "SW-82710102"
+   "point": "SW-82710102",
+   "months": "May–September"
   },
   "ukk3104-33600": {
    "samples": 80,
@@ -3321,7 +3622,8 @@
    "high": 64,
    "line": 500,
    "over_line": 1,
-   "point": "SW-82615236"
+   "point": "SW-82615236",
+   "months": "May–September"
   },
   "ukk3104-33650": {
    "samples": 65,
@@ -3332,7 +3634,8 @@
    "high": 18,
    "line": 500,
    "over_line": 0,
-   "point": "SW-82615247"
+   "point": "SW-82615247",
+   "months": "May–September"
   },
   "ukk3104-33700": {
    "samples": 60,
@@ -3343,7 +3646,8 @@
    "high": "<10",
    "line": 500,
    "over_line": 0,
-   "point": "SW-82615254"
+   "point": "SW-82615254",
+   "months": "May–September"
   },
   "ukk3105-30100": {
    "samples": 55,
@@ -3354,7 +3658,8 @@
    "high": "<10",
    "line": 500,
    "over_line": 0,
-   "point": "SW-82114850"
+   "point": "SW-82114850",
+   "months": "May–September"
   },
   "ukk3105-30200": {
    "samples": 70,
@@ -3365,7 +3670,8 @@
    "high": 36,
    "line": 500,
    "over_line": 0,
-   "point": "SW-82114893"
+   "point": "SW-82114893",
+   "months": "May–September"
   },
   "ukk3105-30400": {
    "samples": 79,
@@ -3376,7 +3682,8 @@
    "high": 82,
    "line": 500,
    "over_line": 0,
-   "point": "SW-82114960"
+   "point": "SW-82114960",
+   "months": "May–September"
   },
   "ukk3105-30500": {
    "samples": 80,
@@ -3387,7 +3694,8 @@
    "high": 36,
    "line": 500,
    "over_line": 2,
-   "point": "SW-82114972"
+   "point": "SW-82114972",
+   "months": "May–September"
   },
   "ukk3105-30600": {
    "samples": 55,
@@ -3398,7 +3706,8 @@
    "high": "<10",
    "line": 500,
    "over_line": 0,
-   "point": "SW-82214920"
+   "point": "SW-82214920",
+   "months": "May–September"
   },
   "ukk3105-30700": {
    "samples": 55,
@@ -3409,7 +3718,8 @@
    "high": "<10",
    "line": 500,
    "over_line": 0,
-   "point": "SW-82215005"
+   "point": "SW-82215005",
+   "months": "May–September"
   },
   "ukk3105-30750": {
    "samples": 55,
@@ -3420,7 +3730,8 @@
    "high": "<10",
    "line": 500,
    "over_line": 0,
-   "point": "SW-82215010"
+   "point": "SW-82215010",
+   "months": "May–September"
   },
   "ukk3105-30800": {
    "samples": 55,
@@ -3431,7 +3742,8 @@
    "high": "<10",
    "line": 500,
    "over_line": 0,
-   "point": "SW-82215270"
+   "point": "SW-82215270",
+   "months": "May–September"
   },
   "ukk3105-30900": {
    "samples": 55,
@@ -3442,7 +3754,8 @@
    "high": "<10",
    "line": 500,
    "over_line": 0,
-   "point": "SW-82215281"
+   "point": "SW-82215281",
+   "months": "May–September"
   },
   "ukk3105-31000": {
    "samples": 80,
@@ -3453,7 +3766,8 @@
    "high": 36,
    "line": 500,
    "over_line": 0,
-   "point": "SW-82215326"
+   "point": "SW-82215326",
+   "months": "May–September"
   },
   "ukk3105-31100": {
    "samples": 55,
@@ -3464,7 +3778,8 @@
    "high": 18,
    "line": 500,
    "over_line": 0,
-   "point": "SW-82215340"
+   "point": "SW-82215340",
+   "months": "May–September"
   },
   "ukk3105-31200": {
    "samples": 65,
@@ -3475,7 +3790,8 @@
    "high": 27,
    "line": 500,
    "over_line": 1,
-   "point": "SW-82215364"
+   "point": "SW-82215364",
+   "months": "May–September"
   },
   "ukk3105-31250": {
    "samples": 55,
@@ -3486,7 +3802,8 @@
    "high": 45,
    "line": 500,
    "over_line": 0,
-   "point": "SW-82215385"
+   "point": "SW-82215385",
+   "months": "May–September"
   },
   "ukk3105-31300": {
    "samples": 50,
@@ -3497,7 +3814,8 @@
    "high": 27,
    "line": 500,
    "over_line": 0,
-   "point": "SW-82215391"
+   "point": "SW-82215391",
+   "months": "May–September"
   },
   "ukk3105-31350": {
    "samples": 55,
@@ -3508,7 +3826,8 @@
    "high": "<10",
    "line": 500,
    "over_line": 0,
-   "point": "SW-82215395"
+   "point": "SW-82215395",
+   "months": "May–September"
   },
   "ukk3105-31400": {
    "samples": 65,
@@ -3519,7 +3838,8 @@
    "high": "<10",
    "line": 500,
    "over_line": 0,
-   "point": "SW-82215420"
+   "point": "SW-82215420",
+   "months": "May–September"
   },
   "ukk3105-31450": {
    "samples": 55,
@@ -3530,7 +3850,8 @@
    "high": 18,
    "line": 500,
    "over_line": 0,
-   "point": "SW-82215425"
+   "point": "SW-82215425",
+   "months": "May–September"
   },
   "ukk3106-27100": {
    "samples": 81,
@@ -3541,7 +3862,8 @@
    "high": 82,
    "line": 500,
    "over_line": 2,
-   "point": "SW-81510150"
+   "point": "SW-81510150",
+   "months": "May–September"
   },
   "ukk3106-27200": {
    "samples": 69,
@@ -3552,7 +3874,8 @@
    "high": 55,
    "line": 500,
    "over_line": 2,
-   "point": "SW-81614829"
+   "point": "SW-81614829",
+   "months": "May–September"
   },
   "ukk3106-27300": {
    "samples": 76,
@@ -3563,7 +3886,8 @@
    "high": 160,
    "line": 500,
    "over_line": 2,
-   "point": "SW-81614842"
+   "point": "SW-81614842",
+   "months": "May–September"
   },
   "ukk3106-27400": {
    "samples": 55,
@@ -3574,7 +3898,8 @@
    "high": "<10",
    "line": 500,
    "over_line": 0,
-   "point": "SW-81714867"
+   "point": "SW-81714867",
+   "months": "May–September"
   },
   "ukk3106-27500": {
    "samples": 50,
@@ -3585,7 +3910,8 @@
    "high": "<10",
    "line": 500,
    "over_line": 0,
-   "point": "SW-81714873"
+   "point": "SW-81714873",
+   "months": "May–September"
   },
   "ukk3106-27600": {
    "samples": 55,
@@ -3596,7 +3922,8 @@
    "high": 27,
    "line": 500,
    "over_line": 0,
-   "point": "SW-81714886"
+   "point": "SW-81714886",
+   "months": "May–September"
   },
   "ukk3106-27700": {
    "samples": 50,
@@ -3607,7 +3934,8 @@
    "high": "<10",
    "line": 500,
    "over_line": 0,
-   "point": "SW-81714901"
+   "point": "SW-81714901",
+   "months": "May–September"
   },
   "ukk3106-27800": {
    "samples": 55,
@@ -3618,7 +3946,8 @@
    "high": 27,
    "line": 500,
    "over_line": 0,
-   "point": "SW-81714921"
+   "point": "SW-81714921",
+   "months": "May–September"
   },
   "ukk3106-27900": {
    "samples": 75,
@@ -3629,7 +3958,8 @@
    "high": 45,
    "line": 500,
    "over_line": 0,
-   "point": "SW-81814815"
+   "point": "SW-81814815",
+   "months": "May–September"
   },
   "ukk3106-28000": {
    "samples": 55,
@@ -3640,7 +3970,8 @@
    "high": "<10",
    "line": 500,
    "over_line": 0,
-   "point": "SW-81814835"
+   "point": "SW-81814835",
+   "months": "May–September"
   },
   "ukk3106-28100": {
    "samples": 75,
@@ -3651,7 +3982,8 @@
    "high": 27,
    "line": 500,
    "over_line": 0,
-   "point": "SW-81814866"
+   "point": "SW-81814866",
+   "months": "May–September"
   },
   "ukk3106-28200": {
    "samples": 75,
@@ -3662,7 +3994,8 @@
    "high": 55,
    "line": 500,
    "over_line": 0,
-   "point": "SW-81814885"
+   "point": "SW-81814885",
+   "months": "May–September"
   },
   "ukk3106-28300": {
    "samples": 55,
@@ -3673,7 +4006,8 @@
    "high": "<10",
    "line": 500,
    "over_line": 0,
-   "point": "SW-81814904"
+   "point": "SW-81814904",
+   "months": "May–September"
   },
   "ukk3106-28400": {
    "samples": 79,
@@ -3684,7 +4018,8 @@
    "high": 280,
    "line": 500,
    "over_line": 2,
-   "point": "SW-81814942"
+   "point": "SW-81814942",
+   "months": "May–September"
   },
   "ukk3106-32100": {
    "samples": 79,
@@ -3695,7 +4030,8 @@
    "high": 160,
    "line": 500,
    "over_line": 2,
-   "point": "SW-82514949"
+   "point": "SW-82514949",
+   "months": "May–September"
   },
   "ukk3106-32150": {
    "samples": 75,
@@ -3706,7 +4042,8 @@
    "high": "<10",
    "line": 500,
    "over_line": 0,
-   "point": "SW-82514991"
+   "point": "SW-82514991",
+   "months": "May–September"
   },
   "ukk3106-32200": {
    "samples": 60,
@@ -3717,7 +4054,8 @@
    "high": "<10",
    "line": 500,
    "over_line": 0,
-   "point": "SW-82514993"
+   "point": "SW-82514993",
+   "months": "May–September"
   },
   "ukk3106-32300": {
    "samples": 80,
@@ -3728,7 +4066,8 @@
    "high": 64,
    "line": 500,
    "over_line": 0,
-   "point": "SW-82514969"
+   "point": "SW-82514969",
+   "months": "May–September"
   },
   "ukk3106-32310": {
    "samples": 80,
@@ -3739,7 +4078,8 @@
    "high": 27,
    "line": 500,
    "over_line": 0,
-   "point": "SW-82514988"
+   "point": "SW-82514988",
+   "months": "May–September"
   },
   "ukk3106-32320": {
    "samples": 55,
@@ -3750,7 +4090,8 @@
    "high": 27,
    "line": 500,
    "over_line": 0,
-   "point": "SW-82514997"
+   "point": "SW-82514997",
+   "months": "May–September"
   },
   "ukk3106-32330": {
    "samples": 50,
@@ -3761,7 +4102,8 @@
    "high": 36,
    "line": 500,
    "over_line": 0,
-   "point": "SW-82515002"
+   "point": "SW-82515002",
+   "months": "May–September"
   },
   "ukk3106-32340": {
    "samples": 74,
@@ -3772,7 +4114,8 @@
    "high": 120,
    "line": 500,
    "over_line": 0,
-   "point": "SW-82515008"
+   "point": "SW-82515008",
+   "months": "May–September"
   },
   "ukk3106-32400": {
    "samples": 60,
@@ -3783,7 +4126,8 @@
    "high": "<10",
    "line": 500,
    "over_line": 0,
-   "point": "SW-82515037"
+   "point": "SW-82515037",
+   "months": "May–September"
   },
   "ukk3106-32500": {
    "samples": 75,
@@ -3794,7 +4138,8 @@
    "high": 18,
    "line": 500,
    "over_line": 0,
-   "point": "SW-82515060"
+   "point": "SW-82515060",
+   "months": "May–September"
   },
   "ukk4100-26400": {
    "samples": 60,
@@ -3805,7 +4150,8 @@
    "high": 55,
    "line": 500,
    "over_line": 1,
-   "point": "SW-81210340"
+   "point": "SW-81210340",
+   "months": "May–September"
   },
   "ukk4100-26500": {
    "samples": 61,
@@ -3816,7 +4162,8 @@
    "high": 55,
    "line": 500,
    "over_line": 1,
-   "point": "SW-81210295"
+   "point": "SW-81210295",
+   "months": "May–September"
   },
   "ukk4200-23100": {
    "samples": 50,
@@ -3827,7 +4174,8 @@
    "high": 36,
    "line": 500,
    "over_line": 0,
-   "point": "SW-70614683"
+   "point": "SW-70614683",
+   "months": "May–September"
   },
   "ukk4200-23200": {
    "samples": 57,
@@ -3838,7 +4186,8 @@
    "high": 55,
    "line": 500,
    "over_line": 0,
-   "point": "SW-70614694"
+   "point": "SW-70614694",
+   "months": "May–September"
   },
   "ukk4200-23300": {
    "samples": 50,
@@ -3849,7 +4198,8 @@
    "high": 36,
    "line": 500,
    "over_line": 1,
-   "point": "SW-70614710"
+   "point": "SW-70614710",
+   "months": "May–September"
   },
   "ukk4200-23400": {
    "samples": 60,
@@ -3860,7 +4210,8 @@
    "high": 55,
    "line": 500,
    "over_line": 2,
-   "point": "SW-70614728"
+   "point": "SW-70614728",
+   "months": "May–September"
   },
   "ukk4200-23501": {
    "samples": 65,
@@ -3871,7 +4222,8 @@
    "high": 73,
    "line": 500,
    "over_line": 0,
-   "point": "SW-70614740"
+   "point": "SW-70614740",
+   "months": "May–September"
   },
   "ukk4200-23600": {
    "samples": 50,
@@ -3882,7 +4234,8 @@
    "high": "<10",
    "line": 500,
    "over_line": 0,
-   "point": "SW-70614840"
+   "point": "SW-70614840",
+   "months": "May–September"
   },
   "ukk4200-23700": {
    "samples": 60,
@@ -3893,7 +4246,8 @@
    "high": 64,
    "line": 500,
    "over_line": 1,
-   "point": "SW-70614847"
+   "point": "SW-70614847",
+   "months": "May–September"
   },
   "ukk4200-23800": {
    "samples": 65,
@@ -3904,7 +4258,8 @@
    "high": 73,
    "line": 500,
    "over_line": 0,
-   "point": "SW-70614854"
+   "point": "SW-70614854",
+   "months": "May–September"
   },
   "ukk4200-23900": {
    "samples": 80,
@@ -3915,7 +4270,8 @@
    "high": 45,
    "line": 500,
    "over_line": 0,
-   "point": "SW-70614869"
+   "point": "SW-70614869",
+   "months": "May–September"
   },
   "ukk4200-24000": {
    "samples": 59,
@@ -3926,7 +4282,8 @@
    "high": 27,
    "line": 500,
    "over_line": 0,
-   "point": "SW-70614872"
+   "point": "SW-70614872",
+   "months": "May–September"
   },
   "ukk4200-24100": {
    "samples": 79,
@@ -3937,7 +4294,8 @@
    "high": 45,
    "line": 500,
    "over_line": 0,
-   "point": "SW-70614874"
+   "point": "SW-70614874",
+   "months": "May–September"
   },
   "ukk4200-24200": {
    "samples": 78,
@@ -3948,7 +4306,8 @@
    "high": 55,
    "line": 500,
    "over_line": 0,
-   "point": "SW-70614882"
+   "point": "SW-70614882",
+   "months": "May–September"
   },
   "ukk4200-24300": {
    "samples": 55,
@@ -3959,7 +4318,8 @@
    "high": 64,
    "line": 500,
    "over_line": 0,
-   "point": "SW-70614904"
+   "point": "SW-70614904",
+   "months": "May–September"
   },
   "ukk4200-24500": {
    "samples": 60,
@@ -3970,7 +4330,8 @@
    "high": 18,
    "line": 500,
    "over_line": 2,
-   "point": "SW-70614944"
+   "point": "SW-70614944",
+   "months": "May–September"
   },
   "ukk4200-24600": {
    "samples": 50,
@@ -3981,7 +4342,8 @@
    "high": 18,
    "line": 500,
    "over_line": 0,
-   "point": "SW-70614997"
+   "point": "SW-70614997",
+   "months": "May–September"
   },
   "ukk4301-21600": {
    "samples": 79,
@@ -3992,7 +4354,8 @@
    "high": 100,
    "line": 500,
    "over_line": 3,
-   "point": "SW-70214510"
+   "point": "SW-70214510",
+   "months": "May–September"
   },
   "ukk4301-21700": {
    "samples": 69,
@@ -4003,7 +4366,8 @@
    "high": 91,
    "line": 500,
    "over_line": 1,
-   "point": "SW-70214515"
+   "point": "SW-70214515",
+   "months": "May–September"
   },
   "ukk4301-21800": {
    "samples": 80,
@@ -4014,7 +4378,8 @@
    "high": 73,
    "line": 500,
    "over_line": 1,
-   "point": "SW-70314533"
+   "point": "SW-70314533",
+   "months": "May–September"
   },
   "ukk4301-21900": {
    "samples": 55,
@@ -4025,7 +4390,8 @@
    "high": 45,
    "line": 500,
    "over_line": 1,
-   "point": "SW-70314532"
+   "point": "SW-70314532",
+   "months": "May–September"
   },
   "ukk4301-22000": {
    "samples": 75,
@@ -4036,7 +4402,8 @@
    "high": 140,
    "line": 500,
    "over_line": 2,
-   "point": "SW-70414504"
+   "point": "SW-70414504",
+   "months": "May–September"
   },
   "ukk4301-22100": {
    "samples": 77,
@@ -4047,7 +4414,8 @@
    "high": 110,
    "line": 500,
    "over_line": 0,
-   "point": "SW-70414533"
+   "point": "SW-70414533",
+   "months": "May–September"
   },
   "ukk4301-22200": {
    "samples": 80,
@@ -4058,7 +4426,8 @@
    "high": 64,
    "line": 500,
    "over_line": 2,
-   "point": "SW-70514511"
+   "point": "SW-70514511",
+   "months": "May–September"
   },
   "ukk4301-22300": {
    "samples": 79,
@@ -4069,7 +4438,8 @@
    "high": 55,
    "line": 500,
    "over_line": 1,
-   "point": "SW-70510107"
+   "point": "SW-70510107",
+   "months": "May–September"
   },
   "ukk4304-34100": {
    "samples": 75,
@@ -4080,7 +4450,8 @@
    "high": 55,
    "line": 500,
    "over_line": 0,
-   "point": "SW-73015012"
+   "point": "SW-73015012",
+   "months": "May–September"
   },
   "ukk4304-34200": {
    "samples": 78,
@@ -4091,7 +4462,8 @@
    "high": 45,
    "line": 500,
    "over_line": 1,
-   "point": "SW-73015017"
+   "point": "SW-73015017",
+   "months": "May–September"
   },
   "ukk4304-34300": {
    "samples": 45,
@@ -4102,7 +4474,8 @@
    "high": 18,
    "line": 500,
    "over_line": 0,
-   "point": "SW-73015036"
+   "point": "SW-73015036",
+   "months": "May–September"
   },
   "ukk4304-34400": {
    "samples": 75,
@@ -4113,7 +4486,8 @@
    "high": 27,
    "line": 500,
    "over_line": 0,
-   "point": "SW-73015038"
+   "point": "SW-73015038",
+   "months": "May–September"
   },
   "ukk4304-34410": {
    "samples": 45,
@@ -4124,7 +4498,8 @@
    "high": 27,
    "line": 500,
    "over_line": 0,
-   "point": "SW-73015075"
+   "point": "SW-73015075",
+   "months": "May–September"
   },
   "ukk4304-34450": {
    "samples": 35,
@@ -4135,7 +4510,8 @@
    "high": 27,
    "line": 500,
    "over_line": 0,
-   "point": "SW-73115115"
+   "point": "SW-73115115",
+   "months": "May–September"
   },
   "ukk4304-34600": {
    "samples": 80,
@@ -4146,7 +4522,8 @@
    "high": 170,
    "line": 500,
    "over_line": 4,
-   "point": "SW-73115135"
+   "point": "SW-73115135",
+   "months": "May–September"
   },
   "ukk4304-34700": {
    "samples": 72,
@@ -4157,7 +4534,8 @@
    "high": 180,
    "line": 500,
    "over_line": 2,
-   "point": "SW-73115166"
+   "point": "SW-73115166",
+   "months": "May–September"
   },
   "ukk4304-34800": {
    "samples": 65,
@@ -4168,7 +4546,8 @@
    "high": 36,
    "line": 500,
    "over_line": 1,
-   "point": "SW-73215136"
+   "point": "SW-73215136",
+   "months": "May–September"
   },
   "ukk4305-24700": {
    "samples": 55,
@@ -4179,7 +4558,8 @@
    "high": 27,
    "line": 500,
    "over_line": 0,
-   "point": "SW-70710124"
+   "point": "SW-70710124",
+   "months": "May–September"
   },
   "ukk4305-24800": {
    "samples": 55,
@@ -4190,7 +4570,8 @@
    "high": 36,
    "line": 500,
    "over_line": 0,
-   "point": "SW-70814625"
+   "point": "SW-70814625",
+   "months": "May–September"
   },
   "ukk4305-24900": {
    "samples": 50,
@@ -4201,7 +4582,8 @@
    "high": "<10",
    "line": 500,
    "over_line": 0,
-   "point": "SW-70814659"
+   "point": "SW-70814659",
+   "months": "May–September"
   },
   "ukk4305-25000": {
    "samples": 50,
@@ -4212,7 +4594,8 @@
    "high": "<10",
    "line": 500,
    "over_line": 0,
-   "point": "SW-70814679"
+   "point": "SW-70814679",
+   "months": "May–September"
   },
   "ukk4305-25100": {
    "samples": 55,
@@ -4223,7 +4606,8 @@
    "high": 18,
    "line": 500,
    "over_line": 0,
-   "point": "SW-70811731"
+   "point": "SW-70811731",
+   "months": "May–September"
   },
   "ukk4305-25200": {
    "samples": 75,
@@ -4234,7 +4618,8 @@
    "high": 45,
    "line": 500,
    "over_line": 0,
-   "point": "SW-70811724"
+   "point": "SW-70811724",
+   "months": "May–September"
   },
   "ukk4305-25300": {
    "samples": 75,
@@ -4245,7 +4630,8 @@
    "high": 64,
    "line": 500,
    "over_line": 2,
-   "point": "SW-70811736"
+   "point": "SW-70811736",
+   "months": "May–September"
   },
   "ukk4305-25400": {
    "samples": 65,
@@ -4256,7 +4642,8 @@
    "high": 150,
    "line": 500,
    "over_line": 2,
-   "point": "SW-70814894"
+   "point": "SW-70814894",
+   "months": "May–September"
   },
   "ukk4305-25500": {
    "samples": 60,
@@ -4267,7 +4654,8 @@
    "high": 36,
    "line": 500,
    "over_line": 1,
-   "point": "SW-70814905"
+   "point": "SW-70814905",
+   "months": "May–September"
   },
   "ukk4305-25600": {
    "samples": 65,
@@ -4278,7 +4666,8 @@
    "high": 64,
    "line": 500,
    "over_line": 0,
-   "point": "SW-70814915"
+   "point": "SW-70814915",
+   "months": "May–September"
   },
   "ukk4305-25700": {
    "samples": 69,
@@ -4289,7 +4678,8 @@
    "high": 300,
    "line": 500,
    "over_line": 2,
-   "point": "SW-70816005"
+   "point": "SW-70816005",
+   "months": "May–September"
   },
   "ukk4305-25800": {
    "samples": 55,
@@ -4300,7 +4690,8 @@
    "high": 91,
    "line": 500,
    "over_line": 0,
-   "point": "SW-70814963"
+   "point": "SW-70814963",
+   "months": "May–September"
   },
   "ukk4305-25900": {
    "samples": 55,
@@ -4311,7 +4702,8 @@
    "high": 18,
    "line": 500,
    "over_line": 0,
-   "point": "SW-70814974"
+   "point": "SW-70814974",
+   "months": "May–September"
   },
   "ukk4305-26000": {
    "samples": 60,
@@ -4322,7 +4714,8 @@
    "high": 27,
    "line": 500,
    "over_line": 1,
-   "point": "SW-70814980"
+   "point": "SW-70814980",
+   "months": "May–September"
   },
   "ukk4305-26100": {
    "samples": 79,
@@ -4333,7 +4726,8 @@
    "high": 180,
    "line": 500,
    "over_line": 3,
-   "point": "SW-70910108"
+   "point": "SW-70910108",
+   "months": "May–September"
   },
   "ukk4305-26150": {
    "samples": 20,
@@ -4344,7 +4738,8 @@
    "high": 55,
    "line": 500,
    "over_line": 0,
-   "point": "SW-81010216"
+   "point": "SW-81010216",
+   "months": "May–September"
   },
   "ukk4305-26200": {
    "samples": 74,
@@ -4355,7 +4750,8 @@
    "high": 64,
    "line": 500,
    "over_line": 2,
-   "point": "SW-81014770"
+   "point": "SW-81014770",
+   "months": "May–September"
   },
   "ukk4305-26300": {
    "samples": 75,
@@ -4366,7 +4762,8 @@
    "high": 45,
    "line": 500,
    "over_line": 2,
-   "point": "SW-81210130"
+   "point": "SW-81210130",
+   "months": "May–September"
   },
   "ukk4306-22400": {
    "samples": 50,
@@ -4377,7 +4774,8 @@
    "high": 18,
    "line": 500,
    "over_line": 0,
-   "point": "SW-70510103"
+   "point": "SW-70510103",
+   "months": "May–September"
   },
   "ukk4306-22500": {
    "samples": 77,
@@ -4388,7 +4786,8 @@
    "high": 110,
    "line": 500,
    "over_line": 1,
-   "point": "SW-70514550"
+   "point": "SW-70514550",
+   "months": "May–September"
   },
   "ukk4306-22600": {
    "samples": 55,
@@ -4399,7 +4798,8 @@
    "high": 36,
    "line": 500,
    "over_line": 0,
-   "point": "SW-70514559"
+   "point": "SW-70514559",
+   "months": "May–September"
   },
   "ukk4306-22700": {
    "samples": 55,
@@ -4410,7 +4810,8 @@
    "high": 36,
    "line": 500,
    "over_line": 0,
-   "point": "SW-70514578"
+   "point": "SW-70514578",
+   "months": "May–September"
   },
   "ukk4306-22800": {
    "samples": 80,
@@ -4421,7 +4822,8 @@
    "high": 91,
    "line": 500,
    "over_line": 1,
-   "point": "SW-70614633"
+   "point": "SW-70614633",
+   "months": "May–September"
   },
   "ukk4306-22900": {
    "samples": 79,
@@ -4432,7 +4834,8 @@
    "high": 82,
    "line": 500,
    "over_line": 2,
-   "point": "SW-70610131"
+   "point": "SW-70610131",
+   "months": "May–September"
   },
   "ukk4306-23000": {
    "samples": 55,
@@ -4443,7 +4846,8 @@
    "high": 45,
    "line": 500,
    "over_line": 0,
-   "point": "SW-70614644"
+   "point": "SW-70614644",
+   "months": "May–September"
   },
   "ukk4307-33800": {
    "samples": 45,
@@ -4454,7 +4858,8 @@
    "high": "<10",
    "line": 500,
    "over_line": 0,
-   "point": "SW-72815051"
+   "point": "SW-72815051",
+   "months": "May–September"
   },
   "ukk4307-33900": {
    "samples": 80,
@@ -4465,7 +4870,8 @@
    "high": 18,
    "line": 500,
    "over_line": 1,
-   "point": "SW-72915015"
+   "point": "SW-72915015",
+   "months": "May–September"
   }
  }
 }

@@ -15,12 +15,20 @@ samples as the prospective check. This PR does all three.
 
 - **every English coastal and estuary bathing water with an archive sampling point** (404 of 426) a line on its card on
   the coverage page: what its own statutory samples read, May to September 2023-2026, with how many were over 500 (the
-  coastal minimum standard's E. coli line). From `data/research/coastal_typical.v1.json`, written off CI by
-  `scripts/export_coastal_typical.py` (EA Water Quality Archive, determinand 2348, purpose MS; 132 requests, 26,113
-  samples, 1 Nov 2026). Refresh it after each season.
+  coastal minimum standard's E. coli line). From `data/research/typical_england_coast.v1.json` (EA Water Quality
+  Archive, determinand 2348, purpose MS; 132 requests, 26,113 samples, 1 Nov 2026);
+- **the Welsh, Irish and Northern Irish directories' sites** the same line, from each nation's own service:
+  Wales 112 of 114 (NRW, OGL v3, 23 requests, 4,588 samples), the Republic 210 of 243 (EPA, CC BY 4.0, 4 requests,
+  8,557 samples), Northern Ireland 33 of 33 (DAERA's yearly results pages, OGL v3 under DAERA's crown copyright page,
+  5 requests, 2,639 samples; its tables give no qualifier, so its lowest value, 10, stands as 10; nine table names
+  differ from its layer's and are matched by `daera_site`). Inland sites count over 900, coastal over 500.
 
-Not covered, and why: the 22 coastal sites with no archive point or under 20 samples; Welsh, Scottish and Irish bathing
-waters (each nation's samples come from its own service, not exported yet); clicked map points (no rain forecast for the point, as for rivers); lakes with
+All four files are written off CI by `scripts/export_typical_readings.py <directory>` (`src/dipcast/typical.py` has the
+rule and the format, `swimsignal.typical-readings` 1.0). Refresh each after its season.
+
+Not covered, and why: **Scotland** (SEPA's sample results are under "SEPA website conditions of use", and SEPA's data
+terms prohibit "publishing it or making it available to the public"; publishing needs SEPA's agreement, an outside
+contact); the 22 English coastal, 2 Welsh and 33 Irish sites with no sampling point or under 20 samples; clicked map points (no rain forecast for the point, as for rivers); lakes with
 no overflow upstream that are not bathing waters (no samples and nothing to forecast from).
 
 ## 1. What the site does at lakes today
@@ -127,6 +135,6 @@ test. Winter is out in every option: the EA takes no samples from October to Apr
 | Identity | LAKE-CONC; owner: Claude session "ecoli-estimate-lakes"; this PR; `src/dipcast/lake_range.py`, `data/processed/ecoli_lake_range.json` |
 | Evidence | #584: all three conditions passed on 962 unseen lake rows (Windermere, Frensham); gain from three Windermere sites |
 | Stage and claim | Limited forecast at lakes with overflows upstream, labelled by basis, from merge; logged for the 2027 read |
-| Next deliverable | Typical readings at Welsh, Scottish and Irish bathing waters need their own sample exports (not started); the coastal export refreshed after the 2027 season; the 2027 read |
+| Next deliverable | Scotland's past samples, if SEPA agrees to publication (Ethan's contact); the four exports refreshed after the 2027 season; the 2027 read |
 | Milestone | 2027 read on or after 15 Oct 2027 (section 3) |
 | Release route | Removing the model file turns the lake range off (the page says "Not estimated"); the past-samples tile follows the evidence export |
