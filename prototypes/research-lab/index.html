@@ -7,7 +7,8 @@
      Each cover is drawn from that exhibit's own data: a real satellite picture, the real dot record, the real outline. -->
 <title>Research Lab · SwimSignal</title>
 <meta name="robots" content="noindex">
-<link rel="stylesheet" href="lab.css?v=9">
+<link rel="stylesheet" href="lab.css?v=10">
+<link rel="stylesheet" href="pollution/pollution.css?v=1">
 <style>
   .gallery { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; }
   @media (max-width: 900px) { .gallery { grid-template-columns: 1fr; gap: 40px; } }
@@ -30,6 +31,7 @@
   .ex .map-cover { position: absolute; inset: 0; background: var(--paper-2); display: grid; place-items: center; padding: 18px; }
   .ex .map-cover .drawn-map { width: 82%; }
   .ex .map-cover .drawn-map svg { border: 0; }
+  .ex .map-cover.dark { background: #0e1c21; }
   .ex.off { cursor: default; }
   .ex.off .no { color: var(--ink); text-shadow: none; }
   .ex.off .tag { color: var(--muted); }
@@ -54,11 +56,11 @@
       <h2>The lake from space</h2>
       <p>Can changes seen from space tell us anything useful about algae in English lakes? Satellite pictures, an index and lab chlorophyll, cloud included.</p>
     </a>
-    <div class="ex off">
-      <div class="cover"><div class="map-cover"><div class="drawn-map" id="map-cover"></div></div><span class="no">2</span><span class="tag">not started</span></div>
+    <a class="ex" href="pollution/">
+      <div class="cover"><div class="map-cover dark"><div class="drawn-map dark" id="map-cover"></div></div><span class="no">2</span><span class="tag">prototype</span></div>
       <h2>Where does the pollution go?</h2>
-      <p>The overflows upstream of a swim spot, and how rain, flow and the lake itself might change what arrives. Connections first; any movement drawn will be labelled as illustration.</p>
-    </div>
+      <p>Every overflow upstream of a swim spot, the rivers that join them, and the questions the research has tested about the journey.</p>
+    </a>
     <a class="ex" href="forecasts/">
       <div class="cover"><div class="ledger-cover" id="ledger-cover"></div><span class="no">3</span><span class="tag">prototype</span></div>
       <h2>How good are the forecasts?</h2>
@@ -67,18 +69,18 @@
   </div>
 </div></section></main>
 <footer class="foot"><div class="wrap">
-  <p>Covers: Contains modified Copernicus Sentinel data [2026]. <span id="map-credit"></span> Exhibit 3's cover is one dot per sample over 900 and per false alarm, rivers and lakes, 2024–2026, in date order.</p>
+  <p>Covers: Contains modified Copernicus Sentinel data [2026]. <span id="map-credit"></span> Exhibit 2's cover: the mapped rivers joining every spot's overflows to it (OS Open Rivers). Exhibit 3's cover is one dot per sample over 900 and per false alarm, rivers and lakes, 2024–2026, in date order.</p>
   <p>A prototype for review. It changes nothing on swimsignal.co.uk and nothing in the forecast.</p>
 </div></footer>
-<script src="lab.js?v=1"></script>
+<script src="lab.js?v=3"></script>
 <script>
   // Covers from the exhibits' own files: exhibit 3's dot record, and the outline exhibit 2 will draw on.
   fetch('forecasts/exploration.json').then(r => r.json()).then(ex => {
     const rows = ex.ecoli.samples.filter(r => (r.y || r.model >= ex.warn_at)).sort((a, b) => a.t.localeCompare(b.t));
     document.getElementById('ledger-cover').innerHTML = rows.map(r => `<i class="${r.y ? (r.model >= ex.warn_at ? 'hit' : 'miss') : 'fa'}"></i>`).join('');
   });
-  LAB.loadOutline('').then(() => {
-    LAB.drawMap(document.getElementById('map-cover'), []);
+  Promise.all([LAB.loadOutline(''), fetch('assets/paths/overview.json').then(r => r.json())]).then(([, ov]) => {
+    LAB.drawMap(document.getElementById('map-cover'), [], { lines: ov.lines.map(c => ({ coords: c })), aria: 'Rivers joining overflows to swim spots' });
     document.getElementById('map-credit').textContent = 'Map: ' + LAB.credit() + '.';
   });
 </script>

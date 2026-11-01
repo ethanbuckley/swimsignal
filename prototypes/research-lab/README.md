@@ -5,7 +5,7 @@ Local prototypes for review. Not built by `site.yml`, not linked from the site, 
 | Exhibit | Folder | State | Record |
 |---|---|---|---|
 | 1. The lake from space | `lake-from-space/` | prototype | `docs/LAKE-FROM-SPACE-EXPLORATION-2026-11.md` |
-| 2. Where does the pollution go? | | not started | |
+| 2. Where does the pollution go? | `pollution/` | prototype | `docs/POLLUTION-PATHS-EXHIBIT-2026-11.md` |
 | 3. How good are the forecasts? | `forecasts/` | prototype | `docs/FORECAST-RECORD-EXPLORATION-2026-11.md` |
 
 ## Run it
@@ -27,6 +27,8 @@ SwimSignal app means another server or an old service worker holds that port: pi
 - `assets/wide/`: one 4 km true-colour picture per weekly lake, made by `scripts/lab_wide_pictures.py` (1 Nov 2026: 18
   requests, 25.3 MiB, caps 80 requests and 60 MiB; scratch `DIPCAST_ROOT`/`DIPCAST_STATE`; `data/research` hashed
   before and after, unchanged). `wide.json` records each scene, its time and hash. Pictures, not readings.
+- `assets/paths/`: each spot's upstream overflows (the forecast's own distance, travel time and weight) and the mapped
+  rivers joining them, from `scripts/lab_pollution_paths.py` (offline; scratch root linking the cached network).
 - `assets/britain.json`: England, Wales and Scotland outlines from ONS (OGL), simplified on the server, one request
   (`scripts/lab_britain_outline.py`).
 
