@@ -2,3 +2,12 @@ id,name,lat,lon,kind,river,source,notes,area,trial
 sepa-200305,"Dores, Loch Ness",57.38371,-4.33595,lake,Loch Ness,sepa,SEPA designated bathing water,Scotland,scotland
 sepa-366986,Loch Morlich,57.16702,-3.70221,lake,Loch Morlich,sepa,SEPA designated bathing water,Scotland,scotland
 sepa-125079,"Luss Bay, Loch Lomond",56.10341,-4.63805,lake,Loch Lomond,sepa,SEPA designated bathing water,Scotland,scotland
+scot-lomond-milarrochy,"Milarrochy Bay, Loch Lomond",56.09586,-4.55753,lake,Loch Lomond,scotland,"Swimming: VisitScotland, ""Milarrochy Bay is one of the area’s most scenic and accessible swim spots.""",Scotland,scotland
+scot-lomond-sallochy,"Sallochy, Loch Lomond",56.12657,-4.60875,lake,Loch Lomond,scotland,"Swimming: Forestry and Land Scotland, ""this is a popular place for wild swimming""",Scotland,scotland
+scot-lomond-duck-bay,"Duck Bay, Loch Lomond",56.01744,-4.61154,lake,Loch Lomond,scotland,"Swimming: Loch Lomond & The Trossachs National Park Authority, ""expect to see other users like paddleboarders and swimmers in the water""",Scotland,scotland
+scot-lomond-balloch,"Balloch Castle Country Park, Loch Lomond",56.01373,-4.58990,lake,Loch Lomond,scotland,"Swimming: Loch Lomond & The Trossachs National Park Authority, ""expect to see other users like paddleboarders and swimmers in the water""",Scotland,scotland
+scot-lomond-balmaha,"Manse Bay, Balmaha, Loch Lomond",56.08769,-4.54871,lake,Loch Lomond,scotland,"Swimming: Loch Lomond & The Trossachs National Park Authority, ""expect to see other users like paddleboarders and swimmers in the water""",Scotland,scotland
+scot-lomond-rowardennan,"Rowardennan, Loch Lomond",56.15372,-4.64314,lake,Loch Lomond,scotland,"Swimming: Loch Lomond & The Trossachs National Park Authority, ""expect to see other users like paddleboarders and swimmers in the water""",Scotland,scotland
+scot-maree-tollie-bay,"Tollie Bay, Loch Maree",57.74174,-5.58126,lake,Loch Maree,scotland,"Swimming: VisitScotland, ""take a wild swim in Tollie Bay""",Scotland,scotland
+scot-almond-almondell,"River Almond, Almondell",55.90383,-3.45994,river,River Almond,scotland,"Swimming: Forth Rivers Trust (a charity), ""People are regularly seen swimming, paddling, kayaking""",Scotland,scotland
+scot-lubnaig-strathyre,"Loch Lubnaig, by Strathyre",56.26845,-4.28983,lake,Loch Lubnaig,scotland,"Swimming: Loch Lomond & The Trossachs National Park Authority, ""Increasingly, open water and wild swimmers are discovering the picturesque location""",Scotland,scotland

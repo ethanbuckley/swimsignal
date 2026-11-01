@@ -15,7 +15,20 @@ PEAK_SPOTS = {"osm-burbage-padley-gorge", "osm-wye-chee-dale", "osm-dane-three-s
 LAKE_SPOTS = {"osm-ullswater-sandwick", "osm-windermere-waterhead"}
 
 
+# Scotland: the statutory right of responsible access (Land Reform (Scotland) Act 2003, Part 1) and the Scottish
+# Outdoor Access Code, which the owner took as the access evidence for the Scotland trial's spots on 1 Nov 2026.
+# Its swimming page, read 1 Nov 2026: "Access rights extend to swimming (subject to any local byelaws)."
+SCOTLAND_CODE = "https://www.outdooraccess-scotland.scot/index%2Ephp/practical-guide-all/watersports/swimming"
+SCOTLAND_CHECKED = "2026-11-01"
+
+
 def access_note(spot: dict) -> dict | None:
+    if spot.get("trial") == "scotland":
+        return {"status": "statutory_access", "checked_at": SCOTLAND_CHECKED, "url": SCOTLAND_CODE,
+                "text": "The Scottish Outdoor Access Code says access rights extend to swimming, subject to any local "
+                        "byelaws, and asks swimmers to keep away from water intakes, abstraction points and spillways. "
+                        "That is not a check of this entry point, its currents or the cold: follow the Code and any "
+                        "signs at the water."}
     if spot.get("source") != "openstreetmap" and spot.get("id") not in PEAK_SPOTS:
         return None
     note = {"status": "unconfirmed", "checked_at": CHECKED,

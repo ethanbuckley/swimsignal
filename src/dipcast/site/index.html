@@ -2152,6 +2152,8 @@ const check = d => { const url = (d.classification || {}).url;
   return `<p class="check">${plainLevel(level(d)) ? 'A forecast, not a water test.' : 'A forecast, not a water test: check the signs at the water before you swim.'}${d.source === 'unlisted' ? ''
     : d.source === 'sepa'   // a Scottish bathing water (the Scotland trial): SEPA tests it, and its page has any advice
     ? (/^https:\/\//.test((d.sepa || {}).page || '') ? ` <a href="${esc(d.sepa.page)}">SEPA's page</a> has its samples and any advice against bathing there today, which this forecast does not include.` : '')
+    : d.trial === 'scotland' && d.source !== 'designated'   // Scotland's other spots: SEPA, not the EA, designates
+    ? ' This is not a designated bathing water, so SEPA does not test it for bathing.'
     : d.source !== 'designated'
     ? ' This is not a designated bathing water, so the Environment Agency does not test it for bathing.'
     : eaUnchecked(d) ? ''
