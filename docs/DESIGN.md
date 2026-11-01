@@ -304,6 +304,8 @@ paper, as the site's first screen looked in the fifth round.
   a page: the map moves into the spot's own tile, 400 px tall; the opening spans the page over the
   wide sky (`icons/fells-wide.webp`, `make_sky_image.py --wide`), and under it two columns, 5 to 7,
   1,180 px at most: the five days, nearby and the water on the left, the map and why on the right.
+  **Replaced 1 November 2026** by sections across the page ("The spot page on a desktop", at the end): the two
+  independent columns left a long left column beside an empty right half below the first screens.
   Before, a spot was 3,803 px tall in the 460 px column at 1,440 x 900, beside a map already used to
   pick it. The list, Saved and Plan a swim match it (`cols`, `col-list`, `col-map`): the opening
   (`.lead`) centred over the wide sky, 760 px at most, the back link at the left edge as on a spot;
@@ -1806,3 +1808,50 @@ card is a control of its own.
 measurement; a hindsight estimate "would have flagged", it did not warn; the model's weight is a factor from 0 to 1,
 not a share arriving; the lake coverage is pooled over five sites. The spot page's tile says the Lab changes nothing
 in the forecast.
+
+## The spot page on a desktop (1 November 2026)
+
+Ethan's screenshot of River Eden, Armathwaite on a Mac showed the fault the two columns made: below the first screens
+the right column ("Latest readings") ended, and the left ran on alone for about 3,000 px at 1,440 px wide (the
+detail, history, spill map, nearby and the guide). The page is now a run of **sections, each across the width**
+(`index.html` `deskSections`, from 801 px; a phone keeps its one stack and `phoneFolds` unchanged):
+
+1. **The opening** (`spotTop`): the place, the level, the issue time and official advice when there is any; the
+   sky picture with 32 px under it, not 48.
+2. **Forecast and upstream:** the five days, beside the Upstream map, where the risk comes from and what the
+   level cannot see (5 to 7), so the two halves end near each other.
+3. **Conditions:** water temperature, river level, rain and air in one row of four; three or two in a row of three or
+   two, so no cell sits beside an empty one. Each keeps its unit, its estimate or source line and its corner button.
+4. **The open day:** its forecast ("Forecast for …", which showDay changes) beside the latest readings, measured
+   (7 to 5); alone across the width when there are no readings, with a lake's past temperatures and local samples
+   under it.
+5. **Evidence and history:** one paper surface, its tiles as sections between hairlines, not separate boxes: what the
+   level rests on, how the forecast has done here, past spills, the timeline, the overflows that matter most and the
+   day-by-day numbers, beside the spill map ("Where spill water may be", a model estimate) (7 to 5). Past spills by
+   month, a chart, opens on a desktop as it does on a phone. Without a spill
+   map (lakes, or no file) the evidence takes the width (`.row:has(> .col-b:empty)`).
+6. **At the water and nearby:** one paper surface: the EA's rating and any lab results beside the nearby spots, then
+   the practical guide across the section in two columns of its sections and pictures, and after it the notes and
+   reviews. Without a rating, the nearby spots pair with "Know this spot?".
+7. **The Research Lab's exhibits** on this spot, the routes side by side.
+
+Then the actions and the technical details, as before. Rules that hold for the whole page:
+- **No column outlives its section.** Two halves sit side by side only where they are of similar height, or where
+  the shorter one is the section's natural end. Never masonry, never equal-height boxes to hide a gap.
+- **Widths:** the page 1,320 px at most (the list, Saved and Plan too, and the foot on the same edges); paragraphs in
+  the evidence and water sections at most 68 characters. From 801 to 999 px each section is one 720 px column; the two
+  halves sit side by side from 1,000 px.
+- **DOM order is reading order**, and Tab order, in both layouts. The mount points (`#sources-host`, `#nearby-host`,
+  `#plume-host`, `#replay-host`, `#since-last-host`, `#evmap-host`, `#scores-host`) and tile ids are the same in both,
+  so later fills, showDay and the notes and reviews find them.
+- **Headings name the kind of evidence:** "Forecast for …" (forecast), "Latest readings" (measured), "Evidence and
+  history" (records, measurements and model estimates, each tile saying which), the spill map "a model estimate".
+
+**The rest of the product, in the same pass:** the home page's Research Lab block opens under an ink rule, as a Lab
+section does. Accuracy and Research and data open each section under an ink rule (`body.report`), so a long page
+reads as parts. The list, Saved and Plan a swim take the same 1,320 px width. Their own layouts are unchanged.
+
+**Checked:** headless Chrome at 390, 768, 1024, 1280, 1440 and 1920 px, whole pages, four spots (Armathwaite, Ilkley,
+Derwent Water, Janet's Foss with no overflow upstream). The tall captures were stitched from screenfuls: one
+capture taller than the screen painted a lazily drawn map as blank. Not checked: Safari on a Mac (the session had no
+Safari driver), a screen reader.

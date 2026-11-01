@@ -137,6 +137,10 @@ main.doc .summary h2 { margin: 0 0 8px; }
 .routes a:hover b { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 2px; }
 .routes a:focus-visible { border-radius: 0; }
 .jump { font-size: var(--fs-note); color: var(--muted); margin: -8px 0 8px; }
+/* A report (Accuracy, Research and data): each section opens under an ink rule, as the Lab's numbered sections do,
+   so a long page reads as parts, not one run of headings. */
+body.report main.doc h2 { border-top: 1px solid var(--ink); padding-top: 10px; margin-top: 44px; }
+body.report main.doc :is(h2#toc-h, .summary h2, nav h2) { border-top: 0; padding-top: 0; }
 
 /* Notices: something to read before the rest. */
 .notice { border: 1px solid var(--notice-line); background: var(--notice-bg); border-radius: var(--radius); padding: 12px 16px; margin: 12px 0 16px; }

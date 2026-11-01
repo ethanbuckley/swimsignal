@@ -11,13 +11,14 @@ const { join } = require('node:path');
 const SITE = join(__dirname, '../src/dipcast/site');
 const html = fs.readFileSync(join(SITE, 'index.html'), 'utf8');
 const render = html.slice(html.indexOf('\nfunction render(d) {'), html.indexOf('\n}\n', html.indexOf('\nfunction render(d) {')));
+const desk = html.slice(html.indexOf('\nfunction deskSections(d, o) {'), html.indexOf('\n}\n', html.indexOf('\nfunction deskSections(d, o) {')));
 
 test('the page puts nearby, then the water, then why, in the order a swimmer asks', () => {
   const at = s => { const i = render.indexOf(s); assert.ok(i >= 0, `render() has no ${s}`); return i; };
   // The five days are daysTile's, which the build also writes into the spot's own page (prerender_spots.js).
   assert.match(html, /\nconst daysTile = d => `<section class="tile" aria-labelledby="days-h">[^\n]*Pollution risk, next five days/);
   const days = at('<div class="stack"><div class="col-go">${daysTile(d)}'), near = at('<div id="nearby-host">${nearby(d)}</div>${atWater}');
-  const why = at('<div id="sources-host">'), map = at('<span>Upstream</span>'), tiles = at('h += tiles + `</div><div class="col-more">${more}${labTile(d)}`;'), ovs = at('h += overflowTile(d, '), table = at('dayTable(d, total');
+  const why = at('h += `<div id="sources-host">'), map = at('h += mapTile;'), tiles = at('h += tiles + `</div><div class="col-more">${more}${labTile(d)}`;'), ovs = at('h += ovs + replay + plume;'), table = at('h += table + ');
   assert.ok(days < render.indexOf('${conditionsSummary(d)}', days) && render.indexOf('${conditionsSummary(d)}', days) < near);
   assert.ok(days < near && near < why && why < map && map < tiles && tiles < ovs && ovs < table);
   // "Explore the evidence" (labTile, the Research Lab's exhibits on this spot) comes after the detail, never above the answer.
@@ -25,7 +26,12 @@ test('the page puts nearby, then the water, then why, in the order a swimmer ask
 
 test("the EA's rating, with today's advice at its foot, leads the water, and the guide follows it", () => {
   // Between them, the lab results an organisation sent (measured.js), when there are any.
-  assert.match(render, /atWater = fx\.filter\(o => o\.icon === ICON\.rating\)\.map\(tile\)\.join\(''\)\n\s+\+ \(typeof measuredTile === 'function' \? measuredTile\(d, Date\.now\(\)\) : ''\)[^\n]*\n\s+\+ \(typeof guideTile === 'function' \? guideTile\(d, serverToday\) : ''\);/);
+  assert.match(render, /waterTop = fx\.filter\(o => o\.icon === ICON\.rating\)\.map\(tile\)\.join\(''\)\n\s+\+ \(typeof measuredTile === 'function' \? measuredTile\(d, Date\.now\(\)\) : ''\);/);
+  assert.match(render, /const guide = typeof guideTile === 'function' \? guideTile\(d, serverToday\) : '', atWater = waterTop \+ guide;/);
+  // A desktop: the rating and lab results beside the nearby spots, then the guide across the section, where the
+  // notes and reviews mount after it.
+  assert.match(desk, /`<div class="col-a">\$\{top\}<\/div><div class="col-b">\$\{o\.nearby\}<\/div>`/);
+  assert.match(desk, /`<div class="wide">\$\{wide\}<\/div><\/section>`/);
   // The other tiles: the open day's forecast, then the latest readings (dayTiles, nowTiles), then a lake spot's one
   // link to its lake's past measured temperatures (lakeTempHost, tests/site_lake_temperatures.test.cjs), then its link to
   // a local group's past samples (localSamplesHost, tests/site_local_samples.test.cjs).
@@ -52,4 +58,16 @@ test('the overflows fold whole, and what their figures mean stays inside the fol
   assert.match(ov, /most first: `\n\s+\+ 'one matters more the larger its model weight here, the likelier it is to spill this week, and if it is discharging now\. '/);
   assert.doesNotMatch(ov, /with the most reach of/);
   assert.doesNotMatch(ov, /t-more/);   // its corner fold would sit on the fold's own chevron
+});
+
+test('a desktop reads in sections, top to bottom: forecast and map, conditions, the day, evidence, the water, the Lab', () => {
+  // deskSections (docs/DESIGN.md, "The spot page on a desktop"): each section takes the page's width, so no column
+  // runs on alone below another, and the DOM order is the reading and Tab order.
+  const at = s => { const i = desk.indexOf(s); assert.ok(i >= 0, `deskSections has no ${s}`); return i; };
+  const order = ["two('r-forecast'", "class=\"row r-cond\"", "two('r-today'", "r-evidence", "r-visit", "r-lab"].map(at);
+  assert.deepEqual([...order].sort((a, b) => a - b), order);
+  assert.match(render, /if \(!PHONE\.matches\) h \+= deskSections\(d, \{/);   // a phone keeps its one stack and phoneFolds
+  // The mount points later fills and showDay look for are all in the desktop's markup too.
+  for (const id of ['sources-host', 'nearby-host']) assert.match(render, new RegExp(`deskSections\\(d, \\{[\\s\\S]*id="${id}"`));
+  assert.match(html, /\.stack\.desk \.row:has\(> \.col-b:empty\) \{ grid-template-columns:minmax\(0, 1fr\); \}/);
 });
