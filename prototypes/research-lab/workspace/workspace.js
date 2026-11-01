@@ -117,7 +117,7 @@ function renderFront() {
       (tally.over[0] / tally.over[1] > tally.under[0] / Math.max(1, tally.under[1]) + 0.1
         ? 'High samples followed spills more often, but low ones often did too: a spill alone does not explain a high sample.'
         : 'High and low samples followed spills about as often: spills alone do not separate them here.');
-  $('#front-status').innerHTML = `<b>Exploratory, on outcomes already read.</b> A count, not a test. 2026 is left out because its spill records are not published yet. Nothing after 30 Sep 2026.`;
+  $('#front-status').innerHTML = `<b>Exploratory, on outcomes already read.</b> A count, not a test. 2026 is left out because its spill records are not imported here. Nothing after 30 Sep 2026.`;
   const pts = IDX.catchments.map(c => ({ id: c.id, lat: c.lat, lon: c.lon, name: c.name, mark: '<circle r="6" class="cm"/>' }));
   LAB.drawMap($('#overview'), pts, { box: { w: -4.6, e: -0.4, s: 53.2, n: 55.2 }, selected: C.id, label: C.short, maxH: 460, aria: 'The two catchments', onPick: id => { S.from = null; choose(id); } });
   $('#overview-cap').textContent = `The two catchments in this first version. ${C.intro}`;
@@ -316,7 +316,9 @@ function renderDay() {
   }
   if (on('spills')) {
     h += `<h3>Spills on the day and the two before</h3>`;
-    if (!known) h += `<p class="gapnote">No spill records for this date. The EA publishes each year's start/stop records the following spring, so 2026 is not yet available. Not the same as no spills.</p>`;
+    if (!known) h += `<p class="gapnote">No spill records shown for this date. ${d <= '2026-08-31'
+      ? 'The EA has published 2026 start/stop records to the end of August, but they are not imported into this workspace yet.'
+      : "The EA's 2026 file runs to the end of August, so September is not published; January to August are published but not imported here."} Not the same as no spills.</p>`;
     else {
       const rows = C.overflows.map(o => ({ o, ev: spilledIn(o.id, from, d) })).filter(x => x.ev.length).sort((a, b) => (b.o.at[S.spot]?.weight || 0) - (a.o.at[S.spot]?.weight || 0));
       h += rows.length ? `<table><thead><tr><th>Overflow</th><th>Spill hours</th><th>Weight at spot</th></tr></thead><tbody>` + rows.map(({ o, ev }) => {
@@ -357,18 +359,21 @@ function evidenceRows(V) {
   return out.sort((a, b) => a[1].localeCompare(b[1]) || a[0].localeCompare(b[0]));
 }
 function csvCell(v) { const s = String(v ?? ''); return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; }
-function csv(V) {
-  const L = C.layers, rows = evidenceRows(V), src = C.sources, used = LAYERS.filter(l => on(l.id));
+// The CSV is built from the state at the moment of download, by the same rowsInView() the timeline draws from.
+function csv() {
+  const V = rowsInView(), L = C.layers, rows = evidenceRows(V), src = C.sources, used = LAYERS.filter(l => on(l.id));
+  const bad = outsideWindow(rows);
+  if (bad.length) throw new Error(`${bad.length} rows fall outside ${S.from} to ${S.to}, first ${bad[0].slice(0, 2).join(' ')}`);
   const gaps = [
     on('rain') && `rain: ${L.rain.meta.gap_days} days with no complete record in the full file, including every day after ${L.rain.meta.last}`,
-    on('spills') && `spills: no start/stop records after ${L.spills.meta.covered[1]}; overflows with no events in the file: ${C.overflows.filter(o => !o.events_in_window).map(o => o.id).join(', ') || 'none'}`,
+    on('spills') && `spills: start/stop records imported to ${L.spills.meta.covered[1]} only (the EA's 2026 file, January to August, is published but not imported here; September 2026 is not published); overflows with no events in the file: ${C.overflows.filter(o => !o.events_in_window).map(o => o.id).join(', ') || 'none'}`,
     on('temp') && (L.temp.meta.applies ? 'water temperature: May to September only were fetched' : 'water temperature: none in the repository for this catchment'),
     on('sat') && (L.sat.meta.applies ? 'satellite: clear images only; cloud is not a reading' : 'satellite: not processed for rivers'),
   ].filter(Boolean);
   const head = [
     'SwimSignal Research Lab, catchment workspace (prototype). A record of the past: not a forecast and not swimming advice.',
     `Investigation: ${location.href}`,
-    `Catchment: ${C.name}; dates ${S.from} to ${S.to} (UK dates); layers: ${used.map(l => l.name).join(', ')}; spot in focus: ${spotById(S.spot).name}`,
+    `Catchment: ${C.name}; dates ${S.from} to ${S.to} (UK dates; a spill is listed if any part of it falls in these dates, under the date it started); layers: ${used.map(l => l.name).join(', ')}; spot in focus: ${spotById(S.spot).name}`,
     `Data: prototypes/research-lab/workspace/data/${C.id}.json, exported at commit ${C.commit} on ${C.made} by scripts/lab_catchment_workspace.py (sha256 ${C.code_sha256.slice(0, 16)}...)`,
     ...['rain', 'spills', 'ecoli', 'wet', 'hindsight', 'temp', 'sat'].filter(k => k === 'wet' || k === 'hindsight' ? on('ecoli') : on(k)).map(k => `Source (${k}): ${src[k].name}. Licence: ${src[k].licence}. Credit: ${src[k].credit}`),
     `Source (spots): ${src.spots.name}. Licence: ${src.spots.licence}. Credit: ${src.spots.credit}`,
@@ -377,6 +382,10 @@ function csv(V) {
     `Rows: ${rows.length}`,
   ];
   return head.map(l => '# ' + l.replace(/\n/g, ' ')).join('\n') + '\n' + COLS.join(',') + '\n' + rows.map(r => r.map(csvCell).join(',')).join('\n') + '\n';
+}
+// A row's dates must fall in the window: a reading's own date, a spill's span (start date to end date) must overlap it.
+function outsideWindow(rows) {
+  return rows.filter(r => (r[0] === 'spill' ? (ukDate(r[3]) < S.from || r[1] > S.to) : (r[1] < S.from || r[1] > S.to)));
 }
 function renderRows(V) {
   const n = Object.fromEntries(Object.entries(V).map(([k, v]) => [k, v.length]));
@@ -390,18 +399,13 @@ function renderRows(V) {
   };
   t.ontoggle = () => { if (t.open) fill(); };
   if (t.open) fill();
-  $('#dl').onclick = () => {
-    const blob = new Blob([csv(V)], { type: 'text/csv;charset=utf-8' }), a = document.createElement('a');
-    a.href = URL.createObjectURL(blob); a.download = `swimsignal-${C.id}-${S.from}-to-${S.to}.csv`;
-    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-  };
   const s = C.sources, sl = k => `<dt>${esc({ rain: 'Rain', spills: 'Spills', ecoli: 'E. coli', wet: 'Waterhead samples', hindsight: 'Hindsight', temp: 'Water temperature', sat: 'Satellite', map: 'Map', spots: 'Swim spots' }[k])}</dt><dd>${esc(s[k].name)}. <i>${esc(s[k].licence)}</i>.</dd>`;
   $('#sources').innerHTML = `<dl>${['rain', 'spills', 'ecoli', ...(C.layers.ecoli.rows.some(r => r.src === 'WET') ? ['wet'] : []), 'hindsight', ...(C.layers.temp.meta.applies ? ['temp'] : []), ...(C.layers.sat.meta.applies ? ['sat'] : []), 'map', 'spots'].map(sl).join('')}</dl>`;
   $('#attrib').textContent = Object.values(s).map(x => x.credit).join('. ') + '. ' + (LAB.credit() ? 'Outline: ' + LAB.credit() + '.' : '');
 }
 
 // ------------------------------------------------------------------ stepping
-function setDay(d) { S.day = d; renderView(true); }
+function setDay(d) { S.day = d; renderView(); }
 function stepSample(dir) {
   const dates = [...new Set(C.layers.ecoli.rows.map(r => r.date))].sort();
   const next = dir > 0 ? dates.find(x => x > S.day) : [...dates].reverse().find(x => x < S.day);
@@ -411,11 +415,12 @@ function stepSample(dir) {
 }
 
 // ------------------------------------------------------------------ render
-function renderView(dayOnly) {
-  const V = rowsInView();
+let rowsKey = '';
+function renderView() {
+  const V = rowsInView(), key = [S.c, S.from, S.to, [...S.off].sort(), S.spot].join('|');
   renderTimeline(V);
   renderDay();
-  if (!dayOnly) renderRows(V);
+  if (key !== rowsKey) { renderRows(V); rowsKey = key; }
   writeHash();
 }
 function renderAll() { renderFront(); renderControls(); renderView(); }
@@ -438,8 +443,23 @@ async function init() {
     try { await navigator.clipboard.writeText(location.href); $('#copy-msg').textContent = 'Link copied. It reopens these dates, layers and day.'; }
     catch { $('#copy-msg').textContent = 'Copy the address bar: it holds this investigation.'; }
   };
-  let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => C && renderView(true), 150); });
-  addEventListener('hashchange', () => { const h = readHash(); if (h.c !== S.c || h.from !== S.from || h.to !== S.to || h.day !== S.day) { S = h; choose(S.c, true); } });
+  let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => C && renderView(), 150); });
+  // a link opened in an open page applies every field, as a fresh load does: catchment, dates, day, layers, focus
+  addEventListener('hashchange', () => {
+    const h = readHash();
+    if (h.c !== S.c) { S = h; choose(S.c, true); return; }
+    S = { ...h, from: h.from || S.from, to: h.to || S.to };
+    if (!C.spots.some(s => s.id === S.spot)) S.spot = C.spots.find(s => C.layers.ecoli.rows.some(r => r.spot === s.id))?.id || C.spots[0].id;
+    if (!S.day || S.day < S.from || S.day > S.to) S.day = highestDay();
+    renderControls(); renderView();
+  });
+  $('#dl').onclick = () => {
+    let text;
+    try { text = csv(); } catch (e) { $('#copy-msg').textContent = 'Download stopped: ' + e.message; return; }
+    const blob = new Blob([text], { type: 'text/csv;charset=utf-8' }), a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = `swimsignal-${C.id}-${S.from}-to-${S.to}.csv`;
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  };
   await choose(S.c, true);
 }
 init();

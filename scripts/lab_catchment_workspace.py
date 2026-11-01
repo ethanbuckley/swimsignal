@@ -7,7 +7,7 @@ EA bathing waters) and the Wharfe at Ilkley (Cromwheel). For each, from 1 Jan 20
 - rain: Open-Meteo's ERA5-Land archive (the forecast's own cache, data/cache/rain), daily totals by UK date, averaged
   over the 0.1 degree cells that hold the spots and their upstream overflows. A day any cell lacks is a gap, not zero.
 - spills: every overflow upstream of the catchment's spots (assets/paths, the forecast's own network), with each event
-  from the EA's 2024 and 2025 start/stop files (data/processed/ea_events_*.parquet). 2026 events are not published yet.
+  from the EA's 2024 and 2025 start/stop files (data/processed/ea_events_*.parquet). The EA's 2026 file (to August, listed 22 Oct 2026) is not imported here.
 - E. coli: EA samples and the hindsight estimates beside them (data/research/ecoli_evidence.v1.json); WET samples at
   Waterhead (data/research/waterhead_wet.v1.json).
 - water temperature: EA readings in the lake, May to September (data/research/lake_temperature_obs.v1.json).

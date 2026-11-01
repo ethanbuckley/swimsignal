@@ -24,7 +24,7 @@ licence, its gaps, the investigation link and the commit the data was exported a
 | Layer | File | Licence | Gaps shown |
 |---|---|---|---|
 | Rain | `data/cache/rain/archive_*` (Open-Meteo ERA5-Land, the forecast's cache), daily by UK date, mean of the 0.1° cells holding the spots and their overflows (Windermere 4 cells, Ilkley 5) | CC BY 4.0 (Open-Meteo); Copernicus C3S | A day any cell lacks is a gap. The cache ends 6 Sep 2026, so 7–30 Sep 2026 (24 days) is hatched |
-| Spills | `data/processed/ea_events_{united_utilities,yorkshire_water}.parquet` (EA detailed EDM start/stop, 2024 and 2025) | OGL v3.0 | 2026 is hatched: not yet published. Bridge Lane CSO (Ilkley) has no event in the file, labelled, not drawn as zero |
+| Spills | `data/processed/ea_events_{united_utilities,yorkshire_water}.parquet` (EA detailed EDM start/stop, 2024 and 2025) | OGL v3.0 | 2026 is hatched: the EA publishes 2026 records to the end of August (data.gov.uk, "2026 year to August Detailed EDM Start-Stop Data.zip", updated 22 Oct 2026, checked 1 Nov 2026), but they are not imported here. September 2026 is not published. Bridge Lane CSO (Ilkley) has no event in the file, labelled, not drawn as zero |
 | E. coli | `data/research/ecoli_evidence.v1.json` (EA) and `data/research/waterhead_wet.v1.json` (WET) | OGL v3.0; WET public domain with credit | Days without a sample are empty. Two WET samples after 30 Sep 2026 are left out |
 | Hindsight | `ecoli_evidence.v1.json` (`hindsight`, P(over 900), refitted leaving out each year) | SwimSignal's own | "No estimate" with its reason (before 2024, not in the study's file, WET) |
 | Water temperature | `data/research/lake_temperature_obs.v1.json` (EA WQA, 10 points in Windermere's two basins) | OGL v3.0 | Only May to September was fetched: October to April is shaded "not fetched". Ilkley: none in the repository, said in the lane |
@@ -70,8 +70,8 @@ give different counts.
 ## What it cannot tell you
 
 Lining things up is not cause. Rain is a 9 km reanalysis, not a gauge. Monitored overflows are not the only source.
-Spill records stop at 31 Dec 2025, so the 2026 season can be read for rain, samples, temperature and the satellite
-index, but not spills.
+Spill records imported here stop at 31 Dec 2025. The EA's 2026 records to August exist but are not imported, so the
+2026 season can be read for rain, samples, temperature and the satellite index, but not spills.
 
 ## Next
 
@@ -80,6 +80,6 @@ index, but not spills.
 | Identity | LAB-WORKSPACE; Claude (Research Lab session); this PR; `prototypes/research-lab/workspace/`, `scripts/lab_catchment_workspace.py` |
 | Evidence | No verdict: a tool over existing data. One exploratory count above. Data boundary 30 Sep 2026 |
 | Stage and claim | Bounded exploration, local prototype. Claim: these records, lined up, with gaps shown |
-| Next deliverable | Ethan's review alongside #586. Then: add 2026 spills when the EA publishes them (expected spring 2027), and a third catchment chosen by a count of catchments with samples, spill records and rain in the same window (question 4 on the page) |
+| Next deliverable | Ethan's review alongside #586. Then: import the EA's 2026 January to August spill records for the two companies (published, not yet imported; a bounded follow-up, outside the frozen evaluation windows), and a third catchment chosen by a count of catchments with samples, spill records and rain in the same window (question 4 on the page) |
 | Milestone and budget | Review with #586. No fetch is needed for the next step; the third catchment uses cached files only |
 | Release route | Prototype only. A public version would need the Research page owner, a refresh for rain and spills, and the source terms rechecked (ODbL for OpenStreetMap spots). Rollback: delete the folder |
