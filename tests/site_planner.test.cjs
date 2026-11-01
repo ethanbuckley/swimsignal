@@ -311,7 +311,7 @@ test('a lake with overflows upstream gives the likely reading and its 8-in-10 ra
   assert.match(out, /<sup>†<\/sup>Out of season/);
   const lab = vm.runInContext('ecoliReading', ctx);
   assert.deepEqual([lab(7), lab(48), lab(1200), lab('<10'), lab('>10000'), lab(null)], ['under 10', '48', '1,200', 'under 10', 'over 10,000', '–']);
-  const t = vm.runInContext('typicalLine', ctx)({ samples: 81, first_year: 2023, last_year: 2026, low: 45, median: 150, high: 350, over_900: 2 });
+  const t = vm.runInContext('typicalLine', ctx)({ samples: 81, first_year: 2023, last_year: 2026, low: 45, median: 150, high: 350, line: 900, over_line: 2 });
   assert.equal(t, 'The middle of 81 Environment Agency samples here, May to September 2023–2026, read 150 E.&nbsp;coli per 100&nbsp;ml; the middle 8 in 10 read between 45 and 350. 2 were over 900.');
 });
 

@@ -2087,7 +2087,7 @@ const RANGE_OFF_SAID = 'Out of season. The lake estimate is tested only for May 
 const rangeFold = ds => explain(ECOLI_FOLD, ds.map(x => rangeLine(x, dayWord(x.date))).join(' '));
 // Where there is no daily figure (no monitored overflow upstream, or an isolated water), a bathing water's own past
 // samples (build_site.typical_readings): what they read, never a forecast.
-const typicalLine = t => `The middle of ${t.samples} Environment Agency samples here, May to September ${t.first_year === t.last_year ? t.first_year : `${t.first_year}–${t.last_year}`}, read ${ecoliReading(t.median)} E.&nbsp;coli per 100&nbsp;ml; the middle 8 in 10 read between ${ecoliReading(t.low)} and ${ecoliReading(t.high)}. ${t.over_900 ? `${t.over_900} ${t.over_900 === 1 ? 'was' : 'were'} over 900.` : 'None was over 900.'}`;
+const typicalLine = t => `The middle of ${t.samples} Environment Agency samples here, May to September ${t.first_year === t.last_year ? t.first_year : `${t.first_year}–${t.last_year}`}, read ${ecoliReading(t.median)} E.&nbsp;coli per 100&nbsp;ml; the middle 8 in 10 read between ${ecoliReading(t.low)} and ${ecoliReading(t.high)}. ${t.over_line ? `${t.over_line} ${t.over_line === 1 ? 'was' : 'were'} over ${t.line}.` : `None was over ${t.line}.`}`;
 const TYPICAL_SAID = 'Past samples, not a forecast: with no monitored overflow upstream there is nothing to forecast from.';
 const TYPICAL_MORE = 'For comparison, England rates an inland bathing water Excellent when about 95 in 100 of its samples, over four seasons, are under 500 per 100&nbsp;ml. Past samples do not set the level. <a href="#about-ecoli">What this counts</a>';
 // The calibrated number, over the days given: it counts bacteria from any source, so rain can

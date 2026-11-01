@@ -13,8 +13,14 @@ samples as the prospective check. This PR does all three.
   the Serpentine, the Hampstead ponds, Colwick, Cotswold, Henleaze) what its own EA samples have read since 2023,
   labelled as past samples, not a forecast.
 
-Not covered, and why: coastal, Welsh, Scottish and Irish bathing waters (the build holds only their latest sample, so a
-typical range needs a new sample export); clicked map points (no rain forecast for the point, as for rivers); lakes with
+- **every English coastal and estuary bathing water with an archive sampling point** (404 of 426) a line on its card on
+  the coverage page: what its own statutory samples read, May to September 2023-2026, with how many were over 500 (the
+  coastal minimum standard's E. coli line). From `data/research/coastal_typical.v1.json`, written off CI by
+  `scripts/export_coastal_typical.py` (EA Water Quality Archive, determinand 2348, purpose MS; 132 requests, 26,113
+  samples, 1 Nov 2026). Refresh it after each season.
+
+Not covered, and why: the 22 coastal sites with no archive point or under 20 samples; Welsh, Scottish and Irish bathing
+waters (each nation's samples come from its own service, not exported yet); clicked map points (no rain forecast for the point, as for rivers); lakes with
 no overflow upstream that are not bathing waters (no samples and nothing to forecast from).
 
 ## 1. What the site does at lakes today
@@ -121,6 +127,6 @@ test. Winter is out in every option: the EA takes no samples from October to Apr
 | Identity | LAKE-CONC; owner: Claude session "ecoli-estimate-lakes"; this PR; `src/dipcast/lake_range.py`, `data/processed/ecoli_lake_range.json` |
 | Evidence | #584: all three conditions passed on 962 unseen lake rows (Windermere, Frensham); gain from three Windermere sites |
 | Stage and claim | Limited forecast at lakes with overflows upstream, labelled by basis, from merge; logged for the 2027 read |
-| Next deliverable | Typical readings at coastal and other-nation bathing waters need a sample export (not started); the 2027 read |
+| Next deliverable | Typical readings at Welsh, Scottish and Irish bathing waters need their own sample exports (not started); the coastal export refreshed after the 2027 season; the 2027 read |
 | Milestone | 2027 read on or after 15 Oct 2027 (section 3) |
 | Release route | Removing the model file turns the lake range off (the page says "Not estimated"); the past-samples tile follows the evidence export |

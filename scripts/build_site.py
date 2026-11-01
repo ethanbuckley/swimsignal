@@ -51,6 +51,7 @@ from dipcast.overflows import duplicate_site_ids
 from dipcast.spot_links import attach as attach_spot_links
 from dipcast.stretches import attach as attach_stretches
 from dipcast.trace import SIMPLIFY_M, spot_trace_parts
+from dipcast.typical import typical_readings
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 logging.getLogger("httpx").setLevel(logging.WARNING)
@@ -3673,32 +3674,8 @@ def attach_sample_history(results: list[dict], path: Path = ECOLI_EVIDENCE) -> i
     return n
 
 
-TYPICAL_MIN = 20   # samples needed before a bathing water's typical readings are given
-
-
-def typical_readings(samples: list[dict]) -> dict | None:
-    """What a bathing water's own EA samples have read: the middle one and the range the middle 8 in 10 fell in (the
-    10th and 90th sample in 100, by rank), how many, their years and how many were over 900. A value the lab gave as a
-    limit stays one ("<10", ">10000"): a "<10" ranks below every count. None under TYPICAL_MIN samples."""
-    xs = [x for x in samples or [] if isinstance(x.get("ecoli"), int | float) and x.get("t")]
-    if len(xs) < TYPICAL_MIN:
-        return None
-    # "<10" ranks just below 10; ">10000" just above 10,000
-    key = lambda x: x["ecoli"] + {"<": -0.5, ">": 0.5}.get(x.get("q"), 0.0)   # noqa: E731
-    xs = sorted(xs, key=key)
-    n = len(xs)
-
-    def at(q: float):
-        x = xs[max(0, math.ceil(q * n) - 1)]
-        v = x["ecoli"] if x.get("q") else float(f"{x['ecoli']:.2g}")
-        return f"{x['q']}{x['ecoli']:g}" if x.get("q") in ("<", ">") else (int(v) if v == int(v) else v)
-    years = sorted({x["t"][:4] for x in xs})
-    return {"samples": n, "first_year": int(years[0]), "last_year": int(years[-1]), "low": at(0.1), "median": at(0.5),
-            "high": at(0.9), "over_900": sum(1 for x in xs if x["ecoli"] > 900 and x.get("q") != "<")}
-
-
 def attach_typical_readings(results: list[dict], path: Path = ECOLI_EVIDENCE) -> int | None:
-    """On each bathing water in the export, `ecoli_typical` (typical_readings): the page gives it where the spot has no
+    """On each bathing water in the export, `ecoli_typical` (typical.typical_readings, over-900 counted): the page gives it where the spot has no
     daily E. coli figure, a lake or river with no monitored overflow upstream. Past samples, not a forecast. Returns how
     many spots got it, None without a publishable export."""
     doc, why = read_ecoli_evidence(path)
@@ -3708,7 +3685,7 @@ def attach_typical_readings(results: list[dict], path: Path = ECOLI_EVIDENCE) ->
     n = 0
     for r in results:
         x = by.get(str(r["id"]))
-        t = typical_readings(x.get("samples")) if x else None
+        t = typical_readings(x.get("samples"), 900) if x else None
         if t:
             r["ecoli_typical"] = t
             n += 1
@@ -4532,15 +4509,17 @@ def build(refresh: bool = True) -> dict:
     health["anypoint"] = write_any_point(SITE, credits, health["warnings"])   # its warning is announced there
     health["guide_photos"] = copy_photos(SITE, results)
     from dipcast.coastal import attach_samples
+    from dipcast.coastal import attach_typical as attach_coastal_typical
     from dipcast.coastal import fetch as fetch_coastal
     # The latest statutory sample at each site from the EA's archive, kept six hours in the cache.
     coastal = attach_samples(fetch_coastal(), cache=config.CACHE / "coastal_samples.json")
+    n_coastal_typical = attach_coastal_typical(coastal)   # a committed export: no request
     coastal_water = attach_directory_water_temp(coastal["sites"], anypoint_water_air(SITE))
     (SITE / "data" / "coastal.json").write_text(json.dumps(coastal))
     health["coastal"] = {"status": coastal["status"], "sites": len(coastal["sites"]),
                          "samples": coastal.get("samples", {}).get("state"),
                          "with_sample": sum((s.get("sample") or {}).get("state") == "ok" for s in coastal["sites"]),
-                         "water_temperature_estimate": coastal_water}
+                         "water_temperature_estimate": coastal_water, "typical_readings": n_coastal_typical}
     # Welsh bathing waters: NRW's sites and latest samples, live or from the dated snapshot (wales.py).
     from dipcast.wales import fetch as fetch_wales
     wales = fetch_wales()
