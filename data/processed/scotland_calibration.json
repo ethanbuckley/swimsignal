@@ -1,0 +1,20 @@
+{
+ "written": "2026-11-01",
+ "method": "platt",
+ "fitted_on": [
+  2022,
+  2023,
+  2024
+ ],
+ "rows": 168095,
+ "spill_days": 37287,
+ "model": "United Utilities 2023-2025 (refit on all years; verified on 2025 before refit)",
+ "model_file": "spill_model.pkl",
+ "a": 0.44928584513880876,
+ "b": 0.7496750672880154,
+ "verdict": "PASS",
+ "rule": "scripts/scotland_recalibration.py",
+ "source": "Contains Scottish Water data licensed under the Open Government Licence v3.0.",
+ "spill_stamp": "808da63d",
+ "use": "Fitted for this spill model only (forecast.model_version's spill= stamp). A new spill model needs a new map and check."
+}
