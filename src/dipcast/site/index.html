@@ -2114,6 +2114,8 @@ const check = d => { const url = (d.classification || {}).url;
   // A point off the list (anypoint.js, source 'unlisted') may well be a bathing water: a click on Brighton
   // beach said "This is not a designated bathing water". Nothing checks a clicked point, so nothing is said.
   return `<p class="check">${plainLevel(level(d)) ? 'A forecast, not a water test.' : 'A forecast, not a water test: check the signs at the water before you swim.'}${d.source === 'unlisted' ? ''
+    : d.source === 'sepa'   // a Scottish bathing water (the Scotland trial): SEPA tests it, and its page has any advice
+    ? (/^https:\/\//.test((d.sepa || {}).page || '') ? ` <a href="${esc(d.sepa.page)}">SEPA's page</a> has its samples and any advice against bathing there today, which this forecast does not include.` : '')
     : d.source !== 'designated'
     ? ' This is not a designated bathing water, so the Environment Agency does not test it for bathing.'
     : eaUnchecked(d) ? ''
@@ -2704,6 +2706,7 @@ function unknowns(d) {
     // that no reading is not known to be dry.
     + ' A monitor reports when it spills, not how much or what is in it.']);
   if (walesWords(d)) rows.push(['Overflows in Wales', 'Not counted', esc(walesWords(d))]);
+  if (trialWords(d)) rows.push(['Scotland', 'Trial', esc(trialWords(d))]);
   const reviewed = typeof eaTodayCover === 'function' ? eaTodayCover(d) : '';
   // The answer says what was checked and when (coverLine); here only where the latest is.
   // Labelled as the EA's only where the spot has the EA's panel (a bathing water); another publisher's notice
@@ -2747,6 +2750,7 @@ function coverWords(d, iso = null) {
   const gone = daily(d) && !iso ? d.days.slice(0, 5).filter(x => !hasData(x)).map(x => dayName(x.date)) : [];
   if (gone.length && gone.length < 5) out.push(`No forecast for ${gone.length > 1 ? gone.slice(0, -1).join(', ') + ' or ' + gone[gone.length - 1] : gone[0]}`);
   if (walesWords(d, true)) out.push(esc(walesWords(d, true)));
+  if (trialWords(d, true)) out.push(esc(trialWords(d, true)));
   // A reviewed notice above (eatoday.js, eaTodayCover) has its check date and link in its own block, so the line leaves it
   // out (31 Oct 2026: the block, a line under the level and this line each said it apart from the level).
   const reviewed = typeof eaTodayCover === 'function' ? eaTodayCover(d) : '';
@@ -2843,7 +2847,7 @@ async function shareImage(d) {
   if (why) { g.fillStyle = v('--muted'); g.font = `600 36px ${F}`; y = wrapText(g, cap(why), 60, y + 6, W - 120, 46); }
   if (live && !lead && !head.startsWith(live)) { g.fillStyle = v('--ink'); g.font = `500 32px ${F}`; y = wrapText(g, live + '.', 60, y + 6, W - 120, 42); }
   if (later) { g.fillStyle = v('--ink'); g.font = `600 36px ${F}`; y = wrapText(g, later, 60, y + 6, W - 120, 46); }
-  const notes = [walesWords(d, true), eaUnchecked(d) ? "Today's EA advice not checked: see the EA's page" : ''].filter(Boolean);
+  const notes = [walesWords(d, true), trialWords(d, true), eaUnchecked(d) ? "Today's EA advice not checked: see the EA's page" : ''].filter(Boolean);
   if (notes.length) { g.fillStyle = v('--ink'); g.font = `500 30px ${F}`; y = wrapText(g, notes.join('. ') + '.', 60, y + 10, W - 120, 40); }
   // Under each day, the E. coli estimate only while all five days are in its tested season (May to
   // September), else the rain, as at a spot without the estimate: a picture in a chat is read as the
@@ -3347,7 +3351,7 @@ const away = k => milesAway(k / MILE_KM);   // a distance to travel, in miles as
 // not set the level: a percentage with no unit, beside a level it does not count in. The spot's page keeps
 // it, marked †, with its unit.
 // Under a row's headline, what it cannot count, short: the overflows in Wales (levels.js, walesWords).
-const headNote = s => walesWords(s, true) ? `<span class="hl-note">${esc(walesWords(s, true))}</span>` : '';
+const headNote = s => [walesWords(s, true), trialWords(s, true)].filter(Boolean).map(w => `<span class="hl-note">${esc(w)}</span>`).join('');
 function spotItem(s) {
   const d = dist(s);
   const meta = [cap(s.kind), s.source === 'designated' ? 'bathing water' : null, d !== null ? away(d) : null, rainMeta(s)].filter(Boolean).join(' · ');
@@ -3385,6 +3389,9 @@ function outingResume() {
 // The way on from a search with no inland spot: the official coastal, Welsh, Scottish and Irish
 // directories (coverage.html), searched for the same words. Also under the offers of a town or water (offerOnMap).
 const regionalLink = q => `<a href="coverage.html${String(q || '').trim() ? `?q=${encodeURIComponent(String(q).trim())}` : ''}#regional-results">Search official coastal and regional bathing-water information</a>, which is not a SwimSignal forecast.`;
+// Where the listed spots are (build_site.spots_where says the same in the page's first paint): England, and
+// Scotland while the Scotland trial lists its spots (scotland_trial.py).
+const spotsWhere = () => (DATA.spots || []).some(s => s.trial === 'scotland') ? 'in England, and in Scotland as a trial' : 'in England';
 function renderList() {
   contribLayer.clearLayers(); selLayer.clearLayers(); current = null; shown = 'list';
   setView('list');
@@ -3399,7 +3406,7 @@ function renderList() {
   // level in words. Everything down to the caveat's line is also in the built home page, so it and the
   // picture paint before the forecast arrives (scripts/build_site.py, home_lead): what depends on the
   // forecast comes after it, so that nothing above it moves when the script draws this.
-  let h = `<div class="lead"><section class="intro"><h1>Check the water before you go</h1><p class="lede">Five-day pollution risk forecasts for ${DATA.spots.length} swim spots in England<span class="lede-map">, and for any river or lake you ${TOUCH ? 'tap' : 'click'} on the map</span>. <a href="#about">How it works</a></p>`
+  let h = `<div class="lead"><section class="intro"><h1>Check the water before you go</h1><p class="lede">Five-day pollution risk forecasts for ${DATA.spots.length} swim spots ${spotsWhere()}<span class="lede-map">, and for any river or lake you ${TOUCH ? 'tap' : 'click'} on the map</span>. <a href="#about">How it works</a></p>`
     + `<div class="search">${SEARCH_ICON}<label class="sr" for="q">Find a spot</label><input type="search" id="q" placeholder="River, lake or town" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" value="${esc(VIEW.q)}">${'geolocation' in navigator ? NEAR_PIN : ''}</div>`
     + ('geolocation' in navigator ? `<p class="small muted geo" id="geo-cta" aria-live="polite"${VIEW.geoMsg && VIEW.geoAt === 'cta' ? '' : ' hidden'}>${VIEW.geoAt === 'cta' ? esc(VIEW.geoMsg) : ''}</p>` : '') + '</section>'
     // The five days as a strip, as Plan has them, each with how many spots are at low risk that day: the day's
@@ -3605,7 +3612,7 @@ function drawSpots() {
   const groups = areaGroups(items);
   ul.innerHTML = groups ? groups.map(([a, xs]) => byArea() ? areaFold(a, xs, spotItem) : areaRows(a, xs, spotItem, VIEW.quiet, !words.length)).join('')
     : items.length ? items.map(spotItem).join('')
-    : `<li class="empty"><p class="below">No inland forecasts match. SwimSignal forecasts ${DATA.spots.length} river and lake spots in England. ${regionalLink(VIEW.q)} Missing yours? <a href="feedback.html?type=spot">Request it</a>.</p>`
+    : `<li class="empty"><p class="below">No inland forecasts match. SwimSignal forecasts ${DATA.spots.length} river and lake spots ${spotsWhere()}. ${regionalLink(VIEW.q)} Missing yours? <a href="feedback.html?type=spot">Request it</a>.</p>`
       + `<button type="button" class="btn" id="clear-filters">Clear search and filters</button></li>`;
   document.getElementById('count').textContent = items.length === DATA.spots.length ? `${items.length} spot${items.length === 1 ? '' : 's'}.` : `Showing ${items.length} of ${DATA.spots.length} spots.`;
   bindClear();
@@ -3642,7 +3649,7 @@ function savedCard(s, unsave = true, iso = null, tile = unsave, from = 'saved sp
     + (m.cardLive ? `<p class="place-live">${m.cardLive}</p>` : '')   // before the level: a low there is a forecast (liveParts)
     + `<div class="place-mid">${m.word ? `<p class="big ${m.tone}">${m.word} risk</p>` : `<p class="big-head ${m.tone}">${m.head}</p>`}${unsave && !withWeek ? '' : week(s)}</div>`
     + `<p class="place-sub">${plainLevel(level(s)) && m.next ? `${m.sub} ${m.next}.` : [m.sub, m.next].filter(Boolean).join(' · ')}</p>`   // under a plain level, two sentences
-    + (walesWords(s, true) ? `<p class="place-sub">${esc(walesWords(s, true))}.</p>` : '')
+    + [walesWords(s, true), trialWords(s, true)].filter(Boolean).map(w => `<p class="place-sub">${esc(w)}.</p>`).join('')
     // What has changed since you last looked, where the card gives the answer: no day picked, or today (Explore opens
     // on today, so until 29 Oct 2026 its saved cards never said it).
     + `${(!iso || iso === today()) && typeof sinceSaid === 'function' ? sinceSaid(s, DATA.generated_at) : ''}</li>`;
@@ -5118,7 +5125,7 @@ function render(d) {
   // Why: where the risk comes from in words (showDay keeps it to the day), the map of it, then the tiles.
   h += `<div id="sources-host">${whereFrom(d)}</div>`;
   if (total) h += `<div class="tile spot-map-tile"><h2 class="t-lab">${ICON.map}<span>Upstream</span></h2><div id="spot-map"></div>`
-    + `<p class="t-say">The spot, ringed, and the overflows that matter most: a bigger circle means a larger model weight here.</p>`
+    + `<p class="t-say">The spot, ringed, and the overflows that matter most: a bigger circle means a larger model weight here.${PAGE_ID.test(d.id) ? ` <a href="lab/pollution/#spot=${encodeURIComponent(d.id)}">The rivers joining each one, in the Research Lab</a>.` : ''}</p>`
     + `<p class="t-key"><span class="dot sm" style="background:${colourFor(1)}"></span>discharging<span class="dot sm" style="background:${colourFor(0)}"></span>not discharging<span class="dot sm" style="background:${colourFor(-1)}"></span>no current reading</p>`
     + `<p class="t-key trkey" hidden><span class="trline"></span>the water that reaches this spot</p></div>`;   // drawTrace shows it
   // With no overflow upstream there is no Upstream map, and a desktop's spot page has no map column:

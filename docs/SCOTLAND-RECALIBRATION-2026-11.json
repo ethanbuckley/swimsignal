@@ -1,0 +1,495 @@
+{
+ "what": "Scotland trial calibration map, fitted 2022-24, checked on 2025 at leads 0-3 (scripts/scotland_recalibration.py). Summary scores only; no Scottish Water rows.",
+ "map": {
+  "written": "2026-11-01",
+  "method": "platt",
+  "fitted_on": [
+   2022,
+   2023,
+   2024
+  ],
+  "rows": 168095,
+  "spill_days": 37287,
+  "model": "United Utilities 2023-2025 (refit on all years; verified on 2025 before refit)",
+  "model_file": "spill_model.pkl",
+  "a": 0.44929,
+  "b": 0.74968,
+  "verdict": "PASS",
+  "rule": "scripts/scotland_recalibration.py",
+  "source": "Contains Scottish Water data licensed under the Open Government Licence v3.0."
+ },
+ "verdict": "PASS",
+ "parts": {
+  "lead 0 R1": true,
+  "lead 0 R2": true,
+  "lead 0 R3": true,
+  "lead 1 R1": true,
+  "lead 1 R2": true,
+  "lead 1 R3": true,
+  "lead 2 R1": true,
+  "lead 2 R2": true,
+  "lead 2 R3": true,
+  "lead 3 R1": true,
+  "lead 3 R2": true,
+  "lead 3 R3": true
+ },
+ "leads": {
+  "0": {
+   "overflows": 233,
+   "rows": 85045,
+   "spill_days": 15604,
+   "brier": 0.10055,
+   "log_loss": 0.33054,
+   "auc": 0.85968,
+   "brier_ci": [
+    0.086039,
+    0.11599
+   ],
+   "log_loss_ci": [
+    0.28867,
+    0.37519
+   ],
+   "bss_vs_earlier_years": 0.2294,
+   "bss_vs_earlier_years_ci": [
+    0.14931,
+    0.30141
+   ],
+   "bss_vs_unmapped": 0.052722,
+   "bss_vs_unmapped_ci": [
+    0.025892,
+    0.076936
+   ],
+   "level": 1.0264,
+   "level_unmapped": 0.67159,
+   "R1": true,
+   "R2": true,
+   "R3": true,
+   "england_lead_calibration": {
+    "brier": 0.10586,
+    "level": 0.66069
+   },
+   "reliability": [
+    {
+     "band": "0.0-0.1",
+     "n": 46698,
+     "forecast": 0.0387,
+     "observed": 0.0435
+    },
+    {
+     "band": "0.1-0.2",
+     "n": 12522,
+     "forecast": 0.1432,
+     "observed": 0.1262
+    },
+    {
+     "band": "0.2-0.3",
+     "n": 6941,
+     "forecast": 0.2459,
+     "observed": 0.2193
+    },
+    {
+     "band": "0.3-0.4",
+     "n": 4761,
+     "forecast": 0.3475,
+     "observed": 0.3451
+    },
+    {
+     "band": "0.4-0.5",
+     "n": 3556,
+     "forecast": 0.4476,
+     "observed": 0.4376
+    },
+    {
+     "band": "0.5-0.6",
+     "n": 2976,
+     "forecast": 0.5488,
+     "observed": 0.5494
+    },
+    {
+     "band": "0.6-0.7",
+     "n": 2483,
+     "forecast": 0.6491,
+     "observed": 0.6347
+    },
+    {
+     "band": "0.7-0.8",
+     "n": 2120,
+     "forecast": 0.7494,
+     "observed": 0.7344
+    },
+    {
+     "band": "0.8-0.9",
+     "n": 1919,
+     "forecast": 0.8494,
+     "observed": 0.8108
+    },
+    {
+     "band": "0.9-1.0",
+     "n": 1069,
+     "forecast": 0.9362,
+     "observed": 0.8868
+    }
+   ],
+   "wet_dry": {
+    "wet": {
+     "rows": 19933,
+     "spill_days": 8378,
+     "level": 1.0143,
+     "brier": 0.16719,
+     "brier_unmapped": 0.17887
+    },
+    "dry": {
+     "rows": 65112,
+     "spill_days": 7226,
+     "level": 1.0404,
+     "brier": 0.080151,
+     "brier_unmapped": 0.083887
+    }
+   }
+  },
+  "1": {
+   "overflows": 233,
+   "rows": 85045,
+   "spill_days": 15604,
+   "brier": 0.10473,
+   "log_loss": 0.34224,
+   "auc": 0.8483,
+   "brier_ci": [
+    0.08944,
+    0.12072
+   ],
+   "log_loss_ci": [
+    0.29912,
+    0.38802
+   ],
+   "bss_vs_earlier_years": 0.19739,
+   "bss_vs_earlier_years_ci": [
+    0.11747,
+    0.27238
+   ],
+   "bss_vs_unmapped": 0.056396,
+   "bss_vs_unmapped_ci": [
+    0.030173,
+    0.079707
+   ],
+   "level": 1.0044,
+   "level_unmapped": 0.64699,
+   "R1": true,
+   "R2": true,
+   "R3": true,
+   "england_lead_calibration": {
+    "brier": 0.11108,
+    "level": 0.62923
+   },
+   "reliability": [
+    {
+     "band": "0.0-0.1",
+     "n": 46810,
+     "forecast": 0.0388,
+     "observed": 0.0465
+    },
+    {
+     "band": "0.1-0.2",
+     "n": 12883,
+     "forecast": 0.1435,
+     "observed": 0.1461
+    },
+    {
+     "band": "0.2-0.3",
+     "n": 7019,
+     "forecast": 0.2467,
+     "observed": 0.2368
+    },
+    {
+     "band": "0.3-0.4",
+     "n": 4678,
+     "forecast": 0.3478,
+     "observed": 0.3343
+    },
+    {
+     "band": "0.4-0.5",
+     "n": 3679,
+     "forecast": 0.4479,
+     "observed": 0.4289
+    },
+    {
+     "band": "0.5-0.6",
+     "n": 2919,
+     "forecast": 0.5487,
+     "observed": 0.5447
+    },
+    {
+     "band": "0.6-0.7",
+     "n": 2381,
+     "forecast": 0.6482,
+     "observed": 0.6228
+    },
+    {
+     "band": "0.7-0.8",
+     "n": 1968,
+     "forecast": 0.7488,
+     "observed": 0.7215
+    },
+    {
+     "band": "0.8-0.9",
+     "n": 1755,
+     "forecast": 0.8492,
+     "observed": 0.8017
+    },
+    {
+     "band": "0.9-1.0",
+     "n": 953,
+     "forecast": 0.9365,
+     "observed": 0.8835
+    }
+   ],
+   "wet_dry": {
+    "wet": {
+     "rows": 19311,
+     "spill_days": 7840,
+     "level": 1.0148,
+     "brier": 0.17142,
+     "brier_unmapped": 0.18315
+    },
+    "dry": {
+     "rows": 65734,
+     "spill_days": 7764,
+     "level": 0.9939,
+     "brier": 0.085135,
+     "brier_unmapped": 0.089789
+    }
+   }
+  },
+  "2": {
+   "overflows": 233,
+   "rows": 85045,
+   "spill_days": 15604,
+   "brier": 0.10733,
+   "log_loss": 0.34867,
+   "auc": 0.84279,
+   "brier_ci": [
+    0.091846,
+    0.12352
+   ],
+   "log_loss_ci": [
+    0.30465,
+    0.39448
+   ],
+   "bss_vs_earlier_years": 0.17744,
+   "bss_vs_earlier_years_ci": [
+    0.10018,
+    0.24933
+   ],
+   "bss_vs_unmapped": 0.062203,
+   "bss_vs_unmapped_ci": [
+    0.03593,
+    0.086074
+   ],
+   "level": 0.9806,
+   "level_unmapped": 0.62423,
+   "R1": true,
+   "R2": true,
+   "R3": true,
+   "england_lead_calibration": {
+    "brier": 0.1154,
+    "level": 0.5807
+   },
+   "reliability": [
+    {
+     "band": "0.0-0.1",
+     "n": 47378,
+     "forecast": 0.0392,
+     "observed": 0.0488
+    },
+    {
+     "band": "0.1-0.2",
+     "n": 12891,
+     "forecast": 0.1434,
+     "observed": 0.1589
+    },
+    {
+     "band": "0.2-0.3",
+     "n": 7112,
+     "forecast": 0.2459,
+     "observed": 0.2532
+    },
+    {
+     "band": "0.3-0.4",
+     "n": 4661,
+     "forecast": 0.3472,
+     "observed": 0.3452
+    },
+    {
+     "band": "0.4-0.5",
+     "n": 3448,
+     "forecast": 0.4476,
+     "observed": 0.431
+    },
+    {
+     "band": "0.5-0.6",
+     "n": 2785,
+     "forecast": 0.5487,
+     "observed": 0.5408
+    },
+    {
+     "band": "0.6-0.7",
+     "n": 2365,
+     "forecast": 0.6487,
+     "observed": 0.6085
+    },
+    {
+     "band": "0.7-0.8",
+     "n": 1910,
+     "forecast": 0.7486,
+     "observed": 0.6895
+    },
+    {
+     "band": "0.8-0.9",
+     "n": 1643,
+     "forecast": 0.8488,
+     "observed": 0.8168
+    },
+    {
+     "band": "0.9-1.0",
+     "n": 852,
+     "forecast": 0.9356,
+     "observed": 0.8697
+    }
+   ],
+   "wet_dry": {
+    "wet": {
+     "rows": 18129,
+     "spill_days": 7224,
+     "level": 1.0172,
+     "brier": 0.1759,
+     "brier_unmapped": 0.18764
+    },
+    "dry": {
+     "rows": 66916,
+     "spill_days": 8380,
+     "level": 0.94904,
+     "brier": 0.088754,
+     "brier_unmapped": 0.094623
+    }
+   }
+  },
+  "3": {
+   "overflows": 233,
+   "rows": 85045,
+   "spill_days": 15604,
+   "brier": 0.11116,
+   "log_loss": 0.35976,
+   "auc": 0.83287,
+   "brier_ci": [
+    0.094582,
+    0.12746
+   ],
+   "log_loss_ci": [
+    0.3139,
+    0.4063
+   ],
+   "bss_vs_earlier_years": 0.14813,
+   "bss_vs_earlier_years_ci": [
+    0.066677,
+    0.22195
+   ],
+   "bss_vs_unmapped": 0.050545,
+   "bss_vs_unmapped_ci": [
+    0.022674,
+    0.076566
+   ],
+   "level": 1.0088,
+   "level_unmapped": 0.65123,
+   "R1": true,
+   "R2": true,
+   "R3": true,
+   "england_lead_calibration": {
+    "brier": 0.11759,
+    "level": 0.60167
+   },
+   "reliability": [
+    {
+     "band": "0.0-0.1",
+     "n": 46897,
+     "forecast": 0.0393,
+     "observed": 0.0523
+    },
+    {
+     "band": "0.1-0.2",
+     "n": 12718,
+     "forecast": 0.1431,
+     "observed": 0.1567
+    },
+    {
+     "band": "0.2-0.3",
+     "n": 6943,
+     "forecast": 0.2457,
+     "observed": 0.2497
+    },
+    {
+     "band": "0.3-0.4",
+     "n": 4689,
+     "forecast": 0.3473,
+     "observed": 0.3342
+    },
+    {
+     "band": "0.4-0.5",
+     "n": 3645,
+     "forecast": 0.4484,
+     "observed": 0.4088
+    },
+    {
+     "band": "0.5-0.6",
+     "n": 2950,
+     "forecast": 0.5483,
+     "observed": 0.48
+    },
+    {
+     "band": "0.6-0.7",
+     "n": 2434,
+     "forecast": 0.649,
+     "observed": 0.5752
+    },
+    {
+     "band": "0.7-0.8",
+     "n": 2128,
+     "forecast": 0.7493,
+     "observed": 0.6805
+    },
+    {
+     "band": "0.8-0.9",
+     "n": 1743,
+     "forecast": 0.848,
+     "observed": 0.7676
+    },
+    {
+     "band": "0.9-1.0",
+     "n": 898,
+     "forecast": 0.9358,
+     "observed": 0.8497
+    }
+   ],
+   "wet_dry": {
+    "wet": {
+     "rows": 18634,
+     "spill_days": 7149,
+     "level": 1.0886,
+     "brier": 0.17961,
+     "brier_unmapped": 0.18568
+    },
+    "dry": {
+     "rows": 66411,
+     "spill_days": 8455,
+     "level": 0.94134,
+     "brier": 0.091949,
+     "brier_unmapped": 0.097825
+    }
+   }
+  }
+ },
+ "bootstrap": {
+  "draws": 2000,
+  "seed": 0,
+  "clusters": "overflows x ISO weeks"
+ }
+}

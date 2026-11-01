@@ -14,6 +14,7 @@ function waterSamples(s, now = Date.now()) {
   const cl = s.classification, said = sampleWords()(s.lab_sample, now);
   const page = cl?.url ? ' Check the Environment Agency’s page for every result and current advice.' : '';
   if (said) return said + page;
+  if (s.source === 'sepa') return 'SEPA samples this loch in the bathing season. Its results are on SEPA’s page; SwimSignal does not republish them.';
   if (s.source !== 'designated' && !cl) return 'No lab samples here.';   // the rating row says it is not a bathing water
   return (s.lab_sample === null ? 'No lab sample this season.' : 'No lab sample in this update.') + page;
 }
@@ -26,7 +27,9 @@ function evidenceRows(s, iso, generatedAt = null, now = Date.now()) {
   // that day, or one built before the mark) goes by the calendar month, May to September.
   const offSeason = day && typeof day.in_validated_season === 'boolean' ? !day.in_validated_season
     : ![5, 6, 7, 8, 9].includes(Number(iso.slice(5, 7)));
+  const sr = (s.sepa || {}).rating;
   return [
+    s.source === 'sepa' ? ['SEPA rating', sr?.value ? `${sr.value}${sr.year ? ' · ' + sr.year : ''}. SEPA's rating from its samples over up to four seasons; not today’s water quality.` : 'SEPA designated bathing water; no rating available in this update.'] :
     ['Environment Agency rating', cl?.class ? `${cl.class.charAt(0).toUpperCase() + cl.class.slice(1)}${cl.year ? ' · ' + cl.year : ''}. Based on up to four seasons of samples; not today’s water quality.`
       : s.source === 'designated' ? 'Designated bathing water; no rating available in this update.' : 'Not an Environment Agency designated bathing water. No bathing-water rating shown.'],
     ['Water samples', waterSamples(s, now)],
@@ -98,6 +101,7 @@ function compareAdvice(s) {
     return htmlText(R.EA_UNCHECKED) + (url ? ` <a href="${htmlText(url)}">The EA's page</a> has any advice against bathing there today.` : '');
   }
   if (s.source === 'designated') return 'Not known: this update has no Environment Agency page for this bathing water.';
+  if (s.source === 'sepa') return 'Not checked: SEPA’s page and the sign at the water give any advice for today.';
   return 'None: not a designated bathing water, so the Environment Agency gives no bathing advice for it.';
 }
 // Access at the spot (access.py: a desk check of the authority's guidance, for the spots from OpenStreetMap

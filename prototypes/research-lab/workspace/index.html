@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Research Lab exhibit 4, the catchment workspace. Built into the site at lab/ by scripts/build_site.py write_lab. -->
+<title>Catchment workspace · SwimSignal Research Lab</title>
+<meta name="description" content="Rain, overflow spills, E. coli samples, water temperature and satellite readings for Windermere and the Wharfe at Ilkley on one timeline, with gaps drawn as gaps and every row downloadable.">
+<link rel="stylesheet" href="../lab.css?v=10">
+<link rel="stylesheet" href="workspace.css?v=1">
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <a class="brand" href="https://swimsignal.co.uk/">SwimSignal</a>
+  <span class="crumb"><a href="../">Research Lab</a> · Exhibit 4 of 4 · exploratory</span>
+  <a href="https://swimsignal.co.uk/methods.html">Methods</a>
+</div></header>
+
+<div class="front"><div class="wrap">
+  <div>
+    <h1>Catchment workspace</h1>
+    <p class="q">When a sample came back high, what had the rain and the overflows upstream been doing?</p>
+    <p class="answer" id="front-answer">Loading the catchment…</p>
+    <p class="status" id="front-status"></p>
+  </div>
+  <figure class="overview">
+    <div class="drawn-map dark" id="overview"></div>
+    <figcaption id="overview-cap"></figcaption>
+  </figure>
+</div></div>
+
+<main>
+  <section class="sec" id="s-pick"><div class="wrap">
+    <div class="sec-head"><span class="no">1</span><h2>Choose a catchment and dates</h2><span class="aside">1 Jan 2024 to 30 Sep 2026</span></div>
+    <div class="ws-controls">
+      <div class="ws-field">
+        <span class="lbl" id="c-lbl">Catchment</span>
+        <div class="seg" id="c-seg" role="group" aria-labelledby="c-lbl"></div>
+      </div>
+      <div class="ws-field">
+        <span class="lbl">Dates</span>
+        <div class="ws-dates">
+          <label>From <input type="date" id="d-from" min="2024-01-01" max="2026-09-30"></label>
+          <label>to <input type="date" id="d-to" min="2024-01-01" max="2026-09-30"></label>
+        </div>
+        <div class="ws-presets" id="presets"></div>
+      </div>
+      <div class="ws-field">
+        <span class="lbl" id="l-lbl">Layers on screen</span>
+        <div class="ws-layers" id="layers" role="group" aria-labelledby="l-lbl"></div>
+      </div>
+    </div>
+    <p class="note" id="c-intro"></p>
+  </div></section>
+
+  <section class="sec" id="s-time"><div class="wrap">
+    <div class="sec-head"><span class="no">2</span><h2>One timeline</h2><span class="aside">tap a day to inspect it</span></div>
+    <div class="ws-daybar">
+      <button type="button" id="prev-sample">Previous sample</button>
+      <button type="button" id="prev-day">Day before</button>
+      <b id="day-label">–</b>
+      <button type="button" id="next-day">Day after</button>
+      <button type="button" id="next-sample">Next sample</button>
+    </div>
+    <div class="chart ws-chart" id="timeline"></div>
+    <div class="chart-note" id="t-key"></div>
+  </div></section>
+
+  <section class="sec" id="s-day"><div class="wrap">
+    <div class="sec-head"><span class="no">3</span><h2 id="day-head">The chosen day</h2><span class="aside">map and readings for the day</span></div>
+    <div class="ws-dayrow">
+      <figure class="netmap">
+        <div class="drawn-map" id="net"></div>
+        <div class="map-key" id="net-key"></div>
+      </figure>
+      <div class="ws-day" id="day"></div>
+    </div>
+  </div></section>
+
+  <section class="sec" id="s-rows"><div class="wrap">
+    <div class="sec-head"><span class="no">4</span><h2>The evidence rows</h2><span class="aside">exactly what the timeline draws</span></div>
+    <p class="note" id="rows-sum"></p>
+    <div class="ws-share">
+      <button type="button" id="dl">Download these rows (CSV)</button>
+      <button type="button" id="copy">Copy link to this investigation</button>
+      <span class="note" id="copy-msg" aria-live="polite"></span>
+    </div>
+    <details class="table" id="rows-table"><summary>Show the rows</summary><div class="scroll" id="rows-scroll"></div></details>
+    <div class="ws-sources" id="sources"></div>
+  </div></section>
+
+  <section class="sec" id="s-not"><div class="wrap">
+    <div class="sec-head"><span class="no">5</span><h2>What it cannot tell you</h2></div>
+    <ul class="lim">
+      <li><b>Lining things up is not cause.</b> A spill before a high sample does not show the spill caused it. Farms, birds, dogs, misconnected drains and unmonitored outfalls carry bacteria too.</li>
+      <li><b>No reading is not a zero.</b> Hatched stretches have no record. The EA has published 2026 spill records to the end of August, but they are not imported into this workspace yet, so 2026 shows no spills because nothing is loaded, not because nothing spilled.</li>
+      <li><b>An overflow with no events in the file</b> may have spilled with a broken or missing monitor. The annual return's own count is the check.</li>
+      <li><b>“Would have flagged” is hindsight.</b> It is the model refitted without that year's samples, run on archived rain. The site never issued it.</li>
+      <li><b>Weight is a factor from 0 to 1.</b> It ranks how strongly the model counts an overflow at a spot. It is not the share of bacteria that arrives.</li>
+      <li><b>The satellite index is not a toxin measurement.</b> NDCI rises with chlorophyll and floating plant material. It says nothing about blue-green algae toxins or about safe water.</li>
+      <li><b>Rain is a reanalysis, not a gauge.</b> ERA5-Land cells are about 9 km across. A storm on one fell can be missed or spread out.</li>
+      <li><b>Official advice comes first.</b> Environment Agency notices and signs at the water are on each spot page of the live site.</li>
+    </ul>
+  </div></section>
+
+  <section class="sec" id="s-next"><div class="wrap">
+    <div class="sec-head"><span class="no">6</span><h2>Questions worth asking next</h2><span class="aside">proposed, not started</span></div>
+    <ol class="qs">
+      <li><div><h3>Do high samples at Ilkley follow spills at the three nearest overflows more than spills further up?</h3>
+        <p class="k">Useful if: a pre-stated comparison on 2027 samples, with the 2024–25 pattern as the stated hypothesis. Unconvincing if: it rests on the same 2024–25 samples this page shows.</p></div></li>
+      <li><div><h3>Do Waterhead's weekly samples track Ambleside's treatment works spills?</h3>
+        <p class="k">Useful if: WET's 2026 sheet arrives and the EA's 2026 spill records (published to August) are imported. Unconvincing if: one wet week drives the whole pattern.</p></div></li>
+      <li><div><h3>Would a gauge or radar rain layer change what a day looks like?</h3>
+        <p class="k">Useful if: cached radar (docs/RADAR-RAIN-CHECK-2026-10.md) is added and differs from ERA5-Land on the days that matter. Unconvincing if: it differs only on dry days.</p></div></li>
+      <li><div><h3>Which other catchments have enough layers to be worth a workspace?</h3>
+        <p class="k">Useful if: a count of catchments with samples, spill records and rain in the same window. Unconvincing if: it picks catchments by how interesting their high samples look.</p></div></li>
+    </ol>
+  </div></section>
+</main>
+
+<footer class="foot"><div class="wrap">
+  <p id="attrib"></p>
+  <p>Method: <a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/CATCHMENT-WORKSPACE-2026-11.md">the workspace's record</a>,
+     <a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/RESEARCH-RECOVERY-2026-10.md">the research register</a>.
+     Data: <a href="data/index.json">data/</a>, one file per catchment, made by <code>scripts/lab_catchment_workspace.py</code>.</p>
+  <p>Exploratory work on data already read. It changes nothing in the forecast. Each spot's own page gives the forecast and official advice.</p>
+</div></footer>
+<script src="../lab.js?v=3"></script>
+<script src="workspace.js?v=2"></script>
+</body>
+</html>

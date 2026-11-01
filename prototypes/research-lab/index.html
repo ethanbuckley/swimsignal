@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- The Research Lab's front page. Built into the site at lab/ by scripts/build_site.py write_lab, which points the data reads at
+     lab/data/ and the fonts at the site's own; served from the repository root, it reads data/research/ as committed. -->
+<title>Research Lab · SwimSignal</title>
+<meta name="description" content="SwimSignal's Research Lab: exploratory exhibits on satellite pictures of lakes, the rivers joining sewage overflows to swim spots, and how past E. coli estimates did.">
+<link rel="stylesheet" href="lab.css?v=10">
+<link rel="stylesheet" href="pollution/pollution.css?v=1">
+<style>
+  .gallery { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 28px; }
+  @media (max-width: 1100px) { .gallery { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 640px) { .gallery { grid-template-columns: 1fr; gap: 40px; } }
+  .ex { display: block; color: inherit; text-decoration: none; }
+  .ex .cover { position: relative; aspect-ratio: 4 / 5; border: 1px solid var(--ink); overflow: hidden; background: var(--deep); }
+  .ex .cover::before, .ex .cover::after { content: ""; position: absolute; width: 14px; height: 14px; border: 1px solid #fbf7ec; z-index: 2; pointer-events: none; }
+  .ex .cover::before { top: 8px; left: 8px; border-right: 0; border-bottom: 0; }
+  .ex .cover::after { bottom: 8px; right: 8px; border-left: 0; border-top: 0; }
+  .ex .cover img { width: 100%; height: 100%; object-fit: cover; display: block; filter: brightness(1.6) contrast(1.05); transition: transform .6s; }
+  .ex:hover .cover img { transform: scale(1.04); }
+  @media (prefers-reduced-motion: reduce) { .ex .cover img { transition: none; } .ex:hover .cover img { transform: none; } }
+  .ex .no { position: absolute; left: 14px; bottom: 12px; z-index: 2; font: 600 64px/1 var(--font-display); color: #fbf7ec; text-shadow: 0 1px 12px rgba(0, 0, 0, .45); }
+  .ex .tag { position: absolute; right: 14px; top: 14px; z-index: 2; font: 12px var(--font-mono); color: #fbf7ec; }
+  .ex h2 { font: 600 26px/1.15 var(--font-display); margin: 16px 0 6px; }
+  .ex:hover h2 { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  .ex p { margin: 0; font-size: var(--fs-note); color: var(--muted); }
+  .ex .ledger-cover { position: absolute; inset: 0; padding: 40px 20px 20px; display: flex; flex-wrap: wrap; align-content: center; gap: 4px; }
+  .ex .ledger-cover i { width: 9px; height: 9px; border-radius: 50%; display: block; }
+  .ex .ledger-cover i.hit { background: #e0766b; } .ex .ledger-cover i.miss { border: 1.5px solid #e0766b; } .ex .ledger-cover i.fa { background: #d9a648; }
+  .ex .map-cover { position: absolute; inset: 0; background: var(--paper-2); display: grid; place-items: center; padding: 18px; }
+  .ex .map-cover .drawn-map { width: 82%; }
+  .ex .map-cover .drawn-map svg { border: 0; }
+  .ex .map-cover.dark { background: #0e1c21; }
+  .ex.off { cursor: default; }
+  .ex.off .no { color: var(--ink); text-shadow: none; }
+  .ex.off .tag { color: var(--muted); }
+  .ex.off .cover::before, .ex.off .cover::after { border-color: var(--ink); }
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <a class="brand" href="https://swimsignal.co.uk/">SwimSignal</a>
+  <span class="crumb">Research Lab · exploratory</span>
+  <a href="https://swimsignal.co.uk/research.html">Research</a>
+</div></header>
+<div class="front"><div class="wrap" style="display:block">
+  <h1>Research Lab</h1>
+  <p class="q">What SwimSignal is investigating, the evidence so far, and what it does not yet show.</p>
+  <p>Each exhibit asks one question, shows the real data behind the answer, and keeps exploratory findings apart from results that were stated in advance. Missing data is drawn as missing.</p>
+</div></div>
+<main><section class="sec"><div class="wrap">
+  <div class="gallery">
+    <a class="ex" href="lake-from-space/">
+      <div class="cover"><img src="assets/wide/wqa-SW-50900003.jpg" alt="Sentinel-2 picture of Little Sea and Studland, 30 October 2026"><span class="no">1</span><span class="tag">exploratory</span></div>
+      <h2>The lake from space</h2>
+      <p>Can changes seen from space tell us anything useful about algae in English lakes? Satellite pictures, an index and lab chlorophyll, cloud included.</p>
+    </a>
+    <a class="ex" href="pollution/">
+      <div class="cover"><div class="map-cover dark"><div class="drawn-map dark" id="map-cover"></div></div><span class="no">2</span><span class="tag">exploratory</span></div>
+      <h2>Where does the pollution go?</h2>
+      <p>Every overflow upstream of a swim spot, the rivers that join them, and the questions the research has tested about the journey.</p>
+    </a>
+    <a class="ex" href="forecasts/">
+      <div class="cover"><div class="ledger-cover" id="ledger-cover"></div><span class="no">3</span><span class="tag">exploratory</span></div>
+      <h2>How good are the forecasts?</h2>
+      <p>What the model said against what the samples found: catches, misses and false alarms at every bathing water, beside simple alternatives.</p>
+    </a>
+    <a class="ex" href="workspace/">
+      <div class="cover"><div class="map-cover dark"><div class="drawn-map dark" id="ws-cover"></div></div><span class="no">4</span><span class="tag">exploratory</span></div>
+      <h2>Catchment workspace</h2>
+      <p>Rain, overflow spills, E. coli samples, water temperature and the satellite index on one timeline and map, for Windermere and the Wharfe at Ilkley. Gaps drawn as gaps; a link and a CSV of the rows shown.</p>
+    </a>
+  </div>
+</div></section></main>
+<footer class="foot"><div class="wrap">
+  <p>Covers: Contains modified Copernicus Sentinel data [2026]. <span id="map-credit"></span> Exhibit 2's cover: the mapped rivers joining every spot's overflows to it (OS Open Rivers). Exhibit 3's cover is one dot per sample over 900 and per false alarm, rivers and lakes, 2024–2026, in date order.</p>
+  <p>Exploratory work on data already read. It changes nothing in the forecast. Each spot's own page gives the forecast and official advice.</p>
+</div></footer>
+<script src="lab.js?v=3"></script>
+<script>
+  // Covers from the exhibits' own files: exhibit 3's dot record, and the outline exhibit 2 will draw on.
+  fetch('forecasts/exploration.json').then(r => r.json()).then(ex => {
+    const rows = ex.ecoli.samples.filter(r => (r.y || r.model >= ex.warn_at)).sort((a, b) => a.t.localeCompare(b.t));
+    document.getElementById('ledger-cover').innerHTML = rows.map(r => `<i class="${r.y ? (r.model >= ex.warn_at ? 'hit' : 'miss') : 'fa'}"></i>`).join('');
+  });
+  Promise.all([LAB.loadOutline(''), fetch('assets/paths/overview.json').then(r => r.json())]).then(([, ov]) => {
+    LAB.drawMap(document.getElementById('map-cover'), [], { lines: ov.lines.map(c => ({ coords: c })), aria: 'Rivers joining overflows to swim spots' });
+    document.getElementById('map-credit').textContent = 'Map: ' + LAB.credit() + '.';
+  });
+  // exhibit 4's cover: the Wharfe above Ilkley and its overflows, from the workspace's own file
+  Promise.all([LAB.loadOutline(''), fetch('workspace/data/wharfe-ilkley.json').then(r => r.json())]).then(([, c]) => {
+    LAB.drawMap(document.getElementById('ws-cover'), c.overflows.map(o => ({ id: o.id, lat: o.lat, lon: o.lon, name: o.name, mark: '<circle r="2.6" class="pt-hist"/>' })),
+      { box: c.box, maxH: 300, lines: c.lines.map(l => ({ coords: l.coords })), aria: 'The Wharfe above Ilkley and its overflows' });
+  });
+</script>
+</body>
+</html>

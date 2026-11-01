@@ -137,7 +137,7 @@ export async function ask(question, env, deps = {}) {
   const client = deps.client ?? await defaultClient(env);
   const today = londonDay(now);
   levels.setToday(today);   // the page's level rules read "today" from here
-  const ctx = { env, today, now, question, seen: newSeen(), toolTexts: [], fetcher: deps.fetcher ?? fetch };
+  const ctx = { env, today, now, question, seen: newSeen(), shown: [], fetcher: deps.fetcher ?? fetch };
   const doc = await readSite(env, 'data/spots-lite.json', ctx);
   ctx.seen.doc = doc;
   const days = forecastDays(doc).map((d) => `${dayWords(d)} (${d})`);
@@ -174,7 +174,7 @@ export async function ask(question, env, deps = {}) {
       }
       const out = await runTool(use.name, use.input, ctx);
       const text = JSON.stringify(out);
-      ctx.toolTexts.push(JSON.stringify(use.input), text);
+      ctx.shown.push({ name: use.name, out });
       results.push({ type: 'tool_result', tool_use_id: use.id, content: text, ...(out.error ? { is_error: true } : {}) });
     }
     messages.push({ role: 'user', content: results });

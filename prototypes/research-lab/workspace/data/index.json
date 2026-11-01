@@ -1,0 +1,40 @@
+{
+ "catchments": [
+  {
+   "id": "windermere",
+   "name": "Windermere",
+   "short": "Windermere",
+   "kind": "lake",
+   "lat": 54.41897,
+   "lon": -2.96235,
+   "rows": {
+    "rain": 980,
+    "spills": 4322,
+    "ecoli": 298,
+    "temp": 307,
+    "sat": 196
+   }
+  },
+  {
+   "id": "wharfe-ilkley",
+   "name": "The Wharfe at Ilkley",
+   "short": "Wharfe at Ilkley",
+   "kind": "river",
+   "lat": 53.93189,
+   "lon": -1.81618,
+   "rows": {
+    "rain": 980,
+    "spills": 2696,
+    "ecoli": 60,
+    "temp": 0,
+    "sat": 0
+   }
+  }
+ ],
+ "window": [
+  "2024-01-01",
+  "2026-09-30"
+ ],
+ "inputs_unchanged": true,
+ "cached_inputs": 29
+}

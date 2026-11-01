@@ -1,0 +1,125 @@
+{
+ "unseen": {
+  "train_rows": 1310,
+  "train_lake_sites": 6,
+  "candidate": {
+   "central80": 0.7557,
+   "below_range": 0.1985,
+   "above_range": 0.0457,
+   "logscore": -1.1348,
+   "by_water": {
+    "Windermere": 0.7477,
+    "Frensham": 0.7847
+   }
+  },
+  "background": {
+   "central80": 0.7287,
+   "below_range": 0.2401,
+   "above_range": 0.0312,
+   "logscore": -1.1984,
+   "by_water": {
+    "Windermere": 0.7025,
+    "Frensham": 0.823
+   }
+  },
+  "candidate_minus_background": {
+   "mean": 0.0636,
+   "ci95": [
+    0.0333,
+    0.0934
+   ]
+  }
+ },
+ "examples_1_july": {
+  "Windermere, Lakeside YMCA": {
+   "dry": {
+    "median": 2.3,
+    "range80": [
+     0.29,
+     18.0
+    ],
+    "p_over_900": 0.0
+   },
+   "wet": {
+    "median": 11.0,
+    "range80": [
+     1.3,
+     84.0
+    ],
+    "p_over_900": 0.003
+   }
+  },
+  "Windermere, Millerground Landing": {
+   "dry": {
+    "median": 4.0,
+    "range80": [
+     0.51,
+     32.0
+    ],
+    "p_over_900": 0.0
+   },
+   "wet": {
+    "median": 21.0,
+    "range80": [
+     2.6,
+     170.0
+    ],
+    "p_over_900": 0.01
+   }
+  },
+  "Windermere, Rayrigg Meadow": {
+   "dry": {
+    "median": 5.2,
+    "range80": [
+     0.66,
+     41.0
+    ],
+    "p_over_900": 0.001
+   },
+   "wet": {
+    "median": 28.0,
+    "range80": [
+     3.6,
+     220.0
+    ],
+    "p_over_900": 0.016
+   }
+  },
+  "Windermere, Fellfoot": {
+   "dry": {
+    "median": 12.0,
+    "range80": [
+     1.5,
+     91.0
+    ],
+    "p_over_900": 0.003
+   },
+   "wet": {
+    "median": 48.0,
+    "range80": [
+     6.1,
+     380.0
+    ],
+    "p_over_900": 0.035
+   }
+  },
+  "Frensham Great Pond": {
+   "dry": {
+    "median": 15.0,
+    "range80": [
+     1.9,
+     120.0
+    ],
+    "p_over_900": 0.006
+   },
+   "wet": {
+    "median": 47.0,
+    "range80": [
+     5.9,
+     370.0
+    ],
+    "p_over_900": 0.034
+   }
+  }
+ }
+}
