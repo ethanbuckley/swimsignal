@@ -13,12 +13,17 @@ OXFORD = "https://www.oxford.gov.uk/news/article/1860/new-signage-to-be-installe
 PEAK_SPOTS = {"osm-burbage-padley-gorge", "osm-wye-chee-dale", "osm-dane-three-shires-head",
               "osm-lathkill-dale", "osm-bradford-youlgrave", "dove-dovedale", "derwent-slippery-stones"}
 LAKE_SPOTS = {"osm-ullswater-sandwick", "osm-windermere-waterhead"}
+DARTMOOR = "https://www.dartmoor.gov.uk/enjoy-dartmoor/planning-your-visit/visiting-faqs"
+# Listed on 1 Nov 2026 under the owner's relaxed rule 4 (docs/SPOT-ADDITIONS-ENGLAND-2026-11.md): no owner or
+# authority page saying no was found, which is not a yes. Checked that day, not on CHECKED.
+NOV_SPOTS = {"osm-tame-dosthill", "osm-blackaton-shilley-pool"}
+NOV_CHECKED = "2026-11-01"
 
 
 def access_note(spot: dict) -> dict | None:
     if spot.get("source") != "openstreetmap" and spot.get("id") not in PEAK_SPOTS:
         return None
-    note = {"status": "unconfirmed", "checked_at": CHECKED,
+    note = {"status": "unconfirmed", "checked_at": NOV_CHECKED if spot["id"] in NOV_SPOTS else CHECKED,
             "text": "Permission to enter the water at this point has not been confirmed. A mapped swimming place or public footpath does not establish swimming permission. Check current signs and the landowner's rules."}
     if spot["id"] in PEAK_SPOTS:
         note.update(status="restricted_guidance", url=PEAK,
@@ -32,6 +37,9 @@ def access_note(spot: dict) -> dict | None:
     elif spot["id"] == "osm-teign-drogo-weir":
         note.update(url="https://www.nationaltrust.org.uk/visit/devon/castle-drogo/teign-gorge-classic-circuit",
                     text="The National Trust describes Drogo Weir on its walking route. That does not establish permission to swim. This point is beside a weir; the pollution forecast does not assess the weir, currents or access.")
+    elif spot["id"] == "osm-blackaton-shilley-pool":
+        note.update(url=DARTMOOR,
+                    text="Dartmoor National Park Authority says you can swim in Dartmoor's rivers if you get in from land you have a right to be on. Natural England's maps put this point on Dartmoor commons, which are open to the public. No page names this pool, and nobody has checked the way in on the ground.")
     return note
 
 

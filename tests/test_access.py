@@ -1,7 +1,11 @@
 import csv
 from pathlib import Path
 
-from dipcast.access import attach_access
+from dipcast.access import NOV_SPOTS, attach_access
+
+
+def by_id_text(spots, i):
+    return next(s["access"]["text"] for s in spots if s["id"] == i)
 
 
 def test_all_osm_spots_distinguish_map_features_from_permission():
@@ -9,8 +13,9 @@ def test_all_osm_spots_distinguish_map_features_from_permission():
     spots = list(csv.DictReader((root / "spots-osm.csv").open()))
     for spot in spots:
         spot["source"] = "openstreetmap"
-    assert len(spots) == attach_access(spots) == 16
-    assert all(s["access"]["checked_at"] == "2026-10-03" for s in spots)
+    assert len(spots) == attach_access(spots) == 18
+    assert all(s["access"]["checked_at"] == ("2026-11-01" if s["id"] in NOV_SPOTS else "2026-10-03") for s in spots)
+    assert "Dartmoor commons" in by_id_text(spots, "osm-blackaton-shilley-pool")
     by_id = {s["id"]: s["access"] for s in spots}
     assert by_id["osm-wye-chee-dale"]["status"] == "restricted_guidance"
     assert "particular entry point" in by_id["osm-ullswater-sandwick"]["text"]

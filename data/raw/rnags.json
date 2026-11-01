@@ -1,9 +1,5 @@
-{"source":"Environment Agency, Catchment Data Explorer: reasons for not achieving good status, England (https://environment.data.gov.uk/catchment-planning/England/rnags); water body river lines and catchments, by river basin district (https://environment.data.gov.uk/catchment-planning/RiverBasinDistrict/<id>.geojson)","licence":"Open Government Licence v3.0 (https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/)","credit":"© Environment Agency copyright and/or database right. All rights reserved.","fetched":"2026-10-18","sha256":"553bb49f68f0b83af76d0722acaf2ebea40d075d5981119bda09d5c94ebada1a","rows":33732,"rows_kept":15959,"made":"Reasons for not achieving good status (Reason Type RNAG) whose sector is Confirmed or Probable, one pressure per water body, sector and issue with the strongest certainty of its rows. Spots: a river spot in the water body whose river line, named for its river, is nearest within 500 m, else the named catchment holding it; a lake spot in the WFD lake the forecast places it in. By scripts/make_rnags.py",
+{"source":"Environment Agency, Catchment Data Explorer: reasons for not achieving good status, England (https://environment.data.gov.uk/catchment-planning/England/rnags); water body river lines and catchments, by river basin district (https://environment.data.gov.uk/catchment-planning/RiverBasinDistrict/<id>.geojson)","licence":"Open Government Licence v3.0 (https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/)","credit":"© Environment Agency copyright and/or database right. All rights reserved.","fetched":"2026-11-01","sha256":"553bb49f68f0b83af76d0722acaf2ebea40d075d5981119bda09d5c94ebada1a","rows":33732,"rows_kept":15959,"made":"Reasons for not achieving good status (Reason Type RNAG) whose sector is Confirmed or Probable, one pressure per water body, sector and issue with the strongest certainty of its rows. Spots: a river spot in the water body whose river line, named for its river, is nearest within 500 m, else the named catchment holding it; a lake spot in the WFD lake the forecast places it in. By scripts/make_rnags.py",
 "spots":{
-"brothers-water":{"id":"GB30229116","by":"lake","m":0},
-"loweswater":{"id":"GB31228986","by":"lake","m":0},
-"bassenthwaite":{"id":"GB31228847","by":"lake","m":0},
-"carding-mill-reservoir":null,
 "bw-uke4100-08901":{"id":"GB104027064257","by":"river line","m":3},
 "bw-uke2203-08903":{"id":"GB104027068298","by":"river line","m":9},
 "bw-uke4200-08904":{"id":"GB104027064255","by":"river line","m":30},
@@ -54,8 +50,11 @@
 "semerwater":{"id":"GB30429479","by":"lake","m":131},
 "ullswater-glenridding":{"id":"GB30228955","by":"lake","m":215},
 "ullswater-pooley-bridge":{"id":"GB30228955","by":"lake","m":587},
+"brothers-water":{"id":"GB30229116","by":"lake","m":0},
 "buttermere":{"id":"GB31229052","by":"lake","m":338},
 "crummock-water":{"id":"GB31229000","by":"lake","m":0},
+"loweswater":{"id":"GB31228986","by":"lake","m":0},
+"bassenthwaite":{"id":"GB31228847","by":"lake","m":0},
 "wastwater":{"id":"GB31229183","by":"lake","m":0},
 "grasmere":{"id":"GB31229184","by":"lake","m":0},
 "rydal-water":{"id":"GB31229197","by":"lake","m":0},
@@ -74,6 +73,7 @@
 "hatchmere":{"id":"GB31233210","by":"lake","m":0},
 "wye-hereford":{"id":"GB109055037113","by":"river line","m":193},
 "wye-symonds-yat":{"id":"GB109055037111","by":"river line","m":88},
+"carding-mill-reservoir":null,
 "avon-warleigh-weir":{"id":"GB109053027372","by":"river line","m":3},
 "frome-tellisford-weir":{"id":"GB109053021840","by":"river line","m":4},
 "dart-spitchwick":{"id":"GB108046008350","by":"river line","m":7},
@@ -108,7 +108,9 @@
 "osm-test-chilbolton":{"id":"GB107042022750","by":"river line","m":12},
 "osm-itchen-compton-lock":{"id":"GB70710008","by":"river line","m":0},
 "osm-teign-drogo-weir":{"id":"GB108046008550","by":"river line","m":3},
-"osm-dart-dartington":{"id":"GB108046008350","by":"river line","m":5}
+"osm-dart-dartington":{"id":"GB108046008350","by":"river line","m":5},
+"osm-tame-dosthill":{"id":"GB104028046440","by":"river line","m":140},
+"osm-blackaton-shilley-pool":{"id":"GB108046008580","by":"river line","m":0}
 },
 "water_bodies":{
 "GB102021072830":{"name":"Till from Source to Linhope Burn","type":"River","pressures":[]},
