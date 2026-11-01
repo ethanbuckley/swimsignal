@@ -17,8 +17,9 @@ This folder is the Cloudflare Worker that answers. It is **not deployed** and is
 4. `src/answer.js` checks `give_answer` before anyone sees it, and sends it back to the model with the problems if:
    - its words say "safe", "clean" or their kin ("safer", "pollution-free", "harmless" and so on, `NEVER`);
    - its words judge a spot "kid-friendly" or "suitable for children" (`KIDS`);
-   - its words name a condition (calm, shallow, warm, clear and others, `CONDITIONS`) that none of the lines it was shown use;
-   - its words give a number that is in neither the data nor the question;
+   - its words name a condition (calm, shallow, warm, clear and others, `CONDITIONS`) that no line it was shown says. A line that says the condition is not known ("cannot say whether the water will be calm") does not count. Words about one spot must find it in that spot's own lines; a sentence that names no spot must find it in the lines of every spot given;
+   - its words give a number, with its unit, that the data does not give: "2 steps" is not "2 miles";
+   - only what the tools gave back counts for these two. The question never does, and nor do the model's own tool inputs. A hedge or a "not known" in the model's own sentence never lets a condition through: "No wind forecast means the water is calm" says the water is calm. A condition the lines do not say may appear only in the unknown list, asked as a question ("Whether the water will be calm"), and an assumption may restate the question's numbers only before "read as" ("40 minutes read as 25 miles");
    - it names a spot it did not look up with `get_spot`;
    - its summary names a level ("low risk") for a day the forecast does not cover.
    After three refusals, or if the model never answers, refuses or runs out of turns, the reader gets the lines for the spots it looked up with a plain sentence, not the model's words.
@@ -51,7 +52,7 @@ The model is `claude-haiku-5-5` (`ASK_MODEL`), at `ASK_EFFORT = "medium"`. The t
 | Claude Sonnet 5.5 | $2 / $10 | about $0.06 | about $19 |
 | Claude Opus 5.5 | $4 / $20 | about $0.13 | about $38 |
 
-The first live run will give the real figure: `npm run eval -- --live` asks the 22 eval questions and prints the cost from the usage the API reports (about $0.07 on Haiku by the estimate above).
+The first live run will give the real figure: `npm run eval -- --live` asks the 26 eval questions and prints the cost from the usage the API reports (about $0.08 on Haiku by the estimate above).
 
 ### The limits in the Worker
 
@@ -81,9 +82,9 @@ node --test test/*.test.js
 npm run eval
 ```
 
-You will know they passed when the first ends `ℹ fail 0` and the second ends `22 of 22 passed (scripted model)`.
+You will know they passed when the first ends `ℹ fail 0` and the second ends `26 of 26 passed (scripted model)`.
 
-- `evals/questions.json`: 22 questions, each with what a grounded answer must show (`expect`) and a scripted model run (`mock`). Six scripts give a bad answer first (says "safe", invents a spot, a condition, a number, or a level for a day outside the forecast) and check the Worker turns it back; two never answer; one ends in a refusal.
+- `evals/questions.json`: 26 questions, each with what a grounded answer must show (`expect`) and a scripted model run (`mock`). Ten scripts give a bad answer first (says "safe", invents a spot, a condition, a number, or a level for a day outside the forecast; takes a condition or a number from the question; gives a number in another unit; borrows one spot's condition for another; infers a condition from a missing forecast) and check the Worker turns it back; two never answer; one ends in a refusal.
 - `evals/check.js`: the checks, the same for mocked and live runs. Every answer is also checked for: no "safe", "clean" or judgement for children in the model's words; official advice as each spot's first line; wind said to be not known; a source on every line; links to the spot's page and Plan a swim; a restricted spot never first.
 - `test/fixtures/`: twelve spots, their guides and nineteen places, cut from the live site's files of 31 October 2026 (issued 18:13 UTC).
 
@@ -100,7 +101,7 @@ Decide first:
 Then, in order:
 
 1. In the Claude Console (console.anthropic.com), make a workspace for SwimSignal, set its monthly spend limit, and create an API key in it. You will know it worked when the key is listed under the workspace.
-2. From this folder: `npm install`, then `ANTHROPIC_API_KEY=<the key> npm run eval -- --live`. You will know it worked when it ends "22 of 22 passed" with a cost. If questions fail, read them with `--show` before going on.
+2. From this folder: `npm install`, then `ANTHROPIC_API_KEY=<the key> npm run eval -- --live`. You will know it worked when it ends "26 of 26 passed" with a cost. If questions fail, read them with `--show` before going on.
 3. `npx wrangler d1 create swimsignal-ask --jurisdiction=eu`, and paste the `database_id` it prints into `wrangler.toml`.
 4. `npx wrangler d1 migrations apply swimsignal-ask --remote`.
 5. `npx wrangler secret put ANTHROPIC_API_KEY` (the key from step 1) and `npx wrangler secret put ASK_HASH_KEY` (any long random string, for example from `openssl rand -hex 32`).
