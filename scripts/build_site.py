@@ -3673,6 +3673,48 @@ def attach_sample_history(results: list[dict], path: Path = ECOLI_EVIDENCE) -> i
     return n
 
 
+TYPICAL_MIN = 20   # samples needed before a bathing water's typical readings are given
+
+
+def typical_readings(samples: list[dict]) -> dict | None:
+    """What a bathing water's own EA samples have read: the middle one and the range the middle 8 in 10 fell in (the
+    10th and 90th sample in 100, by rank), how many, their years and how many were over 900. A value the lab gave as a
+    limit stays one ("<10", ">10000"): a "<10" ranks below every count. None under TYPICAL_MIN samples."""
+    xs = [x for x in samples or [] if isinstance(x.get("ecoli"), int | float) and x.get("t")]
+    if len(xs) < TYPICAL_MIN:
+        return None
+    # "<10" ranks just below 10; ">10000" just above 10,000
+    key = lambda x: x["ecoli"] + {"<": -0.5, ">": 0.5}.get(x.get("q"), 0.0)   # noqa: E731
+    xs = sorted(xs, key=key)
+    n = len(xs)
+
+    def at(q: float):
+        x = xs[max(0, math.ceil(q * n) - 1)]
+        v = x["ecoli"] if x.get("q") else float(f"{x['ecoli']:.2g}")
+        return f"{x['q']}{x['ecoli']:g}" if x.get("q") in ("<", ">") else (int(v) if v == int(v) else v)
+    years = sorted({x["t"][:4] for x in xs})
+    return {"samples": n, "first_year": int(years[0]), "last_year": int(years[-1]), "low": at(0.1), "median": at(0.5),
+            "high": at(0.9), "over_900": sum(1 for x in xs if x["ecoli"] > 900 and x.get("q") != "<")}
+
+
+def attach_typical_readings(results: list[dict], path: Path = ECOLI_EVIDENCE) -> int | None:
+    """On each bathing water in the export, `ecoli_typical` (typical_readings): the page gives it where the spot has no
+    daily E. coli figure, a lake or river with no monitored overflow upstream. Past samples, not a forecast. Returns how
+    many spots got it, None without a publishable export."""
+    doc, why = read_ecoli_evidence(path)
+    if why:
+        return None
+    by = {x["spot_id"]: x for x in ecoli_sites(doc)}
+    n = 0
+    for r in results:
+        x = by.get(str(r["id"]))
+        t = typical_readings(x.get("samples")) if x else None
+        if t:
+            r["ecoli_typical"] = t
+            n += 1
+    return n
+
+
 def write_samples(site: Path, token: str | None = None, root: str | None = None, results: list[dict] | None = None) -> str:
     """samples.html and samples.js beside the app, and the samples they read. Returns the script's version."""
     write_ecoli_evidence(site, results=results)
@@ -4398,6 +4440,7 @@ def build(refresh: bool = True) -> dict:
     n_algae = attach_algae(results, fetch=refresh)
     n_lab = attach_lab_samples(results)   # read from the samples refresh_all's scoring fetched: no request
     n_history = attach_sample_history(results)   # from the research export, a file: no request
+    n_typical = attach_typical_readings(results)   # the same export: typical readings where no daily figure is
     measured = attach_measured(results)   # lab results organisations sent, from samples/: not part of the level
     n_classified = attach_classifications(results)
     water_body = attach_water_body(results)   # the EA's reasons for not reaching good status, from a file: no request
@@ -4430,6 +4473,7 @@ def build(refresh: bool = True) -> dict:
     health["warnings"] += dry["warnings"]
     health["lab_samples"] = n_lab
     health["sample_history"] = n_history
+    health["typical_readings"] = n_typical
     if water_body is None:
         health["warnings"].append("data/raw/rnags.json is missing or unreadable: no spot says what the Environment Agency lists on its water body")
     else:

@@ -1,16 +1,17 @@
-"""The lake E. coli range shadow (docs/LAKE-RANGE-HINDCAST-TEST-2026-11.md, docs/LAKE-RANGE-WORDING-2026-11.md): at
-every lake spot a forecast computes, the reading a sample would most likely show each day and the range 8 in 10
-samples would fall in, from the frozen rule `lake-range-v1`, logged in its own table, `shadow_lake_range_v1`, in the
-state database.
+"""The lake E. coli range (docs/LAKE-RANGE-HINDCAST-TEST-2026-11.md, docs/LAKE-RANGE-WORDING-2026-11.md): at every
+lake spot a forecast computes, the reading a sample would most likely show each day and the range 8 in 10 samples
+would fall in, from the frozen rule `lake-range-v1`. The forecast gives it on each day (`ecoli_range`, shown on the
+spot's page) and logs it in its own table, `shadow_lake_range_v1`, in the state database, for the 2027 read.
 
 lake-range-v1 is the candidate PR #584 tested on 2012-2022 lake seasons: a censored normal model of log10 E. coli with
 its own lake noise level and a random intercept per bathing water (scripts/lake_range_hindcast.py `export`, fitted on
-the 2023-26 rows). A lake bathing water in the file uses its own intercept weights; any other lake uses the average
-lake's ("average lake"). It reads the same inputs as the spot's E. coli figure (ecoli.features: rain at the spot,
-the exposure, season), so it costs no request.
+the 2023-26 rows). Its `basis`, which the page words: "tested", a lake bathing water in that test (its own level);
+"own samples", a lake bathing water with its own level from 2023-26 but not in the test; "average lake", any other
+lake, at the average lake's level. It reads the same inputs as the spot's E. coli figure (ecoli.features: rain at
+the spot, the exposure, season), so it costs no request.
 
-Nothing here changes a forecast or a page: no page, alert, level or published score reads the table. Without the
-model file, or with a file of another hash, it is off.
+It sets no level, colour or alert. Without the model file, or with a file of another hash, it is off and the page
+says "Not estimated", as before.
 """
 
 from __future__ import annotations
@@ -32,6 +33,8 @@ RULE = "lake-range-v1"
 TABLE = "shadow_lake_range_v1"
 FILE = config.PROCESSED / "ecoli_lake_range.json"
 SHA256 = "5566b12e5fc6acc1686f2aeb201ec2b9f8cd7e38a39f4352de314c5e32c3fcca"
+# The lake bathing waters in the 2012-2022 test (#584): Windermere x4 and Frensham Great Pond.
+TESTED = frozenset({"ukd1203-45625", "ukd1203-45650", "ukd1203-45675", "ukd1203-45700", "ukj2310-11945"})
 SITE_RADIUS_M = 100        # a spot this close to a bathing water's spots.csv position is that bathing water
 SEASON = range(5, 10)      # the months the EA samples, and the test's
 COLUMNS = ("issued_at", "issue_day", "lat", "lon", "bw_id", "basis", "target_day", "lead", "in_season",
@@ -89,7 +92,7 @@ def _quantiles(m: dict, X: pd.DataFrame, bw: str | None, qs=(0.1, 0.5, 0.9)) -> 
 
 
 def ranges(lat: float, lon: float, X: pd.DataFrame, m: dict | None = None) -> dict | None:
-    """lake-range-v1 for each row of X (ecoli.features' frame, one row a day), or None with the shadow off. A row with
+    """lake-range-v1 for each row of X (ecoli.features' frame, one row a day), or None with the model off. A row with
     a missing input gets NaN, never a range computed as if it were dry. Inputs are not altered."""
     m = m if m is not None else model()
     if m is None or X is None or not len(X):
@@ -98,8 +101,16 @@ def ranges(lat: float, lon: float, X: pd.DataFrame, m: dict | None = None) -> di
     ok = np.isfinite(X[m["cols"]].to_numpy(dtype=float)).all(axis=1)
     q = _quantiles(m, X.fillna(0.0), bw)
     nan = lambda a: np.where(ok, a, np.nan)   # noqa: E731
-    return {"bw_id": bw, "basis": "site" if bw else "average lake",
-            "low": nan(q[0.1]), "median": nan(q[0.5]), "high": nan(q[0.9])}
+    return {"bw_id": bw, "basis": basis(bw), "low": nan(q[0.1]), "median": nan(q[0.5]), "high": nan(q[0.9])}
+
+
+def basis(bw: str | None) -> str:
+    return "average lake" if bw is None else "tested" if bw in TESTED else "own samples"
+
+
+def sig2(v: float) -> float | None:
+    """Two significant figures, as the page gives them; None for a missing value."""
+    return None if v is None or not np.isfinite(v) else float(f"{float(v):.2g}")
 
 
 def log_shadow(issued_at: pd.Timestamp, lat: float, lon: float, days: pd.DatetimeIndex, r48: np.ndarray,

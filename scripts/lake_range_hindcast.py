@@ -396,9 +396,9 @@ def background(tr: pd.DataFrame, lakes: list[str]) -> dict:
 
 
 def stage_export() -> None:
-    """Freeze the tested candidate for the shadow log (src/dipcast/shadow_lake_range.py): the same fit as `run`, on
+    """Freeze the tested candidate for the lake range (src/dipcast/lake_range.py): the same fit as `run`, on
     every training row, written to data/processed/ecoli_lake_range.json with each lake site's intercept weights and
-    check values the site's own code must reproduce (tests/test_shadow_lake_range.py)."""
+    check values the site's own code must reproduce (tests/test_lake_range.py)."""
     import hashlib
 
     from dipcast.model.ecoli import features

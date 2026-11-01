@@ -1,4 +1,4 @@
-"""The lake E. coli range shadow (src/dipcast/shadow_lake_range.py, docs/LAKE-RANGE-WORDING-2026-11.md): the frozen
+"""The lake E. coli range (src/dipcast/lake_range.py, docs/LAKE-RANGE-WORDING-2026-11.md): the frozen
 file, the research script's own answers reproduced, which lake gets which intercept, the off switch, and the rows it
 logs."""
 
@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from dipcast import shadow_lake_range as sl
+from dipcast import lake_range as sl
 from dipcast.model.ecoli import features
 
 TZ = "Europe/London"
@@ -44,7 +44,8 @@ def test_a_bathing_water_uses_its_own_intercept_and_any_other_lake_the_average()
     X = _X([0.0, 25.0], [0.0, 15.0], [0.002, 0.08])
     a = sl.ranges(s["lat"], s["lon"], X, m)
     b = sl.ranges(s["lat"] + 0.01, s["lon"], X, m)
-    assert a["basis"] == "site" and b["basis"] == "average lake" and b["bw_id"] is None
+    assert a["basis"] == "tested" and b["basis"] == "average lake" and b["bw_id"] is None
+    assert sl.ranges(*(lambda c: (c["lat"], c["lon"]))(m["sites"]["ukd1101-45800"]), X, m)["basis"] == "own samples"
     assert (a["low"] < a["median"]).all() and (a["median"] < a["high"]).all()
     assert (a["median"][1] > a["median"][0]) and (a["high"][1] > a["high"][0])   # a wet day reads higher
 
@@ -86,5 +87,10 @@ def test_logs_leads_from_zero_in_its_own_table(tmp_path):
     assert t["lead"].tolist() == [0, 1, 2]
     assert t["in_season"].tolist() == [True, False, False]
     assert t["median"].isna().tolist() == [False, True, False] and t["rain_48h"].isna().tolist() == [False, True, False]
-    assert set(t["bw_id"]) == {"ukj2310-11945"} and set(t["basis"]) == {"site"}
+    assert set(t["bw_id"]) == {"ukj2310-11945"} and set(t["basis"]) == {"tested"}
     assert set(t["rule"]) == {"lake-range-v1"} and set(t["model_sha"]) == {sl.SHA256[:16]}
+
+
+def test_two_significant_figures():
+    assert [sl.sig2(v) for v in (6.62, 55.4, 172.0, 1234.0)] == [6.6, 55.0, 170.0, 1200.0]
+    assert sl.sig2(float("nan")) is None and sl.sig2(None) is None
