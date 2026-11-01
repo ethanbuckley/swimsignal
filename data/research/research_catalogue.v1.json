@@ -704,6 +704,13 @@
    "branch": "claude/ecoli-estimate-lakes-078fcb",
    "branch_exists": true,
    "date": null
+  },
+  "585": {
+   "n": 585,
+   "state": "open",
+   "branch": "claude/lake-range-shadow",
+   "branch_exists": true,
+   "date": null
   }
  },
  "entries": [
@@ -940,8 +947,8 @@
    "verdict": "All three stated conditions passed on 962 lake samples from 2012-2022 that the model never read: 78.9% of results inside the stated 80% range, a log score above the lake's typical range of +0.033 [+0.011, +0.055], and 79.3% (Windermere) and 77.5% (Frensham) inside at each water body. The weather gain came from three Windermere sites; at Fellfoot and Frensham it added nothing measurable.",
    "scope": "Five lake bathing waters on two water bodies (Windermere, Frensham), May-September 2012-2022, hindcast exposure from archive rain using today's overflow list. Other lakes are not tested; the over-900 chance is still unjudgeable at lakes (9 results over 900).",
    "stage": "development",
-   "stage_note": "No model or shown value changed. The over-900 chance stays off lakes.",
-   "next": "A wording proposal for Ethan, a shadow log at lake spots, and the 2027 lake samples as the prospective check.",
+   "stage_note": "No model or shown value changed. A shadow log of the range at lake spots is proposed in #585; the over-900 chance stays off lakes.",
+   "next": "Ethan's choice of where and how to show it (docs/LAKE-RANGE-WORDING-2026-11.md), then the 2027 lake samples as the prospective check, read on or after 15 Oct 2027.",
    "records": [
     {
      "doc": "docs/LAKE-RANGE-HINDCAST-TEST-2026-11.md",
@@ -949,7 +956,8 @@
     }
    ],
    "prs": [
-    584
+    584,
+    585
    ]
   },
   {
