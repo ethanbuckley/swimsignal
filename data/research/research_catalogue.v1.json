@@ -1595,10 +1595,10 @@
    "topics": [
     "nations"
    ],
-   "verdict": "Plans, not tests. Wales has the data but not the permission; Scotland could be forecast with its spill records once a test passes; Ireland has no reusable spill data.",
-   "scope": "Plans only; nothing built.",
+   "verdict": "Scotland's hindcast passed Gate A on 1 Nov 2026: the English spill model, with Scottish covariates, beats each overflow's own history at leads 0 to 3, but forecasts 72% of the spill-days that happened. Wales passed its Gate A on 10 Oct and waits on Dŵr Cymru's permission; Ireland has no reusable spill data.",
+   "scope": "Scotland: 254 overflows, 2022-25, the 12 Sep model. Wales: Hafren Dyfrdwy and Dŵr Cymru's English overflows. Directories only in Ireland.",
    "stage": "waiting",
-   "stage_note": "Directories are live; forecasts wait on licences and local tests.",
+   "stage_note": "Directories are live; Scotland's shadow scores run since 11 Oct; nothing Scottish is published before Gate B and outside review.",
    "next": "Expand observations and evidence first, then licence and local validation before forecasting.",
    "records": [
     {
@@ -1607,6 +1607,10 @@
     },
     {
      "doc": "docs/SCOTLAND-PLAN-2026-10.md"
+    },
+    {
+     "doc": "docs/SCOTLAND-HINDCAST-2026-11.md",
+     "quote": "All four parts were tested and all four pass."
     },
     {
      "doc": "docs/IRELAND-PLAN-2026-10.md"

@@ -473,6 +473,11 @@ cell count and calls used.
 before the first run. Writes `data/processed/scotland_hindcast.json`. The PR shows the tables of
 section 6 and says pass or fail. If it fails, the next PR is a short write-up, and the rest stops.
 
+*Run 1 November 2026: Gate A PASS* ([write-up](SCOTLAND-HINDCAST-2026-11.md)). All four parts pass: lead 0
+BSS 0.18 (0.13 to 0.23), leads 1 to 3 0.18, 0.15 and 0.13, every lower end above zero. 254 overflows, 52,891
+spill-days, 2022-25. The model forecasts 72% of the spill-days that happened; the calibration arm and set N
+were not run (rain not cached).
+
 **S4. Live adapter, shadow only.** Test the API from a runner first (a throwaway workflow on a
 throwaway branch, deleted after; needs Ethan's yes). Then `src/dipcast/ingest/scottish_water.py`:
 the status mapping of section 5.1, both events per asset into the live history keyed by discharge
