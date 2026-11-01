@@ -7,13 +7,12 @@
      site. Serve the repository root (README.md beside this file) so the page can read data/research/ as committed. -->
 <title>The lake from space · SwimSignal Research Lab</title>
 <meta name="robots" content="noindex">
-<link rel="stylesheet" href="../../../src/dipcast/site/vendor/leaflet/leaflet.css">
-<link rel="stylesheet" href="../lab.css?v=8">
+<link rel="stylesheet" href="../lab.css?v=9">
 </head>
 <body>
 <header class="top"><div class="wrap">
   <a class="brand" href="https://swimsignal.co.uk/">SwimSignal</a>
-  <span class="crumb">Research Lab · Exhibit 1 of 3 · prototype</span>
+  <span class="crumb"><a href="../">Research Lab</a> · Exhibit 1 of 3 · prototype</span>
   <a href="https://swimsignal.co.uk/research.html">Research</a>
 </div></header>
 
@@ -24,7 +23,10 @@
     <p class="answer" id="front-answer">Loading the record…</p>
     <p class="status" id="front-status"></p>
   </div>
-  <div class="contact" id="contact" aria-label="The latest picture at each lake checked weekly"></div>
+  <div>
+    <figure class="wide" id="hero"></figure>
+    <div class="contact" id="contact" aria-label="The five lakes checked weekly"></div>
+  </div>
 </div></div>
 
 <main>
@@ -36,8 +38,8 @@
         <nav class="index" id="lake-index" aria-label="Lakes in the record"></nav>
       </div>
       <div>
-        <div id="map" role="img" aria-label="Map of the monitored lakes in England"></div>
-        <div class="map-key"><span><i class="pilot"></i>checked weekly, with pictures</span><span><i class="hist"></i>historical record only</span><span><i class="small"></i>too small for 20 m pixels</span><span>Map © OpenStreetMap contributors</span></div>
+        <div class="drawn-map" id="map"></div>
+        <div class="map-key"><span><i class="pilot"></i>checked weekly, with pictures</span><span><i class="hist"></i>historical record only</span><span><i class="small"></i>too small for 20 m pixels</span></div>
       </div>
     </div>
   </div></section>
@@ -49,6 +51,7 @@
       <div class="meta" id="lk-link"></div>
     </div>
     <dl class="facts" id="lk-facts"></dl>
+    <figure class="wide" id="context" style="margin-top:24px"></figure>
 
     <div class="plate-row" style="margin-top:28px">
       <div>
@@ -57,6 +60,7 @@
       </div>
       <div class="reading" id="reading"></div>
     </div>
+    <div id="flipbook"></div>
   </div></section>
 
   <section class="sec" id="s-record"><div class="wrap">
@@ -103,7 +107,7 @@
   <p>A prototype for review. It changes nothing on swimsignal.co.uk and nothing in the forecast.</p>
 </div></footer>
 
-<script src="../../../src/dipcast/site/vendor/leaflet/leaflet.js"></script>
-<script src="exhibit.js?v=8"></script>
+<script src="../lab.js?v=1"></script>
+<script src="exhibit.js?v=9"></script>
 </body>
 </html>

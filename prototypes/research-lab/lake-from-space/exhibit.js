@@ -20,7 +20,7 @@ const todayISO = new Date().toISOString().slice(0, 10);
 const plural = (n, one, many = one + 's') => `${n.toLocaleString('en-GB')} ${n === 1 ? one : many}`;
 const sat = item => (item || '').slice(0, 3).replace('S2', 'Sentinel-2');
 
-let OBS, IMG, EXP, LAKES = {}, PICS = {}, map, markers = {};
+let OBS, IMG, EXP, WIDE, RUNS, LAKES = {}, PICS = {}, WPIC = {}, heroLake = 'wqa-SW-50900003', flipTimer = null;
 const S = { lake: null, date: null, year: null, layer: 'tci', bright: true, compare: null };
 
 // ------------------------------------------------------------------ colour of the index, the imagery manifest's legend
@@ -81,18 +81,26 @@ function renderFront() {
     `<b>Exploratory.</b> Historical record May–September 2020–2026, ${plural(OBS.coverage.usable, 'clear reading')} at ` +
     `${OBS.coverage.with_reading} sites. Five lakes checked weekly since 31 October 2026; newest picture ${fmt(pics[pics.length - 1])}.`;
 
-  const order = OBS.pilot.sites;
-  $('#contact').innerHTML = order.map(id => {
-    const l = LAKES[id], p = PICS[id], shown = (p?.scenes || []).filter(c => c.quality === 'shown');
-    const last = shown[shown.length - 1];
-    const short = l.water_body.replace(' Great Pond', '');
-    const im = last
-      ? `<img src="${DATA + last.image_url}" alt="True-colour satellite picture of ${esc(l.water_body)}, ${fmt(last.datetime)}"><span class="ring"></span>`
-      : '<span class="none">no clear image</span>';
-    const cap = last ? fmt(last.datetime) : `no clear image since ${fmt(l.latest.date, { noYear: true })}`;
-    return `<button type="button" data-lake="${id}"><span class="im">${im}</span><span class="cap"><b>${esc(short)}</b>${cap}</span></button>`;
-  }).join('') + `<p class="contact-note">The newest clear picture at each lake checked weekly. Dashed circle: the 300 m the reading uses. Brightened for viewing.</p>`;
-  $('#contact').addEventListener('click', e => { const b = e.target.closest('button[data-lake]'); if (b) { selectLake(b.dataset.lake); $('#s-lake').scrollIntoView({ behavior: 'smooth' }); } });
+  renderHero();
+  $('#contact').addEventListener('click', e => { const b = e.target.closest('button[data-hero]'); if (b) { heroLake = b.dataset.hero; renderHero(); } });
+}
+
+// A wide picture: 4 km of the real scene, the 800 m plate window and the reading's 300 m circle marked on it.
+function wideHTML(lid, opts = {}) {
+  const w = WPIC[lid], l = LAKES[lid];
+  if (!w) return '';
+  const km = 1000 / (2 * WIDE.radius_m) * 100;
+  return `<div class="im" style="aspect-ratio:${opts.ratio || '1'}"><img src="../${w.file}" alt="True-colour Sentinel-2 picture, 4 km across, around ${esc(l.water_body)}, ${fmt(w.datetime)}">
+      <span class="box" title="the 800 m plate; dashed: the 300 m the reading uses"></span><span class="bar" style="width:100%"><i style="width:${km}%"></i>1 km</span></div>
+    <figcaption><b>${esc(l.water_body)}</b>, ${fmt(w.datetime)}, ${utcTime(w.datetime)}, ${sat(w.item_id)}. 4 km across; the square is the 800 m plate below, the dashed circle the 300 m the reading uses. Cloud is shown as it was. Brightened for viewing.</figcaption>`;
+}
+function renderHero() {
+  $('#hero').innerHTML = wideHTML(heroLake);
+  $('#contact').innerHTML = OBS.pilot.sites.map(id => {
+    const w = WPIC[id], l = LAKES[id];
+    return `<button type="button" data-hero="${id}" aria-current="${id === heroLake}"><span class="im">${w ? `<img src="../${w.file}" alt="">` : ''}</span><span class="cap"><b>${esc(l.water_body.replace(' Great Pond', ''))}</b>${w ? fmt(w.datetime) : ''}</span></button>`;
+  }).join('') + `<p class="contact-note"><a href="#lake=${heroLake}" style="color:var(--deep-ink)" id="hero-open">Open ${esc(LAKES[heroLake].water_body)} below</a>. The five lakes checked weekly, each on its newest picture.</p>`;
+  $('#hero-open').onclick = e => { e.preventDefault(); selectLake(heroLake); $('#s-lake').scrollIntoView({ behavior: 'smooth' }); };
 }
 
 // ------------------------------------------------------------------ atlas: index, picker, map
@@ -109,34 +117,19 @@ function renderAtlas() {
     `<optgroup label="${r}">${byRegion[r].map(l => `<option value="${l.lake_id}">${esc(l.name)} (${lakeTag(l)})</option>`).join('')}</optgroup>`).join('');
   $('#lake-select').addEventListener('change', e => selectLake(e.target.value));
 
-  map = L.map('map', { scrollWheelZoom: false, attributionControl: false, zoomSnap: 0.25 }).setView([53.2, -1.8], 6);
-  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 15 }).addTo(map);
-  for (const l of OBS.lakes) {
-    const m = L.circleMarker([l.lat, l.lon], markStyle(l, false)).addTo(map);
-    m.bindTooltip(esc(l.name), { direction: 'top', offset: [0, -6] });
-    m.on('click', () => selectLake(l.lake_id));
-    markers[l.lake_id] = m;
-  }
-  map.fitBounds(OBS.lakes.map(l => [l.lat, l.lon]), { padding: [24, 24] });
+  drawAtlasMap();
 }
-function markStyle(l, on) {
-  const pilot = isPilot(l);
-  return {
-    radius: on ? 9 : pilot ? 6.5 : 5, weight: on ? 3 : 1.5,
-    color: on ? '#c2552a' : small(l) ? '#6c7174' : pilot ? '#0f5a61' : '#1b2328',
-    fillColor: small(l) ? 'transparent' : pilot ? '#0f5a61' : '#fbf9f3', fillOpacity: 1,
-    dashArray: small(l) ? '2 2' : null,
-  };
+function drawAtlasMap() {
+  LAB.drawMap($('#map'), OBS.lakes.map(l => ({ id: l.lake_id, lat: l.lat, lon: l.lon, name: l.name, kind: small(l) ? 'small' : isPilot(l) ? 'pilot' : 'hist' })),
+    { selected: S.lake, onPick: id => selectLake(id) });
 }
 
 // ------------------------------------------------------------------ selection
 function selectLake(id, date) {
   const l = LAKES[id];
   if (!l) return;
-  if (S.lake && markers[S.lake]) markers[S.lake].setStyle(markStyle(LAKES[S.lake], false));
   S.lake = id; S.compare = null;
-  markers[id].setStyle(markStyle(l, true)).bringToFront();
-  document.querySelectorAll('[data-lake]').forEach(b => b.setAttribute('aria-current', b.dataset.lake === id));
+  document.querySelectorAll('#lake-index [data-lake]').forEach(b => b.setAttribute('aria-current', b.dataset.lake === id));
   $('#lake-select').value = id;
   const ps = primaries(l);
   const pics = (PICS[id]?.scenes || []).filter(c => c.quality === 'shown');
@@ -145,8 +138,7 @@ function selectLake(id, date) {
     : ps.length ? ps[ps.length - 1].date : null;
   S.year = S.date ? +S.date.slice(0, 4) : null;
   renderLakeHead(); renderYears(); selectDate(S.date, { keepYear: true });
-  if (map) map.panTo([l.lat, l.lon], { animate: true });
-  drawScatter();
+  drawAtlasMap(); renderContext(); renderFlip(); drawScatter();
 }
 
 function selectDate(date, opt = {}) {
@@ -365,8 +357,52 @@ function renderTable() {
   $('#rec-table .scroll').innerHTML = `<table><thead><tr><th>Date</th><th>Kind</th><th>Value</th><th>Note</th></tr></thead><tbody>${rows.map(r => `<tr><td>${fmt(r.d)}</td><td>${r.k}</td><td class="mono">${esc(r.v)}</td><td>${esc(r.n)}</td></tr>`).join('')}</tbody></table>`;
 }
 
+// ------------------------------------------------------------------ section 2: the 4 km view and every pass
+function renderContext() { $('#context').innerHTML = WPIC[S.lake] ? wideHTML(S.lake, { ratio: '16 / 7' }) : ''; $('#context').hidden = !WPIC[S.lake]; }
+
+// Every satellite pass the weekly checks read at this lake, clear or not, one frame a date (the clearest tile).
+function passes(lid) {
+  const byDate = {};
+  for (const run of RUNS) for (const r of run.rows || []) {
+    if (r.lake_id !== lid) continue;
+    const k = r.scene_date, cur = byDate[k];
+    if (!cur || r.clear_core / r.n_core > cur.clear_core / cur.n_core) byDate[k] = r;
+  }
+  const pics = Object.fromEntries((PICS[lid]?.scenes || []).filter(c => c.image_url).map(c => [c.item_id, c]));
+  return Object.values(byDate).sort((a, b) => a.datetime.localeCompare(b.datetime)).map(r => ({ ...r, pic: pics[r.item_id] }));
+}
+function renderFlip() {
+  clearInterval(flipTimer); flipTimer = null;
+  const F = passes(S.lake), el = $('#flipbook');
+  if (!F.length) { el.innerHTML = ''; return; }
+  const win = RUNS[0].window;
+  let i = Math.max(0, F.map(f => !!f.pic).lastIndexOf(true));
+  el.innerHTML = `<div class="sec-head" style="margin-top:36px;border-top-color:var(--line)"><h3 style="margin:0">Every pass since the weekly checks began</h3><span class="aside">${fmt(win.from)} to ${fmt(F[F.length - 1].datetime)} · ${plural(F.length, 'date')}</span></div>
+    <div class="flip"><div><div id="flip-frame"></div>
+      <div class="ctl"><button type="button" id="flip-play">Play</button><input type="range" id="flip-range" min="0" max="${F.length - 1}" value="${i}" aria-label="Pass date"></div></div>
+      <div><p class="note" style="margin-top:0">Sentinel-2 passed over ${esc(LAKES[S.lake].water_body)} on ${plural(F.length, 'date')} in the fortnight. A picture is kept only when at least 80% of the reading's open water was clear; every other pass is shown blank, with how much of that water the satellite could see. Nothing is filled in between.</p>
+        <div class="strip" id="flip-strip">${F.map((f, k) => `<button type="button" data-k="${k}" aria-label="${fmt(f.datetime)}">${f.pic ? `<img src="${DATA + f.pic.image_url}" alt="">` : ''}<span>${f.scene_date.slice(8)}</span></button>`).join('')}</div></div></div>`;
+  const show = k => {
+    i = k; const f = F[k], clear = f.clear_core / f.n_core;
+    $('#flip-frame').innerHTML = f.pic
+      ? `<div class="frame"><img class="tci bright" src="${DATA + f.pic.image_url}" alt="True-colour picture, ${fmt(f.datetime)}"><span class="ring"></span><span class="stamp">${fmt(f.datetime)}</span></div><figcaption><span class="log">${sat(f.item_id)} · ${pct(clear)} of core clear · ${f.pic.quality.startsWith('excluded') ? 'not used: ' + esc(f.pic.quality.split(':')[1].replace(/_/g, ' ')) : 'NDCI ' + num(f.pic.ndci, 3)}</span></figcaption>`
+      : `<div class="frame cloud"><span class="stamp">${fmt(f.datetime)}</span><div class="msg"><b>${clear === 0 ? 'No clear water' : pct(clear) + ' clear'}</b>${clear === 0 ? 'Cloud or shadow over all of the reading\'s open water' : 'Not enough clear water for a reading'}</div></div><figcaption><span class="log">${sat(f.item_id)} · ${f.core_cloud_high ? f.core_cloud_high + ' of ' + f.n_core + ' core pixels high cloud' : 'unknown, not clean'}</span></figcaption>`;
+    $('#flip-range').value = k;
+    el.querySelectorAll('#flip-strip button').forEach(b => b.setAttribute('aria-current', +b.dataset.k === k));
+  };
+  show(i);
+  $('#flip-range').oninput = e => show(+e.target.value);
+  $('#flip-strip').onclick = e => { const b = e.target.closest('button'); if (b) show(+b.dataset.k); };
+  $('#flip-play').onclick = () => {
+    if (flipTimer) { clearInterval(flipTimer); flipTimer = null; $('#flip-play').textContent = 'Play'; return; }
+    if (i >= F.length - 1) show(0);
+    $('#flip-play').textContent = 'Pause';
+    flipTimer = setInterval(() => { if (i >= F.length - 1) { clearInterval(flipTimer); flipTimer = null; $('#flip-play').textContent = 'Play'; return; } show(i + 1); }, 650);
+  };
+}
+
 // ------------------------------------------------------------------ findings
-function noteW() { const n = document.querySelector('.fnote'); return Math.max(280, Math.min(520, Math.round(n ? n.clientWidth : 520))); }
+const noteW = LAB.noteW;
 function scatterSVG() {
   const P = EXP.pairs, W = noteW(), H = W < 440 ? 240 : 300, pl = 44, pb = 30, pt = 10, pr = 10;
   const x = v => pl + (Math.max(-0.3, Math.min(0.5, v)) + 0.3) / 0.8 * (W - pl - pr);
@@ -382,17 +418,7 @@ function scatterSVG() {
 }
 function drawScatter() { const el = $('#scatter'); if (el && S.lake) { el.innerHTML = scatterSVG(); const n = EXP.pairs.filter(p => p.lake_id === S.lake).length; $('#scatter-cap').textContent = n ? `Orange: ${esc(LAKES[S.lake].name)}, ${plural(n, 'pair')}.` : `${LAKES[S.lake].name} has no pairs: no lab sample with a clear image within a day.`; } }
 
-function bars(items, max = 1, ref = null, fmtv = pct) {
-  const W = noteW(), narrow = W < 440, row = narrow ? 42 : 28, H = items.length * row + 8, pl = narrow ? 0 : 170;
-  const x = v => pl + v / max * (W - pl - 60);
-  let g = items.map((it, i) => {
-    const y0 = 4 + i * row + (narrow ? 14 : 0);
-    const ci = it.ci ? `<line x1="${x(it.ci[0])}" x2="${x(it.ci[1])}" y1="${y0 + 10}" y2="${y0 + 10}" stroke="var(--ink)" stroke-width="1.5"/><line x1="${x(it.ci[0])}" x2="${x(it.ci[0])}" y1="${y0 + 5}" y2="${y0 + 15}" stroke="var(--ink)"/><line x1="${x(it.ci[1])}" x2="${x(it.ci[1])}" y1="${y0 + 5}" y2="${y0 + 15}" stroke="var(--ink)"/>` : '';
-    return `<text x="0" y="${narrow ? y0 - 2 : y0 + 14}">${it.label}</text><rect x="${pl}" y="${y0 + 3}" width="${x(it.v) - pl}" height="14" fill="${it.c || 'var(--rule)'}"/>${ci}<text x="${x(Math.max(it.v, it.ci ? it.ci[1] : 0)) + 6}" y="${y0 + 14}" style="fill:var(--ink)">${fmtv(it.v)}</text>`;
-  }).join('');
-  if (ref != null) g += `<line x1="${x(ref.v)}" x2="${x(ref.v)}" y1="0" y2="${H}" stroke="var(--pick)" stroke-dasharray="3 3"/><text x="${x(ref.v) + 4}" y="${H}" style="fill:var(--pick)">${ref.label}</text>`;
-  return `<svg viewBox="0 0 ${W} ${H + 6}" style="max-width:${W}px">${g}</svg>`;
-}
+function bars(items, max = 1, ref = null, fmtv = pct) { return LAB.dots(items, { max, ref, fmt: fmtv }); }
 
 function renderNotes() {
   const r = EXP.reproduction, w = EXP.within_season, dir = EXP.direction, cal = dir.calendar, dc = EXP.detectable_change, gp = EXP.gaps, py = EXP.pairing_yield;
@@ -446,16 +472,18 @@ function renderQuestions() {
 }
 
 // ------------------------------------------------------------------ start
-Promise.all([DATA + 'lake_observations.v1.json', DATA + 'lake_imagery.v1.json', 'exploration.json'].map(u => fetch(u).then(r => { if (!r.ok) throw new Error(u + ' ' + r.status); return r.json(); })))
-  .then(([o, i, e]) => {
-    OBS = o; IMG = i; EXP = e;
+Promise.all([DATA + 'lake_observations.v1.json', DATA + 'lake_imagery.v1.json', 'exploration.json', '../assets/wide/wide.json', DATA + 'satellite/pilot_runs.json'].map(u => fetch(u).then(r => { if (!r.ok) throw new Error(u + ' ' + r.status); return r.json(); })))
+  .then(async ([o, i, e, w, runs]) => {
+    OBS = o; IMG = i; EXP = e; WIDE = w; RUNS = runs;
+    for (const p of WIDE.pictures) WPIC[p.lake_id] = p;
+    await LAB.loadOutline('../');
     for (const l of OBS.lakes) LAKES[l.lake_id] = l;
     for (const s of IMG.sites) PICS[s.lake_id] = s;
-    $('#attrib').textContent = [...new Set([...OBS.attribution, ...IMG.attribution])].join('. ') + '.';
+    $('#attrib').textContent = [...new Set([...OBS.attribution, ...IMG.attribution])].join('. ') + '. Map: ' + LAB.credit() + '.';
     renderFront(); renderAtlas(); renderNotes(); renderQuestions();
     const h = readHash();
     selectLake(LAKES[h.lake] ? h.lake : OBS.pilot.sites[0], h.date);
-    let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { renderChart(); renderNotes(); }, 150); });
+    let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { renderChart(); renderNotes(); drawAtlasMap(); }, 150); });
     window.addEventListener('hashchange', () => { const k = readHash(); if (k.lake && (k.lake !== S.lake || k.date !== S.date)) selectLake(k.lake, k.date); });
   })
   .catch(err => { $('#front-answer').textContent = `Could not read the research files (${err.message}). Serve the repository root: see README.md beside this page.`; });

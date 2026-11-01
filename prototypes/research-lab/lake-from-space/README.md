@@ -24,7 +24,8 @@ SwimSignal service worker on that port, will show the main app instead. Pick an 
 
 - `data/research/lake_observations.v1.json` and `lake_imagery.v1.json` with `lake-img/`, as committed.
 - `exploration.json`, made by `uv run python scripts/lake_from_space_explore.py`.
-- Map tiles from tile.openstreetmap.org (the site's CARTO key is tied to its domain).
+- `data/research/satellite/pilot_runs.json`, for the flipbook: every pass the weekly checks read, clear or not.
+- `../assets/wide/` and `../assets/britain.json` (see the Lab README). No map tiles.
 
 ## Files
 

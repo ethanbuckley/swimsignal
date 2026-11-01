@@ -93,6 +93,18 @@ contract's release checklist (item 7: no algae, toxin, safety or swimming wordin
 caption may claim to detect, measure or rule out algae or toxins, and the page must say plainly that the index is not
 a harmful-algae test and not swimming advice (section 5 of the exhibit does).
 
+## Polish round (1 November 2026, Ethan's choice of four upgrades)
+
+- **Wide pictures:** one 4 km true-colour scene per weekly lake (`scripts/lab_wide_pictures.py`): its newest picture,
+  or for Derwent Water its newest clear reading (30 September; much of the wider view is cloud, shown as it was).
+  18 requests, 25.3 MiB, inside caps of 80 requests and 60 MiB and the pilot's allocation; scratch `DIPCAST_ROOT` and
+  `DIPCAST_STATE`; `data/research` hashed before and after, unchanged. Pictures only: no index, mask or reading.
+- **Drawn map:** ONS country outlines, one simplified request (`scripts/lab_britain_outline.py`), in place of map tiles.
+- **Flipbook:** every pass the weekly checks read since 18 October, one frame a date. A picture only where at least 80%
+  of the reading's open water was clear; every other pass is a blank frame with how much was clear.
+- **Charts and gallery:** dot-and-interval charts shared by both exhibits (`prototypes/research-lab/lab.js`), and a
+  front page whose covers come from each exhibit's own data.
+
 ## Readout
 
 | Field | Content |

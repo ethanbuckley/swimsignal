@@ -23,6 +23,12 @@ It worked if the front page lists three exhibits and the two built ones open wit
 SwimSignal app means another server or an old service worker holds that port: pick another.
 
 ## Shared
+- `lab.js`: the drawn map of Great Britain (`LAB.drawMap`) and the dot-and-interval chart (`LAB.dots`).
+- `assets/wide/`: one 4 km true-colour picture per weekly lake, made by `scripts/lab_wide_pictures.py` (1 Nov 2026: 18
+  requests, 25.3 MiB, caps 80 requests and 60 MiB; scratch `DIPCAST_ROOT`/`DIPCAST_STATE`; `data/research` hashed
+  before and after, unchanged). `wide.json` records each scene, its time and hash. Pictures, not readings.
+- `assets/britain.json`: England, Wales and Scotland outlines from ONS (OGL), simplified on the server, one request
+  (`scripts/lab_britain_outline.py`).
 
 - `lab.css`: the field-journal stylesheet every exhibit uses (the site's type pair and colours).
 - Each exhibit: a question and a plain answer with figures; numbered sections; real data only, missing data drawn as

@@ -36,12 +36,37 @@ function renderFront() {
     `and it gave ${m.false_alarms} false alarms. At lakes it did no better than quoting the usual rate: it warned before none of ${l.over_900}. ` +
     `Spill forecasts beat the usual rate by ${pct(lead0.brier_skill_vs_clim)} on the day, falling to ${pct(lead4.brier_skill_vs_clim)} four days ahead.`;
   $('#front-status').innerHTML = `<b>Exploratory, on outcomes already read.</b> E. coli: ${plural(EX.ecoli.all.samples, 'sample')} at ${EX.ecoli.all.sites} bathing waters, 2024–2026, against estimates rebuilt in hindsight. Spills: one held-out year. Nothing after ${fmt(EX.cutoff)}.`;
-  const dots = (n, c) => Array.from({ length: n }, () => `<i class="${c}"></i>`).join('');
-  $('#ledger').innerHTML = `
-    <div class="blk"><div class="lbl"><b>${r.over_900}</b>river samples over 900</div><div class="dots">${dots(m.hits, 'hit')}${dots(m.misses, 'miss')}</div></div>
-    <div class="blk"><div class="lbl"><b>${m.false_alarms}</b>false alarms at rivers</div><div class="dots">${dots(m.false_alarms, 'fa')}</div></div>
-    <div class="blk"><div class="lbl"><b>${l.over_900}</b>lake samples over 900</div><div class="dots">${dots(l.at_line.model.hits, 'hit')}${dots(l.at_line.model.misses, 'miss')}</div></div>
-    <figcaption>One dot per lab sample. Filled: the estimate was over the ${pct(WARN)} warning line. Hollow: it was not. Amber: warned, but the sample was under 900. Estimates rebuilt in hindsight, 2024–2026.</figcaption>`;
+  // One dot per sample, in date order within each block, so "play" can fill them as the summers went.
+  const kindOf = r => SITES[r.bw_id].kind, warned = r => r.model >= WARN;
+  const blocks = [
+    ['over', r => kindOf(r) === 'river' && r.y, `<b>${r.over_900}</b>river samples over 900`],
+    ['fa', r => kindOf(r) === 'river' && !r.y && warned(r), `<b>${m.false_alarms}</b>false alarms at rivers`],
+    ['lake', r => kindOf(r) === 'lake' && r.y, `<b>${l.over_900}</b>lake samples over 900`],
+  ];
+  const rows = [...EX.ecoli.samples].sort((a, b) => a.t.localeCompare(b.t));
+  $('#ledger').innerHTML = blocks.map(([k, f, lbl]) => `<div class="blk"><div class="lbl">${lbl}</div><div class="dots">${rows.filter(f).map(r =>
+      `<i class="${r.y ? (warned(r) ? 'hit' : 'miss') : 'fa'}" data-t="${r.t}"></i>`).join('')}</div></div>`).join('') +
+    `<div class="play"><button type="button" id="ledger-play">Play 2024 to 2026</button><span id="ledger-read" aria-live="polite"></span></div>
+    <figcaption>One dot per lab sample, in date order. Filled: the estimate was over the ${pct(WARN)} warning line. Hollow: it was not. Amber: warned, but the sample was under 900. Estimates rebuilt in hindsight.</figcaption>`;
+  $('#ledger-play').onclick = playLedger;
+}
+let ledgerTimer = null;
+function playLedger() {
+  const dots = [...document.querySelectorAll('#ledger i[data-t]')].sort((a, b) => a.dataset.t.localeCompare(b.dataset.t));
+  const read = $('#ledger-read'), btn = $('#ledger-play');
+  if (ledgerTimer) { clearInterval(ledgerTimer); ledgerTimer = null; dots.forEach(d => d.classList.remove('off')); btn.textContent = 'Play 2024 to 2026'; read.textContent = ''; return; }
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  dots.forEach(d => d.classList.add('off'));
+  const n = { hit: 0, miss: 0, fa: 0 }; let i = 0;
+  btn.textContent = 'Stop';
+  const step = () => {
+    const end = Math.min(dots.length, i + (reduce ? dots.length : 4));
+    for (; i < end; i++) { dots[i].classList.remove('off'); n[dots[i].className] = (n[dots[i].className] || 0) + 1; }
+    const t = dots[Math.max(0, i - 1)].dataset.t;
+    read.textContent = `${new Date(t.slice(0, 10) + 'T12:00:00Z').toLocaleDateString('en-GB', { month: 'long', year: 'numeric', timeZone: 'UTC' })} · caught ${n.hit} · missed ${n.miss} · false alarms ${n.fa}`;
+    if (i >= dots.length) { clearInterval(ledgerTimer); ledgerTimer = null; btn.textContent = 'Play 2024 to 2026'; }
+  };
+  step(); ledgerTimer = setInterval(step, 70);
 }
 
 // ------------------------------------------------------------------ choosing a bathing water
@@ -161,15 +186,8 @@ function renderSample() {
 }
 
 // ------------------------------------------------------------------ section 3: against the simple alternatives
-function noteW() { const n = document.querySelector('.fnote'); return Math.max(280, Math.min(520, Math.round(n ? n.clientWidth : 520))); }
-function bars(items, max, fmtv, ref) {
-  const W = noteW(), narrow = W < 440, row = narrow ? 42 : 28, H = items.length * row + 8, pl = narrow ? 0 : 170;
-  const x = v => pl + v / max * (W - pl - 60);
-  let g = items.map((it, i) => { const y0 = 4 + i * row + (narrow ? 14 : 0);
-    return `<text x="0" y="${narrow ? y0 - 2 : y0 + 14}">${it.label}</text><rect x="${pl}" y="${y0 + 3}" width="${Math.max(0, x(it.v) - pl)}" height="14" fill="${it.c || 'var(--rule)'}"/><text x="${x(it.v) + 6}" y="${y0 + 14}" style="fill:var(--ink)">${fmtv(it.v)}</text>`; }).join('');
-  if (ref) g += `<line x1="${x(ref.v)}" x2="${x(ref.v)}" y1="0" y2="${H}" stroke="var(--pick)" stroke-dasharray="3 3"/><text x="${x(ref.v) + 4}" y="${H + 4}" style="fill:var(--pick)">${ref.label}</text>`;
-  return `<svg viewBox="0 0 ${W} ${H + 8}" style="max-width:${W}px">${g}</svg>`;
-}
+const noteW = LAB.noteW;
+function bars(items, max, fmtv, ref) { return LAB.dots(items, { max, fmt: fmtv, ref }); }
 const REFNAME = { model: 'SwimSignal estimate', usual: 'Usual rate', site_usual: "This water's own rate", last: 'Last sample' };
 function brierNote(k, tag) {
   const s = EX.ecoli[k];
