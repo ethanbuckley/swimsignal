@@ -42,6 +42,7 @@ data/processed/*
 !data/processed/verification_live_oldrule_2026-09-28.json
 # Scottish covariates (Scotland plan S2). Contains Scottish Water data licensed under the Open Government Licence v3.0.
 !data/processed/sw_covariates.parquet
+!data/processed/scotland_calibration.json
 # Each overflow's longest spill in the EA's 2024-2025 start/stop records, for the data-quality page's long_run
 # list (scripts/make_longest_events.py, 154 KB). Contains Environment Agency data, Open Government Licence v3.0.
 !data/processed/longest_events.parquet

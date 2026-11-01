@@ -213,7 +213,8 @@ function lakesShares(lake, index) {
 }
 // One location whole.
 function lakesLake(lake, doc, todayISO, width, index = null) {
-  const spot = lake.site_ids && lake.site_ids.bathing_water ? `<a href="spot/${lakesEsc(lake.lake_id)}/">Its pollution forecast</a>` : '';
+  const spot = [lake.site_ids && lake.site_ids.bathing_water ? `<a href="spot/${lakesEsc(lake.lake_id)}/">Its pollution forecast</a>` : '',
+    `<a href="lab/lake-from-space/#lake=${lakesEsc(encodeURIComponent(lake.lake_id))}">Its pictures in the Research Lab</a>`].filter(Boolean).join(' · ');
   // The season's images up to the export's own date; anything read later is the refresh's sentence, below.
   const base = ((doc && doc.processing) || {}).processed_to;
   const scope = lakesSelected(lake) ? '' : `Every image from May to September was read here${base ? `, up to ${lakesDate(base)}` : ''}.`;

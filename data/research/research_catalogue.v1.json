@@ -711,6 +711,34 @@
    "branch": "claude/lake-range-shadow",
    "branch_exists": true,
    "date": null
+  },
+  "592": {
+   "n": 592,
+   "state": "open",
+   "branch": "claude/lab-live",
+   "branch_exists": true,
+   "date": "2026-11-01"
+  },
+  "586": {
+   "n": 586,
+   "state": "merged",
+   "branch": "claude/swimsignal-research-lab-749df7",
+   "branch_exists": true,
+   "date": "2026-11-01"
+  },
+  "587": {
+   "n": 587,
+   "state": "open",
+   "branch": "research/scotland-gate-a",
+   "branch_exists": true,
+   "date": "2026-11-01"
+  },
+  "591": {
+   "n": 591,
+   "state": "open",
+   "branch": "research/scotland-trial",
+   "branch_exists": true,
+   "date": "2026-11-01"
   }
  },
  "entries": [
@@ -763,7 +791,7 @@
    "verdict": "Failed as stated, by 0.0003 on one condition: the pooled Spearman correlation was 0.502 with a 95% interval of 0.2997 to 0.667, and the lower end had to be above 0.3. It beat the within-lake placebo. Overall calibration skill 0.159 (−0.058 to 0.325), too uncertain. Classified afterwards (#407) as \"promising, not validated\"; the verdict itself was not changed.",
    "scope": "207 pairs at 38 English lake sampling points, May to September 2021 and 2023-26, satellite image within a day of the lab sample. Shallow lakes 0.301 (0.052 to 0.475), but that subgroup was singled out after the result was seen.",
    "stage": "live",
-   "stage_note": "Dated index readings are shown as observations on the Lakes page, with a weekly pilot at five sites since 31 October 2026. They are not converted to chlorophyll, an algae warning or swimming advice. Exploration of 1 November 2026 (seen data): within one lake's summer, with the month removed, rank correlation 0.245 (0.071 to 0.405); the direction of a change was called no better than the calendar. A Research Lab prototype shows this; it is not published.",
+   "stage_note": "Dated index readings are shown as observations on the Lakes page, with a weekly pilot at five sites since 31 October 2026. They are not converted to chlorophyll, an algae warning or swimming advice. Exploration of 1 November 2026 (seen data): within one lake's summer, with the month removed, rank correlation 0.245 (0.071 to 0.405); the direction of a change was called no better than the calendar. The Research Lab's first exhibit, the lake from space, shows this on the site at lab/ (1 November 2026).",
    "next": "Review the draft 2027 shallow-lake protocol before 1 May 2027, then collect new readings weekly from 1 May 2027 for a fair test.",
    "read_on": "2027-05-01",
    "records": [
@@ -1671,6 +1699,31 @@
    ]
   },
   {
+   "id": "scotland-trial",
+   "title": "Scotland trial",
+   "section": "data",
+   "topics": [
+    "nations",
+    "scotland",
+    "calibration"
+   ],
+   "verdict": "Gate A passed on Scottish Water's 2022-25 records. A calibration map fitted on 2022-24 brought the forecast's level from 0.62-0.67 to 0.98-1.03 on 2025 at leads 0 to 3, passing all 12 parts of its rule; exploratory, since 2025 had been seen in aggregate. Live scores (Gate B) have not passed.",
+   "scope": "Three SEPA inland bathing waters (Dores, Loch Morlich, Luss Bay), 1,485 Scottish Water overflows, the production spill model (808da63d) only.",
+   "stage": "development",
+   "stage_note": "Built behind DIPCAST_SCOTLAND_TRIAL, off until the owner switches it on; labelled a trial on every page it reaches.",
+   "next": "A shadow arm with Scotland's map, Gate B after November to January, Scottish river spots, click-anywhere in Scotland, outside review.",
+   "records": [
+    {
+     "doc": "docs/SCOTLAND-TRIAL-2026-11.md",
+     "quote": "Built behind `DIPCAST_SCOTLAND_TRIAL`, off by default."
+    }
+   ],
+   "prs": [
+    587,
+    591
+   ]
+  },
+  {
    "id": "neural",
    "title": "Neural network in place of the tree model",
    "section": "negative",
@@ -2288,6 +2341,32 @@
    ],
    "prs": [
     356
+   ]
+  },
+  {
+   "id": "research-lab",
+   "title": "Research Lab exhibits",
+   "section": "satellite",
+   "project": "LABS",
+   "topics": [
+    "lakes",
+    "satellite",
+    "overflows",
+    "accuracy"
+   ],
+   "verdict": "A display, not a test: four exploratory exhibits on data already read, the lake from space, where the pollution goes, how good the forecasts are, and a catchment workspace, with gaps drawn as gaps and hindsight estimates said to be rebuilt afterwards.",
+   "scope": "Frozen copies of the satellite, E. coli sample, overflow path and research files as exported on 1 November 2026. Outcomes to 30 September 2026 only.",
+   "stage": "live",
+   "stage_note": "On the site at lab/ once PR 592 merges, linked from the Research and Accuracy pages, the lake viewer and each spot's Upstream tile. Changes nothing in the forecast. The data is a frozen copy; a repeatable refresh is next.",
+   "records": [
+    {
+     "doc": "docs/RESEARCH-LAB-LIVE-2026-11.md",
+     "quote": "**It changes no forecast, level, model or evaluation window.**"
+    }
+   ],
+   "prs": [
+    586,
+    592
    ]
   }
  ]

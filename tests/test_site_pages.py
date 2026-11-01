@@ -63,7 +63,7 @@ def test_every_spot_gets_its_own_page_and_preview(tmp_path):
     assert 'href="https://example.org/swim/icons/apple-touch-icon.png"' in lost
     assert (tmp_path / "robots.txt").read_text() == "User-agent: *\nAllow: /\nSitemap: https://example.org/swim/sitemap.xml\n"
     sm = (tmp_path / "sitemap.xml").read_text()
-    assert sm.count("<url>") == 28 and "<loc>https://example.org/swim/spot/tarn/</loc>" in sm   # with sites.html, record.html, clubs.html, quality.html, spots.html, research.html, lakes.html, lake-temperatures.html, durations.html (spill durations), samples.html, waterhead.html, research-catalogue.html, sampling-planner.html, partners.html, models.html and two profiles
+    assert sm.count("<url>") == 28 + len(_build_site().lab_pages()) and "<loc>https://example.org/swim/spot/tarn/</loc>" in sm   # the Research Lab's pages, and sites.html, record.html, clubs.html, quality.html, spots.html, research.html, lakes.html, lake-temperatures.html, durations.html (spill durations), samples.html, waterhead.html, research-catalogue.html, sampling-planner.html, partners.html, models.html and two profiles
     assert (tmp_path / "quality.html").exists()   # without an overflow table its lists say so (tests/test_quality.py)
     assert "<loc>https://example.org/swim/methods.html</loc>" in sm
     assert "<loc>https://example.org/swim/coverage.html</loc>" in sm
@@ -120,7 +120,7 @@ def test_the_built_pages_open_on_the_views_opening_as_the_script_draws_it(tmp_pa
     assert "best-day" not in body and "data-notices" not in body   # these wait for the forecast
     page = (ROOT / "src" / "dipcast" / "site" / "index.html").read_text()
     lead = page.split("function renderList()", 1)[1].split("h += notices()", 1)[0]
-    for part in ['<h1>Check the water before you go</h1>', "Five-day pollution risk forecasts for ${DATA.spots.length} swim spots in England<span class=\"lede-map\">, and for any river or lake you ",
+    for part in ['<h1>Check the water before you go</h1>', "Five-day pollution risk forecasts for ${DATA.spots.length} swim spots ${spotsWhere()}<span class=\"lede-map\">, and for any river or lake you ",
                  " on the map</span>. <a href=\"#about\">How it works</a></p>",
                  'placeholder="River, lake or town" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search"',
                  '<fieldset class="day-strip list-days" id="listday"><legend class="sr">When are you swimming?</legend>']:

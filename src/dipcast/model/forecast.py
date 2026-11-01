@@ -11,7 +11,7 @@ from functools import lru_cache
 import numpy as np
 import pandas as pd
 
-from dipcast import config
+from dipcast import config, scotland_trial
 from dipcast.ingest.flows import nearest_level_station, reading_fields
 from dipcast.ingest.live import with_data_states
 from dipcast.ingest import soil
@@ -317,7 +317,7 @@ def ensemble_members(ov: pd.DataFrame, days: pd.DatetimeIndex, model: SpillModel
     ps, rains, risks = [], [], []
     for mr in members:
         p_raw, avail, mm = spill_probabilities(ov, days, model, return_rain=True, rain=mr)
-        p = calibrate_by_lead(p_raw, first_lead=-hist)
+        p = scotland_trial.calibrate(calibrate_by_lead(p_raw, first_lead=-hist), p_raw, ov)
         r = combine_daily(p, weights, travel)
         risks.append(np.where(missing_share(avail, weights, travel) > MAX_MISSING_SHARE, np.nan, r))
         ps.append(np.where(avail, p, np.nan))
@@ -453,6 +453,7 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
     rain = fetch_forecast(cells_for_sites(ov["lat"], ov["lon"])) if not ov.empty else None
     p_raw, avail, rain_mm, frame = spill_probabilities(ov, days, model, return_rain=True, rain=rain, return_frame=True)
     p = calibrate_by_lead(p_raw, first_lead=-hist)   # column `hist` is today (lead 0)
+    p = scotland_trial.calibrate(p, p_raw, ov)   # Scottish Water's rows: Scotland's own map
     # The live-status shadow (docs/LIVE-STATUS-SHADOW-TEST-2026-10.md): for the forecast log only, from the
     # same site-day frame, so it costs no rain request. Nothing below reads it but log_forecast.
     shadow = None
