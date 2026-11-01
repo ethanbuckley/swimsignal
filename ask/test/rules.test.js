@@ -33,9 +33,36 @@ test('safe, clean and their kin are refused in the model\'s words, wherever they
 });
 
 test('a condition or a number is allowed only when the lines say it', () => {
-  assert.equal(textProblems('Calm and shallow', 'wind: not known ... whether the water will be calm', 'x').length, 1);   // shallow
+  assert.equal(textProblems('Calm and shallow', 'wind: not known ... whether the water will be calm', 'x').length, 2);
   assert.deepEqual(textProblems('11.7 miles away', 'miles: 11.7', 'x'), []);
   assert.equal(textProblems('About 19 °C', 'about 11 °c', 'x').length, 1);
+  assert.deepEqual(textProblems('At most 1.5 metres deep', 'the beach shelves very gently, and the water is at most about 1.5 metres deep', 'x'), []);
+});
+
+// The outside review of 1 Nov 2026: this answer passed with no problems, because the question's words
+// approved its conditions and its number, and the wind line approved "calm" by saying it is not known.
+const ilkley = { every: [WIND_UNKNOWN.toLowerCase() + '\n"within_miles":2,"miles":0.4'], numbers: '"within_miles":2,"miles":0.4',
+  question: 'Find calm warm shallow water near Ilkley with 2 steps to get in' };
+test('the question never approves a condition or a number, and a line saying it is not known does not either', () => {
+  const p = textProblems('The water here is calm, warm and shallow, with 2 steps.', ilkley, 'x');
+  for (const w of ['"calm"', '"warm"', '"shallow"', '2 steps']) assert.ok(p.some((x) => x.includes(w)), `${w}: ${p.join(' | ')}`);
+  for (const t of ['You asked for calm water, and it is calm here.', 'You asked for calm water and the river is calm.',
+    'Calm water, no wind forecast though.', 'SwimSignal cannot say whether it will be calm, but it is warm.', 'You asked for 2 steps. There are 2 steps.'])
+    assert.equal(textProblems(t, ilkley, 'x').length, 1, t);
+});
+
+test('the person\'s words may be said back as what they asked for, and a condition as not known', () => {
+  for (const t of ['You asked for calm, warm, shallow water with 2 steps to get in.', 'SwimSignal has no wind forecast, so whether the water will be calm is not known.',
+    'Its data does not say how warm, how deep or how many steps.', '2 miles read as 2 miles in a straight line'])
+    assert.deepEqual(textProblems(t, ilkley, 'x'), [], t);
+  assert.deepEqual(textProblems('Calm, warm or shallow water with 2 steps', ilkley, 'x', { unknown: true }), []);
+});
+
+test('a number must come with the unit the data gives it', () => {
+  assert.deepEqual(textProblems('Within 2 miles', ilkley, 'x'), []);
+  assert.equal(textProblems('Within 2 km', ilkley, 'x').length, 1);
+  assert.deepEqual(textProblems('An 11.7-mile walk', 'miles: 11.7', 'x'), []);
+  assert.equal(textProblems('Opened in 2026', '"year":20260', 'x').length, 1);   // a number inside another is not it
 });
 
 test('official advice is the first line, and a restricting notice puts the forecast after it', () => {

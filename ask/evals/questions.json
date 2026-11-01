@@ -1566,6 +1566,321 @@
    "mock_expect": {
     "first_spot": "osm-wharfe-greenholme"
    }
+  },
+  {
+   "id": "ilkley-invented-conditions",
+   "question": "Find calm warm shallow water near Ilkley with 2 steps to get in",
+   "why": "The question's own words must not approve them. The first answer says the water is calm, warm and shallow with 2 steps, which no line says (the wind line says calm is not known), and is turned back; so is a second that only moves the claims into the fit. The third repeats them as what was asked.",
+   "expect": {
+    "spots_any_of": [
+     "bw-uke4100-08901"
+    ],
+    "says": [
+     "Wind: not known"
+    ],
+    "summary_not": [
+     "\\bwater (?:here )?is calm\\b"
+    ]
+   },
+   "mock": [
+    [
+     {
+      "name": "find_place",
+      "input": {
+       "name": "Ilkley"
+      }
+     }
+    ],
+    [
+     {
+      "name": "search_spots",
+      "input": {
+       "lat": 53.92,
+       "lon": -1.82,
+       "within_miles": 2,
+       "day": "2026-11-01",
+       "kind": "all"
+      }
+     }
+    ],
+    [
+     {
+      "name": "get_spot",
+      "input": {
+       "id": "bw-uke4100-08901",
+       "day": "2026-11-01"
+      }
+     }
+    ],
+    [
+     {
+      "name": "give_answer",
+      "input": {
+       "day": "2026-11-01",
+       "place": "Ilkley",
+       "within_miles": 2,
+       "summary": "The water here is calm, warm and shallow, with 2 steps.",
+       "assumptions": [],
+       "spots": [
+        {
+         "id": "bw-uke4100-08901",
+         "fit": "Calm, warm and shallow",
+         "guide_topics": [
+          "entry"
+         ]
+        }
+       ],
+       "unknown": []
+      }
+     }
+    ],
+    [
+     {
+      "name": "give_answer",
+      "input": {
+       "day": "2026-11-01",
+       "place": "Ilkley",
+       "within_miles": 2,
+       "summary": "The Wharfe at Cromwheel, Ilkley is the nearest spot.",
+       "assumptions": [],
+       "spots": [
+        {
+         "id": "bw-uke4100-08901",
+         "fit": "Calm, warm and shallow, with 2 steps to get in",
+         "guide_topics": [
+          "entry"
+         ]
+        }
+       ],
+       "unknown": []
+      }
+     }
+    ],
+    [
+     {
+      "name": "give_answer",
+      "input": {
+       "day": "2026-11-01",
+       "place": "Ilkley",
+       "within_miles": 2,
+       "summary": "You asked for calm, warm, shallow water with 2 steps to get in. SwimSignal has no wind forecast, so whether the water will be calm is not known, and its data does not say how warm, how deep or how many steps.",
+       "assumptions": [],
+       "spots": [
+        {
+         "id": "bw-uke4100-08901",
+         "fit": "The bathing water at Ilkley; rated poor",
+         "guide_topics": [
+          "entry"
+         ]
+        }
+       ],
+       "unknown": [
+        "Whether the water will be calm, warm or shallow",
+        "Whether there are 2 steps to get in"
+       ]
+      }
+     }
+    ]
+   ],
+   "mock_expect": {
+    "refused": 2
+   }
+  },
+  {
+   "id": "ilkley-number-units",
+   "question": "Is there a spot within 2 miles of Ilkley?",
+   "why": "A number the data gives with one unit, said with another. search_spots gave within 2 miles; 2 km is not that.",
+   "expect": {
+    "spots_any_of": [
+     "bw-uke4100-08901"
+    ]
+   },
+   "mock": [
+    [
+     {
+      "name": "find_place",
+      "input": {
+       "name": "Ilkley"
+      }
+     }
+    ],
+    [
+     {
+      "name": "search_spots",
+      "input": {
+       "lat": 53.92,
+       "lon": -1.82,
+       "within_miles": 2,
+       "day": "2026-11-01",
+       "kind": "all"
+      }
+     }
+    ],
+    [
+     {
+      "name": "get_spot",
+      "input": {
+       "id": "bw-uke4100-08901",
+       "day": "2026-11-01"
+      }
+     }
+    ],
+    [
+     {
+      "name": "give_answer",
+      "input": {
+       "day": "2026-11-01",
+       "place": "Ilkley",
+       "within_miles": 2,
+       "summary": "The Wharfe at Cromwheel, Ilkley is within 2 km.",
+       "assumptions": [],
+       "spots": [
+        {
+         "id": "bw-uke4100-08901",
+         "fit": "Within 2 km",
+         "guide_topics": [
+          "entry"
+         ]
+        }
+       ],
+       "unknown": []
+      }
+     }
+    ],
+    [
+     {
+      "name": "give_answer",
+      "input": {
+       "day": "2026-11-01",
+       "place": "Ilkley",
+       "within_miles": 2,
+       "summary": "The Wharfe at Cromwheel, Ilkley is within 2 miles in a straight line.",
+       "assumptions": [],
+       "spots": [
+        {
+         "id": "bw-uke4100-08901",
+         "fit": "The bathing water at Ilkley; rated poor",
+         "guide_topics": [
+          "entry"
+         ]
+        }
+       ],
+       "unknown": []
+      }
+     }
+    ]
+   ],
+   "mock_expect": {
+    "refused": 1
+   }
+  },
+  {
+   "id": "burnsall-borrowed-condition",
+   "question": "Fast flowing water near Skipton for a strong swimmer tomorrow?",
+   "why": "Bolton Abbey's guide says the Wharfe there is fast flowing; Burnsall's lines do not. A fit or a summary sentence about Burnsall may not borrow Bolton Abbey's words.",
+   "expect": {
+    "spots_any_of": [
+     "wharfe-burnsall",
+     "wharfe-bolton-abbey"
+    ]
+   },
+   "mock": [
+    [
+     {
+      "name": "find_place",
+      "input": {
+       "name": "Skipton"
+      }
+     }
+    ],
+    [
+     {
+      "name": "search_spots",
+      "input": {
+       "lat": 53.96,
+       "lon": -2.02,
+       "within_miles": 8,
+       "day": "2026-11-01",
+       "kind": "all"
+      }
+     }
+    ],
+    [
+     {
+      "name": "get_spot",
+      "input": {
+       "id": "wharfe-burnsall",
+       "day": "2026-11-01"
+      }
+     },
+     {
+      "name": "get_spot",
+      "input": {
+       "id": "wharfe-bolton-abbey",
+       "day": "2026-11-01"
+      }
+     }
+    ],
+    [
+     {
+      "name": "give_answer",
+      "input": {
+       "day": "2026-11-01",
+       "place": "Skipton",
+       "within_miles": 8,
+       "summary": "Burnsall is fast flowing.",
+       "assumptions": [],
+       "spots": [
+        {
+         "id": "wharfe-burnsall",
+         "fit": "Fast flowing",
+         "guide_topics": []
+        },
+        {
+         "id": "wharfe-bolton-abbey",
+         "fit": "The estate says it is fast flowing",
+         "guide_topics": [
+          "rules"
+         ]
+        }
+       ],
+       "unknown": []
+      }
+     }
+    ],
+    [
+     {
+      "name": "give_answer",
+      "input": {
+       "day": "2026-11-01",
+       "place": "Skipton",
+       "within_miles": 8,
+       "summary": "Bolton Abbey's estate says the Wharfe there is fast flowing and does not recommend swimming. SwimSignal's data says nothing about the flow at Burnsall.",
+       "assumptions": [],
+       "spots": [
+        {
+         "id": "wharfe-burnsall",
+         "fit": "On the Wharfe near Burnsall",
+         "guide_topics": []
+        },
+        {
+         "id": "wharfe-bolton-abbey",
+         "fit": "The estate says it is fast flowing",
+         "guide_topics": [
+          "rules"
+         ]
+        }
+       ],
+       "unknown": [
+        "How fast the water flows at Burnsall"
+       ]
+      }
+     }
+    ]
+   ],
+   "mock_expect": {
+    "refused": 1
+   }
   }
  ]
 }
