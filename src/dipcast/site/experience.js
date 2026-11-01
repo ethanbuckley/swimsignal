@@ -29,6 +29,7 @@ function evidenceRows(s, iso, generatedAt = null, now = Date.now()) {
     : ![5, 6, 7, 8, 9].includes(Number(iso.slice(5, 7)));
   const sr = (s.sepa || {}).rating;
   return [
+    s.trial === 'scotland' && s.source !== 'sepa' ? ['SEPA rating', 'Not a SEPA designated bathing water. No bathing-water rating shown.'] :
     s.source === 'sepa' ? ['SEPA rating', sr?.value ? `${sr.value}${sr.year ? ' · ' + sr.year : ''}. SEPA's rating from its samples over up to four seasons; not today’s water quality.` : 'SEPA designated bathing water; no rating available in this update.'] :
     ['Environment Agency rating', cl?.class ? `${cl.class.charAt(0).toUpperCase() + cl.class.slice(1)}${cl.year ? ' · ' + cl.year : ''}. Based on up to four seasons of samples; not today’s water quality.`
       : s.source === 'designated' ? 'Designated bathing water; no rating available in this update.' : 'Not an Environment Agency designated bathing water. No bathing-water rating shown.'],
@@ -102,6 +103,7 @@ function compareAdvice(s) {
   }
   if (s.source === 'designated') return 'Not known: this update has no Environment Agency page for this bathing water.';
   if (s.source === 'sepa') return 'Not checked: SEPA’s page and the sign at the water give any advice for today.';
+  if (s.trial === 'scotland') return 'None: not a designated bathing water, so SEPA gives no bathing advice for it.';
   return 'None: not a designated bathing water, so the Environment Agency gives no bathing advice for it.';
 }
 // Access at the spot (access.py: a desk check of the authority's guidance, for the spots from OpenStreetMap
@@ -119,8 +121,9 @@ function compareAccess(s) {
 // model limits the last row gives.
 function compareRows(s, iso, generatedAt = null, now = Date.now()) {
   const f = Object.fromEntries(evidenceRows(s, iso, generatedAt, now)), t = k => htmlText(f[k]);
-  return [['Right now', compareNow(s, generatedAt)], ['Environment Agency rating', t('Environment Agency rating')],
-    ["Today's EA advice", compareAdvice(s)], ['Water samples', t('Water samples')], ['Algae observation', t('Algae observation')],
+  const rating = s.trial === 'scotland' ? 'SEPA rating' : 'Environment Agency rating';   // the Scotland trial: SEPA's
+  return [['Right now', compareNow(s, generatedAt)], [rating, t(rating)],
+    [s.trial === 'scotland' ? "Today's SEPA advice" : "Today's EA advice", compareAdvice(s)], ['Water samples', t('Water samples')], ['Algae observation', t('Algae observation')],
     ['Access', compareAccess(s)], ['Local warnings', t('Local warnings')], ['Model limits', t('Model limits')]];
 }
 // "Too high to swim" (build_site.attach_flow_state): the river high or rising fast at a gauge on the
