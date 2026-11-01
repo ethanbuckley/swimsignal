@@ -3553,7 +3553,78 @@ def write_lab(site: Path, token: str | None = None, lab: Path = LAB, research: P
             s = with_counter(s, token)
             pages += 1
         f.write_text(s)
+    write_lab_refresh(site)
     return pages
+
+
+# How old each part of the Lab is (docs/RESEARCH-LAB-LIVE-2026-11.md, "Refresh"): lab/refresh.json, read by every
+# exhibit's "Data as of" line. Dates come from the files themselves, so a copy that was never refreshed shows its
+# real age. The two analyses are dated, versioned results on outcomes already read: they are kept as they are (a
+# new season's analysis is a new version), so they are never called out of date. `stale_days`: the age past which a
+# page says a part is older than its refresh should leave it.
+LAB_ANALYSES = {"lake-analysis": ("lake-from-space/exploration.json", "2026-11-01"),
+                "forecast-record": ("forecasts/exploration.json", "2026-11-01")}
+
+
+def _lab_date(path: Path, *keys: str) -> str | None:
+    try:
+        d = json.loads(path.read_text())
+    except (OSError, ValueError):
+        return None
+    d = d[-1] if isinstance(d, list) and d else d
+    return next((str(d[k])[:10] for k in keys if isinstance(d, dict) and d.get(k)), None)
+
+
+def write_lab_refresh(site: Path, paths_from_build: bool = False) -> dict:
+    """lab/refresh.json: each part of the Lab, the date it was made, how it is refreshed and when to call it old."""
+    out = site / "lab"
+    if not out.is_dir():
+        return {}
+    wsd = out / "workspace" / "data"
+    ws = [f for f in sorted(wsd.glob("*.json")) if f.name != "index.json"] if wsd.is_dir() else []
+    try:
+        window = json.loads((wsd / "index.json").read_text()).get("window") or [None, None]
+    except (OSError, ValueError):
+        window = [None, None]
+    parts = {
+        "satellite": {"label": "Satellite pictures and readings", "as_of": _lab_date(out / "data" / "lake_imagery.v1.json", "generated_at"),
+                      "refresh": "weekly, by the satellite pilot", "stale_days": 14},
+        "paths": {"label": "Overflows and the rivers joining them", "as_of": _lab_date(out / "assets" / "paths" / "index.json", "made"),
+                  "refresh": "at every site build" if paths_from_build else "by hand", "stale_days": 2 if paths_from_build else 90},
+        "wide": {"label": "Wide cover pictures", "as_of": _lab_date(out / "assets" / "wide" / "wide.json", "made"),
+                 "refresh": "by hand", "stale_days": 120},
+        "workspace": {"label": "Catchment workspace layers", "as_of": _lab_date(ws[0], "made") if ws else None,
+                      "outcomes_to": window[-1],
+                      "refresh": "by hand", "stale_days": 90},
+        "catalogue": {"label": "Research records", "as_of": _lab_date(out / "data" / "research_catalogue.v1.json", "written"),
+                      "refresh": "with each research record", "stale_days": None},
+    }
+    for key, (rel, made) in LAB_ANALYSES.items():
+        f = out / rel
+        if f.is_file():
+            parts[key] = {"label": "Analysis of the satellite readings" if key == "lake-analysis" else "Forecast record",
+                          "as_of": made, "outcomes_to": _lab_date(f, "cutoff"),
+                          "refresh": "a dated analysis: a new season brings a new version", "stale_days": None}
+    parts = {k: {kk: vv for kk, vv in v.items() if vv is not None} for k, v in parts.items() if v.get("as_of")}
+    doc = {"built": pd.Timestamp.now(tz="UTC").isoformat(timespec="seconds"), "parts": parts}
+    (out / "refresh.json").write_text(json.dumps(doc, indent=1) + "\n")
+    return doc
+
+
+def write_lab_paths(site: Path, net, ov) -> dict:
+    """Exhibit 2's files, lab/assets/paths/, from this build's own network and overflow table, over the copy write_lab
+    put there, then refresh.json again. Offline, about 20 s. Without the Lab, nothing."""
+    out = site / "lab" / "assets" / "paths"
+    if not out.is_dir():
+        return {"skipped": "no Lab in this build"}
+    import lab_pollution_paths as lpp
+    meta = lpp.export(out, lpp.spots_frame(ROOT), net, ov, {
+        "overflows": "this site build's overflow table", "network": "OS Open Rivers via this build's river network"},
+        say=lambda m: None)
+    lpp.overview(out, say=lambda m: None)
+    write_lab_refresh(site, paths_from_build=True)
+    spots = meta["spots"]
+    return {"spots": len(spots), "errors": sum(1 for x in spots if "error" in x), "seconds": meta["seconds"]}
 
 
 def write_record(site: Path, token: str | None = None, root: str | None = None) -> str:
@@ -4717,6 +4788,13 @@ def build(refresh: bool = True) -> dict:
         health["reviews"] = {"warning": f"reviews not written, so the site shows none this time: {e}"}
     if health["reviews"].get("warning"):
         announce(health["reviews"]["warning"])
+    # The Research Lab's exhibit 2 from this build's own network and overflows, over the repository's copy that
+    # write_pages put in lab/. Never stops the site: on a failure the copy stays, and refresh.json keeps its date.
+    try:
+        health["lab_paths"] = write_lab_paths(SITE, _net(), _overflows())
+    except Exception as e:  # noqa: BLE001 - a Lab file must never stop the forecast publishing
+        health["lab_paths"] = {"warning": f"Lab paths not refreshed, so lab/ keeps the repository's copy: {e}"}
+        announce(health["lab_paths"]["warning"])
     # Cards to post to Instagram and Facebook, at site/cards/: last, from what is written above.
     health["cards"] = write_cards(SITE, results, generated.isoformat(), site_url(), alerts_ok)
     # The issued-forecast history (docs/ISSUED-HISTORY-2026-10.md): the previous issue into data/since-last.json

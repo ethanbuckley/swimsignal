@@ -49,6 +49,7 @@
   <h1>Research Lab</h1>
   <p class="q">What SwimSignal is investigating, the evidence so far, and what it does not yet show.</p>
   <p>Each exhibit asks one question, shows the real data behind the answer, and keeps exploratory findings apart from results that were stated in advance. Missing data is drawn as missing.</p>
+  <p class="status" data-asof="satellite,paths,forecast-record,workspace"></p>
 </div></div>
 <main><section class="sec"><div class="wrap">
   <div class="gallery">
@@ -78,7 +79,7 @@
   <p>Covers: Contains modified Copernicus Sentinel data [2026]. <span id="map-credit"></span> Exhibit 2's cover: the mapped rivers joining every spot's overflows to it (OS Open Rivers). Exhibit 3's cover is one dot per sample over 900 and per false alarm, rivers and lakes, 2024–2026, in date order.</p>
   <p>Exploratory work on data already read. It changes nothing in the forecast. Each spot's own page gives the forecast and official advice.</p>
 </div></footer>
-<script src="lab.js?v=3"></script>
+<script src="lab.js?v=4"></script>
 <script>
   // Covers from the exhibits' own files: exhibit 3's dot record, and the outline exhibit 2 will draw on.
   fetch('forecasts/exploration.json').then(r => r.json()).then(ex => {

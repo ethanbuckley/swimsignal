@@ -91,3 +91,23 @@ def test_no_lab_no_folder(tmp_path):
     (tmp_path / "lab").mkdir()
     assert build_site.write_lab(tmp_path, lab=tmp_path / "missing") == 0 and not (tmp_path / "lab").exists()
     assert build_site.lab_pages(tmp_path / "missing") == []
+
+
+def test_refresh_dates_every_part_a_page_names(site):
+    doc = json.loads((site / "lab" / "refresh.json").read_text())
+    for p in doc["parts"].values():
+        assert re.fullmatch(r"\d{4}-\d{2}-\d{2}", p["as_of"]) and p["label"] and p["refresh"], p
+    named = set()
+    for f in _files(site, ".html"):
+        for m in re.findall(r'data-asof="([^"]+)"', f.read_text()):
+            named |= set(m.split(","))
+    assert named and named <= set(doc["parts"]), named - set(doc["parts"])
+    # the analyses are dated versions, never called out of date; the copied paths are by hand until a build makes them
+    assert "stale_days" not in doc["parts"]["forecast-record"] and doc["parts"]["forecast-record"]["outcomes_to"] == "2026-09-30"
+    assert doc["parts"]["paths"]["refresh"] == "by hand"
+
+
+def test_paths_from_the_build_are_dated_as_such(tmp_path):
+    build_site.write_lab(tmp_path)
+    assert build_site.write_lab_refresh(tmp_path, paths_from_build=True)["parts"]["paths"]["refresh"] == "at every site build"
+    assert build_site.write_lab_paths(tmp_path / "none", None, None) == {"skipped": "no Lab in this build"}

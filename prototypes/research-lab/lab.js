@@ -100,5 +100,24 @@ const LAB = (() => {
     });
   }
 
+  // ---------------------------------------------------------------- "Data as of"
+  // The element with data-asof names the parts this page draws on; refresh.json (build_site.write_lab_refresh) says
+  // when each was made and how it is refreshed. Only a site build writes that file: run from the repository there is
+  // none, and the line stays empty. A part older than its refresh should leave it is named, not hidden.
+  async function asOf() {
+    const el = document.querySelector('[data-asof]');
+    if (!el) return;
+    let doc;
+    try { const r = await fetch((el.dataset.base || '') + 'refresh.json'); if (!r.ok) return; doc = await r.json(); } catch { return; }
+    const day = d => new Date(d.slice(0, 10) + 'T12:00:00Z').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
+    const items = el.dataset.asof.split(',').map(k => doc.parts[k]).filter(Boolean);
+    if (!items.length) return;
+    const age = p => (Date.now() - Date.parse(p.as_of.slice(0, 10) + 'T00:00:00Z')) / 864e5;
+    const old = items.filter(p => p.stale_days && age(p) > p.stale_days);
+    el.innerHTML = '<b>Data as of.</b> ' + items.map(p => `${esc(p.label)}: ${day(p.as_of)}${p.outcomes_to ? `, outcomes to ${day(p.outcomes_to)}` : ''} (${esc(p.refresh)})`).join('; ') + '.'
+      + (old.length ? ` <b>Older than its refresh should leave it:</b> ${old.map(p => `${esc(p.label)}, ${Math.floor(age(p))} days`).join('; ')}.` : '');
+  }
+  asOf();
+
   return { esc, noteW, dots, loadOutline, drawMap, credit: () => OUTLINE && OUTLINE.credit };
 })();

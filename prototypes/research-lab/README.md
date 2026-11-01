@@ -30,7 +30,9 @@ SwimSignal app means another server or an old service worker holds that port: pi
 - `assets/wide/`: one 4 km true-colour picture per weekly lake, made by `scripts/lab_wide_pictures.py` (1 Nov 2026: 18
   requests, 25.3 MiB, caps 80 requests and 60 MiB; scratch `DIPCAST_ROOT`/`DIPCAST_STATE`; `data/research` hashed
   before and after, unchanged). `wide.json` records each scene, its time and hash. Pictures, not readings.
-- `assets/paths/`: each spot's upstream overflows (the forecast's own distance, travel time and weight) and the mapped
+- `refresh.json` exists only in a site build (`build_site.write_lab_refresh`): each part's date, read by the
+  "Data as of" line in `lab.js`. Run from the repository, that line stays empty.
+- `assets/paths/` (the site build remakes these every build from its own network): each spot's upstream overflows (the forecast's own distance, travel time and weight) and the mapped
   rivers joining them, from `scripts/lab_pollution_paths.py` (offline; scratch root linking the cached network).
 - `workspace/data/`: one file per catchment (Windermere, the Wharfe at Ilkley) with every layer the workspace draws, from
   `scripts/lab_catchment_workspace.py` (offline; scratch `DIPCAST_ROOT` linking the rain cache and the EA event files,
