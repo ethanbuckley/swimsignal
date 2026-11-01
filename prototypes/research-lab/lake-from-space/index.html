@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Research Lab exhibit 1, "The lake from space": a local prototype, not built by site.yml and not linked from the
+     site. Serve the repository root (README.md beside this file) so the page can read data/research/ as committed. -->
+<title>The lake from space · SwimSignal Research Lab</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="../../../src/dipcast/site/vendor/leaflet/leaflet.css">
+<link rel="stylesheet" href="lab.css?v=7">
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <a class="brand" href="https://swimsignal.co.uk/">SwimSignal</a>
+  <span class="crumb">Research Lab · Exhibit 1 of 3 · prototype</span>
+  <a href="https://swimsignal.co.uk/research.html">Research</a>
+</div></header>
+
+<div class="front"><div class="wrap">
+  <div>
+    <h1>The lake from space</h1>
+    <p class="q">Can changes seen from space tell us anything useful about algae in English lakes?</p>
+    <p class="answer" id="front-answer">Loading the record…</p>
+    <p class="status" id="front-status"></p>
+  </div>
+  <div class="contact" id="contact" aria-label="The latest picture at each lake checked weekly"></div>
+</div></div>
+
+<main>
+  <section class="sec" id="s-atlas"><div class="wrap">
+    <div class="sec-head"><span class="no">1</span><h2>Choose a lake</h2><span class="aside" id="atlas-aside"></span></div>
+    <div class="atlas">
+      <div>
+        <div class="picker"><label for="lake-select">Lake</label><select id="lake-select"></select></div>
+        <nav class="index" id="lake-index" aria-label="Lakes in the record"></nav>
+      </div>
+      <div>
+        <div id="map" role="img" aria-label="Map of the monitored lakes in England"></div>
+        <div class="map-key"><span><i class="pilot"></i>checked weekly, with pictures</span><span><i class="hist"></i>historical record only</span><span><i class="small"></i>too small for 20 m pixels</span><span>Map © OpenStreetMap contributors</span></div>
+      </div>
+    </div>
+  </div></section>
+
+  <section class="sec" id="s-lake"><div class="wrap">
+    <div class="sec-head"><span class="no">2</span><h2>One lake, seen from 786 km up</h2><span class="aside">Sentinel-2, 10 m pixels</span></div>
+    <div class="lakehead">
+      <div><h2 id="lk-name">…</h2><div class="meta" id="lk-meta"></div></div>
+      <div class="meta" id="lk-link"></div>
+    </div>
+    <dl class="facts" id="lk-facts"></dl>
+
+    <div class="plate-row" style="margin-top:28px">
+      <div>
+        <div class="plates" id="plates"></div>
+        <div class="controls" id="plate-controls"></div>
+      </div>
+      <div class="reading" id="reading"></div>
+    </div>
+  </div></section>
+
+  <section class="sec" id="s-record"><div class="wrap">
+    <div class="sec-head"><span class="no">3</span><h2>The record, gaps included</h2><span class="aside" id="rec-aside"></span></div>
+    <p class="note" id="rec-intro"></p>
+    <div class="years" id="years" role="group" aria-label="Seasons"></div>
+    <div class="chart" id="chart"></div>
+    <div class="chart-note" id="chart-note"></div>
+    <details class="table" id="rec-table"><summary>The readings and lab values as a table</summary><div class="scroll"></div></details>
+  </div></section>
+
+  <section class="sec" id="s-found"><div class="wrap">
+    <div class="sec-head"><span class="no">4</span><h2>What the record shows so far</h2><span class="aside">exploratory, on data already examined</span></div>
+    <div class="notes" id="notes"></div>
+  </div></section>
+
+  <section class="sec" id="s-not"><div class="wrap">
+    <div class="sec-head"><span class="no">5</span><h2>What it cannot tell you</h2></div>
+    <ul class="lim">
+      <li><b>It is not a test for harmful algae or toxins.</b> The index responds to green pigment and plant material. It cannot tell blue-green algae (cyanobacteria) from harmless algae or weed, and it measures no toxin.</li>
+      <li><b>It is not swimming advice.</b> For a bathing water, the Environment Agency's own notices and signs on site come first. SwimSignal shows those notices on each spot page.</li>
+      <li><b>A cloudy day is unknown, not clean.</b> When no clear image exists the record has a gap. Nothing is filled in between readings.</li>
+      <li><b>It sees 300 m of open water, not the whole lake.</b> Blooms often gather at shores and in bays the reading does not cover.</li>
+      <li><b>The units are not chlorophyll.</b> No conversion from the index to µg/l has been validated. Lab values are shown on their own scale.</li>
+      <li><b>October readings are experimental.</b> The index was compared with lab chlorophyll only from May to September.</li>
+    </ul>
+  </div></section>
+
+  <section class="sec" id="s-next"><div class="wrap">
+    <div class="sec-head"><span class="no">6</span><h2>Questions worth asking next</h2><span class="aside">proposed, not started</span></div>
+    <ol class="qs" id="qs"></ol>
+  </div></section>
+</main>
+
+<footer class="foot"><div class="wrap">
+  <p id="attrib"></p>
+  <p>Method: <a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/LAKE-FROM-SPACE-EXPLORATION-2026-11.md">the exploration</a>,
+     <a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/LAKE-CHLOROPHYLL-NDCI-TEST-2026-10.md">the chlorophyll test (#386)</a>,
+     <a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/LAKE-OBSERVATIONS-CONTRACT-v1.md">the observation contract</a>,
+     <a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/LAKE-IMAGERY-CONTRACT-v1.md">the imagery contract</a>.
+     Data: <a href="../../../data/research/lake_observations.v1.json">lake_observations.v1.json</a>,
+     <a href="../../../data/research/lake_imagery.v1.json">lake_imagery.v1.json</a>,
+     <a href="exploration.json">exploration.json</a>.</p>
+  <p>A prototype for review. It changes nothing on swimsignal.co.uk and nothing in the forecast.</p>
+</div></footer>
+
+<script src="../../../src/dipcast/site/vendor/leaflet/leaflet.js"></script>
+<script src="exhibit.js?v=7"></script>
+</body>
+</html>

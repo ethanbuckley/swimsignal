@@ -749,7 +749,7 @@
    "verdict": "Failed as stated, by 0.0003 on one condition: the pooled Spearman correlation was 0.502 with a 95% interval of 0.2997 to 0.667, and the lower end had to be above 0.3. It beat the within-lake placebo. Overall calibration skill 0.159 (−0.058 to 0.325), too uncertain. Classified afterwards (#407) as \"promising, not validated\"; the verdict itself was not changed.",
    "scope": "207 pairs at 38 English lake sampling points, May to September 2021 and 2023-26, satellite image within a day of the lab sample. Shallow lakes 0.301 (0.052 to 0.475), but that subgroup was singled out after the result was seen.",
    "stage": "live",
-   "stage_note": "Dated index readings are shown as observations on the Lakes page, with a weekly pilot at five sites since 31 October 2026. They are not converted to chlorophyll, an algae warning or swimming advice.",
+   "stage_note": "Dated index readings are shown as observations on the Lakes page, with a weekly pilot at five sites since 31 October 2026. They are not converted to chlorophyll, an algae warning or swimming advice. Exploration of 1 November 2026 (seen data): within one lake's summer, with the month removed, rank correlation 0.245 (0.071 to 0.405); the direction of a change was called no better than the calendar. A Research Lab prototype shows this; it is not published.",
    "next": "Review the draft 2027 shallow-lake protocol before 1 May 2027, then collect new readings weekly from 1 May 2027 for a fair test.",
    "read_on": "2027-05-01",
    "records": [
@@ -769,6 +769,10 @@
     },
     {
      "doc": "docs/LAKE-OBSERVATIONS-CONTRACT-v1.md"
+    },
+    {
+     "doc": "docs/LAKE-FROM-SPACE-EXPLORATION-2026-11.md",
+     "quote": "**The index did not call direction better than the calendar.**"
     }
    ],
    "prs": [
