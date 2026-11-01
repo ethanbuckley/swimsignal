@@ -2077,7 +2077,7 @@ const likely = r => r.median < 10 ? 'under 10' : `about ${ecoliReading(r.median)
 const rangeLine = (x, when) => { const r = rangeOf(x);
   return `A sample ${when} would most likely read <b>${likely(r)}</b> E.&nbsp;coli per 100&nbsp;ml; 8 in 10 would read between ${ecoliReading(r.low)} and ${ecoliReading(r.high)}.`; };
 const RANGE_BASIS = {
-  tested: "From this lake's own Environment Agency samples, rain at the lake and spills upstream. Tested on 2012–2022 samples here that it never saw: 79% fell inside its 8-in-10 range.",
+  tested: "From this lake's own Environment Agency samples, rain at the lake and spills upstream. Tested on 2012–2022 samples it never saw at five sampling sites on Windermere and Frensham Great Pond, including this one: 79% fell inside its 8-in-10 range overall, from 74% to 87% site by site.",
   'own samples': "From this lake's own Environment Agency samples since 2023, rain at the lake and spills upstream. Not yet tested on past seasons here; the same model held 79% of results inside its 8-in-10 range at Windermere and Frensham.",
   'average lake': "This lake has no Environment Agency samples, so the estimate starts from a typical lake's level, with this lake's rain and the spills upstream. Less certain than at a sampled lake: where it knew nothing of a lake, real samples more often read below its range than above.",
 };

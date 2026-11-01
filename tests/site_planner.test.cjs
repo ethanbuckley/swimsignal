@@ -305,7 +305,7 @@ test('a lake with overflows upstream gives the likely reading and its 8-in-10 ra
   assert.match(inSeason, /<td class="num">under 10 \(under 10–56\)<\/td>/);
   assert.match(inSeason, /<td class="num">about 48 \(under 10–380\)<\/td>/);
   assert.doesNotMatch(inSeason, /<td class="num">\d+%|†/);   // no over-900 percentage in a cell
-  assert.match(inSeason, /E\. coli estimate at a lake<\/b>: the reading a sample would most likely show.*Tested on 2012–2022 samples here that it never saw: 79%/);
+  assert.match(inSeason, /E\. coli estimate at a lake<\/b>: the reading a sample would most likely show.*Tested on 2012–2022 samples it never saw at five sampling sites.*79% fell inside its 8-in-10 range overall, from 74% to 87% site by site/);
   const out = vm.runInContext('d => dayTable(d, 2, true, {})', ctx)(ranged(w.days));   // every day out of season
   assert.match(out, /about 48 \(under 10–380\)<sup>†<\/sup>/);
   assert.match(out, /<sup>†<\/sup>Out of season/);

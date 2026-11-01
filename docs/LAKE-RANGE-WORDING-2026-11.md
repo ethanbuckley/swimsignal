@@ -138,3 +138,11 @@ test. Winter is out in every option: the EA takes no samples from October to Apr
 | Next deliverable | Scotland's past samples, if SEPA agrees to publication (Ethan's contact); the four exports refreshed after the 2027 season; the 2027 read |
 | Milestone | 2027 read on or after 15 Oct 2027 (section 3) |
 | Release route | Removing the model file turns the lake range off (the page says "Not estimated"); the past-samples tile follows the evidence export |
+
+## Correction after review (1 November 2026)
+
+An outside review found the "tested" basis line said 79% of samples "here" fell inside the range. 78.9% is pooled
+across the five test sites; site by site it runs from 73.5% (Fellfoot) to 87.4% (Rayrigg Meadow), with Frensham
+77.5% (`docs/LAKE-RANGE-HINDCAST-TEST-2026-11.md`, "By site"). The line now reads: "Tested on 2012–2022 samples it
+never saw at five sampling sites on Windermere and Frensham Great Pond, including this one: 79% fell inside its
+8-in-10 range overall, from 74% to 87% site by site." No result changed.
