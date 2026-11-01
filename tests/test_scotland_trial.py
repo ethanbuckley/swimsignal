@@ -128,3 +128,18 @@ def test_the_footer_credits_scottish_water_only_while_the_trial_is_on(monkeypatc
 def test_the_build_passes_the_trial_setting_from_a_repository_variable():
     workflow = (ROOT / ".github" / "workflows" / "site.yml").read_text()
     assert "DIPCAST_SCOTLAND_TRIAL: ${{ vars.DIPCAST_SCOTLAND_TRIAL }}" in workflow
+
+
+def test_scottish_spots_are_not_checked_against_englands_water_bodies(tmp_path):
+    bs = _script("build_site")
+    path = tmp_path / "rnags.json"
+    path.write_text(json.dumps({"spots": {"bw-x": None}, "water_bodies": {}}))
+    results = [{"id": "bw-x"}, {"id": "sepa-125079", "trial": "scotland"}, {"id": "new-english"}]
+    assert bs.attach_water_body(results, path) == (0, ["new-english"])
+
+
+def test_the_dores_outfall_is_settled_as_discharging_into_loch_ness():
+    from dipcast.overflows import apply_joins
+    df = apply_joins(pd.DataFrame({"site_id": ["CSO005667", "CSO003129"], "lat": [57.0, 57.3], "lon": [-4.0, -4.4]}))
+    assert df.loc[0, "position_source"] == "join" and (df.loc[0, "lat"], df.loc[0, "lon"]) == (57.379215, -4.336843)
+    assert pd.isna(df.loc[1].get("position_source"))

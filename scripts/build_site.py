@@ -1321,7 +1321,8 @@ def attach_water_body(results: list[dict], path: Path = RNAGS) -> tuple[int, lis
     from the Catchment Data Explorer and which places every listed spot in its water body, so no request is
     made. A spot the file places nowhere (a tributary it does not name, a lake under 50 ha), or in a water
     body it lists no reasons for, gets no field. Returns (how many spots got one, the ids of the spots the
-    file does not know: added since it was made), or None without a readable file, when no spot gets one."""
+    file does not know: added since it was made), or None without a readable file, when no spot gets one.
+    The Scotland trial's spots are skipped: SEPA, not the EA, classifies Scotland's waters."""
     try:
         doc = json.loads(path.read_text())
         spots, bodies = doc["spots"], doc["water_bodies"]
@@ -1330,6 +1331,8 @@ def attach_water_body(results: list[dict], path: Path = RNAGS) -> tuple[int, lis
         return None
     n, unknown = 0, []
     for r in results:
+        if r.get("trial") == "scotland":   # an English record: a Scottish loch is in no EA water body
+            continue
         if r["id"] not in spots:
             unknown.append(r["id"])
             continue
