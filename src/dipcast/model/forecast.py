@@ -16,7 +16,7 @@ from dipcast.ingest.flows import nearest_level_station, reading_fields
 from dipcast.ingest.live import with_data_states
 from dipcast.ingest import soil
 from dipcast.ingest.rainfall import cells_for_sites, fetch_forecast, forecast_age
-from dipcast import shadow_regional
+from dipcast import lake_range, shadow_regional
 from dipcast.model import ecoli, live_status
 from dipcast.model.features import (
     ALL_FEATURES,
@@ -199,6 +199,7 @@ def reload_caches() -> None:
         ecoli.load_sm.cache_clear()
         model_version.cache_clear(); code_commit.cache_clear(); live_status.clear_cache()
         shadow_regional.clear_cache()
+        lake_range.clear_cache()
         # the network itself is immutable at runtime; keep it loaded
 
 
@@ -524,7 +525,7 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
 
     # E. coli exceedance: rain at the spot itself (not at the overflows) plus the day's exposure.
     em = ecoli.load()
-    p_ec = r48 = spot_rain = None
+    p_ec = r48 = spot_rain = ranges = None
     if em is not None:
         try:
             spot_rain = fetch_forecast(cells_for_sites(pd.Series([lat]), pd.Series([lon])))
@@ -534,15 +535,28 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
             X = ecoli.features(r48, r24, risk, np.full(len(days), 1.0 if pin.mode == "lake" else 0.0), days)
             p_ec = em.predict(X)
             p_ec, soil_state = river_ecoli(pin.mode, lat, lon, X, p_ec, now)
+            # At a lake with overflows upstream (the population it was fitted and tested on), lake-range-v1's likely
+            # reading and range from the same inputs (lake_range.py): each day's `ecoli_range`, and its own table for
+            # the 2027 read. The over-900 chance above stays unshown at lakes.
+            if pin.mode == "lake" and not ov.empty:
+                try:
+                    ranges = lake_range.ranges(lat, lon, X)
+                except Exception as e:  # noqa: BLE001 - an optional layer must not fail the forecast
+                    log.warning("lake range skipped: %s", e)
             for row in day_rows:
                 j = days.get_loc(pd.Timestamp(row["date"], tz=LOCAL_TZ))
                 ok = not (np.isnan(r48[j]) or np.isnan(p_ec[j]))
                 row["rain_48h_mm"] = None if np.isnan(r48[j]) else round(float(r48[j]), 1)
                 row["rain_48h_coverage"] = round(float(cov48[j]), 3)   # finite share of the window's 48 hours
                 row["p_ecoli_gt900"] = round(float(p_ec[j]), 3) if ok else None
+                if ranges is not None:   # E. coli per 100 ml, two significant figures; None where an input is missing
+                    row["ecoli_range"] = ({k: lake_range.sig2(ranges[k][j]) for k in ("low", "median", "high")}
+                                          if np.isfinite(ranges["median"][j]) else None)
                 if not ok and row["data_status"] == "ok":
                     row["data_status"] = "rain unavailable"
             out["assumptions"]["ecoli_model"] = ecoli_provenance(em, soil_state)
+            if ranges is not None:
+                out["ecoli_range_scope"] = {"rule": lake_range.RULE, "basis": ranges["basis"], "bw_id": ranges["bw_id"]}
             # Where the E. coli figure has been checked: rivers, in the May-September sampling
             # season, at designated bathing waters. Lakes showed no ranking skill.
             out["ecoli_scope"] = {
@@ -640,6 +654,11 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
                 shadow_regional.log_shadow(now, lat, lon, days, ov, p_raw, p, regional, model_version())
             except Exception as e:  # noqa: BLE001 - a shadow must never fail a forecast
                 log.warning("regional shadow log failed: %s", e)
+        if ranges is not None:
+            try:
+                lake_range.log_shadow(now, lat, lon, days, r48, r24, risk, ranges, model_version())
+            except Exception as e:  # noqa: BLE001 - logging must never fail a forecast
+                log.warning("lake range log failed: %s", e)
     return out
 
 

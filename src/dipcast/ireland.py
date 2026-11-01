@@ -27,7 +27,7 @@ from pathlib import Path
 
 import httpx
 
-from dipcast import config
+from dipcast import config, typical
 from dipcast.coastal import TZ, instant, when
 
 BASE = "https://data.epa.ie/bw/api/v1/"
@@ -386,6 +386,8 @@ def render(snapshot: dict) -> str:
             lines.append(_alert_text(a))
             restricted.append(s["name"])
         lines.append(_sample_text(s["sample"], today, season))
+        if s.get("typical"):
+            lines.append(escape(typical.line(s["typical"])))
         water = water_line(s)
         if water:
             lines.append(escape(water))
@@ -413,6 +415,7 @@ def render(snapshot: dict) -> str:
             f'monitor, designated first.{kept}</p>'
             f'<p class="small">{alerts_text}</p>'
             f'<p class="small">{samples_text}</p>'
+            + typical.note(snapshot, inland=True) +
             '<label for="ireland-search">Find a bathing water in the Republic</label> '
             '<input type="search" id="ireland-search" placeholder="Name, with or without accents">'
             f'<p id="ireland-count" class="small" aria-live="polite">{len(cards)} sites</p>'

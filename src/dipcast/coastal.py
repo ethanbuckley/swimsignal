@@ -281,6 +281,12 @@ def attach_samples(snapshot, now=None, points_file=None, cache=None, fetch=None)
     return snapshot
 
 
+def attach_typical(snapshot, path=None):
+    """Each site's `typical`: what its own EA samples read (typical.attach, a committed file: no request)."""
+    from dipcast import typical
+    return typical.attach(snapshot, "england_coast", path)
+
+
 def _count(r):
     return escape(f'{"" if r["qualifier"] == "=" else r["qualifier"]}{r["value"]:,.0f}')
 
@@ -334,6 +340,7 @@ def when(iso):
 
 def render(snapshot):
     """Server-rendered list works without JavaScript; dates are always visible."""
+    from dipcast import typical
     if not snapshot or not snapshot.get("sites"):
         return '<p>The official directory could not be loaded for this build. Use the EA link above.</p>'
     messages = {"increased": "EA: increased pollution risk",
@@ -353,6 +360,7 @@ def render(snapshot):
             stamp = f'<br>Issued {when(advice["published_at"])}; expires {when(advice["expires_at"])}'
         expiry = f' data-advice-expires="{escape(advice["expires_at"], quote=True)}"' if advice.get("expires_at") else ''
         sample = f'<br>{sample_line(site["sample"], (snapshot.get("samples") or {}).get("since"))}' if "sample" in site else ''
+        sample += f'<br>{escape(typical.line(site["typical"]))}' if site.get("typical") else ''
         water = water_line(site)
         sample += f'<br>{escape(water)}' if water else ''
         profile = escape(site["profile"], quote=True)
@@ -376,7 +384,8 @@ def render(snapshot):
             + (('<p class="small">Sample results are the latest statutory samples in the EA Water Quality Archive'
                 + (f', checked {when(snapshot["samples"]["fetched_at"])}' if snapshot["samples"].get("fetched_at") else '')
                 + '. The archive can lag the official profile by several days. A sample describes the water when '
-                'it was taken, not today. The rating uses four seasons of samples.</p>') if snapshot.get("samples") else '') +
+                'it was taken, not today. The rating uses four seasons of samples.</p>') if snapshot.get("samples") else '')
+            + typical.note(snapshot) +
             '<label for="coastal-search">Find a beach or estuary</label> '
             '<input type="search" id="coastal-search" placeholder="Bathing-water name">'
             f'<p id="coastal-count" class="small" aria-live="polite">{len(cards)} sites</p>'

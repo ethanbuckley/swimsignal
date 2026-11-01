@@ -1423,7 +1423,7 @@
         <dl>
           <dt>Sewage spill risk</dt><dd>A 0–100 score for sewage from upstream reaching the spot. Low under 15, moderate 15 to 40, high 40 to 70, very high 70 or more.</dd>
           <dt>Sewage spills right now</dt><dd>Today only: the overflows upstream discharging now, or stopped lately, from the water companies' live feeds. Today's level is at least right now's.</dd>
-          <dt>E. coli estimate</dt><dd>On rivers with overflows upstream: the chance a water sample would show E. coli over 900 per 100 ml, from any source, runoff after rain included. Low risk under 10%, moderate 10 to 25%, high 25 to 50%, very high over 50%. The minimum bathing-water standard lets about one sample in ten be over 900. It is tested only for May to September, so it sets the level only then: from October to April, when the EA takes no samples, it does not set the level, and a spot's page says "Out of season" in its place, with the figures under "Experimental estimate". A spot's page says how it has done on live samples so far.</dd>
+          <dt>E. coli estimate</dt><dd>On rivers with overflows upstream: the chance a water sample would show E. coli over 900 per 100 ml, from any source, runoff after rain included. Low risk under 10%, moderate 10 to 25%, high 25 to 50%, very high over 50%. The minimum bathing-water standard lets about one sample in ten be over 900. It is tested only for May to September, so it sets the level only then: from October to April, when the EA takes no samples, it does not set the level, and a spot's page says "Out of season" in its place, with the figures under "Experimental estimate". A spot's page says how it has done on live samples so far. On lakes: the reading a sample would most likely show and the range 8 in 10 would fall in, never a level.</dd>
           <dt>Environment Agency rating</dt><dd>At a designated bathing water, the EA's yearly rating from up to four seasons of lab samples. When it is poor, advice against bathing applies through the bathing season, 15 May to 30 September, and the level is at least high risk on every day. Where there is no daily forecast, a rating of sufficient makes the level moderate risk and poor makes it high risk; excellent or good leave the plain level below.</dd>
           <dt>Algae</dt><dd>At a designated bathing water, the EA sampler's last look, if under two weeks old: enough algae to be objectionable makes the level at least high risk, some at intervals at least moderate risk.</dd>
           <dt>Lab sample</dt><dd>At a designated bathing water, the EA's latest sample, if under two weeks old and over 900 E. coli per 100 ml: the level is at least moderate risk.</dd>
@@ -1443,7 +1443,7 @@
         <dl>
           <dt>Right now</dt><dd>Which upstream storm overflows are discharging now or stopped lately, from the water companies' live feeds. A spill counts in full from its start until its water has passed the spot, then for less over the next 48 hours. Today's level is at least right now's. A spill reported running for over two days is named as possibly a monitor fault, and still counts.</dd>
           <dt id="about-exposure">Sewage spill risk (0–100)</dt><dd>A 0–100 score for sewage from upstream reaching the spot. It is built from the chance that at least one overflow upstream spills and its discharge arrives, after travel time, die-off and dilution. The spill part is verified against what the overflows did; the die-off and dilution weights are physical estimates, not calibrated against water samples, so the score is not a probability. The colour levels (low to very high) come from it.</dd>
-          <dt id="about-ecoli">E. coli estimate</dt><dd>The estimated chance that a midday water sample would show over 900 E. coli per 100 ml, from rainfall at the spot, the sewage spill risk, water-body type and season, fitted to Environment Agency samples at river and lake bathing waters and tested on years and sites it never saw. It counts bacteria from any source, so rain alone can raise it when the sewage spill risk is low. 900 is the threshold used in the inland "sufficient" classification, which is a 90th-percentile calculation over four seasons, not a pass/fail test of one sample. It is validated on rivers in the May–September sampling season only; on lakes it has no demonstrated skill and is not shown. The EA takes no samples from October to April, so then nothing tests it: it does not set the level, a spot's page gives the figure only under "Experimental estimate", and the date's own effect is held at its value at the nearer end of the season (30 September or 1 May) rather than carried on with nothing to check it. A spot's page says how it has done on the samples taken since the forecast began, and, where the river runs from Wales, what a test on Welsh river samples found.</dd>
+          <dt id="about-ecoli">E. coli estimate</dt><dd>The estimated chance that a midday water sample would show over 900 E. coli per 100 ml, from rainfall at the spot, the sewage spill risk, water-body type and season, fitted to Environment Agency samples at river and lake bathing waters and tested on years and sites it never saw. It counts bacteria from any source, so rain alone can raise it when the sewage spill risk is low. 900 is the threshold used in the inland "sufficient" classification, which is a 90th-percentile calculation over four seasons, not a pass/fail test of one sample. It is validated on rivers in the May–September sampling season only; on lakes it has no demonstrated skill and is not shown. At a lake with overflows upstream the page gives a different estimate instead: the reading a sample would most likely show, per 100 ml, and the range 8 in 10 samples would fall in, from the same inputs and the lake's own level. On 962 samples from 2012 to 2022 at Windermere and Frensham Great Pond, which it never saw, 79% fell inside that range. A lake bathing water uses its own samples' level; any other lake starts from a typical lake's, which is less certain. Where a bathing water has no monitored overflow upstream, its page gives what its own Environment Agency samples have read instead: past samples, not a forecast. The EA takes no samples from October to April, so then nothing tests it: it does not set the level, a spot's page gives the figure only under "Experimental estimate", and the date's own effect is held at its value at the nearer end of the season (30 September or 1 May) rather than carried on with nothing to check it. A spot's page says how it has done on the samples taken since the forecast began, and, where the river runs from Wales, what a test on Welsh river samples found.</dd>
           <dt>Algae</dt><dd>Designated bathing waters only: the Environment Agency sampler's latest look at the water, an observation, not a forecast. It does not tell blue-green algae from harmless kinds.</dd>
           <dt>Water temperature</dt><dd>Rivers only, where an Environment Agency sensor on the same river, within 15 km in a straight line and on the same side of the tidal limit, has reported in the last day: its latest reading, with how far up or down the river it is and how old the reading is. Where there is no such sensor nothing is shown; the temperature is never estimated. It is not part of the level.</dd>
           <dt>What it does not know</dt><dd>The treated sewage that sewage works let out every day, and anything about a specific farm, road, outfall or algal bloom: only monitored storm overflows are modelled. Nor does it use the wind, which decides where river water goes in a lake. <a href="methods.html#limits">What the forecast does not count, and what you can do</a>.</dd>
@@ -2064,9 +2064,43 @@ const ecoliName = off => off ? ECOLI_EXPERIMENTAL.replace('E. coli', 'E.&nbsp;co
 // means (a picked day's row has no corner fold of its own).
 const ecoliFold = (d, ds, more = false) => explain(ECOLI_FOLD, `Chance a water sample would show E.&nbsp;coli over 900 per 100&nbsp;ml: `
   + `${ds.map(x => `${Math.round(x.p_ecoli_gt900 * 100)}% ${dayWord(x.date)}`).join(', ')}. ${ecoliNotes(d, ecoliCheck(), ds[0]).slice(1).join(' ')}${more ? ' ' + ecoliMore() : ''}`.trim());
+// At a lake, the over-900 chance stays unshown (no skill there); a lake with overflows upstream gets the likely
+// reading and the range 8 in 10 samples would fall in instead (lake_range.py, `ecoli_range` on each day, tested on
+// 2012-2022 lake samples it never saw, docs/LAKE-RANGE-HINDCAST-TEST-2026-11.md). Never a level, band or colour: a
+// low reading is a likely sample, not a clearance. Its `basis` says where its level comes from.
+const lakeRanged = d => !d.error && !d.unlisted && daily(d) && (d.location || {}).mode === 'lake' && !!d.ecoli_range_scope;
+const rangeOf = x => (x && x.ecoli_range) || null;
+// A count as the page gives it: under the lab's limit of 10 as "under 10"; a limit the lab gave ("<10", ">10000") in words.
+const ecoliReading = v => nil(v) ? '–' : typeof v === 'string'
+  ? `${v[0] === '<' ? 'under' : 'over'} ${Number(v.slice(1)).toLocaleString('en-GB')}` : v < 10 ? 'under 10' : Number(v).toLocaleString('en-GB');
+const likely = r => r.median < 10 ? 'under 10' : `about ${ecoliReading(r.median)}`;
+const rangeLine = (x, when) => { const r = rangeOf(x);
+  return `A sample ${when} would most likely read <b>${likely(r)}</b> E.&nbsp;coli per 100&nbsp;ml; 8 in 10 would read between ${ecoliReading(r.low)} and ${ecoliReading(r.high)}.`; };
+const RANGE_BASIS = {
+  tested: "From this lake's own Environment Agency samples, rain at the lake and spills upstream. Tested on 2012–2022 samples it never saw at five sampling sites on Windermere and Frensham Great Pond, including this one: 79% fell inside its 8-in-10 range overall, from 74% to 87% site by site.",
+  'own samples': "From this lake's own Environment Agency samples since 2023, rain at the lake and spills upstream. Not yet tested on past seasons here; the same model held 79% of results inside its 8-in-10 range at Windermere and Frensham.",
+  'average lake': "This lake has no Environment Agency samples, so the estimate starts from a typical lake's level, with this lake's rain and the spills upstream. Less certain than at a sampled lake: where it knew nothing of a lake, real samples more often read below its range than above.",
+};
+const rangeBasis = d => RANGE_BASIS[(d.ecoli_range_scope || {}).basis] || RANGE_BASIS['average lake'];
+const RANGE_MORE = 'For comparison, England rates an inland bathing water Excellent when about 95 in 100 of its samples, over four seasons, are under 500 per 100&nbsp;ml. The range does not set the level. <a href="#about-ecoli">What this counts</a>';
+const RANGE_OFF_SAID = 'Out of season. The lake estimate is tested only for May to September, when the Environment Agency takes samples. From October to April it is experimental and does not set the level.';
+const rangeFold = ds => explain(ECOLI_FOLD, ds.map(x => rangeLine(x, dayWord(x.date))).join(' '));
+// Where there is no daily figure (no monitored overflow upstream, or an isolated water), a bathing water's own past
+// samples (build_site.typical_readings): what they read, never a forecast.
+const typicalLine = t => `The middle of ${t.samples} Environment Agency samples here, May to September ${t.first_year === t.last_year ? t.first_year : `${t.first_year}–${t.last_year}`}, read ${ecoliReading(t.median)} E.&nbsp;coli per 100&nbsp;ml; the middle 8 in 10 read ${t.low === t.high ? ecoliReading(t.low) : `between ${ecoliReading(t.low)} and ${ecoliReading(t.high)}`}. ${t.over_line ? `${t.over_line} ${t.over_line === 1 ? 'was' : 'were'} over ${t.line}.` : `None was over ${t.line}.`}`;
+const TYPICAL_SAID = 'Past samples, not a forecast: with no monitored overflow upstream there is nothing to forecast from.';
+const TYPICAL_MORE = 'For comparison, England rates an inland bathing water Excellent when about 95 in 100 of its samples, over four seasons, are under 500 per 100&nbsp;ml. Past samples do not set the level. <a href="#about-ecoli">What this counts</a>';
 // The calibrated number, over the days given: it counts bacteria from any source, so rain can
 // raise it when the spills are low. Rivers with overflows upstream only, the case it was tested on.
 function water(d, days) {
+  if (lakeRanged(d)) {
+    const ds = days.filter(rangeOf), off = ds.some(ecoliUntested);
+    if (!ds.length) return factorRow('E.&nbsp;coli estimate', null, 'No data', 'No rainfall forecast has arrived, so there is no estimate.');
+    if (off) return factorRow(ecoliName(true), null, ECOLI_OFF, RANGE_OFF_SAID + rangeFold(ds));
+    return factorRow('E.&nbsp;coli estimate', null, `${cap(likely(rangeOf(ds[0])))} per 100&nbsp;ml`,
+      `${ds.map(x => rangeLine(x, dayWord(x.date))).join(' ')} ${rangeBasis(d)}` + explain('About this estimate', RANGE_MORE),
+      days.length === 1 ? 'Not counted in the level.' : '');
+  }
   if (ecoliTested(d) && d.unlisted) return factorRow('E.&nbsp;coli estimate', null, 'Not estimated', UNLISTED_ECOLI);
   if (ecoliTested(d)) {
     // The figure's own band in season. From October to April nothing tests it and it does not set the
@@ -2080,9 +2114,11 @@ function water(d, days) {
       + explain('About this estimate', ecoliMore()),
       days.length === 1 ? tileLine(d, 'water', days[0].date) : '');
   }
+  if (d.ecoli_typical && !daily(d)) { const t = d.ecoli_typical;
+    return factorRow('E.&nbsp;coli in past samples', null, `${cap(ecoliReading(t.median))} per 100&nbsp;ml`, `${typicalLine(t)} ${TYPICAL_SAID}`); }
   if (d.error) return '';
   return factorRow('E.&nbsp;coli estimate', null, 'Not estimated', (d.location || {}).mode === 'lake'
-    ? 'The E.&nbsp;coli model showed no skill on lakes, so there is no daily estimate here.'
+    ? 'No estimate here: the lake model needs monitored overflows upstream and a rain forecast for the lake.'
     : 'Estimated only on rivers with monitored overflows upstream, the case the model was tested on.');
 }
 // A water rated poor: the advice in view, in season with its first words in bold (levels.js, poorAdvice).
@@ -2568,16 +2604,26 @@ function facts(d, iso = null) {
   // open day's figure (and tomorrow's, on today) under "Experimental estimate". It goes last, after the tiles of what is
   // observed (late), where in season it pairs with the spills, since then it sets the level. Tomorrow's
   // figure joins today's only while tomorrow is in season too.
-  if (!d.error && ecoliTested(d) && x0 && !nil(x0.p_ecoli_gt900)) { const off = untested(x0), b = off ? null : ecoliBand(d, x0);
+  if (lakeRanged(d) && rangeOf(x0)) { const r = rangeOf(x0);
+    if (ecoliUntested(x0)) out.push({ wide: true, late: true, icon: ICON.water, label: ecoliName(true), fig: ECOLI_OFF, say: RANGE_OFF_SAID,
+      fold: rangeFold([x0, x1].filter(rangeOf)), more: RANGE_MORE });
+    else out.push({ wide: true, icon: ICON.water, label: 'E.&nbsp;coli estimate', fig: r.median < 10 ? 'Under 10' : ecoliReading(r.median),
+      unit: 'per 100&nbsp;ml, most likely', rel: 'Not counted in the level.',
+      say: `${rangeLine(x0, when)}${x1 && rangeOf(x1) && !ecoliUntested(x1) ? ` Tomorrow ${likely(rangeOf(x1))}, 8 in 10 between ${ecoliReading(rangeOf(x1).low)} and ${ecoliReading(rangeOf(x1).high)}.` : ''} ${rangeBasis(d)}`,
+      more: RANGE_MORE }); }
+  else if (!d.error && ecoliTested(d) && x0 && !nil(x0.p_ecoli_gt900)) { const off = untested(x0), b = off ? null : ecoliBand(d, x0);
     if (off) out.push({ wide: true, late: true, icon: ICON.water, label: ecoliName(true), fig: ECOLI_OFF, say: ecoliNotes(d, ecoliCheck(), x0)[0],
       fold: ecoliFold(d, [x0, x1].filter(x => x && !nil(x.p_ecoli_gt900))), more: ecoliMore() });
     else out.push({ wide: true, icon: ICON.water, label: 'E.&nbsp;coli estimate', fig: pct(x0.p_ecoli_gt900) + '%', word: `${cap(b)} risk`, wordTone: tone(b),
       vis: scaleBar(x0.p_ecoli_gt900, ECOLI_CUTS, b, `${pct(x0.p_ecoli_gt900)}% chance: ${b} risk`), rel: tileLine(d, 'water', iso),
       say: `Chance a water sample would show E.&nbsp;coli over 900 per 100&nbsp;ml ${when}${x1 && !nil(x1.p_ecoli_gt900) && !untested(x1) ? `; ${pct(x1.p_ecoli_gt900)}% tomorrow` : ''}. ${ecoliSaid(d, x0)}`,
       more: ecoliMore() }); }
+  else if (d.ecoli_typical && !daily(d)) { const t = d.ecoli_typical;
+    out.push({ wide: true, icon: ICON.water, label: 'E.&nbsp;coli in past samples', fig: t.median === '<10' ? 'Under 10' : ecoliReading(t.median),
+      unit: 'per 100&nbsp;ml, the middle sample', say: `${typicalLine(t)} ${TYPICAL_SAID}`, more: TYPICAL_MORE }); }
   else if (!d.error) out.push({ icon: ICON.water, label: 'E.&nbsp;coli estimate', fig: '–', unit: ecoliTested(d) && !d.unlisted ? 'no estimate' : 'not estimated',
-    say: ecoliTested(d) && d.unlisted ? UNLISTED_ECOLI : ecoliTested(d) ? 'No rainfall forecast has arrived, so there is no estimate.' : (d.location || {}).mode === 'lake'
-      ? 'The E.&nbsp;coli model showed no skill on lakes, so there is no daily estimate here.' : 'Estimated only on rivers with monitored overflows upstream, the case the model was tested on.' });
+    say: ecoliTested(d) && d.unlisted ? UNLISTED_ECOLI : ecoliTested(d) || lakeRanged(d) ? 'No rainfall forecast has arrived, so there is no estimate.' : (d.location || {}).mode === 'lake'
+      ? (d.unlisted ? UNLISTED_ECOLI : 'No estimate here: the lake model needs monitored overflows upstream and a rain forecast for the lake.') : 'Estimated only on rivers with monitored overflows upstream, the case the model was tested on.' });
   if (!d.error && total) out.push(nowTile(d, total));
   const a = d.algae;
   if (a) { const thisYear = +today().slice(0, 4), age = (Date.parse(today()) - Date.parse(a.date)) / 864e5, season = a.season === thisYear ? 'this season' : `in the ${a.season} season`;
@@ -4745,9 +4791,11 @@ function dayTable(d, total, isLake, scope) {
     const noData = !hasData(day); anyNoData = anyNoData || noData;
     // No overflow upstream: the build still computes a figure, but the model was fitted on sites with
     // overflows upstream, so none is shown (ecoliTested), on a river as on a lake.
-    const pe = total ? day.p_ecoli_gt900 : null, off = !isLake && !nil(pe) && day.in_validated_season === false;   // a cell with a †
+    const pe = total ? day.p_ecoli_gt900 : null, lr = isLake && total ? rangeOf(day) : null;
+    const off = (isLake ? !!lr : !nil(pe)) && day.in_validated_season === false;   // a cell with a †
     anyOffSeason = anyOffSeason || off;
-    const ecoli = isLake ? '<span class="muted" title="Not validated on lakes">n/a</span>' : !total ? '<span class="muted" title="Not estimated without monitored overflows upstream">n/a</span>'
+    const ecoli = !total ? '<span class="muted" title="Not estimated without monitored overflows upstream">n/a</span>'
+      : isLake ? (lr ? `${likely(lr)} (${ecoliReading(lr.low)}–${ecoliReading(lr.high)})${off ? '<sup>†</sup>' : ''}` : '<span class="muted" title="No lake estimate">n/a</span>')
       : (pe === null || pe === undefined) ? '–' : Math.round(pe*100) + '%' + (off ? '<sup>†</sup>' : '');
     // No overflow upstream: the exposure is zero whatever the weather, so show a dash, not "Low".
     const exp = !total ? '–' : noData ? '<span class="muted" title="' + esc(day.data_status) + '">no data</span>' : day.risk > 0 && day.risk < .005 ? '&lt;1' : Math.round(day.risk*100);
@@ -4757,8 +4805,11 @@ function dayTable(d, total, isLake, scope) {
   }
   h += `</table>`;
   const notes = [];
-  if (isLake) notes.push(`<b>E. coli not shown for lakes</b>: ${esc(scope.note || 'no ranking skill on lakes in the fitting data.')}`);
-  else if (!total) notes.push('<b>E. coli not shown here</b>: estimated only on rivers with monitored overflows upstream, the case the model was tested on.');
+  if (isLake && total && d.ecoli_range_scope) notes.push(`<b>E. coli estimate at a lake</b>: the reading a sample would most likely show, per 100 ml, and in brackets the range 8 in 10 samples would fall in. ${rangeBasis(d)}`);
+  else if (isLake && total) notes.push(`<b>E. coli not shown here</b>: ${esc(scope.note || 'no lake estimate in this forecast.')}`);
+  else if (!total) notes.push(d.ecoli_typical ? '<b>No daily E. coli estimate here</b>: with no monitored overflow upstream there is nothing to forecast from. The E. coli tile gives what this water\'s own samples have read.'
+    : isLake ? '<b>E. coli not shown here</b>: estimated only with monitored overflows upstream, the case the models were tested on.'
+    : '<b>E. coli not shown here</b>: estimated only on rivers with monitored overflows upstream, the case the model was tested on.');
   if (anyOffSeason) notes.push(`<sup>†</sup>Out of season: from October to April the Environment Agency takes no samples, so the estimate is untested, experimental and not part of the level. <a href="#about-ecoli">What this means</a>`);
   if (!isLake && total) notes.push(ecoliNotes(d, ecoliCheck(), d.days[0]).slice(1).join(' '));   // how it has done on live samples, and in Wales
   if (anyNoData) notes.push(`<b>No data</b>: the rainfall forecast for that day did not arrive; no figure is shown rather than one computed as if it were dry.`);

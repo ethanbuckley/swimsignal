@@ -216,7 +216,7 @@ function pageContext(names, extra = {}) {
   return ctx;
 }
 test('the day-by-day table gives each day the level its row in the five days gives', () => {
-  const ctx = pageContext(['esc', 'fmt', 'cls', 'dateLabel', 'glyph', 'ICON', 'ecoliCheck', 'dayTable']);
+  const ctx = pageContext(['esc', 'fmt', 'cls', 'dateLabel', 'glyph', 'ICON', 'ecoliCheck', 'lakeRanged', 'rangeOf', 'ecoliReading', 'likely', 'rangeLine', 'RANGE_BASIS', 'rangeBasis', 'RANGE_MORE', 'RANGE_OFF_SAID', 'rangeFold', 'typicalLine', 'TYPICAL_SAID', 'TYPICAL_MORE', 'dayTable']);
   const poor = week(['low', 'low', 'high', 'low', 'low'], {classification:{class:'poor'}});
   const table = vm.runInContext('d => dayTable(d, 2, false, {})', ctx)(poor);
   const cells = [...table.matchAll(/<span class="badge [\w-]+">([^<]+)<\/span>/g)].map(m => m[1]);
@@ -284,7 +284,7 @@ test('a water rated poor names the advice against bathing in its season only, by
   finally { L.setToday('2026-09-30'); }
 });
 test('the day table’s † note shows only while a cell carries a †', () => {
-  const ctx = pageContext(['esc', 'fmt', 'cls', 'dateLabel', 'glyph', 'ICON', 'ecoliCheck', 'dayTable']);
+  const ctx = pageContext(['esc', 'fmt', 'cls', 'dateLabel', 'glyph', 'ICON', 'ecoliCheck', 'lakeRanged', 'rangeOf', 'ecoliReading', 'likely', 'rangeLine', 'RANGE_BASIS', 'rangeBasis', 'RANGE_MORE', 'RANGE_OFF_SAID', 'rangeFold', 'typicalLine', 'TYPICAL_SAID', 'TYPICAL_MORE', 'dayTable']);
   const off = week(['low', 'low', 'low', 'low', 'low']);   // every day out of season, with a figure
   const river = vm.runInContext('d => dayTable(d, 2, false, {})', ctx)(off);
   // The figures stay in this folded table out of season, marked †, and the note says they are experimental
@@ -295,6 +295,24 @@ test('the day table’s † note shows only while a cell carries a †', () => {
   assert.doesNotMatch(lake, /†/);
   const blank = vm.runInContext('d => dayTable(d, 2, false, {})', ctx)({days: off.days.map(x => ({...x, p_ecoli_gt900: null}))});
   assert.doesNotMatch(blank, /†/);
+});
+
+test('a lake with overflows upstream gives the likely reading and its 8-in-10 range, never a percentage', () => {
+  const ctx = pageContext(['esc', 'fmt', 'cls', 'dateLabel', 'glyph', 'ICON', 'ecoliCheck', 'lakeRanged', 'rangeOf', 'ecoliReading', 'likely', 'rangeLine', 'RANGE_BASIS', 'rangeBasis', 'RANGE_MORE', 'RANGE_OFF_SAID', 'rangeFold', 'typicalLine', 'TYPICAL_SAID', 'TYPICAL_MORE', 'dayTable']);
+  const w = week(['low', 'low', 'low', 'low', 'low']);
+  const ranged = days => ({ ecoli_range_scope: { basis: 'tested' }, days: days.map((x, j) => ({ ...x, ecoli_range: j ? { low: 6.1, median: 48, high: 380 } : { low: 0.9, median: 7, high: 56 } })) });
+  const inSeason = vm.runInContext('d => dayTable(d, 2, true, {})', ctx)(ranged(w.days.map(x => ({ ...x, in_validated_season: true }))));
+  assert.match(inSeason, /<td class="num">under 10 \(under 10–56\)<\/td>/);
+  assert.match(inSeason, /<td class="num">about 48 \(under 10–380\)<\/td>/);
+  assert.doesNotMatch(inSeason, /<td class="num">\d+%|†/);   // no over-900 percentage in a cell
+  assert.match(inSeason, /E\. coli estimate at a lake<\/b>: the reading a sample would most likely show.*Tested on 2012–2022 samples it never saw at five sampling sites.*79% fell inside its 8-in-10 range overall, from 74% to 87% site by site/);
+  const out = vm.runInContext('d => dayTable(d, 2, true, {})', ctx)(ranged(w.days));   // every day out of season
+  assert.match(out, /about 48 \(under 10–380\)<sup>†<\/sup>/);
+  assert.match(out, /<sup>†<\/sup>Out of season/);
+  const lab = vm.runInContext('ecoliReading', ctx);
+  assert.deepEqual([lab(7), lab(48), lab(1200), lab('<10'), lab('>10000'), lab(null)], ['under 10', '48', '1,200', 'under 10', 'over 10,000', '–']);
+  const t = vm.runInContext('typicalLine', ctx)({ samples: 81, first_year: 2023, last_year: 2026, low: 45, median: 150, high: 350, line: 900, over_line: 2 });
+  assert.equal(t, 'The middle of 81 Environment Agency samples here, May to September 2023–2026, read 150 E.&nbsp;coli per 100&nbsp;ml; the middle 8 in 10 read between 45 and 350. 2 were over 900.');
 });
 
 // ------------------------------------------------------------------------------ the plain levels
