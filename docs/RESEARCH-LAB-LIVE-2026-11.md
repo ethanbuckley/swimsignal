@@ -27,7 +27,7 @@ build is needed.
 
 ## Where it is linked
 
-- **Research page:** a "Research Lab" section first, with the three exhibits and a status line.
+- **Research page:** a "Research Lab" section first, with the exhibits (four once the workspace, #590, merged) and a status line.
 - **Accuracy page:** one sentence in the opening links exhibit 3, "every past E. coli sample one by one".
 - **Lake viewer:** each location links "Its pictures in the Research Lab" (exhibit 1 at that lake).
 - **Spot pages:** the Upstream tile links "The rivers joining each one, in the Research Lab" (exhibit 2 at that spot).
