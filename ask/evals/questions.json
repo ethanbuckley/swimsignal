@@ -72,7 +72,7 @@
        "day": "2026-11-07",
        "place": "Leeds",
        "within_miles": 25,
-       "summary": "Saturday 7 November is beyond SwimSignal's five-day forecast, so the pollution risk there is not known yet. These are the nearest spots with practical guides. Wind is not known, so whether the water will be calm cannot be said.",
+       "summary": "Saturday 7 November is beyond SwimSignal's five-day forecast, so the pollution risk there is not known yet. These are the nearest spots with practical guides. Wind is not known.",
        "assumptions": [
         "40 minutes read as 25 miles in a straight line",
         "Saturday read as Saturday 7 November"
@@ -503,7 +503,7 @@
        "day": "2026-11-01",
        "place": "Keswick",
        "within_miles": 10,
-       "summary": "SwimSignal has no wind forecast, so whether Buttermere will be calm on Sunday 1 November is not known. Paddleboards need a permit there.",
+       "summary": "SwimSignal has no wind forecast, so it cannot say what the water at Buttermere will be like on Sunday 1 November. Paddleboards need a permit there.",
        "assumptions": [
         "Sunday read as Sunday 1 November"
        ],
@@ -518,6 +518,7 @@
         }
        ],
        "unknown": [
+        "Whether Buttermere will be calm on Sunday",
         "Wind on Sunday"
        ]
       }
@@ -1570,7 +1571,7 @@
   {
    "id": "ilkley-invented-conditions",
    "question": "Find calm warm shallow water near Ilkley with 2 steps to get in",
-   "why": "The question's own words must not approve them. The first answer says the water is calm, warm and shallow with 2 steps, which no line says (the wind line says calm is not known), and is turned back; so is a second that only moves the claims into the fit. The third repeats them as what was asked.",
+   "why": "The question's own words must not approve them. The first answer says the water is calm, warm and shallow with 2 steps, which no line says (the wind line says calm is not known), and is turned back; so is a second that only moves the claims into the fit. The third puts them in unknown, as questions.",
    "expect": {
     "spots_any_of": [
      "bw-uke4100-08901"
@@ -1663,7 +1664,7 @@
        "day": "2026-11-01",
        "place": "Ilkley",
        "within_miles": 2,
-       "summary": "You asked for calm, warm, shallow water with 2 steps to get in. SwimSignal has no wind forecast, so whether the water will be calm is not known, and its data does not say how warm, how deep or how many steps.",
+       "summary": "The Wharfe at Cromwheel, Ilkley is the nearest spot. SwimSignal has no wind forecast, and its data does not cover the rest of what was asked about the water or getting in.",
        "assumptions": [],
        "spots": [
         {
@@ -1880,6 +1881,119 @@
    ],
    "mock_expect": {
     "refused": 1
+   }
+  },
+  {
+   "id": "ilkley-hedged-calm",
+   "question": "Will the water be calm at Ilkley tomorrow?",
+   "why": "The follow-up review of 1 Nov 2026: a missing forecast is not evidence. 'No wind forecast means the water is calm' passed because a not-known word came first. The same inference is then put in an assumption and in the fit. All three are turned back, so the reader gets the data's lines without the model's words.",
+   "expect": {
+    "spots_any_of": [
+     "bw-uke4100-08901"
+    ],
+    "says": [
+     "Wind: not known"
+    ],
+    "summary_not": [
+     "\\bcalm\\b"
+    ]
+   },
+   "mock": [
+    [
+     {
+      "name": "find_place",
+      "input": {
+       "name": "Ilkley"
+      }
+     }
+    ],
+    [
+     {
+      "name": "search_spots",
+      "input": {
+       "lat": 53.92,
+       "lon": -1.82,
+       "within_miles": 2,
+       "day": "2026-11-01",
+       "kind": "all"
+      }
+     }
+    ],
+    [
+     {
+      "name": "get_spot",
+      "input": {
+       "id": "bw-uke4100-08901",
+       "day": "2026-11-01"
+      }
+     }
+    ],
+    [
+     {
+      "name": "give_answer",
+      "input": {
+       "day": "2026-11-01",
+       "place": "Ilkley",
+       "within_miles": 2,
+       "summary": "No wind forecast means the water is calm.",
+       "assumptions": [],
+       "spots": [
+        {
+         "id": "bw-uke4100-08901",
+         "fit": "The bathing water at Ilkley",
+         "guide_topics": []
+        }
+       ],
+       "unknown": []
+      }
+     }
+    ],
+    [
+     {
+      "name": "give_answer",
+      "input": {
+       "day": "2026-11-01",
+       "place": "Ilkley",
+       "within_miles": 2,
+       "summary": "The Wharfe at Cromwheel, Ilkley is the nearest spot.",
+       "assumptions": [
+        "Wind unknown, so it should be calm"
+       ],
+       "spots": [
+        {
+         "id": "bw-uke4100-08901",
+         "fit": "The bathing water at Ilkley",
+         "guide_topics": []
+        }
+       ],
+       "unknown": []
+      }
+     }
+    ],
+    [
+     {
+      "name": "give_answer",
+      "input": {
+       "day": "2026-11-01",
+       "place": "Ilkley",
+       "within_miles": 2,
+       "summary": "The Wharfe at Cromwheel, Ilkley is the nearest spot.",
+       "assumptions": [],
+       "spots": [
+        {
+         "id": "bw-uke4100-08901",
+         "fit": "With no wind data, expect calm water",
+         "guide_topics": []
+        }
+       ],
+       "unknown": []
+      }
+     }
+    ]
+   ],
+   "mock_expect": {
+    "refused": 3,
+    "partial": true
    }
   }
  ]

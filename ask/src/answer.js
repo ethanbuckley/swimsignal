@@ -6,6 +6,7 @@
 // Only what the tools gave back approves a condition or a number: never the question (the person's words
 // say what they want, not what the water is) and never the model's own tool inputs. A line saying a
 // condition is not known does not approve it, and words about one spot may use only that spot's lines.
+// A condition the lines do not affirm may appear only in the unknown list, asked as "Whether ...".
 
 import { KIDS_NOTE, TRAVEL_NOTE, dayWords, milesBetween, spotFacts, spotURL } from './facts.js';
 import levels from '../../src/dipcast/site/levels.js';
@@ -20,7 +21,7 @@ export const NEVER = /\b(safe|safer|safest|safely|unsafe|safety|clean|cleaner|cl
 // Never in the model's words either: a judgement for children SwimSignal does not make (KIDS_NOTE says so).
 export const KIDS = /\b(kid|child|family|toddler|beginner)[- ]?friendly\b|\bsuitable for (?:young )?(?:children|kids|families|toddlers|beginners)\b|\bgood for (?:children|kids|families)\b/i;
 // Conditions at the water: allowed in the model's words only where a line it was shown says so.
-export const CONDITIONS = /\b(calm|calmer|flat|choppy|windy|breezy|gusty|sheltered|shallow|deep|warm|warmer|warmest|cold|colder|coldest|chilly|clear|murky|gentle|slow[- ]flowing|fast[- ]flowing|sunny|dry|rainy|quiet|busy)\b/gi;
+export const CONDITIONS = /\b(calm|calmer|flat|still water|glassy|smooth|placid|tranquil|rough|wavy|choppy|windy|breezy|gusty|sheltered|shallow|deep|warm|warmer|warmest|mild|balmy|cold|colder|coldest|chilly|icy|freezing|clear|murky|gentle|slow[- ]flowing|fast[- ]flowing|sunny|dry|rainy|quiet|busy)\b/gi;
 const LEVEL_WORDS = /\b(low|moderate|high|very high) risk\b/i;
 const NUMBER = /\d+(?:\.\d+)?/g;
 // A unit after a number, and the units that are the same: 2 steps is not 2 miles.
@@ -48,22 +49,21 @@ const clauses = (t) => String(t).toLowerCase().split(/(?<!\d)[.,:](?!\d)|[!?;"\n
 // The model's text in claims: a list ("calm, warm and shallow") stays one claim, and a new subject
 // ("and it is calm") or "but" or "so" starts another.
 const claims = (t) => String(t).toLowerCase().split(/(?<!\d)[.:](?!\d)|[!?;\n]|,?\s(?:but|so|yet|while|though|although|whereas)\s|,?\s(?:and|which|where)\s(?=(?:it|its|it's|the|this|that|there|they|these|those|here|[a-z]+ (?:is|are|was|were|will|has|have))\b)/).map((c) => c.trim()).filter(Boolean);
-// Where in a claim a marker first says what follows is not known, or is what the person asked for.
-const after = (re, claim) => { const m = claim.match(re); return m ? m.index : Infinity; };
 // A line that says a condition is not known, or not so, does not approve it ("cannot say whether the water will be calm").
 const NEGATED = /\b(not|no|never|none|nothing|unknown|cannot|can't|isn't|aren't|won't|whether|without)\b/;
 const has = (c, text) => new RegExp(`\\b${c.replace('-', '[- ]')}\\b`).test(text);
 const linesSay = (c, lines) => clauses(lines).some((l) => has(c, l) && !NEGATED.test(l));
-// The model may name a condition the lines do not give only to say it is not known ...
-const SAYS_UNKNOWN = /\b(whether|not known|unknown|cannot say|can't say|cannot tell|can't tell|does not say|doesn't say|no (?:wind |weather |water )?(?:forecast|data|reading|measurement)s?)\b/;
-// ... or, in the person's own words, to say what they asked for ("you asked for calm water").
-const ECHO = /\byou(?:'re| are)? (?:asked|ask|want|wanted|said|wrote|mentioned|looking for|would like|prefer)\b|\byour question\b|\basked (?:for|about)\b|\bread as\b/;
+// In the unknown list, a claim that asks ("Whether the water will be calm", "How deep it is") may name a
+// condition or the question's number. Nowhere else does a hedge, a "not known" or the person's own words
+// let one through: "No wind forecast means the water is calm" says the water is calm.
+const ASKS = /^(?:whether|how|if)\b/;
 
 // Problems with one piece of the model's text. from: the lines that may approve a condition or a number,
 // as one text, or { every, numbers, question }: a condition must be in each text of every (each spot a
-// sentence speaks of), a number in numbers, and the question approves only in a clause that echoes it.
-// unknown: the text lists what is not known, so a condition in it is not a claim.
-export function textProblems(text, from, where, { unknown = false } = {}) {
+// sentence speaks of) and a number in numbers. unknown: the text is a line of the unknown list.
+// assumption: the text is an assumption, which may restate the question's numbers before "read as"
+// ("40 minutes read as 25 miles"); what it was read as must still be the data's.
+export function textProblems(text, from, where, { unknown = false, assumption = false } = {}) {
   const src = typeof from === 'string' ? { every: [from], numbers: from } : from;
   const question = String(src.question || '').toLowerCase();
   const out = [];
@@ -73,18 +73,20 @@ export function textProblems(text, from, where, { unknown = false } = {}) {
   if (k) out.push(`${where} says "${k[0]}": SwimSignal does not judge suitability for children.`);
   const said = new Set();
   for (const claim of claims(text)) {
-    const notKnown = unknown ? -1 : after(SAYS_UNKNOWN, claim), echo = after(ECHO, claim);
+    const asks = unknown && ASKS.test(claim);
+    const readAs = assumption ? claim.indexOf(' read as ') : -1;
     for (const c of claim.matchAll(CONDITIONS)) {
       const w = c[0].toLowerCase();
-      if (said.has(w) || c.index > notKnown || (c.index > echo && has(w, question)) || src.every.every((lines) => linesSay(w, lines))) continue;
+      if (said.has(w) || asks || src.every.every((lines) => linesSay(w, lines))) continue;
       said.add(w);
-      out.push(`${where} says "${w}", which no line from the data says${src.every.length > 1 ? ' for every spot it speaks of' : ''}. What the question asks for is not what the water is.`);
+      out.push(`${where} says "${w}", which no line from the data says${src.every.length > 1 ? ' for every spot it speaks of' : ''}. `
+        + 'A missing forecast or the question\'s words never say what the water is: put it in unknown, as "Whether the water will be …".');
     }
     for (const n of claim.matchAll(NUMBER)) {
       const u = claim.slice(n.index + n[0].length).match(UNIT);
       const unit = u ? unitOf(u[1]) : null;
       const given = (t) => { const seen = unitsOf(n[0], String(t).toLowerCase()); return unit ? seen.has(unit) : seen.size > 0; };
-      if (said.has(`${n[0]} ${unit}`) || given(src.numbers) || ((unknown || n.index > echo) && given(question))) continue;
+      if (said.has(`${n[0]} ${unit}`) || given(src.numbers) || ((asks || n.index < readAs) && given(question))) continue;
       said.add(`${n[0]} ${unit}`);
       out.push(u ? `${where} gives ${n[0]} ${u[1].trim()}, which the data does not give with that unit.` : `${where} gives the number ${n[0]}, which is not in the data.`);
     }
@@ -141,15 +143,16 @@ export function checkAnswer(input, ctx) {
     spots.push({ got, built, fit });
   }
   // A sentence that names spots may use only their lines. One that names none speaks of every spot
-  // given, so a condition in it must be in the lines of each.
+  // given (or looked up, if none is given), so a condition in it must be in the lines of each.
   const ownOf = (id) => shown.own(id, [seen.spots.get(id).s.name, seen.spots.get(id).s.area || '']);
-  const scoped = (text, where) => sentences(text).flatMap((t) => {
+  const scoped = (text, where, opts) => sentences(text).flatMap((t) => {
     const lower = t.toLowerCase();
     const named = [...seen.spots.keys()].filter((id) => nameParts(seen.spots.get(id).s).some((p) => lower.includes(p)));
-    const every = named.length ? named.map(ownOf) : spots.length ? spots.map((x) => ownOf(x.got.s.id)) : [shown.all];
-    return textProblems(t, { every, numbers: named.length ? [...named.map(ownOf), shown.general].join('\n') : shown.all, question }, where);
+    const looked = spots.length ? spots.map((x) => x.got.s.id) : [...seen.spots.keys()];
+    const every = (named.length ? named : looked).map(ownOf);
+    return textProblems(t, { every, numbers: named.length ? [...named.map(ownOf), shown.general].join('\n') : shown.all, question }, where, opts);
   });
-  problems.unshift(...scoped(summary, 'The summary'), ...assumptions.flatMap((a, i) => scoped(a, `Assumption ${i + 1}`)));
+  problems.unshift(...scoped(summary, 'The summary'), ...assumptions.flatMap((a, i) => scoped(a, `Assumption ${i + 1}`, { assumption: true })));
   if (spots.length && !spots.some((x) => x.built.level_known) && LEVEL_WORDS.test(summary)) {
     problems.push(`The summary names a level, but the forecast does not cover ${dayWords(day)} at these spots: say it is not known.`);
   }
