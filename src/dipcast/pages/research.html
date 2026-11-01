@@ -1,5 +1,5 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Research · SwimSignal</title>
+<title>Research and data · SwimSignal</title>
 <meta name="description" content="What SwimSignal is testing and trying: satellite lake observations, and prototypes you can open on any spot, each with its record and what would make it part of the forecast pages.">
 <meta name="theme-color" content="#3d5b5d">
 <link rel="icon" href="/static/icons/icon.svg" type="image/svg+xml">
@@ -8,20 +8,27 @@
 <link rel="preload" href="/static/fonts/SourceSans3-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/static/fonts/SourceSerif4-latin.woff2" as="font" type="font/woff2" crossorigin></head><body><a class="skip" href="#main">Skip to content</a>
 <header class="top"><a class="brand" href="/"><svg viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" fill="#0f5a61"/><path d="M430-20C330 110 470 230 300 290S110 380 190 540" fill="none" stroke="#5CC2B5" stroke-width="70" stroke-linecap="round"/><circle cx="318" cy="138" r="38" fill="#F08A4B"/><circle cx="165" cy="358" r="46" fill="none" stroke="#fff" stroke-width="22"/></svg>SwimSignal</a>
-<nav aria-label="Site"><a href="/plan/">Plan a swim</a><a href="/saved/">Saved</a><a href="/verification">Accuracy</a><a href="/about">About</a><a class="desk-only" aria-current="page" href="/research">Research</a><a class="desk-only" href="/feedback">Feedback</a></nav></header>
+<nav aria-label="Site"><a href="/plan/">Plan a swim</a><a href="/saved/">Saved</a><a href="/verification">Accuracy</a><a href="/about">About</a><a class="desk-only" href="/lab/">Research Lab</a><a class="desk-only" aria-current="page" href="/research">Research &amp; data</a><a class="desk-only" href="/feedback">Feedback</a></nav></header>
 <main class="doc" id="main">
 <!-- The Research page (31 Oct 2026): where research and prototypes are found, each with its record and its route to
      the forecast pages, so none is reachable only by a hidden address. A prototype's own address flag still opens it on
      a spot's page; this page is where those addresses are given. Keep each entry's "Status" true: when a prototype
      becomes part of the forecast pages, move it to "Now part of the forecast pages" with the date and PR. -->
-<h1>Research</h1>
+<h1>Research and data</h1>
 <p class="lead">What SwimSignal is testing and trying before it becomes part of the forecast. Each item says what it is, how far it has got, where its record is, and what would make it part of the forecast pages. None of it changes a spot's level.</p>
 
-<h2><a href="lab/">Research Lab</a></h2>
-<p>Four exhibits that put the research in pictures, each on data already read: <a href="lab/lake-from-space/">the lake from space</a>, satellite pictures of lakes beside lab chlorophyll, cloudy days left blank; <a href="lab/pollution/">where the pollution goes</a>, every monitored overflow upstream of a spot and the mapped rivers joining them; and <a href="lab/forecasts/">how good the forecasts are</a>, every past E. coli sample against what the estimate, rebuilt afterwards, would have said, misses and false alarms included; and <a href="lab/workspace/">a catchment workspace</a>, rain, spills, samples, temperature and satellite readings for Windermere and the Wharfe at Ilkley on one timeline.</p>
-<p><b>Status:</b> exploratory. Each exhibit is a frozen copy of the data, with its date on the page. Nothing in it changes a spot's level, and a satellite index is not a toxin measurement.</p>
+<p class="jump">On this page: <a href="#lab">Research Lab</a> · <a href="#observations">Observations</a> · <a href="#prototypes">Prototypes</a> · <a href="#tests">Tests</a> · <a href="#becoming">Becoming a feature</a></p>
 
-<h2>Observations you can look at</h2>
+<h2 id="lab"><a href="/lab/">Research Lab</a></h2>
+<p>The research in pictures, each exhibit on data already read. Exploratory: nothing in it changes a spot's level, and a satellite index is not a toxin measurement. Each exhibit gives the date of its data.</p>
+<ul class="routes">
+<li><a href="/lab/lake-from-space/"><img src="lab/assets/covers/lake-from-space.jpg" alt="" width="160" height="160" loading="lazy"><span><small>Exhibit 1</small><b>The lake from space</b>Satellite pictures of lakes beside lab chlorophyll, cloudy days left blank.</span></a></li>
+<li><a href="/lab/pollution/"><img src="lab/assets/covers/pollution.jpg" alt="" width="160" height="160" loading="lazy"><span><small>Exhibit 2</small><b>Where does the pollution go?</b>Every monitored overflow upstream of a spot and the rivers joining them.</span></a></li>
+<li><a href="/lab/forecasts/"><img src="lab/assets/covers/forecasts.jpg" alt="" width="160" height="160" loading="lazy"><span><small>Exhibit 3</small><b>How good are the forecasts?</b>Every past E. coli sample against what the estimate would have said.</span></a></li>
+<li><a href="/lab/workspace/"><img src="lab/assets/covers/workspace.jpg" alt="" width="160" height="160" loading="lazy"><span><small>Exhibit 4</small><b>Catchment workspace</b>Rain, spills, samples and satellite readings for Windermere and Ilkley on one timeline.</span></a></li>
+</ul>
+
+<h2 id="observations">Observations you can look at</h2>
 <h3><a href="/lakes">Satellite lake observations</a></h3>
 <p>Dated Sentinel-2 satellite readings of how green the water looked at English lakes, with how many images were clear enough to read and how old the latest is. Laboratory chlorophyll measurements are shown apart where the Environment Agency has them.</p>
 <p><b>Status:</b> observations, shown as they are. The index followed laboratory chlorophyll in a test but missed its stated bar, so it is not turned into a chlorophyll figure, an algae warning or swimming advice. Images are read for May to September at every location. Five pilot locations (Rutland Water, Derwent Water, Frensham Great Pond, Little Sea and Barton Broad) are also checked for new images weekly, and each says when it was last checked; their readings from outside May to September are experimental. Every other location is the historical record: nothing newer than the last season is shown as current.</p>
@@ -42,7 +49,7 @@
 <p>Where the lab samples behind the E. coli model are thin, by spot, month and rain, and what a simulation found for three simple ways of spending a sampling budget, with a cost you set.</p>
 <p><b>Status:</b> a planning aid, not a sampling plan. The simulation's information policy failed its test against equal coverage, and no policy has been tried in real water. <a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/SAMPLING-PLANNER-CONTRACT-v1.md">Its record</a>. <b>To claim a policy is more efficient:</b> a randomised field study, set out in the record.</p>
 
-<h2>Prototypes you can try</h2>
+<h2 id="prototypes">Prototypes you can try</h2>
 <p>Each opens on a spot's own page, added to the address. They are prototypes: the words and the layout may change, and each needs a check with swimmers before it is shown to everyone.</p>
 
 <h3>What changed in the inputs</h3>
@@ -61,7 +68,7 @@
 <p>The last 48 hours upstream of a spot: the spills the companies' feeds reported, and when their water was modelled to arrive.</p>
 <p><a href="spot/bw-uke4100-08901/?replay=1">Try it at Ilkley</a>. <b>Status:</b> prototype. <a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/CATCHMENT-REPLAY-2026-10.md">Its record</a>.</p>
 
-<h2>Tests and their results</h2>
+<h2 id="tests">Tests and their results</h2>
 <h3><a href="/models">Model scorecard</a></h3>
 <p>Each forecast model and candidate on one page: what it predicts, where and when it was tested, how it did against a simple reference with its interval, what it misses, how often it was wrong, and whether it is live, in a running test or in the lab. A running test shows its window and read date, not a score, until the read.</p>
 <p>Every change to the forecast model is tested against past data first, under rules written down before the scores are seen; many fail, and are kept as records. <a href="/verification">How accurate the forecast is</a>, <a href="/methods">how it works</a>, and every test's record in <a href="https://github.com/ethanbuckley/swimsignal/tree/main/docs">the project's documents</a>.</p>
@@ -69,7 +76,7 @@
 <h3><a href="/research-catalogue">Research catalogue</a></h3>
 <p>Every research record in one searchable list: what each test found when it was run, kept as it was, where the work stands now, and what would reopen a version that was archived.</p>
 
-<h2>How a prototype becomes part of the forecast pages</h2>
+<h2 id="becoming">How a prototype becomes part of the forecast pages</h2>
 <ol>
 <li>It answers one question a swimmer asks, with a way to tell whether it does.</li>
 <li>It says only what its data holds, with each fact's source and date, and says what it does not know.</li>

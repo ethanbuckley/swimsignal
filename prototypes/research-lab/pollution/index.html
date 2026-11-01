@@ -7,21 +7,26 @@
      lab/data/ and the fonts at the site's own; served from the repository root, it reads data/research/ as committed. -->
 <title>Where does the pollution go? · SwimSignal Research Lab</title>
 <meta name="description" content="Every monitored storm overflow upstream of a swim spot, the mapped rivers joining them, and the forecast model's settings for travel time and weight.">
-<link rel="stylesheet" href="../lab.css?v=10">
-<link rel="stylesheet" href="pollution.css?v=1">
+<link rel="stylesheet" href="../../../src/dipcast/pages/page.css">
+<link rel="stylesheet" href="../lab.css?v=11">
+<link rel="stylesheet" href="pollution.css?v=3">
 </head>
-<body>
-<header class="top"><div class="wrap">
-  <a class="brand" href="https://swimsignal.co.uk/">SwimSignal</a>
-  <span class="crumb"><a href="../">Research Lab</a> · Exhibit 2 of 4 · exploratory</span>
-  <a href="https://swimsignal.co.uk/methods.html">Methods</a>
-</div></header>
+<body class="lab">
+<!-- A stand-in for a repository preview: the site build puts the site's own header here (build_site.site_header). -->
+<header class="top"><a class="brand" href="https://swimsignal.co.uk/">SwimSignal</a></header>
+<nav class="labnav" aria-label="Research Lab"><div class="wrap">
+  <a href="../">Research Lab</a>
+  <a href="../lake-from-space/"><span class="n">1</span>Lake from space</a>
+  <a href="../pollution/" aria-current="page"><span class="n">2</span>Where pollution goes</a>
+  <a href="../forecasts/"><span class="n">3</span>Forecast record</a>
+  <a href="../workspace/"><span class="n">4</span>Catchment workspace</a>
+</div></nav>
 
 <div class="front"><div class="wrap">
   <div>
     <h1>Where does the pollution go?</h1>
     <p class="q">When an overflow spills upstream of a swim spot, how strongly does the forecast count it, and when might its water arrive?</p>
-    <p class="answer" id="front-answer">Loading the network…</p>
+    <div class="answer" id="front-answer">Loading the network…</div>
     <p class="status" id="front-status"></p>
     <p class="status" data-asof="paths,catalogue" data-base="../"></p>
   </div>
@@ -40,7 +45,7 @@
 
   <section class="sec" id="s-net"><div class="wrap">
     <div class="sec-head"><span class="no">2</span><h2>What lies upstream</h2><span class="aside">rivers within 60 km along the network</span></div>
-    <div class="lakehead"><div><h2 id="sp-name">…</h2><div class="meta" id="sp-meta"></div></div></div>
+    <div class="lakehead"><div><h2 id="sp-name">…</h2><div class="meta" id="sp-meta"></div></div><div class="meta" id="sp-link"></div></div>
     <dl class="facts" id="sp-facts"></dl>
     <div class="netrow">
       <figure class="netmap"><div class="drawn-map" id="net"></div><div class="map-key" id="net-key"></div></figure>
@@ -75,6 +80,13 @@
     <div class="sec-head"><span class="no">6</span><h2>Questions worth asking next</h2><span class="aside">proposed, not started</span></div>
     <ol class="qs" id="qs"></ol>
   </div></section>
+  <section class="sec"><div class="wrap">
+    <nav class="pager" aria-label="Exhibits">
+      <a class="prev" href="../lake-from-space/"><small>&larr; Exhibit 1</small><b>The lake from space</b></a>
+      <a class="next" href="../forecasts/"><small>Exhibit 3 &rarr;</small><b>How good are the forecasts?</b></a>
+    </nav>
+    <p class="back"><a href="https://swimsignal.co.uk/">Back to the forecasts</a> · <a href="https://swimsignal.co.uk/research.html">Research &amp; data</a></p>
+  </div></section>
 </main>
 
 <footer class="foot"><div class="wrap">
@@ -84,8 +96,9 @@
      <a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/RESEARCH-RECOVERY-2026-10.md">the research register</a>.
      Data: <a href="../assets/paths/index.json">paths/index.json</a> and one file per spot, made by <code>scripts/lab_pollution_paths.py</code>.</p>
   <p>Exploratory work on data already read. It changes nothing in the forecast. Each spot's own page gives the forecast and official advice.</p>
+  <p class="site-links"><a href="https://swimsignal.co.uk/terms.html">Terms of use</a> · <a href="https://swimsignal.co.uk/privacy.html">Privacy</a> · <a href="https://swimsignal.co.uk/feedback.html">Feedback</a> · <a href="https://swimsignal.co.uk/research.html">Research &amp; data</a></p>
 </div></footer>
-<script src="../lab.js?v=4"></script>
-<script src="pollution.js?v=4"></script>
+<script src="../lab.js?v=5"></script>
+<script src="pollution.js?v=5"></script>
 </body>
 </html>

@@ -91,7 +91,8 @@ REWRITES = [('href="/feedback"', 'href="feedback.html"'), ('href="/feedback?type
             ('href="/methods"', 'href="methods.html"'), ('href="/methods#', 'href="methods.html#'),
             ('href="/verification#', 'href="verification.html#'), ('href="/coverage"', 'href="coverage.html"'),
             ('href="/plan/"', 'href="plan/"'), ('href="/saved/"', 'href="saved/"'),   # the header's links, as the app's (29 Oct 2026)
-            ('href="/research"', 'href="research.html"'), ('href="/lakes"', 'href="lakes.html"')]   # Research and its lake viewer (31 Oct 2026)
+            ('href="/research"', 'href="research.html"'), ('href="/lakes"', 'href="lakes.html"'),   # Research and its lake viewer (31 Oct 2026)
+            ('href="/lab/', 'href="lab/')]   # the Research Lab and its exhibits (1 Nov 2026)
 BRAND = "SwimSignal"
 # The home page leads with the name, for search; every other page is "Page · SwimSignal" (docs/DESIGN.md, Words).
 HOME_TITLE = f"{BRAND} · pollution risk forecasts for swim spots"
@@ -2439,7 +2440,7 @@ PAGE_DESCRIPTION = re.compile(r'<meta name="description" content="([^"]*)">\n?')
 # script. A browser without popovers (iOS before 17) ignores popovertarget, so MORE_FALLBACK opens the list as a plain
 # toggle there instead of leaving a button that does nothing (found on the live site, 31 Oct 2026). index.html's bar
 # has the same.
-MORE_LINKS = (("verification.html", "Accuracy"), ("about.html", "About"), ("research.html", "Research"), ("feedback.html", "Feedback"))
+MORE_LINKS = (("verification.html", "Accuracy"), ("about.html", "About"), ("lab/", "Research Lab"), ("research.html", "Research &amp; data"), ("feedback.html", "Feedback"))
 MORE_FALLBACK = "if(!('popover' in this)){this.setAttribute('aria-expanded',this.nextElementSibling.classList.toggle('open'))}"
 MORE_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>'
 
@@ -2752,6 +2753,15 @@ def with_warning_words(html: str, verification: Path) -> str:
     return WARN_FIGURES.sub(lambda m: m.group(1) + said + m.group(2), html, count=1)
 
 
+def site_header(r: str, current: str = "") -> str:
+    """The header every page shares (page.css .top): the mark and the main links, `current` (a link's href, such as
+    "lab/") marked as the page you are on. The prose pages and the app write the same links by hand."""
+    links = (("plan/", "Plan a swim", ""), ("saved/", "Saved", ""), ("verification.html", "Accuracy", ""), ("about.html", "About", ""),
+             ("lab/", "Research Lab", "desk-only"), ("research.html", "Research &amp; data", "desk-only"), ("feedback.html", "Feedback", "desk-only"))
+    nav = "".join(f'<a{f' class="{c}"' if c else ""}{' aria-current="page"' if h == current else ""} href="{r}{h}">{t}</a>' for h, t, c in links)
+    return f'<header class="top"><a class="brand" href="{r}">{MARK}{BRAND}</a><nav aria-label="Site">{nav}</nav></header>'
+
+
 def not_found_page(root: str) -> str:
     """404.html: GitHub Pages serves it for any missing address, at any depth, so every link in it
     is absolute. Without it, a mistyped or outdated link gets GitHub's own page, with no way back."""
@@ -2764,8 +2774,7 @@ def not_found_page(root: str) -> str:
         f'<link rel="stylesheet" href="{r}page.css">\n'
         f'<link rel="preload" href="{r}fonts/SourceSans3-latin.woff2" as="font" type="font/woff2" crossorigin>'
         f'<link rel="preload" href="{r}fonts/SourceSerif4-latin.woff2" as="font" type="font/woff2" crossorigin>\n'
-        f'</head><body>\n<header class="top"><a class="brand" href="{r}">{MARK}{BRAND}</a>'
-        f'<nav aria-label="Site"><a href="{r}plan/">Plan a swim</a><a href="{r}saved/">Saved</a><a href="{r}verification.html">Accuracy</a><a href="{r}about.html">About</a><a class="desk-only" href="{r}research.html">Research</a><a class="desk-only" href="{r}feedback.html">Feedback</a></nav></header>\n'
+        f'</head><body>\n{site_header(r)}\n'
         '<main class="doc"><h1>No page at this address</h1>\n'
         '<p class="lead">A spot changes address when it is renamed or removed, and a link can be copied or typed wrongly.</p>\n'
         f'<ul><li><a href="{r}">All spots</a>, each with its five-day forecast</li><li><a href="{r}saved/">Your saved spots</a></li>'
@@ -3302,7 +3311,7 @@ def write_traces(site: Path, traces: dict[str, list[str]], upstream: dict[str, l
 # spot's page asks for its own data/spot/<id>.json. spots.json itself stays whole, for anyone who
 # reads it, for the organisers' page and the decision record, and for scripts/alerts.js. The lab
 # results an organisation sent (measured) are a spot page's alone too.
-DETAIL_FIELDS = ("contributors", "guide", "measured", "linked", "seasonal", "stretches", "sample_history")   # linked: spot_links, the Nearby card's; seasonal: past spills by month; stretches: an outing's finish (stretches.py); sample_history: the link to every EA sample (attach_sample_history)
+DETAIL_FIELDS = ("contributors", "guide", "measured", "linked", "seasonal", "stretches", "sample_history", "lab")   # linked: spot_links, the Nearby card's; seasonal: past spills by month; stretches: an outing's finish (stretches.py); sample_history: the link to every EA sample (attach_sample_history)
 
 
 def reach_by_company(contributors: list[dict]) -> list[list]:
@@ -3515,7 +3524,9 @@ LAB = ROOT / "prototypes" / "research-lab"
 LAB_DATA = ("ecoli_evidence.v1.json", "lake_observations.v1.json", "lake_imagery.v1.json",
             "satellite/pilot_runs.json", "research_catalogue.v1.json", "lake-img")
 LAB_REWRITES = (("../../../data/research/", "../data/"),            # an exhibit's reads, one folder down
-                ("../../src/dipcast/pages/fonts/", "../fonts/"))     # lab.css: the site's own fonts
+                ("../../../src/dipcast/pages/page.css", "../../page.css"),   # an exhibit's link to the site's stylesheet
+                ("../../src/dipcast/pages/page.css", "../page.css"))         # the front page's
+LAB_HEADER = re.compile(r'<header class="top">.*?</header>', re.S)
 
 
 def lab_pages(lab: Path = LAB) -> list[str]:
@@ -3549,12 +3560,46 @@ def write_lab(site: Path, token: str | None = None, lab: Path = LAB, research: P
             s = s.replace(a, b)
         if f.suffix == ".html":
             up = "../" * len(f.relative_to(site).parts[:-1])   # the site's root, so a preview build links to itself
-            s = s.replace('href="https://swimsignal.co.uk/"', f'href="{up}"').replace('<meta name="robots" content="noindex">\n', '')
-            s = with_counter(s, token)
+            s = s.replace('href="https://swimsignal.co.uk/', f'href="{up}').replace('<meta name="robots" content="noindex">\n', '')
+            # The site's own header, icon and phone bar in place of the stand-in a repository preview shows: one product
+            # shell, with Research Lab as the page you are on.
+            s = LAB_HEADER.sub(lambda _: site_header(up, "lab/"), s, count=1)
+            s = s.replace("</head>", f'<meta name="theme-color" content="#3d5b5d">\n<link rel="icon" href="{up}icons/icon.svg" type="image/svg+xml">\n'
+                                     f'<link rel="apple-touch-icon" href="{up}icons/apple-touch-icon.png">\n</head>', 1)
+            s = with_counter(with_phone_nav(s, up), token)
             pages += 1
         f.write_text(s)
     write_lab_refresh(site)
     return pages
+
+
+def attach_lab_links(results: list[dict], lab: Path = LAB, research: Path = ROOT / "data" / "research") -> int:
+    """On each spot whose record is in a Research Lab exhibit, `lab`: the key each exhibit opens it by, for the spot
+    page's "Explore the evidence" (index.html labTile). `lake`: its satellite record (exhibit 1, #lake=); `bw`: its
+    bathing water in the forecast record (exhibit 3, #bw=); `ws`: the workspace catchment it is in (exhibit 4, #c=).
+    Exhibit 2 needs no key: every spot with an overflow upstream is in it. A spot's own file only (DETAIL_FIELDS).
+    Returns how many spots got one."""
+    def read(path: Path) -> dict:
+        try:
+            return json.loads(path.read_text())
+        except (OSError, ValueError):
+            return {}
+    lakes = {x.get("lake_id") for x in read(research / "lake_observations.v1.json").get("lakes", [])}
+    bws = set((read(lab / "forecasts" / "exploration.json").get("ecoli") or {}).get("sites", {}))
+    ws = {}
+    for c in read(lab / "workspace" / "data" / "index.json").get("catchments", []):
+        for s in read(lab / "workspace" / "data" / f"{c['id']}.json").get("spots", []):
+            ws.setdefault(s["id"], c["id"])
+    n = 0
+    for r in results:
+        sid = str(r["id"])
+        links = {k: v for k, v in (("lake", sid if sid in lakes else None),
+                                   ("bw", sid[3:] if sid.startswith("bw-") and sid[3:] in bws else None),
+                                   ("ws", ws.get(sid))) if v}
+        if links:
+            r["lab"] = links
+            n += 1
+    return n
 
 
 # How old each part of the Lab is (docs/RESEARCH-LAB-LIVE-2026-11.md, "Refresh"): lab/refresh.json, read by every
@@ -3576,7 +3621,8 @@ def _lab_date(path: Path, *keys: str) -> str | None:
 
 
 def write_lab_refresh(site: Path, paths_from_build: bool = False) -> dict:
-    """lab/refresh.json: each part of the Lab, the date it was made, how it is refreshed and when to call it old."""
+    """lab/refresh.json: each part of the Lab, the date it was made, how it is refreshed and when to call it old.
+    `short`: its name in the one line a page shows folded ("Data as of: satellite 31 Oct 2026")."""
     out = site / "lab"
     if not out.is_dir():
         return {}
@@ -3587,22 +3633,23 @@ def write_lab_refresh(site: Path, paths_from_build: bool = False) -> dict:
     except (OSError, ValueError):
         window = [None, None]
     parts = {
-        "satellite": {"label": "Satellite pictures and readings", "as_of": _lab_date(out / "data" / "lake_imagery.v1.json", "generated_at"),
+        "satellite": {"label": "Satellite pictures and readings", "short": "satellite", "as_of": _lab_date(out / "data" / "lake_imagery.v1.json", "generated_at"),
                       "refresh": "weekly, by the satellite pilot", "stale_days": 14},
-        "paths": {"label": "Overflows and the rivers joining them", "as_of": _lab_date(out / "assets" / "paths" / "index.json", "made"),
+        "paths": {"label": "Overflows and the rivers joining them", "short": "overflows and rivers", "as_of": _lab_date(out / "assets" / "paths" / "index.json", "made"),
                   "refresh": "at every site build" if paths_from_build else "by hand", "stale_days": 2 if paths_from_build else 90},
-        "wide": {"label": "Wide cover pictures", "as_of": _lab_date(out / "assets" / "wide" / "wide.json", "made"),
+        "wide": {"label": "Wide cover pictures", "short": "wide pictures", "as_of": _lab_date(out / "assets" / "wide" / "wide.json", "made"),
                  "refresh": "by hand", "stale_days": 120},
-        "workspace": {"label": "Catchment workspace layers", "as_of": _lab_date(ws[0], "made") if ws else None,
+        "workspace": {"label": "Catchment workspace layers", "short": "layers", "as_of": _lab_date(ws[0], "made") if ws else None,
                       "outcomes_to": window[-1],
                       "refresh": "by hand", "stale_days": 90},
-        "catalogue": {"label": "Research records", "as_of": _lab_date(out / "data" / "research_catalogue.v1.json", "written"),
+        "catalogue": {"label": "Research records", "short": "records", "as_of": _lab_date(out / "data" / "research_catalogue.v1.json", "written"),
                       "refresh": "with each research record", "stale_days": None},
     }
     for key, (rel, made) in LAB_ANALYSES.items():
         f = out / rel
         if f.is_file():
             parts[key] = {"label": "Analysis of the satellite readings" if key == "lake-analysis" else "Forecast record",
+                          "short": "analysis" if key == "lake-analysis" else "record",
                           "as_of": made, "outcomes_to": _lab_date(f, "cutoff"),
                           "refresh": "a dated analysis: a new season brings a new version", "stale_days": None}
     parts = {k: {kk: vv for kk, vv in v.items() if vv is not None} for k, v in parts.items() if v.get("as_of")}
@@ -4607,6 +4654,7 @@ def build(refresh: bool = True) -> dict:
     n_algae = attach_algae(results, fetch=refresh)
     n_lab = attach_lab_samples(results)   # read from the samples refresh_all's scoring fetched: no request
     n_history = attach_sample_history(results)   # from the research export, a file: no request
+    n_lab_links = attach_lab_links(results)   # which Research Lab exhibits hold this spot's record: files, no request
     n_typical = attach_typical_readings(results)   # the same export: typical readings where no daily figure is
     measured = attach_measured(results)   # lab results organisations sent, from samples/: not part of the level
     n_classified = attach_classifications(results)
@@ -4640,6 +4688,7 @@ def build(refresh: bool = True) -> dict:
     health["warnings"] += dry["warnings"]
     health["lab_samples"] = n_lab
     health["sample_history"] = n_history
+    health["lab_links"] = n_lab_links
     health["typical_readings"] = n_typical
     if water_body is None:
         health["warnings"].append("data/raw/rnags.json is missing or unreadable: no spot says what the Environment Agency lists on its water body")

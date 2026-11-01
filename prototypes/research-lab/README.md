@@ -21,8 +21,9 @@ research files it reads. Run from the repository root, as below, the exhibits re
 
 2. Open http://localhost:8823/prototypes/research-lab/
 
-It worked if the front page lists four exhibits and each one opens with figures in its opening paragraph.
-"Could not read the research files" means the server was started in the wrong folder. A page showing the main
+It worked if the front page lists four exhibits and each one opens with its answer and "The figures behind it".
+"This exhibit's data could not be loaded" means the server was started in the wrong folder. From the repository the
+header is a stand-in with the name only; the site build puts the site's own header and phone bar there. A page showing the main
 SwimSignal app means another server or an old service worker holds that port: pick another.
 
 ## Shared
@@ -40,7 +41,16 @@ SwimSignal app means another server or an old service worker holds that port: pi
 - `assets/britain.json`: England, Wales and Scotland outlines from ONS (OGL), simplified on the server, one request
   (`scripts/lab_britain_outline.py`).
 
-- `lab.css`: the field-journal stylesheet every exhibit uses (the site's type pair and colours).
+- The shell: every page links the site's `src/dipcast/pages/page.css` before `lab.css`, so the fonts, header, phone bar,
+  fields and tables are the site's. The build swaps the stand-in header for `build_site.site_header` and adds the phone
+  bar. Each page has the Lab's own bar (`.labnav`) and each exhibit ends with the previous and next one
+  (docs/DESIGN.md, "The Research Lab").
+- `lab.css`: the Lab's editorial variant over `page.css`: the warmer paper, the deep frontispiece, plates and captions.
+- `assets/covers/`: the four exhibits' covers as 320 px pictures, for the Research page, Accuracy, the home page and a
+  spot's "Explore the evidence". Taken on 1 Nov 2026 from this front page's own drawn covers (headless Chrome, the big
+  numbers hidden). Retake them if an exhibit's cover changes.
+- Links in: `#lake=`, `#spot=`, `#bw=` and `#c=…&spot=` open an exhibit on a place; a place an exhibit lacks is said in a
+  status line, never swapped quietly. Each exhibit links back to "Today's forecast for" the place it shows.
 - Each exhibit: a question and a plain answer with figures; numbered sections; real data only, missing data drawn as
   missing; notes labelled "stated in advance" or "exploratory"; what it cannot tell you; next questions with what
   would be unconvincing. Every figure is read from a committed file when the page loads.

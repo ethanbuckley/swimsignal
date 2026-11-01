@@ -60,7 +60,7 @@ def test_research_and_the_viewer_are_written_and_linked_from_every_page(tmp_path
     bs = _build_site()
     bs.write_pages(tmp_path, [{"id": "a", "name": "A", "kind": "lake", "days": []}], root="https://example.org/")
     research, lakes = (tmp_path / "research.html").read_text(), (tmp_path / "lakes.html").read_text()
-    assert "<title>Research · SwimSignal</title>" in research and 'href="lakes.html"' in research
+    assert "<title>Research and data · SwimSignal</title>" in research and 'href="lakes.html"' in research
     assert "<title>Satellite lake observations · SwimSignal</title>" in lakes and '<script src="lakes.js?v=' in lakes
     assert (tmp_path / "lakes.js").read_bytes() == (bs.TEMPLATE.parent / "lakes.js").read_bytes()
     # In the header (desktop) and the foot (every width) of the app and of every prose page.

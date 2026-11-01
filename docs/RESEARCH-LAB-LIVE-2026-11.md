@@ -94,6 +94,30 @@ How each part stays current:
   unchanged), the build-made files match the committed copy: the same 109 spots and settings, and the same lines
   once order is ignored. The lines are now sorted, so each build writes the same file.
 
+## One product (1 November 2026, the polish pass)
+
+Ethan picked the Lab's look as the reference for the deeper evidence. This pass made the Lab part of the same
+product and carried a restrained share of its manner into the forecast pages (docs/DESIGN.md, "The Research Lab").
+No forecast, level, model, threshold or evaluation window changed.
+
+- **Shell.** The Lab loads the site's `page.css`; the build gives it the site's header (Research Lab marked) and the
+  phone bar. The header's desktop links are now "Research Lab" and "Research &amp; data"; the phone's More has both.
+- **Inside the Lab.** Its own bar (overview and four numbered exhibits), previous and next at each exhibit's foot,
+  "Back to the forecasts". Each opening is the question, a short answer, "The figures behind it" folded, a scope line,
+  and "Data as of" folded to its dates (a part past its limit is said outside the fold). The front page is shorter; its
+  cards are one link each, with inert covers. On phones the overflow table is one block per overflow.
+- **Places.** `build_site.attach_lab_links` puts, on each spot whose record an exhibit holds, the key that opens it:
+  39 spots on 1 November 2026. A spot's page lists those exhibits under "Explore the evidence", after its detail.
+  Each exhibit links back to the place's forecast, and says so when a link names a place it lacks.
+- **The forecast pages.** Research shows four routes with covers; Accuracy one route to exhibit 3; the home page a
+  compact Lab block after the list; a spot's Upstream map is framed and captioned as a Lab figure.
+- **Checks.** A preview build from the live spots.json, every missing file served from the live site read-only:
+  each exhibit opened by a spot page's link on that spot (Windermere, Rayrigg Meadow: all four; the workspace with the
+  spot in focus); a catchment, bathing water and lake an exhibit lacks each said in a status line; stepping to the next
+  sample moved the day, the link, the panel and the CSV together (29 July 2025, Rayrigg Meadow 36 per 100 ml in
+  both); a backdated part showed its warning outside the fold; the front page's gallery has four tab stops and no
+  focusable point inside a cover; the header stays on one line at 820 and 1,030 px.
+
 ## Left for later
 
 - **The rest of the refresh plan.**

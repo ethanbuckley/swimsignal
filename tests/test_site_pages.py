@@ -1179,7 +1179,7 @@ def test_information_pages_offer_mobile_navigation_and_map_handoff(tmp_path):
     # More holds the header's links a phone hides (Research was only in the foot, 31 Oct 2026), and the app's bar
     # lists the same ones as the prose pages'.
     more = "".join(f'<li><a href="{h}">{label}</a></li>' for h, label in bs.MORE_LINKS)
-    assert [h for h, _ in bs.MORE_LINKS] == ["verification.html", "about.html", "research.html", "feedback.html"]
+    assert [h for h, _ in bs.MORE_LINKS] == ["verification.html", "about.html", "lab/", "research.html", "feedback.html"]   # the Research Lab beside Research and data (1 Nov 2026)
     assert f'<ul class="more-menu" id="more-menu" popover>{more}</ul>' in app
     assert 'popovertarget="more-menu"' in app and 'popovertarget="more-menu"' in page
     # Without popovers (iOS before 17) the button toggles the list itself, the same way in both bars.
