@@ -7,6 +7,7 @@ Local prototypes for review. Not built by `site.yml`, not linked from the site, 
 | 1. The lake from space | `lake-from-space/` | prototype | `docs/LAKE-FROM-SPACE-EXPLORATION-2026-11.md` |
 | 2. Where does the pollution go? | `pollution/` | prototype | `docs/POLLUTION-PATHS-EXHIBIT-2026-11.md` |
 | 3. How good are the forecasts? | `forecasts/` | prototype | `docs/FORECAST-RECORD-EXPLORATION-2026-11.md` |
+| 4. Catchment workspace | `workspace/` | prototype | `docs/CATCHMENT-WORKSPACE-2026-11.md` |
 
 ## Run it
 
@@ -18,7 +19,7 @@ Local prototypes for review. Not built by `site.yml`, not linked from the site, 
 
 2. Open http://localhost:8823/prototypes/research-lab/
 
-It worked if the front page lists three exhibits and the two built ones open with figures in their opening paragraph.
+It worked if the front page lists four exhibits and each one opens with figures in its opening paragraph.
 "Could not read the research files" means the server was started in the wrong folder. A page showing the main
 SwimSignal app means another server or an old service worker holds that port: pick another.
 
@@ -29,6 +30,9 @@ SwimSignal app means another server or an old service worker holds that port: pi
   before and after, unchanged). `wide.json` records each scene, its time and hash. Pictures, not readings.
 - `assets/paths/`: each spot's upstream overflows (the forecast's own distance, travel time and weight) and the mapped
   rivers joining them, from `scripts/lab_pollution_paths.py` (offline; scratch root linking the cached network).
+- `workspace/data/`: one file per catchment (Windermere, the Wharfe at Ilkley) with every layer the workspace draws, from
+  `scripts/lab_catchment_workspace.py` (offline; scratch `DIPCAST_ROOT` linking the rain cache and the EA event files,
+  hashed before and after, unchanged). Outcomes to 30 Sep 2026 only.
 - `assets/britain.json`: England, Wales and Scotland outlines from ONS (OGL), simplified on the server, one request
   (`scripts/lab_britain_outline.py`).
 
