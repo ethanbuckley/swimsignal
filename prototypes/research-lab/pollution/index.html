@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Research Lab exhibit 2, "Where does the pollution go?": a local prototype, not built by site.yml and not linked from
+     the site. Serve the repository root (README.md in the Research Lab folder). -->
+<title>Where does the pollution go? · SwimSignal Research Lab</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="../lab.css?v=10">
+<link rel="stylesheet" href="pollution.css?v=1">
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <a class="brand" href="https://swimsignal.co.uk/">SwimSignal</a>
+  <span class="crumb"><a href="../">Research Lab</a> · Exhibit 2 of 3 · prototype</span>
+  <a href="https://swimsignal.co.uk/methods.html">Methods</a>
+</div></header>
+
+<div class="front"><div class="wrap">
+  <div>
+    <h1>Where does the pollution go?</h1>
+    <p class="q">When an overflow spills upstream of a swim spot, how strongly does the forecast count it, and when might its water arrive?</p>
+    <p class="answer" id="front-answer">Loading the network…</p>
+    <p class="status" id="front-status"></p>
+  </div>
+  <figure class="overview">
+    <div class="drawn-map dark" id="overview"></div>
+    <figcaption id="overview-cap"></figcaption>
+  </figure>
+</div></div>
+
+<main>
+  <section class="sec" id="s-pick"><div class="wrap">
+    <div class="sec-head"><span class="no">1</span><h2>Choose a swim spot</h2><span class="aside" id="pick-aside"></span></div>
+    <div class="picker always"><label for="spot-select">Swim spot</label><select id="spot-select"></select></div>
+  </div></section>
+
+  <section class="sec" id="s-net"><div class="wrap">
+    <div class="sec-head"><span class="no">2</span><h2>What lies upstream</h2><span class="aside">rivers within 60 km along the network</span></div>
+    <div class="lakehead"><div><h2 id="sp-name">…</h2><div class="meta" id="sp-meta"></div></div></div>
+    <dl class="facts" id="sp-facts"></dl>
+    <div class="netrow">
+      <figure class="netmap"><div class="drawn-map" id="net"></div><div class="map-key" id="net-key"></div></figure>
+      <div class="clock" id="clock"></div>
+    </div>
+  </div></section>
+
+  <section class="sec" id="s-list"><div class="wrap">
+    <div class="sec-head"><span class="no">3</span><h2>Overflow by overflow</h2><span class="aside">ordered by the model's weight at this spot</span></div>
+    <p class="note" id="list-intro"></p>
+    <div class="ovtable" id="ovtable"></div>
+  </div></section>
+
+  <section class="sec" id="s-research"><div class="wrap">
+    <div class="sec-head"><span class="no">4</span><h2>The questions the research is testing</h2><span class="aside">results as recorded, adopted and failed alike</span></div>
+    <div class="journey" id="journey"></div>
+  </div></section>
+
+  <section class="sec" id="s-not"><div class="wrap">
+    <div class="sec-head"><span class="no">5</span><h2>What it cannot tell you</h2></div>
+    <ul class="lim">
+      <li><b>No spill was followed down a river.</b> The lines are the mapped rivers that join each overflow to the spot. Travel times and weights are the model's settings, fitted to samples, not measured journeys.</li>
+      <li><b>The clock is an illustration.</b> It shows when water would arrive at the model's assumed speed. Real speed changes with flow: a river in flood moves far faster than one in a dry spell.</li>
+      <li><b>Monitored overflows only.</b> Farms, misconnected drains, birds, dogs and unmonitored outfalls also carry bacteria. A spot with no overflow upstream is not a clean spot.</li>
+      <li><b>Sixty kilometres is a cut-off, not a boundary.</b> Overflows further up are left out because the model gives them almost no weight, not because their water never arrives.</li>
+      <li><b>A lake is not a pipe.</b> At lakes the model holds water for the lake's residence time and mixes it. Wind and currents can carry a plume much faster along one shore.</li>
+      <li><b>Official advice comes first.</b> Environment Agency notices and signs at the water are shown on each spot page.</li>
+    </ul>
+  </div></section>
+
+  <section class="sec" id="s-next"><div class="wrap">
+    <div class="sec-head"><span class="no">6</span><h2>Questions worth asking next</h2><span class="aside">proposed, not started</span></div>
+    <ol class="qs" id="qs"></ol>
+  </div></section>
+</main>
+
+<footer class="foot"><div class="wrap">
+  <p id="attrib"></p>
+  <p>Method: <a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/POLLUTION-PATHS-EXHIBIT-2026-11.md">the exhibit's record</a>,
+     <a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/TRANSPORT-FIT-TEST-2026-10.md">the transport fit</a>,
+     <a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/RESEARCH-RECOVERY-2026-10.md">the research register</a>.
+     Data: <a href="../assets/paths/index.json">paths/index.json</a> and one file per spot, made by <code>scripts/lab_pollution_paths.py</code>.</p>
+  <p>A prototype for review. It changes nothing on swimsignal.co.uk and nothing in the forecast.</p>
+</div></footer>
+<script src="../lab.js?v=3"></script>
+<script src="pollution.js?v=3"></script>
+</body>
+</html>
