@@ -67,6 +67,14 @@ Spill forecasts and the EA comparison are shown from their existing records, unc
 - **Inferred:** the lake result says the model's lake inputs carry little sample-level information at these 12 lakes;
   it does not say lakes cannot be forecast.
 
+## Wording correction after review (1 November 2026)
+
+An outside review found that the exhibit's opening said the estimate "warned before" 121 river samples. These estimates
+were rebuilt afterwards, so nothing was warned before any sample. The opening, the dot ledger's caption and playback,
+the per-site facts and note 3 now say the estimate "would have flagged" a sample, and the opening says "rebuilt
+afterwards, not issued at the time". The one comparison of forecasts issued at the time (against the Environment
+Agency, 16 to 28 September 2026) keeps "warned", since those were real issued forecasts. No numbers changed.
+
 ## Proposed next questions (not started)
 
 1. **How far apart are hindsight and the issued record?** Report issued against hindsight on the same 2027 samples, from

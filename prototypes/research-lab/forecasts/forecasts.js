@@ -22,7 +22,8 @@ function outcome(x) {
   const w = x.hindsight >= WARN;
   return x.over ? (w ? 'hit' : 'miss') : (w ? 'fa' : 'quiet');
 }
-const WORD = { hit: 'Warned, and over 900', miss: 'Missed: over 900 with no warning', fa: 'False alarm: warned, under 900', quiet: 'Quiet, and under 900', none: 'No estimate' };
+// 'would have flagged': these estimates were rebuilt afterwards, so nothing here was a warning issued before a sample
+const WORD = { hit: 'Would have flagged, and over 900', miss: 'Would have missed: over 900, not flagged', fa: 'False alarm: would have flagged, under 900', quiet: 'Not flagged, and under 900', none: 'No estimate' };
 const COL = { hit: 'var(--hit)', miss: 'var(--card)', fa: 'var(--fa)', quiet: 'var(--quiet)', none: 'var(--card)' };
 const samplesOf = bw => SITES[bw].samples.filter(x => x.t.slice(0, 10) <= EX.cutoff);
 
@@ -32,8 +33,8 @@ function renderFront() {
   const lead0 = sp.find(x => x.source === 'forecast lead 0'), lead4 = sp.find(x => x.source === 'forecast lead 4');
   const m = r.at_line.model;
   $('#front-answer').innerHTML =
-    `At rivers, better than the simple alternatives, with real misses. Of ${r.over_900} river samples over 900, the estimate warned before ${m.hits} and missed ${m.misses}, ` +
-    `and it gave ${m.false_alarms} false alarms. At lakes it did no better than quoting the usual rate: it warned before none of ${l.over_900}. ` +
+    `At rivers, better than the simple alternatives, with real misses. <b>Rebuilt afterwards</b>, not issued at the time: of ${r.over_900} river samples over 900, the estimate would have flagged ${m.hits} and missed ${m.misses}, ` +
+    `with ${m.false_alarms} false alarms. At lakes it did no better than quoting the usual rate: it would have flagged none of ${l.over_900}. ` +
     `Spill forecasts beat the usual rate by ${pct(lead0.brier_skill_vs_clim)} on the day, falling to ${pct(lead4.brier_skill_vs_clim)} four days ahead.`;
   $('#front-status').innerHTML = `<b>Exploratory, on outcomes already read.</b> E. coli: ${plural(EX.ecoli.all.samples, 'sample')} at ${EX.ecoli.all.sites} bathing waters, 2024–2026, against estimates rebuilt in hindsight. Spills: one held-out year. Nothing after ${fmt(EX.cutoff)}.`;
   // One dot per sample, in date order within each block, so "play" can fill them as the summers went.
@@ -47,7 +48,7 @@ function renderFront() {
   $('#ledger').innerHTML = blocks.map(([k, f, lbl]) => `<div class="blk"><div class="lbl">${lbl}</div><div class="dots">${rows.filter(f).map(r =>
       `<i class="${r.y ? (warned(r) ? 'hit' : 'miss') : 'fa'}" data-t="${r.t}"></i>`).join('')}</div></div>`).join('') +
     `<div class="play"><button type="button" id="ledger-play">Play 2024 to 2026</button><span id="ledger-read" aria-live="polite"></span></div>
-    <figcaption>One dot per lab sample, in date order. Filled: the estimate was over the ${pct(WARN)} warning line. Hollow: it was not. Amber: warned, but the sample was under 900. Estimates rebuilt in hindsight.</figcaption>`;
+    <figcaption>One dot per lab sample, in date order. Estimates rebuilt in hindsight, not issued at the time. Filled: the estimate was over the ${pct(WARN)} line, so it would have flagged the sample. Hollow: it was not. Amber: it would have flagged a sample under 900.</figcaption>`;
   $('#ledger-play').onclick = playLedger;
 }
 let ledgerTimer = null;
@@ -63,7 +64,7 @@ function playLedger() {
     const end = Math.min(dots.length, i + (reduce ? dots.length : 4));
     for (; i < end; i++) { dots[i].classList.remove('off'); n[dots[i].className] = (n[dots[i].className] || 0) + 1; }
     const t = dots[Math.max(0, i - 1)].dataset.t;
-    read.textContent = `${new Date(t.slice(0, 10) + 'T12:00:00Z').toLocaleDateString('en-GB', { month: 'long', year: 'numeric', timeZone: 'UTC' })} · caught ${n.hit} · missed ${n.miss} · false alarms ${n.fa}`;
+    read.textContent = `${new Date(t.slice(0, 10) + 'T12:00:00Z').toLocaleDateString('en-GB', { month: 'long', year: 'numeric', timeZone: 'UTC' })} · in hindsight: would have flagged ${n.hit} · missed ${n.miss} · false alarms ${n.fa}`;
     if (i >= dots.length) { clearInterval(ledgerTimer); ledgerTimer = null; btn.textContent = 'Play 2024 to 2026'; }
   };
   step(); ledgerTimer = setInterval(step, 70);
@@ -113,7 +114,7 @@ function renderSiteHead() {
   const refBest = b ? Math.min(b.usual, b.site_usual, b.last) : null;
   $('#bw-facts').innerHTML = [
     ['Samples over 900', `${sm.filter(v => v.over).length} of ${sm.length}`, 'E. coli per 100 ml'],
-    ['Warned before', x ? `${x.hits} of ${x.over_900}` : '–', x ? `${x.misses} missed` : 'no estimate here'],
+    ['Would have flagged', x ? `${x.hits} of ${x.over_900}` : '–', x ? `${x.misses} missed` : 'no estimate here'],
     ['False alarms', x ? String(x.false_alarms) : '–', x ? `of ${x.samples - x.over_900} samples under 900` : ''],
     ['Brier, estimate', b ? num(b.model, 3) : '–', b ? `best simple alternative ${num(refBest, 3)}; lower is better` : ''],
   ].map(([t, v, n]) => `<div><dt>${t}</dt><dd>${v}<small>${n || '&nbsp;'}</small></dd></div>`).join('');
@@ -164,7 +165,7 @@ function renderChart() {
     d.onclick = () => selectSample(d.dataset.t);
     d.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectSample(d.dataset.t); requestAnimationFrame(() => document.querySelector(`.dot[data-t="${d.dataset.t}"]`)?.focus()); } };
   });
-  $('#chart-note').innerHTML = `<span><span class="sw" style="background:var(--hit)"></span>warned, over 900</span><span><span class="sw" style="background:var(--card);border:2px solid var(--miss)"></span>missed, over 900</span><span><span class="sw" style="background:var(--fa)"></span>false alarm</span><span><span class="sw" style="background:var(--quiet)"></span>quiet, under 900</span><span>Estimates and samples are not joined: each is one dated sample.</span>`;
+  $('#chart-note').innerHTML = `<span><span class="sw" style="background:var(--hit)"></span>would have flagged, over 900</span><span><span class="sw" style="background:var(--card);border:2px solid var(--miss)"></span>would have missed, over 900</span><span><span class="sw" style="background:var(--fa)"></span>false alarm</span><span><span class="sw" style="background:var(--quiet)"></span>quiet, under 900</span><span>Estimates and samples are not joined: each is one dated sample.</span>`;
 }
 
 function renderSample() {
@@ -206,10 +207,10 @@ function renderRefs() {
   const yrs = Object.entries(EX.ecoli.by_year);
   $('#refs').innerHTML = brierNote('river', 'Note 1 · rivers') + brierNote('lake', 'Note 2 · lakes') + `
     <div class="fnote"><span class="tag">Note 3 · at the warning line, rivers</span>
-      <p class="fig">${m.hits} of ${r.over_900} <small>samples over 900 warned before; last-sample rule ${l.hits}</small></p>
-      ${bars([{ label: 'Estimate: warned, over', v: m.hits, c: 'var(--hit)' }, { label: 'Estimate: missed', v: m.misses, c: 'var(--rule)' }, { label: 'Estimate: false alarms', v: m.false_alarms, c: 'var(--fa)' },
-        { label: 'Last sample: warned, over', v: l.hits, c: 'var(--hit)' }, { label: 'Last sample: missed', v: l.misses, c: 'var(--rule)' }, { label: 'Last sample: false alarms', v: l.false_alarms, c: 'var(--fa)' }], Math.max(m.false_alarms, l.misses, l.false_alarms) * 1.1, v => String(v))}
-      <p>At the ${pct(WARN)} line the estimate caught ${m.hits - l.hits} more of the samples over 900 than a rule that warns after a bad sample, for ${m.false_alarms - l.false_alarms} more false alarms. Roughly one false alarm for every sample it caught.</p></div>
+      <p class="fig">${m.hits} of ${r.over_900} <small>samples over 900 it would have flagged; last-sample rule ${l.hits}</small></p>
+      ${bars([{ label: 'Estimate: flagged, over', v: m.hits, c: 'var(--hit)' }, { label: 'Estimate: missed', v: m.misses, c: 'var(--rule)' }, { label: 'Estimate: false alarms', v: m.false_alarms, c: 'var(--fa)' },
+        { label: 'Last sample: flagged, over', v: l.hits, c: 'var(--hit)' }, { label: 'Last sample: missed', v: l.misses, c: 'var(--rule)' }, { label: 'Last sample: false alarms', v: l.false_alarms, c: 'var(--fa)' }], Math.max(m.false_alarms, l.misses, l.false_alarms) * 1.1, v => String(v))}
+      <p>At the ${pct(WARN)} line the rebuilt estimate would have caught ${m.hits - l.hits} more of the samples over 900 than a rule that warns after a bad sample, with ${m.false_alarms - l.false_alarms} more false alarms. Roughly one false alarm for every sample it would have caught.</p></div>
     <div class="fnote"><span class="tag">Note 4 · confident misses, rivers</span>
       <p class="fig">${me.under_0_1} of ${me.n} <small>river misses had an estimate under 10%</small></p>
       <p>Half the missed river samples had an estimate of ${pct(me.median)} or less. These are worth reading one by one; the lowest are below.</p>

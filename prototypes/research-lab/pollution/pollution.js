@@ -13,7 +13,8 @@ const plural = (n, one, many = one + 's') => `${Number(n).toLocaleString('en-GB'
 const ABBR = new Set(['STW', 'WWTW', 'WTW', 'CSO', 'SPS', 'PS', 'SSO', 'EO', 'STC', 'TPS', 'SO', 'WRC', 'SWO', 'UV']);
 // "AMBLESIDE WwTW" -> "Ambleside WwTW": capitals only where the source shouted
 const nice = s => String(s || '').split(/\s+/).map(w => (w === w.toUpperCase() && /[A-Z]{2}/.test(w) && !ABBR.has(w.replace(/[^A-Z]/g, ''))) ? w[0] + w.slice(1).toLowerCase() : w).join(' ');
-const pctW = w => (w >= 0.1 ? `${Math.round(w * 100)}%` : w >= 0.01 ? `${(w * 100).toFixed(1)}%` : `${(w * 100).toFixed(2)}%`);
+// A weight is a relative factor between 0 and 1, never a percentage: a percentage reads as the share of bacteria arriving
+const fmtW = w => (w >= 0.1 ? w.toFixed(2) : w >= 0.001 ? w.toPrecision(2) : '<0.001');
 const hours = h => (h == null ? '–' : h < 1 ? 'under 1 h' : h < 48 ? `${Math.round(h)} h` : `${(h / 24).toFixed(1)} days`);
 
 let IDX, CAT, SPOT = null, T = 0, clockTimer = null, showAll = false;
@@ -66,7 +67,7 @@ function renderHead() {
   $('#sp-facts').innerHTML = [
     ['Overflows upstream', String(o.length), `within ${IDX.settings.max_upstream_km} km along the rivers`],
     ['Nearest, by model time', nearest ? hours(nearest.travel_h) : '–', nearest ? `${nice(nearest.name)}, ${num(nearest.distance_km)} km` : ''],
-    ['Strongest single link', strongest ? pctW(strongest.weight) : '–', strongest ? `${nice(strongest.name)}: share the model expects to arrive` : ''],
+    ['Highest model weight', strongest ? fmtW(strongest.weight) : '–', strongest ? `${nice(strongest.name)}: survival times dilution, 0 to 1` : ''],
     ['Spills a year, all of them', o.length ? Math.round(spills).toLocaleString('en-GB') : '–', 'sum of each overflow\'s yearly average (EDM)'],
   ].map(([t, v, n]) => `<div><dt>${t}</dt><dd>${v}<small>${esc(n) || '&nbsp;'}</small></dd></div>`).join('');
 }
@@ -134,7 +135,7 @@ function setT(t) {
   const wAll = o.reduce((a, x) => a + (x.weight || 0), 0), wIn = arrived.reduce((a, x) => a + (x.weight || 0), 0);
   if ($('#ck-big')) {
     $('#ck-big').innerHTML = `${t < 48 ? t + ' h' : (t / 24).toFixed(1) + ' days'}<small>after the spill</small>`;
-    $('#ck-line').innerHTML = `Water from <b>${arrived.length} of ${o.length}</b> overflows would have reached the spot, carrying ${wAll ? Math.round(100 * wIn / wAll) : 0}% of the model's weight here.`;
+    $('#ck-line').innerHTML = `Water from <b>${arrived.length} of ${o.length}</b> overflows would have reached the spot, ${wAll ? Math.round(100 * wIn / wAll) : 0}% of the summed model weight at this spot.`;
   }
   applyClock();
 }
@@ -155,12 +156,12 @@ function renderTable() {
   if (!o.length) { $('#list-intro').textContent = 'Nothing to list for this spot.'; $('#ovtable').innerHTML = ''; return; }
   const maxW = Math.max(...o.map(x => x.weight || 0));
   const rows = showAll ? o : o.slice(0, 15);
-  $('#list-intro').innerHTML = `The model's weight is the share of a spill's bacteria it expects to arrive here: what survives the journey (${IDX.settings.t90_h} h for a tenfold fall), times what is left after dilution by the larger river. It is a setting fitted to samples, not a measurement at this spot. Hover a row to find it on the map.`;
-  $('#ovtable').innerHTML = `<table><thead><tr><th>Overflow</th><th>Into</th><th>Along the rivers</th><th>Model travel</th><th>Survives / undiluted</th><th>Spills a year</th><th>Model weight</th></tr></thead><tbody>${rows.map(x =>
+  $('#list-intro').innerHTML = `The model's weight is how strongly it counts a spill from that overflow at this spot, from 0 to 1: the survival factor for the journey (${IDX.settings.t90_h} h for a tenfold fall) times a dilution factor that is lower when the overflow joins a much smaller river than the one at the spot. Dilution lowers concentration by mixing; it removes no bacteria. So the weight is not the share of a spill that arrives, and without each spill's volume it cannot say what share of the spot's pollution an overflow causes. Its settings were fitted to samples; nothing was measured at this spot. Hover a row to find it on the map.`;
+  $('#ovtable').innerHTML = `<table><thead><tr><th>Overflow</th><th>Into</th><th>Along the rivers</th><th>Model travel</th><th>Survival × dilution</th><th>Spills a year</th><th>Model weight</th></tr></thead><tbody>${rows.map(x =>
     `<tr data-id="${esc(x.id)}"><td><span class="nm">${esc(nice(x.name))}</span><span class="sub">${esc(x.company || '')} · ${esc(x.id)}</span></td><td>${esc(nice(x.water) || '–')}</td>
      <td class="n">${num(x.distance_km)} km${x.lake_km ? `<span class="sub">${num(x.lake_km)} km of it in a lake</span>` : ''}</td><td class="n">${hours(x.travel_h)}</td>
-     <td class="n">${x.decay != null ? Math.round(x.decay * 100) + '%' : '–'} / ${x.dilution != null ? Math.round(x.dilution * 100) + '%' : '–'}</td><td class="n">${num(x.spills_a_year, 0)}</td>
-     <td class="n"><span class="w" style="width:${Math.max(2, 70 * (x.weight || 0) / maxW)}px"></span>${pctW(x.weight || 0)}</td></tr>`).join('')}</tbody></table>
+     <td class="n">${x.decay != null ? fmtW(x.decay) : '–'} × ${x.dilution != null ? fmtW(x.dilution) : '–'}</td><td class="n">${num(x.spills_a_year, 0)}</td>
+     <td class="n"><span class="w" style="width:${Math.max(2, 70 * (x.weight || 0) / maxW)}px"></span>${fmtW(x.weight || 0)}</td></tr>`).join('')}</tbody></table>
     ${o.length > 15 ? `<div class="more"><button type="button" id="more">${showAll ? 'Show the first 15' : `Show all ${o.length}`}</button></div>` : ''}`;
   $('#ovtable').querySelectorAll('tr[data-id]').forEach(r => { r.onmouseenter = () => hl(r.dataset.id); r.onmouseleave = () => hl(null); });
   const m = $('#more'); if (m) m.onclick = () => { showAll = !showAll; renderTable(); };

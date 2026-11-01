@@ -59,3 +59,12 @@ lakes (lake path/residence/distance, lake direction, near field, wind), rain and
 2. Draw the 32 missing paths through their repair links and check each: a data fix.
 3. An exposure table: each overflow's weight summed over spots times its spills a year, published as a model observation.
 4. Trace to 100 km and measure the weight the 60 km cut-off drops.
+
+## Wording correction after review (1 November 2026)
+
+An outside review of the prototype found that the exhibit called the model weight "the share of a spill's bacteria it
+expects to arrive" and showed it as a percentage. That is wrong. The weight is survival times a dilution factor.
+Dilution lowers concentration by mixing; it removes no bacteria. So the weight is a relative factor the model uses, not
+the share of a spill that arrives, and without spill volumes it cannot say what share of a spot's pollution one overflow
+causes. The exhibit now shows weights as factors from 0 to 1, labels the column "Survival × dilution", and explains this
+above the table. The opening question now asks how strongly the forecast counts an overflow. No data changed.
