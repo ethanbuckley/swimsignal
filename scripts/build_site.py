@@ -2757,7 +2757,7 @@ def site_header(r: str, current: str = "") -> str:
     """The header every page shares (page.css .top): the mark and the main links, `current` (a link's href, such as
     "lab/") marked as the page you are on. The prose pages and the app write the same links by hand."""
     links = (("plan/", "Plan a swim", ""), ("saved/", "Saved", ""), ("verification.html", "Accuracy", ""), ("about.html", "About", ""),
-             ("lab/", "Research Lab", "desk-only"), ("research.html", "Research &amp; data", "desk-only"), ("feedback.html", "Feedback", "desk-only"))
+             ("lab/", "Research Lab", "desk-only"))   # Research and data and Feedback: the More menu and every foot (2 Nov 2026)
     nav = "".join(f'<a{f' class="{c}"' if c else ""}{' aria-current="page"' if h == current else ""} href="{r}{h}">{t}</a>' for h, t, c in links)
     return f'<header class="top"><a class="brand" href="{r}">{MARK}{BRAND}</a><nav aria-label="Site">{nav}</nav></header>'
 

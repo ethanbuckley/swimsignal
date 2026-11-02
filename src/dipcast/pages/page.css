@@ -81,9 +81,9 @@ pre { margin: 0 0 14px; padding: 10px 0; border-top: 1px solid var(--line); bord
 .top nav a:hover { color: var(--on-fill); background: var(--bar-hover); }
 .top nav a[aria-current=page] { color: var(--on-fill); box-shadow: inset 0 -2px 0 var(--on-fill); border-radius: 0; }
 .top :focus-visible { outline-color: var(--on-fill); }
-/* Seven links from 1 November 2026 (Research Lab beside Research and data): one line each, and from the phone layout's end to 1,023 px Feedback, the seventh, leaves the bar, as it does on a phone; it is in every page's foot. */
+/* Five links from 2 November 2026 (Plan a swim, Saved, Accuracy, About, Research Lab): Research and data and Feedback
+   are in the More menu and every page's foot. One line each. */
 .top nav a { white-space: nowrap; }
-@media (max-width: 1023px) { .top nav a[href$="feedback.html"], .top nav a[href="/feedback"] { display: none; } }
 
 /* On a phone the brand and the four links each get a complete row. The links are the app's (29 October
    2026); Feedback, the fifth, is in every page's foot and leaves the row so four fit. */
