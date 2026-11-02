@@ -1,7 +1,7 @@
 # Reliability checks, 2 November 2026
 
 Pillar 1 of 6: bugs and reliability. The checks were run on main at 88f75e54 (after PR #600). Two checks failed and
-are fixed in this PR. Everything else passed as it stands.
+are fixed in PR #607. Everything else passed as it stands.
 
 ## How it was run
 
