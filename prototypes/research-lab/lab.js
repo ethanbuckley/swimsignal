@@ -105,7 +105,8 @@ const LAB = (() => {
   }
 
   // ---------------------------------------------------------------- "Data as of"
-  // The element with data-asof names the parts this page draws on; refresh.json (build_site.write_lab_refresh) says
+  // The element with data-asof names the parts this page draws on (the folded line gives a part's outcomes end date
+  // beside the date it was made, so an export made in November of samples to September is never read as November's); refresh.json (build_site.write_lab_refresh) says
   // when each was made and how it is refreshed. Folded: the dates in one line, how each part is refreshed and when the
   // page was built inside. A part older than its refresh should leave it is said outside the fold, never hidden. Only
   // a site build writes refresh.json: run from the repository there is none, and nothing is shown.
@@ -122,7 +123,7 @@ const LAB = (() => {
     const built = doc.built ? new Date(doc.built).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' }) : '';
     const det = document.createElement('details');
     det.className = 'asof';
-    det.innerHTML = `<summary><b>Data as of</b> ${items.map(p => `${esc(p.short || p.label)} ${day(p.as_of)}`).join(' · ')}</summary>`
+    det.innerHTML = `<summary><b>Data as of</b> ${items.map(p => `${esc(p.short || p.label)} ${day(p.as_of)}${p.outcomes_to ? `, outcomes to ${day(p.outcomes_to)}` : ''}`).join(' · ')}</summary>`
       + `<dl>${items.map(p => `<dt>${esc(p.label)}</dt><dd>${day(p.as_of)}${p.outcomes_to ? `, outcomes to ${day(p.outcomes_to)}` : ''}; ${esc(p.refresh)}${p.stale_days ? `, called old after ${p.stale_days} days` : ''}</dd>`).join('')}</dl>`
       + (built ? `<p>This page was built ${built} (UK time). The dates above are when each part's data was made, not this page.</p>` : '');
     el.replaceWith(det);
