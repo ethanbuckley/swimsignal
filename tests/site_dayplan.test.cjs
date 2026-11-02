@@ -57,7 +57,7 @@ test('while the spot\'s own file loads, access says so and nothing is called mis
   assert.ok(D.dpConditions(lake('n', {detail_file: 'spot/n.json', detail_loaded: true}), TODAY, TODAY).missing.includes('access'));
 });
 
-test('for a boat or a board on a river: rules, the river now, finishes; wind is not known', () => {
+test('for a boat or a board on a river: rules, the river now, finishes, and the day\'s wind where the update has it', () => {
   const byId = new Map([['b', {id: 'b', name: 'Greenholme'}]]);
   const s = {id: 'a', name: 'Ilkley', kind: 'river', downstream: [['b', 5.5], ['gone', 9]], boat_note: {topic: 'launch', text: 'Launch at the steps.', source: 'Council'},
     river_state: {label: 'normal', station: 'Addingham', level_m: 0.49, age_hours: 1, stale: false}};
@@ -69,7 +69,12 @@ test('for a boat or a board on a river: rules, the river now, finishes; wind is 
   const old = Object.fromEntries(D.dpConditions({...s, river_state: {station: 'Addingham', stale: true, age_hours: 50}}, TODAY, TODAY, 'sup', byId, NOW).rows);
   assert.equal(old['River level'], '<span class="vt vt-none">Not known</span> <span class="vt vt-stale">Last reading at Addingham 2 days ago: too old to use</span>');
   assert.equal(rows.Finish, 'Greenholme (5.5 km down)');
-  assert.ok(c.missing.includes('wind'));
+  assert.ok(c.missing.includes('wind'));   // no weather for the day
+  // With the day's wind (build_site.attach_weather, km/h): in mph, over the day, never an hour.
+  const windy = D.dpConditions({...s, weather: {days: [{date: '2026-11-01', tmax: 11, sunrise: '07:07', sunset: '16:33', wind_kmh: 30, gust_kmh: 55}]}}, '2026-11-01', TODAY, 'sup', byId, NOW);
+  assert.equal(Object.fromEntries(windy.rows).Wind, 'Strongest about 19 mph, gusts to 34 mph, over the day <span class="vt vt-estimate">Forecast at 10 m above open ground</span> '
+    + '<span class="muted">(<a href="https://open-meteo.com/">Weather data by Open-Meteo.com</a>)</span>');
+  assert.ok(!windy.missing.includes('wind'));
   // Where none of it is known, it is listed, never left out.
   const bare = D.dpConditions({id: 'z', name: 'Z', kind: 'river'}, TODAY, TODAY, 'paddle', byId, NOW);
   for (const w of ['rules for boats and boards', 'river level', 'a finish downstream', 'wind']) assert.ok(bare.missing.includes(w), w);
@@ -107,7 +112,7 @@ test('the page draws the options above the outing, and the outing offers the pic
   assert.ok(app.indexOf("drawOuting(box, r.groups.flat())") < app.indexOf('planOptions(box, r.groups);'));   // afterbegin: the options end up first
   assert.match(outing, /id="outing-picture">Make a picture to send<\/button>/);
   assert.match(app, /if \(!blob\) blob = await dpBlob\(await dpPicture\(\{ \.\.\.p, tiles: null \}\)\);/);   // a map provider that does not allow it
-  assert.doesNotMatch(fs.readFileSync(path.join(__dirname, '../src/dipcast/site/dayplan.js'), 'utf8'), /open-meteo|fetch\(/i);   // no new requests
+  assert.doesNotMatch(fs.readFileSync(path.join(__dirname, '../src/dipcast/site/dayplan.js'), 'utf8'), /api\.open-meteo|fetch\(/i);   // no new requests
 });
 
 test('the picture\'s map is shorter with a third spot, so the blocks and the footer fit', () => {
@@ -123,7 +128,7 @@ test('for a boat or a board, launching, rules, river level, finish and wind each
   const bare = D.dpConditions({id: 'z', name: 'Z', kind: 'river'}, TODAY, TODAY, 'paddle', new Map(), NOW);
   const rows = Object.fromEntries(bare.rows);
   for (const k of ['Rules', 'Launching', 'River level', 'Finish']) assert.equal(rows[k], '<span class="vt vt-none">Not known</span>', k);
-  assert.match(rows.Wind, /^<span class="vt vt-none">Not known<\/span> <span class="muted">\(SwimSignal has no wind forecast\)<\/span>$/);
+  assert.equal(rows.Wind, '<span class="vt vt-none">Not known</span>');   // no wind in this update
   const h = D.dpOption(row(bare.rows && {id: 'z', name: 'Z', kind: 'river'}), {href: '/spot/z/', headline: 'Low risk', tone: 'low', meta: '1 mile away · River'}, bare, null, 0);
   assert.doesNotMatch(h, /Not known here:[^<]*\b(wind|rules for boats|launching|a finish downstream|river level)\b/);
   // A lake has no river rows; a swim has none of these rows at all.
