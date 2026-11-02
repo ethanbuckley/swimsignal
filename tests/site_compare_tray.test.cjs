@@ -85,3 +85,15 @@ test('valueTag and VALUE_KINDS are defined exactly once, and every kind says its
   assert.equal(tag('anything', 'Not known'), '<span class="vt vt-none">Not known</span>');
   for (const k of ['vt-none', 'vt-stale']) assert.ok(html.includes(`.${k}`), k);
 });
+
+// The page's inline scripts compile, alone and together (they share one global scope in the browser, so a second
+// `const valueTag` in either is the SyntaxError that would stop the app): the real error, not only a count.
+test('the inline app scripts compile, alone and together; a duplicate const would fail here', () => {
+  const vm = require('node:vm');
+  const blocks = [...html.matchAll(/<script(?![^>]*\bsrc=)([^>]*)>([\s\S]*?)<\/script>/g)]
+    .filter(m => !/type="(application\/(ld\+)?json|importmap)"/.test(m[1])).map(m => m[2]);
+  assert.ok(blocks.length >= 1 && blocks.some(b => b.includes('const valueTag')));
+  for (const b of blocks) new vm.Script(b);
+  new vm.Script(blocks.join('\n;\n'));
+  assert.throws(() => new vm.Script(blocks.join('\n;\n') + '\nconst valueTag = 1;'), SyntaxError);   // the check bites
+});
