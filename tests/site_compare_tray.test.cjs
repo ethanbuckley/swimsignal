@@ -39,14 +39,18 @@ test('nothing is chosen until ticked; ticks are kept for the visit, never stored
   assert.doesNotMatch(html, /localStorage\.setItem\([^)]*PLAN_PICKS/);
 });
 
-test('the water row: measured or an estimate, the gauge named, and "no reading" where there is none', () => {
+test('the water rows: each value with its kind (measured where and when, estimate, too old, none), the gauge named', () => {
   const src = slice('function compareWater(s) {', '\n// "Plan here" in a comparison');
-  const make = (w, lv) => new Function('waterTile', 'riverTile', 'esc', src + '\nreturn compareWater;')(() => w, () => lv, esc);
-  const river = { kind: 'river', river_state: { station: 'Sutton Courtenay' } };
-  assert.equal(make({ fig: '12°', unit: 'C, provisional estimate' }, { fig: '1.99', label: 'River level', word: 'Low water' })(river),
-    'Water 12°, provisional estimate<br>River level 1.99&nbsp;m, low water <span class="k">at Sutton Courtenay</span>');
-  assert.equal(make({ fig: '14°', live: true }, null)({ kind: 'river' }), 'Water 14°, measured<br>No river gauge');
-  assert.equal(make(null, { fig: '–' })({ kind: 'lake', river_state: { water: 'lake' } }), 'No water temperature<br>No current level reading');
+  const tag = (k, w) => `<span class="vt vt-${k}">${w}</span>`;
+  const make = (w, lv) => new Function('waterTile', 'riverTile', 'esc', 'valueTag', 'dpAgo', src + '\nreturn compareWater;')(() => w, () => lv, esc, tag, h => `${Math.round(h)} h ago`);
+  const river = { kind: 'river', river_state: { station: 'Sutton Courtenay', age_hours: 2 } };
+  assert.deepEqual(make({ fig: '12°', unit: 'C, provisional estimate' }, { fig: '1.99', label: 'River level', word: 'Low water' })(river),
+    ['12&nbsp;°C <span class="vt vt-estimate">Provisional estimate</span>', '1.99&nbsp;m, low water <span class="vt vt-measured">Measured at Sutton Courtenay, 2 h ago</span>']);
+  const now = Date.now(), at = new Date(now - 3 * 3.6e6).toISOString();
+  assert.deepEqual(make({ fig: '14°', live: true }, null)({ kind: 'river', water_temp: { where: 'at Bures Mill', observed_at: at } }),
+    ['14&nbsp;°C <span class="vt vt-measured">Measured at Bures Mill, 3 h ago</span>', '<span class="vt vt-none">No gauge</span>']);
+  assert.deepEqual(make(null, { fig: '–' })({ kind: 'lake', river_state: { water: 'lake', stale: true, station: 'Bowness', age_hours: 30 } }),
+    ['<span class="vt vt-none">No reading</span>', '<span class="vt vt-none">No current reading</span> <span class="vt vt-stale">Last reading at Bowness 30 h ago: too old to use</span>']);
 });
 
 test('a forecast that did not load says why in words, offers Try again, and points to official advice', () => {
@@ -57,4 +61,39 @@ test('a forecast that did not load says why in words, offers Try again, and poin
   assert.match(fail, /onclick="location\.reload\(\)">Try again<\/button>/);
   assert.match(fail, /the Environment Agency's bathing water pages<\/a>, and the signs at the water/);
   assert.doesNotMatch(fail, /\bcap\(/);   // levels.js may be what failed
+});
+
+// 2 Nov 2026: "possible, not expected" said once for a group where every row has it; each row keeps its count.
+test('a group whose rows all say a spill is possible, not expected says it once; each row keeps its own count', () => {
+  const why = slice('const PLAN_QUIET =', '\n// How much evidence sits');
+  assert.match(why, /if \(t && quiet && t\.endsWith\(PLAN_QUIET\)\) out\.push\(`\$\{total\} overflow\$\{total === 1 \? '' : 's'\} upstream\.`\);/);
+  assert.match(why, /else if \(t\) out\.push\(`\$\{cap\(t\)\}/);   // otherwise the sentence as before
+  const draw = slice('function drawPlan(fit = false) {', '\n// Compare these spots');
+  assert.match(draw, /const quiet = displayGroups\.map\(g => g\.length >= 2 && g\.every\(o => planQuiet\(o\.s, PLAN\.day\)\)\);/);
+  assert.match(draw, /At each spot here a spill from an overflow upstream is \$\{PLAN_QUIET\}\./);
+  assert.match(draw, /g\.map\(o => planItem\(o, quiet\[i\]\)\)/);
+  assert.match(draw, /restrictedLow\.map\(planItem\)/);   // the restricted group is never shortened (official advice first)
+});
+
+// The value-kind treatment is defined once (docs/DESIGN.md, "What kind of value"): a second copy left by a rebase
+// would be a SyntaxError that stops the whole app.
+test('valueTag and VALUE_KINDS are defined exactly once, and every kind says its kind in words', () => {
+  assert.equal((html.match(/\bconst valueTag\b/g) || []).length, 1);
+  assert.equal((html.match(/\bconst VALUE_KINDS\b/g) || []).length, 1);
+  const tag = new Function(slice('const VALUE_KINDS =', '\nfunction waterTile(') + '\nreturn valueTag;')();
+  assert.equal(tag('estimate', 'Estimate'), '<span class="vt vt-estimate">Estimate</span>');
+  assert.equal(tag('anything', 'Not known'), '<span class="vt vt-none">Not known</span>');
+  for (const k of ['vt-none', 'vt-stale']) assert.ok(html.includes(`.${k}`), k);
+});
+
+// The page's inline scripts compile, alone and together (they share one global scope in the browser, so a second
+// `const valueTag` in either is the SyntaxError that would stop the app): the real error, not only a count.
+test('the inline app scripts compile, alone and together; a duplicate const would fail here', () => {
+  const vm = require('node:vm');
+  const blocks = [...html.matchAll(/<script(?![^>]*\bsrc=)([^>]*)>([\s\S]*?)<\/script>/g)]
+    .filter(m => !/type="(application\/(ld\+)?json|importmap)"/.test(m[1])).map(m => m[2]);
+  assert.ok(blocks.length >= 1 && blocks.some(b => b.includes('const valueTag')));
+  for (const b of blocks) new vm.Script(b);
+  new vm.Script(blocks.join('\n;\n'));
+  assert.throws(() => new vm.Script(blocks.join('\n;\n') + '\nconst valueTag = 1;'), SyntaxError);   // the check bites
 });

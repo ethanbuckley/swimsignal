@@ -41,7 +41,7 @@ function savedPage({standalone = true} = {}) {
     const setView = nothing, planDates = () => [], notices = none, bestDayNote = none, savedGrid = none, issued = none, ago = none, agoSpan = none, ageMin = none;
     const swimsShown = () => false, compareSection = none, savedCompare = none, alertsCard = none, swimsCard = none, cols = h => h, solo = h => h;
     const bindBack = nothing, bindSavedPage = nothing, bindLists = nothing, bindAlerts = nothing, bindComparison = nothing, bindBestDay = nothing;
-    const bindSwims = nothing, bindToAlerts = nothing, bindFind = nothing, placeMap = nothing, plainClick = () => true, select = nothing;
+    const bindSwims = nothing, bindToAlerts = nothing, drawSpotAlerts = nothing, passportSection = undefined, bindFind = nothing, placeMap = nothing, plainClick = () => true, select = nothing;
     const RING = none, MOTION = () => ({}), dayName = d => d;
     const savedCard = s => '<li class="scard">' + esc(s.name) + '</li>';
     ${between('const esc =', '\nconst fmt')}

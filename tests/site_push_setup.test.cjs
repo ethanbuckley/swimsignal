@@ -9,7 +9,7 @@ function setup(manager, fetch) {
   let timer, cleared = 0;
   const ctx = vm.createContext({canPush: () => true, pushReg: async () => ({pushManager: manager}),
     Notification: {requestPermission: async () => 'granted'}, DATA: {push: {url: 'https://test.invalid/', key: 'key'}, spots: [{id:'spot'}]},
-    SAVED: new Set(['spot']), b64: () => 'key', fetch, AbortSignal, localStorage: {setItem() {},removeItem() {}},
+    SAVED: new Set(['spot']), alertSpots: require('../src/dipcast/site/lists.js').alertSpots, b64: () => 'key', fetch, AbortSignal, localStorage: {setItem() {},removeItem() {}},
     PUSH_KEY: 'test', setTimeout: fn => {timer=fn;return 1;}, clearTimeout: () => {cleared++;}});
   vm.runInContext(source + ';this.on = alertsOn;this.off = alertsOff;', ctx);
   return {ctx, fire: () => timer(), cleared: () => cleared};
@@ -64,7 +64,7 @@ function withStorage() {
   const store = new Map(), bodies = [];
   const ctx = vm.createContext({canPush: () => true, pushReg: async () => ({pushManager: {getSubscription: async () => sub}}),
     Notification: {requestPermission: async () => 'granted'}, DATA: {push: {url: 'https://test.invalid/', key: 'key'}, spots: [{id:'spot'}]},
-    SAVED: new Set(['spot']), b64: () => 'key', AbortSignal, PUSH_KEY: 'test', setTimeout, clearTimeout,
+    SAVED: new Set(['spot']), alertSpots: require('../src/dipcast/site/lists.js').alertSpots, b64: () => 'key', AbortSignal, PUSH_KEY: 'test', setTimeout, clearTimeout,
     fetch: async (_url, options) => { bodies.push(JSON.parse(options.body || '{}')); return {ok: true, status: 204}; },
     localStorage: {getItem: k => store.get(k) ?? null, setItem: (k, v) => store.set(k, v), removeItem: k => store.delete(k)}});
   const sub = {endpoint: 'https://fcm.googleapis.com/fcm/send/x', toJSON: () => ({endpoint: 'https://fcm.googleapis.com/fcm/send/x'}), unsubscribe: async () => true};
@@ -86,6 +86,23 @@ test('the weekly note is off unless ticked, and a re-send keeps what was ticked'
   assert.equal(t.ctx.weeklyOn(), false);
   t.store.set('test', 'not json');
   assert.equal(t.ctx.weeklyOn(), false);
+});
+
+// A spot turned off on its card (2 Nov 2026): left out of what is sent, kept with the record so re-sends leave it
+// out too, and forgotten with the rest when alerts are turned off.
+test('a spot turned off on its card is left out of what is sent, and of every re-send', async () => {
+  const t = withStorage();
+  await t.ctx.on();
+  assert.deepEqual(t.bodies.at(-1).spots, ['spot']);
+  await t.ctx.send(t.sub, false, ['spot']);
+  assert.deepEqual(t.bodies.at(-1).spots, []);
+  assert.deepEqual(JSON.parse(t.store.get('test')).off, ['spot']);
+  await t.ctx.send(t.sub);
+  assert.deepEqual(t.bodies.at(-1).spots, []);
+  assert.equal('dates' in t.bodies.at(-1), false);   // the app never sends dates: the service keeps those asked for elsewhere
+  await t.ctx.off();
+  await t.ctx.on();
+  assert.deepEqual(t.bodies.at(-1).spots, ['spot']);
 });
 
 test('the weekly box is in the alerts tile, hidden until alerts are on', () => {

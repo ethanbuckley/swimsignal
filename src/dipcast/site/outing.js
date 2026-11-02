@@ -388,6 +388,89 @@ function outingStretch(o) {
     + 'Nothing here is about weirs, flow, or where you can get in and out.</p></div>';
 }
 
+// ------------------------------------------------------------------------------ conditions for the outing
+// "Conditions for your outing" (2 Nov 2026): for each chosen spot, the water's temperature, the river's or lake's level
+// and its trend, the day's air, wind and daylight, and the rain, in the spot page's figure-and-caption cells
+// (index.html, conditionsSummary: .cond, .cell). Beside the forecast, never part of a level. Each keeps the resolution
+// it has:
+// - a reading says where it was read and how long ago, and on a later day that it is the latest, not a forecast for that day;
+// - the high, the wind, sunrise and sunset are the outing day's (build_site.attach_weather), never an hour's;
+// - the water estimate is today's only (index.html, waterEstOk), so a later day says it has none;
+// - a trend is the gauge's own readings over the six hours to the build (flows.rise_over_window: river_state's
+//   rise_6h_m, rise_from, rise_to), and none is said without them or for a reading over a day old.
+// What kind each value is (measured, estimate, stale, none) is said in the page's shared words (index.html, valueTag).
+const OUTING_STALE_H = 24;   // as conditionsSummary, and experience.js's FLOW_MAX_H.reading
+const outTag = (kind, words) => typeof valueTag === 'function' ? valueTag(kind, words)
+  : `<span class="vt vt-${['measured', 'estimate', 'stale', 'none'].includes(kind) ? kind : 'none'}">${words}</span>`;   // Node: index.html's valueTag
+const outClock = iso => new Date(iso).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' });
+const outAge = (iso, nowMs) => { const h = Math.max(0, (nowMs - Date.parse(iso)) / 36e5);
+  return h < 1 ? 'under an hour ago' : h < 48 ? `${Math.round(h)} h ago` : `${Math.round(h / 24)} days ago`; };
+const outMph = kmh => Math.round(kmh * 0.621371);
+// A gauge reading the build thought current but now over a day old is stale here too (as conditionsSummary).
+function outingFresh(rs, nowMs = Date.now()) {
+  const t = rs && Date.parse(rs.observed_at);
+  if (!rs || rs.stale || !Number.isFinite(t)) return rs;
+  const age = Math.max(0, (nowMs - t) / 36e5);
+  return age > OUTING_STALE_H ? { ...rs, stale: true, age_hours: age } : rs;
+}
+// The level's change over the six hours to its latest reading, in metres as the level is: '' without those readings.
+function outingTrend(rs) {
+  if (!rs || rs.stale || typeof rs.rise_6h_m !== 'number' || !Number.isFinite(Date.parse(rs.rise_from)) || !Number.isFinite(Date.parse(rs.rise_to))) return '';
+  const m = Math.round(rs.rise_6h_m * 100) / 100, span = `${outClock(rs.rise_from)} to ${outClock(rs.rise_to)}`;
+  return m === 0 ? `No change to the centimetre, ${span}` : `${m > 0 ? 'Rose' : 'Fell'} ${Math.abs(m).toFixed(2)}&nbsp;m, ${span}`;
+}
+// The picked time against daylight ("HH:MM" sunrise and sunset, local, as the time): '' with no time, or one in daylight.
+function outingDark(when, sunrise, sunset) {
+  const span = outingSpan(when), min = t => /^\d\d:\d\d$/.test(t || '') ? Number(t.slice(0, 2)) * 60 + Number(t.slice(3)) : null;
+  const up = min(sunrise), down = min(sunset);
+  if (!span || up === null || down === null) return '';
+  const [a, b] = [span[0] * 60, span[1] * 60];
+  const side = a >= down || (b > down && a >= up) ? 'after sunset' : 'before sunrise';
+  if (b <= up || a >= down) return `All of the time you picked is ${side}`;
+  return a < up || b > down ? `Part of the time you picked is ${side}` : '';
+}
+const outCell = (label, fig, subs, vis = '') => `<div class="tile cell"><h4 class="t-lab">${label}</h4><p class="cfig">${fig}</p>${vis}`
+  + subs.filter(Boolean).map(t => `<p class="csub">${t}</p>`).join('') + '</div>';
+// One spot's cells. c = { s (the spot), water (index.html's waterTile for it, or null), level (riverTile on
+// outingFresh's reading, or null) }; o = { day, when, nowMs }.
+function outingCells(c, o) {
+  const s = c.s, R = outingRules(), on = R.dayWord(o.day), day = outDay(o.day), later = o.day !== R.today(), nowMs = o.nowMs ?? Date.now();
+  const w = c.water, lv = c.level, rs = outingFresh(s.river_state, nowMs), lake = (rs && rs.water === 'lake') || s.kind === 'lake';
+  const prov = w && /provisional/.test(w.unit || '') ? 'Provisional estimate' : 'Estimate';
+  const water = !w ? outCell('Water temperature', '–', [outTag('none', 'No reading')])
+    : w.live ? outCell('Water temperature', w.fig, [outTag('measured', (w.say || '').split(/(?<=\.) /)[0].replace(/\.$/, ''))])   // "Measured at <where>, <age>"
+    : w.fig === '–' ? outCell('Water temperature', '–', [outTag('none', 'Not known'), 'Not estimated today'])
+    : later ? outCell('Water temperature', '–', [outTag('none', `Not known for ${day}`), `Today's ${prov.toLowerCase()} is about ${w.fig}C`])
+    : outCell('Water temperature', w.fig, [outTag('estimate', `${prov} for today`)]);
+  const station = rs && rs.station ? outEsc(rs.station) : 'the gauge';
+  const level = !lv ? outCell(lake ? 'Lake level' : 'River level', '–', [outTag('none', 'No gauge')])
+    : lv.fig === '–' ? outCell(lv.label, '–', ['No current reading', rs && rs.observed_at ? outTag('stale', `Last reading at ${station} ${outAge(rs.observed_at, nowMs)}: too old to use`) : ''])
+    : outCell(lv.label, `${lv.fig}&nbsp;m`, [`${lv.word || 'Read'} at ${station}`, outTag('measured', `Measured ${outAge(rs.observed_at, nowMs)}`),
+      outingTrend(rs) || (lake ? 'No trend is read for a lake' : 'No recent trend from this gauge')], lv.vis || '');
+  const wx = ((s.weather || {}).days || []).find(x => x && x.date === o.day), has = k => wx && typeof wx[k] === 'number';
+  const air = !has('tmax') ? outCell('Air', '–', [outTag('none', 'Not known')])
+    : outCell('Air', `${wx.tmax}°`, [outTag('estimate', `Forecast high ${on}`)]);
+  const wind = !has('wind_kmh') ? outCell('Wind', '–', [outTag('none', 'Not known')])
+    : outCell('Wind', `${outMph(wx.wind_kmh)}&nbsp;mph`, [outTag('estimate', `Forecast strongest ${on}`), has('gust_kmh') ? `Gusts to ${outMph(wx.gust_kmh)}&nbsp;mph` : '']);
+  const light = !wx || !wx.sunset ? outCell('Sunset', '–', [outTag('none', 'Not known')])
+    : outCell('Sunset', outEsc(wx.sunset), [`Sunrise ${outEsc(wx.sunrise)} ${on}`, outingDark(o.when, wx.sunrise, wx.sunset)]);
+  const x = (s.days || []).find(d => d && d.date === o.day), mm = x ? x.rain_48h_mm : null;
+  const rain = typeof mm !== 'number' ? '' : outCell('Rain', `${mm > 0 && mm < 1 ? mm.toFixed(1) : Math.round(mm)}&nbsp;mm`,
+    [outTag('estimate', `${later ? 'Forecast, i' : 'I'}n the 48 hours to midday ${day}`)]);
+  return [water, level, air, wind, light, rain];
+}
+// The panel, as HTML. cols = [{ role ('Your spot', 'Backup', 'Finish'), ...outingCells's c }]; o = { day, when, nowMs }.
+function outingConditions(cols, o) {
+  if (!cols.length) return '';
+  const later = o.day !== outingRules().today(), wx = cols.some(c => ((c.s.weather || {}).days || []).some(x => x && x.date === o.day));
+  const rows = cols.map(c => `<div class="outing-cond-spot"><p class="outing-role">${c.role}: ${outEsc(c.s.name)}</p><div class="cond">${outingCells(c, o).join('')}</div></div>`).join('');
+  return `<section class="outing-cond" aria-labelledby="outing-cond-h"><h3 class="outing-watch-h" id="outing-cond-h">Conditions for your outing</h3>${rows}`
+    + `<p class="small muted">${later ? `The water and level readings are the latest measured, not forecasts for ${outDay(o.day)}. ` : ''}`
+    + 'The air, wind, sunrise and sunset are for the whole day, not an hour. The wind is a weather model\'s strongest at 10&nbsp;m above open ground: '
+    + 'at the water it can be calmer, or gustier near hills and buildings. None of these is part of the pollution level.'
+    + `${wx ? ' <a href="https://open-meteo.com/">Weather data by Open-Meteo.com</a>.' : ''}</p></section>`;
+}
+
 // ------------------------------------------------------------------------------ the plan's list, for a boat or a board
 // Under each spot on Plan a swim, for a kayak or canoe or a paddleboard (index.html, planItem): the first confirmed fact
 // its guide has for boats and boards (the lite file's boat_note, guides.py), and up to three listed spots downstream to
@@ -440,6 +523,7 @@ function outingSection(o) {
     : `<p class="outing-said">${said}</p>${meet}${licence}${outingBoth(o)}${outingNeither(o)}${o.alt ? `<p class="outing-join" id="outing-join">${outEsc(o.join)}</p>` : ''}`
       + `<div class="outing-pair${o.alt ? '' : ' one'}">${outingCol(o.main, 'Your spot')}${o.alt ? outingCol(o.alt, 'Backup') : ''}</div>`
       + (o.fin ? `<div class="outing-pair one">${outingCol(o.fin, 'Finish')}</div><div id="outing-stretch">${o.stretch || ''}</div>` : '')
+      + outingConditions(o.cond || [], { day: o.day, when: o.when, nowMs: o.nowMs })
       + `<p class="small muted">${[...notes, `Issued ${outEsc(o.issued)}.`, 'A lower forecast level does not mean safe water: check the signs at the water before you swim.'].join(' ')}</p>`
       + outingKeep();
   // Opened from a link someone shared (plan.js, sent=): said so, with what is below for it. Until it is kept
@@ -511,6 +595,8 @@ function drawOuting(box, shown) {
     shared: sent ? issuedWords(sent.forecast) : '',
     groups: outingOptions(list, SAVED, byId, PLAN.backup), backupGroups: outingOptions(list, SAVED, byId, PLAN.spot),
     main: pair.main && col(pair.main), alt: pair.backup && col(pair.backup), join: outingJoin(pair.main, pair.backup), missing: pair.missing,
+    cond: [[pair.main, 'Your spot'], [pair.backup, 'Backup'], [fin, 'Finish']].filter(([s]) => s).map(([s, role]) => ({ role, s,   // index.html's own tiles' words
+      water: waterTile(s.water_temp, s.water_temp_est, s.kind, s.water_temp_est_missing), level: riverTile(outingFresh(s.river_state)) })),
     issued: `${issued()}, ${ago(ageMin())} ago`, open: OUTING_OPEN, nowMs: Date.now(), dateAlerts: outingDates().dateAlertsOn(DATA) }));
   const tile = document.getElementById('outing');
   tile.addEventListener('toggle', () => { OUTING_OPEN = tile.open; });
@@ -629,6 +715,6 @@ async function bindOutingAlert(byId) {
 }
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { outingActLine, outingJoined, outingJoin, outingApart, OUTING_LICENCE, OUTING_ACCESS_PADDLE, outingAccessTopics, outingResumeSaid, outingReplaces, outingOff, outingFinishes, outingStretch, outingKm, OUTING_PARTS, OUTING_HOURS, OUTING_CHECK, OUTING_ASKED_KEY, OUTING_ACT_WORDS, OUTING_MEET_WORDS, outingChanged, outingSent, outingVerb, outingOfficial, outingAccess, OUTING_ACCESS, outingPractical, outingBoth, outingPoor, outingNeither, outingShared, outingSpan, outingWhen, outingTimeNote, outingForDay, outingOptions, outingPair, outingSection,
+  module.exports = { outingActLine, outingConditions, outingCells, outingTrend, outingDark, outingFresh, outingJoined, outingJoin, outingApart, OUTING_LICENCE, OUTING_ACCESS_PADDLE, outingAccessTopics, outingResumeSaid, outingReplaces, outingOff, outingFinishes, outingStretch, outingKm, OUTING_PARTS, OUTING_HOURS, OUTING_CHECK, OUTING_ASKED_KEY, OUTING_ACT_WORDS, OUTING_MEET_WORDS, outingChanged, outingSent, outingVerb, outingOfficial, outingAccess, OUTING_ACCESS, outingPractical, outingBoth, outingPoor, outingNeither, outingShared, outingSpan, outingWhen, outingTimeNote, outingForDay, outingOptions, outingPair, outingSection,
     outingPairs, outingAsk, outingList, outingEarlier, outingAlert, outingIcs };
 }

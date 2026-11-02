@@ -7,8 +7,8 @@ const path = require('node:path');
 const app = fs.readFileSync(path.join(__dirname, '../src/dipcast/site/index.html'), 'utf8');
 
 test('one spot: no grid, no windows, the card with its week, then its page and the planner', () => {
-  assert.match(app, /let v = spots\.length > 1 \? `<div id="grid-host">\$\{savedGrid\(spots\)\}<\/div>` : '<div id="grid-host"><\/div>';/);
-  assert.match(app, /savedCard\(s, true, null, true, from, false, one\)/);
+  assert.match(app, /below \+= spots\.length > 1 \? `<div id="grid-host">\$\{savedGrid\(spots\)\}<\/div>` : '<div id="grid-host"><\/div>';/);
+  assert.match(app, /savedCard\(s, true, null, false, from, false, one, true\)/);
   assert.match(app, /\$\{unsave && !withWeek \? '' : week\(s\)\}<\/div>`/);
   assert.match(app, /\+ \(one \? savedOneNext\(spots\[0\]\) : ''\)/);
   assert.match(app, /Going\? <a href="\$\{esc\(planPath\(\) \+ planHereHash\(s\)\)\}" data-plan-here>Plan a swim here<\/a>\./);

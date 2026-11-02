@@ -471,6 +471,38 @@ function sinceSaid(s, forecast) {
   return `<p class="place-since">${esc1(t)}${said ? ` <span class="since-why">What changed in the inputs: ${esc1(said)}</span>` : ''} <span class="since-ev">${esc1(ev)}${which}</span></p>`;
 }
 
+// ------------------------------------------------------------------------------ the Saved page's summary
+// Over the places on the Saved page (2 Nov 2026): one sentence on what changed at the list's spots since this
+// browser last showed them, by the same rules as each card's line (sinceLine), so it never says more than the
+// cards do, and never why. rows: [{ name, was, now }], was the note kept (or undefined) and now this
+// forecast's record (seenRecord; null where the spot has no forecast). Returns { state, text, changed }:
+//   none      no spot has a note: nothing to compare yet
+//   same      notes, but the forecast on screen is the one already seen
+//   quiet     a newer forecast and no change the cards would say
+//   changed   the spots whose card has a line, by name
+// The time is said only where every note compared was made at the same look; otherwise "since you last
+// looked at each", as the cards give each one's time.
+function sinceSummary(rows) {
+  const notes = rows.filter(r => r.was && r.now), newer = notes.filter(r => Date.parse(r.now.forecast) > Date.parse(r.was.forecast));
+  const n = rows.length, spots = k => `${k} spot${k === 1 ? '' : 's'}`;
+  if (!notes.length) return { state: 'none', changed: [], text: n === 1 ? 'This browser has not shown this spot before, so there is nothing to compare yet. Next time, what changed since now is said here.'
+    : 'This browser has not shown these spots before, so there is nothing to compare yet. Next time, what changed since now is said here.' };
+  const whens = [...new Set(notes.map(r => lookedWhen(r.was.at)))], when = whens.length === 1 ? `you looked ${whens[0]}` : 'you last looked at each';
+  const left = n - notes.length, also = left ? ` ${left === 1 ? 'One spot has' : `${left} spots have`} nothing to compare with yet.` : '';
+  if (!newer.length) return { state: 'same', changed: [], text: `No new forecast since ${when}.${also}` };
+  const changed = newer.filter(r => sinceLine(r.was, r.now)).map(r => r.name);
+  if (!changed.length) return { state: 'quiet', changed, text: `Since ${when}, no level, rating or official notice changed at ${n === 1 ? 'this spot' : notes.length === n ? `your ${spots(n)}` : `${notes.length} of your ${spots(n)}`}, and no overflow upstream was reported starting or stopping.${also}` };
+  // Names hold commas ("River Wharfe, Burnsall"), so a list of them is kept apart with semicolons.
+  const sep = changed.some(x => x.includes(',')) ? '; ' : ', ';
+  const names = changed.length === 1 ? changed[0] : `${changed.slice(0, -1).join(sep)}${sep === '; ' ? '; and' : ' and'} ${changed.at(-1)}`;
+  return { state: 'changed', changed, text: `Since ${when}, ${n === 1 ? 'this spot' : `${changed.length} of your ${spots(n)}`} changed${n === 1 ? '' : `: ${names}`}. ${changed.length === 1 ? 'Its card says' : 'Each card says'} what changed and which forecasts it compares.${also}` };
+}
+// In the page: the list's spots against the notes as they were when the page opened (LOOKED).
+function sinceSummaryFor(spots, forecast) {
+  seenStore();
+  return sinceSummary(spots.map(s => ({ name: s.name, was: LOOKED.get(s.id), now: seenRecord(s, forecast, Date.now()) })));
+}
+
 if (typeof module === 'object' && module.exports) {
-  module.exports = { lastGap, lastChanges, lastParts, lastSaid, mountLast, LAST_DAYS_SAID, SEEN_KEY, SINCE_STALE_MIN, WHY_CUTS, whyFacts, whySaid, whyHeadlineDay, whyHeadlinePassed, whyOutingDay, whyDayLine, levelWords, seenRecord, seenOfficial, officialChange, sinceEvidence, sinceSpills, sinceOuting, issuedWords, readSeen, noteSeen, lookedWhen, sinceLine, seenStore, writeSeen, lookedAt, sinceSaid };
+  module.exports = { sinceSummary, sinceSummaryFor, lastGap, lastChanges, lastParts, lastSaid, mountLast, LAST_DAYS_SAID, SEEN_KEY, SINCE_STALE_MIN, WHY_CUTS, whyFacts, whySaid, whyHeadlineDay, whyHeadlinePassed, whyOutingDay, whyDayLine, levelWords, seenRecord, seenOfficial, officialChange, sinceEvidence, sinceSpills, sinceOuting, issuedWords, readSeen, noteSeen, lookedWhen, sinceLine, seenStore, writeSeen, lookedAt, sinceSaid };
 }
