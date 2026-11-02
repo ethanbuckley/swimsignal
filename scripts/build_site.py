@@ -2788,7 +2788,7 @@ def robots(root: str) -> str:
 
 
 def sitemap(root: str, spot_ids: list[str], day: str, extra: list[str] | None = None, overflow_ids: list[str] | None = None) -> str:
-    urls = [root, f"{root}plan/", f"{root}about.html", f"{root}verification.html", f"{root}methods.html", f"{root}testing.html", f"{root}coverage.html", f"{root}data.html", f"{root}organisers.html", f"{root}sites.html", f"{root}record.html", f"{root}clubs.html", f"{root}quality.html", f"{root}spots.html", f"{root}research.html", f"{root}lakes.html", f"{root}lake-temperatures.html", f"{root}durations.html", f"{root}samples.html", f"{root}waterhead.html", f"{root}research-catalogue.html", f"{root}sampling-planner.html", f"{root}partners.html", f"{root}models.html"] +[f"{root}{x}" for x in extra or []] + [f"{root}spot/{i}/" for i in spot_ids] + [f"{root}spot/{i}/profile/" for i in spot_ids] + [f"{root}overflow/{i}/" for i in overflow_ids or []]
+    urls = [root, f"{root}plan/", f"{root}about.html", f"{root}verification.html", f"{root}methods.html", f"{root}testing.html", f"{root}coverage.html", f"{root}data.html", f"{root}organisers.html", f"{root}sites.html", f"{root}record.html", f"{root}demo.html", f"{root}clubs.html", f"{root}quality.html", f"{root}spots.html", f"{root}research.html", f"{root}lakes.html", f"{root}lake-temperatures.html", f"{root}durations.html", f"{root}samples.html", f"{root}waterhead.html", f"{root}research-catalogue.html", f"{root}sampling-planner.html", f"{root}partners.html", f"{root}models.html"] +[f"{root}{x}" for x in extra or []] + [f"{root}spot/{i}/" for i in spot_ids] + [f"{root}spot/{i}/profile/" for i in spot_ids] + [f"{root}overflow/{i}/" for i in overflow_ids or []]
     body = "".join(f"<url><loc>{escape(u)}</loc><lastmod>{day}</lastmod></url>" for u in urls)
     return f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{body}</urlset>\n'
 
@@ -3132,6 +3132,7 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     write_organisers(site, token, root)
     write_sites(site, token, root)
     write_record(site, token, root)
+    write_demo(site, token, root)
     write_lake_temperatures_page(site, token, root)   # measured lake temperatures (research): the viewer
     write_durations(site, token, root)   # the spill durations viewer, from the files written before the profiles
     if support:
@@ -3445,6 +3446,17 @@ RECORD_SCRIPTS = ("levels.js", "evidence.js", "organisers.js", "printed.js", "ea
 
 def write_sites(site: Path, token: str | None = None, root: str | None = None) -> str:
     return write_scripted_page(site, "sites.html", SITES_SCRIPTS, ("organisers.js", "printed.js", "sites.js"), token, root)
+
+
+# The organisers' demonstration, demo.html: one worked example, on the live forecast for four Wharfe spots, of the
+# briefing, the sites view, what changed since the last update, the decision record and the signs (demo.js). It
+# reuses the sites view's and the spot page's own rules, so it loads their scripts. Not in the offline copy, for the
+# organisers' page's reasons; in the sitemap, as that page is.
+DEMO_SCRIPTS = ("levels.js", "experience.js", "lists.js", "organisers.js", "printed.js", "eatoday.js", "since.js", "sites.js", "demo.js")
+
+
+def write_demo(site: Path, token: str | None = None, root: str | None = None) -> str:
+    return write_scripted_page(site, "demo.html", DEMO_SCRIPTS, ("organisers.js", "printed.js", "sites.js", "demo.js"), token, root)
 
 
 # Satellite lake observations (docs/LAKE-OBSERVATIONS-CONTRACT-v1.md; the Research page links to the viewer). The
