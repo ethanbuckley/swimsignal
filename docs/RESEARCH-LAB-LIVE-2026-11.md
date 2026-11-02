@@ -13,6 +13,7 @@ exhibits on the site at `lab/` as they are. **It changes no forecast, level, mod
   - `lake_imagery.v1.json` and `lake-img/`
   - `satellite/pilot_runs.json`
   - `research_catalogue.v1.json`
+  - `sampling_planner.v1.json` (exhibit 5, from 2 November 2026)
 - changes three things in the copied pages, scripts and stylesheet:
   - each exhibit's data path, `../../../data/research/`, becomes `../data/`;
   - the stylesheet's fonts point at the site's own `fonts/`;
@@ -82,6 +83,7 @@ How each part stays current:
 | Research records | Copied at every build | never |
 | Wide cover pictures | By hand, `scripts/lab_wide_pictures.py` | 120 days |
 | Catchment workspace | By hand, `scripts/lab_catchment_workspace.py` | 90 days |
+| Sampling gaps (exhibit 5) | By hand after each bathing season: `scripts/export_sampling_planner.py`, then `scripts/lab_sampling_gaps.py` | never (dated to its last sample) |
 | Analysis of the satellite readings; forecast record | Dated analyses on outcomes already read. A new season brings a new version; the old one is kept | never |
 
 - **`lab/refresh.json`** (`write_lab_refresh`) holds each part's date, taken from the file itself, and how it is

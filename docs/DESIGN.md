@@ -1767,8 +1767,8 @@ size are gone.
 
 **Navigation.** The header's desktop links gained "Research Lab" (`lab/`) and renamed "Research" to "Research &amp;
 data" (`research.html`, now titled "Research and data"). The phone's More menu has both. The four primary phone
-destinations are unchanged. Under the header each Lab page has its own bar: "Research Lab", then the four exhibits
-numbered. The page you are on is in white with a rule under it, so colour is not the only sign. On a phone the bar
+destinations are unchanged. Under the header each Lab page has its own bar: "Research Lab", then the exhibits
+numbered (five from 2 November 2026, when sampling gaps was added). The page you are on is in white with a rule under it, so colour is not the only sign. On a phone the bar
 scrolls sideways, and the current one is scrolled into view. Each exhibit ends with the previous and next exhibit by
 name, the overview at either end, and "Back to the forecasts".
 
@@ -1956,3 +1956,15 @@ the planner or a comparison gives a reading:
 - A gap is set in ink, not grey, so it never reads as small print (the 31 Oct 2026 rule that "Not known" is as plain
   as a fact). `.vt-none` replaces the old `.dp-unk`.
 - When Node runs `dayplan.js` alone, `dpTag` writes the same markup. Saved and Conditions take the same helper.
+
+## The organisers' worked example (2 November 2026)
+
+`demo.html` (`demo.js`) is a prose page that walks one invented activity centre's session on four Windermere
+bathing waters through the existing tools, on the live forecast: the session, the briefing in `briefing.py`'s words,
+the sites view for the session's day, what changed since the previous update, the issue id with the decision record,
+and the signs. Each step is an h2 with a number; the part the script draws sits under a hairline (`.d-live`), so it
+reads as the tool's own output. The sites view's rows are `sites.js`'s markup with its CSS copied, without its print
+button (`view(..., { print: false })`). A "Free today" summary box opens the page: the tools are free, paid terms are
+only being explored, no organisation pays, swimmers' features stay free. Linked from the organisers' and clubs pages;
+in the sitemap, not in the offline copy. The commercial wording and the interview plan are in
+`docs/ORGANISER-INTERVIEWS-2026-11.md`.

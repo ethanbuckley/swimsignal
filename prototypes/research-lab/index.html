@@ -6,13 +6,14 @@
 <!-- The Research Lab's front page. Built into the site at lab/ by scripts/build_site.py write_lab, which points the data reads at
      lab/data/ and the fonts at the site's own; served from the repository root, it reads data/research/ as committed. -->
 <title>Research Lab · SwimSignal</title>
-<meta name="description" content="SwimSignal's Research Lab: exploratory exhibits on satellite pictures of lakes, the rivers joining sewage overflows to swim spots, and how past E. coli estimates did.">
+<meta name="description" content="SwimSignal's Research Lab: exploratory exhibits on satellite pictures of lakes, the rivers joining sewage overflows to swim spots, how past E. coli estimates did, and where lab samples are thin.">
 <link rel="stylesheet" href="../../src/dipcast/pages/page.css">
 <link rel="stylesheet" href="lab.css?v=11">
 <link rel="stylesheet" href="pollution/pollution.css?v=1">
 <style>
-  .gallery { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 28px; }
-  @media (max-width: 1100px) { .gallery { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .gallery { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 24px; }
+  @media (max-width: 1100px) { .gallery { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; } }
+  @media (max-width: 860px) { .gallery { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   @media (max-width: 640px) { .gallery { grid-template-columns: 1fr; gap: 40px; } }
   .ex { display: block; color: inherit; text-decoration: none; }
   .ex .cover { position: relative; aspect-ratio: 1; border: 1px solid var(--ink); overflow: hidden; background: var(--deep); }
@@ -57,12 +58,13 @@
   <a href="pollution/"><span class="n">2</span>Where pollution goes</a>
   <a href="forecasts/"><span class="n">3</span>Forecast record</a>
   <a href="workspace/"><span class="n">4</span>Catchment workspace</a>
+  <a href="sampling/"><span class="n">5</span>Sampling gaps</a>
 </div></nav>
 <div class="front intro"><div class="wrap">
   <h1>Research Lab</h1>
   <p class="say">What SwimSignal is investigating, the evidence so far, and what it does not yet show.</p>
   <p>Exploratory work on data already read: it changes no forecast. Missing data is drawn as missing.</p>
-  <p class="status" data-asof="satellite,paths,forecast-record,workspace"></p>
+  <p class="status" data-asof="satellite,paths,forecast-record,workspace,sampling"></p>
 </div></div>
 <main><section class="sec gal"><div class="wrap">
   <div class="gallery">
@@ -90,12 +92,18 @@
       <p>Rain, spills, samples, temperature and the satellite index on one timeline, for Windermere and the Wharfe at Ilkley.</p>
       <p class="kind">Two catchments · 2024 to Sept 2026</p>
     </a>
+    <a class="ex" href="sampling/">
+      <div class="cover" aria-hidden="true"><div class="map-cover dark"><div class="drawn-map dark" id="sg-cover"></div></div><span class="no">5</span></div>
+      <h2>Sampling gaps</h2>
+      <p>Where the lab samples behind the forecast are thin, and candidate sampling seasons compared by the gaps they fill and their cost.</p>
+      <p class="kind">Planning aid · samples to Sept 2026</p>
+    </a>
   </div>
   <p class="back"><a href="https://swimsignal.co.uk/">Back to the forecasts</a> · <a href="https://swimsignal.co.uk/research.html">Research &amp; data</a>: every observation, test and record.</p>
 </div></section>
 </main>
 <footer class="foot"><div class="wrap">
-  <p>Covers: Contains modified Copernicus Sentinel data [2026]. <span id="map-credit"></span> Exhibit 2's cover: the mapped rivers joining every spot's overflows to it (OS Open Rivers). Exhibit 3's cover is one dot per sample over 900 and per false alarm, rivers and lakes, 2024–2026, in date order.</p>
+  <p>Covers: Contains modified Copernicus Sentinel data [2026]. <span id="map-credit"></span> Exhibit 2's cover: the mapped rivers joining every spot's overflows to it (OS Open Rivers). Exhibit 3's cover is one dot per sample over 900 and per false alarm, rivers and lakes, 2024–2026, in date order. Exhibit 5's: every spot, filled where it has lab samples, ringed where it has none.</p>
   <p>Exploratory work on data already read. It changes nothing in the forecast. Each spot's own page gives the forecast and official advice.</p>
   <p class="site-links"><a href="https://swimsignal.co.uk/terms.html">Terms of use</a> · <a href="https://swimsignal.co.uk/privacy.html">Privacy</a> · <a href="https://swimsignal.co.uk/feedback.html">Feedback</a> · <a href="https://swimsignal.co.uk/research.html">Research &amp; data</a></p>
 </div></footer>
@@ -114,6 +122,11 @@
   Promise.all([LAB.loadOutline(''), fetch('workspace/data/wharfe-ilkley.json').then(r => r.json())]).then(([, c]) => {
     LAB.drawMap(document.getElementById('ws-cover'), c.overflows.map(o => ({ id: o.id, lat: o.lat, lon: o.lon, name: o.name, mark: '<circle r="2.6" class="pt-hist"/>' })),
       { inert: true, box: c.box, maxH: 300, lines: c.lines.map(l => ({ coords: l.coords })) });
+  });
+  // exhibit 5's cover: every spot, filled where it has lab samples and ringed where it has none, from the exhibit's own file
+  Promise.all([LAB.loadOutline(''), fetch('sampling/gaps.json').then(r => r.json())]).then(([, g]) => {
+    LAB.drawMap(document.getElementById('sg-cover'), g.spots.map(s => ({ id: s.id, lat: s.lat, lon: s.lon, name: s.name,
+      mark: s.ea || s.local ? '<circle r="3.2" fill="#fbf7ec"/>' : '<circle r="3.2" fill="none" stroke="#e0766b" stroke-width="1.3"/>' })), { inert: true });
   });
 </script>
 </body>
