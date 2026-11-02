@@ -3604,7 +3604,8 @@ function renderList() {
     + labRoutes([[1, 'lab/lake-from-space/', 'The lake from space', 'Satellite pictures of lakes, cloud included.'],
       [2, 'lab/pollution/', 'Where does the pollution go?', 'The rivers joining overflows to spots.'],
       [3, 'lab/forecasts/', 'How good are the forecasts?', 'Every past sample: catches and misses.'],
-      [4, 'lab/workspace/', 'Catchment workspace', 'Rain, spills and samples on one timeline.']]) + `</section>`;
+      [4, 'lab/workspace/', 'Catchment workspace', 'Rain, spills and samples on one timeline.'],
+      [5, 'lab/sampling/', 'Sampling gaps', 'Where lab samples are thin, and what a season would fill.']]) + `</section>`;
   setPanel(h + cols(v));
   if (saved.length) bindItems(document.getElementById('saved-list'));
   document.getElementById('listday').addEventListener('change', e => setMapDay(e.target.value));
@@ -5334,7 +5335,7 @@ function deskSections(d, o) {
 // "Explore the evidence": the Research Lab's exhibits that hold this spot's own record, each opened on it (build_site.
 // attach_lab_links gives the keys; exhibit 2 holds every spot with an overflow upstream). After the forecast and the
 // detail, never above them. A spot no exhibit holds is told so, with the way to the rest: nothing stands in for it.
-const LAB_COVER = n => `lab/assets/covers/${['', 'lake-from-space', 'pollution', 'forecasts', 'workspace'][n]}.jpg`;
+const LAB_COVER = n => `lab/assets/covers/${['', 'lake-from-space', 'pollution', 'forecasts', 'workspace', 'sampling'][n]}.jpg`;
 const labRoutes = items => `<ul class="routes">${items.map(([n, href, name, line]) => `<li><a href="${href}"><img src="${LAB_COVER(n)}" alt="" width="56" height="56" loading="lazy"><span><small>Exhibit ${n}</small><b>${name}</b>${line}</span></a></li>`).join('')}</ul>`;
 function labTile(d) {
   if (!PAGE_ID.test(d.id)) return '';   // a clicked point: no record of its own in the Lab
@@ -5345,7 +5346,7 @@ function labTile(d) {
   if (l.ws) items.push([4, `lab/workspace/#c=${enc(l.ws)}&spot=${enc(d.id)}`, 'Catchment workspace', 'Rain, spills and samples around it on one timeline, January 2024 to September 2026.']);
   return `<section class="tile lab-tile" aria-labelledby="lab-h"><h2 class="t-lab" id="lab-h">${ICON.evidence}<span>Explore the evidence</span></h2>`
     + (items.length ? labRoutes(items) : `<p class="t-say">No Research Lab exhibit holds a record for this spot yet.</p>`)
-    + `<p class="t-key">Research Lab: exploratory, on data already read. It changes nothing in this forecast. <a href="lab/">All four exhibits</a>.</p></section>`;
+    + `<p class="t-key">Research Lab: exploratory, on data already read. It changes nothing in this forecast. <a href="lab/">All five exhibits</a>.</p></section>`;
 }
 const daysTile = d => `<section class="tile" aria-labelledby="days-h"><h2 class="t-lab" id="days-h">${ICON.days}<span>Pollution risk, next five days</span></h2>`
   + `<p class="t-sent">${daysSentence(d)}</p>${dayRows(d)}${liveRow(d)}<div class="after" id="answer-after">${answerAfter(d)}</div><div id="day-view"></div>${check(d)}</section>`;

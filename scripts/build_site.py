@@ -3534,7 +3534,7 @@ def write_lakes(site: Path, token: str | None = None, root: str | None = None) -
 # dropped here, and lab_pages puts every page in the sitemap.
 LAB = ROOT / "prototypes" / "research-lab"
 LAB_DATA = ("ecoli_evidence.v1.json", "lake_observations.v1.json", "lake_imagery.v1.json",
-            "satellite/pilot_runs.json", "research_catalogue.v1.json", "lake-img")
+            "satellite/pilot_runs.json", "research_catalogue.v1.json", "sampling_planner.v1.json", "lake-img")
 LAB_REWRITES = (("../../../data/research/", "../data/"),            # an exhibit's reads, one folder down
                 ("../../../src/dipcast/pages/page.css", "../../page.css"),   # an exhibit's link to the site's stylesheet
                 ("../../src/dipcast/pages/page.css", "../page.css"))         # the front page's
@@ -3654,6 +3654,11 @@ def write_lab_refresh(site: Path, paths_from_build: bool = False) -> dict:
         "workspace": {"label": "Catchment workspace layers", "short": "layers", "as_of": _lab_date(ws[0], "made") if ws else None,
                       "outcomes_to": window[-1],
                       "refresh": "by hand", "stale_days": 90},
+        # exhibit 5: the planner's file and gaps.json, both made by hand from samples to the end of a season; a new
+        # season's samples bring a new export, so they are never called out of date between seasons
+        "sampling": {"label": "Lab samples and sampling gaps", "short": "samples", "as_of": _lab_date(out / "sampling" / "gaps.json", "made"),
+                     "outcomes_to": _lab_date(out / "sampling" / "gaps.json", "outcomes_to"),
+                     "refresh": "by hand, after each bathing season", "stale_days": None},
         "catalogue": {"label": "Research records", "short": "records", "as_of": _lab_date(out / "data" / "research_catalogue.v1.json", "written"),
                       "refresh": "with each research record", "stale_days": None},
     }

@@ -746,6 +746,13 @@
    "branch": "research/scotland-trial",
    "branch_exists": true,
    "date": "2026-11-01"
+  },
+  "566": {
+   "n": 566,
+   "state": "merged",
+   "branch": "research/sampling-planner-482",
+   "branch_exists": true,
+   "date": "2026-10-31"
   }
  },
  "entries": [
@@ -1187,19 +1194,38 @@
    ],
    "verdict": "Failed. In a simulated world built to the method's own assumptions, the information-based policy beat simple coverage in 58.5% of 200 replications against a 60% condition; mean gain 0.000189 (0.000077 to 0.000306).",
    "scope": "Synthetic data only; nothing about real waters.",
-   "stage": "waiting",
-   "stage_note": "Not wired into anything. The record says \"Not pursued\"; the register's later route is a transparent coverage planner before any automatic site choice.",
-   "next": "A coverage planner with simple coverage and wet-day references, if a sampling partner needs one.",
+   "stage": "live",
+   "stage_note": "The simulation's policy is not adopted and is wired into nothing. Its coverage and results are shown as a planning aid: the sampling planner on Research since 31 October 2026 (#566), and, from 2 November 2026 (PR pending at the time of writing), the Research Lab's fifth exhibit, sampling gaps, which draws where lab samples are thin and compares candidate seasons by the gaps they fill and their cost Neither allocates a sample or claims a policy is more efficient; no policy has been tried in real water.",
+   "next": "Only a randomised field study with a partner who samples anyway could show a policy works (set out in the planner's contract); offering it is Ethan's decision. Re-export the coverage after the 2027 season.",
    "records": [
     {
      "doc": "docs/SAMPLING-PRIORITIES-SIM-2026-10.md",
      "quote": "| COVER | 58.5% | 60% | 0.000189 | 0.000077 to 0.000306 | 6.2% | condition 1 fails |"
+    },
+    {
+     "doc": "docs/SAMPLING-PLANNER-CONTRACT-v1.md",
+     "quote": "It allocates no sample, sends nothing to anyone, and makes no efficiency claim."
+    },
+    {
+     "doc": "docs/SAMPLING-GAPS-EXHIBIT-2026-11.md",
+     "quote": "It allocates no sample, sends nothing to anyone, and says nothing about which season would\nteach the model more."
     }
    ],
    "prs": [
-    381
+    381,
+    566
    ],
-   "register_note": "The register does not give the doc's verdict (\"fail\") or its decision \"Not pursued\"; its coverage-planner route is a newer register decision, not in the doc."
+   "register_note": "The register does not give the doc's verdict (\"fail\") or its decision \"Not pursued\"; its coverage-planner route is a newer register decision, not in the doc.",
+   "links": [
+    {
+     "label": "Sampling planner",
+     "href": "sampling-planner.html"
+    },
+    {
+     "label": "Research Lab: sampling gaps",
+     "href": "lab/sampling/"
+    }
+   ]
   },
   {
    "id": "lake-direction",
@@ -2481,7 +2507,7 @@
     "overflows",
     "accuracy"
    ],
-   "verdict": "A display, not a test: four exploratory exhibits on data already read, the lake from space, where the pollution goes, how good the forecasts are, and a catchment workspace, with gaps drawn as gaps and hindsight estimates said to be rebuilt afterwards.",
+   "verdict": "A display, not a test: five exploratory exhibits on data already read, the lake from space, where the pollution goes, how good the forecasts are, a catchment workspace, and sampling gaps, with gaps drawn as gaps and hindsight estimates said to be rebuilt afterwards.",
    "scope": "Frozen copies of the satellite, E. coli sample, overflow path and research files as exported on 1 November 2026. Outcomes to 30 September 2026 only.",
    "stage": "live",
    "stage_note": "On the site at lab/ since 1 November 2026, linked from the Research and Accuracy pages, the lake viewer and each spot's Upstream tile. Changes nothing in the forecast. Each exhibit says how old its data is: the overflow paths are remade at every build and the satellite files weekly; the two analyses are dated versions.",

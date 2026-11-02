@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Research Lab exhibit 5, sampling gaps. Built into the site at lab/ by scripts/build_site.py write_lab, which points the data reads at
+     lab/data/ and the fonts at the site's own; served from the repository root, it reads data/research/ as committed. -->
+<title>Sampling gaps · SwimSignal Research Lab</title>
+<meta name="description" content="Where the E. coli lab samples behind SwimSignal's forecast are thin, by place, month and rain, and a comparison of candidate sampling seasons by the gaps they fill and what they cost. A planning aid, not a sampling plan.">
+<link rel="stylesheet" href="../../../src/dipcast/pages/page.css">
+<link rel="stylesheet" href="../lab.css?v=11">
+<link rel="stylesheet" href="sampling.css?v=1">
+</head>
+<body class="lab">
+<!-- A stand-in for a repository preview: the site build puts the site's own header here (build_site.site_header). -->
+<header class="top"><a class="brand" href="https://swimsignal.co.uk/">SwimSignal</a></header>
+<nav class="labnav" aria-label="Research Lab"><div class="wrap">
+  <a href="../">Research Lab</a>
+  <a href="../lake-from-space/"><span class="n">1</span>Lake from space</a>
+  <a href="../pollution/"><span class="n">2</span>Where pollution goes</a>
+  <a href="../forecasts/"><span class="n">3</span>Forecast record</a>
+  <a href="../workspace/"><span class="n">4</span>Catchment workspace</a>
+  <a href="../sampling/" aria-current="page"><span class="n">5</span>Sampling gaps</a>
+</div></nav>
+
+<div class="front"><div class="wrap">
+  <div>
+    <h1>Sampling gaps</h1>
+    <p class="q">Where are the lab samples behind the forecast thin, and what would a season of extra samples fill?</p>
+    <div class="answer" id="front-answer">Loading the samples…</div>
+    <p class="status" id="front-status"></p>
+    <p class="status" id="scope">Exploratory: a planning aid on samples already taken. It allocates no sample and changes nothing in the forecast.</p>
+    <p class="status" data-asof="sampling" data-base="../"></p>
+  </div>
+  <figure class="overview">
+    <div class="drawn-map dark" id="overview"></div>
+    <figcaption id="overview-cap"></figcaption>
+  </figure>
+</div></div>
+
+<main>
+  <section class="sec" id="s-where"><div class="wrap">
+    <div class="sec-head"><span class="no">1</span><h2>Where the samples are</h2><span class="aside">every SwimSignal spot</span></div>
+    <p class="note" id="pop"></p>
+    <p class="note" id="spot-note" role="status"></p>
+    <div class="sg-where">
+      <figure class="netmap">
+        <div class="drawn-map" id="map"></div>
+        <div class="map-key"><span><i class="ea"></i>Environment Agency samples (size: how many)</span><span><i class="local"></i>A local group's samples</span><span><i class="none"></i>No lab samples</span></div>
+      </figure>
+      <div>
+        <div class="picker always"><label for="spot-select">Spot</label><select id="spot-select"></select></div>
+        <div class="sg-spot" id="spot"></div>
+        <div class="tw"><table class="sg-areas" id="areas"></table></div>
+      </div>
+    </div>
+  </div></section>
+
+  <section class="sec" id="s-when"><div class="wrap">
+    <div class="sec-head"><span class="no">2</span><h2>When they were taken</h2><span class="aside">samples a month, January 2023 to December 2026</span></div>
+    <p class="note">Each row is a place with lab samples, each column a month. A hatched cell had none. The months after September 2026 are not in this record yet.</p>
+    <div class="sg-cal" id="calendar"></div>
+    <div class="chart-note"><span><span class="sw ea"></span>Environment Agency samples</span><span><span class="sw local"></span>A local group's samples</span><span><span class="sw gap"></span>No sample that month</span><span><span class="sw later"></span>Not in this record yet</span></div>
+  </div></section>
+
+  <section class="sec" id="s-rain"><div class="wrap">
+    <div class="sec-head"><span class="no">3</span><h2>How many came after rain</h2><span class="aside">2024–2026, days fixed in advance</span></div>
+    <div class="notes" id="rain"></div>
+  </div></section>
+
+  <section class="sec" id="s-compare"><div class="wrap">
+    <div class="sec-head"><span class="no">4</span><h2>Compare candidate seasons</h2><span class="aside">places, months and costs you set</span></div>
+    <p class="note">Three seasons side by side. Each starts from an example to change, not a suggestion. Add spots from the map or the list above, or start a plan from a group of spots. The figures are arithmetic on the samples already taken; none says which season would teach the model more.</p>
+    <div class="sg-costs">
+      <label>Lab price per sample, £ (your assumption)<input id="lab-price" type="number" inputmode="decimal" min="0" step="any"></label>
+      <label>Travel and time per sample, £ (your assumption)<input id="travel" type="number" inputmode="decimal" min="0" step="any"></label>
+    </div>
+    <div class="sg-plans" id="plans"></div>
+    <div class="tw"><table class="sg-compare" id="compare"></table></div>
+    <p class="sg-limit"><b>Beside these figures:</b> the one rule for choosing samples that was tested, an information score, failed its test against equal coverage in a simulation, and no rule here has been tried in real water. Choosing places and months by the gaps they fill is a way to talk about a season, not a shown improvement. <a href="#s-sim">The simulation</a>.</p>
+    <div class="ws-share">
+      <button type="button" id="copy">Copy a link to these three seasons</button>
+      <span class="note" id="copy-msg" aria-live="polite"></span>
+    </div>
+  </div></section>
+
+  <section class="sec" id="s-sim"><div class="wrap">
+    <div class="sec-head"><span class="no">5</span><h2>What a simulation found about choosing</h2><span class="aside">made-up worlds, stated in advance</span></div>
+    <div class="notes" id="sim"></div>
+  </div></section>
+
+  <section class="sec" id="s-not"><div class="wrap">
+    <div class="sec-head"><span class="no">6</span><h2>What it cannot tell you</h2></div>
+    <ul class="lim">
+      <li><b>No rule has been shown to work.</b> The information policy failed its test against equal coverage (58.5% of simulated worlds, 60% needed). Nobody has sampled to any rule here and compared the result in real water.</li>
+      <li><b>No samples is not clean water.</b> A spot without samples is one the model knows little about. It says nothing about whether its water is better or worse.</li>
+      <li><b>The samples are the Environment Agency's routine ones.</b> They were taken on days fixed in advance, at bathing waters, from May to September. They show where the model's data are thin, not where the water is worst.</li>
+      <li><b>“After rain” is archived forecast rain.</b> More than 10 mm in the 48 hours before the sample, from the forecast as it was issued, not a rain gauge. Another line would give other counts.</li>
+      <li><b>The rain share is a rough guide.</b> It pools the bathing waters in an area. A spot in the same area can be wetter or drier, and a season can be unlike 2024–2026.</li>
+      <li><b>The costs are yours.</b> Both prices are assumptions you set, not a quote. Kit, training, delivery to a laboratory in time and staff on call after rain are not counted.</li>
+      <li><b>A local group's samples are not in the model's data.</b> Waterhead's samples are shown here for coverage. They have their own page and are not compared with the forecast yet.</li>
+      <li><b>Official advice comes first.</b> Environment Agency notices and signs at the water are on each spot page of the live site.</li>
+    </ul>
+  </div></section>
+
+  <section class="sec" id="s-next"><div class="wrap">
+    <div class="sec-head"><span class="no">7</span><h2>Questions worth asking next</h2><span class="aside">proposed, not started</span></div>
+    <ol class="qs">
+      <li><div><h3>Does sampling by a stated rule teach the model more than a group's usual schedule?</h3>
+        <p class="k">Useful if: the randomised week-level field study in <a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/SAMPLING-PLANNER-CONTRACT-v1.md#the-field-study-an-efficiency-claim-would-need">the planner's record</a>, with a pilot season first and its pass rule written down before the first sample. Unconvincing if: a rerun of the simulation, or a reanalysis of past EA samples, which no rule chose.</p></div></li>
+      <li><div><h3>What do samples between October and April show?</h3>
+        <p class="k">Useful if: a group that samples out of season shares dated results with the laboratory's method. Unconvincing if: a handful of winter samples is read as a winter rate.</p></div></li>
+      <li><div><h3>How wet is a spot with no bathing water nearby on a fixed schedule?</h3>
+        <p class="k">Useful if: archived forecast rain at each unsampled spot on a stated weekly day, 2024–2026, replacing the area share. Unconvincing if: it uses only the days a sample happened to be taken.</p></div></li>
+    </ol>
+  </div></section>
+  <section class="sec"><div class="wrap">
+    <nav class="pager" aria-label="Exhibits">
+      <a class="prev" href="../workspace/"><small>&larr; Exhibit 4</small><b>Catchment workspace</b></a>
+      <a class="next" href="../"><small>All five exhibits &rarr;</small><b>Research Lab</b></a>
+    </nav>
+    <p class="back"><a href="https://swimsignal.co.uk/">Back to the forecasts</a> · <a href="https://swimsignal.co.uk/sampling-planner.html">The sampling planner</a> · <a href="https://swimsignal.co.uk/research.html">Research &amp; data</a></p>
+  </div></section>
+</main>
+
+<footer class="foot"><div class="wrap">
+  <p id="attrib"></p>
+  <p>Method: <a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/SAMPLING-GAPS-EXHIBIT-2026-11.md">this exhibit's record</a>,
+     <a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/SAMPLING-PLANNER-CONTRACT-v1.md">the planner's contract</a>,
+     <a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/SAMPLING-PRIORITIES-SIM-2026-10.md">the simulation</a>.
+     Data: <a href="../../../data/research/sampling_planner.v1.json">sampling_planner.v1.json</a>, <a href="gaps.json">gaps.json</a> (<code>scripts/lab_sampling_gaps.py</code>).</p>
+  <p>Exploratory work on data already read. It changes nothing in the forecast. Each spot's own page gives the forecast and official advice.</p>
+  <p class="site-links"><a href="https://swimsignal.co.uk/terms.html">Terms of use</a> · <a href="https://swimsignal.co.uk/privacy.html">Privacy</a> · <a href="https://swimsignal.co.uk/feedback.html">Feedback</a> · <a href="https://swimsignal.co.uk/research.html">Research &amp; data</a></p>
+</div></footer>
+<script src="../lab.js?v=5"></script>
+<script src="sampling.js?v=1"></script>
+</body>
+</html>
