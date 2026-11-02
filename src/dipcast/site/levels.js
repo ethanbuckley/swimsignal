@@ -29,13 +29,15 @@ const dayWord = iso => iso === today() ? 'today' : iso === addDays(today(), 1) ?
   : 'on ' + new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', {weekday:'long'});
 const dayName = iso => dayWord(iso).replace(/^on /, '');
 // The reader's day. Builds come up to 7.7 h apart, so with the build's date as "today" everywhere,
-// between midnight and the next build the page would call yesterday "Today". While the forecast is no
-// more than `freshMin` minutes old (the page's stale notice comes after that) the page's day is the
-// device's, if later; fromDay then moves the rows before it out of each spot's five days. The alerts,
-// the organisers' record and the other pages keep the build's day (setToday with the build's date).
-function readerDay(generatedAt, nowMs, freshMin) {
+// between midnight and the next build the page would call yesterday "Today". The page's day is the
+// device's, if later, however old the forecast is; fromDay then moves the rows before it out of each
+// spot's five days, each row keeping its own date. Until 2 Nov 2026 a forecast over eight hours old
+// (the page's stale notice) kept the build's day, so at 07:45 the morning after a build at 23:20 the page
+// called Sunday "Today" on Monday (docs/RELIABILITY-CHECKS-2026-11.md). The alerts, the organisers'
+// record and the other pages keep the build's day (setToday with the build's date).
+function readerDay(generatedAt, nowMs) {
   const built = String(generatedAt).slice(0, 10), mine = localISO(new Date(nowMs));
-  return mine > built && nowMs - Date.parse(generatedAt) <= freshMin * 6e4 ? mine : built;
+  return mine > built ? mine : built;
 }
 // A spot's forecast from the day `iso`, `built` being the build's date: the rows before it move to `past`
 // (a spot's page greys the last as "Yesterday"), and each overflow's chances of a spill, one a day from

@@ -37,6 +37,27 @@ test('failed server unsubscribe preserves browser subscription for a retry', asy
   assert.equal(removed, 0);
 });
 
+// Reliability checks, 2 Nov 2026: a refused sign-up left the new push address in the browser, so a reload
+// showed "Turn off alerts" though the alert service held nothing.
+test('a push address the alert service refused is dropped again', async () => {
+  let made = null;
+  const sub = {endpoint: 'https://fcm.googleapis.com/fcm/send/x', toJSON: () => ({}), unsubscribe: async () => { made = null; return true; }};
+  const state = setup({getSubscription: async () => made, subscribe: async () => (made = sub)},
+    async () => ({ok: false, status: 500}));
+  state.ctx.setTimeout = setTimeout; state.ctx.clearTimeout = clearTimeout;
+  await assert.rejects(state.ctx.on(), /answered 500/);
+  assert.equal(made, null);
+});
+
+test('a refused re-send keeps a push address the browser already had', async () => {
+  let removed = 0;
+  const sub = {endpoint: 'https://fcm.googleapis.com/fcm/send/x', toJSON: () => ({}), unsubscribe: async () => { removed++; return true; }};
+  const state = setup({getSubscription: async () => sub}, async () => ({ok: false, status: 503}));
+  state.ctx.setTimeout = setTimeout; state.ctx.clearTimeout = clearTimeout;
+  await assert.rejects(state.ctx.on(), /answered 503/);
+  assert.equal(removed, 0);
+});
+
 // The weekly note (push/src/weekly.js): off unless ticked, sent with the saved spots, and remembered
 // with them so that the page's re-sends keep it.
 function withStorage() {
