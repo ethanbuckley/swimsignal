@@ -15,7 +15,7 @@ import build_site  # noqa: E402
 @pytest.fixture(scope="module")
 def site(tmp_path_factory) -> Path:
     site = tmp_path_factory.mktemp("site")
-    assert build_site.write_lab(site) >= 4   # the front page and three exhibits, at least
+    assert build_site.write_lab(site) >= 6   # the front page and five exhibits, at least
     return site
 
 
@@ -36,7 +36,7 @@ def test_nothing_reaches_into_the_repository(site):
 
 # What a Lab page may link outside lab/: the site's own pages and files, which the rest of the build writes.
 SITE_FILES = {"", "index.html", "page.css", "icons/icon.svg", "icons/apple-touch-icon.png", "plan/", "saved/", "verification.html",
-              "about.html", "research.html", "feedback.html", "terms.html", "privacy.html"}
+              "about.html", "research.html", "feedback.html", "terms.html", "privacy.html", "sampling-planner.html"}
 
 
 def test_every_read_resolves(site):
@@ -71,21 +71,21 @@ def test_the_sites_shell(site):
         assert f'aria-current="page" href="{up}lab/"' in s and s.count('<nav class="phone-nav" aria-label="Main">') == 1, f
         assert f'<a href="{up}lab/">Research Lab</a>' in s, f   # the phone's More
         nav = re.search(r'<nav class="labnav".*?</nav>', s, re.S).group(0)
-        assert nav.count('aria-current="page"') == 1 and nav.count("<a ") == 5, f
+        assert nav.count('aria-current="page"') == 1 and nav.count("<a ") == 6, f
 
 
 def test_exhibits_end_with_the_next_and_the_way_back(site):
-    for d in ("lake-from-space", "pollution", "forecasts", "workspace"):
+    for d in ("lake-from-space", "pollution", "forecasts", "workspace", "sampling"):
         s = (site / "lab" / d / "index.html").read_text()
         assert '<nav class="pager" aria-label="Exhibits">' in s and ">Back to the forecasts</a>" in s, d
 
 
 def test_covers_are_not_controls(site):
     s = (site / "lab" / "index.html").read_text()
-    assert s.count("LAB.drawMap(") == 2 and s.count("inert: true") == 2
-    assert s.count('<div class="cover" aria-hidden="true">') == 4 and ".ex .cover * { pointer-events: none; }" in s
+    assert s.count("LAB.drawMap(") == 3 and s.count("inert: true") == 3
+    assert s.count('<div class="cover" aria-hidden="true">') == 5 and ".ex .cover * { pointer-events: none; }" in s
     covers = site / "lab" / "assets" / "covers"
-    assert sorted(f.name for f in covers.iterdir()) == ["forecasts.jpg", "lake-from-space.jpg", "pollution.jpg", "workspace.jpg"]
+    assert sorted(f.name for f in covers.iterdir()) == ["forecasts.jpg", "lake-from-space.jpg", "pollution.jpg", "sampling.jpg", "workspace.jpg"]
 
 
 def test_lab_links_name_only_what_an_exhibit_holds(tmp_path):
@@ -123,7 +123,7 @@ def test_left_out(site):
 
 def test_every_page_is_in_the_sitemap(site):
     pages = build_site.lab_pages()
-    assert pages[0] == "lab/" and {"lab/lake-from-space/", "lab/pollution/", "lab/forecasts/"} <= set(pages)
+    assert pages[0] == "lab/" and {"lab/lake-from-space/", "lab/pollution/", "lab/forecasts/", "lab/workspace/", "lab/sampling/"} <= set(pages)
     assert all((site / p / "index.html").is_file() for p in pages)
     assert all(f"<loc>https://example.org/{p}</loc>" in build_site.sitemap("https://example.org/", [], "2026-11-01", extra=pages) for p in pages)
 
@@ -152,3 +152,45 @@ def test_paths_from_the_build_are_dated_as_such(tmp_path):
     build_site.write_lab(tmp_path)
     assert build_site.write_lab_refresh(tmp_path, paths_from_build=True)["parts"]["paths"]["refresh"] == "at every site build"
     assert build_site.write_lab_paths(tmp_path / "none", None, None) == {"skipped": "no Lab in this build"}
+
+
+# ------------------------------------------------------------------ exhibit 5, sampling gaps
+# docs/SAMPLING-GAPS-EXHIBIT-2026-11.md: the sampling planner's own file beside gaps.json; the failed verdict and "never
+# tried in real water" beside the comparison; the population and cutoff it covers said on the page.
+
+def test_sampling_reads_the_planners_file_and_its_own(site):
+    lab = site / "lab"
+    planner = json.loads((lab / "data" / "sampling_planner.v1.json").read_text())
+    assert planner["schema"] == "swimsignal.sampling-planner" and planner["field_validation"] is False
+    gaps = json.loads((lab / "sampling" / "gaps.json").read_text())
+    import lab_sampling_gaps
+    assert lab_sampling_gaps.check(gaps) == []   # the same spots and samples as the planner's file
+    js = (lab / "sampling" / "sampling.js").read_text()
+    assert "DATA + 'sampling_planner.v1.json'" in js and "fetch('gaps.json')" in js
+
+
+def test_sampling_says_what_it_covers(site):
+    # The site's spot list grows after an export: the page names the export's spot count, its date and the last
+    # sample, and says spots added since are not in it. Never complete current coverage.
+    page = (site / "lab" / "sampling" / "index.html").read_text()
+    js = (site / "lab" / "sampling" / "sampling.js").read_text()
+    assert 'id="scope"' in page and 'id="pop"' in page
+    assert "This export holds the ${G.spots.length} spots in SwimSignal's list on ${LAB.day(G.made)}" in js
+    assert "Spots added to the site since are not in it." in js
+    assert "$('#scope').textContent" in js and "$('#pop').textContent" in js
+    assert "of SwimSignal's ${sp.total} spots" not in js   # a count of "SwimSignal's spots" would read as current
+    gaps = json.loads((site / "lab" / "sampling" / "gaps.json").read_text())
+    assert re.fullmatch(r"\d{4}-\d{2}-\d{2}T.*", gaps["made"]) and gaps["outcomes_to"] <= "2026-09-30"
+    part = json.loads((site / "lab" / "refresh.json").read_text())["parts"]["sampling"]
+    assert part["as_of"] == gaps["made"][:10] and part["outcomes_to"] == gaps["outcomes_to"] and "stale_days" not in part
+
+
+def test_sampling_keeps_the_planners_limits_beside_the_figures(site):
+    page = (site / "lab" / "sampling" / "index.html").read_text()
+    compare = page[page.index('id="s-compare"'):page.index('id="s-sim"')]
+    assert "failed its test against equal coverage" in compare and "no rule here has been tried in real water" in compare
+    js = (site / "lab" / "sampling" / "sampling.js").read_text()
+    assert "The test needed 60%: it failed." in js and "Made-up worlds, not real water." in js
+    assert "No rule for choosing them has been shown to help." in js
+    assert "That says nothing about whether the water is clean." in js
+    assert not re.search(r"\b(more efficient|recommended|best season|optimal)\b", page + js, re.I)
