@@ -455,6 +455,9 @@
   .lt-past[hidden] { display:none; }
   #nearby-host:empty { display:none; }
   #sources-host:empty { display:none; }
+  /* The spill map's host waits empty until it nears the screen (mountPlume). Alone in a desktop section's right half it
+     had no height, and Safari never reported a zero-area box as on screen, so the map never loaded (2 Nov 2026). */
+  #plume-host:empty { min-height:1px; }
   .stack .loc { margin:0; }
   .tile #spot-map { margin:10px 0 0; }
   /* A spot's Upstream map: no legend, and none of the list's controls (the day, low risk only),

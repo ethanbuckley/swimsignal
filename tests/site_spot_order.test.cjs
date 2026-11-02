@@ -70,4 +70,6 @@ test('a desktop reads in sections, top to bottom: forecast and map, conditions, 
   // The mount points later fills and showDay look for are all in the desktop's markup too.
   for (const id of ['sources-host', 'nearby-host']) assert.match(render, new RegExp(`deskSections\\(d, \\{[\\s\\S]*id="${id}"`));
   assert.match(html, /\.stack\.desk \.row:has\(> \.col-b:empty\) \{ grid-template-columns:minmax\(0, 1fr\); \}/);
+  // the spill map's empty host has a height, or Safari never sees it on screen and never loads the map
+  assert.match(html, /#plume-host:empty \{ min-height:1px; \}/);
 });
