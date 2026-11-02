@@ -194,3 +194,21 @@ def test_sampling_keeps_the_planners_limits_beside_the_figures(site):
     assert "No rule for choosing them has been shown to help." in js
     assert "That says nothing about whether the water is clean." in js
     assert not re.search(r"\b(more efficient|recommended|best season|optimal)\b", page + js, re.I)
+
+
+def test_folded_dates_never_pass_an_export_date_off_as_the_datas(site):
+    # An export made in November of samples to September: the folded line gives both (2 Nov 2026, a live check read
+    # "samples 2 Nov 2026" for samples to 28 Sept).
+    js = (site / "lab" / "lab.js").read_text()
+    assert "${p.outcomes_to ? `, outcomes to ${day(p.outcomes_to)}` : ''}`).join(' · ')}</summary>" in js
+    doc = json.loads((site / "lab" / "refresh.json").read_text())
+    if "sampling" in doc["parts"]:
+        assert doc["parts"]["sampling"]["short"] == "sampling export" and doc["parts"]["sampling"].get("outcomes_to")
+
+
+def test_sampling_never_claims_every_spot(site):
+    # Its export holds the spots on its date, not every spot the site has now (2 Nov 2026): the labels say so too.
+    for f in ("sampling/index.html", "sampling/sampling.js"):
+        p = site / "lab" / f
+        if p.is_file():
+            assert "every SwimSignal spot" not in p.read_text() and "every spot" not in p.read_text().lower().replace("every spot's", ""), f

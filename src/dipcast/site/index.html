@@ -754,6 +754,9 @@
   details.fold > summary, details.more > summary, details.comparison > summary, details.outing > summary, details.lists > summary, details.sec.tile > summary { cursor:pointer; list-style:none; display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:44px; }
   details.fold > summary::-webkit-details-marker, details.more > summary::-webkit-details-marker, details.comparison > summary::-webkit-details-marker, details.outing > summary::-webkit-details-marker, details.lists > summary::-webkit-details-marker, details.sec.tile > summary::-webkit-details-marker { display:none; }
   details.fold > summary::after, details.more > summary::after, details.comparison > summary::after, details.outing > summary::after, details.lists > summary::after, details.sec.tile > summary::after { content:""; flex:none; width:8px; height:8px; margin-right:5px; border-right:1.75px solid var(--muted); border-bottom:1.75px solid var(--muted); transform:rotate(45deg); transition:transform .15s; }
+  /* The ring inside a summary, not 2 px outside it: "Compare these spots", focused when Compare opens it, put its ring
+     over the line under it (2 Nov 2026). */
+  :is(details.fold, details.more, details.comparison, details.outing, details.lists, details.sec.tile) > summary:focus-visible { outline-offset:-2px; }
   details[open].fold > summary::after, details[open].more > summary::after, details[open].comparison > summary::after, details[open].outing > summary::after, details[open].lists > summary::after, details[open].sec.tile > summary::after { transform:rotate(-135deg); }
   details.sec > summary { margin:-10px 0 0; }
   details.sec[open] > summary { margin-bottom:4px; }

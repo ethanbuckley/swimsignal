@@ -3666,7 +3666,7 @@ def write_lab_refresh(site: Path, paths_from_build: bool = False) -> dict:
                       "refresh": "by hand", "stale_days": 90},
         # exhibit 5: the planner's file and gaps.json, both made by hand from samples to the end of a season; a new
         # season's samples bring a new export, so they are never called out of date between seasons
-        "sampling": {"label": "Lab samples and sampling gaps", "short": "samples", "as_of": _lab_date(out / "sampling" / "gaps.json", "made"),
+        "sampling": {"label": "Lab samples and sampling gaps", "short": "sampling export", "as_of": _lab_date(out / "sampling" / "gaps.json", "made"),
                      "outcomes_to": _lab_date(out / "sampling" / "gaps.json", "outcomes_to"),
                      "refresh": "by hand, after each bathing season", "stale_days": None},
         "catalogue": {"label": "Research records", "short": "records", "as_of": _lab_date(out / "data" / "research_catalogue.v1.json", "written"),
