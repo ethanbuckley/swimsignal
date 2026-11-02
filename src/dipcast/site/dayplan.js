@@ -11,7 +11,11 @@ const DP_SHOWN = 3;   // options: a few to choose between, not the list again
 const DP_BOAT = ['paddle', 'sup'];
 // The desk check of permission (access.py), short; the spot's page has it in full.
 const DP_PERMIT = { unconfirmed: 'Permission at this point not confirmed.', restricted_guidance: 'Park guidance restricts river swimming.' };
-const DP_UNKNOWN = '<span class="dp-unk">Not known</span>';
+// What kind of value each is: the page's valueTag (index.html; docs/DESIGN.md, "What kind of value"), or the same
+// markup where Node runs this file alone.
+const dpTag = (kind, words) => typeof valueTag === 'function' ? valueTag(kind, words) : `<span class="vt vt-${kind}">${words}</span>`;
+const dpKind = (kind, words) => ' ' + dpTag(kind, words);
+const DP_UNKNOWN = dpTag('none', 'Not known');
 const dpEsc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const dpAgo = h => h < 1 ? 'under an hour ago' : h < 36 ? `${Math.round(h)} h ago` : `${Math.round(h / 24)} days ago`;
 const dpDate = iso => new Date(iso + 'T12:00:00Z').toLocaleDateString('en-GB', { timeZone: 'UTC', weekday: 'short', day: 'numeric', month: 'short' });
@@ -38,10 +42,10 @@ function dpConditions(s, day, today, act, byId = new Map(), nowMs = Date.now()) 
   // The water's temperature: a sensor's reading, or the build's estimate, which is for today only.
   const w = s.water_temp, t = w && Date.parse(w.observed_at), e = s.water_temp_est;
   if (w && typeof w.temp_c === 'number' && Number.isFinite(t))
-    rows.push(['Water', `${Math.round(w.temp_c)}&nbsp;°C, measured ${dpEsc(w.where || 'nearby')} ${dpAgo((nowMs - t) / 3.6e6)}`]);
+    rows.push(['Water', `${Math.round(w.temp_c)}&nbsp;°C` + dpKind('measured', `Measured ${dpEsc(w.where || 'nearby')}, ${dpAgo((nowMs - t) / 3.6e6)}`)]);
   else if (e && typeof e.temp_c === 'number' && e.date === today && (s.kind === 'river' || s.kind === 'lake'))
-    rows.push(['Water', `About ${e.temp_c}&nbsp;°C today, ${!e.route || e.route === 'river_model' ? 'an estimate' : 'a provisional estimate'}`
-      + (day === today ? '' : `; none for ${dpDate(day)}`)]);
+    rows.push(['Water', `About ${e.temp_c}&nbsp;°C today${day === today ? '' : `, none for ${dpDate(day)}`}`
+      + dpKind('estimate', !e.route || e.route === 'river_model' ? 'Estimate' : 'Provisional estimate')]);
   else missing.push('water temperature');
   // Daylight on the day (the weather file's sunrise and sunset, local time).
   const wd = ((s.weather || {}).days || []).find(x => x && x.date === day);
@@ -76,8 +80,10 @@ function dpConditions(s, day, today, act, byId = new Map(), nowMs = Date.now()) 
     const rs = s.river_state;
     if (river && rs && !rs.stale && typeof rs.level_m === 'number') {
       const word = { low: 'Low water', normal: 'Usual level', high: 'High water', 'very high': 'Very high water' }[rs.label] || `${rs.level_m} m`;
-      rows.push(['River level', `${word} at ${dpEsc(rs.station)}, read ${dpAgo(rs.age_hours ?? 0)}${day === today ? '' : '; a reading now, not a forecast'}`]);
-    } else if (river) { missing.push('river level'); rows.push(['River level', DP_UNKNOWN]); unk.push('river level'); }
+      rows.push(['River level', `${word} at ${dpEsc(rs.station)}` + dpKind('measured', `Measured ${dpAgo(rs.age_hours ?? 0)}${day === today ? '' : '; a reading now, not a forecast'}`)]);
+    } else if (river) { missing.push('river level'); unk.push('river level');
+      // A reading past its age rule is said as such, not as no gauge at all.
+      rows.push(['River level', DP_UNKNOWN + (rs && rs.stale && rs.station ? dpKind('stale', `Last reading at ${dpEsc(rs.station)}${typeof rs.age_hours === 'number' ? ` ${dpAgo(rs.age_hours)}` : ''}: too old to use`) : '')]); }
     // Finishes downstream (stretches.py), rivers only.
     const fins = (Array.isArray(s.downstream) ? s.downstream : []).filter(([id]) => byId.has(id)).slice(0, 2);
     if (fins.length) rows.push(['Finish', fins.map(([id, km]) => `${dpEsc(byId.get(id).name)} (${km < 10 ? km : Math.round(km)} km down)`).join(', ')]);
@@ -85,17 +91,32 @@ function dpConditions(s, day, today, act, byId = new Map(), nowMs = Date.now()) 
     // The day's strongest wind and gust at 10 m (build_site.attach_weather, from 2 Nov 2026): a figure for the whole day,
     // never an hour's. An update from before then, or a day Open-Meteo did not answer for, has none.
     const wx = ((s.weather || {}).days || []).find(x => x && x.date === day), mph = k => Math.round(wx[k] * 0.621371);
-    if (wx && typeof wx.wind_kmh === 'number') rows.push(['Wind', `Strongest about ${mph('wind_kmh')} mph${typeof wx.gust_kmh === 'number' ? `, gusts to ${mph('gust_kmh')} mph` : ''}, over the day `
-      + '<span class="muted">(forecast at 10 m above open ground; <a href="https://open-meteo.com/">Weather data by Open-Meteo.com</a>)</span>']);
+    if (wx && typeof wx.wind_kmh === 'number') rows.push(['Wind', `Strongest about ${mph('wind_kmh')} mph${typeof wx.gust_kmh === 'number' ? `, gusts to ${mph('gust_kmh')} mph` : ''}, over the day`
+      + dpKind('estimate', 'Forecast at 10 m above open ground') + ' <span class="muted">(<a href="https://open-meteo.com/">Weather data by Open-Meteo.com</a>)</span>']);
     else { missing.push('wind'); rows.push(['Wind', DP_UNKNOWN]); unk.push('wind'); }
   }
   return { rows, missing, unk };
 }
 
+// What is the same at every option, said once above them, not under each (2 Nov 2026): rows whose words match at
+// all of them (the day's daylight, today's water estimate, the day's wind) and what none of them has. Access, rules,
+// launching, the river and finishes stay with each option even when they match: they are the spot's own, and qualify
+// its level. cs: each option's dpConditions. Returns the shared rows and gaps, and each option's conditions without
+// them. With one option there is nothing to share.
+const DP_OWN = ['Access', 'Rules', 'Launching', 'River level', 'Finish'];
+const dpGaps = c => [...new Set(c.missing)].filter(w => !(c.unk || []).includes(w));   // not again what a row already says
+function dpShared(cs) {
+  if (cs.length < 2) return { rows: [], gaps: [], cs };
+  const val = (c, k) => (c.rows.find(r => r[0] === k) || [])[1];
+  const rows = cs[0].rows.filter(([k, v]) => !DP_OWN.includes(k) && cs.every(c => val(c, k) === v)), keys = rows.map(r => r[0]);
+  const gaps = dpGaps(cs[0]).filter(w => cs.every(c => dpGaps(c).includes(w)));
+  return { rows, gaps, cs: cs.map(c => ({ ...c, rows: c.rows.filter(([k]) => !keys.includes(k)), missing: c.missing.filter(w => !gaps.includes(w)) })) };
+}
+
 // One option, as HTML. o = {s, miles, level}; v = the page's words for it: { href, headline (HTML), tone, official
 // (HTML: a notice, first), meta (text), chosen (it is the plan's spot) }; c = dpConditions; backup: the name of the option that would be its backup.
 function dpOption(o, v, c, backup, i) {
-  const gaps = [...new Set(c.missing)].filter(w => !(c.unk || []).includes(w));   // not again what a row already says
+  const gaps = dpGaps(c);
   return `<li class="dp-opt"><h3 class="dp-nm"><a href="${dpEsc(v.href)}" data-id="${dpEsc(o.s.id)}">${dpEsc(o.s.name)}</a></h3>`
     + `<p class="k">${dpEsc(v.meta)}</p>${v.official || ''}<p class="hl ${dpEsc(v.tone)}">${v.headline}</p>`
     + (c.rows.length ? `<dl class="dp-facts">${c.rows.map(([k, t]) => `<div><dt>${k}</dt><dd>${t}</dd></div>`).join('')}</dl>` : '')
@@ -105,16 +126,21 @@ function dpOption(o, v, c, backup, i) {
       + (backup ? ` <span class="small muted">with ${dpEsc(backup)} as backup</span>` : '') + '</p>') + '</li>';
 }
 
-// The tile: heading, one line on what the options are, and the options; or why there are none.
-function dpSection(on, items, actWord, boat = false, unforecast = false) {
+// The tile: heading, one line on what the options are, what is the same at all of them (dpShared), and the options; or
+// why there are none.
+const DP_ALL = n => n === 2 ? 'both' : n === 3 ? 'all three' : `all ${n}`;
+function dpSection(on, items, actWord, boat = false, unforecast = false, shared = null) {
+  const same = shared && (shared.rows.length || shared.gaps.length) ? `<div class="dp-same"><p class="dp-same-h">The same at ${DP_ALL(items.length)}</p>`
+    + (shared.rows.length ? `<dl class="dp-facts">${shared.rows.map(([k, t]) => `<div><dt>${k}</dt><dd>${t}</dd></div>`).join('')}</dl>` : '')
+    + (shared.gaps.length ? `<p class="dp-gap">Not known at any of them: ${dpEsc(shared.gaps.join(', '))}.</p>` : '') + '</div>' : '';
   const head = `<h2 class="group-head" id="dp-h">Options ${dpEsc(on)}</h2>`;
   if (!items.length) return `<section class="group tile dp" id="dp" aria-labelledby="dp-h">${head}<p class="sub">No spot within reach is at low risk from sewage spills ${dpEsc(on)}, or has no overflow upstream to forecast from. The full list is below.</p></section>`;
   return `<section class="group tile dp" id="dp" aria-labelledby="dp-h">${head}`
     // The forecast is of pollution, whatever is done on the water: "a low forecast for paddleboarding" said otherwise
     // (31 Oct 2026). unforecast: some options have no overflow upstream, so no level at all.
     + `<p class="sub">The ${items.length === 1 ? 'nearest spot' : `${items.length} nearest spots`} at low risk from sewage spills${unforecast ? ' or with no monitored overflow upstream' : ''}, and what SwimSignal knows at each for ${actWord}. `
-    + `${boat ? 'Spots whose guide says boats and boards are not allowed are left out. ' : ''}The forecast is for the whole day, not by the hour. Check the signs at the water before you go in.</p>`
-    + `<ol class="dp-list">${items.join('')}</ol></section>`;
+    + `${boat ? 'Spots whose guide says boats and boards are not allowed are left out. ' : ''}A forecast for the whole day, not by the hour, and not a water test: check the signs at the water before you go in.</p>`
+    + same + `<ol class="dp-list">${items.join('')}</ol></section>`;
 }
 
 // ------------------------------------------------------------------------------ the day plan in words
@@ -224,5 +250,5 @@ async function dpTiles(ctx, t, z, ox, oy, doc, M = DP_MAP) {
 const dpBlob = cv => new Promise(res => { try { cv.toBlob(b => res(b), 'image/png'); } catch (e) { res(null); } });
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { DP_SHOWN, DP_H, dpMap, dpNoBoats, dpOptions, dpConditions, dpOption, dpSection, dpTitle, dpZoom, dpWorld, dpWrap };
+  module.exports = { DP_SHOWN, DP_H, dpMap, dpNoBoats, dpOptions, dpConditions, dpShared, dpOption, dpSection, dpTitle, dpZoom, dpWorld, dpWrap };
 }

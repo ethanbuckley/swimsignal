@@ -2798,7 +2798,7 @@ def robots(root: str) -> str:
 
 
 def sitemap(root: str, spot_ids: list[str], day: str, extra: list[str] | None = None, overflow_ids: list[str] | None = None) -> str:
-    urls = [root, f"{root}plan/", f"{root}about.html", f"{root}verification.html", f"{root}methods.html", f"{root}testing.html", f"{root}coverage.html", f"{root}data.html", f"{root}organisers.html", f"{root}sites.html", f"{root}record.html", f"{root}clubs.html", f"{root}quality.html", f"{root}spots.html", f"{root}research.html", f"{root}lakes.html", f"{root}lake-temperatures.html", f"{root}durations.html", f"{root}samples.html", f"{root}waterhead.html", f"{root}research-catalogue.html", f"{root}sampling-planner.html", f"{root}partners.html", f"{root}models.html"] +[f"{root}{x}" for x in extra or []] + [f"{root}spot/{i}/" for i in spot_ids] + [f"{root}spot/{i}/profile/" for i in spot_ids] + [f"{root}overflow/{i}/" for i in overflow_ids or []]
+    urls = [root, f"{root}plan/", f"{root}about.html", f"{root}verification.html", f"{root}methods.html", f"{root}testing.html", f"{root}coverage.html", f"{root}data.html", f"{root}organisers.html", f"{root}sites.html", f"{root}record.html", f"{root}demo.html", f"{root}clubs.html", f"{root}quality.html", f"{root}spots.html", f"{root}research.html", f"{root}lakes.html", f"{root}lake-temperatures.html", f"{root}durations.html", f"{root}samples.html", f"{root}waterhead.html", f"{root}research-catalogue.html", f"{root}sampling-planner.html", f"{root}partners.html", f"{root}models.html"] +[f"{root}{x}" for x in extra or []] + [f"{root}spot/{i}/" for i in spot_ids] + [f"{root}spot/{i}/profile/" for i in spot_ids] + [f"{root}overflow/{i}/" for i in overflow_ids or []]
     body = "".join(f"<url><loc>{escape(u)}</loc><lastmod>{day}</lastmod></url>" for u in urls)
     return f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{body}</urlset>\n'
 
@@ -3142,6 +3142,7 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     write_organisers(site, token, root)
     write_sites(site, token, root)
     write_record(site, token, root)
+    write_demo(site, token, root)
     write_lake_temperatures_page(site, token, root)   # measured lake temperatures (research): the viewer
     write_durations(site, token, root)   # the spill durations viewer, from the files written before the profiles
     if support:
@@ -3457,6 +3458,17 @@ def write_sites(site: Path, token: str | None = None, root: str | None = None) -
     return write_scripted_page(site, "sites.html", SITES_SCRIPTS, ("organisers.js", "printed.js", "sites.js"), token, root)
 
 
+# The organisers' demonstration, demo.html: one worked example, on the live forecast for four Wharfe spots, of the
+# briefing, the sites view, what changed since the last update, the decision record and the signs (demo.js). It
+# reuses the sites view's and the spot page's own rules, so it loads their scripts. Not in the offline copy, for the
+# organisers' page's reasons; in the sitemap, as that page is.
+DEMO_SCRIPTS = ("levels.js", "experience.js", "lists.js", "organisers.js", "printed.js", "eatoday.js", "since.js", "sites.js", "demo.js")
+
+
+def write_demo(site: Path, token: str | None = None, root: str | None = None) -> str:
+    return write_scripted_page(site, "demo.html", DEMO_SCRIPTS, ("organisers.js", "printed.js", "sites.js", "demo.js"), token, root)
+
+
 # Satellite lake observations (docs/LAKE-OBSERVATIONS-CONTRACT-v1.md; the Research page links to the viewer). The
 # research side exports one file, data/research/lake_observations.v1.json (scripts/export_lake_observations.py, from
 # the satellite tests' caches: no imagery is fetched by the build). The site splits it: data/research/lakes.json, every
@@ -3532,7 +3544,7 @@ def write_lakes(site: Path, token: str | None = None, root: str | None = None) -
 # dropped here, and lab_pages puts every page in the sitemap.
 LAB = ROOT / "prototypes" / "research-lab"
 LAB_DATA = ("ecoli_evidence.v1.json", "lake_observations.v1.json", "lake_imagery.v1.json",
-            "satellite/pilot_runs.json", "research_catalogue.v1.json", "lake-img")
+            "satellite/pilot_runs.json", "research_catalogue.v1.json", "sampling_planner.v1.json", "lake-img")
 LAB_REWRITES = (("../../../data/research/", "../data/"),            # an exhibit's reads, one folder down
                 ("../../../src/dipcast/pages/page.css", "../../page.css"),   # an exhibit's link to the site's stylesheet
                 ("../../src/dipcast/pages/page.css", "../page.css"))         # the front page's
@@ -3652,6 +3664,11 @@ def write_lab_refresh(site: Path, paths_from_build: bool = False) -> dict:
         "workspace": {"label": "Catchment workspace layers", "short": "layers", "as_of": _lab_date(ws[0], "made") if ws else None,
                       "outcomes_to": window[-1],
                       "refresh": "by hand", "stale_days": 90},
+        # exhibit 5: the planner's file and gaps.json, both made by hand from samples to the end of a season; a new
+        # season's samples bring a new export, so they are never called out of date between seasons
+        "sampling": {"label": "Lab samples and sampling gaps", "short": "samples", "as_of": _lab_date(out / "sampling" / "gaps.json", "made"),
+                     "outcomes_to": _lab_date(out / "sampling" / "gaps.json", "outcomes_to"),
+                     "refresh": "by hand, after each bathing season", "stale_days": None},
         "catalogue": {"label": "Research records", "short": "records", "as_of": _lab_date(out / "data" / "research_catalogue.v1.json", "written"),
                       "refresh": "with each research record", "stale_days": None},
     }

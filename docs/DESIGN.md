@@ -1767,8 +1767,8 @@ size are gone.
 
 **Navigation.** The header's desktop links gained "Research Lab" (`lab/`) and renamed "Research" to "Research &amp;
 data" (`research.html`, now titled "Research and data"). The phone's More menu has both. The four primary phone
-destinations are unchanged. Under the header each Lab page has its own bar: "Research Lab", then the four exhibits
-numbered. The page you are on is in white with a rule under it, so colour is not the only sign. On a phone the bar
+destinations are unchanged. Under the header each Lab page has its own bar: "Research Lab", then the exhibits
+numbered (five from 2 November 2026, when sampling gaps was added). The page you are on is in white with a rule under it, so colour is not the only sign. On a phone the bar
 scrolls sideways, and the current one is scrolled into view. Each exhibit ends with the previous and next exhibit by
 name, the overview at either end, and "Back to the forecasts".
 
@@ -1914,6 +1914,139 @@ before. It is never a default for anyone else.
 - Headless Chrome, whole pages: Home and Plan at 1,440 px.
 - Not checked: a screen reader, a five-person usability study (later, by people, not invented here), and Safari at
   increased zoom.
+
+## Plan a swim: caveats once, and what kind of value (2 November 2026)
+
+**Caveats said once.** A caveat that applies to every option, or to every row of a group, is said once above them.
+A line stays with an option only where it differs for that spot.
+- "Options today": the intro says "A forecast for the whole day, not by the hour, and not a water test: check the
+  signs at the water before you go in." Under it, "The same at all three" (or "both") holds the rows whose words
+  match at every option. Today these are water temperature, daylight and, for a boat or a board, wind. It also holds
+  the gaps every option has ("Not known at any of them: access."). See `dpShared` in `dayplan.js`.
+- Access, rules for boats and boards, launching, the river level and finishes stay with each option even when they
+  match. They are the spot's own facts, and "not confirmed" or "Not known" qualifies that spot's level.
+- Official advice stays above each option's level.
+- The result list: when every row in a group has "a spill … is possible, not expected", the group's line says it once.
+  Each row keeps its own count ("43 overflows upstream."). See `planQuiet` in `index.html`.
+
+**The comparison.**
+- Short labels, with official advice first: Today's official advice, Right now, Bathing-water rating, Latest lab
+  sample, Algae, Access, Flood warnings, Model limits.
+- The caveat every column shares is the row's note, in muted text under its label. Examples: "From up to four
+  seasons of samples; not today's water quality" and "A desk check of published sources; signs at the water not
+  inspected". It is the third field of `compareRows`.
+- A row whose cells all say the same is one cell across the columns.
+- Distance reads "1.1 miles".
+- Water today is two rows, Water temperature and Water level.
+- Figures use tabular numerals.
+
+**What kind of value.** One treatment, `valueTag(kind, words)` in `index.html` (classes `vt vt-<kind>`), wherever
+the planner or a comparison gives a reading:
+
+| kind | how it looks | words |
+|---|---|---|
+| `measured` | value, then a muted word at the meta size | its source and time: "Measured at Bowness, 2 h ago"; "Checked 3 Oct 2026"; "Seen 23 Sept 2026" |
+| `estimate` | value, then a muted word | "Estimate", "Provisional estimate" |
+| `stale` | a muted word after "Not known", led by a dash | past its age rule: "Last reading at Addingham 2 days ago: too old to use" |
+| `none` | the words are the value, in ink, semibold, at body size | "Not known", "No reading", "No gauge", "None recorded in this update" |
+
+- The word carries the kind, so colour is never the only cue.
+- The risk colours are not used and keep their meanings.
+- In the comparison, a value's kind sits on its own line under the value.
+- A gap is set in ink, not grey, so it never reads as small print (the 31 Oct 2026 rule that "Not known" is as plain
+  as a fact). `.vt-none` replaces the old `.dp-unk`.
+- When Node runs `dayplan.js` alone, `dpTag` writes the same markup. Saved and Conditions take the same helper.
+
+## The organisers' worked example (2 November 2026)
+
+`demo.html` (`demo.js`) is a prose page that walks one invented activity centre's session on four Windermere
+bathing waters through the existing tools, on the live forecast: the session, the briefing in `briefing.py`'s words,
+the sites view for the session's day, what changed since the previous update, the issue id with the decision record,
+and the signs. Each step is an h2 with a number; the part the script draws sits under a hairline (`.d-live`), so it
+reads as the tool's own output. The sites view's rows are `sites.js`'s markup with its CSS copied, without its print
+button (`view(..., { print: false })`). A "Free today" summary box opens the page: the tools are free, paid terms are
+only being explored, no organisation pays, swimmers' features stay free. Linked from the organisers' and clubs pages;
+in the sitemap, not in the offline copy. The commercial wording and the interview plan are in
+`docs/ORGANISER-INTERVIEWS-2026-11.md`.
+
+## Saved as a starting page (2 November 2026)
+
+Saved opened on a day-by-day grid and five tall cards beside a 480 px map. At 1,440 px the map ended about 420 px
+down and the right half stayed empty for about 2,800 px. It is now a page to start a visit from. It uses the
+primitives from "Home and Plan as reference screens": opaque paper, hairlines, the list chips. It adds no new
+colour, radius or box.
+
+**Order (one stack on a phone; the same DOM and Tab order on a desktop).**
+1. The opening, as before: the heading, the list chips when there are several lists, the lede ("kept in this
+   browser"), notices, the best-day line.
+2. **Since you last looked:** one tile, one sentence (`since.js`, `sinceSummary`). See below.
+3. **The places, grouped** (`lists.js`, `savedGroups`), each group a paper tile with its heading and the cards
+   between hairlines:
+   - With more than one list, the list shown is the group, under its name. Its chips already choose it, and Share,
+     Compare and Save act on it. Showing every list at once would cut those tools off from what is on screen.
+   - With one list, its spots are grouped by area. Inside an area they keep the order saved. The areas come in the
+     order their first spot was saved.
+4. Beside 2 and 3 on a desktop, the map. It is sticky, so it stays beside the places while they scroll, and it ends
+   with them.
+5. Then, each across the width (`.saved-secs`): Day by day; Alerts beside Share this list; Compare; Your lists;
+   Find a window; the journal beside Water-wise. Two tiles sit side by side (`.saved-pair`, from 1,000 px) only when
+   both are drawn and of similar height. A tile drawn alone takes the width. Paragraphs stop at 68 characters.
+
+**A card says less, in this order.**
+1. The name, and the kind of water.
+2. Official advice first (`eaTodayTag`).
+3. The level with its noun ("Low risk"), and the line under it, as before.
+4. The water now, only what is known: the temperature, and the river or lake level with its own words. Each is
+   tagged as measured or an estimate with the shared `valueTag` from the planner wording work. Where neither is
+   known, nothing is said. The spot's page says what is missing and why.
+5. Its own change line (`sinceSaid`), unchanged.
+6. Its alerts.
+
+**Since you last looked.** The summary uses the cards' own rules (`sinceLine`), so it never says more than they do,
+and it never says why something changed.
+- First look: "This browser has not shown these spots before, so there is nothing to compare yet."
+- Same forecast as last time: "No new forecast since you looked on Friday at 18:20."
+- Newer forecast, nothing the cards would say: it lists what was checked: no level, rating or official notice
+  changed, and no overflow upstream was reported starting or stopping. It never says "safe" or "all clear".
+- Changes: how many, and which spots by name, then "Each card says what changed and which forecasts it compares."
+  Names hold commas, so a list of them is separated with semicolons.
+- A time is given only when every note compared came from the same look. Otherwise it says "since you last looked
+  at each".
+- A spot saved since the last look is counted separately ("One spot has nothing to compare with yet").
+- The notes are read as they were when the page opened, so the summary and the lines stay for the whole visit.
+
+**Alerts on each card** (`lists.js`, `spotAlert`):
+- **On:** a tick, "Alerts for this spot", and "A notification if it reaches high or very high risk."
+  - Unticking leaves that spot out of the list sent to the alert service. Nothing else is sent. The left-out spots
+    are kept in the browser's alert record (`dipcast.push`, as `off`), so the page's re-sends leave them out too.
+    Turning alerts off forgets them with the rest.
+  - The saved lists and `dipcast.saved` are untouched.
+- **Off:** "Alerts are off." and a "Set up alerts" button. It brings the Alerts tile into view and focuses its
+  heading. The tile holds what turning alerts on sends, so nothing is turned on from a card.
+- **Blocked in the browser's settings:** says so.
+- **No notifications in this browser** (an iPhone outside the Home Screen app, Facebook's or Instagram's browser, the
+  offline copy turned off, no web push): says so, with "See Alerts", where the tile gives the steps. Where email
+  alerts exist, it says they cover the spots saved when you sign up. Email is not per spot.
+- **The alert service did not answer** (a network error, a time-out or a 5xx): "The alert service did not answer,
+  so alerts for this spot are as they were. Try again later." The Alerts tile says the same in its own message.
+  Before, it said "Could not change alerts: Failed to fetch."
+- **Nothing** where the site has no alerts.
+- Alerts for a date (`push.dates`, on since 31 Oct) are untouched. The app never sends dates, and the alert service
+  keeps the dates asked for on the organisers' page or an outing.
+
+**Unchanged:** the empty state from #600 ("Saved spots stay in this browser: nothing is sent to SwimSignal.", Find a
+spot, Plan a swim, no heading); a shared list's page; storage of the lists; one spot keeps its week on its card and
+has no grid.
+
+**Checked:**
+- Headless Chrome, whole pages at 390, 1,024 and 1,440 px, before and after: empty, one spot, and five spots in four
+  areas, two of which changed since a look on Friday (made by editing the kept notes, not the forecast).
+- Real Safari 26.6.2 at 1,440 px, five spots: the summary, four groups, the alert lines, both pairs side by side,
+  no sideways scroll.
+- Headless Chrome: the on, left-out, service-down and off states, and "Set up alerts" focusing the Alerts heading.
+  The states were set in the page. No subscription was made.
+- The Browser pane, where notifications are denied: the blocked state on each card, matching the tile.
+- Not checked: a real subscription (no notification is sent to anyone in testing), iPhone Safari, a screen reader.
 
 ## Conditions for your outing (2 November 2026)
 

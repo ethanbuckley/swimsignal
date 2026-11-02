@@ -37,17 +37,17 @@ test('conditions say each value\'s kind and date; the water estimate is for toda
     access: {status: 'unconfirmed', text: 'Long text.', checked_at: '2026-10-03'}, guide: {checked: '2026-10-20', facts: [{topic: 'parking'}, {topic: 'entry'}]}});
   const today = D.dpConditions(s, TODAY, TODAY, null, new Map(), NOW);
   assert.deepEqual(today.rows.map(r => r[0]), ['Water', 'Daylight', 'Access']);
-  assert.equal(today.rows[0][1], 'About 14&nbsp;°C today, a provisional estimate');
+  assert.equal(today.rows[0][1], 'About 14&nbsp;°C today <span class="vt vt-estimate">Provisional estimate</span>');
   assert.equal(today.rows[1][1], 'Sunrise 07:11, sunset 16:38');
   assert.match(today.rows[2][1], /^Permission at this point not confirmed <span class="muted">\(checked from published sources, 3 Oct 2026\)<\/span>\. Its guide covers parking, getting in/);
   assert.deepEqual(today.missing, ['the path', 'getting out']);
   const sun = D.dpConditions(s, '2026-11-01', TODAY, null, new Map(), NOW);
-  assert.equal(sun.rows[0][1], 'About 14&nbsp;°C today, a provisional estimate; none for Sun 1 Nov');
+  assert.equal(sun.rows[0][1], 'About 14&nbsp;°C today, none for Sun 1 Nov <span class="vt vt-estimate">Provisional estimate</span>');
   assert.equal(sun.rows[1][1], 'Sunrise 07:13, sunset 16:36');
   // A stale estimate is never shown as today's; a measured reading says where and how long ago.
   assert.ok(D.dpConditions(lake('x', {water_temp_est: {temp_c: 9, date: '2026-10-30'}}), TODAY, TODAY).missing.includes('water temperature'));
   const m = D.dpConditions(lake('y', {water_temp: {temp_c: 11.4, observed_at: '2026-10-31T17:00:00Z', where: 'at Bowness'}}), TODAY, TODAY, null, new Map(), NOW);
-  assert.equal(m.rows[0][1], '11&nbsp;°C, measured at Bowness 2 h ago');
+  assert.equal(m.rows[0][1], '11&nbsp;°C <span class="vt vt-measured">Measured at Bowness, 2 h ago</span>');
 });
 
 test('while the spot\'s own file loads, access says so and nothing is called missing yet', () => {
@@ -64,12 +64,16 @@ test('for a boat or a board on a river: rules, the river now, finishes, and the 
   const c = D.dpConditions(s, '2026-11-01', TODAY, 'sup', byId, NOW);
   const rows = Object.fromEntries(c.rows);
   assert.equal(rows.Launching, 'Launch at the steps. <span class="muted">(Council)</span>');
-  assert.equal(rows['River level'], 'Usual level at Addingham, read 1 h ago; a reading now, not a forecast');
+  assert.equal(rows['River level'], 'Usual level at Addingham <span class="vt vt-measured">Measured 1 h ago; a reading now, not a forecast</span>');
+  // A reading past its age rule: not known, and said as too old, not as no gauge.
+  const old = Object.fromEntries(D.dpConditions({...s, river_state: {station: 'Addingham', stale: true, age_hours: 50}}, TODAY, TODAY, 'sup', byId, NOW).rows);
+  assert.equal(old['River level'], '<span class="vt vt-none">Not known</span> <span class="vt vt-stale">Last reading at Addingham 2 days ago: too old to use</span>');
   assert.equal(rows.Finish, 'Greenholme (5.5 km down)');
   assert.ok(c.missing.includes('wind'));   // no weather for the day
   // With the day's wind (build_site.attach_weather, km/h): in mph, over the day, never an hour.
   const windy = D.dpConditions({...s, weather: {days: [{date: '2026-11-01', tmax: 11, sunrise: '07:07', sunset: '16:33', wind_kmh: 30, gust_kmh: 55}]}}, '2026-11-01', TODAY, 'sup', byId, NOW);
-  assert.match(Object.fromEntries(windy.rows).Wind, /^Strongest about 19 mph, gusts to 34 mph, over the day <span class="muted">\(forecast at 10 m above open ground; <a href="https:\/\/open-meteo\.com\/">Weather data by Open-Meteo\.com<\/a>\)<\/span>$/);
+  assert.equal(Object.fromEntries(windy.rows).Wind, 'Strongest about 19 mph, gusts to 34 mph, over the day <span class="vt vt-estimate">Forecast at 10 m above open ground</span> '
+    + '<span class="muted">(<a href="https://open-meteo.com/">Weather data by Open-Meteo.com</a>)</span>');
   assert.ok(!windy.missing.includes('wind'));
   // Where none of it is known, it is listed, never left out.
   const bare = D.dpConditions({id: 'z', name: 'Z', kind: 'river'}, TODAY, TODAY, 'paddle', byId, NOW);
@@ -89,7 +93,7 @@ test('an option: the notice first, then the level, the facts, what is not known 
   const chosen = D.dpOption(o, {href: '/', headline: 'Low risk', tone: 'low', meta: '', chosen: true}, {rows: [], missing: []}, null, 0);
   assert.doesNotMatch(chosen, /data-dp-go/);
   assert.match(D.dpSection('on Saturday', [], 'swimming'), /No spot within reach is at low risk from sewage spills on Saturday/);
-  assert.match(D.dpSection('tomorrow', [h], 'swimming'), /The forecast is for the whole day, not by the hour\./);
+  assert.match(D.dpSection('tomorrow', [h], 'swimming'), /A forecast for the whole day, not by the hour, and not a water test: check the signs at the water before you go in\./);
 });
 
 test('the plan in words, and the picture\'s map fits the spots', () => {
@@ -123,12 +127,34 @@ test('the picture\'s map is shorter with a third spot, so the blocks and the foo
 test('for a boat or a board, launching, rules, river level, finish and wind each have a row, "Not known" where nothing is', () => {
   const bare = D.dpConditions({id: 'z', name: 'Z', kind: 'river'}, TODAY, TODAY, 'paddle', new Map(), NOW);
   const rows = Object.fromEntries(bare.rows);
-  for (const k of ['Rules', 'Launching', 'River level', 'Finish']) assert.equal(rows[k], '<span class="dp-unk">Not known</span>', k);
-  assert.equal(rows.Wind, '<span class="dp-unk">Not known</span>');   // no wind in this update
+  for (const k of ['Rules', 'Launching', 'River level', 'Finish']) assert.equal(rows[k], '<span class="vt vt-none">Not known</span>', k);
+  assert.equal(rows.Wind, '<span class="vt vt-none">Not known</span>');   // no wind in this update
   const h = D.dpOption(row(bare.rows && {id: 'z', name: 'Z', kind: 'river'}), {href: '/spot/z/', headline: 'Low risk', tone: 'low', meta: '1 mile away · River'}, bare, null, 0);
   assert.doesNotMatch(h, /Not known here:[^<]*\b(wind|rules for boats|launching|a finish downstream|river level)\b/);
   // A lake has no river rows; a swim has none of these rows at all.
   const lakeRows = D.dpConditions(lake('l'), TODAY, TODAY, 'sup', new Map(), NOW).rows.map(r => r[0]);
   assert.ok(!lakeRows.includes('River level') && !lakeRows.includes('Finish') && lakeRows.includes('Wind'));
   assert.deepEqual(D.dpConditions(lake('l'), TODAY, TODAY, null, new Map(), NOW).rows.filter(r => ['Rules', 'Launching', 'Wind'].includes(r[0])), []);
+});
+
+// 2 Nov 2026: what is the same at every option is said once, above them; the spot's own facts stay with it.
+test('the same at every option: said once above them; access, rules and the river stay with each spot', () => {
+  const day = {weather: {days: [{date: TODAY, sunrise: '07:11', sunset: '16:38'}]}, water_temp_est: {temp_c: 12, date: TODAY, route: 'x'}};
+  const a = lake('a', {...day, access: {status: 'unconfirmed', text: 'x'}}), b = lake('b', {...day, access: {status: 'unconfirmed', text: 'x'}});
+  const cs = [a, b].map(s => D.dpConditions(s, TODAY, TODAY, 'sup', new Map(), NOW));
+  const sh = D.dpShared(cs);
+  assert.deepEqual(sh.rows.map(r => r[0]), ['Water', 'Daylight', 'Wind']);
+  assert.ok(sh.cs.every(c => c.rows.some(r => r[0] === 'Access') && c.rows.some(r => r[0] === 'Rules')));   // the spot's own, even when equal
+  assert.ok(sh.cs.every(c => !c.rows.some(r => ['Water', 'Daylight', 'Wind'].includes(r[0]))));
+  // A different value stays with its option.
+  const c2 = D.dpShared([cs[0], D.dpConditions({...b, water_temp_est: {temp_c: 9, date: TODAY}}, TODAY, TODAY, 'sup', new Map(), NOW)]);
+  assert.ok(!c2.rows.some(r => r[0] === 'Water') && c2.cs.every(c => c.rows.some(r => r[0] === 'Water')));
+  // A gap all of them have is said once; one only some have stays with them.
+  const g = D.dpShared([{rows: [], missing: ['access', 'wind']}, {rows: [], missing: ['access']}]);
+  assert.deepEqual(g.gaps, ['access']);
+  assert.deepEqual(g.cs.map(c => c.missing), [['wind'], []]);
+  const html = D.dpSection('today', ['<li></li>', '<li></li>'], 'swimming', false, false, {rows: [['Daylight', 'Sunrise 07:11']], gaps: ['access']});
+  assert.match(html, /<p class="dp-same-h">The same at both<\/p><dl class="dp-facts"><div><dt>Daylight<\/dt><dd>Sunrise 07:11<\/dd><\/div><\/dl><p class="dp-gap">Not known at any of them: access\.<\/p>/);
+  assert.ok(html.indexOf('dp-same') < html.indexOf('dp-list'));
+  assert.equal(D.dpShared([cs[0]]).rows.length, 0);   // one option: nothing to share
 });
