@@ -502,14 +502,14 @@ test('right now raised with nothing discharging says the spills are recent', () 
 test('the comparison has a column a spot, the five days first with the day picked shaded, one cell for a level that does not change, and no blank', () => {
   const dir = require('node:path').join(__dirname, '../src/dipcast/site/');
   const ctx = pageContext(['esc', 'tone', 'dateLabel', 'PAGE_ID', 'spotPath', 'ago', 'agoSpan', 'ageMin', 'issued', 'compareTable'],
-    {ROOT: {pathname: '/'}, DATA: {generated_at: '2026-09-30T06:00:00+01:00'}, fiveDays: () => DATES});
+    {ROOT: {pathname: '/'}, DATA: {generated_at: '2026-09-30T06:00:00+01:00'}, fiveDays: () => DATES, compareWater: s => `water at ${s.id}`});   // compareWater has its own test
   for (const f of ['evidence.js', 'eatoday.js']) vm.runInContext(fs.readFileSync(dir + f, 'utf8'), ctx);
   const a = {...week(['low', 'high', 'low', 'low', 'low']), id: 'a', name: 'River <A>', now: {label: 'low', monitored_upstream: 2, discharging_upstream: 0}};
   const b = {...week(['low', 'low', 'low', 'low']), id: 'b', name: 'B'};   // no fifth day
   const html = vm.runInContext('compareTable', ctx)([a, b, clearRiver], DATES[1], s => `${s.id} away`);
   // Each row's label is a band across the three columns.
   assert.deepEqual([...html.matchAll(/<tr class="lab"><th colspan="3" id="[\w-]+"><span>([^<]+)<\/span><\/th><\/tr>/g)].map(m => m[1]),
-    ['Pollution risk, next five days', 'Right now', 'Environment Agency rating', "Today's EA advice", 'Water samples', 'Algae observation', 'Access',
+    ['Pollution risk, next five days', 'Distance', 'Water today', 'Right now', 'Environment Agency rating', "Today's EA advice", 'Water samples', 'Algae observation', 'Access',
       'Local warnings', 'Model limits']);
   // The five days, each cell naming its day; the day picked (tomorrow here) shaded.
   assert.deepEqual([...html.matchAll(/<tr( class="on" aria-current="true")?><td class="d0" headers="cmp-days cmp-s0"><span class="day">([^<]+)<\/span>/g)].map(m => [m[2], !!m[1]]),

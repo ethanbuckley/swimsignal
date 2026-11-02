@@ -298,8 +298,8 @@ paper, as the site's first screen looked in the fifth round.
 ### Layout
 
 - **Header**, shared by every page: the slate bar (seventh round), the mark, the serif wordmark and
-  the main links (Explore, Accuracy, About, Feedback; the app adds Saved) in white. The current page
-  is underlined in white.
+  the main links in white (from 2 November 2026: Plan a swim, Saved, Accuracy, About, Research Lab; "Home and Plan
+  as reference screens", below). The current page is underlined in white.
 - **App, desktop:** every view is a page under the header from 1,100 px (20 Oct 2026). A spot opens as
   a page: the map moves into the spot's own tile, 400 px tall; the opening spans the page over the
   wide sky (`icons/fells-wide.webp`, `make_sky_image.py --wide`), and under it two columns, 5 to 7,
@@ -1855,3 +1855,62 @@ reads as parts. The list, Saved and Plan a swim take the same 1,320 px width. Th
 Derwent Water, Janet's Foss with no overflow upstream). The tall captures were stitched from screenfuls: one
 capture taller than the screen painted a lazily drawn map as blank. Not checked: Safari on a Mac (the session had no
 Safari driver), a screen reader.
+
+## Home and Plan as reference screens (2 November 2026)
+
+Ethan approved a design pass making the working screens read as the Research Lab does, with no new theme and no
+change to a forecast. Home and Plan a swim set the pattern; Saved and the prose pages take its primitives.
+
+**Navigation.** The desktop header has five links: Plan a swim, Saved, Accuracy, About, Research Lab. Research and
+data and Feedback left it: they are in the phone's More menu, on the Lab's front page (Research and data) and in every
+page's foot, so neither is a dead end. The Lab stays one click away. Each link stays on one line.
+
+**Working screens: quieter scenery, opaque paper.** On the list, Plan a swim and Saved, the sky picture behind the
+opening is at 45% (`body:is(.view-list, .view-plan, .view-saved) .lead::before`). Their groups sit on opaque paper
+(`--card`) with a hairline, in place of frosted glass, so a row reads the same wherever it scrolls. A spot's page
+keeps both: there the picture is the place.
+
+**Home, from 1,100 px.** The title (at the level size, 30 px), one line under it, then the search and the five days
+on one row, then the count line and the freshness: the list and the map start about 290 px down at 1,440 x 900
+(about 440 before). The markup is the built page's (`home_lead`); only the layout changed, so nothing moves when the
+script draws. A phone is unchanged. After the list, the Research Lab block opens under an ink rule.
+
+**Plan a swim, from 1,100 px.** One planning bar on the paper, laid out in the order the Tab key moves (the phone's):
+- the day, beside what for (swim, kayak or canoe, paddleboard);
+- where from and how far, with the lines that answer them under it (where the plan starts, the count and Compare
+  spots), beside the kinds of water;
+- what the activity changes, at the foot under a hairline (it holds no control, so the Tab order is unaffected).
+
+The options, the outing and the results with the map start about 460 px down (about 610 before). The DOM order is
+the phone's, so a phone and the Tab order are unchanged. The activity a visitor chose is kept in their browser as
+before. It is never a default for anyone else.
+
+**Comparing.** The planner's main action.
+- Every result row has its Compare tick, always.
+- Nothing is chosen until ticked. The first three used to come pre-ticked, which read as a choice already made.
+- A tray at the head of the results (`planTray`) says what to do with none or one chosen. With some chosen it names
+  them, each with its distance and a cross to take it out, then "Compare 2 spots" and Clear.
+- The ticks are kept for the visit (`PLAN_PICKS`), so opening a spot and coming back keeps them. They are never
+  stored.
+- The table aligns the same fields for every spot: the five days, Distance, Water today, Right now, the EA's rating,
+  today's EA advice, water samples, algae, access, local warnings and model limits.
+- Water today says the temperature as measured or an estimate (provisional where it is), and the river or lake level
+  with its gauge named, since spots on one river often share one. Otherwise it says "No water temperature", "No
+  river gauge" or "No current level reading".
+
+**States.**
+- The forecast that did not load says so in a tile, with the reason, Try again, and where official advice is (the
+  Environment Agency's pages and the signs), and that no level is shown rather than an old one.
+- An empty Saved page says what saving does and that saved spots stay in the browser, with Find a spot and Plan a
+  swim.
+- The planner's empty, no-place and no-results states are unchanged. They already say what to do.
+
+**Checked:**
+- Real Safari 26.6.2 on this Mac, at 1,440 px:
+  - Plan from Oxford for kayak or canoe on Tuesday: two spots ticked, compared (Distance and Water today rows), a spot
+    opened (its page on Tuesday), and back (`history.back()`). The plan came back on the same day, activity and
+    place, with both ticks.
+  - Saved, empty and with three spots.
+- Headless Chrome, whole pages: Home and Plan at 1,440 px.
+- Not checked: a screen reader, a five-person usability study (later, by people, not invented here), and Safari at
+  increased zoom.
