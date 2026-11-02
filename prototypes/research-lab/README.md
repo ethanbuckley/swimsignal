@@ -10,6 +10,7 @@ research files it reads. Run from the repository root, as below, the exhibits re
 | 2. Where does the pollution go? | `pollution/` | live, exploratory | `docs/POLLUTION-PATHS-EXHIBIT-2026-11.md` |
 | 3. How good are the forecasts? | `forecasts/` | live, exploratory | `docs/FORECAST-RECORD-EXPLORATION-2026-11.md` |
 | 4. Catchment workspace | `workspace/` | live, exploratory | `docs/CATCHMENT-WORKSPACE-2026-11.md` |
+| 5. Sampling gaps | `sampling/` | exploratory planning aid | `docs/SAMPLING-GAPS-EXHIBIT-2026-11.md` |
 
 ## Run it
 
@@ -21,7 +22,7 @@ research files it reads. Run from the repository root, as below, the exhibits re
 
 2. Open http://localhost:8823/prototypes/research-lab/
 
-It worked if the front page lists four exhibits and each one opens with its answer and "The figures behind it".
+It worked if the front page lists five exhibits and each one opens with its answer and "The figures behind it".
 "This exhibit's data could not be loaded" means the server was started in the wrong folder. From the repository the
 header is a stand-in with the name only; the site build puts the site's own header and phone bar there. A page showing the main
 SwimSignal app means another server or an old service worker holds that port: pick another.
@@ -46,7 +47,9 @@ SwimSignal app means another server or an old service worker holds that port: pi
   bar. Each page has the Lab's own bar (`.labnav`) and each exhibit ends with the previous and next one
   (docs/DESIGN.md, "The Research Lab").
 - `lab.css`: the Lab's editorial variant over `page.css`: the warmer paper, the deep frontispiece, plates and captions.
-- `assets/covers/`: the four exhibits' covers as 320 px pictures, for the Research page, Accuracy, the home page and a
+- `sampling/gaps.json`: every spot's place and samples, the calendar and the fixed-day rain shares, from
+  `scripts/lab_sampling_gaps.py` (committed files only; `check` matches it to the planner's file, which exhibit 5 also reads).
+- `assets/covers/`: the five exhibits' covers as 320 px pictures, for the Research page, Accuracy, the home page and a
   spot's "Explore the evidence". Taken on 1 Nov 2026 from this front page's own drawn covers (headless Chrome, the big
   numbers hidden). Retake them if an exhibit's cover changes.
 - Links in: `#lake=`, `#spot=`, `#bw=` and `#c=…&spot=` open an exhibit on a place; a place an exhibit lacks is said in a

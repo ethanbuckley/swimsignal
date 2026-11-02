@@ -1,0 +1,136 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- The organisers' demonstration: a prose page, with the shared head, header and foot, written by scripts/build_site.py
+     (write_demo) beside the app, whose spots-lite.json and data/since-last.json it reads. demo.js fills the five
+     parts marked d-* from the live forecast; the rest is here so the page reads, and prints, without a script.
+     The commercial wording follows docs/ORGANISER-INTERVIEWS-2026-11.md: free today, paid terms explored, no customer
+     claimed, the public forecasts and swimmers' features free whatever is decided. -->
+<title>A worked example for organisers · SwimSignal</title>
+<meta name="description" content="A worked example, on live forecasts for four bathing waters on Windermere, of the free tools SwimSignal has for clubs, activity centres and event organisers: a session briefing, several venues on one page, what changed since the last update, a decision record and signs.">
+<meta name="theme-color" content="#3d5b5d">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="page.css">
+<link rel="preload" href="fonts/SourceSans3-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/SourceSerif4-latin.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+  /* The tokens and the prose page are page.css's. Each step is an h2 with a numbered run-in; a live part sits
+     under a hairline so it reads as the tool's own output, not the page's prose. */
+  .d-live { margin:12px 0 0; padding:12px 0 0; border-top:1px solid var(--hair); }
+  main.doc .d-tools { font-size:var(--fs-note); margin:8px 0 0; }
+  /* The briefing: the email as sent, at the notes size, its subject line in the display face. */
+  .d-brief { font-size:var(--fs-note); }
+  main.doc .d-brief p { margin:0 0 8px; }
+  main.doc .d-subject { font:600 var(--fs-body)/1.3 var(--font-display); }
+  main.doc ul.d-spots li, main.doc ul.d-since li { margin:6px 0; }
+  /* A level's colour on its words, never on a surface (as the sites view sets it). */
+  .d-lv { font-weight:700; color:var(--k-na); }
+  .d-lv.low { color:var(--k-low); } .d-lv.moderate { color:var(--k-moderate); } .d-lv.high { color:var(--k-high); }
+  .d-lv.veryhigh { color:var(--k-veryhigh); } .d-lv.clear { color:var(--k-clear); }
+  /* The sites view's rows (sites.html, copied: the same markup, from sites.js). */
+  .s-issued { font-size:var(--fs-note); color:var(--muted); margin:0 0 8px; }
+  ol.sites { list-style:none; padding:0; margin:8px 0 0; border-top:1px solid var(--line); }
+  .site { display:grid; grid-template-columns:minmax(0, 2fr) minmax(0, 3fr) 66px; gap:4px 20px; align-items:start; padding:12px 0; border-bottom:1px solid var(--line); margin:0; }
+  .s-place { min-width:0; }
+  main.doc h2.s-h { font:inherit; margin:0; }
+  .s-name { display:block; font:600 var(--fs-body)/1.3 var(--font-display); }
+  .s-meta { display:block; font-size:var(--fs-meta); color:var(--muted); margin-top:2px; }
+  main.doc .s-say p { margin:0; }
+  main.doc .s-head { font:700 var(--fs-note)/1.35 var(--font-text); color:var(--k-na); }
+  main.doc .s-head.low { color:var(--k-low); } main.doc .s-head.moderate { color:var(--k-moderate); } main.doc .s-head.high { color:var(--k-high); }
+  main.doc .s-head.veryhigh { color:var(--k-veryhigh); } main.doc .s-head.clear { color:var(--k-clear); }
+  main.doc .s-why { font-size:var(--fs-note); margin-top:2px; }
+  main.doc .o-tag { margin:3px 0 4px; padding-left:7px; border-left:3px solid var(--notice-line); font-size:var(--fs-note); line-height:1.35; color:var(--ink); }
+  main.doc .s-rec { font-size:var(--fs-meta); color:var(--muted); margin-top:4px; }
+  .s-rec a { color:var(--link); }
+  .week { display:flex; gap:4px; }
+  .wk { display:flex; flex-direction:column; align-items:center; gap:3px; }
+  .wk i { display:block; width:10px; height:22px; background:var(--unknown); }
+  .wk i.low { background:var(--low); } .wk i.moderate { background:var(--moderate); } .wk i.high { background:var(--high); } .wk i.veryhigh { background:var(--veryhigh); }
+  .wk b { font-size:var(--fs-meta); font-weight:600; line-height:1; color:var(--faint); }
+  .wk.first b, .wk.on b { color:var(--ink); }
+  .wk.on b { text-decoration:underline; text-underline-offset:2px; }
+  .week.rain .wk { justify-content:flex-end; height:40px; }
+  .week.rain .wk i { height:var(--h, 3px); min-height:3px; background:var(--rain); opacity:.85; }
+  .s-missing { font-size:var(--fs-note); margin:12px 0 0; }
+  main.doc .credits-h { font:600 var(--fs-note)/1.3 var(--font-display); margin:24px 0 4px; }
+  main.doc .credits { font-size:var(--fs-meta); color:var(--muted); }
+  main.doc .credits ul { margin:0 0 6px; }
+  main.doc .credits li { margin:2px 0; }
+  .credits-run { display:none; }
+  @media (max-width: 600px) {
+    .site { grid-template-columns:minmax(0, 1fr) 66px; }
+    .s-place { grid-column:1 / -1; }
+  }
+  @page { size:A4 portrait; margin:12mm; }
+  @media print {
+    body { background:var(--card); }
+    .top nav, .screen-only, noscript { display:none; }
+    .top { padding:0 0 6px; background:var(--card); color:var(--ink); }
+    .top .brand { color:var(--ink); }
+    main.doc { max-width:none; padding:8px 0 0; }
+    .site { break-inside:avoid; }
+    a { color:var(--ink); text-decoration:none; }
+  }
+</style>
+</head><body>
+<header class="top"><a class="brand" href="./"><svg viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" fill="#0f5a61"/><path d="M430-20C330 110 470 230 300 290S110 380 190 540" fill="none" stroke="#5CC2B5" stroke-width="70" stroke-linecap="round"/><circle cx="318" cy="138" r="38" fill="#F08A4B"/><circle cx="165" cy="358" r="46" fill="none" stroke="#fff" stroke-width="22"/></svg>SwimSignal</a>
+<nav aria-label="Site"><a href="plan/">Plan a swim</a><a href="saved/">Saved</a><a href="verification.html">Accuracy</a><a href="about.html">About</a><a class="desk-only" href="lab/">Research Lab</a></nav></header>
+<main class="doc">
+<h1>A worked example for organisers</h1>
+<p class="lead">What SwimSignal already gives a club, an activity centre or an event organiser, shown on one planned session at four real bathing waters on Windermere, with the live forecast. The activity centre is invented for the example.</p>
+
+<aside class="summary" aria-labelledby="terms-h">
+<h2 id="terms-h">Free today</h2>
+<ul>
+<li>Every tool on this page is free, with no account and nothing to sign up for.</li>
+<li>SwimSignal is looking into whether organisations would pay for a service built on these tools, such as briefings sent on a schedule and the copies kept for them. No price is set. No organisation pays for SwimSignal or has agreed to.</li>
+<li>The public forecasts and everything for swimmers stay free, whatever is decided.</li>
+<li>It is a forecast, not a water test, and it misses many spills: the <a href="verification.html">accuracy page</a> has the latest figures, by water company. Your organisation makes the decision.</li>
+</ul>
+</aside>
+
+<noscript><p class="notice">This page needs JavaScript to read the forecasts. The steps below say what each tool does; each link opens the tool itself.</p></noscript>
+
+<h2 id="step-session">1. The session</h2>
+<div class="d-live" id="d-session"><p>Loading the forecast…</p></div>
+
+<h2 id="step-brief">2. The session briefing</h2>
+<p>A briefing is what the session's decision maker reads before the session: what the forecast covers and what it does not, who decides, then each spot's level on the day with the reason. This is the text a pilot briefing would carry (<code>scripts/briefing.py</code>), drawn here from the live forecast.</p>
+<div class="d-live" id="d-brief"></div>
+
+<h2 id="step-sites">3. Several venues on one page</h2>
+<p>The sites view puts every spot an organiser uses on one page, with each spot's five days and its level on the session's day. Any list of spots can be made into one from the <a href="organisers.html#sites-maker">organisers' page</a> or a named list on the Saved page. The spots are in the link, so nothing is stored.</p>
+<div class="d-live" id="d-sites"></div>
+
+<h2 id="step-since">4. What changed since the last update</h2>
+<p>The forecast is updated several times a day, so a briefing read in the evening can be out of date by the morning. Each spot's page says what moved since the previous update, and in which inputs. During a pilot, a short note would say what changed since the briefing was sent.</p>
+<div class="d-live" id="d-since"></div>
+
+<h2 id="step-kept">5. A decision record, kept</h2>
+<p>The decision record is one spot on one day, on up to two A4 pages: what the forecast is and is not, the level and why, every input with its age and source, what it cannot see, then lines for the decision and a signature. Printed or saved as a PDF when the decision is made, it shows what was known then.</p>
+<div class="d-live" id="d-kept"></div>
+<p>Today nothing is kept for you: the pages show the latest forecast, and the copy you print is yours. During a pilot, each briefing would be kept as a fixed copy (the PDFs, the data they were drawn from and the issue id) for an agreed period, so it could be found again and shown as it was.</p>
+
+<h2 id="step-signs">6. At the water</h2>
+<p>Each spot with its own page, Millerground Landing here, has <a href="spot/bw-ukd1203-45650/sign/">a sign to print</a>, with a QR code to the spot's forecast, and <a href="embed.html?spot=bw-ukd1203-45650&amp;screen">a live sign</a> for a screen in a club hut or a centre's reception, which updates itself. A club's website can show the same card with the <a href="embed.html?spot=bw-ukd1203-45650">embed</a>.</p>
+
+<h2 id="step-more">Where to go next</h2>
+<ul>
+<li><a href="clubs.html">Clubs, centres and leaders</a>: what the levels mean for a group, by how wet people get.</li>
+<li><a href="organisers.html">For event organisers</a>: one spot and one day, the overflows upstream, and a checklist from British Triathlon's and Swim England's guidance.</li>
+<li><a href="terms.html#responsibility">What SwimSignal takes responsibility for</a> when it is used to run a session or an event.</li>
+<li>If you run sessions and want to say what would help, or what you do now, the <a href="feedback.html">feedback page</a> reaches Ethan.</li>
+</ul>
+</main>
+<footer class="site-foot"><div class="rule"><p>SwimSignal is a free, non-commercial pollution risk forecast for river and lake swim spots in England, run by Ethan Buckley. A forecast, not a water test: check the signs at the water before you swim.</p>
+<p><a href="terms.html">Terms of use</a> · <a href="privacy.html">Privacy</a> · <a href="feedback.html">Feedback</a> · <a href="methods.html">Method</a> · <a href="research.html">Research</a> · <a href="terms.html#data">Data credits</a> · <a href="https://github.com/ethanbuckley/swimsignal">Source code</a> (MIT)</p></div></footer>
+<script src="levels.js"></script>
+<script src="experience.js"></script>
+<script src="lists.js"></script>
+<script src="organisers.js"></script>
+<script src="printed.js"></script>
+<script src="eatoday.js"></script>
+<script src="since.js"></script>
+<script src="sites.js"></script>
+<script src="demo.js"></script>
+</body></html>
