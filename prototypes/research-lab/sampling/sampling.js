@@ -1,6 +1,6 @@
 // Sampling gaps, Research Lab exhibit 5. Reads the sampling planner's file (data/research/sampling_planner.v1.json,
 // docs/SAMPLING-PLANNER-CONTRACT-v1.md) for each bathing water's samples, the simulation and its failed verdict, and
-// gaps.json (scripts/lab_sampling_gaps.py) for every spot's place, the calendar and the fixed-day rain shares.
+// gaps.json (scripts/lab_sampling_gaps.py) for each exported spot's place, the calendar and the fixed-day rain shares.
 // The comparison is arithmetic on samples already taken: places, months, samples, cost and gaps filled. It never says
 // which season would teach the model more, and the failed verdict stands beside it. A spot with no samples is "no
 // samples", never clean. The three seasons and the chosen spot live in the URL hash, so a link reopens them.
@@ -124,7 +124,7 @@ function pick(id) {
   SPOT = id;
   $('#spot-select').value = id;
   const s = G.spots.find(x => x.id === id), k = status(s), b = BY[id];
-  LAB.drawMap($('#map'), marks(), { selected: id, label: s.name, onPick: pick, aria: 'Map of every SwimSignal spot, by its lab samples' });
+  LAB.drawMap($('#map'), marks(), { selected: id, label: s.name, onPick: pick, aria: 'Map of the spots in this export, by their lab samples' });
   let h = `<h3>${esc(s.name)}</h3><p class="meta">${s.kind === 'lake' ? 'Lake' : 'River'} · ${esc(s.area)} · <a href="${LAB.spotURL(id)}">Today's forecast for ${esc(s.name)}</a></p>`;
   if (k === 'ea') {
     h += `<p class="big">${num(s.ea)}<small>Environment Agency samples, ${P.coverage.years[0]}–${P.coverage.years.at(-1)}</small></p>`

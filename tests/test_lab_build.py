@@ -204,3 +204,11 @@ def test_folded_dates_never_pass_an_export_date_off_as_the_datas(site):
     doc = json.loads((site / "lab" / "refresh.json").read_text())
     if "sampling" in doc["parts"]:
         assert doc["parts"]["sampling"]["short"] == "sampling export" and doc["parts"]["sampling"].get("outcomes_to")
+
+
+def test_sampling_never_claims_every_spot(site):
+    # Its export holds the spots on its date, not every spot the site has now (2 Nov 2026): the labels say so too.
+    for f in ("sampling/index.html", "sampling/sampling.js"):
+        p = site / "lab" / f
+        if p.is_file():
+            assert "every SwimSignal spot" not in p.read_text() and "every spot" not in p.read_text().lower().replace("every spot's", ""), f
