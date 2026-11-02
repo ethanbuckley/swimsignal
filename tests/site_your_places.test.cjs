@@ -7,7 +7,7 @@ const path = require('node:path');
 const app = fs.readFileSync(path.join(__dirname, '../src/dipcast/site/index.html'), 'utf8');
 
 test('a saved card gives the change since your last look for no day or today, never for another day', () => {
-  assert.match(app, /\$\{\(!iso \|\| iso === today\(\)\) && typeof sinceSaid === 'function' \? sinceSaid\(s, DATA\.generated_at\) : ''\}<\/li>`;/);
+  assert.match(app, /\$\{\(!iso \|\| iso === today\(\)\) && typeof sinceSaid === 'function' \? sinceSaid\(s, DATA\.generated_at\) : ''\}`/);
   assert.match(app, /if \(!savedGroup\.hidden && \(!VIEW\.day \|\| VIEW\.day === today\(\)\) && typeof lookedAt === 'function'\) lookedAt\(/);
 });
 
