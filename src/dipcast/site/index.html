@@ -5633,7 +5633,7 @@ function keptView() {
 // The forecast did not arrive (2 Nov 2026): what happened, one way to try again, and where official advice is, which
 // does not depend on SwimSignal. Nothing is shown from an older copy unless the offline copy has one (sw.js).
 main().catch(e => { document.getElementById('result').innerHTML = `<section class="tile empty-saved load-failed" role="alert" aria-labelledby="fail-h">`
-  + `<h2 class="sec-h" id="fail-h">The forecast did not load</h2><p class="sub">${navigator.onLine ? `${esc(String(e.message).replace(/^./, c => c.toUpperCase()))}. It is usually back within a few minutes.` : 'You are offline, and this device has no saved copy yet.'} `
+  + `<h2 class="sec-h" id="fail-h">The forecast did not load</h2><p class="sub">${navigator.onLine ? `${e instanceof TypeError ? 'The forecast could not be reached' : esc(String(e.message).replace(/^./, c => c.toUpperCase()))}. It is usually back within a few minutes.` : 'You are offline, and this device has no saved copy yet.'} `
   + `No level is shown rather than an old one.</p><p><button type="button" class="btn primary" onclick="location.reload()">Try again</button></p>`
   + `<p class="small muted">Official advice does not depend on SwimSignal: <a href="https://environment.data.gov.uk/bwq/profiles/">the Environment Agency's bathing water pages</a>, and the signs at the water.</p></section>`; });
 // Opened from the home screen there is no reload button, and a phone keeps the page for days:

@@ -48,3 +48,13 @@ test('the water row: measured or an estimate, the gauge named, and "no reading" 
   assert.equal(make({ fig: '14°', live: true }, null)({ kind: 'river' }), 'Water 14°, measured<br>No river gauge');
   assert.equal(make(null, { fig: '–' })({ kind: 'lake', river_state: { water: 'lake' } }), 'No water temperature<br>No current level reading');
 });
+
+test('a forecast that did not load says why in words, offers Try again, and points to official advice', () => {
+  const fail = slice('main().catch(e => {', '\n// Opened from the home screen');
+  assert.match(fail, /The forecast did not load/);
+  assert.match(fail, /e instanceof TypeError \? 'The forecast could not be reached'/);   // not the browser's "Failed to fetch"
+  assert.match(fail, /No level is shown rather than an old one\./);
+  assert.match(fail, /onclick="location\.reload\(\)">Try again<\/button>/);
+  assert.match(fail, /the Environment Agency's bathing water pages<\/a>, and the signs at the water/);
+  assert.doesNotMatch(fail, /\bcap\(/);   // levels.js may be what failed
+});
