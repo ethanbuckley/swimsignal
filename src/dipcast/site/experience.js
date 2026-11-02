@@ -110,18 +110,52 @@ function compareAdvice(s) {
 const ACCESS_WORDS = { restricted_guidance: 'Park guidance restricts river swimming; not checked here.', unconfirmed: 'Permission to swim at this point is not confirmed.' };
 function compareAccess(s) {
   const a = s.access;
-  if (!a) return 'No access information.';
+  if (!a) return vTag('none', 'No access information');
+  // When it was checked is its kind and time; "signs at the water not inspected" is the row's note (compareRows).
   return htmlText(a.text || ACCESS_WORDS[a.status] || 'Not known whether swimming is allowed at this point.') + ' '
-    + htmlText(a.checked_at ? `Checked from published sources on ${experienceWhen(a.checked_at)}; signs at the water not inspected.` : 'Not known when it was checked.')
-    + (/^https:\/\//.test(a.url || '') ? ` <a href="${htmlText(a.url)}">Authority guidance</a>.` : '');
+    + (a.checked_at ? vTag('measured', `Checked ${htmlText(experienceWhen(a.checked_at))}`) : vTag('none', 'Not known when it was checked'))
+    + (/^https:\/\//.test(a.url || '') ? ` <a href="${htmlText(a.url)}">Authority guidance</a>` : '');
 }
-// The rows under the five days, as [label, HTML], for one spot; iso is the day picked, whose E. coli
-// model limits the last row gives.
+// The rows under the five days, as [label, HTML, note], for one spot; iso is the day picked, whose E. coli
+// model limits the last row gives. Short cells (2 Nov 2026): the caveat every column shares is the note, which the
+// table says once under the row's label (index.html, compareTable); a cell keeps only what is its own. The spot's own
+// "not confirmed", official advice and missing data stay in its cell.
+const vTag = (kind, words) => typeof valueTag === 'function' ? valueTag(kind, words) : `<span class="vt vt-${kind}">${words}</span>`;
+function compareRating(s) {
+  const cl = s.classification, sr = (s.sepa || {}).rating;
+  if (s.source === 'sepa') return sr?.value ? `${htmlText(sr.value)}${sr.year ? ', ' + htmlText(sr.year) : ''} (SEPA)` : vTag('none', 'No SEPA rating in this update');
+  if (cl?.class) return `${htmlText(cl.class.charAt(0).toUpperCase() + cl.class.slice(1))}${cl.year ? ', ' + htmlText(cl.year) : ''}`;
+  return s.source === 'designated' ? vTag('none', 'No rating in this update') : 'Not a designated bathing water';
+}
+function compareSample(s, now) {
+  const said = sampleWords()(s.lab_sample, now);
+  if (said) return htmlText(said);
+  if (s.source === 'sepa') return 'SEPA’s page has its results';
+  if (s.source !== 'designated' && !s.classification) return vTag('none', 'None taken here');
+  return vTag('none', s.lab_sample === null ? 'None this season' : 'None in this update');
+}
+function compareAlgae(s) {
+  const a = s.algae;
+  const said = String(a?.phrase || 'Visual check');
+  return a?.date ? `${htmlText(said.charAt(0).toUpperCase() + said.slice(1))} ${vTag('measured', `Seen ${dayMonthYear(a.date)}`)}` : vTag('none', 'None recorded in this update');
+}
+function compareWarnings(s, generatedAt, now) {
+  const said = [...flowFacts(s, now, generatedAt).filter(f => f.flood).map(f => flowSentence(f)),
+    floodUnchecked(s, now, generatedAt) ? floodUncheckedLine() : '', floodUnmatched(s, now, generatedAt) ? floodUnmatchedLine() : ''].filter(Boolean);
+  if (said.length) return htmlText(said.join(' '));
+  if (generatedAt && hoursAgo(generatedAt, now) > FLOW_MAX_H.build) return vTag('none', 'Not known') + ' ' + vTag('stale', 'This forecast is over a day old');
+  return Array.isArray(s.flood_alerts) ? 'No flood alert matched to this spot' : vTag('none', 'Not known');
+}
 function compareRows(s, iso, generatedAt = null, now = Date.now()) {
-  const f = Object.fromEntries(evidenceRows(s, iso, generatedAt, now)), t = k => htmlText(f[k]);
-  return [['Right now', compareNow(s, generatedAt)], ['Environment Agency rating', t('Environment Agency rating')],
-    ["Today's EA advice", compareAdvice(s)], ['Water samples', t('Water samples')], ['Algae observation', t('Algae observation')],
-    ['Access', compareAccess(s)], ['Local warnings', t('Local warnings')], ['Model limits', t('Model limits')]];
+  const f = Object.fromEntries(evidenceRows(s, iso, generatedAt, now));
+  // Official advice first, as everywhere (2 Nov 2026).
+  return [["Today's official advice", compareAdvice(s)], ['Right now', compareNow(s, generatedAt), 'Live spill reports from overflows upstream'],
+    ['Bathing-water rating', compareRating(s), 'From up to four seasons of samples; not today’s water quality'],
+    ['Latest lab sample', compareSample(s, now), 'E. coli on the day it was taken; the Environment Agency’s page has every result'],
+    ['Algae', compareAlgae(s), 'A past visual check, not a current warning. None recorded does not mean none there'],
+    ['Access', compareAccess(s), 'A desk check of published sources; signs at the water not inspected'],
+    ['Flood warnings', compareWarnings(s, generatedAt, now), 'Short-term pollution warnings are not fetched here: check official advice and the signs at the water'],
+    ['Model limits', htmlText(f['Model limits'])]];
 }
 // "Too high to swim" (build_site.attach_flow_state): the river high or rising fast at a gauge on the
 // spot's own river, and the Environment Agency's flood alerts and warnings in force whose area's outline
