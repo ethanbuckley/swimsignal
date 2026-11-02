@@ -673,7 +673,7 @@ def test_weather_context_is_attached_per_spot_and_a_failed_call_leaves_none(tmp_
     spots = [{"id": "a", "name": "A", "lat": 54.0, "lon": -2.0}, {"id": "b", "name": "B", "lat": 54.1, "lon": -2.1},
              {"id": "d", "name": "Broken", "lat": 54.5, "lon": -3.1, "error": "forecast failed: boom"}]
     assert bs.attach_weather(spots, request=request, cache=tmp_path / "weather.json") == 2
-    assert seen[0]["daily"] == "temperature_2m_max,sunrise,sunset" and seen[0]["latitude"] == "54.000,54.100"
+    assert seen[0]["daily"] == "temperature_2m_max,sunrise,sunset,wind_speed_10m_max,wind_gusts_10m_max" and seen[0]["latitude"] == "54.000,54.100"
     assert spots[0]["weather"]["days"] == [{"date": "2026-10-01", "tmax": 11, "sunrise": "07:12", "sunset": "18:40"},
                                            {"date": "2026-10-02", "tmax": None, "sunrise": "07:14", "sunset": "18:38"}]
     assert spots[0]["weather"]["credit"] == "Weather data by Open-Meteo.com" and "weather" not in spots[2]

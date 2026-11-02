@@ -972,6 +972,17 @@
   /* How the backup's water is joined to the spot's (outing.js, outingJoin): a plain line over both columns, empty until known. */
   .outing-join { margin:0 0 10px; font-size:var(--fs-note); line-height:1.4; }
   .outing-join:empty { display:none; }
+  /* Conditions for your outing (outing.js, outingConditions): the spot page's figure-and-caption cells (.cond), a group
+     of them a chosen spot, three to a line at every width (two lines of three), under a hairline. The figures are a
+     size down from the spot page's, since the outing shows two or three spots' worth. */
+  .outing-cond { margin:4px 0 12px; padding-top:10px; border-top:1px solid var(--hair); }
+  .outing-cond-spot { margin:0 0 10px; }
+  .outing-cond .outing-role { margin:0 0 6px; }
+  .outing-cond .cond { grid-template-columns:repeat(3, minmax(0, 1fr)); gap:6px; }
+  .outing-cond .cond .cell { padding:8px 10px 10px; }
+  .outing-cond .cfig { font-size:var(--fs-head); font-weight:400; }
+  .outing-cond .t-lab { padding-right:0; }
+  .outing-cond > p.small { margin:0 0 6px; }
   /* The swim passport (passport.js): a summary line, then the badges, earned or not yet, as a quiet list. */
   .pp-sum { margin:8px 0; }
   .pp-badges { list-style:none; margin:0 0 8px; padding:0; }
@@ -2344,6 +2355,9 @@ function waterEstMore(x) {
     + ` A listed spot's estimate also uses the river's size or the lake's area.${WT_TAIL}`;
   return `A provisional estimate, not a measurement. ${WT_AIR}, through a relation between the air and the ${r === 'lake_off_season' ? 'lake' : 'river'} fitted on May to September samples. It has not been checked from October to April: no test so far had samples from those months, so how far out it is in winter is not known yet. Each estimate is saved and is being compared with the Environment Agency's water sensors as the winter goes on.${WT_TAIL}`;
 }
+// from planner-wording, remove on rebase
+const VALUE_KINDS = ['measured', 'estimate', 'stale', 'none'];
+const valueTag = (kind, words) => '<span class="vt vt-' + (VALUE_KINDS.includes(kind) ? kind : 'none') + '">' + words + '</span>';
 function waterTile(w, e = null, kind = null, miss = null) {
   const wtIcon = () => glyph('<path d="M10 14.6V5a2 2 0 0 1 4 0v9.6a3.6 3.6 0 1 1-4 0Z"/><path d="M12 9.5v8"/>');
   const t = w ? Date.parse(w.observed_at) : NaN;

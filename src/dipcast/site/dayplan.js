@@ -82,8 +82,12 @@ function dpConditions(s, day, today, act, byId = new Map(), nowMs = Date.now()) 
     const fins = (Array.isArray(s.downstream) ? s.downstream : []).filter(([id]) => byId.has(id)).slice(0, 2);
     if (fins.length) rows.push(['Finish', fins.map(([id, km]) => `${dpEsc(byId.get(id).name)} (${km < 10 ? km : Math.round(km)} km down)`).join(', ')]);
     else if (river) { missing.push('a finish downstream'); rows.push(['Finish', DP_UNKNOWN]); unk.push('a finish downstream'); }
-    missing.push('wind');   // SwimSignal has no wind forecast: it would need new weather requests
-    rows.push(['Wind', `${DP_UNKNOWN} <span class="muted">(SwimSignal has no wind forecast)</span>`]); unk.push('wind');
+    // The day's strongest wind and gust at 10 m (build_site.attach_weather, from 2 Nov 2026): a figure for the whole day,
+    // never an hour's. An update from before then, or a day Open-Meteo did not answer for, has none.
+    const wx = ((s.weather || {}).days || []).find(x => x && x.date === day), mph = k => Math.round(wx[k] * 0.621371);
+    if (wx && typeof wx.wind_kmh === 'number') rows.push(['Wind', `Strongest about ${mph('wind_kmh')} mph${typeof wx.gust_kmh === 'number' ? `, gusts to ${mph('gust_kmh')} mph` : ''}, over the day `
+      + '<span class="muted">(forecast at 10 m above open ground; <a href="https://open-meteo.com/">Weather data by Open-Meteo.com</a>)</span>']);
+    else { missing.push('wind'); rows.push(['Wind', DP_UNKNOWN]); unk.push('wind'); }
   }
   return { rows, missing, unk };
 }

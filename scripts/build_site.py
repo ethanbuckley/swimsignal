@@ -1847,6 +1847,9 @@ WEATHER_CREDIT = "Weather data by Open-Meteo.com"
 # build every 30 minutes. A daily high, sunrise and sunset change little in 3 hours.
 WEATHER_REFRESH_H = 3.0
 WEATHER_CACHE = "weather.json"
+# Daily figures only: the day's high, its daylight, and its strongest wind and gust at 10 m (km/h), each a figure for
+# the whole day, never an hour's. Adding the wind (2 Nov 2026) kept the weight at one call a location (attach_weather).
+WEATHER_DAILY = "temperature_2m_max,sunrise,sunset,wind_speed_10m_max,wind_gusts_10m_max"
 
 
 def _weather_key(r: dict) -> str:
@@ -1855,8 +1858,10 @@ def _weather_key(r: dict) -> str:
 
 def attach_weather(results: list[dict], request=None, batch: int = 50, cache: Path | None = None,
                    refresh_h: float = WEATHER_REFRESH_H) -> int:
-    """Each spot's daytime high, sunrise and sunset for the forecast's days, from Open-Meteo in a
-    few calls for all spots (three daily variables over five days weigh one call per location).
+    """Each spot's daytime high, sunrise and sunset, and the day's strongest wind and gust, for the forecast's days,
+    from Open-Meteo in a few calls for all spots. Five daily variables over five days weigh one call per location, as
+    the three before wind did (rainfall.call_weight: max(1, 0.5, 0.5 x 5/14)); the wind adds about 150 bytes a
+    location to each answer (measured 2 Nov 2026).
     Context beside the forecast, not an input to it. The answers are kept in `cache` (in the rain
     cache, so they persist with the state) and used again while under `refresh_h` old and from the
     same Europe/London day, so only spots not in it are asked for; the day's Open-Meteo ration
@@ -1878,13 +1883,13 @@ def attach_weather(results: list[dict], request=None, batch: int = 50, cache: Pa
     got = {}
     for i in range(0, len(todo), batch):
         chunk = todo[i:i + batch]
-        weight = rainfall.call_weight(len(chunk), config.FORECAST_DAYS, variables=3)
+        weight = rainfall.call_weight(len(chunk), config.FORECAST_DAYS, variables=len(WEATHER_DAILY.split(",")))
         if not rainfall.may_spend(weight, "weather"):
             break
         try:
             res = request(config.OPEN_METEO_FORECAST, {
                 "latitude": ",".join(f"{r['lat']:.3f}" for r in chunk), "longitude": ",".join(f"{r['lon']:.3f}" for r in chunk),
-                "daily": "temperature_2m_max,sunrise,sunset", "forecast_days": config.FORECAST_DAYS, "timezone": "Europe/London"}, timeout=30)
+                "daily": WEATHER_DAILY, "forecast_days": config.FORECAST_DAYS, "timezone": "Europe/London"}, timeout=30)
         except Exception as e:  # noqa: BLE001 - context beside the forecast must not sink the build
             if isinstance(e, rainfall.OpenMeteoBadBody):
                 rainfall.spend(weight, "weather")
@@ -1908,8 +1913,13 @@ def attach_weather(results: list[dict], request=None, batch: int = 50, cache: Pa
         if d is None:
             continue
         try:
-            days = [{"date": t, "tmax": None if x is None else round(float(x)), "sunrise": str(sr)[11:16], "sunset": str(ss)[11:16]}
-                    for t, x, sr, ss in zip(d["time"], d["temperature_2m_max"], d["sunrise"], d["sunset"], strict=True)]
+            n_days = len(d["time"])
+            # The wind is optional: an answer cached earlier the same day, before the wind was asked for, has none.
+            wind = d.get("wind_speed_10m_max") or [None] * n_days
+            gust = d.get("wind_gusts_10m_max") or [None] * n_days
+            days = [{"date": t, "tmax": None if x is None else round(float(x)), "sunrise": str(sr)[11:16], "sunset": str(ss)[11:16],
+                     **({"wind_kmh": round(float(w))} if w is not None else {}), **({"gust_kmh": round(float(g))} if g is not None else {})}
+                    for t, x, sr, ss, w, g in zip(d["time"], d["temperature_2m_max"], d["sunrise"], d["sunset"], wind, gust, strict=True)]
         except (KeyError, TypeError, ValueError) as e:
             log.warning("weather for %s: %s", r["name"], e)
             continue

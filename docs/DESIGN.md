@@ -1914,3 +1914,40 @@ before. It is never a default for anyone else.
 - Headless Chrome, whole pages: Home and Plan at 1,440 px.
 - Not checked: a screen reader, a five-person usability study (later, by people, not invented here), and Safari at
   increased zoom.
+
+## Conditions for your outing (2 November 2026)
+
+On Plan a swim, the outing gains a panel under the spot and its backup (and a paddle's finish): **Conditions for your
+outing** (`outing.js`, `outingConditions`). It uses the primitives from "Home and Plan as reference screens": the
+spot page's figure-and-caption cells (`.cond`, `.cell`, `.cfig`, `.csub`) on the opaque paper of the working screens.
+Each spot has six cells, three to a line at every width: water temperature, river or lake level, air, wind, sunset,
+rain. The figures are a size down from the spot page's, since the outing shows two or three spots' worth.
+
+**Every value keeps its real resolution.**
+- A water sensor or a gauge reading says where it was read and how long ago. On a later day, one line says the
+  readings are the latest measured, not forecasts for that day.
+- The water estimate is today's only (`waterEstOk`). On a later day the cell says "Not known for Tuesday" and gives
+  today's estimate in words, never as Tuesday's figure.
+- The high, the wind, sunrise and sunset are the outing day's daily figures. They never carry an hour. The foot of the
+  panel says so.
+- A level trend is shown only from the gauge's own readings over the six hours to the build (`rise_6h_m`), with the
+  times it runs between. Without those readings the cell says "No recent trend from this gauge". For a lake it says
+  "No trend is read for a lake".
+- A reading over a day old is stale (`outingFresh`, as `conditionsSummary`). The cell shows no figure and no trend,
+  and says when it was last read.
+- With a time picked, the sunset cell says when all or part of that time is after sunset or before sunrise. It is a
+  fact about daylight, not a judgement on the swim.
+
+**Kinds of value.** Each cell's caption says what the value is through the page's shared `valueTag` (measured,
+estimate, stale, none), defined by the planner-wording work. Weather figures are worded as forecasts ("Forecast high
+today"). Missing data is said as "Not known", "No reading" or "No gauge", never as a value or as calm.
+
+**Wind.** The build asks Open-Meteo for each day's strongest wind and gust at 10 m alongside the high, sunrise and
+sunset (`WEATHER_DAILY`). Five daily variables over five days still weigh one call a location
+(`rainfall.call_weight`), so the ration does not change. The panel shows it in mph and says it is a model's figure for
+open ground: at the water it can be calmer, or gustier near hills and buildings. The day plan's Wind row
+(`dayplan.js`) uses the same figures where an update has them, and still says "Not known" where it does not.
+
+**What it is not.** No score and no overall verdict. None of it is part of the pollution level, and the panel says so.
+
+**Checked:** headless Chrome at 390 and 1,440 px; real Safari 26.6.2 at 1,440 px, for today and for tomorrow.
