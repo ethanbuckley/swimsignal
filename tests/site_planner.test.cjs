@@ -112,18 +112,20 @@ test('the comparison says a day, a live status, advice or access is not known, r
   assert.equal(compareAdvice({source: 'designated'}), 'Not known: this update has no Environment Agency page for this bathing water.');
   assert.equal(compareAdvice({source: 'openstreetmap'}), 'None: not a designated bathing water, so the Environment Agency gives no bathing advice for it.');
   // Access: the desk check's own words and its date, or none.
-  assert.equal(compareAccess({}), 'No access information.');
+  // Since 2 Nov 2026 the date is the value's kind, and "signs at the water not inspected" is the row's note, said once.
+  assert.equal(compareAccess({}), '<span class="vt vt-none">No access information</span>');
   assert.equal(compareAccess({access: {status: 'unconfirmed', checked_at: '2026-10-03', text: 'Check the <b>signs</b> & the bank.', url: 'https://example.org/a"b'}}),
-    'Check the &lt;b&gt;signs&lt;/b&gt; &amp; the bank. Checked from published sources on 3 Oct 2026; signs at the water not inspected. <a href="https://example.org/a&quot;b">Authority guidance</a>.');
-  assert.equal(compareAccess({access: {status: 'restricted_guidance'}}), 'Park guidance restricts river swimming; not checked here. Not known when it was checked.');
+    'Check the &lt;b&gt;signs&lt;/b&gt; &amp; the bank. <span class="vt vt-measured">Checked 3 Oct 2026</span> <a href="https://example.org/a&quot;b">Authority guidance</a>');
+  assert.equal(compareAccess({access: {status: 'restricted_guidance'}}), 'Park guidance restricts river swimming; not checked here. <span class="vt vt-none">Not known when it was checked</span>');
   assert.equal(compareAccess({access: {status: 'something new', checked_at: '2026-10-03', url: 'http://not-https.example'}}),
-    'Not known whether swimming is allowed at this point. Checked from published sources on 3 Oct 2026; signs at the water not inspected.');
+    'Not known whether swimming is allowed at this point. <span class="vt vt-measured">Checked 3 Oct 2026</span>');
+  assert.equal(Object.fromEntries(compareRows({days: []}, '2026-09-30').map(r => [r[0], r[2]])).Access, 'A desk check of published sources; signs at the water not inspected');
   // Every row of every column says something, and nothing calls a spot safe or the best.
   for (const s of [spot, {days: []}, {days: [], error: 'forecast failed: x'}, {...bw, ...spot, access: {status: 'unconfirmed'}}]) {
     const rows = compareRows(s, '2026-09-30');
-    assert.deepEqual(rows.map(r => r[0]), ['Right now', 'Environment Agency rating', "Today's EA advice", 'Water samples', 'Algae observation', 'Access', 'Local warnings', 'Model limits']);
+    assert.deepEqual(rows.map(r => r[0]), ["Today's official advice", 'Right now', 'Bathing-water rating', 'Latest lab sample', 'Algae', 'Access', 'Flood warnings', 'Model limits']);
     for (const [label, html] of rows) {
-      assert.ok(typeof html === 'string' && html.trim().length > 10, `${label}: ${html}`);
+      assert.ok(typeof html === 'string' && html.replace(/<[^>]+>/g, '').trim().length > 8, `${label}: ${html}`);
       assert.doesNotMatch(html, /\b(best|safest|safe to swim|clean)\b/i, label);
     }
   }
@@ -502,15 +504,18 @@ test('right now raised with nothing discharging says the spills are recent', () 
 test('the comparison has a column a spot, the five days first with the day picked shaded, one cell for a level that does not change, and no blank', () => {
   const dir = require('node:path').join(__dirname, '../src/dipcast/site/');
   const ctx = pageContext(['esc', 'tone', 'dateLabel', 'PAGE_ID', 'spotPath', 'ago', 'agoSpan', 'ageMin', 'issued', 'compareTable'],
-    {ROOT: {pathname: '/'}, DATA: {generated_at: '2026-09-30T06:00:00+01:00'}, fiveDays: () => DATES, compareWater: s => `water at ${s.id}`});   // compareWater has its own test
+    {ROOT: {pathname: '/'}, DATA: {generated_at: '2026-09-30T06:00:00+01:00'}, fiveDays: () => DATES, compareWater: s => [`temp at ${s.id}`, `level at ${s.id}`]});   // compareWater has its own test
   for (const f of ['evidence.js', 'eatoday.js']) vm.runInContext(fs.readFileSync(dir + f, 'utf8'), ctx);
   const a = {...week(['low', 'high', 'low', 'low', 'low']), id: 'a', name: 'River <A>', now: {label: 'low', monitored_upstream: 2, discharging_upstream: 0}};
   const b = {...week(['low', 'low', 'low', 'low']), id: 'b', name: 'B'};   // no fifth day
   const html = vm.runInContext('compareTable', ctx)([a, b, clearRiver], DATES[1], s => `${s.id} away`);
   // Each row's label is a band across the three columns.
-  assert.deepEqual([...html.matchAll(/<tr class="lab"><th colspan="3" id="[\w-]+"><span>([^<]+)<\/span><\/th><\/tr>/g)].map(m => m[1]),
-    ['Pollution risk, next five days', 'Distance', 'Water today', 'Right now', 'Environment Agency rating', "Today's EA advice", 'Water samples', 'Algae observation', 'Access',
-      'Local warnings', 'Model limits']);
+  // Official advice first among the facts (2 Nov 2026); what every column shares is the label's note, said once.
+  assert.deepEqual([...html.matchAll(/<tr class="lab"><th colspan="3" id="[\w-]+"><span>([^<]+)(?:<span class="lab-note">[^<]+<\/span>)?<\/span><\/th><\/tr>/g)].map(m => m[1]),
+    ['Pollution risk, next five days', 'Distance', 'Water temperature', 'Water level', "Today's official advice", 'Right now', 'Bathing-water rating', 'Latest lab sample', 'Algae',
+      'Access', 'Flood warnings', 'Model limits']);
+  assert.match(html, /<span>Algae<span class="lab-note">A past visual check, not a current warning\. None recorded does not mean none there<\/span><\/span>/);
+  assert.match(html, /<span>Distance<span class="lab-note">In a straight line, not by road<\/span><\/span><\/th><\/tr><tr><td headers="cmp-dist cmp-s0">a<\/td>/);
   // The five days, each cell naming its day; the day picked (tomorrow here) shaded.
   assert.deepEqual([...html.matchAll(/<tr( class="on" aria-current="true")?><td class="d0" headers="cmp-days cmp-s0"><span class="day">([^<]+)<\/span>/g)].map(m => [m[2], !!m[1]]),
     [['Today', false], ['Tomorrow', true], ['Fri 2 Oct', false], ['Sat 3 Oct', false], ['Sun 4 Oct', false]]);
@@ -521,7 +526,12 @@ test('the comparison has a column a spot, the five days first with the day picke
   assert.equal([...html.matchAll(/rowspan="5"/g)].length, 1);
   assert.match(html, /<td class="same" rowspan="5" headers="cmp-days cmp-s2"><span class="hl clear">No monitored overflow found upstream<\/span>\. The same on every day\.<\/td>/);
   assert.doesNotMatch(html, /<td[^>]*>\s*<\/td>/);
-  assert.equal([...html.matchAll(/<td headers="cmp-r\d cmp-s\d">/g)].length, 8 * 3);   // every fact, every spot
+  // Every fact for every spot: a cell each, or one across the three where all three say the same.
+  for (let k = 0; k < 8; k++) {
+    const each = [...html.matchAll(new RegExp(`<td headers="cmp-r${k} cmp-s\\d">`, 'g'))].length;
+    const across = [...html.matchAll(new RegExp(`<td colspan="3" headers="cmp-r${k} cmp-s0 cmp-s1 cmp-s2">`, 'g'))].length;
+    assert.ok((each === 3 && across === 0) || (each === 0 && across === 1), `row ${k}: ${each} ${across}`);
+  }
   assert.match(html, />River &lt;A&gt;<\/a><span class="k">a away<\/span>/);
   assert.match(html, /^<p class="small muted compare-note">Issued [^<]*<span data-ago="\d+">[^<]*<\/span> ago\)\. A lower forecast level does not mean safe water: check the signs at the water\.<\/p>/);
   // The question is which spots to look into further: no column is called the best or the safest.
