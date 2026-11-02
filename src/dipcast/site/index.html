@@ -1869,14 +1869,16 @@ const dateLabel = iso => { const t = serverToday ?? localISO(new Date());
   if (iso === t) return 'Today'; if (iso === addDays(t, 1)) return 'Tomorrow';
   return new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', {weekday:'short', day:'numeric', month:'short'}); };
 // The page's day, and every spot's days from it (levels.js, readerDay and fromDay): the device's day
-// between midnight and the next build, while the forecast is fresh, and the build's otherwise. Set when
+// after midnight, however old the forecast (a stale one keeps its Stale notice), and the build's before. Set when
 // the forecast arrives and on each spot's page, with the point clicked on the map (anypoint.js) if that
 // is the one shown. Then the forecast's days are four, from today (fiveDays), and the build's time is
 // "yesterday at 23:24" (yesterdayLine).
-const setDays = (...more) => { serverToday = readerDay(DATA.generated_at, Date.now(), STALE_MIN);
+const setDays = (...more) => { serverToday = readerDay(DATA.generated_at, Date.now());
   for (const s of [...DATA.spots, ...more]) fromDay(s, serverToday, DATA.generated_at.slice(0, 10)); };
 const fiveDays = () => [0, 1, 2, 3, 4].map(k => addDays(today(), k)).filter(iso => !DATA || iso < addDays(DATA.generated_at.slice(0, 10), 5));
-const nextDay = () => !!DATA && today() > DATA.generated_at.slice(0, 10);
+// After midnight, before the next build, while the forecast is fresh: the build was yesterday's ("yesterday at 23:24").
+// A stale one says its age in the Stale notice and its issue time as a date instead.
+const nextDay = () => !!DATA && today() > DATA.generated_at.slice(0, 10) && ageMin() <= STALE_MIN;
 const yesterdayLine = () => `Issued yesterday at ${new Date(DATA.generated_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}; today's update is due.`;
 // An overflow's live status in words. With the build's data_state (ingest.live.data_states), a reading
 // from a feed that has not updated within six hours says when it last did, not "not discharging": a
@@ -1993,10 +1995,12 @@ async function sendSub(sub, weekly = weeklyOn()) {
 async function alertsOn() {
   if (await Notification.requestPermission() !== 'granted') throw new Error('notifications are not allowed for this site');
   const reg = await pushReg(); if (!reg) throw new Error('the offline copy is not running, so notifications cannot be set up');
-  const sub = await pushDeadline(reg.pushManager.getSubscription(), 'the browser did not answer; try again', 8000)
-    || await pushDeadline(reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64(DATA.push.key) }),
-      'the browser could not finish setting up notifications. Check your connection and try again. On iPhone, use the Home Screen app');
-  await sendSub(sub);
+  const had = await pushDeadline(reg.pushManager.getSubscription(), 'the browser did not answer; try again', 8000);
+  const sub = had || await pushDeadline(reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64(DATA.push.key) }),
+    'the browser could not finish setting up notifications. Check your connection and try again. On iPhone, use the Home Screen app');
+  // A push address made just now that the alert service did not take is dropped again: the page reads alerts as
+  // on from the browser's address (bindAlerts, outingPushState), so a reload would say "on" with nothing sent.
+  try { await sendSub(sub); } catch (e) { if (!had) await sub.unsubscribe().catch(() => {}); throw e; }
 }
 async function alertsOff() {   // true if alerts were on
   const sub = await pushSub(); if (!sub) return false;
@@ -2551,9 +2555,11 @@ const dayRows = d => { const on = daily(d), past = (d.past || []).slice(-1), sho
     const v = on ? levelPlace(d, x) : Math.min(1, (rain || 0) / 40), band = on && !gone ? bandPlace(d, x, d.days.indexOf(x)) : null;
     const attrs = tag === 'button' ? ` type="button" data-day="${x.date}" aria-pressed="false" aria-controls="day-view"` : '';
     const sub = on && !gone && advisedAgainst(d) && hasData(x) && x.label ? x.label : null;
-    const when = gone ? 'Yesterday' : (x.date === today() ? 'Today, ' : '') + new Date(x.date + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+    // The row before today is Yesterday only when it was: a forecast days old greys its last row under its own date.
+    const yday = gone && x.date === addDays(today(), -1);
+    const when = yday ? 'Yesterday' : (x.date === today() ? 'Today, ' : '') + new Date(x.date + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
     const said = `${when}: ${on ? (lv ? `${lv} risk.` : 'no forecast.') : rain === null ? 'no rain forecast.' : `${Math.round(rain)} mm of rain in the 48 hours to midday.`}${sub ? ` Sewage spills: ${esc(sub)}.` : ''}`;
-    return `<${tag} class="drow ${on ? (lv ? tone(lv) : 'na') : 'rain'}${gone ? ' past' : ''}"${attrs}><span class="sr">${said}</span><span class="d" aria-hidden="true">${gone ? 'Yesterday' : shortDay(x.date)}</span>`
+    return `<${tag} class="drow ${on ? (lv ? tone(lv) : 'na') : 'rain'}${gone ? ' past' : ''}"${attrs}><span class="sr">${said}</span><span class="d" aria-hidden="true">${yday ? 'Yesterday' : shortDay(x.date)}</span>`
       + `<span class="l" aria-hidden="true">${on ? (lv ? cap(lv) : 'No data') : rain === null ? '–' : Math.round(rain) + ' mm'}`
       // A poor rating keeps every day at high risk or more: the day's own sewage spill forecast under it, so it is seen apart.
       + `${sub ? `<span class="lsub">spills: ${esc(sub)}</span>` : ''}</span>`
@@ -5679,7 +5685,7 @@ async function stillCurrent(nowMs = Date.now()) {
   const aged = s => ((s.now && s.now.aged) || []).length, before = DATA.spots.reduce((n, s) => n + aged(s), 0);
   for (const s of DATA.spots) ageReadings(s, nowMs);
   let why = DATA.spots.reduce((n, s) => n + aged(s), 0) > before ? 'aged'
-    : readerDay(DATA.generated_at, nowMs, STALE_MIN) > today() ? 'day' : '';
+    : readerDay(DATA.generated_at, nowMs) > today() ? 'day' : '';
   if (!why && !UPDATE && navigator.onLine && nowMs - CHECKED >= CHECK_MS) { CHECKED = nowMs; if (await newerOut()) why = 'newer'; }
   if (!why || UPDATE === why) return;
   if (why !== 'newer' && !held()) { reload(); return; }
