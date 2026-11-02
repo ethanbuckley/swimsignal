@@ -1915,6 +1915,48 @@ before. It is never a default for anyone else.
 - Not checked: a screen reader, a five-person usability study (later, by people, not invented here), and Safari at
   increased zoom.
 
+## Plan a swim: caveats once, and what kind of value (2 November 2026)
+
+**Caveats said once.** A caveat that applies to every option, or to every row of a group, is said once above them.
+A line stays with an option only where it differs for that spot.
+- "Options today": the intro says "A forecast for the whole day, not by the hour, and not a water test: check the
+  signs at the water before you go in." Under it, "The same at all three" (or "both") holds the rows whose words
+  match at every option. Today these are water temperature, daylight and, for a boat or a board, wind. It also holds
+  the gaps every option has ("Not known at any of them: access."). See `dpShared` in `dayplan.js`.
+- Access, rules for boats and boards, launching, the river level and finishes stay with each option even when they
+  match. They are the spot's own facts, and "not confirmed" or "Not known" qualifies that spot's level.
+- Official advice stays above each option's level.
+- The result list: when every row in a group has "a spill … is possible, not expected", the group's line says it once.
+  Each row keeps its own count ("43 overflows upstream."). See `planQuiet` in `index.html`.
+
+**The comparison.**
+- Short labels, with official advice first: Today's official advice, Right now, Bathing-water rating, Latest lab
+  sample, Algae, Access, Flood warnings, Model limits.
+- The caveat every column shares is the row's note, in muted text under its label. Examples: "From up to four
+  seasons of samples; not today's water quality" and "A desk check of published sources; signs at the water not
+  inspected". It is the third field of `compareRows`.
+- A row whose cells all say the same is one cell across the columns.
+- Distance reads "1.1 miles".
+- Water today is two rows, Water temperature and Water level.
+- Figures use tabular numerals.
+
+**What kind of value.** One treatment, `valueTag(kind, words)` in `index.html` (classes `vt vt-<kind>`), wherever
+the planner or a comparison gives a reading:
+
+| kind | how it looks | words |
+|---|---|---|
+| `measured` | value, then a muted word at the meta size | its source and time: "Measured at Bowness, 2 h ago"; "Checked 3 Oct 2026"; "Seen 23 Sept 2026" |
+| `estimate` | value, then a muted word | "Estimate", "Provisional estimate" |
+| `stale` | a muted word after "Not known", led by a dash | past its age rule: "Last reading at Addingham 2 days ago: too old to use" |
+| `none` | the words are the value, in ink, semibold, at body size | "Not known", "No reading", "No gauge", "None recorded in this update" |
+
+- The word carries the kind, so colour is never the only cue.
+- The risk colours are not used and keep their meanings.
+- In the comparison, a value's kind sits on its own line under the value.
+- A gap is set in ink, not grey, so it never reads as small print (the 31 Oct 2026 rule that "Not known" is as plain
+  as a fact). `.vt-none` replaces the old `.dp-unk`.
+- When Node runs `dayplan.js` alone, `dpTag` writes the same markup. Saved and Conditions take the same helper.
+
 ## The organisers' worked example (2 November 2026)
 
 `demo.html` (`demo.js`) is a prose page that walks one invented activity centre's session on four Windermere
