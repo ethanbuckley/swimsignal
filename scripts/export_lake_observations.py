@@ -37,7 +37,7 @@ BATHING = ROOT / "data" / "raw" / "bathing_waters_inland.json"
 CHL_LAKES = ROOT / "docs" / "LAKE-CHLOROPHYLL-NDCI-TEST-2026-10-lakes.json"
 OUT = ROOT / "data" / "research" / "lake_observations.v1.json"
 
-SCHEMA, VERSION = "swimsignal.lake-observations", "1.3.0"
+SCHEMA, VERSION = "swimsignal.lake-observations", "1.4.0"
 PILOT_STATUS = ("new_reading", "no_new_clear_image", "no_new_scenes", "no_scenes", "partial", "failed", "not_reached")
 PROCESSING = "s2c1-l2a.ndci-core-median.v1"
 SEASON = (5, 6, 7, 8, 9)
@@ -46,6 +46,10 @@ SHALLOW_M = 3.0
 MASK = {"site_radius_m": 300, "pixel_m": 20, "min_core_pixels": 9, "min_clear_share": 0.80}
 MIN_SUN_DEG = 15.0        # amendment 1.1: a refreshed reading needs the sun at least this high
 MIN_WATER_SHARE = 0.90    # amendment 1.1: out of season, this share of clear core pixels must be classed water
+# 1.4: a refreshed reading is marked low signal when the water reflected almost no light (median B4 + B5 over the clear
+# core below brightness_below) or its pixels disagreed widely (interquartile range of pixel NDCI at least iqr_at_least).
+# Provisional thresholds from docs/SATELLITE-SHORE-OUTLIERS-2026-11.md; a display note, never a removal or a backfill.
+LOW_SIGNAL = {"brightness_below": 0.015, "iqr_at_least": 0.10}
 COVERAGE_LABEL = {"every_scene": "every image, May to September, of the years covered",
                   "near_lab_samples": "selected historical coverage: only images within a day of a lab sample"}
 YEARS = tuple(range(2020, 2027))   # the seasons the tests searched (protocol.YEARS)
@@ -272,16 +276,37 @@ def latest_block(series: list[dict], passes: bool, scope: str, as_of: date, lake
         "date": last["date"], "datetime": last["datetime"], "item_id": last["item_id"], "ndci": last["ndci"],
         "clear_share": round(last["clear_core"] / last["n_core"], 4), "season": last["season"],
         "experimental": last["experimental"]}
+    if last is not None and "low_signal" in last:   # 1.4
+        block.update({k: last.get(k) for k in ("low_signal", "core_brightness", "index_iqr", "inner_ndci")})
     return {**block, "scope": "latest_in_dataset", "age_days": age, "freshness": fresh, "reasons": reasons}
+
+
+def _measured(r, name: str):
+    v = getattr(r, name, None)
+    return None if v is None or (isinstance(v, float) and np.isnan(v)) else float(v)
+
+
+def low_signal(brightness: float | None, iqr: float | None) -> bool | None:
+    """The 1.4 display rule on a reading's measured signal; None where nothing was measured (a reading made before
+    the measurement existed stays unmarked, not marked clean)."""
+    if brightness is None and iqr is None:
+        return None
+    return bool((brightness is not None and brightness < LOW_SIGNAL["brightness_below"])
+                or (iqr is not None and iqr >= LOW_SIGNAL["iqr_at_least"]))
 
 
 def refreshed_row(r, source: str) -> dict:
     out_of = int(r.scene_date[5:7]) not in SEASON
-    return {"date": r.scene_date, "datetime": r.datetime, "item_id": r.item_id, "tile": r.tile,
-            "processing_baseline": r.processing_baseline, "clear_core": int(r.clear_core), "n_core": int(r.n_core),
-            "ndci": round(float(r.reading), 5), "season": "out_of_season" if out_of else "in_season",
-            "experimental": out_of, "source": source, "sun_elevation_deg": float(r.sun_elevation_deg),
-            "clear_water_share": round(1 - (getattr(r, "clear_core_not_water", 0) or 0) / r.clear_core, 4)}
+    row = {"date": r.scene_date, "datetime": r.datetime, "item_id": r.item_id, "tile": r.tile,
+           "processing_baseline": r.processing_baseline, "clear_core": int(r.clear_core), "n_core": int(r.n_core),
+           "ndci": round(float(r.reading), 5), "season": "out_of_season" if out_of else "in_season",
+           "experimental": out_of, "source": source, "sun_elevation_deg": float(r.sun_elevation_deg),
+           "clear_water_share": round(1 - (getattr(r, "clear_core_not_water", 0) or 0) / r.clear_core, 4)}
+    bright, iqr = _measured(r, "core_brightness"), _measured(r, "index_iqr")
+    if bright is not None or iqr is not None:   # 1.4: measured from the next pilot run on; absent before
+        row.update({"core_brightness": bright, "index_iqr": iqr, "inner_ndci": _measured(r, "inner_ndci"),
+                    "low_signal": low_signal(bright, iqr)})
+    return row
 
 
 def apply_refresh(lk: dict, rf: pd.DataFrame, info: dict, as_of: date) -> dict:
@@ -399,7 +424,8 @@ def build(as_of: date, refresh_dirs: list[Path] = ()) -> dict:
     return {"schema": SCHEMA, "version": VERSION, "generated_at": datetime.now(UTC).isoformat(timespec="seconds"),
             "as_of": as_of.isoformat(),
             "processing": {"version": PROCESSING, "processed_to": processed_to, "season_months": list(SEASON),
-                           "display_rules": {"min_sun_deg": MIN_SUN_DEG, "out_of_season_min_water_share": MIN_WATER_SHARE},
+                           "display_rules": {"min_sun_deg": MIN_SUN_DEG, "out_of_season_min_water_share": MIN_WATER_SHARE,
+                                             "low_signal": LOW_SIGNAL},
                            "code": {"sha256": code_hashes(), "commit_at_export": git_commit(),
                                     "note": "the file hashes are authoritative; the commit may predate them"},
                            "sources": [{"input": k, "sha256": v} for k, v in before.items()],
@@ -542,6 +568,11 @@ def check(doc: dict) -> list[str]:
                 err.append(f"{lid}: an experimental reading must come from a refresh")
             if x.get("experimental") and x.get("clear_water_share", 0) < MIN_WATER_SHARE:
                 err.append(f"{lid}: an out-of-season reading below the water-share rule")
+            if "low_signal" in x or "core_brightness" in x or "index_iqr" in x:   # 1.4: the mark follows the rule
+                if x.get("low_signal") != low_signal(x.get("core_brightness"), x.get("index_iqr")):
+                    err.append(f"{lid}: low_signal does not follow the rule on its measured signal ({x['item_id']})")
+        if "low_signal" in lt and lt.get("low_signal") != low_signal(lt.get("core_brightness"), lt.get("index_iqr")):
+            err.append(f"{lid}: latest.low_signal does not follow the rule")
         if lt.get("age_days") is not None and lt["age_days"] < 0:
             err.append(f"{lid}: negative age_days")
         if lt.get("scope") != "latest_in_dataset":
