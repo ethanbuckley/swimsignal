@@ -31,10 +31,10 @@
      2026). main() takes the answer from FORECAST; the catch only stops an early failure being
      reported before main() gets to it, and main() still gets the error. The forecast is
      spots-lite.json, without each spot's overflows and guide; a spot's page asks for its own here
-     too (DETAIL, data/spot/<id>.json), so the two arrive together. Each screen asks for the picture
-     it shows, and only that one: a wide desktop's views draw the wide sky (build_site.SKY_PRELOAD;
-     a spot's page draws it from 801 px). -->
-<link rel="preload" href="icons/fells.webp" as="image" fetchpriority="high" media="(max-width: 1099px)">
+     too (DETAIL, data/spot/<id>.json), so the two arrive together. The phone's picture needs no
+     request: the build writes icons/fells.webp into the style below (build_site.with_inline_sky),
+     so it paints with the page's first paint. A wide desktop's views draw the wide sky, asked for
+     here (build_site.SKY_PRELOAD; a spot's page draws it from 801 px). -->
 <link rel="preload" href="icons/fells-wide.webp" as="image" fetchpriority="high" media="(min-width: 1100px)">
 <script>window.FORECAST = fetch('data/spots-lite.json', { cache: 'no-cache' }); FORECAST.catch(() => {});
   { const m = location.pathname.match(/\/spot\/([A-Za-z0-9_-]+)\/?$/);
@@ -52,8 +52,15 @@
 <meta name="apple-mobile-web-app-title" content="SwimSignal">
 <!-- The map library, Leaflet 1.9.4, served from this site (vendor/leaflet/, with its licence) so
      that no third party receives a request for it, as for the fonts. Pinned by hash: a changed file
-     is refused rather than run (tests/test_design_tokens.py checks the hashes against the files). -->
-<link rel="stylesheet" href="vendor/leaflet/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=">
+     is refused rather than run (tests/test_design_tokens.py checks the hashes against the files).
+     Its stylesheet does not hold back the first paint: preloaded, it becomes a stylesheet when it
+     arrives. Only the map uses it, and app.js draws the map after every script has come. As an
+     ordinary stylesheet the first screen waited for it: on a slow phone connection the page had
+     arrived at 0.72 s and painted at 1.44 s (5 Nov 2026). Without it, about half of
+     Lighthouse's throttled runs painted at 2.7 s, and none with Chrome's render-blocking fonts
+     switched off (--disable-features=RenderBlockingFonts); a probe without tracing never did. Not media="print": that is fetched last,
+     and on a spot's page it came 0.5 s before the map. -->
+<link rel="preload" as="style" href="vendor/leaflet/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" onload="this.onload=null;this.rel='stylesheet'">
 <!-- The map tiles come from one other host, named in the privacy notice. Opening its connection
      while the page is read saves a round trip on the first tile (Lighthouse, 16 Oct 2026: 214 ms on
      a phone). build_site.with_tiles swaps the host for DIPCAST_TILES'. No crossorigin: Leaflet asks
@@ -1764,6 +1771,9 @@ const TintedTiles = L.TileLayer.extend({
 });
 // The build swaps the tile layer line inside this call (build_site.TILE_LINE); without the filter, as is.
 const tintTiles = layer => tileColour ? new TintedTiles(layer._url, layer.options) : layer;
+// Leaflet's stylesheet is preloaded and applied when it arrives (the head): applied here too, before the
+// map, in case it has not arrived yet or the browser does not preload.
+document.querySelectorAll('link[rel=preload][as=style]').forEach(l => { l.onload = null; l.rel = 'stylesheet'; });
 const map = L.map('map', { zoomControl: true, dragging: !TOUCH, zoomAnimation: !STILL, fadeAnimation: !STILL, markerZoomAnimation: !STILL,
   inertia: !STILL }).setView([53.6, -2.0], 6);
 map.attributionControl.setPrefix(false);   // the map's credit is the tiles', as on the small map; the terms credit Leaflet
