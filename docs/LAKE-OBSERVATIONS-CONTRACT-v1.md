@@ -171,7 +171,7 @@ gives (tested).
   the historical record. `release.scope` stays `historical`.
 - **Unchanged:** every rule of 1.1 and 1.2, the historical series, and the 2027 confirmation.
 
-## Version 1.4 (5 November 2026): a reading measures its own signal
+## Version 1.4 (5 November 2026, [#624](https://github.com/ethanbuckley/swimsignal/pull/624)): a reading measures its own signal
 
 Additive, from the shore-margin outlier record (`SATELLITE-SHORE-OUTLIERS-2026-11.md`, [#623](https://github.com/ethanbuckley/swimsignal/pull/623)): the largest shifts
 between shore masks were scenes in which the water reflected almost no light, so the index was a ratio of noise. From
