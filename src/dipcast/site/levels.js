@@ -238,11 +238,17 @@ function risk(s, x, isNow = false) {
   let sp = !daily(s) || !x ? null : isNow ? (ORDER[x.label] !== undefined && !nowUnknown(s) ? x.label : null) : hasData(x) ? x.label : null;
   const lift = !isNow && !!x && x.date === today() && rank(nowSpill(s)) >= 1 && rank(nowSpill(s)) > rank(sp);   // a low right now raises nothing
   if (lift) sp = nowSpill(s);
+  // A later day keeps what right now's spills still give it at its midday (forecast.py's now.carried, transport.carried_risk):
+  // the day's forecast counts the spills the rain makes likely, not those already reported (Ethan, 5 Nov 2026: Swale read
+  // Low on Friday while their water was due to pass by Saturday 13:02). Only where right now is known.
+  const kept = !isNow && !!x && x.date > today() && rank(nowSpill(s)) >= 1 ? ((s.now || {}).carried || []).find(c => c.date === x.date) : null;
+  const carried = !!kept && rank(spillLevel(kept.risk)) >= 1 && rank(spillLevel(kept.risk)) > rank(sp);
+  if (carried) sp = spillLevel(kept.risk);
   const wq = isNow ? null : ecoliLevel(s, x), rec = advisedAgainst(s) ? 'high' : null, alg = algaeLevel(s), smp = sampleLevel(s);
   const lv = [sp, wq, rec, alg, smp].reduce(higher, null);
   if (lv === null) return { level: null, by: null };
   const by = rec && rank(rec) >= rank(lv) ? 'record' : lv === sp ? 'spill' : lv === wq ? 'water' : lv === smp ? 'sample' : 'algae';
-  return lift && by === 'spill' ? { level: lv, by, now: true } : { level: lv, by };
+  return lift && by === 'spill' ? { level: lv, by, now: true } : carried && by === 'spill' ? { level: lv, by, carried: true } : { level: lv, by };
 }
 // Right now, today and tomorrow: what the headline and the map colour go by, and the worst of them.
 const near = s => [[risk(s, s.now, true), 'right now'], [risk(s, s.days[0]), 'today'], [risk(s, s.days[1]), 'tomorrow']];
@@ -264,7 +270,7 @@ const laterDay = s => { if (!daily(s)) return null; const w = rank(worst(s));
 const laterWords = s => { const x = laterDay(s); return x ? `${cap(x[0].level)} risk ${dayWord(x[1].date)}` : ''; };
 // What set a level, in a forecast's words: "high E. coli likely". "Very poor water quality" read as
 // the result of a test, which nothing here is. Today raised by right now's spills says so.
-const because = r => r.by === 'spill' ? (r.now ? 'sewage spills right now' : 'sewage spills')
+const because = r => r.by === 'spill' ? (r.now ? 'sewage spills right now' : r.carried ? 'water from spills already reported' : 'sewage spills')
   : r.by === 'water' ? (r.level === 'moderate' ? 'E.\u00a0coli may be raised' : r.level === 'very high' ? 'high E.\u00a0coli likely' : 'raised E.\u00a0coli likely')
   : r.by === 'sample' ? 'a recent EA sample over 900 E.\u00a0coli'
   : r.by === 'algae' ? 'algae at the last check' : 'rated poor';
@@ -444,7 +450,7 @@ function tileLine(s, kind, iso = null) {
   let L, by, when = 'today', lifted = false;
   if (!daily(s)) { L = ORDER[level(s)] === undefined ? null : level(s);
     by = { algae: 'algae', sample: 'sample' }[standingLevel(s).by] || 'record'; }
-  else if (iso) { const r = x ? risk(s, x) : { level: null }; L = r.level; by = r.by; lifted = !!r.now; }
+  else if (iso) { const r = x ? risk(s, x) : { level: null }; L = r.level; by = r.by; lifted = r.now ? 'now' : r.carried ? 'carried' : false; }
   else { const [r, w] = worstNear(s); L = r.level; by = r.by; when = w; }
   let t = null;
   if (kind === 'rating') {
@@ -474,6 +480,7 @@ function tileLine(s, kind, iso = null) {
     : by === 'algae' ? `Algae at the last check raise the level to ${L} risk.`
     : by === 'sample' ? `A recent EA sample over 900 E. coli raises the level to ${L} risk.`
     : by === 'water' ? `${day} E. coli estimate raises the level to ${L} risk.`
+    : lifted === 'carried' ? `Water from spills already reported raises the level to ${L} risk ${dayWord(iso)}.`
     : lifted ? `${recent ? 'Recent spills' : 'Spills right now'} raise today's level to ${L} risk.`
     : when !== 'right now' ? `${day} sewage spill risk raises the level to ${L} risk.`
     : recent ? `Recent spills raise the level to ${L} risk right now.` : `Spills right now raise the level to ${L} risk.`;

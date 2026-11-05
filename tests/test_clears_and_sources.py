@@ -378,3 +378,22 @@ def test_carried_risk_is_right_now_run_forward_and_agrees_with_the_clear_time():
     minute = pd.Timedelta(minutes=1)
     assert carried(ov, NOW, [at - minute])[0] >= CLEAR_CUT > carried(ov, NOW, [at + minute])[0]
     assert carried(ov.iloc[0:0], NOW, [NOW, NOW]) == [0.0, 0.0]
+
+
+def test_forecast_point_carries_right_nows_spills_onto_the_later_days_they_still_raise(monkeypatch):
+    """now.carried (5 Nov 2026): each later day whose midday comes before the clearing time, with right now's spills'
+    risk then; none at or after it, none low, and none at all when right now is low."""
+    carried = partial(transport.carried_risk, t90_h=T90)
+    ov = _upstream().assign(status=[0, 1], travel_h=[3.3, 30.0],
+                            latest_event_end=[pd.Timestamp.now(tz="UTC") - pd.Timedelta(hours=1), pd.NaT])
+    out = _forecast(monkeypatch, ov, _Steady(), carried_risk=carried)
+    now, today = out["now"], out["days"][0]["date"]
+    clears = pd.Timestamp(now["clears_at"])
+    assert now["carried"], now
+    for c in now["carried"]:
+        noon = pd.Timestamp(f"{c['date']} 12:00", tz="Europe/London")
+        assert c["date"] > today and noon < clears and c["risk"] >= LOW_CUT
+    later = [d["date"] for d in out["days"][1:] if pd.Timestamp(f"{d['date']} 12:00", tz="Europe/London") < clears]
+    assert [c["date"] for c in now["carried"]] == later
+    quiet = _forecast(monkeypatch, _upstream().assign(status=[0, 0], latest_event_end=pd.NaT), _Steady(), carried_risk=carried)
+    assert "carried" not in quiet["now"]

@@ -28,6 +28,7 @@ from dipcast.model.spill_model import MODEL_PATH, SpillModel
 from dipcast.model.transport import (
     ARRIVING_SAYS,
     COUNT_WEIGHT,
+    carried_risk,
     clear_time,
     combine_daily,
     daily_effects,
@@ -584,7 +585,14 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
     spilling = bool(len(ov)) and bool(running(ov).any())
     said = risk_label(now_risk) != "low" or (spilling and now_risk > 0)
     arriving = arriving_of(ov, now, now_contrib) if said else None
+    # The later days right now's spills still raise, at midday on each (transport.carried_risk): only while right now
+    # is raised (a clearing time), and only days not low by the same cut. The page lifts those days to it (levels.js, risk).
+    later = [r["date"] for r in day_rows if r["date"] > now.date().isoformat()] if clears_at is not None else []
+    carried = [{"date": d, "risk": round(r, 3)} for d, r in
+               zip(later, carried_risk(ov, now, [pd.Timestamp(f"{d} 12:00", tz=LOCAL_TZ) for d in later]))
+               if risk_label(r) != "low"]
     clearing = {"clears_at": None if clears_at is None else to_minute(clears_at), "clears_by": clears_by,
+                **({"carried": carried} if carried else {}),
                 # The overflow whose travel time holds the risk up most as it clears, when travel does ('travel').
                 **({"clears_after": {k: _clean(ov.loc[last_water].get(k)) for k in ("site_id", "site_name")}
                     | {"travel_h": round(float(ov.loc[last_water, "travel_h"]), 1)}} if clears_by == "travel" else {}),

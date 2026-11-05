@@ -620,3 +620,18 @@ test('the five days say when spills that stopped lately set today, and how long 
   s.now = { label: 'low', risk: 0, discharging_upstream: 0, recent_upstream: 1, monitored_upstream: 3 };
   assert.match(text(vm.runInContext('daysSentence', ctx)(s)), /^A spill from one of the 3 overflows upstream is possible, not expected today\./);
 });
+
+test('a later day keeps what right now\'s spills still give it at midday (now.carried, 5 Nov 2026)', () => {
+  // Swale above Richmond Falls: very high right now from three spills that stopped, clearing Saturday 13:02.
+  const s = spilt({ label: 'very high', risk: 0.93, recent_upstream: 3, carried: [{ date: DATES[1], risk: 0.42 }, { date: DATES[2], risk: 0.2 }],
+    clears_at: '2026-10-13T13:02:00+01:00' }, ['moderate', 'low', 'low', 'low', 'low']);
+  assert.deepEqual(JSON.parse(JSON.stringify(L.risk(s, s.days[1]))), { level: 'high', by: 'spill', carried: true });
+  assert.deepEqual(JSON.parse(JSON.stringify(L.risk(s, s.days[2]))), { level: 'moderate', by: 'spill', carried: true });
+  assert.deepEqual(JSON.parse(JSON.stringify(L.risk(s, s.days[3]))), { level: 'low', by: 'spill' });
+  assert.equal(L.tileLine(s, 'spill', DATES[1]), 'Water from spills already reported raises the level to high risk tomorrow.');
+  // Never below the day's own forecast, never where right now is not known or low, and today keeps right now's own lift.
+  assert.equal(L.risk({ ...s, days: s.days.map((x, i) => i === 1 ? { ...x, label: 'very high', risk: 0.8 } : x) }, s.days.map((x, i) => i === 1 ? { ...x, label: 'very high', risk: 0.8 } : x)[1]).level, 'very high');
+  const quiet = { ...s, now: { ...s.now, label: 'low', risk: 0.1 } };   // a low right now carries nothing
+  assert.equal(L.risk(quiet, quiet.days[1]).level, 'low');
+  assert.equal(L.risk(s, s.days[0]).now, true);
+});
