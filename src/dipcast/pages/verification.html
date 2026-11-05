@@ -527,13 +527,13 @@ function liveError(L) {
   const O = L.overall || {};
   const skill = L.n_scored && L.overall ? Math.round(100 * (1 - O.calibrated.brier / O.climatology_brier)) : null;
   const flat = O.period_base_rate_brier ? 1 - O.calibrated.brier / O.period_base_rate_brier : null;
-  return {skill, flatBy: flat === null ? '' : `${(100 * Math.abs(flat)).toFixed(1)}% ${flat > 0 ? 'lower' : 'higher'}`};
+  return {skill, flat, flatBy: flat === null ? '' : `${(100 * Math.abs(flat)).toFixed(1)}% ${flat > 0 ? 'lower' : 'higher'}`};
 }
 // The page's one-screen answer: the four figures that matter as tiles, one sentence each, then the warnings by
 // company in one line. Fourteen sections follow, and the figures used to sit under two paragraphs and a table.
 // Every figure is computed from the same data as the sections below, never written in.
 function summary(d) {
-  const L = d.live || {}, W = L.warning_table || {}, ho = (d.holdout || [])[0], {skill, flatBy} = liveError(L);
+  const L = d.live || {}, W = L.warning_table || {}, ho = (d.holdout || [])[0], {skill, flat} = liveError(L);
   const tile = (v, l, dd) => `<div class="stat"><dt class="l">${l}</dt><dd class="v">${v}</dd><dd class="d">${dd}</dd></div>`;
   const live = !!W.n, spills = W.hits + W.misses, warnings = W.hits + W.false_alarms;
   const liveTiles = [
@@ -541,9 +541,14 @@ function summary(d) {
       : `Since ${day(W.first_day)}, ${n0(W.hits)} of ${n0(spills)} forecasts for a day with a spill gave a High risk warning.`),
     tile(live && W.warnings_true !== null ? p0(W.warnings_true) : '–', 'Warnings that came true', !live ? 'Nothing scored yet.' : !warnings ? 'It gave no warnings.'
       : `${n0(W.hits)} of ${n0(warnings)} warnings were followed by a spill, against ${pLow(W.base_rate)} of all forecasts.`),
-    // A live error above the long-run rate is said as higher, never as a negative "lower".
-    tile(skill === null ? '–' : `${Math.abs(skill)}%`, skill !== null && skill < 0 ? 'Higher error, live' : 'Lower error, live', skill === null ? 'Nothing scored yet.'
-      : `Read as a chance, against each overflow's long-run rate${flatBy ? `, and ${flatBy} against a flat forecast at this period's own rate` : ''}.`),
+    // A live error above the baseline is said as higher, never as a negative "lower". The figure is against the harder
+    // baseline, a flat forecast at the period's own rate, where there is one (Ethan, 5 Nov 2026): the long-run rate is
+    // "an easy test here", as the page says, and its larger figure is given second.
+    flat !== null
+      ? tile(`${(100 * Math.abs(flat)).toFixed(1)}%`, flat < 0 ? 'Higher error, live' : 'Lower error, live',
+        `Read as a chance, against a flat forecast at this period's own rate. Against each overflow's long-run rate, an easier test, ${Math.abs(skill)}% ${skill < 0 ? 'higher' : 'lower'}.`)
+      : tile(skill === null ? '–' : `${Math.abs(skill)}%`, skill !== null && skill < 0 ? 'Higher error, live' : 'Lower error, live', skill === null ? 'Nothing scored yet.'
+        : `Read as a chance, against each overflow's long-run rate.`),
   ].join('');
   const historical = tile(ho ? `${Math.round(100 * ho.auc)} in 100` : '–', 'Pairs ranked the right way round', ho ? 'A ranking of spill days above dry days, not a share of forecasts right: United Utilities, 2025, a year the model never saw.' : 'No offline test loaded.');
   return `<section aria-labelledby="live-summary-h"><h2 id="live-summary-h">Issued forecasts: live results</h2>`

@@ -17,7 +17,7 @@ test('the page puts nearby, then the water, then why, in the order a swimmer ask
   const at = s => { const i = render.indexOf(s); assert.ok(i >= 0, `render() has no ${s}`); return i; };
   // The five days are daysTile's, which the build also writes into the spot's own page (prerender_spots.js).
   assert.match(html, /\nconst daysTile = d => `<section class="tile" aria-labelledby="days-h">[^\n]*Pollution risk, next five days/);
-  const days = at('<div class="stack"><div class="col-go">${daysTile(d)}'), near = at('<div id="nearby-host">${nearby(d)}</div>${atWater}');
+  const days = at('<div class="stack"><div class="col-go">${daysTile(d)}'), near = at('<div id="nearby-host">${nearby(d)}</div><div id="water-top">${waterTop}</div>${guide}');   // the rating in its own host, which phones move up (PHONE_EARLY)
   const why = at('h += `<div id="sources-host">'), map = at('h += mapTile;'), tiles = at('h += tiles + `</div><div class="col-more">${more}${labTile(d)}`;'), ovs = at('h += ovs + replay + plume;'), table = at('h += table + ');
   assert.ok(days < render.indexOf('${conditionsSummary(d)}', days) && render.indexOf('${conditionsSummary(d)}', days) < near);
   assert.ok(days < near && near < why && why < map && map < tiles && tiles < ovs && ovs < table);

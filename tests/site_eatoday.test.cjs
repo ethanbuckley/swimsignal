@@ -184,8 +184,8 @@ test("one fold per page, at the foot of the rating tile, rated or not yet; a pic
     assert.equal(rating.fold, ea.eaTodayFold(s));
     assert.ok(rating.fold.includes(`data-site="${s.id.slice(3)}"`));
     assert.equal(tiles.filter(t => t.fold).length, 1);
-    // The tile's sentence no longer says the page lacks the advice; the fold follows it.
-    assert.match(text(rating.say), /The EA's page has its latest samples and any short-term advice against bathing, after pollution or algae\.$/);
+    // The tile's sentence names the samples; the advice is the fold's to give, which follows it (5 Nov 2026).
+    assert.match(text(rating.say), /The EA's page has its latest samples\.$/);
     const day = standing(s, '2026-10-06');
     assert.doesNotMatch(day, /ea-today|which this page does not include/);
     assert.match(text(day), /any short-term advice against bathing, after pollution or algae\./);

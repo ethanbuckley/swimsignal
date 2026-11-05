@@ -196,7 +196,8 @@ test('11 Oct 2026: the climatology row has its own AUC, and the error is said ag
   assert.ok(!/Climatology [^)]*\) 0\.0349 0\.500/.test(l));
   assert.match(a, /Read as a chance, its error is 29% lower than each overflow's long-run rate\. That rate is an easy test here: it averaged 9\.7% a day, against 2\.8% observed\. A flat forecast at the period's own rate, 2\.8% every day, is harder to beat\. Against it the error is 7\.6% lower\./);
   assert.match(a, /At 5 of the 9 companies, that flat forecast scored better than SwimSignal\./);
-  assert.match(text(els.top.innerHTML), /Lower error, live 29% Read as a chance, against each overflow's long-run rate, and 7\.6% lower against a flat forecast at this period's own rate\./);
+  // The tile's figure is against the harder baseline, the flat forecast; the long-run rate's second (5 Nov 2026).
+  assert.match(text(els.top.innerHTML), /Lower error, live 7\.6% Read as a chance, against a flat forecast at this period's own rate\. Against each overflow's long-run rate, an easier test, 29% lower\./);
   assert.match(s, /which ran high: 9\.7% a day against 2\.8% observed\. It is 7\.6% lower than a flat forecast at this period's own rate\./);
 });
 
@@ -317,7 +318,7 @@ test('24 Oct 2026: by company says what the data says, and the row with no compa
 
 test('a live error above the long-run rate is said as higher, never as a negative lower', async () => {
   const top = text((await render({live: {...OCT11, overall: {...OCT11.overall, calibrated: {...OCT11.overall.calibrated, brier: 0.05}}}})).top.innerHTML);
-  assert.match(top, /Higher error, live 43% Read as a chance/);
+  assert.match(top, /Higher error, live 85\.3% Read as a chance, against a flat forecast at this period.s own rate\. Against each overflow.s long-run rate, an easier test, 43% higher\./);
   assert.ok(!/-\d+%/.test(top), top);
 });
 
