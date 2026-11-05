@@ -200,7 +200,7 @@ function sinceEvidence(was, now, nowMs = Date.now(), extra = {}) {
   const named = (extra.spills || []).slice(0, 2), more = Number.isInteger(b) ? b - named.length : 0;
   const which = !named.length || !b ? '' : `: ${named.map(x => `${x.name} since ${issuedWords(new Date(x.since).toISOString())}`).join(', ')}${more > 0 ? `, and ${more} more` : ''}`;
   if (Number.isInteger(b)) out.push(b ? `${cap1(overflowsWord(b))} reported discharging now${then}${which}.` : `No overflow upstream reported discharging now${then}.`);
-  else if (now.gap) out.push('How many overflows upstream are discharging now is not known: a feed upstream is down or has not updated within six hours.');
+  else if (now.gap) out.push('How many overflows upstream are discharging now is not known: a feed upstream is down, or its latest readings are over six hours old.');
   else if (now.level) out.push('No live overflow count for this spot.');
   if (was.rating && now.rating && was.rating !== now.rating) out.push("The rating is the Environment Agency's, from its yearly bathing water classification.");
   // Official advice: the notice now, in the shared compact words with its state (checked, or not re-checked

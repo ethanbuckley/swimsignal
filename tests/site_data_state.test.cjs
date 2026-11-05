@@ -95,8 +95,10 @@ test('click anywhere ages a quiet feed where the page is read, as a spot page do
   const late = A.forecast(fx.rows, od, fx.cal, null, at + 7 * 3600e3);     // 7 h after: stale where read
   const rec = late.now.recent_upstream;
   assert.equal(late.now.monitored_upstream, rec);
-  assert.deepEqual(late.now.feed_stale, [{ company: 'Yorkshire Water', overflows: 15 - rec, since: t }]);
+  // Current when the build read it: the page's copy is what is old (aged_here), and said so.
+  assert.deepEqual(late.now.feed_stale, [{ company: 'Yorkshire Water', overflows: 15 - rec, since: t, aged_here: true }]);
   assert.equal(late.contributors.find(c => c.status === 0).feed_updated_at, t);
+  assert.equal(late.contributors.find(c => c.status === 0 && c.data_state === 'stale').aged_here, true);
   // A discharge stays a discharge.
   const k = [...idx.keys()].find(j => od.live[idx[j]] === 0); od.status[idx[k]] = 1;
   const dis = A.forecast(fx.rows, od, fx.cal, null, at + 7 * 3600e3);
@@ -159,9 +161,9 @@ test('a quiet reading over six hours old where the page is read stops counting a
   assert.equal(fresh.now.monitored_upstream, 20); assert.equal(fresh.now.stale_upstream, 0);
   const s = ageReadings(spot(), built + 2 * 3600e3);              // read at 20:00: Southern's 13:30 is 6.5 h old
   assert.equal(s.now.monitored_upstream, 8); assert.equal(s.now.stale_upstream, 12);
-  assert.deepEqual(JSON.parse(JSON.stringify(s.now.feed_stale)), [{ company: 'Southern Water', overflows: 12, since: '2026-10-11T13:30:00+00:00' }]);   // across the vm's realm
+  assert.deepEqual(JSON.parse(JSON.stringify(s.now.feed_stale)), [{ company: 'Southern Water', overflows: 12, since: '2026-10-11T13:30:00+00:00', aged_here: true }]);   // across the vm's realm
   assert.deepEqual(s.contributors.map(c => c.data_state), ['stale', 'live', 'live']);   // a discharge stays a discharge
-  assert.equal(statusText(0, { ...s.contributors[0], feed_updated_at: '2026-10-11T13:30:00+00:00' }), 'no update since 11 Oct, 14:30');
+  assert.equal(statusText(0, { ...s.contributors[0], feed_updated_at: '2026-10-11T13:30:00+00:00' }), 'not discharging at 11 Oct, 14:30, over six hours ago, so not current');
   ageReadings(s, built + 3 * 3600e3);                             // a second pass (the overflows' file arriving) adds nothing
   assert.equal(s.now.monitored_upstream, 8); assert.equal(s.now.stale_upstream, 12);
   const old = { now: { monitored_upstream: 5 } };                 // a forecast from before quiet_by_feed
@@ -191,6 +193,24 @@ test('click anywhere counts a carried spill and a frozen record as forecast.live
   got = A.forecast(fx.rows, od, fx.cal);
   assert.equal(got.now.monitored_upstream, 14); assert.equal(got.now.stale_upstream, 1);
   assert.deepEqual(got.now.feed_stale, [{ company: 'Yorkshire Water', overflows: 1, since: '2026-03-31T14:23:00+00:00', records: true }]);
+});
+
+test("a feed current at the build but over six hours old where the page is read says the page's copy is old, not the feed", () => {
+  // Henley, 5 Nov 2026: Thames Water's feed updated 04:22, built 04:27, read at 11:30. "Thames Water's live feed has
+  // not updated since 04:22" blamed the company for a feed SwimSignal had not read again.
+  const s = ageReadings({ now: { monitored_upstream: 48, stale_upstream: 0, feed_stale: [], discharging_upstream: 0, recent_upstream: 0,
+    quiet_by_feed: [{ company: 'Thames Water', overflows: 48, updated_at: '2026-11-05T04:22:00+00:00' }] },
+    contributors: [{ company: 'Thames Water', status: 0, data_state: 'live', feed_updated_at: '2026-11-05T04:22:00+00:00' }] },
+    Date.parse('2026-11-05T11:30:00Z'));
+  assert.equal(liveSay(s.now, 49, 0), "This page's readings from Thames Water's live feed date from 5 Nov, 04:22, over six hours ago:"
+    + ' its 48 overflows here could be spilling unseen. One more gives no live reading.');
+  assert.equal(statusText(0, s.contributors[0]), 'not discharging at 5 Nov, 04:22, over six hours ago, so not current');
+  const ev = require('../src/dipcast/site/evidence.js');
+  assert.match(ev.evidenceOverflows({ upstream_summary: { overflows: 49 }, now: s.now }, '2026-11-05T04:27:00Z').say,
+    /48 on Thames Water's feed, whose readings on this page date from .+, over six hours ago\./);
+  // A feed already stale when the build read it keeps saying the feed has not updated.
+  assert.match(liveSay({ stale_upstream: 48, feed_stale: [{ company: 'Thames Water', overflows: 48, since: '2026-11-04T20:00:00+00:00' }] }, 48, 0),
+    /^Thames Water's live feed has not updated since 4 Nov, 20:00/);
 });
 
 test('a feed that stamps a record only when it changes says so, quiet or stopped', () => {

@@ -86,7 +86,7 @@ test('the overflows are the forecast\'s, most reach first, and say when the list
   assert.deepEqual(rows.map(r => r.plain), ['Friday Street (Henley) pumping station overflow', 'Wargrave sewage works overflow', 'Goring sewage works overflow']);
   assert.deepEqual(rows.map(r => r.own), ['Friday Street (Henley) SPS', 'Wargrave STW', 'Goring STW']);   // the company's, in normal case
   const h = O.overflows(henley);
-  assert.ok(h.includes('51 monitored storm overflows are within 60\u00a0km upstream along the river network, all with a live feed.'));
+  assert.ok(h.includes('51 monitored storm overflows are within 60\u00a0km upstream along the river network, all reporting live at the last update.'));
   assert.ok(h.includes('Sewage from the farthest takes about 33\u00a0h to arrive.'));
   // Without the full list (it could not be loaded, or the build wrote none): the three, and why.
   assert.ok(h.includes('The table lists the 3 that matter most in the current forecast: the full list of 51 could not be loaded. Try again later.'));
@@ -97,7 +97,9 @@ test('the overflows are the forecast\'s, most reach first, and say when the list
     ['Weight', '31%'], ['Spills a year', '18'], ['Hours spilling', '121'], ['Live feed', 'Yes']]]);
   assert.equal(cells[2][2][7][1], 'No');
   const mixed = {...henley, upstream_summary: {overflows: 3, with_live_feed: 2, without_live_feed: 1, max_travel_h: 0.4}};
-  assert.ok(O.overflows(mixed).includes(': 2 report their status live, and 1 has no live feed, so SwimSignal forecasts it from rain and their yearly record alone.'));
+  // Not reporting at the last update is not the same as no live feed: Henley's one is in Thames Water's feed, its monitor silent.
+  assert.ok(O.overflows(mixed).includes(': at the last update 2 reported their status live and 1 gave no live reading, so SwimSignal forecasts it from rain and its yearly record alone.'));
+  assert.ok(!O.overflows(mixed).includes('no live feed'));
   assert.ok(O.overflows(mixed).includes('takes under an hour to arrive') && !O.overflows(mixed).includes('does not yet publish'));
 });
 

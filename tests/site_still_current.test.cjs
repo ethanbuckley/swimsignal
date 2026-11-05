@@ -12,7 +12,7 @@ const between = (a, b) => { const i = html.indexOf(a), j = html.indexOf(b, i); a
 const BUILT = '2026-10-30T20:00:00+00:00', T0 = Date.parse(BUILT);
 const H = 3600e3;
 
-function page({ nowMs, feedAt = BUILT, held = false, drafts = [], head = 'Fri, 30 Oct 2026 20:00:00 GMT' } = {}) {
+function page({ nowMs, feedAt = BUILT, held = false, drafts = [], head = 'Fri, 30 Oct 2026 20:00:00 GMT', river = null } = {}) {
   const clock = { now: nowMs };
   class FixedDate extends Date { constructor(...a) { super(...(a.length ? a : [clock.now])); } static now() { return clock.now; } }
   const spans = [{ dataset: { ago: String(T0) }, textContent: '0 min', closest: () => null },
@@ -25,7 +25,7 @@ function page({ nowMs, feedAt = BUILT, held = false, drafts = [], head = 'Fri, 3
       querySelectorAll: sel => sel === '[data-ago]' ? spans : sel === '[data-notices]' ? [{ hasAttribute: () => false, set innerHTML(h) { calls.notices++; calls.last = h; } }] : [] } });
   vm.runInContext(fs.readFileSync(path.join(__dirname, '../src/dipcast/site/levels.js'), 'utf8'), ctx);
   vm.runInContext(`
-    let DATA = ${JSON.stringify({ generated_at: BUILT, spots: [{ id: 'a', now: { monitored_upstream: 4, quiet_by_feed: [{ company: 'Thames', overflows: 4, updated_at: feedAt }] }, contributors: [] }] })};
+    let DATA = ${JSON.stringify({ generated_at: BUILT, spots: [{ id: 'a', now: { monitored_upstream: 4, quiet_by_feed: [{ company: 'Thames', overflows: 4, updated_at: feedAt }] }, contributors: [], ...(river ? { river_state: river } : {}) }] })};
     const reload = () => { calls.reload++; };
     const DRAFTS = new Map(${JSON.stringify(drafts)});
     const STALE_MIN = 8 * 60;
@@ -59,6 +59,28 @@ test('the shared reading pass ages river levels even when no overflow feeds are 
   assert.equal(got.age_hours, 7);
   assert.equal(got.stale, false);
   assert.equal(vm.runInContext(`ageReadings({river_state: rs}, ${T0 + 25 * H}).river_state.stale`, p.ctx), true);
+});
+
+test('a river level passing a day old while the page is open reloads it, with feeds still current', async () => {
+  // Observed 21 h before the 20:00 build: a day old at 23:00, before midnight's own reload. Feed current throughout.
+  const river = { observed_at: new Date(T0 - 21 * H).toISOString(), age_hours: 21, stale: false, level_m: 0.11 };
+  const p = page({ nowMs: T0 + H, feedAt: new Date(T0 + 2 * H).toISOString(), river });
+  p.get('CHECKED = Infinity');
+  await p.run(T0 + 2.9 * H);
+  assert.equal(p.calls.reload, 0);
+  await p.run(T0 + 3 * H + 60e3);
+  assert.equal(p.calls.reload, 1);
+  assert.equal(p.get('DATA.spots[0].river_state.stale'), true);
+});
+
+test('a river level turning a day old while words are written is offered, not reloaded', async () => {
+  const river = { observed_at: new Date(T0 - 21 * H).toISOString(), age_hours: 21, stale: false, level_m: 0.11 };
+  const p = page({ nowMs: T0 + H, feedAt: new Date(T0 + 2 * H).toISOString(), river, held: true });
+  p.get('CHECKED = Infinity');
+  await p.run(T0 + 3 * H + 60e3);
+  assert.equal(p.calls.reload, 0);
+  assert.equal(p.get('UPDATE'), 'level');
+  assert.match(p.calls.last, /over a day old/);
 });
 
 test('with words being written, the page offers the reload once and does not reload', async () => {

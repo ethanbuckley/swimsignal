@@ -259,3 +259,16 @@ def test_the_clubs_page_fills_its_warning_figures_from_the_live_scores(tmp_path)
             f.write_text(json.dumps(v))
         bs.write_pages(tmp_path, SPOTS[:1], root="https://example.org/")
         assert fallback in text((tmp_path / "clubs.html").read_text()), v
+
+
+def test_an_overflow_at_the_spot_is_under_a_tenth_of_a_km_not_zero(tmp_path):
+    # Henley, 5 Nov 2026: Friday Street pumping station at distance 0.0 made "The nearest is 0.0 km upstream".
+    upstream_file(tmp_path)
+    f = tmp_path / "data" / "upstream" / "wharfe-ilkley.json"
+    d = json.loads(f.read_text())
+    d["overflows"][1].update(distance_km=0.0, lake_distance_km=0.0)
+    f.write_text(json.dumps(d))
+    (tmp_path / "spot" / "wharfe-ilkley").mkdir(parents=True)
+    bs.write_profiles(tmp_path, SPOTS[:1], returns=returns(tmp_path / "r.parquet"))
+    words = text((tmp_path / "spot" / "wharfe-ilkley" / "profile" / "index.html").read_text())
+    assert "The nearest is under 0.1 km upstream." in words and "0.0 km upstream" not in words

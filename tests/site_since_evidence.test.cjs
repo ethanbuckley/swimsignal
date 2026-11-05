@@ -29,7 +29,7 @@ test('a level that rose: the line, then both issue times and the overflows repor
 test('a count that is not known says so and why, rather than say nothing', () => {
   const [a, b] = pair(spot('low'), spot('moderate', {feed_down_upstream: 2}));
   assert.equal(b.gap, true);
-  assert.match(S.sinceEvidence(a, b, NOW), /How many overflows upstream are discharging now is not known: a feed upstream is down or has not updated within six hours\.$/);
+  assert.match(S.sinceEvidence(a, b, NOW), /How many overflows upstream are discharging now is not known: a feed upstream is down, or its latest readings are over six hours old\.$/);
   // Not known then, known now: no "against" a number nobody had.
   const [c, d] = pair(spot('low', {stale_upstream: 1}), spot('moderate', {discharging_upstream: 1}));
   assert.match(S.sinceEvidence(c, d, NOW), /1 overflow upstream reported discharging now\.$/);

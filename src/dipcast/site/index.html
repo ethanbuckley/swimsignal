@@ -1946,6 +1946,7 @@ const statusText = (s, c = {}) => runningAtLastAnswer(s, c)
   ? `discharging when the feed last answered${c.feed_down_since ? `, ${feedTime(c.feed_down_since)}` : ''}`
   : c.data_state === 'stale'
   ? (s === 1 ? `discharging at its last update, ${c.feed_updated_at ? feedTime(c.feed_updated_at) : 'time not given'}`
+    : c.aged_here && c.feed_updated_at ? `not discharging at ${feedTime(c.feed_updated_at)}, over six hours ago, so not current`
     : c.feed_updated_at ? `no update since ${feedTime(c.feed_updated_at)}` : 'no update time from the company')
   : s === -2 && c.data_state === 'offline' ? 'not in the company’s live feed'
   : ({1:'discharging', 0:'not discharging', '-1':'monitor offline', '-2':'no live feed', '-3':'company feed down'})[s] ?? '?';
@@ -2679,11 +2680,16 @@ const feedDown = now => (now.feed_down || []).map(f => ` ${esc(companyName(f.com
 // time is its last change anywhere, which a quiet spell leaves old too, and nothing in the feed tells the
 // two apart, so the words say both. "Has not updated since 17:57" alone made Northumbrian Water's feed
 // read as stopped on a quiet night.
+// One with `aged_here` (ageReadings) was current when the build read it, and its time is over six hours old where
+// the page is read: the page's copy is old, not the company's feed, so the words say so (5 Nov 2026: "Thames Water's
+// live feed has not updated since 04:22" at 11:30 blamed a feed SwimSignal had simply not read again).
 const feedStale = now => (now.feed_stale || []).map(f => f.records
   ? ` ${esc(companyName(f.company))} ${f.since ? `has not updated ${f.overflows === 1 ? 'one' : f.overflows} of its overflows here since ${feedTime(f.since)}`
     : `gives no update time for ${f.overflows === 1 ? 'one' : f.overflows} of its overflows here`}: ${f.overflows === 1 ? 'it' : 'they'} could be spilling unseen.`
   : f.on_change && f.since ? ` ${esc(companyName(f.company))}'s feed changes only when an overflow starts or stops. Nothing has changed since ${feedTime(f.since)},`
     + ` so a quiet spell and a stopped feed look the same: its ${f.overflows} overflow${f.overflows === 1 ? '' : 's'} here could be spilling unseen.`
+  : f.aged_here && f.since ? ` This page's readings from ${esc(companyName(f.company))}'s live feed date from ${feedTime(f.since)}, over six hours ago:`
+    + ` its ${f.overflows} overflow${f.overflows === 1 ? '' : 's'} here could be spilling unseen.`
   : ` ${esc(companyName(f.company))}'s live feed has ${f.since ? `not updated since ${feedTime(f.since)}` : 'given no time for its last update'}: its ${f.overflows} overflow${f.overflows === 1 ? '' : 's'} here could be spilling unseen.`).join('');
 // Why the upstream overflows that do not report live do not, for the Not known here row, whose heading has the count
 // ("58 of 61 not reporting"), as the line under the five days does (liveRow): a feed that is down or stale first, named
@@ -2710,9 +2716,9 @@ const ageReadings = (s, nowMs) => {
     n.monitored_upstream = Math.max(0, (n.monitored_upstream || 0) - f.overflows);
     if (Number.isFinite(n.monitored_weight) && Number.isFinite(f.weight)) n.monitored_weight = Math.max(0, n.monitored_weight - f.weight);   // levels.js, nowWatched
     n.stale_upstream = (n.stale_upstream || 0) + f.overflows;
-    n.feed_stale = [...(n.feed_stale || []), { company: f.company, overflows: f.overflows, since: f.updated_at,
+    n.feed_stale = [...(n.feed_stale || []), { company: f.company, overflows: f.overflows, since: f.updated_at, aged_here: true,
       ...((n.feeds_on_change || []).includes(f.company) ? { on_change: true } : {}) }]; }
-  for (const c of s.contributors || []) if (n.aged.includes(c.company) && c.status === 0 && c.data_state === 'live') c.data_state = 'stale';
+  for (const c of s.contributors || []) if (n.aged.includes(c.company) && c.status === 0 && c.data_state === 'live') { c.data_state = 'stale'; c.aged_here = true; }
   return s; };
 // The overflows that stopped lately and still count right now (transport.live_now_risk): a spill counts
 // until recent_spill_hours after its water has passed here, so one far upstream counts for longer after its end.
@@ -5437,7 +5443,7 @@ function conditionsSummary(d) {
   const level = !lv ? cell(lake ? 'Lake level' : 'River level', '–', 'No gauge here')
     : lv.fig === '–' ? cell(lv.label || 'River level', '–', 'No current reading', '', [lv.say, lv.more].filter(Boolean).join(' '))
     : cell(lv.label || 'River level', `${lv.fig}&nbsp;m`, [lv.word, rs && rs.station ? `${esc(rs.station)}, ${at}` : ''].filter(Boolean).join(' · '), lv.vis || '', [lv.say, lv.more].filter(Boolean).join(' '));
-  const rain = x0 && !nil(x0.rain_48h_mm) ? cell('Rain here', `${fmt(x0.rain_48h_mm, x0.rain_48h_mm < 1 && x0.rain_48h_mm > 0 ? 1 : 0)}&nbsp;mm`, 'In the 48 hours to midday') : '';
+  const rain = x0 && !nil(x0.rain_48h_mm) ? cell('Rain here', `${fmt(x0.rain_48h_mm, x0.rain_48h_mm < 1 && x0.rain_48h_mm > 0 ? 1 : 0)}&nbsp;mm`, 'In the 48 hours to midday today') : '';
   const air = wx && !nil(wx.tmax) ? cell('Air today', `${wx.tmax}°`, `High${wx.sunrise && wx.sunset ? ` · light ${esc(wx.sunrise)} to ${esc(wx.sunset)}` : ''}`) : '';
   return `<section class="cond" aria-labelledby="conditions-h"><h2 class="sr" id="conditions-h">Conditions at the spot</h2>${water}${level}${rain}${air}</section>`;
 }
@@ -5807,7 +5813,7 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 // While the page stays open and in view. Each minute the notices are redrawn if their state has
 // changed (refreshNotices) and each "… ago" moves on in place: a change of text outside an alert,
 // so a screen reader does not read the Stale alert out again. Three things change what the rest of the
-// page says: a company's quiet feed passing six hours (ageReadings), midnight before the next build
+// page says: a company's quiet feed passing six hours or a river level a day (ageReadings), midnight before the next build
 // (setDays), and a newer forecast on the server, asked for with a HEAD request every 10 minutes (its
 // Last-Modified or ETag against the one the page loaded). The first two make the page wrong ("not
 // discharging", "Today"), so they reload it, which keeps the view (reload, keptView), unless something
@@ -5818,6 +5824,7 @@ let CHECKED = Date.now();
 const CHECK_MS = 10 * 60 * 1000;
 const UPDATE_SAY = { newer: 'A newer forecast is out.',
   aged: 'Some live overflow readings on this page are now over six hours old, and may no longer be current.',
+  level: 'A river or lake level on this page is now over a day old, and is no longer current.',
   day: 'It is past midnight: this page still counts its days from yesterday.' };
 const stamp = r => (r.headers && (r.headers.get('last-modified') || r.headers.get('etag'))) || '';
 const editing = () => { const a = document.activeElement; return !!a && a.matches('input:not([type=checkbox]):not([type=radio]), textarea, select, [contenteditable]'); };
@@ -5831,8 +5838,10 @@ async function stillCurrent(nowMs = Date.now()) {
   document.querySelectorAll('[data-ago]').forEach(el => { if (!el.closest('[role=alert]')) el.textContent = ago(Math.max(0, (nowMs - Number(el.dataset.ago)) / 60000)); });
   if (document.visibilityState !== 'visible') return;
   const aged = s => ((s.now && s.now.aged) || []).length, before = DATA.spots.reduce((n, s) => n + aged(s), 0);
+  const oldLevel = s => !!(s.river_state && s.river_state.stale), oldBefore = DATA.spots.filter(oldLevel).length;
   for (const s of DATA.spots) ageReadings(s, nowMs);
   let why = DATA.spots.reduce((n, s) => n + aged(s), 0) > before ? 'aged'
+    : DATA.spots.filter(oldLevel).length > oldBefore ? 'level'
     : readerDay(DATA.generated_at, nowMs) > today() ? 'day' : '';
   if (!why && !UPDATE && navigator.onLine && nowMs - CHECKED >= CHECK_MS) { CHECKED = nowMs; if (await newerOut()) why = 'newer'; }
   if (!why || UPDATE === why) return;

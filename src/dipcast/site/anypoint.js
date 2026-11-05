@@ -262,7 +262,8 @@ const AnyPoint = (() => {
       feed_down_upstream: counted(down),
       feed_down: Object.keys(fd).sort().map(c => ({ company: c, overflows: fd[c], since: (od.feed_down_since || {})[c] ?? null })),
       stale_upstream: counted(stale),
-      feed_stale: Object.keys(fs).sort().map(c => ({ company: c, overflows: fs[c], since: staleSince[c] ?? null }))
+      feed_stale: Object.keys(fs).sort().map(c => ({ company: c, overflows: fs[c], since: staleSince[c] ?? null,
+          ...(aged.has(c) && !(c in (od.feed_stale_since || {})) ? { aged_here: true } : {}) }))
         .concat(Object.keys(fr).sort().map(c => ({ company: c, overflows: fr[c], since: frSince[c] ?? null, records: true }))) };
     // The overflows that matter most: forecast_point's relevance, the build's ten.
     const ahead = Pc.map(row => row.slice(hist, hist + DAYS_AHEAD + 1));
@@ -272,6 +273,7 @@ const AnyPoint = (() => {
       return { site_id: names ? names.ids[i] : String(i), site_name: names ? names.name[i] : null, company: od.companies[od.company[i]],
         lat: names ? names.lat[i] : null, lon: names ? names.lon[i] : null, status: status[k], has_live: hasLive[k],
         data_state: state[k], feed_updated_at: state[k] !== 'stale' ? null : ownStale[k] ? staleRows[String(i)] ?? null : staleSince[company[k]] ?? null,
+        ...(state[k] === 'stale' && status[k] === 0 && !ownStale[k] && aged.has(company[k]) && !(company[k] in (od.feed_stale_since || {})) ? { aged_here: true } : {}),
         ...(status[k] === -3 ? { last_status: lastRunning.has(i) ? 1 : null, feed_down_since: (od.feed_down_since || {})[company[k]] ?? null } : {}),
         snap_confidence: low.has(i) ? 'low' : null, distance_km: r1(r.dist / 1000), lake_distance_km: r1(r.dlake / 1000),
         travel_h: r1(travel[k]), weight: r3(w[k]), p_spill_today: r3(Number.isNaN(pd[0]) ? 0 : pd[0]),

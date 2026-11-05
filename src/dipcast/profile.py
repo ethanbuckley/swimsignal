@@ -301,7 +301,8 @@ def body(spot: dict, t: pd.DataFrame | None, durations: dict | None = None) -> s
                    # and which can be lower: Ilkley's history said 15 where its page said 14 (12 Oct 2026).
                    f"<li>{s['live']} of them are in the water companies' live feeds. "
                    f"<a href=\"spot/{sid}/\">The spot's page</a> says how many report right now.</li>"
-                   f"<li>The nearest is {fmt(s['nearest_km'], 1)}&nbsp;km "
+                   # Henley's nearest, Friday Street, is at 0.0 km: "0.0 km upstream" read as a fault (5 Nov 2026).
+                   f"<li>The nearest is {'under 0.1' if s['nearest_km'] < 0.05 else fmt(s['nearest_km'], 1)}&nbsp;km "
                    f"{'away, across the lake' if s['nearest_in_lake'] else 'upstream'}.</li></ul></aside>")
         far = (spot.get("upstream_summary") or {}).get("too_far") or 0
         if far and total + far == s["n"]:

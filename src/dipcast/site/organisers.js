@@ -13,7 +13,7 @@
 const Organisers = (() => {
   const R = typeof module === 'object' && module.exports ? require('./levels.js')
     : { ORDER, COVER, NO_FORECAST, NO_OVERFLOWS, NO_RIVER, OTHER_RISKS, setToday, today, rank, risk, level, dayHeadline, daily, ecoliBand, ecoliUntested, ECOLI_OFF_SAID, poorAdvice,
-      overflowNames, overflowWhere, companyName, allUpstream, tooFarSaid };   // levels.js's globals
+      overflowNames, overflowWhere, companyName, allUpstream, tooFarSaid, WEIGHT_SAID };   // levels.js's globals
   const PAGE_ID = /^[A-Za-z0-9_-]+$/;   // the app and build_site.py use the same rule
   // spotdate.js: the calendar file and the alerts for a date, shared with a plan's outing (outing.js). Asked
   // for when used, so the sites view and the decision record, which load this file for its words, need not load it.
@@ -252,8 +252,11 @@ const Organisers = (() => {
     if (s.error) return h + '<p>This spot has no forecast in this update, so its overflows are not listed.</p>';
     if (!total) return h + `<p>No monitored storm overflow is within ${km} km upstream along the river network.</p>`;
     h += `<p>${total === 1 ? 'One monitored storm overflow is' : `${total} monitored storm overflows are`} within ${km} km upstream along the river network`
-      + (u.without_live_feed ? `: ${u.with_live_feed} report their status live, and ${u.without_live_feed} ${u.without_live_feed === 1 ? 'has' : 'have'} no live feed, so SwimSignal forecasts ${u.without_live_feed === 1 ? 'it' : 'them'} from rain and their yearly record alone`
-        : total === 1 ? ', with a live feed' : ', all with a live feed') + '.'
+      // with_live_feed is what reported live when the forecast was made (forecast.py, monitored_upstream), so the rest
+      // includes monitors that were offline in a feed: Henley's one "had no live feed" here while its history page
+      // and the spot's page said it was in Thames Water's feed and gave no reading (5 Nov 2026).
+      + (u.without_live_feed ? `: at the last update ${u.with_live_feed} reported ${u.with_live_feed === 1 ? 'its' : 'their'} status live and ${u.without_live_feed} gave no live reading, so SwimSignal forecasts ${u.without_live_feed === 1 ? 'it' : 'them'} from rain and ${u.without_live_feed === 1 ? 'its' : 'their'} yearly record alone`
+        : total === 1 ? ', reporting live at the last update' : ', all reporting live at the last update') + '.'
       + (u.max_travel_h ? ` Sewage from the farthest takes ${hoursAway(u.max_travel_h)} to arrive.` : '') + (R.tooFarSaid(s) ? ' ' + esc(R.tooFarSaid(s)) : '') + '</p>';
     if (list.length < all) h += full === 'loading' ? `<p>The table lists the ${list.length} that matter most in the current forecast while the other ${all - list.length} load.</p>`
       : `<p>The table lists the ${list.length} that matter most in the current forecast: the full list of ${all} could not be loaded. Try again later.</p>`;
