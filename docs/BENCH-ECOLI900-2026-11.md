@@ -112,9 +112,11 @@ Paired Brier differences: month rate minus model 0.0171 [0.0062, 0.0321]; last s
 [0.0070, 0.0335]; month rate minus last sample -0.0021 [-0.0082, 0.0040].
 
 - **On these rows the model's forward fit has lower error than both simple baselines**, by paired intervals that
-  exclude zero. Its skill, 0.18, is lower than the hindsight's 0.32. This is a retrospective hindcast on seen seasons,
-  not prospective performance.
-- **The last sample shows no difference from the month rate here**, with or without a turnaround rule.
+  exclude zero. Its skill is 0.18; the hindsight's 0.32 above uses a different set of samples and a different fitting
+  scheme, so the figures do not isolate the effect of the fitting scheme. This is a retrospective hindcast on seen
+  seasons, not prospective performance.
+- **The difference between the last sample and the month rate is uncertain on these rows**: its interval includes
+  zero, with and without the turnaround rule.
 
 **Turnaround: how the last sample depends on when a result is known** (forward fits, all 1,944 rows of 2024-26;
 month rate minus last sample, so positive means the last sample helps)

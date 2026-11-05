@@ -2573,7 +2573,7 @@
     "benchmark",
     "bathing waters"
    ],
-   "verdict": "Release candidate 0, exploratory on seen 2023-26 data: retrospective hindcasts, not prospective performance. Fitted forward (2025-26, 1,023 samples), the production model's form had lower Brier than the month-of-year rate (paired difference 0.017, interval 0.006 to 0.032; skill 0.184) and than the last sample. The leave-one-year-out hindsight's skill of 0.315 overstates it. Within each season the month rate ranks at about chance; the last sample's small edge depends on how soon a result is known.",
+   "verdict": "Release candidate 0, exploratory on seen 2023-26 data: retrospective hindcasts, not prospective performance. Fitted forward (2025-26, 1,023 samples), the production model's form had lower Brier than the month-of-year rate (paired difference 0.017, interval 0.006 to 0.032; skill 0.184) and than the last sample. The leave-one-year-out hindsight's skill of 0.315 uses a different sample and fitting scheme. Within each season the month rate ranks at about chance; the last sample's small edge depends on how soon a result is known.",
    "scope": "38 inland bathing waters, May to September 2023-26, 2,265 Environment Agency samples; protocol fixed before scoring, forward-only and result-known variants added after a review; site bootstrap. Neither model estimate is an issued forecast.",
    "stage": "development",
    "stage_note": "One command reproduces the scores from committed files; no new data published. The model columns stay out of any release until their licence questions (Open-Meteo redistribution; which spill histories the exposure uses) are settled. The dataset licence, a DOI and outside submissions are Ethan's decisions.",
