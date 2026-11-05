@@ -96,33 +96,53 @@ def auc(p: np.ndarray, y: np.ndarray) -> float | None:
     return float((r[:len(pos)].sum() - len(pos) * (len(pos) + 1) / 2) / (len(pos) * len(neg)))
 
 
-def score(sites: np.ndarray, y: np.ndarray, preds: dict[str, np.ndarray]) -> dict:
-    """Brier, Brier skill against the month rate and AUC for each baseline, each with a 95% interval from a bootstrap of
-    sites, and each one's Brier difference from the month rate with its interval."""
+def score(sites: np.ndarray, y: np.ndarray, preds: dict[str, np.ndarray], seasons: np.ndarray) -> dict:
+    """Brier, Brier skill against the month rate and AUC for each baseline, with 95% intervals from a bootstrap of sites,
+    and the paired Brier difference between every two baselines from the same draws (a difference is shown only by
+    its own interval, never by two separate intervals). AUC both pooled across seasons and within each season: under
+    leave one season out each season's predictions come from one fit, so only a within-season AUC compares predictions
+    from the same fit; a pooled AUC also ranks one fit's numbers against another's."""
     ref = "month_rate"
     names = list(preds)
+    pairs = [(a, b) for i, a in enumerate(names) for b in names[i + 1:]]
+    years = sorted(set(seasons.tolist()))
+
+    def within(k, idx):   # the mean of the seasons' own AUCs, over seasons with both outcomes
+        v = [auc(preds[k][idx][seasons[idx] == yr], y[idx][seasons[idx] == yr]) for yr in years]
+        v = [a for a in v if a is not None]
+        return float(np.mean(v)) if v else None
+
     def stats(idx):
         b = {k: brier(preds[k][idx], y[idx]) for k in names}
-        return b, {k: auc(preds[k][idx], y[idx]) for k in names}
-    b0, a0 = stats(np.arange(len(y)))
+        return b, {k: auc(preds[k][idx], y[idx]) for k in names}, {k: within(k, idx) for k in names}
+    b0, a0, w0 = stats(np.arange(len(y)))
     rng = np.random.default_rng(SEED)
     uniq = np.unique(sites)
     by_site = {s: np.flatnonzero(sites == s) for s in uniq}
-    draws = {k: {"brier": [], "auc": [], "diff": [], "skill": []} for k in names}
+    draws = {k: {"brier": [], "auc": [], "within": [], "skill": []} for k in names}
+    diffs = {f"{a} - {b}": [] for a, b in pairs}
     for _ in range(DRAWS):
         idx = np.concatenate([by_site[s] for s in rng.choice(uniq, size=len(uniq), replace=True)])
-        b, a = stats(idx)
+        b, a, w = stats(idx)
         for k in names:
-            draws[k]["brier"].append(b[k]); draws[k]["diff"].append(b[k] - b[ref]); draws[k]["skill"].append(1 - b[k] / b[ref])
+            draws[k]["brier"].append(b[k]); draws[k]["skill"].append(1 - b[k] / b[ref])
             if a[k] is not None:
                 draws[k]["auc"].append(a[k])
+            if w[k] is not None:
+                draws[k]["within"].append(w[k])
+        for a_, b_ in pairs:
+            diffs[f"{a_} - {b_}"].append(b[a_] - b[b_])
     ci = lambda v: [round(float(np.percentile(v, 2.5)), 4), round(float(np.percentile(v, 97.5)), 4)]
     out = {"rows": int(len(y)), "over_900": int(y.sum()), "sites": int(len(uniq))}
     for k in names:
         out[k] = {"brier": round(b0[k], 4), "brier_95": ci(draws[k]["brier"]),
                   "skill_vs_month_rate": round(1 - b0[k] / b0[ref], 4), "skill_95": ci(draws[k]["skill"]),
-                  "brier_minus_month_rate_95": ci(draws[k]["diff"]),
-                  "auc": None if a0[k] is None else round(a0[k], 4), "auc_95": ci(draws[k]["auc"]) if draws[k]["auc"] else None}
+                  "auc_pooled": None if a0[k] is None else round(a0[k], 4), "auc_pooled_95": ci(draws[k]["auc"]) if draws[k]["auc"] else None,
+                  "auc_within_season": None if w0[k] is None else round(w0[k], 4),
+                  "auc_within_season_95": ci(draws[k]["within"]) if draws[k]["within"] else None,
+                  "auc_by_season": {str(yr): (lambda v: None if v is None else round(v, 4))(
+                      auc(preds[k][seasons == yr], y[seasons == yr])) for yr in years}}
+    out["brier_differences"] = {d: {"point": round(b0[d.split(" - ")[0]] - b0[d.split(" - ")[1]], 4), "ci_95": ci(v)} for d, v in diffs.items()}
     return out
 
 
@@ -133,8 +153,10 @@ def table(rs: list[dict], forward: bool = False) -> dict:
     model = "model_forward" if forward else "model_hindsight"
     scored = ~np.isnan(preds["month_rate"])
     has = scored & ~np.isnan(preds[model])
-    return {"all_rows": score(sites[scored], y[scored], {k: preds[k][scored] for k in ("month_rate", "last_sample")}),
-            ("rows_with_model_forward" if forward else "rows_with_hindsight"): score(sites[has], y[has], {k: v[has] for k, v in preds.items()})}
+    seasons = np.array([r["season"] for r in rs])
+    return {"all_rows": score(sites[scored], y[scored], {k: preds[k][scored] for k in ("month_rate", "last_sample")}, seasons[scored]),
+            ("rows_with_model_forward" if forward else "rows_with_hindsight"):
+                score(sites[has], y[has], {k: v[has] for k, v in preds.items()}, seasons[has])}
 
 
 def run(path: Path = EVIDENCE) -> dict:
@@ -145,7 +167,15 @@ def run(path: Path = EVIDENCE) -> dict:
             **table(rows(path)),
             "review_forward_only": table(rows(path), forward=True),
             "review_result_known_3_days": table(rows(path, gap_days=3.0)),
-            "review_forward_and_3_days": table(rows(path, gap_days=3.0), forward=True)}
+            "review_forward_and_3_days": table(rows(path, gap_days=3.0), forward=True),
+            # How the last sample's score depends on when its result is taken to be known: the file has no report
+            # dates, so the true turnaround is not known here. Forward fits; the last sample against the month rate.
+            "review_turnaround_sensitivity": {f"{g:g}_days": (lambda t: {
+                "rows": t["rows"],
+                # Positive: the last sample's Brier is lower than the month rate's (it helps).
+                "month_rate_minus_last_sample": t["brier_differences"]["month_rate - last_sample"],
+                "rows_using_a_previous_result": sum(r["prev"] is not None for r in rows(path, gap_days=g) if r["season"] >= 2024)})(
+                table(rows(path, gap_days=g), forward=True)["all_rows"]) for g in (0, 1, 2, 3, 5, 7)}}
 
 
 if __name__ == "__main__":
