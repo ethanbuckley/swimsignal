@@ -14,7 +14,6 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from collections import defaultdict
 from pathlib import Path
 
 import numpy as np
@@ -22,7 +21,7 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parent / "lake_algae_sat_eval"))
 import protocol as pr  # noqa: E402
 from satellite_shore_bands import CACHE, digest, input_files  # noqa: E402
-from satellite_shore_margin import kept, site_masks  # noqa: E402
+from satellite_shore_margin import site_masks  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 SEED = 20261105
@@ -318,7 +317,8 @@ INDEX_RANGE = (-0.2, 0.4)
 INDEX_COLOURS = np.array([[37, 52, 148], [44, 127, 184], [65, 182, 196], [161, 218, 180], [255, 255, 204]], float)
 SCL_COLOURS = {0: (0, 0, 0), 1: (255, 0, 0), 2: (60, 60, 60), 3: (120, 80, 40), 4: (40, 160, 40), 5: (200, 170, 100),
                6: (30, 60, 200), 7: (150, 150, 150), 8: (210, 210, 210), 9: (240, 240, 240), 10: (120, 200, 255), 11: (255, 120, 255)}
-SCALE = 4
+SCALE = 8
+BRIGHT_RANGE = (0.0, 0.06)
 
 
 def index_rgb(v: np.ndarray) -> np.ndarray:
@@ -350,8 +350,9 @@ def outline(rgb: np.ndarray, mask: np.ndarray, colour, scale: int = SCALE) -> No
 
 
 def draw(row: dict, scl: np.ndarray, m: dict, b4: np.ndarray, b5: np.ndarray, tci) -> Path:
-    """Three panels at 20 m, upscaled: true colour (black where not fetched), scene classes, NDCI over the site's
-    water (margin 0), with the one- and two-pixel masks outlined in white and yellow."""
+    """Four panels at 20 m, upscaled: true colour (black where not fetched), scene classes, B4 + B5 reflectance over
+    the site's water (grey, 0 to BRIGHT_RANGE[1]), NDCI over the site's water (margin 0); the one- and two-pixel masks
+    outlined in white and yellow."""
     from PIL import Image
     rows, cols = np.nonzero(m[0])
     r0, r1 = max(rows.min() - 6, 0), min(rows.max() + 7, scl.shape[0])
@@ -369,6 +370,8 @@ def draw(row: dict, scl: np.ndarray, m: dict, b4: np.ndarray, b5: np.ndarray, tc
     for v, colour in SCL_COLOURS.items():
         sc[scl[crop] == v] = colour
     panels.append(sc)
+    bright = np.clip((b4 + b5 - BRIGHT_RANGE[0]) / (BRIGHT_RANGE[1] - BRIGHT_RANGE[0]), 0, 1) * 255
+    panels.append(np.repeat(np.where(m[0], np.nan_to_num(bright), 0)[crop][..., None], 3, axis=-1))
     index = pr.ndci(b4, b5)
     nd = index_rgb(np.where(m[0], index, np.nan)[crop])
     panels.append(nd)
@@ -377,7 +380,7 @@ def draw(row: dict, scl: np.ndarray, m: dict, b4: np.ndarray, b5: np.ndarray, tc
         outline(p, m[1][crop], (255, 255, 255))
         outline(p, m[2][crop], (255, 220, 0))
     gap = np.full((h * SCALE, 4, 3), 255.0)
-    pic = np.concatenate([up[0], gap, up[1], gap, up[2]], axis=1).astype(np.uint8)
+    pic = np.concatenate([up[0], gap, up[1], gap, up[2], gap, up[3]], axis=1).astype(np.uint8)
     path = PICTURES / f"SATELLITE-SHORE-OUTLIERS-2026-11-{row['site']}-{row['date']}-{row['id'][:3]}.png"
     Image.fromarray(pic, "RGB").save(path, optimize=True)
     return path
