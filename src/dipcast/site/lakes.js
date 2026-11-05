@@ -80,6 +80,9 @@ function lakesPicker(index, sel) {
 // says "in this historical dataset", and the selection is said beside it, before any figure.
 const LAKES_SELECTED = 'Images here were chosen near laboratory sample dates, so this is a selection, not every image: its readings and season medians are not full monitoring of the lake.';
 const LAKES_EXPERIMENTAL = 'Taken outside May to September: an experimental reading. The index was tested against chlorophyll and algae only in May to September, so nothing about either is read from it.';
+// 1.4, `low_signal`: the water reflected almost no light in that image, or its pixels disagreed widely, so the index is
+// a ratio of noise. Said the same way whether the value is high or low; the reading stays, nothing is read from it.
+const LAKES_LOW_SIGNAL = 'Low signal in this image: the water reflected very little light, or its pixels disagreed widely, so the index is unreliable, whether high or low. Kept for the record; nothing is read from it.';
 function lakesLatest(lake, doc, todayISO) {
   const L = lake.latest || {}, f = lakesFresh(L.date ? L : null, todayISO, doc.freshness_rules), sel = lakesSelected(lake);
   // The partial series is said beside the headline; a season closed is not, where the latest is itself out of season or
@@ -92,6 +95,7 @@ function lakesLatest(lake, doc, todayISO) {
   return `<p class="lk-latest"><b>${sel && !lake.operation ? 'Latest in this historical dataset' : 'Latest in this dataset'}: ${lakesEsc(lakesTime(L.datetime || L.date))}</b>, ${lakesAgeWords(f.age)} (${lakesEsc(LAKES_FRESH_WORDS[f.freshness])}).</p>`
     + scope + (L.experimental ? `<p class="lk-exp">${LAKES_EXPERIMENTAL}</p>` : '')
     + `<p class="lk-value">NDCI <b>${lakesNum(L.ndci)}</b>, the median over the clear water within 300 m (${lakesPct(L.clear_share)} of it clear in that image).</p>`
+    + (L.low_signal ? `<p class="lk-signal">${LAKES_LOW_SIGNAL}</p>` : '')
     + `<p class="lk-claim">${lakesEsc((doc.claim || {}).public_wording)}</p>` + why;
 }
 // A pilot site (1.3, `operation`): when the weekly check last ran, over which days' images, and what it found. A check
@@ -164,7 +168,7 @@ function lakesChart(series, width, selected = false) {
     g += `<text x="0" y="${top + rowH / 2 + 4}" class="lk-yr">${yr}</text><rect x="${padL}" y="${top}" width="${W - padL - padR}" height="${rowH}" class="lk-band"/>`
       + (lo < 0 && hi > 0 ? `<line x1="${padL}" x2="${W - padR}" y1="${yv(0, r).toFixed(1)}" y2="${yv(0, r).toFixed(1)}" class="lk-zero"/>` : '')
       + (seen.includes(yr) ? '' : `<text x="${padL + 8}" y="${top + rowH / 2 + 4}" class="lk-mo">No clear image this season</text>`)
-      + pts.filter(p => +p.date.slice(0, 4) === yr).map(p => `<circle cx="${x(p.date).toFixed(1)}" cy="${yv(p.ndci, r).toFixed(1)}" r="3" class="${p.experimental ? 'lk-dot-exp' : 'lk-dot'}"><title>${lakesEsc(lakesDate(p.date))}: NDCI ${lakesNum(p.ndci)}${p.experimental ? ', out of season, experimental' : ''}</title></circle>`).join('');
+      + pts.filter(p => +p.date.slice(0, 4) === yr).map(p => `<circle cx="${x(p.date).toFixed(1)}" cy="${yv(p.ndci, r).toFixed(1)}" r="3" class="${p.experimental ? 'lk-dot-exp' : 'lk-dot'}"><title>${lakesEsc(lakesDate(p.date))}: NDCI ${lakesNum(p.ndci)}${p.experimental ? ', out of season, experimental' : ''}${p.low_signal ? ', low signal, unreliable' : ''}</title></circle>`).join('');
   });
   const bottom = years.length * (rowH + gap), mx = m => padL + (W - padL - padR) * (span(2001, m) - span(2001, m0)) / ((m1 === 12 ? span(2002, 1) : span(2001, m1 + 1)) - span(2001, m0));
   for (let m = m0; m <= m1; m++) g += `<text x="${mx(m).toFixed(1)}" y="${bottom + 10}" class="lk-mo">${LAKES_MONTHS[m - 1]}</text>`;

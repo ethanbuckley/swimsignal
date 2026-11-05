@@ -83,6 +83,33 @@ SCL_NAMES = {0: "no_data", 1: "defective", 2: "dark_area", 3: "cloud_shadow", 4:
              6: "water", 7: "unclassified", 8: "cloud_medium", 9: "cloud_high", 10: "thin_cirrus", 11: "snow_ice"}
 
 
+def signal_quality(scl: np.ndarray, core: np.ndarray, b4: np.ndarray, b5: np.ndarray) -> dict:
+    """How much signal a reading rests on, from the same windows it was made from (contract 1.4; the shore-margin
+    outlier record, docs/SATELLITE-SHORE-OUTLIERS-2026-11.md): the median B4 + B5 reflectance over the clear core
+    (`core_brightness`), the interquartile range of pixel NDCI over the clear core (`index_iqr`), and the reading over
+    the inner core, the core pixels whose eight neighbours are all core pixels (`inner_core_pixels`, `inner_ndci`; close
+    to the two-pixel shore margin, short of it only at the 300 m rim). Measurements only: the display rule is the
+    exporter's."""
+    clear = np.isin(scl, pr.CLEAR) & core
+    index = pr.ndci(b4, b5)
+    v = index[clear]
+    v = v[np.isfinite(v)]
+    bright = (b4 + b5)[clear]
+    bright = bright[np.isfinite(bright)]
+    p = np.pad(core, 1, constant_values=False)
+    inner = core.copy()
+    for dr in (-1, 0, 1):
+        for dc in (-1, 0, 1):
+            inner &= p[1 + dr:1 + dr + core.shape[0], 1 + dc:1 + dc + core.shape[1]]
+    iv = index[inner & clear]
+    iv = iv[np.isfinite(iv)]
+    q = np.percentile(v, [25, 75]) if len(v) else (np.nan, np.nan)
+    return {"core_brightness": round(float(np.median(bright)), 5) if len(bright) else None,
+            "index_iqr": round(float(q[1] - q[0]), 5) if len(v) else None,
+            "inner_core_pixels": int(inner.sum()),
+            "inner_ndci": round(float(np.median(iv)), 5) if len(iv) else None}
+
+
 def scene_quality(scl: np.ndarray, core: np.ndarray, index: np.ndarray | None) -> dict:
     """What the core pixels were classed as, and how many clear core pixels had a valid index (B4 and B5 both
     positive reflectance). Checks for snow and ice, cloud, and missing or invalid bands behind a reading."""
@@ -181,20 +208,21 @@ def run(root: Path, start: str, end: str, only: list[str] | None, max_requests: 
             (root / "scl" / site.bw_id).mkdir(parents=True, exist_ok=True)
             np.savez_compressed(root / "scl" / site.bw_id / f"{it['id']}.npz", scl=w)
             clear, usable = pr.scene_clear(w, core[t])
-            value, index = float("nan"), None
+            value, index, signal = float("nan"), None, {}
             if usable:
                 b4_dn, b5_dn = stac.site_bands(net, it, site.lon, site.lat)
                 b4 = pr.b4_to_20m(pr.reflectance(b4_dn, it["assets"]["red"]["raster:bands"][0]))
                 b5 = pr.reflectance(b5_dn, it["assets"]["rededge1"]["raster:bands"][0])
                 index = pr.ndci(b4, b5)
                 _, _, value = pr.scene_reading(w, core[t], index)
+                signal = signal_quality(w, core[t], b4, b5)
             p = it["properties"]
             return {"bw_id": site.bw_id, "water_body": site.water_body, "tile": t, "item_id": it["id"],
                     "scene_date": p["datetime"][:10], "datetime": p["datetime"],
                     "processing_baseline": p.get("s2:processing_baseline"),
                     "sun_elevation_deg": round(sun_elevation(p["datetime"], site.lat, site.lon), 1),
                     "clear_core": int(clear), "n_core": int(core[t].sum()), "usable": bool(usable),
-                    "reading": None if np.isnan(value) else float(value), **scene_quality(w, core[t], index)}
+                    "reading": None if np.isnan(value) else float(value), **scene_quality(w, core[t], index), **signal}
 
         rows += [r for r in pmap(one, items) if r is not None]
     f = pd.DataFrame(rows)

@@ -170,3 +170,27 @@ gives (tested).
 - `release.pilot_sites` lists the five; `release.label` says five sites are refreshed weekly and every other site is
   the historical record. `release.scope` stays `historical`.
 - **Unchanged:** every rule of 1.1 and 1.2, the historical series, and the 2027 confirmation.
+
+## Version 1.4 (5 November 2026): a reading measures its own signal
+
+Additive, from the shore-margin outlier record (`SATELLITE-SHORE-OUTLIERS-2026-11.md`, [#623](https://github.com/ethanbuckley/swimsignal/pull/623)): the largest shifts
+between shore masks were scenes in which the water reflected almost no light, so the index was a ratio of noise. From
+this version every reading made by a refresh or the weekly pilot carries what it rests on, measured from the same
+windows it was made from, at no extra request. Readings made earlier (the test caches, the October refresh, pilot runs
+before this version) have no such fields and are **not marked either way**; nothing is backfilled or re-read.
+
+- **On a refreshed series reading** (and `latest` when it is one): `core_brightness` (median B4 + B5 surface
+  reflectance over the clear core), `index_iqr` (interquartile range of pixel NDCI over the clear core),
+  `inner_ndci` (the median over the inner core: core pixels whose eight neighbours are all core pixels, close to a
+  two-pixel shore margin and short of it only at the 300 m rim; the record found it within 0.03 of the two-pixel
+  reading on 76 scenes) and `low_signal`.
+- **`low_signal`** is true when `core_brightness` is below `brightness_below` (0.015) or `index_iqr` is at least
+  `iqr_at_least` (0.10); the thresholds are published in `processing.display_rules.low_signal`, and the check refuses a
+  mark that does not follow them. It is a display note: the reading stays in the series and in `latest`, is never
+  removed, and the page says the index in that image is unreliable whether high or low. A dark scene is also what
+  clear, deep water looks like, so a low-signal reading is not "no algae" any more than it is a high index.
+- **Why these thresholds:** fixed on 76 seen scenes (`docs/SATELLITE-SHORE-OUTLIERS-2026-11.md`, section 4.3), where
+  they marked 27 and caught every shift of 0.02 or more between shore masks. Provisional until the 2027 protocol
+  review tests them against laboratory chlorophyll on scenes read after this version.
+- **Unchanged:** every rule of 1.1 to 1.3, the historical series, the production margin and the 2027 confirmation.
+
