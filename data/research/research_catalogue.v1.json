@@ -760,6 +760,13 @@
    "branch": "claude/carry-spill-water-2026-11-05",
    "branch_exists": true,
    "date": "2026-11-05"
+  },
+  "618": {
+   "n": 618,
+   "state": "open",
+   "branch": "claude/bench-ecoli900-rc0",
+   "branch_exists": true,
+   "date": null
   }
  },
  "entries": [
@@ -2555,6 +2562,33 @@
    ],
    "prs": [
     611
+   ]
+  },
+  {
+   "id": "bench-ecoli900",
+   "title": "Open benchmark, first task: E. coli over 900 at inland bathing waters",
+   "section": "data",
+   "topics": [
+    "ecoli",
+    "benchmark",
+    "bathing waters"
+   ],
+   "verdict": "Release candidate 0, exploratory on seen 2023-26 data. On 1,537 samples with a hindsight estimate, the model's hindsight scored Brier 0.082 against 0.120 for the month-of-year rate (skill 0.315, interval 0.173 to 0.409; AUC 0.85); the last sample scored 0.110. The month rate ranks worse than chance (AUC 0.44).",
+   "scope": "38 inland bathing waters, May to September 2023-26, 2,265 Environment Agency samples; leave one season out; site bootstrap. The hindsight is the production model refitted leaving each year out, not the issued forecast.",
+   "stage": "development",
+   "stage_note": "One command reproduces the scores from a committed file; no new data published. The dataset licence, a DOI and outside submissions are Ethan's decisions.",
+   "records": [
+    {
+     "doc": "docs/BENCH-ECOLI900-2026-11.md",
+     "quote": "**Exploratory, on seen data:**"
+    },
+    {
+     "doc": "docs/BENCH-ECOLI900-2026-11.md",
+     "quote": "| 3. Model hindsight | 0.0824 [0.0542, 0.1135] | 0.315 [0.173, 0.409] | 0.854 [0.757, 0.913] |"
+    }
+   ],
+   "prs": [
+    618
    ]
   }
  ]
