@@ -3355,7 +3355,8 @@ const traceKey = on => document.querySelectorAll('.trkey').forEach(k => { k.hidd
 function drawTrace() {
   const s = current;
   if (traceLine) contribLayer.removeLayer(traceLine);
-  if (!s || !s.detail_file || map.getZoom() < TRACE_ZOOM) return;
+  // An isolated lake has nothing traced, so no file (build_site.write_traces): asking logged a 404 on each visit (5 Nov 2026).
+  if (!s || !s.detail_file || isolated(s) || map.getZoom() < TRACE_ZOOM) return;
   if (!TRACES.has(s.id)) TRACES.set(s.id, fetch(`data/${s.detail_file.replace(/\.json$/, '-trace.json')}`)
     .then(r => r.ok ? r.json() : null).then(j => j && j.id === s.id && Array.isArray(j.lines) ? j.lines.map(decodeLine) : null).catch(() => null));
   TRACES.get(s.id).then(lines => { if (!lines || !lines.length || current !== s || map.getZoom() < TRACE_ZOOM || traceLine) return;
