@@ -53,7 +53,9 @@ function scoresWords(s, g) {
   else if (SD < min) second = `Too few spills to give a share: that takes ${min}. ${reached} ${falseAlarms('that line')}`;
   // Each spill holds several forecasts, so the share is of forecasts, said as such: "It warned of 5% of those spills: 9 of
   // the 192 forecasts" put a share of forecasts on spills (31 Oct 2026).
-  else second = `Of the ${scoresN(made)} forecasts made for ${SD === 1 ? 'it' : 'those spills'}, ${s.hits ? scoresN(s.hits) : 'none'} (${scoresPct(s.hits / made)}) reached ${line}. ${falseAlarms('that line')}`
+  // The false alarms against all its warnings, so "208 false alarms" has a size to read it by (5 Nov 2026).
+  else second = `Of the ${scoresN(made)} forecasts made for ${SD === 1 ? 'it' : 'those spills'}, ${s.hits ? scoresN(s.hits) : 'none'} (${scoresPct(s.hits / made)}) reached ${line}. `
+    + (fa ? `Of its ${scoresN(s.hits + fa)} forecasts at that line, ${scoresN(fa)} were false alarms, on days with no spill.` : falseAlarms('that line'))
     + (s.days < 14 ? ` That is ${scoresPlural(s.days, 'day', 'days')} so far, too few to judge across different weather.` : '');
   return { more, say: [first, second] };
 }

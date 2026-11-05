@@ -46,7 +46,8 @@ test('with no day open, the forecast tiles give today, under a heading that says
   const ctx = page(), h = text(vm.runInContext('dayTiles(S)', ctx));
   assert.match(h, /^ Forecast for today /);
   assert.match(h, /Sewage spills 30 of 100/);
-  assert.match(h, /About 7 of the 45 overflows upstream are expected to spill today\./);
+  // Not repeated here: the five days' sentence above the tiles says it (5 Nov 2026).
+  assert.doesNotMatch(h, /About 7 of the 45 overflows upstream are expected to spill today\./);
   // The rain and the air are in each day's row and the conditions tiles since 31 Oct 2026 (dayWx, conditionsSummary).
   assert.doesNotMatch(h, /Rain here|Weather/);
 });

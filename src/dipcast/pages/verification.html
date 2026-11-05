@@ -51,12 +51,10 @@ td.bars { width:38%; padding-top:10px; }
 <main class="doc" id="main">
 <h1>How good is the forecast?</h1>
 <p class="lead">Every forecast SwimSignal issues is logged and scored later against what the overflows actually did. This page updates itself. It also shows the offline tests the model was built on. How the forecast is made is on the <a href="/methods">method page</a>.</p>
-<ul class="routes one"><li><a href="/lab/forecasts/"><img src="lab/assets/covers/forecasts.jpg" alt="" width="160" height="160" loading="lazy"><span><small>Research Lab · Exhibit 3</small><b>How good are the forecasts?</b>Every past E. coli sample, one by one, against what the estimate, rebuilt afterwards, would have said: catches, misses and false alarms.</span></a></li></ul>
-
 <p>A warning can miss a spill, and a warning does not always precede one. These scores describe monitored overflows, not whether the water at a particular spot is safe. An older ranking test measures how well days were ordered; it is not a percentage of forecasts correct.</p>
 <div id="top"><p class="muted">Loading the scores…</p></div>
-<div id="answer"></div>
 <div id="short"></div>
+<div id="answer"></div>
 
 <details class="fold" id="reading"><summary>How to read the numbers</summary>
 <p>The Brier score is the mean squared difference between a probability and what happened (0 or 1). Lower is better; 0 is perfect. Climatology means always forecasting the long-run average. Skill is how far below climatology's Brier score the forecast gets, as a fraction: 0 is no better than the average, 1 is perfect. AUC is how well the forecast ranks spill days above dry days: 0.5 is random, 1 is perfect. A reliability table checks that days forecast at 30% happen about 30% of the time.</p>
@@ -124,7 +122,8 @@ function againstBoth(o, byCompany) {
     const flat = 1 - o.calibrated.brier / o.period_base_rate_brier;
     t += ` A flat forecast at the period's own rate, ${pct(o.calibrated.base_rate)} every day, is harder to beat. ${flat > 0 ? `Against it the error is ${(100 * flat).toFixed(1)}% lower` : `It scored ${(100 * -flat).toFixed(1)}% better than SwimSignal`}. It uses hindsight, so no one could have issued it.`;
   }
-  const C = (byCompany || []).filter(r => r.flat_brier !== undefined && r.brier_cal !== undefined), worse = C.filter(r => r.brier_cal > r.flat_brier);
+  // Not the overflows with no company (NO_COMPANY): "2 of the 10 companies" counted them as a tenth (5 Nov 2026).
+  const C = (byCompany || []).filter(r => r.flat_brier !== undefined && r.brier_cal !== undefined && r.company !== NO_COMPANY), worse = C.filter(r => r.brier_cal > r.flat_brier);
   if (C.length) t += ` At ${worse.length} of the ${C.length} companies, that flat forecast scored better than SwimSignal.`;
   return t;
 }
@@ -132,6 +131,9 @@ function againstBoth(o, byCompany) {
 const scrolling = html => html.replace(/<table/g, '<div class="tw" tabindex="0" role="region" aria-label="Table, scrolls sideways"><table').replace(/<\/table>/g, '</table></div>');
 // A section with an id the contents list can point at.
 const section = (id, title, body, level = 2) => `<section id="${id}"><h${level}>${title}</h${level}>${body}</section>`;
+// A checking table folded, its summary the question it answers (5 Nov 2026: the tables buried the answers). The
+// section's heading stays outside the fold, so the contents list and links still land on it.
+const fold = (question, body) => `<details class="fold"><summary>${question}</summary>${body}</details>`;
 // A reliability table: the bins, and each one's forecast against what happened, as figures and as bars.
 function relTable(rows) {
   let t = `<table><tr><th>Forecast bin</th><th class="num">n</th><th class="num">Mean forecast</th><th class="num">Observed</th><th>Forecast against observed</th></tr>`;
@@ -187,19 +189,20 @@ async function main() {
       const leak = st.base_rate > cd.base_rate * 1.1, kept = `${n0(st.n)} of ${n0(cd.n)} forecasts`;
       let t = `<p class="small muted">The same forecasts scored only on days that also pass a stricter gap rule. If the looser rule let unobserved spills through as "no spill", it would show the lower spill rate. ${leak
         ? `It does: ${pct(cd.base_rate)} against ${pct(st.base_rate)} under the stricter rule, so some spills may be counted as dry days.`
-        : `It does not: ${pct(cd.base_rate)} against ${pct(st.base_rate)} under the stricter rule.`} The stricter rule keeps ${kept}, on the days the pipeline ran most often, so the two rows also cover different days.</p><table><tr><th>Rule</th><th class="num">n</th><th class="num">Spill rate</th><th class="num">Brier</th><th class="num">Climatology</th><th class="num">Skill</th></tr>`;
-      for (const [lab, r] of [[`Longest gap ≤ ${cd.max_gap_h} h (default)`, cd], [`Longest gap ≤ ${st.max_gap_h} h`, st]]) t += `<tr><td>${lab}</td><td class="num">${r.n.toLocaleString()}</td><td class="num">${pct(r.base_rate)}</td><td class="num">${f(r.brier_cal)}</td><td class="num">${f(r.climatology_brier)}</td><td class="num">${f(1 - r.brier_cal/r.climatology_brier, 2)}</td></tr>`;
-      h += section('coverage', 'Sensitivity to the coverage rule', t + '</table>'); }
+        : `It does not: ${pct(cd.base_rate)} against ${pct(st.base_rate)} under the stricter rule.`} The stricter rule keeps ${kept}, on the days the pipeline ran most often, so the two rows also cover different days.</p>`;
+      let tab = `<table><tr><th>Rule</th><th class="num">n</th><th class="num">Spill rate</th><th class="num">Brier</th><th class="num">Climatology</th><th class="num">Skill</th></tr>`;
+      for (const [lab, r] of [[`Longest gap ≤ ${cd.max_gap_h} h (default)`, cd], [`Longest gap ≤ ${st.max_gap_h} h`, st]]) tab += `<tr><td>${lab}</td><td class="num">${r.n.toLocaleString()}</td><td class="num">${pct(r.base_rate)}</td><td class="num">${f(r.brier_cal)}</td><td class="num">${f(r.climatology_brier)}</td><td class="num">${f(1 - r.brier_cal/r.climatology_brier, 2)}</td></tr>`;
+      h += section('coverage', 'Sensitivity to the coverage rule', t + fold('How do the scores compare under each rule?', tab + '</table>')); }
     if (L.by_version) { let t = `<p class="small muted">Every forecast is stamped with the spill model, calibration map, E. coli model, code version and weather source that produced it, so a change starts a new row here rather than being averaged into the old one.</p><table><tr><th>Version</th><th>Issue days</th><th class="num">n</th><th class="num">Spill rate</th><th class="num">Brier</th><th class="num">Skill</th></tr>`;
       // In the order the versions were issued, the unstamped days first: listed as the build wrote them, by hash, the days jumped about.
       for (const r of [...L.by_version].sort((a, b) => String(a.first_day).localeCompare(String(b.first_day)))) t += `<tr><td class="mono">${String(r.version).replace(/;/g, ';<wbr>')}</td><td class="small nw">${r.first_day === r.last_day ? r.first_day : `${r.first_day} – ${r.last_day}`}</td><td class="num">${r.n.toLocaleString()}</td><td class="num">${pct(r.base_rate)}</td><td class="num">${f(r.brier_cal)}</td><td class="num">${f(1 - r.brier_cal/r.climatology_brier, 2)}</td></tr>`;
-      h += section('by-version', 'By model version', t + '</table>'); }
+      h += section('by-version', 'By model version', fold('Did each model version score differently?', t + '</table>')); }
     if (L.by_week) { let t = `<table><tr><th>Week starting</th><th class="num">n</th><th class="num">Spill rate</th><th class="num">Brier</th></tr>`;
       for (const r of L.by_week) t += `<tr><td>${r.week}</td><td class="num">${r.n.toLocaleString()}</td><td class="num">${pct(r.base_rate)}</td><td class="num">${f(r.brier_cal)}</td></tr>`;
-      h += section('by-week', 'By week', t + '</table>'); }
+      h += section('by-week', 'By week', fold('How did the scores change from week to week?', t + '</table>')); }
     if (L.by_rain) { let t = `<p class="small muted">Grouped by the rain the forecast assumed for the target day at each overflow (logged from 28 September 2026${L.n_rain_unlogged ? `; ${L.n_rain_unlogged.toLocaleString()} earlier scored forecasts carry no rain figure` : ''}). If the mean forecast runs above the observed rate on forecast-dry days, the model's floor is too high; if only on wet days, the rain forecast or the model's response to rain is.</p><table><tr><th>Target-day rain</th><th class="num">n</th><th class="num">Mean forecast</th><th class="num">Observed</th><th class="num">Brier</th></tr>`;
       for (const r of L.by_rain) t += `<tr><td>${r.band}</td><td class="num">${r.n.toLocaleString()}</td><td class="num">${pct(r.mean_forecast)}</td><td class="num">${pct(r.base_rate)}</td><td class="num">${f(r.brier_cal)}</td></tr>`;
-      h += section('by-rain', 'By forecast rain', t + '</table>'); }
+      h += section('by-rain', 'By forecast rain', fold('Does the forecast run high on dry days, or on wet ones?', t + '</table>')); }
     if (L.reliability) h += section('reliability', 'Reliability', relTable(L.reliability));
   }
   if (L && L.spots_live && L.spots_live.n_cells) h += section('spot-level', 'How the level itself has done', spotLevel(L.spots_live, d.credits));
@@ -213,6 +216,9 @@ async function main() {
   const via = S && !S.all_failed && bw.refused && ar.answered ? `<p class="small muted">Samples come from the Environment Agency's Water Quality Archive, because the bathing-water service refuses the build server (HTTP 403). The archive publishes the same results, usually 3–7 days later, so the latest week's samples may not be scored yet.</p>` : '';
   const partial = S && !S.all_failed && S.n_failed ? `<p class="small muted">At the last fetch (${when(S.checked_at)}) no source returned samples for ${S.n_failed} of ${S.n_sites} bathing waters (${why}); their earlier samples are kept.</p>` : '';
   const ECOLI_H = 'Live scoring: E. coli forecasts against new lab samples';
+  // The Research Lab's sample-by-sample exhibit sits with the E. coli scores (5 Nov 2026: it sat above every result).
+  // Without a live E. coli section it goes to the offline E. coli test, or the end of the offline tests.
+  const exhibit = `<ul class="routes one"><li><a href="/lab/forecasts/"><img src="lab/assets/covers/forecasts.jpg" alt="" width="160" height="160" loading="lazy"><span><small>Research Lab · Exhibit 3</small><b>How good are the forecasts?</b>Every past E. coli sample, one by one, against what the estimate, rebuilt afterwards, would have said: catches, misses and false alarms.</span></a></li></ul>`;
   if (E && E.n_scored) {
     const eo = E.overall;
     let t = `${stalled}${via}${partial}<p class="small muted">The E. coli estimate (the Water quality tile on a spot's page), checked against Environment Agency samples taken on the forecast day at the designated bathing waters. For each sample and lead the forecast used is the latest one issued <em>before the sample was taken</em>${E.n_issued_after_sample ? ` (${E.n_issued_after_sample} later issues discarded)` : ''}. ${E.n_samples} samples at ${E.n_sites} sites so far; ${E.n_scored} forecast-sample pairs across lead times${E.in_advance ? `; forecasts made at least a day ahead: n = ${E.in_advance.n}, Brier ${f(E.in_advance.brier,3)} against climatology ${f(E.in_advance.climatology_brier,3)}` : ''}. Climatology is the training-period exceedance rate for rivers and lakes.</p>`;
@@ -223,14 +229,15 @@ async function main() {
       for (const r of E.by_lead) t += `<tr><td>${r.lead === 0 ? 'Same day (issued before the sample)' : r.lead === 1 ? 'Tomorrow' : r.lead}</td><td class="num">${r.n}</td><td class="num">${pct(r.base_rate)}</td><td class="num">${f(r.brier,3)}</td><td class="num">${f(r.climatology_brier,3)}</td></tr>`; t += '</table>'; }
     if (E.by_version && E.by_version.length > 1) { t += `<table><tr><th>Version</th><th class="num">n</th><th class="num">Exceedance rate</th><th class="num">Brier</th></tr>`;
       for (const r of E.by_version) t += `<tr><td class="mono">${r.version}</td><td class="num">${r.n}</td><td class="num">${pct(r.base_rate)}</td><td class="num">${f(r.brier,3)}</td></tr>`; t += '</table>'; }
-    if (E.recent && E.recent.length) { t += `<h3>Most recent samples</h3><table><tr><th>Site</th><th>Sampled</th><th class="num">Forecast (lead)</th><th class="num">Rain 48 h</th><th class="num">Measured E. coli</th></tr>`;
-      for (const r of E.recent) t += `<tr><td>${r.site}</td><td>${r.day}</td><td class="num">${pct(r.forecast)} (${r.lead})</td><td class="num">${r.rain_48h === null ? '–' : r.rain_48h + ' mm'}</td><td class="num"${r.ecoli > 900 ? ' style="font-weight:600"' : ''}>${r.ecoli.toLocaleString()}</td></tr>`; t += '</table><p class="small muted">Bold: over 900 E. coli per 100 ml, the inland "sufficient" threshold.</p>'; }
-    h += section('ecoli-live', ECOLI_H, t);
+    if (E.recent && E.recent.length) { t += `<details class="fold"><summary>Most recent samples: what was forecast, and what the lab measured</summary><table><tr><th>Site</th><th>Sampled</th><th class="num">Forecast (lead)</th><th class="num">Rain 48 h</th><th class="num">Measured E. coli</th></tr>`;
+      for (const r of E.recent) t += `<tr><td>${r.site}</td><td>${r.day}</td><td class="num">${pct(r.forecast)} (${r.lead})</td><td class="num">${r.rain_48h === null ? '–' : r.rain_48h + ' mm'}</td><td class="num"${r.ecoli > 900 ? ' style="font-weight:600"' : ''}>${r.ecoli.toLocaleString()}</td></tr>`; t += '</table><p class="small muted">Bold: over 900 E. coli per 100 ml, the inland "sufficient" threshold.</p></details>'; }
+    h += section('ecoli-live', ECOLI_H, t + exhibit);
   } else if (stalled) {
-    h += section('ecoli-live', ECOLI_H, stalled);
+    h += section('ecoli-live', ECOLI_H, stalled + exhibit);
   } else if (L && L.n_scored) {
-    h += section('ecoli-live', ECOLI_H, `${via}${partial}<p class="muted">E. coli estimates are logged from 15 September 2026 and scored against Environment Agency samples as they are published, usually within a week of sampling. Nothing to show yet.</p>`);
+    h += section('ecoli-live', ECOLI_H, `${via}${partial}<p class="muted">E. coli estimates are logged from 15 September 2026 and scored against Environment Agency samples as they are published, usually within a week of sampling. Nothing to show yet.</p>${exhibit}`);
   }
+  const exhibitShown = h.includes(exhibit);
   if (d.prf && d.prf.both) h += section('prf', "Beside the Environment Agency's daily risk prediction", prfSection(d.prf));
   if (d.service) h += section('service', 'Did the forecast run on time?', serviceSection(d.service));
   document.getElementById('live').innerHTML = scrolling(h);
@@ -243,7 +250,7 @@ async function main() {
   if (d.holdout) { hold += `<table><tr><th>Model</th><th class="num">Brier</th><th class="num">Log loss</th><th class="num">AUC</th><th class="num">Skill</th></tr>`;
     for (const r of d.holdout) hold += `<tr><td>${model(r.model)}</td><td class="num">${f(r.brier)}</td><td class="num">${f(r.log_loss,3)}</td><td class="num">${f(r.auc,3)}</td><td class="num">${f(r.brier_skill_vs_clim,2)}</td></tr>`; hold += '</table>'; }
   o += section('holdout', 'Offline test: held-out year', hold);
-  if (d.reliability) o += section('holdout-reliability', 'Reliability on the held-out year', relTable(d.reliability));
+  if (d.reliability) o += section('holdout-reliability', 'Reliability on the held-out year', fold('Did days forecast at a given chance spill that often?', relTable(d.reliability)));
   // The leads test (scripts/verify_leads.py) keeps the overflow-days at monitors that worked under half the year,
   // which train.py's test leaves out (MIN_EDM_PCT): hence its larger n. Its reanalysis row was labelled "upper
   // bound" until 11 Oct 2026, though the same-day forecast beats it.
@@ -251,7 +258,7 @@ async function main() {
   const extra = d.leads && d.leads[0] && ho0 && d.leads[0].n !== ho0.n ? ` It covers ${n0(d.leads[0].n)} overflow-days, ${n0(Math.abs(d.leads[0].n - ho0.n))} ${d.leads[0].n > ho0.n ? 'more' : 'fewer'} than the test above. That test leaves out the overflows whose monitor worked for less than half of the year; this one keeps them.` : '';
   if (d.leads) { let t = `<p class="small muted">Same held-out year, but rainfall taken from Open-Meteo's archived forecasts as they were issued.${extra} Lead 0 is the latest run for the day; lead k was issued k days earlier. The map applies the "isotonic-calibrated" correction per lead (a monotone map fitted on this year). Fitting and scoring a calibration map on the same year is optimistic, so the "cross-fitted" rows score each month with a map fitted on the other months of the year: that is the honest estimate of what the calibration does for a day it has not seen. The Platt rows are kept for comparison. Open-Meteo's previous-runs fields give, for each hour, the value from the run issued k days earlier, so a lead-k day is stitched from several runs rather than one; a single-run replay would be stricter.</p><table><tr><th>Rainfall source</th><th class="num">Brier</th><th class="num">AUC</th><th class="num">Skill</th></tr>`;
     for (const r of d.leads) t += `<tr><td>${srcLabel(r.source)}</td><td class="num">${f(r.brier)}</td><td class="num">${f(r.auc,3)}</td><td class="num">${f(r.brier_skill_vs_clim,2)}</td></tr>`;
-    o += section('leads', 'Offline test: with real weather forecasts', t + '</table>'); }
+    o += section('leads', 'Offline test: with real weather forecasts', fold('How did it score with the rain forecasts issued at the time?', t + '</table>')); }
   if (d.ecoli && d.ecoli.all_sites) {
     const e = d.ecoli, c = d.ecoli_combined || {};
     // The table counts only the samples at sites with a monitored overflow upstream (validate_ecoli.py): say so, or
@@ -263,7 +270,7 @@ async function main() {
     for (const r of e.all_sites) t += `<tr><td>${lab[r.predictor] || r.predictor}</td><td class="num">${r.n}</td><td class="num">${f(r.spearman_pooled,2)}</td><td class="num">${f(r.spearman_within_site,2)}</td><td class="num">${f(r.auc_gt900,2)}</td></tr>`;
     t += `</table>`;
     if (c.between_site_rho_risk !== undefined) t += `<p class="small">Which sites are contaminated: the site-mean sewage spill risk ranks the sites' mean E. coli at ρ = ${f(c.between_site_rho_risk,2)}; site-mean rainfall does not (${f(c.between_site_rho_rain,2)}). Which days are bad at a site: in leave-one-year-out fits within site, rainfall alone scores ρ = ${f(c.loyo_within_site['rain only'].rho_within,2)}, the sewage spill risk alone ${f(c.loyo_within_site['spill risk only'].rho_within,2)}, and both together ${f(c.loyo_within_site['rain + spill risk'].rho_within,2)}. The sewage spill risk covers overflows, not the diffuse runoff that rain washes in regardless, and at inland bathing waters neither signal explains most of the day-to-day variation. The E. coli exceedance model, next, uses both.</p>`;
-    o += section('ecoli', 'Against measured E. coli', t);
+    o += section('ecoli', 'Against measured E. coli', t + (exhibitShown ? '' : exhibit));
   }
   if (d.ecoli_model && d.ecoli_model.loyo) {
     const m = d.ecoli_model;
@@ -299,13 +306,15 @@ async function main() {
       t += `<table><tr><th>Lead</th><th>Exposure</th><th class="num">Brier</th><th class="num">AUC</th><th class="num">Brier, rain only</th><th class="num">Brier, rivers</th><th class="num">AUC, rivers</th><th class="num">Rivers, rain only</th></tr>`;
       for (const r of m.by_lead) t += `<tr><td>${r.lead}</td><td>${r.exposure}</td><td class="num">${f(r.brier,4)}</td><td class="num">${f(r.auc,3)}</td><td class="num">${f(r.brier_rain_only,4)}</td><td class="num">${f(r.brier_river,4)}</td><td class="num">${f(r.auc_river,3)}</td><td class="num">${f(r.brier_river_rain_only,4)}</td></tr>`; t += '</table>'; }
     if (m.row_counts) { const c = m.row_counts; t += `<p class="small muted">Rows: ${c.samples_with_upstream} samples with upstream overflows; ${c.dropped_missing_forecast_rain} dropped for missing forecast rain at some lead and ${c.dropped_missing_replayed_exposure} for missing replayed sewage spill risk. Remaining by year: ${Object.entries(c.by_year_after).map(([y,n]) => `${y}: ${n}`).join(', ')}.</p>`; }
-    if (m.reliability) t += `<h3>Reliability</h3>` + relTable(m.reliability);
+    if (m.reliability) t += fold('Reliability: did samples given a chance exceed 900 that often?', relTable(m.reliability));
     o += section('ecoli-model', 'E. coli exceedance model', t);
   }
+  if (!exhibitShown && !o.includes(exhibit)) o += exhibit;
   document.getElementById('offline').innerHTML = scrolling(o);
   document.getElementById('answer').innerHTML = answer(d);
-  document.getElementById('short').innerHTML = inShort(d);
-  document.getElementById('top').innerHTML = summary(d) + contents();
+  // The tiles, then In short, then the contents list (5 Nov 2026: In short sat under the contents and the warnings).
+  document.getElementById('short').innerHTML = inShort(d) + contents();
+  document.getElementById('top').innerHTML = summary(d);
   // The sections exist only now, so a link to one (#reliability, the In short list's #live-scoring) scrolls here.
   if (location.hash) { const el = document.getElementById(location.hash.slice(1)); if (el) el.scrollIntoView(); }
 }
@@ -397,8 +406,9 @@ function answer(d) {
     const after = afterWarning(W, 'a spill followed', 'across all forecasts', 'a spill');
     // A count of days, and the days inside the span with nothing scored (11 Oct 2026: this said "10 days so far"
     // while In short said "12 target days", the span from 29 Sep to 10 Oct, which has 8 and 9 Oct missing).
+    // The days not scored are named once, under Live scoring (5 Nov 2026); here, a pointer to them.
     const n = scoredDays(L), miss = daysMissing(L);
-    const days = n ? ` That is ${n} day${n === 1 ? '' : 's'} of scores${W.last_day && W.last_day !== W.first_day ? ` between ${day(W.first_day)} and ${day(W.last_day)}` : ''}${n < 14 ? ', too few to judge across different weather' : ''}.${miss ? ' ' + miss : ''}` : '';
+    const days = n ? ` That is ${n} day${n === 1 ? '' : 's'} of scores${W.last_day && W.last_day !== W.first_day ? ` between ${day(W.first_day)} and ${day(W.last_day)}` : ''}${n < 14 ? ', too few to judge across different weather' : ''}.${miss ? ' Some days could not be scored: see <a href="#live-scoring">Live scoring</a>.' : ''}` : '';
     t += `<p>Since ${day(W.first_day)}, the spill forecast ${warned} ${after ? after + '.' : 'It gave no warnings.'} It was right on ${right} of forecasts, against ${no} for saying "no spill" every time. Spills are rare, so a share right says little on its own.${days}</p>`;
     t += grid(W, 'Spill forecasts against what the overflows did', 'Spilled', 'No spill', 'correct quiet days');
     t += `<p class="small muted">Each count is one forecast: one overflow on one day, made from four days ahead to the morning itself.${W.n_overflow_days ? ` The ${n0(W.n)} forecasts are for ${n0(W.n_overflow_days)} overflow-days.` : ''} The ${n0(W.n_spill_overflow_days)} overflow-days with a spill make ${n0(W.hits + W.misses)} forecasts. A warning is a spill chance of ${Math.round(100 * W.warn_at)}% or more: where a spot beside the overflow reads High risk, the level at which alerts are sent.</p>`;
@@ -554,7 +564,7 @@ function companyLine(W) {
   const range = big.length >= 2 ? `, from ${p0(big[0].rate)} at ${big[0].company} to ${p0(big[big.length - 1].rate)} at ${big[big.length - 1].company}` : '';
   return `<p>By company, it warned of ${p0(own.hits / spills(own))} of spills at ${own.company}, the one company the spill model learned from, and ${p0(rh / rs)} at the other ${rest.length} compan${rest.length === 1 ? 'y' : 'ies'}${range}. <a href="#warnings">Warnings by company</a></p>`;
 }
-// A few plain lines under the warnings, from the same data as the tables below.
+// A few plain lines under the tiles, the live results first, from the same data as the tables below.
 function inShort(d) {
   const L = d.live || {}, ho = (d.holdout || [])[0], hi = (d.reliability || []).find(r => r.lo === 0.8), E = L.ecoli_live || {}, pts = [];
   const {skill: liveSkill, flatBy} = liveError(L);
@@ -574,8 +584,10 @@ function inShort(d) {
   const eo = E.overall, eSkill = eo && eo.climatology_brier > 0 ? 1 - eo.brier / eo.climatology_brier : null;
   const ecoliVerdict = eSkill === null ? 'scored' : eSkill <= 0 ? 'no better than the average rate' : eSkill < 0.05 ? 'about the same as the average rate' : `${Math.round(100 * eSkill)}% lower error than the average rate`;
   const pairs = ho ? `${Math.round(100 * ho.auc)} times in 100` : '';
-  if (ho) pts.push(`<b>Spill forecasts, on a year the model never saw</b> (${ho.n.toLocaleString()} overflow-days at United Utilities in 2025): the error was ${Math.round(100 * ho.brier_skill_vs_clim)}% lower than always forecasting each overflow's long-run rate. Given one day that spilled and one that did not, it gave the spill the higher chance ${pairs}.`);
-  if (hi) pts.push(`<b>Offline, over-confident at the top end:</b> days forecast at about ${Math.round(100 * hi.forecast)}% had a spill ${Math.round(100 * hi.observed)}% of the time.`);
+  // The 2025 held-out test comes after the live results (5 Nov 2026: it led the list).
+  const offline = [];
+  if (ho) offline.push(`<b>Spill forecasts, on a year the model never saw</b> (${ho.n.toLocaleString()} overflow-days at United Utilities in 2025): the error was ${Math.round(100 * ho.brier_skill_vs_clim)}% lower than always forecasting each overflow's long-run rate. Given one day that spilled and one that did not, it gave the spill the higher chance ${pairs}.`);
+  if (hi) offline.push(`<b>Offline, over-confident at the top end:</b> days forecast at about ${Math.round(100 * hi.forecast)}% had a spill ${Math.round(100 * hi.observed)}% of the time.`);
   if (L.n_scored && L.overall) {
     pts.push(`<b>Live, against what the overflows then did:</b> ${scoredWords(L)}. The error is ${liveSkill}% lower than each overflow's long-run rate${O.climatology_mean !== undefined ? `, which ran high: ${pct(O.climatology_mean)} a day against ${pct(O.calibrated.base_rate)} observed` : ''}.${flatWords ? ` It is ${flatWords}.` : ''}${short ? ` ${short} day${short === 1 ? ' is' : 's are'} too few to judge across different weather.` : ''} <a href="#live-scoring">Details</a>`);
     // Whose spills the warnings caught (11 Oct 2026): the headline figures are mostly the training company's.
@@ -589,18 +601,19 @@ function inShort(d) {
   const P = d.prf && d.prf.both;
   if (P && P.n_samples && P.ea && P.swimsignal) { const ssBetter = P.swimsignal.brier < P.ea.brier;
     pts.push(`<b>Beside the Environment Agency's daily risk prediction</b> at the inland bathing waters: ${ssBetter ? "SwimSignal's E. coli estimate" : "the Agency's prediction"} scored better on ${P.n_samples} samples, ${P.n_over_threshold} of them over 900${P.n_over_threshold && !P.ea.hits && !P.swimsignal.hits ? ', which neither warned of' : ''}.${P.n_samples < 100 || P.n_over_threshold < 10 ? ' Too few to judge.' : ''} <a href="#prf">Details</a>`); }
-  pts.push(`<b>The sewage spill risk</b> is a 0–100 score for sewage from upstream reaching the spot. It is a score, not a probability. Its spill part is scored above against what the overflows did; its travel speed, die-off and dilution were fitted to Environment Agency water samples on 17 October 2026, not measured (<a href="/methods#rough">how</a>). The samples could not show whether its lake steps help.`);
   // The level itself: every score above is an overflow-day, while a spot's page and its alerts speak per spot
   // (forecast_log.verify_spots).
   const SL = L.spots_live || {}, SO = SL.overall;
   if (SO && SO.hits + SO.misses) pts.push(`<b>The level a spot's page shows, against the spills that happened:</b> ${p0(SO.hit_rate)} of forecasts for a spot-day the spills would have put at High risk were at High risk or above.${SO.hits + SO.false_alarms ? ` ${p0(SO.warnings_true)} of forecasts at High risk or above were for such a day.` : ''}${SL.n_days < 14 ? ` ${SL.n_days} day${SL.n_days === 1 ? ' is' : 's are'} too few to judge.` : ''} <a href="#spot-level">Details</a>`);
   else pts.push(`<b>The level a spot's page shows</b> is checked against the spills that happened${SL.first_day ? ` from ${day(SL.first_day)}` : ''}; nothing has been checked yet. How it is scored is fixed in the <a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/PREREGISTRATION-2027.md#amendment-1-12-october-2026-a-score-for-a-spots-level">pre-registration</a>.${SL.n_cells ? ' <a href="#spot-level">Details</a>' : ''}`);
+  pts.push(...offline);
+  pts.push(`<b>The sewage spill risk</b> is a 0–100 score for sewage from upstream reaching the spot. It is a score, not a probability. Its spill part is scored above against what the overflows did; its travel speed, die-off and dilution were fitted to Environment Agency water samples on 17 October 2026, not measured (<a href="/methods#rough">how</a>). The samples could not show whether its lake steps help.`);
   return `<section class="summary" id="in-short" aria-labelledby="short-h"><h2 id="short-h">In short</h2><ul>${pts.map(x => `<li>${x}</li>`).join('')}</ul></section>`;
 }
-// The contents, from the sections the data produced. It sits above them all, so it starts with the warnings and
-// In short.
+// The contents, from the sections the data produced. It sits under In short and above the rest, so it starts with
+// the warnings.
 function contents() {
-  const first = [document.getElementById('answer').innerHTML ? ['warnings', 'Warnings, misses and false alarms'] : null, ['in-short', 'In short']].filter(Boolean);
+  const first = [document.getElementById('answer').innerHTML ? ['warnings', 'Warnings, misses and false alarms'] : null].filter(Boolean);
   const items = [...first.map(([id, h]) => `<li><a href="#${id}">${h}</a></li>`),
     ...[...document.querySelectorAll('#live section[id] > h2, #offline section[id] > h2')].map(h => `<li><a href="#${h.parentElement.id}">${h.textContent}</a></li>`)];
   return items.length ? `<nav class="toc" aria-labelledby="toc-h"><h2 id="toc-h">On this page</h2><ol>${items.join('')}</ol></nav>` : '';

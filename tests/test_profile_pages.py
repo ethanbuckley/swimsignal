@@ -192,6 +192,9 @@ def test_the_clubs_page_uses_the_sites_own_words_and_says_its_limits_first(tmp_p
     for k, line in action_lines().items():
         assert line in words, k
     assert words.index("What it cannot do") < words.index("The same level, different exposure")
+    # The tools second, straight after the limits (5 Nov 2026: they were ninth).
+    heads = re.findall(r"<h2[^>]*>([^<]+)</h2>", page.split("<main", 1)[1])
+    assert heads[:2] == ["What it cannot do", "Tools for planning a session"], heads
     assert "It is a forecast, not a water test." in words and "0800 80 70 60" in words
     for name in ("Swimming", "Ghyll scrambling and gorge walking", "Kayaking, canoeing and paddleboarding",
                  "Dinghy sailing and windsurfing", "Rowing"):
@@ -272,3 +275,29 @@ def test_an_overflow_at_the_spot_is_under_a_tenth_of_a_km_not_zero(tmp_path):
     bs.write_profiles(tmp_path, SPOTS[:1], returns=returns(tmp_path / "r.parquet"))
     words = text((tmp_path / "spot" / "wharfe-ilkley" / "profile" / "index.html").read_text())
     assert "The nearest is under 0.1 km upstream." in words and "0.0 km upstream" not in words
+
+
+def test_a_long_list_shows_the_ten_with_most_weight_and_folds_the_rest(tmp_path):
+    """Readability pass, 5 Nov 2026: past ten overflows the page shows the ten with the most model weight, then
+    the rest in a fold that says how many there are in all; the CSV keeps every one. Ten or fewer: no fold."""
+    (tmp_path / "data" / "upstream").mkdir(parents=True)
+    rows = [{"site_id": f"S{i:02d}", "site_name": f"Site {i}/CSO", "company": "Yorkshire Water", "distance_km": float(i),
+             "lake_distance_km": 0.0, "travel_h": float(i), "weight": round(1 - i / 20, 3), "has_live": True} for i in range(12)]
+    (tmp_path / "data" / "upstream" / "wharfe-ilkley.json").write_text(json.dumps({"id": "wharfe-ilkley", "overflows": rows}))
+    spot = {**SPOTS[0], "upstream_summary": {"overflows": 12}}
+    (tmp_path / "spot" / spot["id"]).mkdir(parents=True)
+    bs.write_profiles(tmp_path, [spot], returns=tmp_path / "missing.parquet")
+    page = (tmp_path / "spot" / spot["id"] / "profile" / "index.html").read_text()
+    shown, fold = page.split('<details class="fold"><summary>The other 2 overflows</summary>')
+    shown = shown.split("<h2>The overflows, by model weight</h2>")[1]
+    assert re.findall(r"· (S\d\d)</span>", shown) == [f"S{i:02d}" for i in range(10)]
+    assert re.findall(r"· (S\d\d)</span>", fold.split("</details>")[0]) == ["S10", "S11"]
+    assert "The 10 whose spills matter most here, in order; the other 2 are in the fold under them." in text(page)
+    assert 'href="spot/wharfe-ilkley/profile/monitored-storm-overflows.csv" download>Download all 12' in page
+    listed = (tmp_path / "spot" / spot["id"] / "profile" / "monitored-storm-overflows.csv").read_text(encoding="utf-8-sig")
+    assert len(list(csv.DictReader(io.StringIO(listed)))) == 12
+    # Two overflows: one table, no fold.
+    upstream_file(tmp_path)
+    bs.write_profiles(tmp_path, SPOTS[:1], returns=tmp_path / "missing.parquet")
+    two = (tmp_path / "spot" / "wharfe-ilkley" / "profile" / "index.html").read_text()
+    assert "All 2, the one whose spills matter most here first." in text(two) and "overflows</summary>" not in two

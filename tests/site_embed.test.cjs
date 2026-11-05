@@ -101,3 +101,11 @@ test('an unknown or missing id says how to find one', () => {
   assert.ok(Embed.missing(null).includes('No spot chosen') && Embed.missing(null).includes('wharfe-burnsall'));
   assert.ok(Embed.failed().includes('could not be loaded'));
 });
+
+test('overflows upstream that give no live reading are said on the card, as on the spot page (5 Nov 2026)', () => {
+  L.setToday('2026-10-03');
+  const part = {...river, now: {label: 'low', monitored_upstream: 4, discharging_upstream: 0}};
+  assert.match(Embed.card(part, DATA, NOW), /Live status from 4 of 5 overflows upstream: none spilling at the last poll; 1 does not report, so could be spilling unseen\./);
+  const all = {...river, now: {label: 'low', monitored_upstream: 5, discharging_upstream: 0}};
+  assert.doesNotMatch(Embed.card(all, DATA, NOW), /Live status from|spilling unseen/);   // all report: the card stays short
+});

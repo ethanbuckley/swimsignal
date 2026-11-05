@@ -526,12 +526,18 @@ function rainAgeLine(s) {
 // low risk on Saturday." Raised is the day's own level (risk: a day's spills, its E. coli, a rating,
 // algae, and today's right now). Empty where no day is raised, or none after the first raised day is low
 // (a water rated poor never is).
-function backToLow(s) {
+// Not a day before the water from right now's spills has passed (clears_at, in UK time): Swale above Richmond
+// Falls, 5 Nov 2026, said "Back to low risk tomorrow" beside "should have passed and died off by Saturday
+// 13:02", since only today carries right now's level (risk). Then the clearing time is said instead.
+function backToLow(s, nowMs = Date.now()) {
   if (!daily(s)) return '';
   const ls = s.days.slice(0, 5).map(x => ({ x, l: hasData(x) ? risk(s, x).level : null }));
   const up = ls.findIndex(o => rank(o.l) >= 1);
   const back = up < 0 ? null : ls.slice(up + 1).find(o => o.l === 'low');
-  return back ? `Back to low risk ${dayWord(back.x.date)}.` : '';
+  if (!back) return '';
+  const clears = clearWords(s, nowMs);
+  if (clears && back.x.date < UK_DATE.format(new Date(s.now.clears_at))) return clears;
+  return `Back to low risk ${dayWord(back.x.date)}.`;
 }
 // ------------------------------------------------------------------------------ what to do
 // One line under the level saying what to do, as NSW Beachwatch gives an action with each of its

@@ -110,6 +110,15 @@ test('with every overflow upstream loaded (data/upstream/<id>.json), the table a
   assert.equal(names.length, 51);
   assert.deepEqual(names.slice(0, 2), ['Overflow 50', 'Overflow 49']);
   assert.ok(!h.includes('The table lists'));
+  // The ten with the most weight show; the other 41 are in a fold that opens the list to all 51, in the same
+  // order (5 Nov 2026), so the checklist after the table is in reach on a phone. The history link stays.
+  const [open, fold] = h.split('<details class="fold"><summary>The other 41 overflows</summary>');
+  const named = s => [...s.matchAll(/<th scope="row" class="ov">([^<]+)<\/th>/g)].map(m => m[1]);
+  assert.deepEqual(named(open), names.slice(0, 10));
+  assert.deepEqual(named(fold.split('</details>')[0]), names.slice(10));
+  assert.ok(h.includes('href="spot/thames-henley/profile/">Overflow history'));
+  assert.ok(!O.overflows(henley).includes('<details'));   // three: no fold
+  assert.ok(O.view(henley, '2026-10-06', DATA, BASE, NOW, all).includes('id="csv">Download the overflows as CSV'));
   const text = O.csv(henley, DATA, BASE, all), lines = text.trim().split('\n');
   assert.equal(lines.filter(l => !l.startsWith('#')).length, 52);   // the header and 51 rows
   assert.ok(lines.some(l => l === '# 51 monitored overflows within 60 km upstream along the river network.'));
