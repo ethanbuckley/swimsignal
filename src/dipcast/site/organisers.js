@@ -274,7 +274,7 @@ const Organisers = (() => {
     // The ten with the most weight, then the rest in a fold (5 Nov 2026): a long table pushed the checklist out of
     // reach on a phone. Opening the fold shows them all, in the same order.
     h += table(list.slice(0, OVERFLOWS_SHOWN));
-    if (list.length > OVERFLOWS_SHOWN) h += `<details class="fold"><summary>All ${list.length} overflows</summary>${table(list.slice(OVERFLOWS_SHOWN))}</details>`;
+    if (list.length > OVERFLOWS_SHOWN) h += `<details class="fold"><summary>The other ${list.length - OVERFLOWS_SHOWN} overflows</summary>${table(list.slice(OVERFLOWS_SHOWN))}</details>`;
     if (PAGE_ID.test(s.id)) h += `<p><a href="spot/${esc(s.id)}/profile/">Overflow history, 2021 to 2025</a>: each overflow's spills and spill hours a year.</p>`;   // build_site.write_profiles
     return h + '<p class="small muted"><b>Distance</b>: upstream along the river network, through any lake on the way; "across the lake" for one that drains into the same lake. '
       + '<b>Travel</b>: how long sewage takes to arrive, at the model\'s river speed, and across a lake at its slower lake speed. '

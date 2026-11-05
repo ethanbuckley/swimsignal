@@ -288,7 +288,7 @@ def test_a_long_list_shows_the_ten_with_most_weight_and_folds_the_rest(tmp_path)
     (tmp_path / "spot" / spot["id"]).mkdir(parents=True)
     bs.write_profiles(tmp_path, [spot], returns=tmp_path / "missing.parquet")
     page = (tmp_path / "spot" / spot["id"] / "profile" / "index.html").read_text()
-    shown, fold = page.split('<details class="fold"><summary>All 12 overflows</summary>')
+    shown, fold = page.split('<details class="fold"><summary>The other 2 overflows</summary>')
     shown = shown.split("<h2>The overflows, by model weight</h2>")[1]
     assert re.findall(r"· (S\d\d)</span>", shown) == [f"S{i:02d}" for i in range(10)]
     assert re.findall(r"· (S\d\d)</span>", fold.split("</details>")[0]) == ["S10", "S11"]

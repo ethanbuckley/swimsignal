@@ -338,7 +338,7 @@ def body(spot: dict, t: pd.DataFrame | None, durations: dict | None = None) -> s
                 ("Spill hours 2025", True), ("Monitor uptime 2025", True)]
         out.append(_table(head, rows[:SHOWN], "overflows"))
         if folded:   # the rest, in the same order, in a fold that opens the list to all of them
-            out.append(f'<details class="fold"><summary>All {n} overflows</summary>{_table(head, rows[SHOWN:], "more overflows")}</details>')
+            out.append(f'<details class="fold"><summary>The other {n - SHOWN} overflows</summary>{_table(head, rows[SHOWN:], "more overflows")}</details>')
         out.append('<p class="small muted">A dash: no annual return for that overflow in that year.</p>')
         if durations:
             out.append(durations_section(durations))

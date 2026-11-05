@@ -112,7 +112,7 @@ test('with every overflow upstream loaded (data/upstream/<id>.json), the table a
   assert.ok(!h.includes('The table lists'));
   // The ten with the most weight show; the other 41 are in a fold that opens the list to all 51, in the same
   // order (5 Nov 2026), so the checklist after the table is in reach on a phone. The history link stays.
-  const [open, fold] = h.split('<details class="fold"><summary>All 51 overflows</summary>');
+  const [open, fold] = h.split('<details class="fold"><summary>The other 41 overflows</summary>');
   const named = s => [...s.matchAll(/<th scope="row" class="ov">([^<]+)<\/th>/g)].map(m => m[1]);
   assert.deepEqual(named(open), names.slice(0, 10));
   assert.deepEqual(named(fold.split('</details>')[0]), names.slice(10));
