@@ -148,3 +148,136 @@ production form (900 only), concentration model, usual rate, own rate and last s
 season; m = 5 and 30; the log-concentration log scores of section 3; the six lake bathing waters with no overflow
 upstream (Hampstead Heath ×3, the Serpentine, Henleaze, Cotswold: no generic forecast, so the candidate shrinks toward
 the usual rate) as a supplementary population; input hashes; rows dropped at each rule.
+
+---
+
+## Results
+
+Run 5 November 2026 by `scripts/lake_own_rate_test.py` after the protocol was pushed (95287b4c). Input hashes were the
+same before and after. Files: `LAKE-OWN-RATE-TEST-2026-11-scores.json` (every figure below) and `-rows.csv` (the main
+scheme's rows at 900 with every forecast). The join check passed: the atlas's `p_loyo` and `p_fwd` equal the
+predictions files' `production_form` row for row. **Development on seen data; nothing here is a confirmation.**
+
+**Population.** 637 lake rows, 12 lake bathing waters, 6 water bodies, 2024-26; 16 results over 900 and 30 over 500.
+Own history per row: 40 to 61 samples (median 50) from the other seasons of 2023-26, 832 samples in all. 18
+water-body-by-season clusters in the main scheme.
+
+### Verdict: fail
+
+| Condition (main scheme, 900 per 100 ml) | Result | |
+|---|---|---|
+| Gate: at least 15 results over 900 | 16 | runnable |
+| 1. Skill over the usual rate at least 0.10, interval above zero | skill **0.042**; Brier(usual) − Brier(candidate) +0.00104 [−0.00235, +0.00574] (ISO weeks: [−0.00116, +0.00363]) | **fail** |
+| 2. Beats production's form, interval wholly below zero | −0.00138 [−0.00610, +0.00198] (ISO weeks: [−0.00385, +0.00084]) | **fail** |
+| 3. Not worse than the plain own rate | −0.00045 [−0.00205, +0.00073] | pass |
+| G1. Without Derwent Water: at or below production, skill above zero | 578 rows, 4 events: 0.00711 against 0.00753, but skill **−0.010** | **fail** |
+| G2. Lake-out and forward: no harm against production | −0.00304 [−0.00884, +0.00065] and −0.00167 [−0.00559, +0.00028] | pass |
+
+By the rule fixed in section 5, **no shadow log and no lake chance.** The skill interval includes zero, production's
+form is not beaten with the interval below zero, and the gain is one lake's.
+
+### Every model on the main scheme, 900 per 100 ml
+
+| Model | Brier | Skill over the usual rate | AUC, pooled | Mean AUC within a site (4 sites with an event) | Log loss |
+|---|---|---|---|---|---|
+| **candidate** (m = 10) | 0.02359 | +0.042 | 0.808 | 0.146 | 0.0997 |
+| production form | 0.02496 | −0.013 | 0.468 | 0.398 | 0.1233 |
+| concentration model (site intercept) | 0.02544 | −0.033 | 0.885 | 0.387 | 0.1001 |
+| usual rate | 0.02463 | 0 | 0.374 | 0.441 | 0.1212 |
+| own rate | 0.02404 | +0.024 | 0.784 | 0.184 | 0.1222 |
+| last sample | 0.02374 | +0.036 | 0.610 | 0.481 | 0.1075 |
+| candidate, m = 5 / m = 30 | 0.02375 / 0.02343 | +0.036 / +0.049 | 0.809 / 0.818 | 0.146 / 0.146 | 0.1022 / 0.0992 |
+
+- **The ranking gain is between lakes, not within one.** The pooled AUC of 0.81 (as #586 found) comes from Derwent
+  Water, which holds **12 of the 16** results over 900 in 59 rows; the other five water bodies hold 4 in 578. Within a
+  site the own rate from the other seasons ran the wrong way: at Derwent Water the season with 8 of its 12 results
+  (2025) had the lowest own rate from the other seasons (0.098, against 0.268 for 2024 and 0.225 for 2026). The mean
+  within-site AUC of the candidate is 0.15. A lake's own rate says which lake runs high; it does not say which day or
+  which season.
+- **The Brier gain is small and one lake's.** 0.0236 against 0.0246 for the usual rate (4%, interval spanning zero).
+  At Derwent Water the candidate scored 0.185 against 0.197 for the usual rate; at Coniston Water (4 events in 171
+  rows) it was worse (0.0238 against 0.0228); at the four water bodies with no result over 900 every model scores near
+  zero and the differences are in the fourth decimal.
+- **The concentration model ranks best (AUC 0.89) and is worst calibrated** at the line (skill −0.033): its site
+  intercept carries the between-lake information, but its P(>900) sits too high at the lakes that stay low. This was not
+  a stated condition; it is noted for the next candidate (below), not acted on.
+- **m barely matters** (0.0234 to 0.0238 across 5, 10, 30): with 40 or more own samples, the generic forecast's weight
+  is small whichever m is used.
+
+### The other schemes, 900 per 100 ml
+
+| Scheme | Rows / events | Candidate | Production | Usual | Own | Skill | Candidate − production |
+|---|---|---|---|---|---|---|---|
+| leave-one-lake-out and season | 637 / 16 | 0.02358 | 0.02663 | 0.02463 | 0.02404 | +0.043 | −0.00304 [−0.00884, +0.00065]; ISO weeks [−0.00572, −0.00063] |
+| forward (2025-26) | 407 / 13 | 0.02973 | 0.03140 | 0.03142 | 0.02977 | +0.054 | −0.00167 [−0.00559, +0.00028] |
+
+Where the generic model never saw the lake, production's form is worse than the usual rate (AUC 0.21) and the candidate's
+lead over it grows; the week-cluster interval is then below zero, the water-body-by-season interval is not. Forward,
+with 2023 in the own history, the picture is the same as the main scheme: the own rate carries nearly all of it.
+
+### 500 per 100 ml (secondary)
+
+| Scheme | Events | Candidate | Concentration model | Usual | Own | Skill (candidate / own) | Candidate − concentration |
+|---|---|---|---|---|---|---|---|
+| leave-one-season-out | 30 | 0.04225 | 0.04516 | 0.04495 | 0.04211 | +0.060 / +0.063 | −0.0029 [−0.0087, +0.0005] |
+| leave-one-lake-out and season | 30 | 0.04147 | 0.04663 | 0.04495 | 0.04211 | +0.077 / +0.063 | −0.0052 [−0.0185, +0.0027] |
+| forward | 21 | 0.04512 | 0.04729 | 0.04926 | 0.04511 | +0.084 / +0.084 | −0.0022 [−0.0074, +0.0006] |
+
+More events, the same shape: a 6-8% gain over the usual rate with every interval spanning zero; Derwent Water holds 17
+of the 30; the plain own rate does as well as the candidate; the generic concentration model's P(>500) (the normal
+approximation of section 3) is no better than the usual rate.
+
+### Log-concentration (secondary)
+
+Mean censored log score of log10 E. coli, main scheme: own level −1.196; own level shrunk toward the model −1.157;
+concentration model −1.133; background (site intercept, no weather) −1.091. Own level shrunk minus the concentration
+model: −0.024 [−0.100, +0.075]; own level minus background: −0.105 [−0.174, −0.025]. As expected in section 3, a plain
+own level does not beat the random-intercept models on the concentration. Where the lake is held out of the generic
+fit, the lake's own level is far better than the model's (−1.196 against −1.441, +0.245 [−0.008, +0.565]): the
+model's lake prior is a poor stand-in for a lake it never sampled, which supports the "average lake" caution on the page.
+
+### Supplementary: the six lake bathing waters with no overflow upstream
+
+426 samples 2023-26 (Hampstead Heath ×3, the Serpentine, Henleaze, Cotswold), 4 over 900 and 16 over 500, leave one
+season out, the candidate shrunk toward those six's usual rate. Over 900: 0.00943 against 0.00940 (usual). Over 500:
+0.03598 against 0.03625, −0.00027 [−0.00129, +0.00097]; AUC 0.63 against 0.41. Nothing to act on; the past-sample tile
+#585 shows at these waters already states their counts.
+
+## What it means
+
+**Established, on these seen rows:** an over-900 chance built on a lake's own rate scores 4% better than the usual
+lake rate on 2024-26 lake samples, with the interval spanning zero, and ranks samples across lakes well (AUC 0.81)
+because one lake, Derwent Water, holds three quarters of the results over 900. Within a lake, the own rate from other
+seasons ranked a season's samples backwards. Production's lake form is no better than the usual rate on these rows in
+any scheme (AUC 0.47; 0.21 where it never saw the lake).
+
+**Precisely what failed:** condition 1 (skill 0.042 against 0.10, interval [−0.002, +0.006] on the Brier difference),
+condition 2 (candidate minus production −0.0014, interval reaching +0.0020) and guardrail G1 (without Derwent Water,
+skill −0.010 on 4 events). Conditions 3 and G2 passed.
+
+**Not established:** that a daily lake chance cannot be built. The gate was met, but 16 events at 12 sites give an
+interval about ±0.004 wide on a Brier of 0.025, so a 10% margin could not have been shown by any candidate on these
+rows; the test was runnable and underpowered for its margin. It was also not shown that the ranking gain is useless: the
+between-lake information it carries is what #585's past-sample tile already states in words.
+
+**What would reopen this row's exceedance question** (not a rerun of this candidate): (a) the 2027 lake season's samples
+(about 250 rows at these 12 sites, judged forward with the own history frozen before 1 May 2027), which doubles the
+events only if a bad season recurs; (b) a candidate that carries a within-season signal at a lake, for example a
+lake-specific wet-day response or a recalibrated line probability from the lake range model (whose site intercept
+ranked best here, AUC 0.89, but sat too high at the line); (c) an account of Derwent Water's 2025 season, which held 8
+results over 900 in 20 samples while its other seasons held 4 in 41. Each needs its own protocol before any outcome
+is read.
+
+**No change to the site:** the over-900 chance stays off lake pages; `shadow_lake_range_v1` runs unchanged for its
+2027 read; no new shadow log is added.
+
+## Continuation record (after the run)
+
+| Field | Content |
+|---|---|
+| Identity | LAKE-CONC; this PR; `scripts/lake_own_rate_test.py`, `docs/LAKE-OWN-RATE-TEST-2026-11-scores.json`, `-rows.csv` |
+| Evidence | Fail as stated: skill over the usual rate 0.042 [interval on the Brier difference −0.002 to +0.006] against a margin of 0.10; production not beaten with the interval below zero; the gain is Derwent Water's alone |
+| Stage and claim | Development; the exceedance candidate is archived in this version. Supported: "a lake's own past rate says which lakes run high, not which day"; the lake range (concentration) stays in shadow for 2027 |
+| Next deliverable | None scheduled for this candidate. The lake range's 2027 read (on or after 15 Oct 2027) stays the row's milestone; an exceedance candidate of a different kind, if one is proposed, gets its own protocol |
+| Budget | None spent: offline, committed files, no request |
+| Release route | Not applicable: no shadow log, no page change |
