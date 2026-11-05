@@ -777,8 +777,15 @@
   },
   "621": {
    "n": 621,
-   "state": "open",
+   "state": "merged",
    "branch": "codex/shoreline-band-check",
+   "branch_exists": true,
+   "date": "2026-11-05"
+  },
+  "622": {
+   "n": 622,
+   "state": "open",
+   "branch": "claude/shore-band-second-sample",
    "branch_exists": true,
    "date": null
   }
