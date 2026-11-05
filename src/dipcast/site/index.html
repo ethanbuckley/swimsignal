@@ -2672,12 +2672,14 @@ const dayRows = d => { const on = daily(d), past = (d.past || []).slice(-1), sho
       + `</span>${band ? `<span class="sr">${bandSaid(x.band)}</span>` : ''}${gone ? '<span class="dx"></span>' : dayWx(d, x, on)}</${tag}>`; }).join('') + '</div>'; };
 // The drawings. A scale: its bands as steps, the value a dot in its level's colour (Apple's UV tile,
 // stepped, since the bands are). A range: the river's usual range, today's level a dot on it.
-const scaleBar = (v, cuts, lv, label) => { const e = [0, ...cuts, 1];
-  return `<div class="scale" role="img" aria-label="${esc(label)}"><span>${e.slice(1).map((c, i) => `<i style="flex:${(c - e[i]).toFixed(2)}"></i>`).join('')}</span>`
+// A screen reader skips the scale and hears only the range: the figure and the level word above each say
+// the rest, which the drawings' own labels said a second time (screen-reader pass, 5 Nov 2026).
+const scaleBar = (v, cuts, lv) => { const e = [0, ...cuts, 1];
+  return `<div class="scale" aria-hidden="true"><span>${e.slice(1).map((c, i) => `<i style="flex:${(c - e[i]).toFixed(2)}"></i>`).join('')}</span>`
     + `<b class="${lv ? tone(lv) : 'na'}" style="left:${(Math.max(0, Math.min(1, v)) * 100).toFixed(1)}%"></b></div>`; };
 const rangeBar = rs => { const lo = rs.typical_low_m, hi = rs.typical_high_m; if (!(hi > lo)) return '';
   const p = Math.max(0, Math.min(1, (rs.level_m - lo) / (hi - lo)));
-  return `<div class="range" role="img" aria-label="${fmt(rs.level_m, 2)} m, in a usual range of ${fmt(lo, 2)} to ${fmt(hi, 2)} m"><div><b style="left:${(p * 100).toFixed(1)}%"></b></div>`
+  return `<div class="range" role="img" aria-label="Usual range ${fmt(lo, 2)} to ${fmt(hi, 2)} m"><div><b style="left:${(p * 100).toFixed(1)}%"></b></div>`
     + `<p><span>${fmt(lo, 2)}</span><span>${fmt(hi, 2)} m</span></p></div>`; };
 // A company feed that did not answer the last poll: its overflows keep their last snapshot, marked down.
 const feedDown = now => (now.feed_down || []).map(f => ` ${esc(companyName(f.company))}'s live feed is down${f.since ? ` (last answered ${new Date(f.since).toLocaleString('en-GB', { weekday: 'short', hour: '2-digit', minute: '2-digit' })})` : ''}: its ${f.overflows} overflow${f.overflows === 1 ? '' : 's'} here could be spilling unseen.`).join('');
@@ -2778,7 +2780,7 @@ const sunPath = (w, dot = true) => { const m = s => { const [h, mm] = String(s).
     + (dot ? `<circle${tn > rise && tn < set ? '' : ' class="down"'} cx="${x(tn)}" cy="${y(tn)}" r="4.5"/>` : '') + '</svg>'; };
 // A tile: the label with its icon, the figure (with its unit, and a level word under it), the drawing,
 // how the figure stands to the level above (rel: levels.js, tileLine), the sentence, the weather's credit where its figures are, and the rest folded in the corner.
-const tile = o => `<div class="tile${o.wide ? ' wide' : ''}"><h2 class="t-lab">${o.icon}<span>${o.label}</span></h2>`
+const tile = o => `<div class="tile${o.wide ? ' wide' : ''}"><h${o.sub ? 3 : 2} class="t-lab">${o.icon}<span>${o.label}</span></h${o.sub ? 3 : 2}>`
   // A figure in words of more than one ("Out of season", "None seen") at the heading's size, not the number's: in
   // the number's it was the largest text on the tile and said the least (31 Oct 2026).
   + (o.fig === undefined ? '' : `<p class="t-fig${o.figTone ? ' ' + o.figTone : ''}${typeof o.fig === 'string' && /^[A-Za-z]+ [A-Za-z ]+$/.test(o.fig) ? ' t-fig-words' : ''}">${o.fig}${o.unit ? `<small>${o.unit}</small>` : ''}${o.word ? `<span class="t-word ${o.wordTone || ''}">${o.word}</span>` : ''}</p>`)
@@ -2819,12 +2821,12 @@ function facts(d, iso = null) {
     // "3 of 100, Low risk" under "High risk from sewage spills", a contradiction to read, though both were true).
     const i = now.risk * 100, r = Math.round(x0.risk * 100), h = d.assumptions.recent_spill_hours;
     out.push({ icon: ICON.spills, label: 'Sewage spills, right now', fig: Math.round(i), unit: 'of 100', word: `${cap(now.label)} risk`, wordTone: tone(now.label),
-      vis: scaleBar(shownRisk(now.risk), SPILL_CUTS, now.label, `Sewage spill risk right now ${Math.round(i)} of 100: ${now.label} risk`), rel: 'This sets the level above.',
+      vis: scaleBar(shownRisk(now.risk), SPILL_CUTS, now.label), rel: 'This sets the level above.',
       say: `${now.discharging_upstream ? 'Spills under way upstream' : `Spills upstream in the last ${h} hours`} set it. The rain forecast alone gives ${x0.risk > 0 && r < 1 ? 'under 1' : r} of 100 for today, ${x0.label} risk.`,
       more: `The sewage spill risk, a 0–100 score for sewage from upstream reaching the spot, after travel time, die-off and dilution. Right now's counts the spills the overflows' live feeds report, each until ${h} hours after its water has passed; a day's counts the spills the rain forecast makes likely. A score, not a probability. ${bandWords(SPILL_CUTS, c => Math.round(c * 100))}. <a href="#about-exposure">What this counts</a>` }); }
   else if (!d.error && x0 && hasData(x0)) { const i = x0.risk * 100;
     out.push({ icon: ICON.spills, label: 'Sewage spills', fig: i > 0 && i < .5 ? '&lt;1' : Math.round(i), unit: 'of 100', word: `${cap(x0.label)} risk`, wordTone: tone(x0.label),
-      vis: scaleBar(shownRisk(x0.risk), SPILL_CUTS, x0.label, `Sewage spill risk ${i > 0 && i < .5 ? 'under 1' : Math.round(i)} of 100: ${x0.label} risk`), rel: tileLine(d, 'spill', iso),
+      vis: scaleBar(shownRisk(x0.risk), SPILL_CUTS, x0.label), rel: tileLine(d, 'spill', iso),
       // Not on today: the five days' sentence above starts with the same words (5 Nov 2026, said twice on every spot).
       say: first ? '' : `${cap(spilling(x0, total))} ${when}.`,
       more: `The sewage spill risk, a 0–100 score for sewage from upstream reaching the spot, after travel time, die-off and dilution. A score, not a probability. ${bandWords(SPILL_CUTS, c => Math.round(c * 100))}. <a href="#about-exposure">What this counts</a>` }); }
@@ -2845,7 +2847,7 @@ function facts(d, iso = null) {
     if (off) out.push({ wide: true, late: true, icon: ICON.water, label: ecoliName(true), fig: ECOLI_OFF, say: ecoliNotes(d, ecoliCheck(), x0)[0],
       fold: ecoliFold(d, [x0, x1].filter(x => x && !nil(x.p_ecoli_gt900))), more: ecoliMore() });
     else out.push({ wide: true, icon: ICON.water, label: 'E.&nbsp;coli estimate', fig: pct(x0.p_ecoli_gt900) + '%', word: `${cap(b)} risk`, wordTone: tone(b),
-      vis: scaleBar(x0.p_ecoli_gt900, ECOLI_CUTS, b, `${pct(x0.p_ecoli_gt900)}% chance: ${b} risk`), rel: tileLine(d, 'water', iso),
+      vis: scaleBar(x0.p_ecoli_gt900, ECOLI_CUTS, b), rel: tileLine(d, 'water', iso),
       say: `Chance a water sample would show E.&nbsp;coli over 900 per 100&nbsp;ml ${when}${x1 && !nil(x1.p_ecoli_gt900) && !untested(x1) ? `; ${pct(x1.p_ecoli_gt900)}% tomorrow` : ''}. ${ecoliSaid(d, x0)}`,
       more: ecoliMore() }); }
   else if (d.ecoli_typical && !daily(d)) { const t = d.ecoli_typical;
@@ -3198,7 +3200,7 @@ function dayDetail(d, x) {
   if (!nil(x.rain_48h_mm)) rows.push(factorRow('Rain here', null, `${Math.round(x.rain_48h_mm)} mm`, 'In the 48 hours to midday.'));
   rows.push(weatherRow(d, x.date));
   rows.push(howSure(d, j));
-  return `<div class="dd-head"><h2 class="dd-t">${when}</h2><button type="button" class="linkbtn" id="day-close">Close</button></div>`
+  return `<div class="dd-head"><h3 class="dd-t">${when}</h3><button type="button" class="linkbtn" id="day-close">Close<span class="sr"> ${when}</span></button></div>`
     + `<div class="factors">${rows.join('')}${standing(d, x.date)}</div>`
     + (d.unlisted ? '' : `<p class="sub dd-rec"><a href="${esc(ROOT.pathname)}record.html#spot=${esc(encodeURIComponent(d.id))}&amp;day=${x.date}">Print a decision record</a></p>`);   // record.js
 }
@@ -3509,6 +3511,10 @@ function gaps(d, list) {
   const n = list ? (DATA.build || {}).today_rain_unavailable : 0;
   return n ? note(`${n === 1 ? '1 spot has' : `${n} spots have`} no rainfall data for today in this update.`) : '';
 }
+// A live region (role=status, aria-live) written only when its words change: a screen reader reads a
+// region out again each time it is rewritten, and redraws (a day picked, an area opened) rewrote the
+// same "112 spots." and "Starting from Reading." (screen-reader pass, 5 Nov 2026). html: the words are markup.
+const sayOnChange = (el, said, html = false) => { if (!el || el.__said === said) return; el.__said = said; if (html) el.innerHTML = said; else el.textContent = said; };
 // The notices, in a box redrawn when the connection drops or returns, or the forecast turns stale,
 // while the page stays open. Only then: the stale notice is an alert, and a screen reader reads an
 // alert out again each time it is redrawn, so a redraw every minute would repeat it every minute.
@@ -3898,7 +3904,7 @@ function drawSpots() {
     : items.length ? items.map(spotItem).join('')
     : `<li class="empty"><p class="below">No inland forecasts match. SwimSignal forecasts ${DATA.spots.length} river and lake spots ${spotsWhere()}. ${regionalLink(VIEW.q)} Missing yours? <a href="feedback.html?type=spot">Request it</a>.</p>`
       + `<button type="button" class="btn" id="clear-filters">Clear search and filters</button></li>`;
-  document.getElementById('count').textContent = items.length === DATA.spots.length ? `${items.length} spot${items.length === 1 ? '' : 's'}.` : `Showing ${items.length} of ${DATA.spots.length} spots.`;
+  sayOnChange(document.getElementById('count'), items.length === DATA.spots.length ? `${items.length} spot${items.length === 1 ? '' : 's'}.` : `Showing ${items.length} of ${DATA.spots.length} spots.`);
   document.getElementById('count').classList.toggle('sr', !items.length);   // still read out as a status; the page says it already
   bindClear();
   bindItems(ul);
@@ -4696,18 +4702,18 @@ function drawPlan(fit = false) {
   // Without a place yet the tile below asks for one, so the line under the field stays empty.
   const say = planNote || (!PLAN.from ? '' : PLAN.from.here ? (VIEW.here ? 'Starting from your location.' : 'Starting from your location, once this device shares it.')
     : `Starting from ${planWhere()}.`);
-  document.getElementById('plan-where').innerHTML = say + (say && geo && !(PLAN.from && PLAN.from.here && VIEW.here) ? ' ' + here : '');
+  sayOnChange(document.getElementById('plan-where'), say + (say && geo && !(PLAN.from && PLAN.from.here && VIEW.here) ? ' ' + here : ''), true);
   selLayer.clearLayers(); PLAN_BOUNDS = null;
-  if (!from) { sum.textContent = '';
+  if (!from) { sayOnChange(sum, '');
     box.innerHTML = `<div class="empty-saved tile"><h2 class="sec-h">Where are you starting from?</h2><p class="sub">Type a town, a village or a district of a city in England or Wales${geo ? ', or use your location, which stays on this device' : ''}.</p>`
       + (geo ? `<button type="button" class="btn primary" data-plan-here>Use my location</button>` : '') + '</div>' + planSuggest();
     return; }
   const r = planSpots(DATA.spots, PLAN, s => km(from, [s.lat, s.lon]) / MILE_KM), on = dayWord(PLAN.day);
   const reach = PLAN.within ? `within ${PLAN.within} miles of ${planWhere()}` : `by distance from ${planWhere()}`;
   const better = r.count ? betterDay(r.groups.flat().map(o => o.s), PLAN.day, planDates()) : null;
-  sum.innerHTML = !r.count ? '' : `<b>${r.count} ${planNoun(r.count)}</b> ${reach}.`
+  sayOnChange(sum, (!r.count ? '' : `<b>${r.count} ${planNoun(r.count)}</b> ${reach}.`
     + (r.count >= 2 ? ` <button type="button" class="linkbtn small" data-plan-compare>${planCompareWord(!!PLAN.compare)}</button>` : '')
-    + (better ? ` More of them are at low risk ${dayWord(better.date)}: ${better.low}, against ${better.was} ${on}. <button type="button" class="linkbtn small" data-plan-day="${better.date}">Show ${dayName(better.date)}</button>` : '');
+    + (better ? ` More of them are at low risk ${dayWord(better.date)}: ${better.low}, against ${better.was} ${on}. <button type="button" class="linkbtn small" data-plan-day="${better.date}">Show ${dayName(better.date)}</button>` : '')), true);
   // A low risk and a plain level are told apart in the headings: one is a forecast that
   // looked and found the risk low, the other has nothing upstream to forecast from (levels.js, FOUND_NONE).
   // A spot with official advice (plan.js, planAdvised) keeps its level and its group, last in it, with the
@@ -5435,17 +5441,18 @@ function spotTop(d) {
 // The forecast's tiles for the open day (iso), or today, under a heading that names the day, so that
 // the page has one date; showDay draws them again. Then the readings, which no day changes, under a
 // heading of their own (nowTiles). The full-width tiles go after the half ones, which then pair up.
+// Their labels are h3 under the group's h2 (sub), so a screen reader's list of headings nests them.
 const dayTiles = (d, iso = null) => { const x = iso ? (d.days || []).slice(0, 5).find(y => y.date === iso) : null;
   const on = x && x.date !== today() ? new Date(x.date + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' }) : 'today';
   const fx = facts(d, x ? x.date : null).filter(o => o.icon !== ICON.rating && !o.live && !IN_CONDITIONS(o));
   return `<section class="tiles" id="day-tiles" aria-labelledby="day-tiles-h"><h2 class="grp-h" id="day-tiles-h">Forecast for ${on}</h2>`
-    + [...fx.filter(o => !o.wide), ...fx.filter(o => o.wide)].map(tile).join('') + '</section>'; };
+    + [...fx.filter(o => !o.wide), ...fx.filter(o => o.wide)].map(o => tile({...o, sub: true})).join('') + '</section>'; };
 // The rain, the air, the water's temperature and the river's level are in the conditions tiles and the day rows
 // (conditionsSummary, dayWx) since 31 Oct 2026; their tiles here said the same figures a second time.
 const IN_CONDITIONS = o => o.icon === ICON.rain || o.icon === ICON.sun || o.icon === ICON.level || o.label === 'Water temperature';
 const nowTiles = d => { const fx = facts(d).filter(o => o.live && !IN_CONDITIONS(o)); if (!fx.length) return '';
   return `<section class="tiles" id="now-tiles" aria-labelledby="now-tiles-h"><h2 class="grp-h" id="now-tiles-h">Latest readings</h2>`
-    + `<p class="grp-sub">Measured, not forecast, so the same on every day.</p>${fx.map(tile).join('')}</section>`; };
+    + `<p class="grp-sub">Measured, not forecast, so the same on every day.</p>${fx.map(o => tile({...o, sub: true})).join('')}</section>`; };
 // The spot's conditions as four small tiles, figures first: the water's temperature, the river's or lake's level on its
 // usual range, the rain here and the day's air (31 Oct 2026: as sentences under "Water conditions" they read as small
 // print, and the rain and the air were folded away). Each says at the figure what kind it is, measured or an estimate,
