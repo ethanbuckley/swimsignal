@@ -789,6 +789,13 @@
    "branch_exists": true,
    "date": null
   },
+  "623": {
+   "n": 623,
+   "state": "open",
+   "branch": "claude/satellite-shoreline-sensitivity-71b4b0",
+   "branch_exists": true,
+   "date": null
+  },
   "624": {
    "n": 624,
    "state": "open",
@@ -2634,7 +2641,7 @@
    "verdict": "Exploratory, offline, on cached scene classification. In clear scenes the outermost ring of a site's water is classed as not water 7.3% of the time at the bathing lakes, the second ring 1.73% against 1.20% inside: under the pre-stated rule the one-pixel margin is kept. A two-pixel margin keeps every site and makes 10 to 12% more scenes usable; a three-pixel one drops 3 bathing lakes and 7 chlorophyll points.",
    "scope": "18 bathing-water lakes (14 past the size rule) and 40 chlorophyll points, every cached scene 2020-26; the satellite tests' own caches, unchanged. The original classification check could not measure the index shift because no band pixels were cached; the separate follow-up measured 50 selected site-scenes. Not an algae or safety finding.",
    "stage": "reference",
-   "stage_note": "Production keeps margin 1. Two 50-scene band comparisons found a median absolute shift of 0.0041 and 13 of 98 scenes shifting by 0.02 or more; the outlier inspection (#623) found the large shifts are near-zero-reflectance scenes, not a mask-width effect. From contract 1.4 every new pilot reading records its brightness, pixel IQR and inner-core reading with a low-signal mark. Review the margin in the 2027 protocol before 1 May 2027.",
+   "stage_note": "Production keeps margin 1. Two 50-scene band comparisons found a median absolute shift of 0.0041 and 13 of 98 scenes shifting by 0.02 or more; the outlier inspection (sat-shore-outliers, #623) found the large shifts are near-zero-reflectance scenes, not a mask-width effect. From contract 1.4 (#624) every new pilot reading records its brightness, pixel IQR and inner-core reading with a low-signal mark. Review the margin in the 2027 protocol before 1 May 2027.",
    "records": [
     {
      "doc": "docs/SATELLITE-SHORE-MARGIN-2026-11.md",
@@ -2657,6 +2664,39 @@
     620,
     621,
     622,
+    623,
+    624
+   ]
+  },
+  {
+   "id": "sat-shore-outliers",
+   "title": "Satellite lake readings: the images behind the shore-margin outliers, and a sensitivity flag",
+   "section": "satellite",
+   "topics": [
+    "lakes",
+    "satellite"
+   ],
+   "verdict": "Exploratory, 26 selected scenes read (118 requests, 72.3 MiB) plus the second sample's 50. The 0.23 Serpentine shift and both Lake District outliers are scenes where the water's B4 and B5 reflectance is a few thousandths (inner B4 0.0005, B5 0.0007 to 0.0025), so the index is a ratio of noise and the brighter one-pixel shore rim steers the median; not a shore bloom, bottom or mask-width effect. Pre-stated pair test: 5 of 5 big same-day pairs have their extreme scene dark or spread, 1 of 4 small pairs flagged. Proposed flags (brightness below 0.015, pixel IQR at or above 0.10, narrow core) catch 17 of 17 shifts of 0.02 or more on 76 seen scenes; dark-or-spread marks 10 of 50 in the stratified sample.",
+   "scope": "14 bathing-water lakes, seen imagery 2020-26; thresholds set on the second sample's 50 scenes, so exploratory. Says nothing about chlorophyll, algae, safety, or which margin is more accurate; firing rate across the unread archive unknown.",
+   "stage": "live",
+   "stage_note": "Built as contract 1.4 (#624): the weekly pilot and refresher record brightness, pixel IQR and the inner-core reading on every new reading, and /lakes.html shows a low-signal note (brightness < 0.015 or IQR >= 0.10). Earlier readings unmarked; thresholds provisional until the 2027 protocol review.",
+   "next": "Pilot diagnostics (contract minor version) so the flags accumulate prospectively; include in the 2027 shallow-lake protocol review before 1 May 2027.",
+   "records": [
+    {
+     "doc": "docs/SATELLITE-SHORE-OUTLIERS-2026-11.md",
+     "quote": "**The Serpentine outlier (24 June 2026, 0.24 to 0.007) is dark water, not a shore bloom.**"
+    },
+    {
+     "doc": "docs/SATELLITE-SHORE-OUTLIERS-2026-11.md",
+     "quote": "**5 of 5 big pairs** have their extreme scene dark or spread (every one is dark), and"
+    },
+    {
+     "doc": "docs/SATELLITE-SHORE-OUTLIERS-2026-11.md",
+     "quote": "| Both | 76 | 17 | 17 / 9 / 8 | 26 / 14 / 3 | 35 / 10 / 7 | 50 / 17 / 0 |"
+    }
+   ],
+   "prs": [
+    623,
     624
    ]
   }
