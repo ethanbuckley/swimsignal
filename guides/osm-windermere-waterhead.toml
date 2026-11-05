@@ -1,4 +1,4 @@
-# Windermere, Waterhead, Ambleside. Desk check of the park authority's, the council's and the pier operator's pages, 20 October 2026.
+# Windermere, Waterhead, Ambleside. Desk check of the park authority's, the council's and the pier operator's pages, 20 October 2026. The park authority's rules for boats and boards (paddle) added 30 October 2026; the other facts were not rechecked then, so "checked" stays.
 # Prices and hours change by season: recheck every confirmed fact before changing "checked".
 checked = 2026-10-20
 how = "desk"
@@ -71,4 +71,11 @@ topic = "rules"
 text = "On Windermere the National Park Authority offers a short-term event registration, so an event can take place on the lake without each participant registering individually with the Authority. Organisers must meet the criteria in its guidance and use its event application form; the contact is the Ranger Team Leader, Northern Area. The page does not mention swimming."
 status = "confirmed"
 source = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/lake-byelaw-enforcement/windermere-byelaws/windermere-byelaws-exemption-process/"
+source_name = "Lake District National Park Authority"
+
+[[fact]]
+topic = "paddle"
+text = "Canoes, kayaks and paddleboards are allowed on Windermere. Powered craft must be registered, and speed limits of 10 and 6 nautical miles an hour apply, depending on where you are."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/lakes-activities-guide/"
 source_name = "Lake District National Park Authority"

@@ -101,6 +101,10 @@ EDM_ANNUAL_RETURNS = "https://services1.arcgis.com/JZM7qJpmv7vJ0Hzx/arcgis/rest/
 # keeps. Nothing from it is shown on the site or published.
 SCOTTISH_WATER_API = "https://api.scottishwater.co.uk/overflow-event-monitoring/v1/near-real-time"
 SCOTTISH_WATER = os.environ.get("DIPCAST_SCOTTISH_WATER", "") == "1"
+# The Scotland trial (scotland_trial.py): Scottish Water's overflows join the published forecasts, with
+# Scotland's own calibration map, and the Scottish spots (spots-scotland.csv) are listed. Off unless
+# DIPCAST_SCOTLAND_TRIAL=1, and only with DIPCAST_SCOTTISH_WATER=1, which polls the live feed it reads.
+SCOTLAND_TRIAL = os.environ.get("DIPCAST_SCOTLAND_TRIAL", "") == "1"
 
 # ---------------------------------------------------------------------------
 # Rainfall: Open-Meteo. Archive is ERA5-Land reanalysis at ~0.1 deg. No key: the free hosts below;

@@ -19,7 +19,7 @@ from pathlib import Path
 
 import httpx
 
-from dipcast import config
+from dipcast import config, typical
 from dipcast.coastal import ID, TZ, instant, uri, value, when
 
 BASE = "https://environment.data.gov.uk/wales/bathing-waters/doc"
@@ -143,6 +143,13 @@ def _sample_text(sample: dict) -> str:
             + (f', intestinal enterococci {count(ent)}' if ent else '') + ' per 100 ml')
 
 
+def _water(site: dict) -> str:
+    """The site's provisional water temperature line (coastal.water_line), after a break, or nothing."""
+    from dipcast.coastal import water_line
+    line = water_line(site)
+    return f'<br>{escape(line)}' if line else ''
+
+
 def render(snapshot: dict) -> str:
     """The Welsh list, server-rendered so it works without JavaScript. Every line carries its date.
     The page's script (coverage.html) replaces the samples with NRW's current ones and fills the
@@ -158,13 +165,15 @@ def render(snapshot: dict) -> str:
                      f'<a href="{escape(s["profile"], quote=True)}">{escape(s["name"])}</a>'
                      f'<p class="small">{escape(s["kind"].title())} · {escape(rating)}<br>'
                      f'<span class="wales-advice">Current NRW forecast: open the profile</span><br>'
-                     f'<span class="wales-sample">{_sample_text(sample)}</span></p></li>')
+                     f'<span class="wales-sample">{_sample_text(sample)}</span>{_water(s)}'
+                     + (f'<br>{escape(typical.line(s["typical"]))}' if s.get("typical") else '') + '</p></li>')
     inland = sum(s["kind"] in ("lake", "river") for s in snapshot["sites"])
     dated = (f'Snapshot of sites and samples {when(snapshot["fetched_at"])}.' if snapshot.get("state") != "live"
              else f'Sites and samples as published {when(snapshot["fetched_at"])}.')
     return (f'<p class="small">{len(cards)} designated Welsh bathing waters, {inland} of them on lakes or rivers. '
             f'{dated} NRW forecasts pollution risk at some sites in the season; a forecast of no increased risk '
             'is not a water test, and no forecast does not mean clean water.</p>'
+            + typical.note(snapshot, inland=True) +
             '<p class="small" id="wales-status" aria-live="polite"></p>'
             '<label for="wales-search">Find a Welsh bathing water</label> '
             '<input type="search" id="wales-search" placeholder="Bathing-water name">'

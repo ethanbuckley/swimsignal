@@ -1,0 +1,18 @@
+# River Wharfe, Burnsall. Desk check of the Yorkshire Dales National Park Authority's page, 29 October 2026.
+# The old riverside car park has closed, so older directions are wrong: recheck before changing "checked".
+checked = 2026-10-29
+how = "desk"
+
+[[fact]]
+topic = "parking"
+text = "Burnsall Park, the field once used as the visitors' car park, is now closed. Parking in Burnsall is extremely limited, and legal spaces are very hard to find, particularly at weekends and in good weather."
+status = "confirmed"
+source = "https://www.yorkshiredales.org.uk/places/burnsall/"
+source_name = "Yorkshire Dales National Park Authority"
+
+[[fact]]
+topic = "parking"
+text = "The Authority strongly encourages visitors to consider places away from Burnsall and the busier south of the National Park, where parking and facilities are easier to find. Police and traffic enforcement officers, with National Park Rangers, patrol the area."
+status = "confirmed"
+source = "https://www.yorkshiredales.org.uk/places/burnsall/"
+source_name = "Yorkshire Dales National Park Authority"

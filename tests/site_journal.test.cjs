@@ -259,12 +259,14 @@ test('an empty Saved page shows the journal once a swim exists, or once asked; w
   assert.equal(shown([], { hash: '#journal' }), true, 'saved/#journal, from a link');
   assert.equal(shown([], { spots: [{ id: 'a' }] }), true, 'beside saved spots, as before');
   // The empty tile: one sentence, Find a spot, and the link while the journal is hidden.
-  const empty = page.slice(page.indexOf("  else v += `<div class=\"empty-saved tile\"><p class=\"sub\">Save a spot"), page.indexOf("  if (gone) v +="));
-  assert.match(empty, /Save a spot\$\{many \? ` to \$\{named\}` : ''\} from its page and it shows here with the days ahead\./);
+  const empty = page.slice(page.indexOf("  else v += `<div class=\"empty-saved tile\">"), page.indexOf("  if (gone) v +="));
+  // A first visit says what saving does and where it is kept (2 Nov 2026).
+  assert.match(empty, /Save a spot\$\{many \? ` to \$\{named\}` : ''\} from its page and it shows here with the days ahead/);
+  assert.match(empty, /Saved spots stay in this browser: nothing is sent to SwimSignal\./);
   assert.match(empty, /id="find">Find a spot<\/a>/);
-  assert.match(empty, /swimsShown\(spots\) \? '' : '<p class="empty-more"><button type="button" class="linkbtn" id="jn-show">Swim journal<\/button><\/p>'/);
+  assert.match(empty, /<summary>Swim journal<\/summary>/);   // the activity choice is on Plan a swim (31 Oct 2026)
   assert.doesNotMatch(empty, /<h2/, 'one sentence, no heading over it');
-  assert.match(page, /\+ \(swimsShown\(spots\) \? swimsCard\(\) : ''\);/);
+  assert.match(page, /below \+= pair\(swimsShown\(spots\) \? swimsCard\(\) : '', passport\);/);
   // With a swim, the journal's controls are the same as ever.
   const h = j.journalSection([{ key: 'k1', id: 'stour-dedham', name: 'River Stour, Dedham', date: TODAY, time: '07:00', note: '', photos: 0 }]);
   for (const id of ['jn-export', 'jn-import', 'jn-clear', 'jn-file']) assert.ok(h.includes(`id="${id}"`), id);

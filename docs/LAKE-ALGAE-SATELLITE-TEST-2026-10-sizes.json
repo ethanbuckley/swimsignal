@@ -1,0 +1,260 @@
+{
+ "ukf2208-09701": {
+  "name": "Rutland Water Whitwell Creek",
+  "water_body": "Rutland Water",
+  "tiles": {
+   "MGRS-30UXD": {
+    "n_core": 75,
+    "n_site": 122,
+    "items": 424,
+    "passes": true
+   }
+  },
+  "in_test": true
+ },
+ "ukf2208-09702": {
+  "name": "Rutland Water Sykes Lane",
+  "water_body": "Rutland Water",
+  "tiles": {
+   "MGRS-30UXD": {
+    "n_core": 163,
+    "n_site": 194,
+    "items": 424,
+    "passes": true
+   }
+  },
+  "in_test": true
+ },
+ "ukf1400-09750": {
+  "name": "Colwick Country Park (West Lake)",
+  "water_body": "Colwick Country Park, West Lake",
+  "tiles": {
+   "MGRS-30UXD": {
+    "n_core": 45,
+    "n_site": 74,
+    "items": 424,
+    "passes": true
+   }
+  },
+  "in_test": true
+ },
+ "ukk1302-11760": {
+  "name": "Cotswold Country Park and Beach",
+  "water_body": "Cotswold Country Park lake",
+  "tiles": {
+   "MGRS-30UWC": {
+    "n_core": 157,
+    "n_site": 231,
+    "items": 425,
+    "passes": true
+   }
+  },
+  "in_test": true
+ },
+ "uki1101-11910": {
+  "name": "Hampstead Heath (Ladies Pond)",
+  "water_body": "Hampstead Heath Ladies Pond",
+  "tiles": {
+   "MGRS-30UXC": {
+    "n_core": 0,
+    "n_site": 0,
+    "items": 430,
+    "passes": false
+   }
+  },
+  "in_test": false
+ },
+ "uki1101-11920": {
+  "name": "Hampstead Heath (Mens Pond)",
+  "water_body": "Hampstead Heath Men's Pond",
+  "tiles": {
+   "MGRS-30UXC": {
+    "n_core": 0,
+    "n_site": 0,
+    "items": 430,
+    "passes": false
+   }
+  },
+  "in_test": false
+ },
+ "uki1101-11930": {
+  "name": "Hampstead Heath (Mixed Pond)",
+  "water_body": "Hampstead Heath Mixed Pond",
+  "tiles": {
+   "MGRS-30UXC": {
+    "n_core": 0,
+    "n_site": 0,
+    "items": 430,
+    "passes": false
+   }
+  },
+  "in_test": false
+ },
+ "uki1106-11940": {
+  "name": "The Serpentine - Hyde Park",
+  "water_body": "The Serpentine",
+  "tiles": {
+   "MGRS-30UXC": {
+    "n_core": 69,
+    "n_site": 127,
+    "items": 429,
+    "passes": true
+   }
+  },
+  "in_test": true
+ },
+ "ukj2310-11945": {
+  "name": "Frensham Great Pond",
+  "water_body": "Frensham Great Pond",
+  "tiles": {
+   "MGRS-30UXB": {
+    "n_core": 201,
+    "n_site": 237,
+    "items": 214,
+    "passes": true
+   }
+  },
+  "in_test": true
+ },
+ "ukk1100-36050": {
+  "name": "Henleaze Lake",
+  "water_body": "Henleaze Lake",
+  "tiles": {
+   "MGRS-30UWC": {
+    "n_core": 0,
+    "n_site": 0,
+    "items": 425,
+    "passes": false
+   }
+  },
+  "in_test": false
+ },
+ "ukd1203-45625": {
+  "name": "Windermere, Lakeside YMCA",
+  "water_body": "Windermere",
+  "tiles": {
+   "MGRS-30UVF": {
+    "n_core": 184,
+    "n_site": 227,
+    "items": 431,
+    "passes": true
+   },
+   "MGRS-30UWF": {
+    "n_core": 182,
+    "n_site": 225,
+    "items": 431,
+    "passes": true
+   }
+  },
+  "in_test": true
+ },
+ "ukd1203-45650": {
+  "name": "Windermere, Millerground Landing",
+  "water_body": "Windermere",
+  "tiles": {
+   "MGRS-30UVF": {
+    "n_core": 322,
+    "n_site": 360,
+    "items": 432,
+    "passes": true
+   },
+   "MGRS-30UWF": {
+    "n_core": 322,
+    "n_site": 360,
+    "items": 432,
+    "passes": true
+   }
+  },
+  "in_test": true
+ },
+ "ukd1203-45675": {
+  "name": "Windermere, Rayrigg Meadow",
+  "water_body": "Windermere",
+  "tiles": {
+   "MGRS-30UVF": {
+    "n_core": 288,
+    "n_site": 325,
+    "items": 432,
+    "passes": true
+   },
+   "MGRS-30UWF": {
+    "n_core": 287,
+    "n_site": 324,
+    "items": 432,
+    "passes": true
+   }
+  },
+  "in_test": true
+ },
+ "ukd1203-45700": {
+  "name": "Windermere, Fellfoot",
+  "water_body": "Windermere",
+  "tiles": {
+   "MGRS-30UVF": {
+    "n_core": 51,
+    "n_site": 84,
+    "items": 431,
+    "passes": true
+   },
+   "MGRS-30UWF": {
+    "n_core": 51,
+    "n_site": 84,
+    "items": 431,
+    "passes": true
+   }
+  },
+  "in_test": true
+ },
+ "ukd1230-45725": {
+  "name": "Coniston Water, Brown Howe",
+  "water_body": "Coniston Water",
+  "tiles": {
+   "MGRS-30UVF": {
+    "n_core": 263,
+    "n_site": 298,
+    "items": 431,
+    "passes": true
+   }
+  },
+  "in_test": true
+ },
+ "ukd1230-45750": {
+  "name": "Coniston Water, Boating Centre",
+  "water_body": "Coniston Water",
+  "tiles": {
+   "MGRS-30UVF": {
+    "n_core": 239,
+    "n_site": 286,
+    "items": 434,
+    "passes": true
+   }
+  },
+  "in_test": true
+ },
+ "ukd1230-45775": {
+  "name": "Coniston Water, Monk Coniston",
+  "water_body": "Coniston Water",
+  "tiles": {
+   "MGRS-30UVF": {
+    "n_core": 129,
+    "n_site": 169,
+    "items": 434,
+    "passes": true
+   }
+  },
+  "in_test": true
+ },
+ "ukd1101-45800": {
+  "name": "Derwent Water at Crow Park",
+  "water_body": "Derwent Water",
+  "tiles": {
+   "MGRS-30UVF": {
+    "n_core": 130,
+    "n_site": 169,
+    "items": 432,
+    "passes": true
+   }
+  },
+  "in_test": true
+ }
+}

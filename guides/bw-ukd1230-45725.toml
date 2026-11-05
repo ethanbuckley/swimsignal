@@ -1,4 +1,4 @@
-# Coniston Water, Brown Howe. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026; more facts, and every fact rechecked, 20 October 2026.
+# Coniston Water, Brown Howe. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026; more facts, and every fact rechecked, 20 October 2026. The park authority's rules for boats and boards (paddle) added 30 October 2026; the other facts were not rechecked then, so "checked" stays.
 # Prices and hours change by season: recheck every confirmed fact before changing "checked".
 checked = 2026-10-20
 how = "desk"
@@ -57,4 +57,11 @@ topic = "rules"
 text = "The National Park Authority lists Coniston among its busier lakes, with motorboats, sailing boats and other craft. It recommends a swim route along the shoreline, a bright hat, a tow float and a support craft such as a kayak or paddleboard. The page does not name Brown Howe."
 status = "confirmed"
 source = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/swimming-in-the-lake-district/"
+source_name = "Lake District National Park Authority"
+
+[[fact]]
+topic = "paddle"
+text = "Canoes, kayaks and paddleboards are allowed on Coniston Water; powered craft have a 10 mph speed limit."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/lakes-activities-guide/"
 source_name = "Lake District National Park Authority"

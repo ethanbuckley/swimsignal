@@ -1,0 +1,1222 @@
+{
+ "schema": "swimsignal.sampling-planner",
+ "version": "1.0.0",
+ "generated_at": "2026-10-31T18:14:16+00:00",
+ "claim": {
+  "public_wording": "Where the E. coli samples behind SwimSignal's model are thin, and what a simulation found for simple ways of spending a sampling budget. A planning aid for a conversation with a sampler, not a sampling plan: nothing here has been tested in real water.",
+  "not_claimed": [
+   "that any policy finds more pollution or teaches the model more in real water",
+   "that the information policy passed its test: it failed",
+   "a sampling plan or allocation for any site or day",
+   "the cost of any real sampling programme",
+   "that a site without samples is clean or polluted"
+  ]
+ },
+ "field_validation": false,
+ "coverage": {
+  "samples": 2265,
+  "years": [
+   "2023",
+   "2024",
+   "2025",
+   "2026"
+  ],
+  "months": [
+   "05",
+   "06",
+   "07",
+   "08",
+   "09"
+  ],
+  "by_month": [
+   365,
+   516,
+   516,
+   488,
+   380
+  ],
+  "outside_months": 0,
+  "wet": {
+   "mm_48h": 10,
+   "rows": 1537,
+   "wet_rows": 327,
+   "sites": 32,
+   "period": "2024-2026",
+   "rain": "archived lead-0 forecast rain, the concentration study's rows (docs/CONCENTRATION-STUDY-2026-11.md)"
+  },
+  "spots": {
+   "total": 109,
+   "rivers": 72,
+   "lakes": 37,
+   "with_ea": 38,
+   "with_local": 1,
+   "none_rivers": 52,
+   "none_lakes": 18,
+   "by_area": [
+    {
+     "area": "Cumbria and the Lake District",
+     "spots": 28,
+     "with_ea": 8,
+     "with_local": 1
+    },
+    {
+     "area": "East of England",
+     "spots": 8,
+     "with_ea": 3,
+     "with_local": 0
+    },
+    {
+     "area": "Lancashire",
+     "spots": 2,
+     "with_ea": 1,
+     "with_local": 0
+    },
+    {
+     "area": "London",
+     "spots": 5,
+     "with_ea": 5,
+     "with_local": 0
+    },
+    {
+     "area": "Midlands",
+     "spots": 3,
+     "with_ea": 3,
+     "with_local": 0
+    },
+    {
+     "area": "North East",
+     "spots": 3,
+     "with_ea": 0,
+     "with_local": 0
+    },
+    {
+     "area": "Peak District and Sheffield",
+     "spots": 8,
+     "with_ea": 0,
+     "with_local": 0
+    },
+    {
+     "area": "Severn and the Welsh borders",
+     "spots": 8,
+     "with_ea": 4,
+     "with_local": 0
+    },
+    {
+     "area": "South West",
+     "spots": 12,
+     "with_ea": 3,
+     "with_local": 0
+    },
+    {
+     "area": "South and South East",
+     "spots": 8,
+     "with_ea": 3,
+     "with_local": 0
+    },
+    {
+     "area": "Thames Valley",
+     "spots": 11,
+     "with_ea": 4,
+     "with_local": 0
+    },
+    {
+     "area": "Yorkshire",
+     "spots": 13,
+     "with_ea": 4,
+     "with_local": 0
+    }
+   ]
+  },
+  "sites": [
+   {
+    "spot_id": "bw-ukd1101-45800",
+    "name": "Derwent Water at Crow Park",
+    "kind": "lake",
+    "samples": 61,
+    "by_year": [
+     0,
+     20,
+     20,
+     21
+    ],
+    "by_month": [
+     9,
+     17,
+     13,
+     14,
+     8
+    ],
+    "rain_rows": 59,
+    "wet_rows": 20
+   },
+   {
+    "spot_id": "bw-ukd1203-45625",
+    "name": "Windermere, Lakeside YMCA",
+    "kind": "lake",
+    "samples": 80,
+    "by_year": [
+     20,
+     20,
+     20,
+     20
+    ],
+    "by_month": [
+     13,
+     21,
+     19,
+     17,
+     10
+    ],
+    "rain_rows": 57,
+    "wet_rows": 19
+   },
+   {
+    "spot_id": "bw-ukd1203-45650",
+    "name": "Windermere, Millerground Landing",
+    "kind": "lake",
+    "samples": 80,
+    "by_year": [
+     20,
+     20,
+     20,
+     20
+    ],
+    "by_month": [
+     13,
+     21,
+     19,
+     17,
+     10
+    ],
+    "rain_rows": 57,
+    "wet_rows": 18
+   },
+   {
+    "spot_id": "bw-ukd1203-45675",
+    "name": "Windermere, Rayrigg Meadow",
+    "kind": "lake",
+    "samples": 80,
+    "by_year": [
+     20,
+     20,
+     20,
+     20
+    ],
+    "by_month": [
+     13,
+     21,
+     19,
+     17,
+     10
+    ],
+    "rain_rows": 57,
+    "wet_rows": 17
+   },
+   {
+    "spot_id": "bw-ukd1203-45700",
+    "name": "Windermere, Fellfoot",
+    "kind": "lake",
+    "samples": 81,
+    "by_year": [
+     20,
+     20,
+     20,
+     21
+    ],
+    "by_month": [
+     13,
+     21,
+     20,
+     17,
+     10
+    ],
+    "rain_rows": 57,
+    "wet_rows": 17
+   },
+   {
+    "spot_id": "bw-ukd1230-45725",
+    "name": "Coniston Water, Brown Howe",
+    "kind": "lake",
+    "samples": 60,
+    "by_year": [
+     0,
+     20,
+     20,
+     20
+    ],
+    "by_month": [
+     9,
+     15,
+     15,
+     12,
+     9
+    ],
+    "rain_rows": 57,
+    "wet_rows": 28
+   },
+   {
+    "spot_id": "bw-ukd1230-45750",
+    "name": "Coniston Water, Boating Centre",
+    "kind": "lake",
+    "samples": 60,
+    "by_year": [
+     0,
+     20,
+     20,
+     20
+    ],
+    "by_month": [
+     9,
+     15,
+     15,
+     12,
+     9
+    ],
+    "rain_rows": 57,
+    "wet_rows": 30
+   },
+   {
+    "spot_id": "bw-ukd1230-45775",
+    "name": "Coniston Water, Monk Coniston",
+    "kind": "lake",
+    "samples": 60,
+    "by_year": [
+     0,
+     20,
+     20,
+     20
+    ],
+    "by_month": [
+     9,
+     15,
+     15,
+     12,
+     9
+    ],
+    "rain_rows": 57,
+    "wet_rows": 29
+   },
+   {
+    "spot_id": "bw-ukd4308-46501",
+    "name": "River Ribble at Edisford Bridge",
+    "kind": "river",
+    "samples": 60,
+    "by_year": [
+     0,
+     20,
+     20,
+     20
+    ],
+    "by_month": [
+     10,
+     15,
+     16,
+     14,
+     5
+    ],
+    "rain_rows": 59,
+    "wet_rows": 22
+   },
+   {
+    "spot_id": "bw-ukd6300-40752",
+    "name": "Sandy Lane, Chester",
+    "kind": "river",
+    "samples": 20,
+    "by_year": [
+     0,
+     0,
+     0,
+     20
+    ],
+    "by_month": [
+     2,
+     4,
+     5,
+     4,
+     5
+    ],
+    "rain_rows": 17,
+    "wet_rows": 1
+   },
+   {
+    "spot_id": "bw-uke2203-08903",
+    "name": "Nidd at the Lido, Knaresborough",
+    "kind": "river",
+    "samples": 60,
+    "by_year": [
+     0,
+     20,
+     20,
+     20
+    ],
+    "by_month": [
+     11,
+     12,
+     14,
+     13,
+     10
+    ],
+    "rain_rows": 57,
+    "wet_rows": 7
+   },
+   {
+    "spot_id": "bw-uke2204-08905",
+    "name": "Swale above Richmond Falls",
+    "kind": "river",
+    "samples": 21,
+    "by_year": [
+     0,
+     0,
+     0,
+     21
+    ],
+    "by_month": [
+     2,
+     6,
+     3,
+     5,
+     5
+    ],
+    "rain_rows": 17,
+    "wet_rows": 2
+   },
+   {
+    "spot_id": "bw-uke4100-08901",
+    "name": "Wharfe at Cromwheel, Ilkley",
+    "kind": "river",
+    "samples": 80,
+    "by_year": [
+     20,
+     20,
+     20,
+     20
+    ],
+    "by_month": [
+     15,
+     17,
+     19,
+     17,
+     12
+    ],
+    "rain_rows": 57,
+    "wet_rows": 10
+   },
+   {
+    "spot_id": "bw-uke4200-08904",
+    "name": "Wharfe at Wilderness Carpark",
+    "kind": "river",
+    "samples": 58,
+    "by_year": [
+     0,
+     20,
+     20,
+     18
+    ],
+    "by_month": [
+     11,
+     11,
+     15,
+     13,
+     8
+    ],
+    "rain_rows": 56,
+    "wet_rows": 6
+   },
+   {
+    "spot_id": "bw-ukf1400-09750",
+    "name": "Colwick Country Park (West Lake)",
+    "kind": "lake",
+    "samples": 69,
+    "by_year": [
+     20,
+     15,
+     15,
+     19
+    ],
+    "by_month": [
+     12,
+     13,
+     17,
+     15,
+     12
+    ],
+    "rain_rows": 45,
+    "wet_rows": 8
+   },
+   {
+    "spot_id": "bw-ukf2208-09701",
+    "name": "Rutland Water Whitwell Creek",
+    "kind": "lake",
+    "samples": 76,
+    "by_year": [
+     21,
+     20,
+     20,
+     15
+    ],
+    "by_month": [
+     13,
+     17,
+     16,
+     16,
+     14
+    ],
+    "rain_rows": 52,
+    "wet_rows": 8
+   },
+   {
+    "spot_id": "bw-ukf2208-09702",
+    "name": "Rutland Water Sykes Lane",
+    "kind": "lake",
+    "samples": 70,
+    "by_year": [
+     20,
+     20,
+     20,
+     10
+    ],
+    "by_month": [
+     12,
+     16,
+     15,
+     14,
+     13
+    ],
+    "rain_rows": 48,
+    "wet_rows": 7
+   },
+   {
+    "spot_id": "bw-ukg2100-36070",
+    "name": "River Severn at Ironbridge",
+    "kind": "river",
+    "samples": 61,
+    "by_year": [
+     0,
+     20,
+     21,
+     20
+    ],
+    "by_month": [
+     8,
+     12,
+     15,
+     15,
+     11
+    ],
+    "rain_rows": 58,
+    "wet_rows": 9
+   },
+   {
+    "spot_id": "bw-ukg2200-36060",
+    "name": "River Teme in Ludlow",
+    "kind": "river",
+    "samples": 61,
+    "by_year": [
+     0,
+     21,
+     20,
+     20
+    ],
+    "by_month": [
+     8,
+     13,
+     15,
+     15,
+     10
+    ],
+    "rain_rows": 58,
+    "wet_rows": 7
+   },
+   {
+    "spot_id": "bw-ukg2200-36071",
+    "name": "River Severn in Shrewsbury",
+    "kind": "river",
+    "samples": 60,
+    "by_year": [
+     0,
+     20,
+     20,
+     20
+    ],
+    "by_month": [
+     8,
+     12,
+     15,
+     15,
+     10
+    ],
+    "rain_rows": 57,
+    "wet_rows": 8
+   },
+   {
+    "spot_id": "bw-ukh1201-09801",
+    "name": "Sheep's Green, River Cam",
+    "kind": "river",
+    "samples": 61,
+    "by_year": [
+     0,
+     21,
+     20,
+     20
+    ],
+    "by_month": [
+     9,
+     12,
+     12,
+     14,
+     14
+    ],
+    "rain_rows": 57,
+    "wet_rows": 7
+   },
+   {
+    "spot_id": "bw-ukh1401-11051",
+    "name": "Friars Meadow, River Stour",
+    "kind": "river",
+    "samples": 62,
+    "by_year": [
+     0,
+     21,
+     20,
+     21
+    ],
+    "by_month": [
+     9,
+     15,
+     13,
+     12,
+     13
+    ],
+    "rain_rows": 58,
+    "wet_rows": 3
+   },
+   {
+    "spot_id": "bw-ukh1406-10712",
+    "name": "Falcon Meadow, River Waveney",
+    "kind": "river",
+    "samples": 20,
+    "by_year": [
+     0,
+     0,
+     0,
+     20
+    ],
+    "by_month": [
+     2,
+     5,
+     5,
+     4,
+     4
+    ],
+    "rain_rows": 17,
+    "wet_rows": 2
+   },
+   {
+    "spot_id": "bw-uki1101-11910",
+    "name": "Hampstead Heath (Ladies Pond)",
+    "kind": "lake",
+    "samples": 80,
+    "by_year": [
+     20,
+     20,
+     20,
+     20
+    ],
+    "by_month": [
+     13,
+     18,
+     19,
+     16,
+     14
+    ],
+    "rain_rows": null,
+    "wet_rows": null
+   },
+   {
+    "spot_id": "bw-uki1101-11920",
+    "name": "Hampstead Heath (Mens Pond)",
+    "kind": "lake",
+    "samples": 60,
+    "by_year": [
+     20,
+     15,
+     15,
+     10
+    ],
+    "by_month": [
+     11,
+     13,
+     13,
+     13,
+     10
+    ],
+    "rain_rows": null,
+    "wet_rows": null
+   },
+   {
+    "spot_id": "bw-uki1101-11930",
+    "name": "Hampstead Heath (Mixed Pond)",
+    "kind": "lake",
+    "samples": 70,
+    "by_year": [
+     20,
+     15,
+     15,
+     20
+    ],
+    "by_month": [
+     12,
+     16,
+     15,
+     16,
+     11
+    ],
+    "rain_rows": null,
+    "wet_rows": null
+   },
+   {
+    "spot_id": "bw-uki1106-11940",
+    "name": "The Serpentine - Hyde Park",
+    "kind": "lake",
+    "samples": 81,
+    "by_year": [
+     20,
+     20,
+     21,
+     20
+    ],
+    "by_month": [
+     13,
+     18,
+     19,
+     17,
+     14
+    ],
+    "rain_rows": null,
+    "wet_rows": null
+   },
+   {
+    "spot_id": "bw-uki2203-11942",
+    "name": "Ham and Kingston, River Thames",
+    "kind": "river",
+    "samples": 20,
+    "by_year": [
+     0,
+     0,
+     0,
+     20
+    ],
+    "by_month": [
+     2,
+     5,
+     5,
+     5,
+     3
+    ],
+    "rain_rows": 18,
+    "wet_rows": 2
+   },
+   {
+    "spot_id": "bw-ukj1102-11941",
+    "name": "Pangbourne Meadow, River Thames",
+    "kind": "river",
+    "samples": 21,
+    "by_year": [
+     0,
+     0,
+     0,
+     21
+    ],
+    "by_month": [
+     2,
+     4,
+     5,
+     4,
+     6
+    ],
+    "rain_rows": 16,
+    "wet_rows": 2
+   },
+   {
+    "spot_id": "bw-ukj1402-11946",
+    "name": "Wolvercote Mill Stream",
+    "kind": "river",
+    "samples": 80,
+    "by_year": [
+     20,
+     20,
+     19,
+     21
+    ],
+    "by_month": [
+     14,
+     17,
+     15,
+     17,
+     17
+    ],
+    "rain_rows": 54,
+    "wet_rows": 6
+   },
+   {
+    "spot_id": "bw-ukj1403-11947",
+    "name": "Wallingford Beach, River Thames",
+    "kind": "river",
+    "samples": 61,
+    "by_year": [
+     0,
+     20,
+     20,
+     21
+    ],
+    "by_month": [
+     10,
+     13,
+     12,
+     13,
+     13
+    ],
+    "rain_rows": 56,
+    "wet_rows": 6
+   },
+   {
+    "spot_id": "bw-ukj2310-11945",
+    "name": "Frensham Great Pond",
+    "kind": "lake",
+    "samples": 55,
+    "by_year": [
+     20,
+     15,
+     10,
+     10
+    ],
+    "by_month": [
+     9,
+     13,
+     12,
+     13,
+     8
+    ],
+    "rain_rows": 34,
+    "wet_rows": 2
+   },
+   {
+    "spot_id": "bw-ukj3308-19001",
+    "name": "River Avon at Fordingbridge",
+    "kind": "river",
+    "samples": 60,
+    "by_year": [
+     0,
+     20,
+     20,
+     20
+    ],
+    "by_month": [
+     11,
+     14,
+     11,
+     12,
+     12
+    ],
+    "rain_rows": 57,
+    "wet_rows": 9
+   },
+   {
+    "spot_id": "bw-ukk1100-36050",
+    "name": "Henleaze Lake",
+    "kind": "lake",
+    "samples": 79,
+    "by_year": [
+     20,
+     19,
+     20,
+     20
+    ],
+    "by_month": [
+     12,
+     18,
+     17,
+     18,
+     14
+    ],
+    "rain_rows": null,
+    "wet_rows": null
+   },
+   {
+    "spot_id": "bw-ukk1302-11760",
+    "name": "Cotswold Country Park and Beach",
+    "kind": "lake",
+    "samples": 56,
+    "by_year": [
+     20,
+     16,
+     10,
+     10
+    ],
+    "by_month": [
+     13,
+     9,
+     11,
+     11,
+     12
+    ],
+    "rain_rows": null,
+    "wet_rows": null
+   },
+   {
+    "spot_id": "bw-ukk1500-19002",
+    "name": "River Avon at Queen Elizabeth Gardens",
+    "kind": "river",
+    "samples": 20,
+    "by_year": [
+     0,
+     0,
+     0,
+     20
+    ],
+    "by_month": [
+     3,
+     5,
+     4,
+     4,
+     4
+    ],
+    "rain_rows": 17,
+    "wet_rows": 2
+   },
+   {
+    "spot_id": "bw-ukk2301-36051",
+    "name": "River Frome at Farleigh Hungerford",
+    "kind": "river",
+    "samples": 60,
+    "by_year": [
+     0,
+     20,
+     20,
+     20
+    ],
+    "by_month": [
+     10,
+     13,
+     14,
+     11,
+     12
+    ],
+    "rain_rows": 56,
+    "wet_rows": 7
+   },
+   {
+    "spot_id": "bw-ukk2304-35201",
+    "name": "River Tone at French Weir Park",
+    "kind": "river",
+    "samples": 61,
+    "by_year": [
+     0,
+     21,
+     20,
+     20
+    ],
+    "by_month": [
+     10,
+     14,
+     14,
+     14,
+     9
+    ],
+    "rain_rows": 58,
+    "wet_rows": 6
+   }
+  ]
+ },
+ "policies": [
+  {
+   "id": "COVER",
+   "name": "Equal coverage",
+   "rule": "Each week, the sites with the fewest samples so far, on a random weekday."
+  },
+  {
+   "id": "RISK",
+   "name": "Wettest, riskiest days",
+   "rule": "Each week, the site-days with the highest predicted chance of a high count. Not a pure wet-day rule, which was not simulated, but in practice it picked the wettest days."
+  },
+  {
+   "id": "INFO",
+   "name": "Most informative",
+   "rule": "Each week, the site-days whose result would teach the model most, by an information score (BALD)."
+  },
+  {
+   "id": "RANDOM",
+   "name": "Random",
+   "rule": "Each week, site-days drawn at random. A reference, not a proposal."
+  }
+ ],
+ "simulation": {
+  "doc": "docs/SAMPLING-PRIORITIES-SIM-2026-10.md",
+  "issue": 381,
+  "verdict": "fail",
+  "rule": "The information policy passes if, against each of equal coverage and random, its site-rate error is lower in at least 60% of the 200 replications and the mean gain's 95% interval is above 0.",
+  "verdict_words": "Failed. Against equal coverage it had the lower error in 58.5% of simulated worlds, against 60% needed. Nothing was adopted.",
+  "metric": "P, site-rate error: the mean over the 40 sites of the squared difference between the model's rate for the held-out season and the true rate. Lower is better.",
+  "world": {
+   "sites": 40,
+   "never_sampled": 12,
+   "weeks": 20,
+   "max_per_day": 2,
+   "note": "40 made-up sites, 12 of them never sampled before; a 20-week season, at most 2 samples a day. The truth is a logistic model with normal site offsets, the same form the information score assumes."
+  },
+  "runs": [
+   {
+    "run": "main",
+    "replications": 200,
+    "tau": 0.7,
+    "budget": 60,
+    "per_site": 5.0,
+    "P_history_only": 0.004075,
+    "strategies": {
+     "INFO": {
+      "P": 0.002842,
+      "P_never": 0.004959,
+      "P_sampled": 0.001935,
+      "S4_exceedances": 24.105,
+      "share_never_sampled_sites": 0.835083,
+      "share_lakes": 0.211417,
+      "mean_rain48": 10.054812,
+      "sites_visited": 12.535
+     },
+     "COVER": {
+      "P": 0.003031,
+      "P_never": 0.005533,
+      "P_sampled": 0.001959,
+      "S4_exceedances": 11.25,
+      "share_never_sampled_sites": 1.0,
+      "share_lakes": 0.333333,
+      "mean_rain48": 3.478041,
+      "sites_visited": 12.0
+     },
+     "RANDOM": {
+      "P": 0.0034,
+      "P_never": 0.006785,
+      "P_sampled": 0.001949,
+      "S4_exceedances": 11.43,
+      "share_never_sampled_sites": 0.2945,
+      "share_lakes": 0.300583,
+      "mean_rain48": 3.489139,
+      "sites_visited": 31.14
+     },
+     "RISK": {
+      "P": 0.003308,
+      "P_never": 0.006712,
+      "P_sampled": 0.001849,
+      "S4_exceedances": 48.62,
+      "share_never_sampled_sites": 0.1755,
+      "share_lakes": 0.0,
+      "mean_rain48": 15.455184,
+      "sites_visited": 15.14
+     }
+    },
+    "info_vs": {
+     "COVER": {
+      "share_info_lower": 0.585,
+      "mean_gain": 0.000189,
+      "ci95": [
+       7.7e-05,
+       0.000306
+      ]
+     },
+     "RANDOM": {
+      "share_info_lower": 0.73,
+      "mean_gain": 0.000558,
+      "ci95": [
+       0.000429,
+       0.000693
+      ]
+     }
+    }
+   },
+   {
+    "run": "tau0",
+    "replications": 100,
+    "tau": 0.0,
+    "budget": 60,
+    "per_site": 5.0,
+    "P_history_only": 0.00157,
+    "strategies": {
+     "INFO": {
+      "P": 0.000491,
+      "P_never": 0.000499,
+      "P_sampled": 0.000487,
+      "S4_exceedances": 19.17,
+      "share_never_sampled_sites": 0.586,
+      "share_lakes": 0.398167,
+      "mean_rain48": 11.20901,
+      "sites_visited": 11.56
+     },
+     "COVER": {
+      "P": 0.000877,
+      "P_never": 0.001255,
+      "P_sampled": 0.000716,
+      "S4_exceedances": 10.85,
+      "share_never_sampled_sites": 1.0,
+      "share_lakes": 0.333333,
+      "mean_rain48": 3.485319,
+      "sites_visited": 12.0
+     },
+     "RANDOM": {
+      "P": 0.000633,
+      "P_never": 0.00084,
+      "P_sampled": 0.000544,
+      "S4_exceedances": 10.99,
+      "share_never_sampled_sites": 0.290167,
+      "share_lakes": 0.293667,
+      "mean_rain48": 3.457871,
+      "sites_visited": 31.28
+     },
+     "RISK": {
+      "P": 0.000624,
+      "P_never": 0.00086,
+      "P_sampled": 0.000522,
+      "S4_exceedances": 46.17,
+      "share_never_sampled_sites": 0.256167,
+      "share_lakes": 0.0,
+      "mean_rain48": 16.304432,
+      "sites_visited": 18.13
+     }
+    },
+    "info_vs": {
+     "COVER": {
+      "share_info_lower": 0.66,
+      "mean_gain": 0.000387,
+      "ci95": [
+       0.00019,
+       0.000582
+      ]
+     },
+     "RANDOM": {
+      "share_info_lower": 0.62,
+      "mean_gain": 0.000142,
+      "ci95": [
+       -4e-06,
+       0.000296
+      ]
+     }
+    }
+   },
+   {
+    "run": "budget120",
+    "replications": 100,
+    "tau": 0.7,
+    "budget": 120,
+    "per_site": 10.0,
+    "P_history_only": 0.004107,
+    "strategies": {
+     "INFO": {
+      "P": 0.00249,
+      "P_never": 0.004026,
+      "P_sampled": 0.001832,
+      "S4_exceedances": 47.33,
+      "share_never_sampled_sites": 0.802167,
+      "share_lakes": 0.188667,
+      "mean_rain48": 9.022061,
+      "sites_visited": 16.11
+     },
+     "COVER": {
+      "P": 0.00255,
+      "P_never": 0.004135,
+      "P_sampled": 0.001871,
+      "S4_exceedances": 23.03,
+      "share_never_sampled_sites": 1.0,
+      "share_lakes": 0.333333,
+      "mean_rain48": 3.700674,
+      "sites_visited": 12.0
+     },
+     "RANDOM": {
+      "P": 0.003147,
+      "P_never": 0.006229,
+      "P_sampled": 0.001826,
+      "S4_exceedances": 23.56,
+      "share_never_sampled_sites": 0.291083,
+      "share_lakes": 0.29925,
+      "mean_rain48": 3.57594,
+      "sites_visited": 38.19
+     },
+     "RISK": {
+      "P": 0.0031,
+      "P_never": 0.006086,
+      "P_sampled": 0.001821,
+      "S4_exceedances": 90.74,
+      "share_never_sampled_sites": 0.20175,
+      "share_lakes": 0.000167,
+      "mean_rain48": 13.114646,
+      "sites_visited": 19.65
+     }
+    },
+    "info_vs": {
+     "COVER": {
+      "share_info_lower": 0.51,
+      "mean_gain": 6e-05,
+      "ci95": [
+       -6.6e-05,
+       0.000179
+      ]
+     },
+     "RANDOM": {
+      "share_info_lower": 0.78,
+      "mean_gain": 0.000656,
+      "ci95": [
+       0.000484,
+       0.000832
+      ]
+     }
+    }
+   }
+  ]
+ },
+ "cost": {
+  "samples": 60,
+  "per_sample_gbp": 100,
+  "sites": 12,
+  "note": "Starting values to change, not a quote: 60 samples over 12 sites is the simulation's season. £100 a sample is a round figure; a lab's price, travel and staff time are not counted."
+ },
+ "field_study": "docs/SAMPLING-PLANNER-CONTRACT-v1.md#the-field-study-an-efficiency-claim-would-need",
+ "attribution": [
+  "Environment Agency bathing water quality data, Open Government Licence v3.0"
+ ],
+ "sources": [
+  {
+   "file": "data/research/ecoli_evidence.v1.json",
+   "sha256": "4b706230bb532d61e60d791f8d08b6e4b4ecf0883ffa55026f49ca855b5e302f"
+  },
+  {
+   "file": "docs/CONCENTRATION-STUDY-2026-11-atlas-rows.csv",
+   "sha256": "3dad94f4323f6c141872575eb75ec4274ed182291efee3046d51d0502c9fb0ae"
+  },
+  {
+   "file": "data/research/waterhead_wet.v1.json",
+   "sha256": "5a04c8ba7673c082286505ca4d79bf9d9c2163878c10d5b5468c03accdf941f0"
+  },
+  {
+   "file": "spots.csv",
+   "sha256": "1c00d9c64784da51ab4920396db27d35fd6a050d73a029826b199624bbe9570e"
+  },
+  {
+   "file": "spots-osm.csv",
+   "sha256": "912bf3d484082f772cf84c764352d05a4b6625f2f1d667d338a2f05c868e1a86"
+  },
+  {
+   "file": "docs/SAMPLING-PRIORITIES-SIM-2026-10.json",
+   "sha256": "5edcb5c1648aab697526e63173169d1ab21ff362a27dddf3c8aa3f098feff0fa"
+  },
+  {
+   "file": "docs/SAMPLING-PRIORITIES-SIM-2026-10-tau0.json",
+   "sha256": "30cce2cc27417beda4bc963e17a245ead69c3ba919c00c31df70ae317c741752"
+  },
+  {
+   "file": "docs/SAMPLING-PRIORITIES-SIM-2026-10-budget120.json",
+   "sha256": "fec953031966c910f73bbf1c8dc952b0895d042d70fd71943b636fabceda2de3"
+  },
+  {
+   "file": "scripts/export_sampling_planner.py",
+   "sha256": "245d717bd6787b952d98d0bd501ebdc3844953caece7ee03de3b5ae51616ebfa"
+  }
+ ]
+}

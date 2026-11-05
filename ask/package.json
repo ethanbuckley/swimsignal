@@ -1,0 +1,12 @@
+{
+  "name": "swimsignal-ask",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "eval": "node scripts/eval.mjs"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "1.3.0"
+  }
+}

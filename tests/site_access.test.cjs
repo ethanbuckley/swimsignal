@@ -14,7 +14,7 @@ test('access notes escape text and refuse executable source links', () => {
   const access = {text: '<img onerror="bad">', url: 'javascript:bad', checked_at: '2026-10-03'};
   const html = ctx.said(access);
   assert.ok(html.includes('&lt;img') && !html.includes('<img') && !html.includes('javascript:'));
-  assert.ok(html.includes('current signs have not been inspected'));
+  assert.ok(html.includes('signs at the water have not been inspected'));
   assert.ok(ctx.said({...access, url: 'https://www.oxford.gov.uk/x'}).includes('<a href="https://www.oxford.gov.uk/x">Authority guidance</a>.'));
-  assert.ok(!ctx.check({source: 'openstreetmap', access}).includes('Desk check'));   // no longer under the five days
+  assert.ok(!ctx.check({source: 'openstreetmap', access}).includes('Checked from published sources'));   // no longer under the five days
 });

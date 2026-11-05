@@ -59,6 +59,7 @@ def test_the_lite_file_and_the_spot_files_together_are_spots_json(tmp_path):
     for s in lite["spots"]:
         if "detail_file" in s:
             s.pop("reach_by_company", None)                      # made from the contributors (test below)
+            s.pop("boat_note", None)                             # made from the guide (test below)
             extra = json.loads((tmp_path / "data" / s.pop("detail_file")).read_text())
             s.update({k: v for k, v in extra.items() if k not in ("id", "generated_at", "credits")})
         whole.append(s)
@@ -137,3 +138,20 @@ def test_the_built_app_page_has_no_comment_only_script_lines_but_works_the_same(
     after = [m.group(2) for m in bs.INLINE_SCRIPT.finditer(lean)]
     assert len(after) == len(before) and sum(map(len, after)) < 0.8 * sum(map(len, before))
     assert bs.PAGE_META.search(lean) and bs.LOADING in lean
+
+
+def test_the_lite_file_carries_the_guides_first_fact_for_boats_and_boards(tmp_path):
+    """Plan a swim's list, for a kayak, canoe or paddleboard (index.html, planActLine), has no guides: the lite file
+    carries the first confirmed fact on launching, the rules on the water, or carrying, with its source."""
+    doc = _doc()
+    doc["spots"][0]["guide"] = {"checked": "2026-10-30", "facts": [
+        {"topic": "parking", "text": "Car park.", "status": "confirmed", "source_name": "Council"},
+        {"topic": "paddle", "text": "Boats allowed.", "status": "confirmed", "source_name": "National Trust"},
+        {"topic": "launch", "text": "A swimmer said the slipway is open.", "status": "suggested"},
+        {"topic": "launch", "text": "Launch at the south end.", "status": "confirmed", "source_name": "National Trust"}]}
+    doc["spots"][1]["guide"] = {"facts": [{"topic": "launch", "text": "Maybe here.", "status": "suggested"}]}   # suggested only
+    bs.write_app_data(tmp_path, doc)
+    by = {s["id"]: s for s in json.loads((tmp_path / "data" / "spots-lite.json").read_text())["spots"]}
+    assert by["thames-henley"]["boat_note"] == {"topic": "launch", "text": "Launch at the south end.", "source": "National Trust", "more": 2}
+    assert "boat_note" not in by["henleaze-lake"]
+    assert "boat_note" not in by["osm-great-ouse-overcote"]   # no guide

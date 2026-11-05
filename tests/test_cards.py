@@ -233,7 +233,10 @@ def test_build_never_stops_for_cards(tmp_path):
 
 # ------------------------------------------------------------------------------ a spot's share card
 HEADLINES = ["Low risk for the next five days", "Very high risk right now: sewage spills",
-             "Low risk forecast: the overflows that matter most here do not report live",   # the longest on 16 Oct 2026
+             # The live status first where right now is not known, and a raised day said as modelled where nothing
+             # upstream reports (review of PR #463, 30 Oct 2026): the longest forms, with a worse later day.
+             "Live status from 12 of 185 overflows upstream: low risk forecast · Moderate risk on Wednesday",
+             "Moderate risk tomorrow: sewage spills (modelled, no live status) · Very high risk on Wednesday",
              "No monitored overflow found upstream", "No forecast"]
 
 
@@ -269,3 +272,98 @@ def test_write_spot_cards(tmp_path):
     assert sorted(p.name for p in out.iterdir()) == ["a.png"]
     assert cards.write_spot_cards(out, spots, {**alerts, "generated_at": "2026-10-13T08:00:00+01:00"}, GEN) == {}
     assert not out.exists()
+
+
+# Official advice (spots.json `official`): never a clean "Low" on a card. The words are eatoday.js's
+# eaTodayBrief, checked here against the script itself.
+OFFICIAL = {"line": "Environment Agency: advice against bathing (harmful algae) since 19 Jun 2026",
+            "publisher": "Environment Agency",
+            "link": "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukj2310-11945",
+            "since": "2026-06-19", "checked": "2026-10-26", "state": "checked", "restricts": True}
+BRIEF = "EA advice against bathing (harmful algae) · since 19 Jun · checked 26 Oct"
+
+
+@pytest.mark.parametrize("items", [
+    [OFFICIAL], [{**OFFICIAL, "state": "stale"}], [{**OFFICIAL, "state": "gone"}], [OFFICIAL, {**OFFICIAL, "since": "2026-01-01"}],
+    [{**OFFICIAL, "publisher": "Waverley Borough Council", "since": "2025-08-22",
+      "line": "Waverley Borough Council: advice against swimming (blue-green algae) since 22 Aug 2025"}],
+    [], [{**OFFICIAL, "state": "approved"}], [{**OFFICIAL, "checked": "26 Oct"}],
+])
+def test_official_brief_matches_the_site(items):
+    import json
+    import shutil
+    import subprocess
+    node = shutil.which("node")
+    if not node:
+        pytest.skip("node is not installed")
+    js = Path(__file__).resolve().parents[1] / "src/dipcast/site/eatoday.js"
+    script = f"process.stdout.write(require({json.dumps(str(js))}).eaTodayBrief({json.dumps({'official': items})}))"
+    got = subprocess.run([node, "-e", script], capture_output=True, text=True, check=True).stdout
+    assert cards.official_brief({"official": items}) == got
+    if items == [OFFICIAL]:
+        assert got == BRIEF
+
+
+def test_spot_share_card_carries_official_advice(tmp_path):
+    """A low spot with advice: the card's alt text and picture say the advice before the level, which is
+    unchanged; a spot without advice is as before. The longest names still fit with the line."""
+    spots = [{"id": "f", "name": "Frensham Great Pond", "kind": "lake", "official": [OFFICIAL]},
+             {"id": "o", "name": "Other Pond", "kind": "lake"}]
+    alerts = {"generated_at": GEN, "spots": {s["id"]: {"level": "low", "headline": "Low risk for the next five days"} for s in spots}}
+    made = cards.write_spot_cards(tmp_path / "spot", spots, alerts, GEN)
+    assert made["f"] == (f"Frensham Great Pond: Official: {BRIEF}. Follow it first; the level is SwimSignal's sewage "
+                         "forecast only. Low risk for the next five days. Forecast issued Sun 11 Oct, 14:09.")
+    assert made["o"] == "Other Pond: Low risk for the next five days. Forecast issued Sun 11 Oct, 14:09."
+    for name in ["River Wharfe, Bolton Abbey (Cavendish Pavilion)", "River Lathkill, Lathkill Dale, Over Haddon, Derbyshire Dales"]:
+        for headline in HEADLINES:
+            assert cards.draw_spot(name, "Lake", "low", headline, GEN, BRIEF).size == cards.SHARE_SIZE
+    # The line is drawn: the picture differs from the one without advice.
+    with_line = cards.draw_spot("Frensham Great Pond", "Lake", "low", HEADLINES[0], GEN, BRIEF)
+    assert with_line.tobytes() != cards.draw_spot("Frensham Great Pond", "Lake", "low", HEADLINES[0], GEN).tobytes()
+
+
+def test_weekend_card_and_caption_carry_official_advice():
+    card = cards.weekend_card(AREA, cards.spot_levels(alerts_fixture()), [SAT, SUN], {"a": (BRIEF, True)})
+    rows = {r.id: r for r in card.rows}
+    assert rows["a"].cells == ["low", "moderate"] and rows["a"].official == BRIEF   # the level is unchanged
+    assert rows["poor"].official == ""
+    caption = cards.weekend_caption(card, GEN, "https://swimsignal.co.uk/")
+    assert f"Upper: low risk on Saturday, moderate risk on Sunday. Official: {BRIEF}. Follow it first" in caption
+    for size in cards.SIZES:
+        cards.draw_weekend(card, GEN, size)   # the note under the table fits
+
+
+def test_weekend_card_plain_line_spot_with_advice_is_named_with_it():
+    """A spot in a plain line ("No monitored overflow found upstream") with advice, stale or checked, is
+    named with its notice under the table and in the caption; one without advice is not."""
+    stale = BRIEF.replace("checked 26 Oct", "not re-checked since 19 Oct")
+    card = cards.weekend_card(AREA, cards.spot_levels(alerts_fixture()), [SAT, SUN], {"lake": (stale, True), "a": (BRIEF, True)})
+    assert card.plain_official == [("Quiet Lake", stale, True)]
+    assert card.plain == [("No monitored overflow found upstream", "no overflows", ["Quiet Lake", "Quiet Tarn"])]   # unchanged
+    caption = cards.weekend_caption(card, GEN, "https://swimsignal.co.uk/")
+    assert f"Quiet Lake: Official: {stale}. Follow it first" in caption
+    assert "Quiet Tarn: Official" not in caption
+    for size in cards.SIZES:
+        cards.draw_weekend(card, GEN, size)   # both notes fit
+
+
+def test_a_notice_not_marked_restricting_is_read_not_followed_on_cards_and_captions(tmp_path):
+    """Only a notice its reviewer marked restricts: true says "Follow it first" (28 Oct 2026); any other, or one
+    from before the field, "Read the official notice first". The notice's own words and the level are unchanged."""
+    neutral = {**OFFICIAL, "restricts": False}
+    assert cards.official_restricts({"official": [OFFICIAL]}) is True
+    assert cards.official_restricts({"official": [neutral]}) is False
+    assert cards.official_restricts({"official": [{k: v for k, v in OFFICIAL.items() if k != "restricts"}]}) is False
+    assert cards.official_restricts({"official": [{**OFFICIAL, "state": "approved"}]}) is False   # not shown, so not counted
+    assert cards.official_words(BRIEF, False) == f"Official: {BRIEF}. Read the official notice first; the level is SwimSignal's sewage forecast only."
+    spots = [{"id": "f", "name": "Frensham Great Pond", "kind": "lake", "official": [neutral]}]
+    alerts = {"generated_at": GEN, "spots": {"f": {"level": "low", "headline": "Low risk for the next five days"}}}
+    made = cards.write_spot_cards(tmp_path / "spot", spots, alerts, GEN)
+    assert made["f"].startswith(f"Frensham Great Pond: Official: {BRIEF}. Read the official notice first;")
+    card = cards.weekend_card(AREA, cards.spot_levels(alerts_fixture()), [SAT, SUN], {"a": (BRIEF, False)})
+    caption = cards.weekend_caption(card, GEN, "https://swimsignal.co.uk/")
+    assert f"Official: {BRIEF}. Read the official notice first" in caption and "Follow it first" not in caption
+    # A bare brief, as an older caller passes it, reads as not restricting.
+    assert cards.weekend_card(AREA, cards.spot_levels(alerts_fixture()), [SAT, SUN], {"a": BRIEF}).rows[0].official_restricts is False
+    for size in cards.SIZES:
+        cards.draw_weekend(card, GEN, size)

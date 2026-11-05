@@ -371,6 +371,7 @@ function journalOpenForm(d, issued, b) {
     }
     const ok = journalKeep([...journalNow(), entry]);
     if (!ok && entry.photos) jnPhotoDel([entry.key]).catch(() => {});
+    if (typeof draftForget === 'function') draftForget(f, d.id);
     close();
     const m = document.getElementById('swam-msg'), saved = typeof savedPath === 'function' ? savedPath() : 'saved/';
     if (m) m.innerHTML = !ok ? 'This browser is not keeping site data, so the swim could not be kept.'
@@ -383,6 +384,7 @@ function journalOpenForm(d, issued, b) {
   if (m) m.onclick = e => { const a = e.target.closest('[data-jn-open]');
     if (!a || typeof openSaved !== 'function' || (typeof plainClick === 'function' && !plainClick(e))) return;
     e.preventDefault(); openSaved(); journalFocus(); };
+  if (typeof draftTrack === 'function') draftTrack(f, d.id);
   box.querySelector('#jn-box-h').focus({ preventScroll: true });
   box.scrollIntoView({ block: 'nearest', behavior: typeof SCROLL === 'function' ? SCROLL() : 'auto' });
 }

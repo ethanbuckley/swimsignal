@@ -1,0 +1,9 @@
+{
+  "gate_passes": false,
+  "gap_24h_at_0.8_plus": 0.026925384998321533,
+  "rows_at_0.8_plus": 134299,
+  "train_rows": 4038032,
+  "rows_hash": "af293f91ccabea88",
+  "oof_ece_24h_all_nine": 0.04424696981067576,
+  "oof_ece_24h_calibrated_in_sample": 0.00023328529205408433
+}

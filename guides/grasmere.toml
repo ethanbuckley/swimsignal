@@ -1,4 +1,4 @@
-# Grasmere (lake). Desk check of the landowners' and park authorities' pages, 3 October 2026.
+# Grasmere (lake). Desk check of the landowners' and park authorities' pages, 3 October 2026. The park authority's rules for boats and boards (paddle) added 30 October 2026; the other facts were not rechecked then, so "checked" stays.
 # Prices and hours change by season: recheck every confirmed fact before changing "checked".
 checked = 2026-10-03
 how = "desk"
@@ -43,4 +43,11 @@ topic = "rules"
 text = "The park authority says Grasmere lake is great for swimming and rowing because motor boats are prohibited."
 status = "confirmed"
 source = "https://lakedistrict.gov.uk/explore/places-to-go/explore-grasmere-and-rydal/"
+source_name = "Lake District National Park Authority"
+
+[[fact]]
+topic = "paddle"
+text = "Canoes, kayaks and paddleboards are allowed on Grasmere. There is no access to the islands."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/lakes-activities-guide/"
 source_name = "Lake District National Park Authority"

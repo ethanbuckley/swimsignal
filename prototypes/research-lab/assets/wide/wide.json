@@ -1,0 +1,122 @@
+{
+ "made": "2026-11-01T14:40:40+00:00",
+ "radius_m": 2000,
+ "pixel_m": 10,
+ "source": "Earth Search sentinel-2-c1-l2a, asset 'visual' (ESA TCI)",
+ "caps": {
+  "max_requests": 80,
+  "max_mb": 60,
+  "max_minutes": 5
+ },
+ "pictures": [
+  {
+   "lake_id": "bw-ukf2208-09702",
+   "name": "Rutland Water Sykes Lane",
+   "water_body": "Rutland Water",
+   "item_id": "S2B_T30UXD_20261027T111616_L2A",
+   "datetime": "2026-10-27T11:16:34.663000Z",
+   "tile": "MGRS-30UXD",
+   "bbox": [
+    -0.6427628,
+    52.6452424,
+    -0.5835171,
+    52.6811748
+   ],
+   "size_px": [
+    400,
+    400
+   ],
+   "file": "assets/wide/bw-ukf2208-09702.jpg",
+   "sha256": "2ea3ac7006c424e3c68d9a6b11b2701037e39a088672ca5bb73afcfeca935731",
+   "no_data_share": 0.0
+  },
+  {
+   "lake_id": "bw-ukd1101-45800",
+   "name": "Derwent Water at Crow Park",
+   "water_body": "Derwent Water",
+   "item_id": "S2A_T30UVF_20260930T113330_L2A",
+   "datetime": "2026-09-30T11:36:21.108000Z",
+   "tile": "MGRS-30UVF",
+   "bbox": [
+    -3.1731909,
+    54.5770238,
+    -3.1111691,
+    54.6129562
+   ],
+   "size_px": [
+    400,
+    400
+   ],
+   "file": "assets/wide/bw-ukd1101-45800.jpg",
+   "sha256": "21bcae52f37225cacc72b4e2d32a309e62c4c1d418c8d2578bd0410399c5fcbc",
+   "no_data_share": 0.0
+  },
+  {
+   "lake_id": "bw-ukj2310-11945",
+   "name": "Frensham Great Pond",
+   "water_body": "Frensham Great Pond",
+   "item_id": "S2B_T30UXB_20261027T111616_L2A",
+   "datetime": "2026-10-27T11:17:03.616000Z",
+   "tile": "MGRS-30UXB",
+   "bbox": [
+    -0.8204496,
+    51.139343,
+    -0.7631579,
+    51.1752754
+   ],
+   "size_px": [
+    400,
+    400
+   ],
+   "file": "assets/wide/bw-ukj2310-11945.jpg",
+   "sha256": "ce06a1dca9a414eb781061744311c16d0fd7400c0393680c6ec893963dfd922a",
+   "no_data_share": 0.0
+  },
+  {
+   "lake_id": "wqa-SW-50900003",
+   "name": "Little Sea",
+   "water_body": "Little Sea",
+   "item_id": "S2B_T30UWB_20261030T112207_L2A",
+   "datetime": "2026-10-30T11:27:03.938000Z",
+   "tile": "MGRS-30UWB",
+   "bbox": [
+    -1.9905431,
+    50.6414648,
+    -1.9338609,
+    50.6773972
+   ],
+   "size_px": [
+    400,
+    400
+   ],
+   "file": "assets/wide/wqa-SW-50900003.jpg",
+   "sha256": "2beb9f2e3d3088e6447cf32bd244c7a0532e3f9e6d25eff272ac53f11ecf9973",
+   "no_data_share": 0.0
+  },
+  {
+   "lake_id": "wqa-AN-ANT160",
+   "name": "Barton Broad",
+   "water_body": "Barton Broad",
+   "item_id": "S2C_T30UYD_20261029T110555_L2A",
+   "datetime": "2026-10-29T11:06:31.082000Z",
+   "tile": "MGRS-30UYD",
+   "bbox": [
+    1.4668656,
+    52.7269518,
+    1.5262224,
+    52.7628842
+   ],
+   "size_px": [
+    400,
+    400
+   ],
+   "file": "assets/wide/wqa-AN-ANT160.jpg",
+   "sha256": "5086625def4c6f303632e0947c5cd107498a265285b59915c3f581e53b37c971",
+   "no_data_share": 0.0
+  }
+ ],
+ "attribution": "Contains modified Copernicus Sentinel data [2026]",
+ "stop_reason": null,
+ "requests": 18,
+ "megabytes": 25.31
+}

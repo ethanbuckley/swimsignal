@@ -55,6 +55,15 @@ One row per sample. Columns, in this order:
 
 The public file has the same columns less `lab_ref`, `publish` and `evaluate`.
 
+### Version 2: for sampling partners
+
+Eighteen optional columns follow these, for a partner who samples regularly at its own point: whether the time is
+known, the sampling point, each count's basis (cfu or MPN) and the method's limits, how out-of-limit values are
+written, the sampler as a role, the licence and credit, and when each permission was agreed, with the kind of test
+use (`holdout` or `exploratory`). [docs/PARTNER-SAMPLES-CONTRACT-v1.md](../docs/PARTNER-SAMPLES-CONTRACT-v1.md) has each
+column and the checks; the template is `docs/samples-template-v2.csv`. A version 1 file still reads, with the new
+columns blank. `sampler`, `publish_agreed`, `evaluate_use` and `evaluate_agreed` stay private, as the permissions do.
+
 Checks, on adding and on every build:
 
 - The spot id must be one of the site's spots.

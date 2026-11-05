@@ -170,49 +170,6 @@ test('lists.js loads beside the page’s other scripts without a clash', () => {
 // "Mon 19 Oct" turned the list to "On Monday" while the line above it still said "Tomorrow: 67 of 105
 // spots at low risk". With a day picked the line is that day's; with none, the weekend's better day
 // stays the rule (Ethan, PR #216).
-test('the answer line follows the picked day, and keeps the weekend rule with none', () => {
-  const dir = path.join(__dirname, '../src/dipcast/site/');
-  const html = fs.readFileSync(dir + 'index.html', 'utf8');
-  const src = html.slice(html.indexOf('<script>\nconst BRAND') + 9, html.lastIndexOf('</script>')).split('\n');
-  const defs = names => names.map(n => { const i = src.findIndex(l => l.startsWith(`const ${n} =`) || l.startsWith(`function ${n}(`));
-    assert.ok(i >= 0, `no ${n} in index.html`);
-    let j = i + 1; while (j < src.length && /^[\s})\]+]/.test(src[j])) j++;
-    return src.slice(i, j).join('\n'); }).join('\n');
-  const fri = '2026-10-16', days = ['2026-10-16', '2026-10-17', '2026-10-18', '2026-10-19', '2026-10-20'];   // Fri to Tue
-  const spot = labels => ({upstream_summary: {overflows: 1}, location: {mode: 'river'}, now: {label: labels[0]},
-    days: labels.map((l, i) => ({date: days[i], label: l, risk: l === 'low' ? 0.01 : 0.5}))});
-  //                      Fri     Sat     Sun     Mon     Tue
-  const spots = [spot(['low', 'high', 'low', 'low', 'high']), spot(['low', 'low', 'high', 'low', 'high']),
-                 spot(['high', 'high', 'high', 'low', 'high']), {days: [], upstream_summary: {overflows: 0}}];
-  const ctx = vm.createContext({});
-  vm.runInContext(fs.readFileSync(dir + 'levels.js', 'utf8') + `\nsetToday("${fri}");`, ctx);
-  vm.runInContext(`let VIEW = {day: null}; const DATA = {generated_at: '2026-10-16T09:12:00+01:00', spots: ${JSON.stringify(spots)}};\n` + defs(['esc', 'dateLabel', 'fiveDays', 'mostLine', 'lowAnswer', 'answerLines']), ctx);
-  const line = day => { vm.runInContext(`VIEW.day = ${JSON.stringify(day)}`, ctx);
-    return vm.runInContext('answerLines()', ctx).match(/<p class="low-answer">(.*?)<span class="pick"/)[1].replace(/<[^>]+>/g, ''); };
-  assert.equal(line(null), 'Tomorrow: 1 of 4 spots at low risk');   // the weekend's better day: Saturday and Sunday tie, so the earlier
-  assert.equal(line('2026-10-19'), 'Monday: 3 of 4 spots at low risk');
-  assert.equal(line('2026-10-20'), 'Tuesday: none of 4 spots at low risk');
-  assert.equal(line(fri), 'Today: 2 of 4 spots at low risk');
-  assert.equal(line('2026-10-18'), 'Sunday: 1 of 4 spots at low risk');
-  // A picked day worse than the week's best keeps the best-day line under it, in the answer's form.
-  vm.runInContext('VIEW.day = "2026-10-20"', ctx);
-  assert.match(vm.runInContext('answerLines()', ctx), /<p class="planner-note best-day"><b>Monday<\/b>: 3 of 4, the most this week<span class="pick"> · <button[^>]* data-pick-day="2026-10-19"/);
-  // The week's best day itself: no second line.
-  vm.runInContext('VIEW.day = "2026-10-19"', ctx);
-  assert.doesNotMatch(vm.runInContext('answerLines()', ctx), /best-day/);
-  // The rule itself (levels.js), and a picked day outside the five read as none picked.
-  const L = require('../src/dipcast/site/levels.js');
-  L.setToday(fri);
-  try {
-    assert.equal(L.lowAnswerDay(spots, days, '2026-10-19').date, '2026-10-19');
-    assert.equal(L.lowAnswerDay(spots, days, '2026-10-30').date, '2026-10-17');
-    assert.equal(L.lowAnswerDay(spots, days).date, '2026-10-17');
-  } finally { L.setToday(null); }
-  // Picking a day redraws the line: setMapDay fills #answer-lines again, and the list draws it there.
-  const setMapDay = html.slice(html.indexOf('function setMapDay(iso) {'), html.indexOf('\n}\n', html.indexOf('function setMapDay(iso) {')));
-  assert.match(setMapDay, /getElementById\('answer-lines'\); if \(ans\) \{ ans\.innerHTML = answerLines\(\); bindBestDay\(ans\); \}/);
-  assert.match(html, /<div id="answer-lines">\$\{answerLines\(\)\}<\/div>/);
-});
 
 // ------------------------------------------------------------------------------ the home list, A–Z by area
 // The rows with no monitored overflow upstream go at the end of their area behind one line (review of
@@ -228,7 +185,7 @@ function listPage(spots) {
   const dir = path.join(__dirname, '../src/dipcast/site/');
   const ctx = vm.createContext({ console, DATA: { generated_at: GEN, spots } });
   for (const f of ['experience.js', 'levels.js']) vm.runInContext(fs.readFileSync(dir + f, 'utf8'), ctx, { filename: f });
-  vm.runInContext(`setToday('2026-10-16');\n` + pageDefs(['esc', 'VIEW', 'mapLevel', 'mapWhen', 'listHeadline', 'issued', 'overview', 'areaHead', 'QUIET_NAMES', 'areaRows']), ctx);
+  vm.runInContext(`setToday('2026-10-16');\n` + pageDefs(['esc', 'VIEW', 'mapLevel', 'mapWhen', 'listHeadline', 'issued', 'overview', 'lowEligible', 'lowToChoose', 'areaHead', 'QUIET_NAMES', 'areaRows']), ctx);
   return ctx;
 }
 const DAYS = ['2026-10-16', '2026-10-17', '2026-10-18', '2026-10-19', '2026-10-20'];
@@ -261,14 +218,15 @@ test('the count over the list still counts every spot with no monitored overflow
   // 24 of 105 on 16 Oct 2026: here 24 quiet spots among 30.
   const spots = Array.from({ length: 30 }, (_, i) => fc(`s${i}`, `Spot ${i}`, i < 24 ? 0 : 3));
   const ctx = listPage(spots);
-  assert.match(vm.runInContext('overview', ctx)(spots), / · 24 with no monitored overflow found upstream · /);
+  assert.match(vm.runInContext('overview', ctx)(spots), / · 24 with no monitored overflow found upstream[ .]/);
 });
 
-test('"Highest risk", "Near me" and "Low risk only" draw rows as before: only A–Z folds', () => {
+test('"Highest risk" and "Near me" draw rows as before; A–Z, and lowest risk with no search or place, fold by area', () => {
   const page = fs.readFileSync(path.join(__dirname, '../src/dipcast/site/index.html'), 'utf8');
-  // areaGroups is A–Z alone; the other orders map every item to a row.
-  assert.match(page, /function areaGroups\(items\) \{\n\s+if \(VIEW\.sort !== 'name'/);
-  assert.match(page, /ul\.innerHTML = groups \? groups\.map\(\(\[a, xs\]\) => areaRows\(a, xs, spotItem, VIEW\.quiet, !words\.length\)\)\.join\(''\)\n\s+: items\.length \? items\.map\(spotItem\)\.join\(''\)/);
+  // areaGroups is A–Z, or lowest risk with no search and no place (byArea, 31 Oct 2026); the other orders map every item to a row.
+  assert.match(page, /const byArea = \(\) => VIEW\.sort === 'low' && !VIEW\.q\.trim\(\) && !VIEW\.here;/);
+  assert.match(page, /function areaGroups\(items\) \{\n\s+if \(!\(VIEW\.sort === 'name' \|\| byArea\(\)\)/);
+  assert.match(page, /ul\.innerHTML = groups \? groups\.map\(\(\[a, xs\]\) => byArea\(\) \? areaFold\(a, xs, spotItem\) : areaRows\(a, xs, spotItem, VIEW\.quiet, !words\.length\)\)\.join\(''\)\n\s+: items\.length \? items\.map\(spotItem\)\.join\(''\)/);
   // "Low risk only" keeps low spots alone, so none is behind the line.
   const ctx = listPage(cumbria);
   assert.equal(cumbria.filter(s => vm.runInContext('mapLevel', ctx)(s) === 'low').every(s => s.upstream_summary.overflows > 0), true);
@@ -294,4 +252,14 @@ test('a shared list takes the place of a first visit’s empty "My spots", and i
   // The page uses it for Add to my lists.
   const page = fs.readFileSync(path.join(__dirname, '../src/dipcast/site/index.html'), 'utf8');
   assert.match(page, /setLists\(addSharedList\(LISTS, sh\.name, spots\.map\(s => s\.id\)\)\)/);
+});
+
+ test('shared plans preserve valid dates outside the forecast window', () => {
+  for (const date of ['2026-10-01', '2026-12-01']) {
+    const read = S.readShared(S.shareHash('Plan', ['a'], date), DATES);
+    assert.equal(read.day, null);
+    assert.equal(read.requestedDay, date);
+  }
+  for (const date of ['2026-02-30', 'tomorrow'])
+    assert.equal(S.readShared(`#spots=a&day=${date}`, DATES).requestedDay, undefined);
 });

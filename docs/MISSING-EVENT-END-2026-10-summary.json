@@ -1,0 +1,307 @@
+{
+ "unmatched_points": 21486,
+ "primary": {
+  "spot_builds": 7255,
+  "builds": 79,
+  "spots": 80,
+  "from": "2026-10-17 09:35:00.199823+00:00",
+  "to": "2026-10-26 11:08:10.397542+00:00",
+  "match_level": 0.9929703652653342,
+  "match_risk_0.005": 0.9502412129565817,
+  "A": {
+   "risk_changed": 194,
+   "risk_changed_share": 0.026740179186767746,
+   "diff_p50_changed": 0.006099033168299184,
+   "diff_p90_changed": 0.2082393636128214,
+   "diff_max": 0.49388593020222193,
+   "under_0.01_share": 0.9877325982081323,
+   "level_changed": 30,
+   "level_changed_share": 0.004135079255685734,
+   "level_changed_spots": [
+    "bw-ukg2100-36070",
+    "lune-crook-o-lune",
+    "lune-devils-bridge"
+   ],
+   "level_moves": {
+    "0->1": 17,
+    "0->2": 12,
+    "2->3": 1
+   },
+   "headline_changed": 29,
+   "headline_raised_from_low": 28,
+   "headline_changed_spots": [
+    "bw-ukg2100-36070",
+    "lune-crook-o-lune",
+    "lune-devils-bridge"
+   ],
+   "companies_adding": {
+    "Thames Water": 130,
+    "United Utilities": 53,
+    "Severn Trent Water": 11
+   }
+  },
+  "B": {
+   "risk_changed": 19,
+   "risk_changed_share": 0.002618883528600965,
+   "diff_p50_changed": 0.002689868733340983,
+   "diff_p90_changed": 0.0051950148149243255,
+   "diff_max": 0.005241746474305753,
+   "under_0.01_share": 1.0,
+   "level_changed": 0,
+   "level_changed_share": 0.0,
+   "level_changed_spots": [],
+   "level_moves": {},
+   "headline_changed": 0,
+   "headline_raised_from_low": 0,
+   "headline_changed_spots": [],
+   "companies_adding": {
+    "United Utilities": 19
+   }
+  }
+ },
+ "all": {
+  "spot_builds": 30458,
+  "builds": 338,
+  "spots": 80,
+  "from": "2026-09-13 17:43:08.792012+00:00",
+  "to": "2026-10-26 11:08:10.397542+00:00",
+  "match_level": 0.8517630835905181,
+  "match_risk_0.005": 0.6610086020093243,
+  "A": {
+   "risk_changed": 792,
+   "risk_changed_share": 0.026003020552892508,
+   "diff_p50_changed": 0.01563726726312098,
+   "diff_p90_changed": 0.06284997895213408,
+   "diff_max": 0.7677829723387793,
+   "under_0.01_share": 0.9811872086151422,
+   "level_changed": 54,
+   "level_changed_share": 0.0017729332195153982,
+   "level_changed_spots": [
+    "bw-ukd4308-46501",
+    "bw-ukg2100-36070",
+    "eden-armathwaite",
+    "eden-lazonby",
+    "grasmere",
+    "lune-crook-o-lune",
+    "lune-devils-bridge"
+   ],
+   "level_moves": {
+    "0->1": 19,
+    "0->2": 12,
+    "1->2": 11,
+    "1->3": 8,
+    "2->3": 4
+   },
+   "headline_changed": 50,
+   "headline_raised_from_low": 30,
+   "headline_changed_spots": [
+    "bw-ukd4308-46501",
+    "bw-ukg2100-36070",
+    "eden-lazonby",
+    "grasmere",
+    "lune-crook-o-lune",
+    "lune-devils-bridge"
+   ],
+   "companies_adding": {
+    "United Utilities": 521,
+    "Thames Water": 252,
+    "Severn Trent Water": 19
+   }
+  },
+  "B": {
+   "risk_changed": 479,
+   "risk_changed_share": 0.015726574299034738,
+   "diff_p50_changed": 0.015882903519679137,
+   "diff_p90_changed": 0.057780571157749705,
+   "diff_max": 0.30839708144676115,
+   "under_0.01_share": 0.9870969860135268,
+   "level_changed": 8,
+   "level_changed_share": 0.00026265677326154047,
+   "level_changed_spots": [
+    "bw-ukd4308-46501",
+    "eden-armathwaite",
+    "eden-lazonby",
+    "grasmere"
+   ],
+   "level_moves": {
+    "0->1": 2,
+    "1->2": 3,
+    "2->3": 3
+   },
+   "headline_changed": 5,
+   "headline_raised_from_low": 2,
+   "headline_changed_spots": [
+    "bw-ukd4308-46501",
+    "eden-lazonby",
+    "grasmere"
+   ],
+   "companies_adding": {
+    "United Utilities": 479
+   }
+  }
+ },
+ "records_per_build_primary": {
+  "Anglian Water": {
+   "no_end": 23.0,
+   "with_start": 0.0,
+   "within_48h": 0.0,
+   "within_72h": 0.0,
+   "within_48h_B": 0.0,
+   "weighted_within_48h": 0.0,
+   "weighted_within_48h_B": 0.0,
+   "stale_end": 0.0
+  },
+  "Northumbrian Water": {
+   "no_end": 40.69,
+   "with_start": 40.69,
+   "within_48h": 0.14,
+   "within_72h": 0.24,
+   "within_48h_B": 0.0,
+   "weighted_within_48h": 0.0,
+   "weighted_within_48h_B": 0.0,
+   "stale_end": 0.0
+  },
+  "Severn Trent Water": {
+   "no_end": 197.72,
+   "with_start": 197.72,
+   "within_48h": 2.46,
+   "within_72h": 2.82,
+   "within_48h_B": 0.0,
+   "weighted_within_48h": 0.1,
+   "weighted_within_48h_B": 0.0,
+   "stale_end": 0.0
+  },
+  "South West Water": {
+   "no_end": 871.23,
+   "with_start": 0.0,
+   "within_48h": 0.0,
+   "within_72h": 0.0,
+   "within_48h_B": 0.0,
+   "weighted_within_48h": 0.0,
+   "weighted_within_48h_B": 0.0,
+   "stale_end": 0.0
+  },
+  "Thames Water": {
+   "no_end": 31.32,
+   "with_start": 31.32,
+   "within_48h": 0.44,
+   "within_72h": 0.71,
+   "within_48h_B": 0.0,
+   "weighted_within_48h": 0.44,
+   "weighted_within_48h_B": 0.0,
+   "stale_end": 0.0
+  },
+  "United Utilities": {
+   "no_end": 147.99,
+   "with_start": 120.18,
+   "within_48h": 11.33,
+   "within_72h": 14.23,
+   "within_48h_B": 3.99,
+   "weighted_within_48h": 0.26,
+   "weighted_within_48h_B": 0.09,
+   "stale_end": 4.17
+  },
+  "Wessex Water": {
+   "no_end": 221.94,
+   "with_start": 0.0,
+   "within_48h": 0.0,
+   "within_72h": 0.0,
+   "within_48h_B": 0.0,
+   "weighted_within_48h": 0.0,
+   "weighted_within_48h_B": 0.0,
+   "stale_end": 0.0
+  },
+  "Yorkshire Water": {
+   "no_end": 40.77,
+   "with_start": 40.77,
+   "within_48h": 0.0,
+   "within_72h": 0.0,
+   "within_48h_B": 0.0,
+   "weighted_within_48h": 0.0,
+   "weighted_within_48h_B": 0.0,
+   "stale_end": 0.0
+  }
+ },
+ "records_per_build_all": {
+  "Anglian Water": {
+   "no_end": 12.52,
+   "with_start": 0.0,
+   "within_48h": 0.0,
+   "within_72h": 0.0,
+   "within_48h_B": 0.0,
+   "weighted_within_48h": 0.0,
+   "weighted_within_48h_B": 0.0,
+   "stale_end": 0.0
+  },
+  "Northumbrian Water": {
+   "no_end": 43.22,
+   "with_start": 43.22,
+   "within_48h": 0.27,
+   "within_72h": 0.39,
+   "within_48h_B": 0.0,
+   "weighted_within_48h": 0.0,
+   "weighted_within_48h_B": 0.0,
+   "stale_end": 0.0
+  },
+  "Severn Trent Water": {
+   "no_end": 199.02,
+   "with_start": 199.02,
+   "within_48h": 1.28,
+   "within_72h": 1.73,
+   "within_48h_B": 0.0,
+   "weighted_within_48h": 0.02,
+   "weighted_within_48h_B": 0.0,
+   "stale_end": 0.0
+  },
+  "South West Water": {
+   "no_end": 584.01,
+   "with_start": 2.79,
+   "within_48h": 0.0,
+   "within_72h": 0.0,
+   "within_48h_B": 0.0,
+   "weighted_within_48h": 0.0,
+   "weighted_within_48h_B": 0.0,
+   "stale_end": 0.0
+  },
+  "Thames Water": {
+   "no_end": 29.67,
+   "with_start": 29.67,
+   "within_48h": 0.45,
+   "within_72h": 0.71,
+   "within_48h_B": 0.0,
+   "weighted_within_48h": 0.22,
+   "weighted_within_48h_B": 0.0,
+   "stale_end": 0.0
+  },
+  "United Utilities": {
+   "no_end": 138.51,
+   "with_start": 123.07,
+   "within_48h": 10.91,
+   "within_72h": 13.83,
+   "within_48h_B": 4.42,
+   "weighted_within_48h": 0.75,
+   "weighted_within_48h_B": 0.69,
+   "stale_end": 4.63
+  },
+  "Wessex Water": {
+   "no_end": 121.14,
+   "with_start": 0.0,
+   "within_48h": 0.0,
+   "within_72h": 0.0,
+   "within_48h_B": 0.0,
+   "weighted_within_48h": 0.0,
+   "weighted_within_48h_B": 0.0,
+   "stale_end": 0.0
+  },
+  "Yorkshire Water": {
+   "no_end": 43.26,
+   "with_start": 43.26,
+   "within_48h": 0.0,
+   "within_72h": 0.0,
+   "within_48h_B": 0.0,
+   "weighted_within_48h": 0.0,
+   "weighted_within_48h_B": 0.0,
+   "stale_end": 0.0
+  }
+ }
+}

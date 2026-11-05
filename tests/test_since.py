@@ -24,3 +24,16 @@ def test_the_page_loads_since_js_from_its_build_and_the_offline_copy_keeps_it(tm
     assert (tmp_path / "since.js").read_bytes() == (bs.TEMPLATE.parent / "since.js").read_bytes()
     assert "`since.js?v=${BUILD}`" in (tmp_path / "sw.js").read_text()
     assert bs.TEMPLATE.parent / "since.js" in bs.SHELL_SOURCES   # a change to it renames the offline cache
+
+
+def test_why_level_lines_are_the_models():
+    """since.js says where each level starts on the 0-100 spill risk (WHY_CUTS, for "a small change ... moderate
+    risk starts at 15"): the model's own cuts, transport.SCORE_CUTS, in the same order."""
+    import re
+
+    from dipcast.model.transport import SCORE_CUTS
+    js = (ROOT / "src" / "dipcast" / "site" / "since.js").read_text()
+    m = re.search(r"const WHY_CUTS = \[(.*?)\], WHY_SMALL", js)
+    cuts = [(int(n), w) for n, w in re.findall(r"\[(\d+), '([a-z ]+)'\]", m.group(1))]
+    assert [n for n, _ in cuts] == list(SCORE_CUTS)
+    assert [w for _, w in cuts] == ["moderate", "high", "very high"]

@@ -80,7 +80,7 @@ const AnyPoint = (() => {
   }
   // transport.risk_label: from the score the page shows, the 3 dp risk times 100, rounded.
   const riskLabel = r => { const v = Math.round(r3(r) * 100); return v < 15 ? 'low' : v < 40 ? 'moderate' : v < 70 ? 'high' : 'very high'; };
-  const COUNT_WEIGHT = 0.005;   // transport.COUNT_WEIGHT: a weight under it shows as 0% reach and is not counted
+  const COUNT_WEIGHT = 0.005;   // transport.COUNT_WEIGHT: a weight under it shows as "0% weight" and is not counted
   const r3 = x => Math.round(x * 1000) / 1000, r1 = x => Math.round(x * 10) / 10;
 
   // WFD lakes crossed on the way (transport.upstream_overflows, lake path "lake"): k = flat triples
@@ -262,7 +262,8 @@ const AnyPoint = (() => {
       feed_down_upstream: counted(down),
       feed_down: Object.keys(fd).sort().map(c => ({ company: c, overflows: fd[c], since: (od.feed_down_since || {})[c] ?? null })),
       stale_upstream: counted(stale),
-      feed_stale: Object.keys(fs).sort().map(c => ({ company: c, overflows: fs[c], since: staleSince[c] ?? null }))
+      feed_stale: Object.keys(fs).sort().map(c => ({ company: c, overflows: fs[c], since: staleSince[c] ?? null,
+          ...(aged.has(c) && !(c in (od.feed_stale_since || {})) ? { aged_here: true } : {}) }))
         .concat(Object.keys(fr).sort().map(c => ({ company: c, overflows: fr[c], since: frSince[c] ?? null, records: true }))) };
     // The overflows that matter most: forecast_point's relevance, the build's ten.
     const ahead = Pc.map(row => row.slice(hist, hist + DAYS_AHEAD + 1));
@@ -272,6 +273,7 @@ const AnyPoint = (() => {
       return { site_id: names ? names.ids[i] : String(i), site_name: names ? names.name[i] : null, company: od.companies[od.company[i]],
         lat: names ? names.lat[i] : null, lon: names ? names.lon[i] : null, status: status[k], has_live: hasLive[k],
         data_state: state[k], feed_updated_at: state[k] !== 'stale' ? null : ownStale[k] ? staleRows[String(i)] ?? null : staleSince[company[k]] ?? null,
+        ...(state[k] === 'stale' && status[k] === 0 && !ownStale[k] && aged.has(company[k]) && !(company[k] in (od.feed_stale_since || {})) ? { aged_here: true } : {}),
         ...(status[k] === -3 ? { last_status: lastRunning.has(i) ? 1 : null, feed_down_since: (od.feed_down_since || {})[company[k]] ?? null } : {}),
         snap_confidence: low.has(i) ? 'low' : null, distance_km: r1(r.dist / 1000), lake_distance_km: r1(r.dlake / 1000),
         travel_h: r1(travel[k]), weight: r3(w[k]), p_spill_today: r3(Number.isNaN(pd[0]) ? 0 : pd[0]),
@@ -304,6 +306,33 @@ const AnyPoint = (() => {
       if (!best || km < best.km) best = { mm, km: Math.round(km) };
     }
     return best;
+  }
+
+  // The water near the surface at a clicked river or lake point, today (#492, stage 2): a provisional estimate from the
+  // nearest cached cell's 7-day air (overflow_days.json's water_air, build_any_point.water_air), the point's own square
+  // or the nearest of the eight around it, through the river or lake curve the listed spots' model uses
+  // (water_temp.mohseni), never below 0 C. In the months the model was tested in, the curve alone's measured typical
+  // error is given (rivers 1.85 C, lakes 1.93 C); in the others none is, as none was measured. { est } or { miss }, or
+  // {} for anything but a river or lake, or a file from before stage 2.
+  function waterAt(od, lat, lon, kind) {
+    const w = od && od.water_air; if (!w || !w.cells || !w.curves || !(kind === 'river' || kind === 'lake') || !w.curves[kind]) return {};
+    const snap = v => Math.round(v * 10) / 10, key = (a, b) => `${(a + 0).toFixed(1)},${(b + 0).toFixed(1)}`;
+    const c = [snap(lat), snap(lon)];
+    let best = typeof w.cells[key(...c)] === 'number' ? { a7: w.cells[key(...c)], km: 0 } : null;
+    // The eight squares around, else the sixteen beyond them (#492): a point in the hills, far from any overflow,
+    // takes air from up to about 25 km away, and the page says how far.
+    for (let ring = 1; ring <= 2 && !best; ring++) for (let i = -ring; i <= ring; i++) for (let j = -ring; j <= ring; j++) {
+      if (Math.max(Math.abs(i), Math.abs(j)) !== ring) continue;
+      const a = snap(c[0] + i / 10), b = snap(c[1] + j / 10), a7 = w.cells[key(a, b)]; if (typeof a7 !== 'number') continue;
+      const km = Math.hypot((a - lat) * 111.2, (b - lon) * 111.2 * Math.cos(lat * RAD));
+      if (!best || km < best.km) best = { a7, km: Math.round(km) };
+    }
+    if (!best) return { miss: { why: 'air', date: w.date } };
+    const [mu, alpha, beta, gamma] = w.curves[kind], t = mu + (alpha - mu) / (1 + Math.exp(gamma * (beta - best.a7)));
+    if (!Number.isFinite(t)) return { miss: { why: 'error', date: w.date } };
+    const inSeason = (w.months || []).includes(+String(w.date).slice(5, 7));
+    return { est: { temp_c: Math.round(Math.max(0, t)), date: w.date, route: `${kind}_air_curve`, tested: false,
+      typical_c: inSeason ? ((w.typical_c || {})[kind] ?? null) : null, air_7d_c: Math.round(best.a7 * 10) / 10, air_km: best.km } };
   }
 
   // ------------------------------------------------------------------ where a click goes
@@ -509,6 +538,9 @@ const AnyPoint = (() => {
   const ISOLATED = 'An isolated lake: the river network links no monitored storm overflow to it, '
     + 'so the forecast has nothing to say about it. A reservoir filled by pumping from a river can still take in river water. '
     + 'Risk from wildlife, runoff and bathers is not modelled.';
+  // A lake's own name in lakes.json (`lakes[].name`): OS's for its centreline, else its WFD outline's
+  // (build_any_point.outline_names), or null.
+  const lakeName = (lakes, id) => ((lakes.lakes || [])[id] || {}).name || null;
   function place(lat, lon, files) {
     const { cfg, lakes, od, tiles, outside = null, outlines = {}, waters = {} } = files, a = od.assumptions;
     const where = outsideWhere(lat, lon, outside);
@@ -544,10 +576,16 @@ const AnyPoint = (() => {
     const entry = move && !move.tile ? null : tiles[at.link.tile].links[String(at.link.lno)], lake = at.mode === 'lake';
     const rows = !entry ? [] : lake ? (entry.lake === undefined ? [] : lakeRows(lakes.lakes[entry.lake], [lat, lon], null, a.lake_area_halving_km2, waters[entry.lake], a.dilution_power ?? 1,
       a.lake_direction === 'down' ? a.lake_down_margin_m : null))
-      : rowsAt(entry, at.link.frac, a.max_upstream_km * 1000, a.l0_m, a.dilution_power ?? 1);
-    return { mode: at.mode, kind: at.mode, name: at.link.name || (lake ? 'Unnamed lake' : 'Unnamed watercourse'), rows, link: at.link,
+      : !(entry.o || entry.s) ? [] : rowsAt(entry, at.link.frac, a.max_upstream_km * 1000, a.l0_m, a.dilution_power ?? 1);   // an entry can hold only ws
+    // A lake reached by its centreline, from a click just off its outline: the lake's name in lakes.json (the build
+    // takes it from the WFD outline), not "Unnamed lake" (Coniston Water before, 29 Oct 2026).
+    // A lake's own name first: a lake link's name in OS is often a stream through it (29 Oct 2026, "Elder Beck" for a tap
+    // by Ullswater); the link's name only where the lake has none.
+    const named = (lake && entry && entry.lake !== undefined ? lakeName(lakes, entry.lake) : null) || at.link.name;
+    return { mode: at.mode, kind: at.mode, name: named || (lake ? 'Unnamed lake' : 'Unnamed watercourse'), rows, link: at.link,
       ...(lake && entry && entry.lake !== undefined ? { lake: entry.lake } : {}),
-      location: { mode: at.mode, watercourse: at.link.name, snap_distance_m: Math.round(at.link.d), form: FORMS[at.link.form],
+      ...(!lake && entry && entry.ws > 0 ? { wales_share: entry.ws } : {}),
+      location: { mode: at.mode, watercourse: named, snap_distance_m: Math.round(at.link.d), form: FORMS[at.link.form],
         lake_source: lake ? 'centreline' : null, adopted_main_channel: !!at.adopted } };
   }
 
@@ -583,12 +621,17 @@ const AnyPoint = (() => {
     const cal = ((verif || {}).lead_calibration || {}).leads || {};
     // No rows is the API's answer where no monitored overflow is upstream: every day 0.
     const f = forecast(rows, od, cal, ids);
+    // The share of the river above in Wales (build_any_point.wales_shares), where overflows are not counted: the card
+    // says so (levels.js, walesWords), as a listed spot's does.
+    if (at.wales_share) f.upstream_summary = { ...f.upstream_summary, wales_share: at.wales_share };
     // Nothing upstream to spill: the days show the rain, as a listed spot's do.
     const rain = rows.length ? null : rainAt(od, lat, lon);
     if (rain) f.days.forEach((x, k) => { x.rain_48h_mm = rain.mm[k] ?? null; });
     const spot = (typeof DATA !== 'undefined' && DATA && DATA.spots.find(s => s.assumptions)) || {};
     const a = od.assumptions;
+    const waterNow = waterAt(od, lat, lon, at.kind);   // a provisional water temperature (#492): the estimate, or why there is none
     return { ...base, location: at.location, ...f, ...(rain && rain.km ? { rain_km: rain.km } : {}),
+      ...(waterNow.est ? { water_temp_est: waterNow.est } : waterNow.miss ? { water_temp_est_missing: waterNow.miss } : {}),
       assumptions: { river_velocity_ms: a.river_velocity_ms, lake_velocity_ms: a.lake_velocity_ms, t90_hours: a.t90_hours,
         max_upstream_km: a.max_upstream_km, recent_spill_hours: a.recent_spill_hours, lead_calibration: Object.keys(cal).length > 0,
         model: (spot.assumptions || {}).model, version: (spot.assumptions || {}).version } };
@@ -678,8 +721,8 @@ const AnyPoint = (() => {
     open(e.latlng.lat, e.latlng.lng);
   }
 
-  return { historyDays, interp, calibrate, shiftByTravel, combineDaily, missingShare, riskLabel, rowsAt, lakeRows, transportOf, forecast, rainAt,
-    frame, nearestOnLine, waterWay, decodeIndex, candidates, inRing, polygonDistance, outlineDistance, nearLakes, lakePolygon, outlinesNeeded, needsSquares, outsideEngland, outsideWhere, OUTSIDE, locate, place, tileKey, squares, point, open, onMapClick, POINT_ZOOM };
+  return { historyDays, interp, calibrate, shiftByTravel, combineDaily, missingShare, riskLabel, rowsAt, lakeRows, transportOf, forecast, rainAt, waterAt,
+    frame, nearestOnLine, waterWay, decodeIndex, lakeName, candidates, inRing, polygonDistance, outlineDistance, nearLakes, lakePolygon, outlinesNeeded, needsSquares, outsideEngland, outsideWhere, OUTSIDE, locate, place, tileKey, squares, point, open, onMapClick, POINT_ZOOM };
 })();
 
 if (typeof window !== 'undefined' && typeof map !== 'undefined') {

@@ -10,7 +10,16 @@
 // `Embed`, so no name here can clash with one of levels.js's.
 const Embed = (() => {
   const R = typeof module === 'object' && module.exports ? require('./levels.js')
-    : { ORDER, NO_OVERFLOWS, NO_RIVER, setToday, today, rank, risk, level, headline, weekNext, daily, levelAction, walesWords, eaUnchecked, EA_UNCHECKED };   // levels.js's globals
+    : { ORDER, NO_OVERFLOWS, NO_RIVER, setToday, today, rank, risk, level, headline, weekNext, daily, levelAction, walesWords, trialWords, eaUnchecked, EA_UNCHECKED, liveCover, liveLine };   // levels.js's globals
+  // Reviewed official advice, in the compact form the app's rows use (eatoday.js, eaTodayBrief), which
+  // embed.html loads before this file. Without it (a page cached from before), none.
+  const brief = typeof module === 'object' && module.exports ? require('./eatoday.js').eaTodayBrief
+    : typeof eaTodayBrief === 'function' ? eaTodayBrief : () => '';
+  // The line in place of the level's, while a notice shows: "Follow" only for one that restricts swimming.
+  const act = typeof module === 'object' && module.exports ? require('./eatoday.js').eaTodayAct
+    : typeof eaTodayAct === 'function' ? eaTodayAct : () => 'Read the official notice above first.';
+  const restricts = typeof module === 'object' && module.exports ? require('./eatoday.js').eaTodayRestricts
+    : typeof eaTodayRestricts === 'function' ? eaTodayRestricts : () => false;
   const PAGE_ID = /^[A-Za-z0-9_-]+$/;   // the page and build_site.py use the same rule
   const STALE_MIN = 8 * 60;   // the app's "Stale" notice waits as long (index.html, STALE_MIN)
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
@@ -54,8 +63,13 @@ const Embed = (() => {
   // against bathing given at short notice, so it is linked.
   const gaps = s => {
     const url = (s.classification || {}).url;
-    const ea = R.eaUnchecked(s) ? `${esc(R.EA_UNCHECKED)} ${/^https:\/\//.test(url || '') ? out(url, 'The Environment Agency’s page') : 'The Environment Agency’s page'} says when bathing is not advised.` : '';
-    const said = [esc(R.walesWords(s)), ea].filter(Boolean);
+    // A reviewed notice on the card (brief) says when it was checked, so "could not be checked" is left out,
+    // as the spot page's coverage line leaves it out (eatoday.js, eaTodayCover).
+    const ea = R.eaUnchecked(s) && !brief(s) ? `${esc(R.EA_UNCHECKED)} ${/^https:\/\//.test(url || '') ? out(url, 'The Environment Agency’s page') : 'The Environment Agency’s page'} says when bathing is not advised.` : '';
+    // Overflows upstream that give no live reading, as the spot's page says under its five days (levels.js, liveLine):
+    // the card left them out, so it read as fully watched where they could be spilling unseen (5 Nov 2026).
+    const c = R.liveCover(s), live = c && (c.kind === 'none' || c.total > c.mon) ? `${esc(R.liveLine(s))}.` : '';
+    const said = [live, esc(R.walesWords(s)), esc(R.trialWords(s)), ea].filter(Boolean);
     return said.length ? `<p class="act">${said.join(' ')}</p>` : '';
   };
 
@@ -70,8 +84,12 @@ const Embed = (() => {
     // Where the week goes, unless the headline already says it, so "Very high risk on Thursday" is said
     // once. A worse later day is in both (levels.js, headParts).
     const head = R.headline(s);
+    // Official advice above the level, never in it: a card on another site must not lead with a clean "Low".
+    const o = brief(s);
+    if (o) h += `<p class="o-tag">Official: ${esc(o)}. ${restricts(s) ? 'Follow it first' : 'Read the official notice first'}; the level is SwimSignal's sewage forecast only.</p>`;
     h += `<p class="hl ${tone(R.level(s))}">${esc(head)}</p>` + (next && !head.includes(next) ? `<p class="next">${esc(next)}</p>` : '');
-    h += `<p class="act">${esc(R.levelAction(s))}</p>` + gaps(s);   // what to do, as under the spot page's answer
+    // While a reviewed notice shows, it comes first, in place of the level's line (eatoday.js, eaTodayAct).
+    h += `<p class="act">${esc(o ? act(s) : R.levelAction(s))}</p>` + gaps(s);   // what to do, as under the spot page's answer
     if (R.daily(s) && s.days.length) h += `<h2 class="lab" id="days-h">Pollution risk, next five days</h2><ul class="drows" aria-labelledby="days-h">${rows(s)}</ul>`;
     return h + `<p class="check">${check()}</p>`
       + `<p class="foot">Issued ${esc(issued)}, ${ago(age)} ago · ${out(page, 'Full forecast on SwimSignal', 'back')}</p>`

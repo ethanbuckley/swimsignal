@@ -22,10 +22,14 @@
 const Sites = (() => {
   const node = typeof module === 'object' && module.exports;
   const R = node ? require('./levels.js')
-    : { ORDER, COVER, NO_FORECAST, NO_OVERFLOWS, NO_RIVER, OTHER_RISKS, setToday, today, rank, risk, level, dayLevel, headParts, dayHeadline, weekNext, daily, walesWords, eaUnchecked };   // levels.js's globals
+    : { ORDER, COVER, NO_FORECAST, NO_OVERFLOWS, NO_RIVER, OTHER_RISKS, setToday, today, rank, risk, level, dayLevel, headParts, dayHeadline, weekNext, daily, walesWords, trialWords, eaUnchecked };   // levels.js's globals
   const Li = node ? require('./lists.js') : { listName, listIds, sitesHash, LINK_SPOTS_MAX };
   const O = node ? require('./organisers.js') : Organisers;
   const P = node ? require('./printed.js') : typeof Printed === 'undefined' ? null : Printed;
+  // Reviewed official advice, in the compact form the app's rows use (eatoday.js, eaTodayBrief): under the
+  // headline, never in it. Without eatoday.js (an older page), none.
+  const brief = node ? require('./eatoday.js').eaTodayBrief : typeof eaTodayBrief === 'function' ? eaTodayBrief : () => '';
+  const first = node ? require('./eatoday.js').eaTodayFirst : typeof eaTodayFirst === 'function' ? eaTodayFirst : () => 'Read the official notice first';   // follow only a restricting notice
   const PAGE_ID = /^[A-Za-z0-9_-]+$/;   // the app and build_site.py use the same rule
   const DEFAULT_NAME = 'Sites view';
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
@@ -88,7 +92,8 @@ const Sites = (() => {
   // overflows upstream are expected to spill today, in the spot page's words.
   // Then what it cannot count or check, short, as under the list's rows: the overflows in Wales, and at a
   // bathing water the EA's advice for today (levels.js, walesWords and eaUnchecked).
-  const gaps = (s, onDay = false) => [R.walesWords(s, true), R.eaUnchecked(s) ? `${onDay ? 'EA advice on the day' : "Today's EA advice"} not checked: see the EA's page` : ''].filter(Boolean).map(w => w + '.').join(' ');
+  // A reviewed notice on the row (brief) says when it was checked, so "not checked" is left out there.
+  const gaps = (s, onDay = false) => [R.walesWords(s, true), R.trialWords(s, true), R.eaUnchecked(s) && !brief(s) ?`${onDay ? 'EA advice on the day' : "Today's EA advice"} not checked: see the EA's page` : ''].filter(Boolean).map(w => w + '.').join(' ');
   function words(s) {
     const lv = R.level(s), [head, why] = R.headParts(s), g = gaps(s);
     if (R.COVER[lv]) return { head, tone: tone(lv), why: [lv === R.NO_OVERFLOWS || lv === R.NO_RIVER ? R.OTHER_RISKS : '', g].filter(Boolean).join(' ') };
@@ -114,13 +119,16 @@ const Sites = (() => {
   }
   function row(s) {
     const w = DAY ? dayWords(s, DAY) : words(s), loc = s.location || {};
-    const meta = [cap(s.kind || 'river'), s.source === 'designated' ? 'bathing water' : null, loc.watercourse || null].filter(Boolean).map(esc).join(' · ');
+    const meta = [cap(s.kind || 'river'), s.source === 'designated' || s.source === 'sepa' ? 'bathing water' : null, loc.watercourse || null].filter(Boolean).map(esc).join(' · ');
     const days = DAY ? [DAY] : (s.days || []).slice(0, 2).map(x => x.date), t = R.today();
     const rec = days.length ? days.map(iso => `<a href="${esc(recordHref(s.id, iso))}">${DAY ? dated(iso) : iso === t ? 'today' : 'tomorrow'}</a>`).join(' · ')
       : `<a href="${esc(recordHref(s.id, t))}">today</a>`;
     // With a day, the row says which spot, day and level it drew, for briefing.py to check against alerts.json.
-    return `<li class="site"${DAY ? ` data-spot="${esc(s.id)}" data-day="${DAY}" data-level="${esc(w.lv)}"` : ''}><div class="s-place"><a class="s-name" href="${esc(spotHref(s.id))}">${esc(s.name)}</a><span class="s-meta">${meta}</span></div>`
-      + `<div class="s-say"><p class="s-head ${w.tone}">${esc(w.head)}</p>${w.why ? `<p class="s-why">${esc(w.why)}</p>` : ''}`
+    // The name is the row's h2, under the page's h1, so a screen reader can step from spot to spot; it looks as
+    // it did (sites.html, .s-h).
+    return `<li class="site"${DAY ? ` data-spot="${esc(s.id)}" data-day="${DAY}" data-level="${esc(w.lv)}"` : ''}><div class="s-place"><h2 class="s-h"><a class="s-name" href="${esc(spotHref(s.id))}">${esc(s.name)}</a></h2><span class="s-meta">${meta}</span></div>`
+      + `<div class="s-say">${brief(s) ? `<p class="o-tag">Official: ${esc(brief(s))}. ${first(s)}; the level is SwimSignal's sewage forecast only.</p>` : ''}<p class="s-head ${w.tone}">${esc(w.head)}</p>`
+      + `${w.why ? `<p class="s-why">${esc(w.why)}</p>` : ''}`
       + `<p class="s-rec screen-only">Decision record: ${rec}</p></div>`
       + `<div class="s-week">${week(s)}</div></li>`;
   }
@@ -137,7 +145,8 @@ const Sites = (() => {
     return (m > O.STALE_MIN ? `<p class="notice" role="alert"><b>Stale.</b> This forecast is ${ago(m)} old (issued ${esc(at)}). The automatic update has not run since; treat everything below as out of date.</p>` : '')
       + `<p class="s-issued">Forecast issued ${esc(at)}${m <= O.STALE_MIN ? `<span class="screen-only"> (${ago(m)} ago)</span>` : ''}, issue id <b>${esc(P.issueId(data))}</b>. It is updated several times a day${base ? ` at ${esc(base.replace(/^https?:\/\//, '').replace(/\/$/, ''))}` : ''}. A forecast, not a water test: check the signs at the water before you swim.</p>`;
   }
-  function view(data, st, now = Date.now(), base = '') {
+  // print: false leaves out the print button, where the rows sit inside another page (the organisers' demo, demo.js).
+  function view(data, st, now = Date.now(), base = '', { print = true } = {}) {
     R.setToday(String(data.generated_at).slice(0, 10));
     DAY = st.day && (data.spots || []).some(s => (s.days || []).slice(0, 5).some(x => x.date === st.day)) ? st.day : null;
     if (!st.ids.length) return '<p>This link has no spots in it. Make one from a named list on the <a href="saved/">Saved page</a>, or pick several spots on the <a href="organisers.html#sites-maker">organisers\' page</a>.</p>';
@@ -147,8 +156,8 @@ const Sites = (() => {
     if (st.day && !DAY && found.length) h += `<p class="s-missing">${esc(dated(st.day))} is not in this forecast's five days, so the levels above are the usual ones, from today.</p>`;
     if (missing.length) h += `<p class="s-missing">Not found in this forecast: ${missing.map(id => `<b>${esc(id)}</b>`).join(', ')}. ${missing.length === 1 ? 'The spot may have been renamed or removed' : 'They may have been renamed or removed'}; the link still works for the rest.</p>`;
     if (!found.length) return h;
-    return h + P.credits(data, found, base)
-      + '<p class="actions screen-only"><button type="button" class="btn" id="print">Print this page</button></p>';
+    return h + P.credits(data, found, base, [], 2)   // an h2, as the spots' names are
+      + (print ? '<p class="actions screen-only"><button type="button" class="btn" id="print">Print this page</button></p>' : '');
   }
 
   async function start() {
@@ -211,7 +220,7 @@ const Sites = (() => {
     });
   }
 
-  return { fromHash, pick, week, words, row, issue, view, start, maker, DEFAULT_NAME };
+  return { fromHash, pick, week, words, dayWords, row, issue, view, start, maker, DEFAULT_NAME };
 })();
 
 if (typeof module === 'object' && module.exports) module.exports = Sites;

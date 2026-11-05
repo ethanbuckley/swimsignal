@@ -42,8 +42,8 @@ test('a day inside the forecast gives its level by the page rules, why, and how 
   assert.equal(L.dayHeadline(henley, '2026-10-06'), 'Moderate risk: sewage spills');
   assert.ok(h.includes('Moderate risk: about 2 of the 51 overflows upstream are expected to spill.'));
   assert.ok(h.includes('Sewage spill risk <b>20</b> of 100'));
-  // The three most likely to reach the spot that day, chance times reach, by their plain names (levels.js, plainName).
-  assert.match(h, /Most likely to reach the spot: Friday Street \(Henley\) pumping station overflow \(spill chance 3%, reach 100%\); Wargrave sewage works overflow \(/);
+  // The three that count most that day, chance times model weight, by their plain names (levels.js, plainName).
+  assert.match(h, /Counting most that day: Friday Street \(Henley\) pumping station overflow \(spill chance 3%, weight 100%\); Wargrave sewage works overflow \(/);
   // Out of season no figure (20 Oct 2026, levels.js ECOLI_OFF): the words the spot's page gives in its place.
   assert.ok(h.includes(`<dt>Water quality</dt><dd>${L.ECOLI_OFF_SAID}</dd>`) && !h.includes('41%'));
   assert.ok(h.includes('2 days. In tests on past years, spill forecasts this far ahead were about 80% as good as same-day ones, and water-quality ones about 70%.'));
@@ -86,7 +86,7 @@ test('the overflows are the forecast\'s, most reach first, and say when the list
   assert.deepEqual(rows.map(r => r.plain), ['Friday Street (Henley) pumping station overflow', 'Wargrave sewage works overflow', 'Goring sewage works overflow']);
   assert.deepEqual(rows.map(r => r.own), ['Friday Street (Henley) SPS', 'Wargrave STW', 'Goring STW']);   // the company's, in normal case
   const h = O.overflows(henley);
-  assert.ok(h.includes('51 monitored storm overflows are within 60\u00a0km upstream along the river network, all with a live feed.'));
+  assert.ok(h.includes('51 monitored storm overflows are within 60\u00a0km upstream along the river network, all reporting live at the last update.'));
   assert.ok(h.includes('Sewage from the farthest takes about 33\u00a0h to arrive.'));
   // Without the full list (it could not be loaded, or the build wrote none): the three, and why.
   assert.ok(h.includes('The table lists the 3 that matter most in the current forecast: the full list of 51 could not be loaded. Try again later.'));
@@ -94,10 +94,12 @@ test('the overflows are the forecast\'s, most reach first, and say when the list
   const cells = [...h.matchAll(/<tr><th scope="row" class="ov">([^<]+) <span class="own">([^<]+)<\/span><\/th>(.*?)<\/tr>/g)]
     .map(m => [m[1], m[2], [...m[3].matchAll(/data-l="([^"]+)">([^<]*)</g)].map(c => c.slice(1))]);
   assert.deepEqual(cells[1], ['Wargrave sewage works overflow', 'Wargrave STW', [['Company', 'Thames Water'], ['Into', 'River Thames'], ['Distance', '7.3\u00a0km'], ['Travel', '4\u00a0h'],
-    ['Reach', '31%'], ['Spills a year', '18'], ['Hours spilling', '121'], ['Live feed', 'Yes']]]);
+    ['Weight', '31%'], ['Spills a year', '18'], ['Hours spilling', '121'], ['Live feed', 'Yes']]]);
   assert.equal(cells[2][2][7][1], 'No');
   const mixed = {...henley, upstream_summary: {overflows: 3, with_live_feed: 2, without_live_feed: 1, max_travel_h: 0.4}};
-  assert.ok(O.overflows(mixed).includes(': 2 report their status live, and 1 has no live feed, so SwimSignal forecasts it from rain and their yearly record alone.'));
+  // Not reporting at the last update is not the same as no live feed: Henley's one is in Thames Water's feed, its monitor silent.
+  assert.ok(O.overflows(mixed).includes(': at the last update 2 reported their status live and 1 gave no live reading, so SwimSignal forecasts it from rain and its yearly record alone.'));
+  assert.ok(!O.overflows(mixed).includes('no live feed'));
   assert.ok(O.overflows(mixed).includes('takes under an hour to arrive') && !O.overflows(mixed).includes('does not yet publish'));
 });
 
@@ -108,6 +110,15 @@ test('with every overflow upstream loaded (data/upstream/<id>.json), the table a
   assert.equal(names.length, 51);
   assert.deepEqual(names.slice(0, 2), ['Overflow 50', 'Overflow 49']);
   assert.ok(!h.includes('The table lists'));
+  // The ten with the most weight show; the other 41 are in a fold that opens the list to all 51, in the same
+  // order (5 Nov 2026), so the checklist after the table is in reach on a phone. The history link stays.
+  const [open, fold] = h.split('<details class="fold"><summary>The other 41 overflows</summary>');
+  const named = s => [...s.matchAll(/<th scope="row" class="ov">([^<]+)<\/th>/g)].map(m => m[1]);
+  assert.deepEqual(named(open), names.slice(0, 10));
+  assert.deepEqual(named(fold.split('</details>')[0]), names.slice(10));
+  assert.ok(h.includes('href="spot/thames-henley/profile/">Overflow history'));
+  assert.ok(!O.overflows(henley).includes('<details'));   // three: no fold
+  assert.ok(O.view(henley, '2026-10-06', DATA, BASE, NOW, all).includes('id="csv">Download the overflows as CSV'));
   const text = O.csv(henley, DATA, BASE, all), lines = text.trim().split('\n');
   assert.equal(lines.filter(l => !l.startsWith('#')).length, 52);   // the header and 51 rows
   assert.ok(lines.some(l => l === '# 51 monitored overflows within 60 km upstream along the river network.'));
@@ -119,7 +130,7 @@ test('with every overflow upstream loaded (data/upstream/<id>.json), the table a
   const odd = O.overflows(henley, [ov('North_CSO_Princetown', 0.004, 40, {receiving_watercourse: 'WEIR BROOK&TRIB OF WEIR BROOK/DITCH'})]);
   assert.ok(odd.includes('data-l="Into">WEIR BROOK&amp;<wbr>TRIB OF WEIR BROOK/<wbr>DITCH</td>'), odd);
   assert.ok(odd.includes('class="ov">North, Princetown storm overflow <span class="own">North_<wbr>CSO_<wbr>Princetown</span></th>'), odd);
-  assert.ok(odd.includes('data-l="Reach">&lt;1%</td>'));
+  assert.ok(odd.includes('data-l="Weight">&lt;1%</td>'));
 });
 
 test('the CSV carries what it is, its columns and the credits, and is safe to open in a spreadsheet', () => {
@@ -155,14 +166,20 @@ test('names are escaped, and every link stays on this site', () => {
 
 test('the day detail\'s words are index.html\'s, so a day reads the same on both pages', () => {
   const page = fs.readFileSync(path.join(__dirname, '../src/dipcast/site/index.html'), 'utf8');
-  for (const words of ['are expected to spill', 'a spill from a nearby overflow upstream is possible', 'under one spill is expected from the',
+  for (const words of ['are expected to spill', 'a spill from a nearby overflow upstream is possible', 'is possible, not expected',
     'In tests on past years, spill forecasts this far ahead were about', 'as good as same-day ones', 'The rainfall forecast for this day has not arrived, so there is no figure.',
-    'after travel time, die-off and dilution', 'after die-off over the travel time and dilution by the size of the river network upstream',
-    // Reach is a weight, not a chance (11 Oct 2026: both said "the chance a spill there affects this spot").
-    "the share of a spill\\'s bacteria the model expects to arrive here", 'An estimate, not a measured chance.']) {
+    'after travel time, die-off and dilution']) {
     assert.ok(page.includes(words), words);
   }
-  assert.equal(O.spilling({expected_spilling_overflows: 0.2, label: 'low'}, 5), 'under one spill is expected from the 5 overflows upstream');
+  // The weight is a modelled relative contribution weight, neither a share of bacteria nor a chance (30 Oct 2026; on 11 Oct
+  // both pages said "the chance a spill there affects this spot", then "the share of a spill's bacteria"): one definition,
+  // levels.js's WEIGHT_SAID, which both pages give.
+  const levels = fs.readFileSync(path.join(__dirname, '../src/dipcast/site/levels.js'), 'utf8');
+  assert.match(levels, /const WEIGHT_SAID = 'Weight: a modelled relative contribution weight, .*neither a measured bacterial concentration nor a calibrated chance of contamination\.';/);
+  assert.ok(page.includes('${WEIGHT_SAID}</p></details>'));
+  assert.ok(fs.readFileSync(path.join(__dirname, '../src/dipcast/site/organisers.js'), 'utf8').includes("R.WEIGHT_SAID.replace(/^Weight: /, '')"));
+  for (const old of ["share of a spill\\'s bacteria", 'the chance a spill there affects', '<small> reach</small>']) assert.ok(!page.includes(old), old);
+  assert.equal(O.spilling({expected_spilling_overflows: 0.2, label: 'low'}, 5), 'a spill from one of the 5 overflows upstream is possible, not expected');
   assert.equal(O.spilling({expected_spilling_overflows: 0.2, label: 'high'}, 5), 'a spill from a nearby overflow upstream is possible');
   assert.equal(O.spilling({expected_spilling_overflows: 7, label: 'high'}, 5), 'all 5 overflows upstream are expected to spill');
 });

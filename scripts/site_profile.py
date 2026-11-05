@@ -8,8 +8,9 @@ network, the overflow table and the Environment Agency's annual returns (event d
 2021-2025, OGL v3). Nothing is downloaded, so it is safe to run while the site builds elsewhere.
 
 The trace is the site's own: locate_pin and upstream_overflows with the site's settings, so the list
-of overflows matches a spot's page. "Reach" is the transport weight (die-off times dilution): the
-share of a spill's bacteria the model expects to arrive here, before any rain or spill forecast.
+of overflows matches a spot's page. "Weight" is the transport weight (die-off times dilution): a modelled
+relative contribution weight from the transport assumptions, before any rain or spill forecast, neither a
+measured bacterial concentration nor a calibrated chance of contamination (until 30 Oct 2026, "reach").
 """
 from __future__ import annotations
 
@@ -91,12 +92,12 @@ def render(name: str, lat: float, lon: float, where: dict, t: pd.DataFrame, rows
         f"- {s['live']} of them are in the water companies' live feeds; how many report at a given time varies.",
         f"- The nearest is {fmt(s['nearest_km'], 1)} km upstream.",
         "", "## Each year, all overflows upstream", "",
-        "| Year | Overflows with a return | Spills | Spill hours | Spill hours, weighted by reach |",
+        "| Year | Overflows with a return | Spills | Spill hours | Spill hours, weighted by model weight |",
         "|---|---|---|---|---|"]
     lines += [f"| {r['year']} | {r['with_return']} | {r['spills']:,} | {fmt(r['hours'])} | {fmt(r['reach_hours'])} |" for r in rows]
     lines += ["", f"{REACH_NOTE} The method: swimsignal.co.uk/methods.html.", "",
-              f"## The overflows, by reach (top {min(TOP, n)} of {n})", "",
-              "| Overflow (id) | Company | km upstream | Hours away | Reach | Spills 2023 | 2024 | 2025 | Hours 2025 | Monitor uptime 2025 |",
+              f"## The overflows, by model weight (top {min(TOP, n)} of {n})", "",
+              "| Overflow (id) | Company | km upstream | Hours away | Weight | Spills 2023 | 2024 | 2025 | Hours 2025 | Monitor uptime 2025 |",
               "|---|---|---|---|---|---|---|---|---|---|"]
     for _, r in t.head(TOP).iterrows():
         lines.append(f"| {overflow_cell(r['site_name'], r['site_id'])} | {r['company']} | {fmt(r['km'], 1)} | "

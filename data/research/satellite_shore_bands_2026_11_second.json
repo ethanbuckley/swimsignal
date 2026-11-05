@@ -1,0 +1,459 @@
+{
+  "description": "Exploratory paired shoreline-margin observations, a second sample beside satellite_shore_bands_2026_11.json; not algae, toxin, safety, or accuracy estimates.",
+  "source": "Contains modified Copernicus Sentinel data 2020–2026. Sentinel-2 L2A via Earth Search; existing SwimSignal water masks and scene-classification cache.",
+  "selection": "50 eligible site-scenes across 14 bathing-water sites, seed 20261105 (scripts/satellite_shore_margin.py bands); see docs/SATELLITE-SHORE-BANDS-2026-11.md, second sample.",
+  "network_requests": 222,
+  "network_bytes": 131527723,
+  "rows": [
+    {
+      "site_id": "ukd1101-45800",
+      "tile": "MGRS-30UVF",
+      "scene_id": "S2A_T30UVF_20200929T113454_L2A",
+      "scene_date": "2020-09-29",
+      "ndci_margin_0": 0.11890411,
+      "ndci_margin_1": 0.07462687,
+      "ndci_margin_2": 0.04858757
+    },
+    {
+      "site_id": "ukd1101-45800",
+      "tile": "MGRS-30UVF",
+      "scene_id": "S2A_T30UVF_20250707T113336_L2A",
+      "scene_date": "2025-07-07",
+      "ndci_margin_0": -0.00417259,
+      "ndci_margin_1": -0.01019788,
+      "ndci_margin_2": -0.02083507
+    },
+    {
+      "site_id": "ukd1101-45800",
+      "tile": "MGRS-30UVF",
+      "scene_id": "S2B_T30UVF_20210916T112109_L2A",
+      "scene_date": "2021-09-16",
+      "ndci_margin_0": 0.07046492,
+      "ndci_margin_1": 0.02882483,
+      "ndci_margin_2": -0.03253308
+    },
+    {
+      "site_id": "ukd1101-45800",
+      "tile": "MGRS-30UVF",
+      "scene_id": "S2B_T30UVF_20260625T113315_L2A",
+      "scene_date": "2026-06-25",
+      "ndci_margin_0": 0.08132875,
+      "ndci_margin_1": 0.07284161,
+      "ndci_margin_2": 0.06926222
+    },
+    {
+      "site_id": "ukd1203-45625",
+      "tile": "MGRS-30UVF",
+      "scene_id": "S2A_T30UVF_20260709T112128_L2A",
+      "scene_date": "2026-07-09",
+      "ndci_margin_0": -0.04829211,
+      "ndci_margin_1": -0.05327104,
+      "ndci_margin_2": -0.06031746
+    },
+    {
+      "site_id": "ukd1203-45625",
+      "tile": "MGRS-30UWF",
+      "scene_id": "S2A_T30UWF_20240620T113323_L2A",
+      "scene_date": "2024-06-20",
+      "ndci_margin_0": 0.00463201,
+      "ndci_margin_1": 0.00126422,
+      "ndci_margin_2": 0.0020149
+    },
+    {
+      "site_id": "ukd1203-45625",
+      "tile": "MGRS-30UVF",
+      "scene_id": "S2B_T30UVF_20250501T113319_L2A",
+      "scene_date": "2025-05-01",
+      "ndci_margin_0": 0.00956023,
+      "ndci_margin_1": 0.00234854,
+      "ndci_margin_2": -0.000757
+    },
+    {
+      "site_id": "ukd1203-45625",
+      "tile": "MGRS-30UVF",
+      "scene_id": "S2B_T30UVF_20260712T112112_L2A",
+      "scene_date": "2026-07-12",
+      "ndci_margin_0": 0.00694444,
+      "ndci_margin_1": 0.0,
+      "ndci_margin_2": -0.00287632
+    },
+    {
+      "site_id": "ukd1203-45650",
+      "tile": "MGRS-30UVF",
+      "scene_id": "S2B_T30UVF_20210827T112111_L2A",
+      "scene_date": "2021-08-27",
+      "ndci_margin_0": 0.07326655,
+      "ndci_margin_1": 0.0723624,
+      "ndci_margin_2": 0.0715854
+    },
+    {
+      "site_id": "ukd1203-45650",
+      "tile": "MGRS-30UWF",
+      "scene_id": "S2B_T30UWF_20210701T113320_L2A",
+      "scene_date": "2021-07-01",
+      "ndci_margin_0": -0.00757619,
+      "ndci_margin_1": -0.01204897,
+      "ndci_margin_2": -0.01886792
+    },
+    {
+      "site_id": "ukd1203-45650",
+      "tile": "MGRS-30UWF",
+      "scene_id": "S2B_T30UWF_20240814T113321_L2A",
+      "scene_date": "2024-08-14",
+      "ndci_margin_0": 0.01117353,
+      "ndci_margin_1": 0.00286618,
+      "ndci_margin_2": -0.00132802
+    },
+    {
+      "site_id": "ukd1203-45675",
+      "tile": "MGRS-30UVF",
+      "scene_id": "S2A_T30UVF_20250515T112128_L2A",
+      "scene_date": "2025-05-15",
+      "ndci_margin_0": 0.00749625,
+      "ndci_margin_1": 0.00398418,
+      "ndci_margin_2": 0.0
+    },
+    {
+      "site_id": "ukd1203-45675",
+      "tile": "MGRS-30UVF",
+      "scene_id": "S2B_T30UVF_20260605T113321_L2A",
+      "scene_date": "2026-06-05",
+      "ndci_margin_0": 0.07423606,
+      "ndci_margin_1": 0.07393526,
+      "ndci_margin_2": 0.07374267
+    },
+    {
+      "site_id": "ukd1203-45675",
+      "tile": "MGRS-30UVF",
+      "scene_id": "S2B_T30UVF_20260712T112112_L2A",
+      "scene_date": "2026-07-12",
+      "ndci_margin_0": 0.08396947,
+      "ndci_margin_1": 0.07774941,
+      "ndci_margin_2": 0.07462687
+    },
+    {
+      "site_id": "ukd1203-45700",
+      "tile": "MGRS-30UVF",
+      "scene_id": "S2A_T30UVF_20200731T113448_L2A",
+      "scene_date": "2020-07-31",
+      "ndci_margin_0": 0.12838301,
+      "ndci_margin_1": 0.12856623,
+      "ndci_margin_2": 0.12854929
+    },
+    {
+      "site_id": "ukd1203-45700",
+      "tile": "MGRS-30UVF",
+      "scene_id": "S2A_T30UVF_20240518T112115_L2A",
+      "scene_date": "2024-05-18",
+      "ndci_margin_0": 0.04083469,
+      "ndci_margin_1": 0.02728732,
+      "ndci_margin_2": 0.00838944
+    },
+    {
+      "site_id": "ukd1203-45700",
+      "tile": "MGRS-30UVF",
+      "scene_id": "S2A_T30UVF_20260811T113338_L2A",
+      "scene_date": "2026-08-11",
+      "ndci_margin_0": 0.02402891,
+      "ndci_margin_1": -0.00811124,
+      "ndci_margin_2": -0.00822314
+    },
+    {
+      "site_id": "ukd1203-45700",
+      "tile": "MGRS-30UWF",
+      "scene_id": "S2B_T30UWF_20200815T113322_L2A",
+      "scene_date": "2020-08-15",
+      "ndci_margin_0": 0.06563204,
+      "ndci_margin_1": 0.03995953,
+      "ndci_margin_2": 0.01781598
+    },
+    {
+      "site_id": "ukd1230-45725",
+      "tile": "MGRS-30UVF",
+      "scene_id": "S2A_T30UVF_20240501T113414_L2A",
+      "scene_date": "2024-05-01",
+      "ndci_margin_0": null,
+      "ndci_margin_1": 0.0459247,
+      "ndci_margin_2": 0.04586189
+    },
+    {
+      "site_id": "ukd1230-45725",
+      "tile": "MGRS-30UVF",
+      "scene_id": "S2B_T30UVF_20210718T112115_L2A",
+      "scene_date": "2021-07-18",
+      "ndci_margin_0": -0.06630037,
+      "ndci_margin_1": -0.06779661,
+      "ndci_margin_2": -0.06782565
+    },
+    {
+      "site_id": "ukd1230-45725",
+      "tile": "MGRS-30UVF",
+      "scene_id": "S2C_T30UVF_20260717T112342_L2A",
+      "scene_date": "2026-07-17",
+      "ndci_margin_0": 0.0625798,
+      "ndci_margin_1": 0.06209344,
+      "ndci_margin_2": 0.06093662
+    },
+    {
+      "site_id": "ukd1230-45750",
+      "tile": "MGRS-30UVF",
+      "scene_id": "S2A_T30UVF_20240518T112115_L2A",
+      "scene_date": "2024-05-18",
+      "ndci_margin_0": 0.00414411,
+      "ndci_margin_1": -0.00475436,
+      "ndci_margin_2": -0.00646173
+    },
+    {
+      "site_id": "ukd1230-45750",
+      "tile": "MGRS-30UVF",
+      "scene_id": "S2A_T30UVF_20250515T112128_L2A",
+      "scene_date": "2025-05-15",
+      "ndci_margin_0": -0.17174094,
+      "ndci_margin_1": -0.18739054,
+      "ndci_margin_2": -0.19181452
+    },
+    {
+      "site_id": "ukd1230-45750",
+      "tile": "MGRS-30UVF",
+      "scene_id": "S2B_T30UVF_20200507T113316_L2A",
+      "scene_date": "2020-05-07",
+      "ndci_margin_0": -0.13537697,
+      "ndci_margin_1": -0.14612452,
+      "ndci_margin_2": -0.15361749
+    },
+    {
+      "site_id": "ukd1230-45775",
+      "tile": "MGRS-30UVF",
+      "scene_id": "S2B_T30UVF_20210916T112109_L2A",
+      "scene_date": "2021-09-16",
+      "ndci_margin_0": -0.10291859,
+      "ndci_margin_1": -0.14066496,
+      "ndci_margin_2": -0.15699154
+    },
+    {
+      "site_id": "ukd1230-45775",
+      "tile": "MGRS-30UVF",
+      "scene_id": "S2B_T30UVF_20230601T113321_L2A",
+      "scene_date": "2023-06-01",
+      "ndci_margin_0": -0.06231454,
+      "ndci_margin_1": -0.0772164,
+      "ndci_margin_2": -0.07626666
+    },
+    {
+      "site_id": "ukd1230-45775",
+      "tile": "MGRS-30UVF",
+      "scene_id": "S2B_T30UVF_20230611T113322_L2A",
+      "scene_date": "2023-06-11",
+      "ndci_margin_0": null,
+      "ndci_margin_1": -0.16504854,
+      "ndci_margin_2": -0.1623562
+    },
+    {
+      "site_id": "ukf1400-09750",
+      "tile": "MGRS-30UXD",
+      "scene_id": "S2A_T30UXD_20230521T110921_L2A",
+      "scene_date": "2023-05-21",
+      "ndci_margin_0": -0.02762431,
+      "ndci_margin_1": -0.03815029,
+      "ndci_margin_2": -0.04784131
+    },
+    {
+      "site_id": "ukf1400-09750",
+      "tile": "MGRS-30UXD",
+      "scene_id": "S2A_T30UXD_20250922T112128_L2A",
+      "scene_date": "2025-09-22",
+      "ndci_margin_0": 0.0113967,
+      "ndci_margin_1": 0.01734104,
+      "ndci_margin_2": 0.00584795
+    },
+    {
+      "site_id": "ukf1400-09750",
+      "tile": "MGRS-30UXD",
+      "scene_id": "S2B_T30UXD_20230608T112118_L2A",
+      "scene_date": "2023-06-08",
+      "ndci_margin_0": null,
+      "ndci_margin_1": 0.04831933,
+      "ndci_margin_2": 0.06863366
+    },
+    {
+      "site_id": "ukf1400-09750",
+      "tile": "MGRS-30UXD",
+      "scene_id": "S2B_T30UXD_20230615T110637_L2A",
+      "scene_date": "2023-06-15",
+      "ndci_margin_0": -0.09320853,
+      "ndci_margin_1": -0.10084034,
+      "ndci_margin_2": -0.10221286
+    },
+    {
+      "site_id": "ukf2208-09701",
+      "tile": "MGRS-30UXD",
+      "scene_id": "S2A_T30UXD_20200625T111446_L2A",
+      "scene_date": "2020-06-25",
+      "ndci_margin_0": 0.01762334,
+      "ndci_margin_1": 0.0,
+      "ndci_margin_2": -0.00808625
+    },
+    {
+      "site_id": "ukf2208-09701",
+      "tile": "MGRS-30UXD",
+      "scene_id": "S2A_T30UXD_20210720T111452_L2A",
+      "scene_date": "2021-07-20",
+      "ndci_margin_0": 0.06045101,
+      "ndci_margin_1": 0.05850585,
+      "ndci_margin_2": 0.05002943
+    },
+    {
+      "site_id": "ukf2208-09701",
+      "tile": "MGRS-30UXD",
+      "scene_id": "S2A_T30UXD_20260626T110912_L2A",
+      "scene_date": "2026-06-26",
+      "ndci_margin_0": 0.1615245,
+      "ndci_margin_1": 0.10177186,
+      "ndci_margin_2": 0.12121212
+    },
+    {
+      "site_id": "ukf2208-09701",
+      "tile": "MGRS-30UXD",
+      "scene_id": "S2B_T30UXD_20260729T111143_L2A",
+      "scene_date": "2026-07-29",
+      "ndci_margin_0": 0.06066224,
+      "ndci_margin_1": 0.03167421,
+      "ndci_margin_2": 0.02164502
+    },
+    {
+      "site_id": "ukf2208-09702",
+      "tile": "MGRS-30UXD",
+      "scene_id": "S2A_T30UXD_20230822T112119_L2A",
+      "scene_date": "2023-08-22",
+      "ndci_margin_0": -0.00692855,
+      "ndci_margin_1": -0.01202553,
+      "ndci_margin_2": -0.01949508
+    },
+    {
+      "site_id": "ukf2208-09702",
+      "tile": "MGRS-30UXD",
+      "scene_id": "S2A_T30UXD_20260706T111237_L2A",
+      "scene_date": "2026-07-06",
+      "ndci_margin_0": 0.040613,
+      "ndci_margin_1": 0.03629893,
+      "ndci_margin_2": 0.03365385
+    },
+    {
+      "site_id": "ukf2208-09702",
+      "tile": "MGRS-30UXD",
+      "scene_id": "S2B_T30UXD_20250505T110620_L2A",
+      "scene_date": "2025-05-05",
+      "ndci_margin_0": null,
+      "ndci_margin_1": -0.05270404,
+      "ndci_margin_2": -0.05348153
+    },
+    {
+      "site_id": "ukf2208-09702",
+      "tile": "MGRS-30UXD",
+      "scene_id": "S2C_T30UXD_20260803T111524_L2A",
+      "scene_date": "2026-08-03",
+      "ndci_margin_0": -0.02318747,
+      "ndci_margin_1": -0.02727273,
+      "ndci_margin_2": -0.0368272
+    },
+    {
+      "site_id": "uki1106-11940",
+      "tile": "MGRS-30UXC",
+      "scene_id": "S2A_T30UXC_20200622T105647_L2A",
+      "scene_date": "2020-06-22",
+      "ndci_margin_0": 0.072642,
+      "ndci_margin_1": -0.06527622,
+      "ndci_margin_2": -0.11326331
+    },
+    {
+      "site_id": "uki1106-11940",
+      "tile": "MGRS-30UXC",
+      "scene_id": "S2B_T30UXC_20260716T105822_L2A",
+      "scene_date": "2026-07-16",
+      "ndci_margin_0": 0.26574946,
+      "ndci_margin_1": 0.27471297,
+      "ndci_margin_2": 0.29775661
+    },
+    {
+      "site_id": "uki1106-11940",
+      "tile": "MGRS-30UXC",
+      "scene_id": "S2C_T30UXC_20250825T110120_L2A",
+      "scene_date": "2025-08-25",
+      "ndci_margin_0": 0.23566346,
+      "ndci_margin_1": 0.24151697,
+      "ndci_margin_2": 0.24076885
+    },
+    {
+      "site_id": "ukj2310-11945",
+      "tile": "MGRS-30UXB",
+      "scene_id": "S2A_T30UXB_20210918T111448_L2A",
+      "scene_date": "2021-09-18",
+      "ndci_margin_0": 0.04860088,
+      "ndci_margin_1": 0.04044409,
+      "ndci_margin_2": 0.03647212
+    },
+    {
+      "site_id": "ukj2310-11945",
+      "tile": "MGRS-30UXB",
+      "scene_id": "S2A_T30UXB_20240714T110620_L2A",
+      "scene_date": "2024-07-14",
+      "ndci_margin_0": null,
+      "ndci_margin_1": 0.0661157,
+      "ndci_margin_2": 0.06556652
+    },
+    {
+      "site_id": "ukj2310-11945",
+      "tile": "MGRS-30UXB",
+      "scene_id": "S2B_T30UXB_20230615T110637_L2A",
+      "scene_date": "2023-06-15",
+      "ndci_margin_0": 0.14393939,
+      "ndci_margin_1": 0.14008725,
+      "ndci_margin_2": 0.13532594
+    },
+    {
+      "site_id": "ukj2310-11945",
+      "tile": "MGRS-30UXB",
+      "scene_id": "S2C_T30UXB_20250510T111437_L2A",
+      "scene_date": "2025-05-10",
+      "ndci_margin_0": null,
+      "ndci_margin_1": 0.0035551,
+      "ndci_margin_2": 0.0030581
+    },
+    {
+      "site_id": "ukk1302-11760",
+      "tile": "MGRS-30UWC",
+      "scene_id": "S2A_T30UWC_20250522T111202_L2A",
+      "scene_date": "2025-05-22",
+      "ndci_margin_0": null,
+      "ndci_margin_1": 0.04062534,
+      "ndci_margin_2": 0.03037551
+    },
+    {
+      "site_id": "ukk1302-11760",
+      "tile": "MGRS-30UWC",
+      "scene_id": "S2A_T30UWC_20250711T111150_L2A",
+      "scene_date": "2025-07-11",
+      "ndci_margin_0": 0.07554947,
+      "ndci_margin_1": 0.04705882,
+      "ndci_margin_2": 0.03675751
+    },
+    {
+      "site_id": "ukk1302-11760",
+      "tile": "MGRS-30UWC",
+      "scene_id": "S2B_T30UWC_20250717T112116_L2A",
+      "scene_date": "2025-07-17",
+      "ndci_margin_0": null,
+      "ndci_margin_1": 0.00902613,
+      "ndci_margin_2": 0.00740741
+    },
+    {
+      "site_id": "ukk1302-11760",
+      "tile": "MGRS-30UWC",
+      "scene_id": "S2C_T30UWC_20260915T112112_L2A",
+      "scene_date": "2026-09-15",
+      "ndci_margin_0": null,
+      "ndci_margin_1": 0.03870652,
+      "ndci_margin_2": 0.03556188
+    }
+  ]
+}

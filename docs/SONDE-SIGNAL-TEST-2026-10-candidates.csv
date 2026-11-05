@@ -1,0 +1,92 @@
+bw_id,spot,spot_river,property,station_id,label,sonde_river,sonde_lat,sonde_lon,km_straight,opened,closed,samples_covered,years,direction,river_km,network_ok
+uke4100-08901,"Wharfe at Cromwheel, Ilkley",River Wharfe,turbidity,E07263A,WHARFE_ILKLEY STW US_E_201905,Wharfe,53.932404,-1.814601,0.12,2019-06-05,2020-03-02,0,[],downstream,0.1,True
+uke4100-08901,"Wharfe at Cromwheel, Ilkley",River Wharfe,turbidity,E12140A,WHARFE_ILKLEY STW DS_E_201905,Wharfe,53.932404,-1.814601,0.12,2019-05-21,2020-03-02,0,[],downstream,0.1,True
+uke4100-08901,"Wharfe at Cromwheel, Ilkley",River Wharfe,turbidity,E01586A,WHARFE_DS BOLTON BRIDGE_E_202205,Wharfe,53.928877,-1.829663,0.94,2022-05-06,2024-12-13,20,[2024],upstream,0.7,True
+uke4100-08901,"Wharfe at Cromwheel, Ilkley",River Wharfe,turbidity,E05280A,WHARFE_ILKLEY BEANLANDS ISLAND_E_202001,Wharfe,53.932596,-1.841436,1.66,2020-01-20,2020-11-12,0,[],upstream,2.5,True
+uke4100-08901,"Wharfe at Cromwheel, Ilkley",River Wharfe,turbidity,E12232A,WHARFE_DS ADDINGHAM_E_202207,Wharfe,53.945469,-1.874326,4.09,2022-07-12,2022-10-18,0,[],upstream,5.5,True
+uke4100-08901,"Wharfe at Cromwheel, Ilkley",River Wharfe,turbidity,E00349A,WHARFE_DS BOLTON BRIDGE_E_202106,Wharfe,53.963924,-1.887165,5.85,2021-06-15,2021-11-15,0,[],upstream,8.1,True
+uke4100-08901,"Wharfe at Cromwheel, Ilkley",River Wharfe,turbidity,E11146A,WHARFE_APPLETREEWICK_E_202207,Wharfe,54.033607,-1.923161,13.3,2022-07-15,2022-10-18,0,[],upstream,18.9,True
+uke4100-08901,"Wharfe at Cromwheel, Ilkley",River Wharfe,ammonium,E07263A,WHARFE_ILKLEY STW US_E_201905,Wharfe,53.932404,-1.814601,0.12,2019-06-05,2020-03-02,0,[],downstream,0.1,True
+uke4100-08901,"Wharfe at Cromwheel, Ilkley",River Wharfe,ammonium,E12140A,WHARFE_ILKLEY STW DS_E_201905,Wharfe,53.932404,-1.814601,0.12,2019-05-21,2020-03-02,0,[],downstream,0.1,True
+uke4100-08901,"Wharfe at Cromwheel, Ilkley",River Wharfe,ammonium,E01586A,WHARFE_DS BOLTON BRIDGE_E_202205,Wharfe,53.928877,-1.829663,0.94,2022-05-06,2024-12-13,20,[2024],upstream,0.7,True
+uke4100-08901,"Wharfe at Cromwheel, Ilkley",River Wharfe,ammonium,E05280A,WHARFE_ILKLEY BEANLANDS ISLAND_E_202001,Wharfe,53.932596,-1.841436,1.66,2020-01-20,2020-11-12,0,[],upstream,2.5,True
+uke4100-08901,"Wharfe at Cromwheel, Ilkley",River Wharfe,ammonium,E12232A,WHARFE_DS ADDINGHAM_E_202207,Wharfe,53.945469,-1.874326,4.09,2022-07-12,2022-10-18,0,[],upstream,5.5,True
+uke4100-08901,"Wharfe at Cromwheel, Ilkley",River Wharfe,ammonium,E00349A,WHARFE_DS BOLTON BRIDGE_E_202106,Wharfe,53.963924,-1.887165,5.85,2021-06-15,2021-11-15,0,[],upstream,8.1,True
+uke4100-08901,"Wharfe at Cromwheel, Ilkley",River Wharfe,ammonium,E11146A,WHARFE_APPLETREEWICK_E_202207,Wharfe,54.033607,-1.923161,13.3,2022-07-15,2022-10-18,0,[],upstream,18.9,True
+uke2203-08903,"Nidd at the Lido, Knaresborough",River Nidd,turbidity,E03700A,NIDD_KNARESBOROUGH LIDO_E_202501,Nidd,53.99519,-1.451395,0.33,2025-01-28,2025-12-04,20,[2025],upstream,0.4,True
+uke2203-08903,"Nidd at the Lido, Knaresborough",River Nidd,turbidity,E05603A,NIDD_SCOTTON_E_202506,Nidd,54.024102,-1.51604,5.11,2025-06-17,2025-12-04,14,[2025],upstream,7.9,True
+uke2203-08903,"Nidd at the Lido, Knaresborough",River Nidd,turbidity,E08559A,NIDD_US HARROGATE WWTW_E_202501,Nidd,54.025323,-1.540892,6.58,2025-01-28,2025-12-04,20,[2025],upstream,10.4,True
+uke2203-08903,"Nidd at the Lido, Knaresborough",River Nidd,turbidity,E08368A,NIDD_KILLINGHALL_E_202503,Nidd,54.0306,-1.578084,9.02,2025-03-07,2025-12-04,20,[2025],upstream,13.4,True
+uke2203-08903,"Nidd at the Lido, Knaresborough",River Nidd,turbidity,E05705A,NIDD_HAMPSTHWAITE_E_202501,Nidd,54.027398,-1.603946,10.48,2025-02-03,2025-12-04,20,[2025],upstream,15.8,True
+uke2203-08903,"Nidd at the Lido, Knaresborough",River Nidd,ammonium,E03700A,NIDD_KNARESBOROUGH LIDO_E_202501,Nidd,53.99519,-1.451395,0.33,2025-01-28,2025-12-04,20,[2025],upstream,0.4,True
+uke2203-08903,"Nidd at the Lido, Knaresborough",River Nidd,ammonium,E05603A,NIDD_SCOTTON_E_202506,Nidd,54.024102,-1.51604,5.11,2025-06-17,2025-12-04,14,[2025],upstream,7.9,True
+uke2203-08903,"Nidd at the Lido, Knaresborough",River Nidd,ammonium,E08559A,NIDD_US HARROGATE WWTW_E_202501,Nidd,54.025323,-1.540892,6.58,2025-01-28,2025-12-04,20,[2025],upstream,10.4,True
+uke2203-08903,"Nidd at the Lido, Knaresborough",River Nidd,ammonium,E08368A,NIDD_KILLINGHALL_E_202503,Nidd,54.0306,-1.578084,9.02,2025-03-07,2025-12-04,20,[2025],upstream,13.4,True
+uke2203-08903,"Nidd at the Lido, Knaresborough",River Nidd,ammonium,E05705A,NIDD_HAMPSTHWAITE_E_202501,Nidd,54.027398,-1.603946,10.48,2025-02-03,2025-12-04,20,[2025],upstream,15.8,True
+uke2204-08905,Swale above Richmond Falls,River Swale,turbidity,E01480A,SWALE_DS CATTERICK_E_202108,Swale,54.373337,-1.619514,8.05,2021-08-17,2021-10-25,0,[],downstream,12.8,False
+uke2204-08905,Swale above Richmond Falls,River Swale,ammonium,E01480A,SWALE_DS CATTERICK_E_202108,Swale,54.373337,-1.619514,8.05,2021-08-17,2021-10-25,0,[],downstream,12.8,False
+ukh1401-11051,"Friars Meadow, River Stour",River Stour,turbidity,E04268A,STOUR_CORNARD MILL_E_201807,Stour,52.029335,0.741647,0.7,2018-07-09,2018-10-04,0,[],downstream,0.7,True
+ukh1401-11051,"Friars Meadow, River Stour",River Stour,turbidity,E02254A,STOUR_BURES MILL_E_201704,Stour,51.967084,0.77963,8.05,2017-04-12,,59,"[2024, 2025, 2026]",downstream,10.9,False
+ukh1401-11051,"Friars Meadow, River Stour",River Stour,turbidity,E02705A,STOUR_BOXTED MILL_E_202305,Stour,51.973439,0.925948,14.71,2023-06-01,2023-11-25,0,[],downstream,24.6,False
+ukh1401-11051,"Friars Meadow, River Stour",River Stour,turbidity,E02770A,STOUR_BOXTED MILL_E_202407,Stour,51.973439,0.925948,14.71,2023-06-01,2023-11-25,0,[],downstream,24.6,False
+ukh1401-11051,"Friars Meadow, River Stour",River Stour,turbidity,E05301A,STOUR_BOXTED MILL_E_202204,Stour,51.973439,0.925948,14.71,2022-04-04,2022-11-02,0,[],downstream,24.6,False
+ukh1401-11051,"Friars Meadow, River Stour",River Stour,turbidity,E06651A,STOUR_BOXTEDMILL_E_202604,Stour,51.973439,0.925948,14.71,2026-05-05,,17,[2026],downstream,24.6,False
+ukh1401-11051,"Friars Meadow, River Stour",River Stour,turbidity,E08602A,STOUR_BOXTED MILL_E_202505,Stour,51.973439,0.925948,14.71,2025-06-10,2025-11-14,16,[2025],downstream,24.6,False
+ukh1401-11051,"Friars Meadow, River Stour",River Stour,turbidity,E18076A,STOUR_BOXTED MILL_E_201904,Stour,51.973439,0.925948,14.71,2019-04-12,2019-10-31,0,[],downstream,24.6,False
+ukh1401-11051,"Friars Meadow, River Stour",River Stour,turbidity,E19217A,STOUR_BOXTED MILL_E_202103,Stour,51.973439,0.925948,14.71,2021-03-30,2021-09-09,0,[],downstream,24.6,False
+ukh1401-11051,"Friars Meadow, River Stour",River Stour,turbidity,E01165A,STOUR_BOXSTED MILL_E_201807,Stour,51.97191,0.927741,14.9,2018-07-09,2018-10-04,0,[],downstream,24.8,False
+ukh1401-11051,"Friars Meadow, River Stour",River Stour,ammonium,E04268A,STOUR_CORNARD MILL_E_201807,Stour,52.029335,0.741647,0.7,2018-07-09,2018-10-04,0,[],downstream,0.7,True
+ukh1401-11051,"Friars Meadow, River Stour",River Stour,ammonium,E02254A,STOUR_BURES MILL_E_201704,Stour,51.967084,0.77963,8.05,2017-04-12,,59,"[2024, 2025, 2026]",downstream,10.9,False
+ukh1401-11051,"Friars Meadow, River Stour",River Stour,ammonium,E02705A,STOUR_BOXTED MILL_E_202305,Stour,51.973439,0.925948,14.71,2023-06-01,2023-11-25,0,[],downstream,24.6,False
+ukh1401-11051,"Friars Meadow, River Stour",River Stour,ammonium,E02770A,STOUR_BOXTED MILL_E_202407,Stour,51.973439,0.925948,14.71,2023-06-01,2023-11-25,0,[],downstream,24.6,False
+ukh1401-11051,"Friars Meadow, River Stour",River Stour,ammonium,E05301A,STOUR_BOXTED MILL_E_202204,Stour,51.973439,0.925948,14.71,2022-04-04,2022-11-02,0,[],downstream,24.6,False
+ukh1401-11051,"Friars Meadow, River Stour",River Stour,ammonium,E06651A,STOUR_BOXTEDMILL_E_202604,Stour,51.973439,0.925948,14.71,2026-05-05,,17,[2026],downstream,24.6,False
+ukh1401-11051,"Friars Meadow, River Stour",River Stour,ammonium,E08602A,STOUR_BOXTED MILL_E_202505,Stour,51.973439,0.925948,14.71,2025-06-10,2025-11-14,16,[2025],downstream,24.6,False
+ukh1401-11051,"Friars Meadow, River Stour",River Stour,ammonium,E18076A,STOUR_BOXTED MILL_E_201904,Stour,51.973439,0.925948,14.71,2019-04-12,2019-10-31,0,[],downstream,24.6,False
+ukh1401-11051,"Friars Meadow, River Stour",River Stour,ammonium,E19217A,STOUR_BOXTED MILL_E_202103,Stour,51.973439,0.925948,14.71,2021-03-30,2021-09-09,0,[],downstream,24.6,False
+ukh1401-11051,"Friars Meadow, River Stour",River Stour,ammonium,E01165A,STOUR_BOXSTED MILL_E_201807,Stour,51.97191,0.927741,14.9,2018-07-09,2018-10-04,0,[],downstream,24.8,False
+uki2203-11942,"Ham and Kingston, River Thames",River Thames,turbidity,E00302A,THAMES_TEDDINGTON WEIR_E_201902,Thames,51.429082,-0.318506,0.58,2019-02-01,2019-07-24,0,[],,,False
+uki2203-11942,"Ham and Kingston, River Thames",River Thames,turbidity,BREPON,THAMES_BRENTFORD BARGE_E_200807,Thames,51.47982,-0.303118,5.89,2007-07-01,,18,[2026],,,False
+uki2203-11942,"Ham and Kingston, River Thames",River Thames,turbidity,KEWPON,THAMES_KEW BARGE_E_201307,Thames,51.486027,-0.282852,6.84,2013-01-16,,18,[2026],,,False
+uki2203-11942,"Ham and Kingston, River Thames",River Thames,turbidity,GPRSD8A,THAMES_CHISWICK PIER_E_201307,Thames,51.482298,-0.250833,7.42,2013-07-10,,18,[2026],,,False
+uki2203-11942,"Ham and Kingston, River Thames",River Thames,turbidity,PUTNEY,THAMES_PUTNEY_E_201710,Thames,51.467276,-0.215313,7.99,2017-10-19,,18,[2026],,,False
+uki2203-11942,"Ham and Kingston, River Thames",River Thames,turbidity,HAMME2,THAMES_HAMMERSMITH_E_200707,Thames,51.489848,-0.234353,8.76,2021-03-11,,18,[2026],,,False
+uki2203-11942,"Ham and Kingston, River Thames",River Thames,turbidity,CADOG2,THAMES_CADOGAN PIER_E_200707,Thames,51.483145,-0.16731,11.73,2021-04-06,,18,[2026],,,False
+uki2203-11942,"Ham and Kingston, River Thames",River Thames,ammonium,BREPON,THAMES_BRENTFORD BARGE_E_200807,Thames,51.47982,-0.303118,5.89,2007-07-01,,18,[2026],,,False
+uki2203-11942,"Ham and Kingston, River Thames",River Thames,ammonium,KEWPON,THAMES_KEW BARGE_E_201307,Thames,51.486027,-0.282852,6.84,2013-01-16,,18,[2026],,,False
+uki2203-11942,"Ham and Kingston, River Thames",River Thames,ammonium,GPRSD8A,THAMES_CHISWICK PIER_E_201307,Thames,51.482298,-0.250833,7.42,2013-07-10,,18,[2026],,,False
+uki2203-11942,"Ham and Kingston, River Thames",River Thames,ammonium,PUTNEY,THAMES_PUTNEY_E_201710,Thames,51.467276,-0.215313,7.99,2017-10-19,,18,[2026],,,False
+uki2203-11942,"Ham and Kingston, River Thames",River Thames,ammonium,HAMME2,THAMES_HAMMERSMITH_E_200707,Thames,51.489848,-0.234353,8.76,2021-03-11,,18,[2026],,,False
+uki2203-11942,"Ham and Kingston, River Thames",River Thames,ammonium,CADOG2,THAMES_CADOGAN PIER_E_200707,Thames,51.483145,-0.16731,11.73,2021-04-06,,18,[2026],,,False
+ukj1402-11946,Wolvercote Mill Stream,River Thames,turbidity,E05605A,THAMES_EYNSHAM LOCK_E_202505,Thames,51.774175,-1.356035,4.2,2025-04-29,2025-08-21,14,[2025],upstream,5.9,True
+ukj1402-11946,Wolvercote Mill Stream,River Thames,turbidity,E06329A,THAMES_OXFORD_E_202202,Thames,51.728568,-1.239577,6.99,2022-02-16,2022-10-10,0,[],downstream,8.0,False
+ukj1402-11946,Wolvercote Mill Stream,River Thames,ammonium,E05605A,THAMES_EYNSHAM LOCK_E_202505,Thames,51.774175,-1.356035,4.2,2025-04-29,2025-08-21,14,[2025],upstream,5.9,True
+ukj1402-11946,Wolvercote Mill Stream,River Thames,ammonium,E06329A,THAMES_OXFORD_E_202202,Thames,51.728568,-1.239577,6.99,2022-02-16,2022-10-10,0,[],downstream,8.0,False
+ukj3308-19001,River Avon at Fordingbridge,River Avon,turbidity,E04662A,WSX_AVON_HAMPS_E_202605,Avon,50.928649,-1.777742,0.8,2026-05-05,,17,[2026],upstream,1.4,True
+ukj3308-19001,River Avon at Fordingbridge,River Avon,turbidity,E20010A,AVON_CLARKS LAKE_E_201904,Avon,51.057432,-1.766711,14.66,2019-04-03,2019-04-23,0,[],upstream,23.0,False
+ukj3308-19001,River Avon at Fordingbridge,River Avon,ammonium,E04662A,WSX_AVON_HAMPS_E_202605,Avon,50.928649,-1.777742,0.8,2026-05-05,,17,[2026],upstream,1.4,True
+ukj3308-19001,River Avon at Fordingbridge,River Avon,ammonium,E20010A,AVON_CLARKS LAKE_E_201904,Avon,51.057432,-1.766711,14.66,2019-04-03,2019-04-23,0,[],upstream,23.0,False
+ukk1500-19002,River Avon at Queen Elizabeth Gardens,River Avon,turbidity,E20010A,AVON_CLARKS LAKE_E_201904,Avon,51.057432,-1.766711,2.73,2019-04-03,2019-04-23,0,[],,,False
+ukk1500-19002,River Avon at Queen Elizabeth Gardens,River Avon,turbidity,E18089A,AVON_HAM HATCHES_E_201907,Avon,51.168309,-1.788379,11.23,2019-07-30,2019-10-15,0,[],upstream,16.1,True
+ukk1500-19002,River Avon at Queen Elizabeth Gardens,River Avon,turbidity,E08216A,AVON_QUEENS FALLS WEIR_E_201907,Avon,51.171541,-1.78516,11.61,2019-07-30,2019-10-15,0,[],upstream,18.2,True
+ukk1500-19002,River Avon at Queen Elizabeth Gardens,River Avon,ammonium,E20010A,AVON_CLARKS LAKE_E_201904,Avon,51.057432,-1.766711,2.73,2019-04-03,2019-04-23,0,[],,,False
+ukk1500-19002,River Avon at Queen Elizabeth Gardens,River Avon,ammonium,E18089A,AVON_HAM HATCHES_E_201907,Avon,51.168309,-1.788379,11.23,2019-07-30,2019-10-15,0,[],upstream,16.1,True
+ukk1500-19002,River Avon at Queen Elizabeth Gardens,River Avon,ammonium,E08216A,AVON_QUEENS FALLS WEIR_E_201907,Avon,51.171541,-1.78516,11.61,2019-07-30,2019-10-15,0,[],upstream,18.2,True
+ukk2304-35201,River Tone at French Weir Park,River Tone,turbidity,E08085A,RIVER TONE AT ATHELNEY,River Tone At Athelney,51.057183,-2.93327,13.29,2014-02-25,2014-05-21,0,[],,,False
+ukk2304-35201,River Tone at French Weir Park,River Tone,ammonium,E08085A,RIVER TONE AT ATHELNEY,River Tone At Athelney,51.057183,-2.93327,13.29,2014-02-25,2014-05-21,0,[],,,False
+ukk2301-36051,River Frome at Farleigh Hungerford,River Frome,turbidity,E04705A,FROME_KNIGHTS MALTINGS_E_202409,Frome,51.221738,-2.308649,10.87,2024-10-04,2024-12-16,0,[],upstream,18.0,True
+ukk2301-36051,River Frome at Farleigh Hungerford,River Frome,turbidity,E02665A,FROME_KNIGHTS MALTINGS_E_202306,Frome,51.222174,-2.313907,10.89,2023-06-01,2023-11-30,0,[],upstream,17.6,True
+ukk2301-36051,River Frome at Farleigh Hungerford,River Frome,turbidity,E02476A,FROME_BULLS RIDGE_E_202309,Frome,51.198437,-2.32322,13.61,2023-10-03,2024-12-16,20,[2024],upstream,22.2,False
+ukk2301-36051,River Frome at Farleigh Hungerford,River Frome,turbidity,E05439A,FROME_US BULLS BRIDGE_E_202409,Frome,51.198014,-2.323117,13.65,2024-10-04,2024-12-16,0,[],upstream,22.3,False
+ukk2301-36051,River Frome at Farleigh Hungerford,River Frome,ammonium,E04705A,FROME_KNIGHTS MALTINGS_E_202409,Frome,51.221738,-2.308649,10.87,2024-10-04,2024-12-16,0,[],upstream,18.0,True
+ukk2301-36051,River Frome at Farleigh Hungerford,River Frome,ammonium,E02665A,FROME_KNIGHTS MALTINGS_E_202306,Frome,51.222174,-2.313907,10.89,2023-06-01,2023-11-30,0,[],upstream,17.6,True
+ukk2301-36051,River Frome at Farleigh Hungerford,River Frome,ammonium,E02476A,FROME_BULLS RIDGE_E_202309,Frome,51.198437,-2.32322,13.61,2023-10-03,2024-12-16,20,[2024],upstream,22.2,False
+ukk2301-36051,River Frome at Farleigh Hungerford,River Frome,ammonium,E05439A,FROME_US BULLS BRIDGE_E_202409,Frome,51.198014,-2.323117,13.65,2024-10-04,2024-12-16,0,[],upstream,22.3,False
+ukg2200-36060,River Teme in Ludlow,River Teme,turbidity,E03242A,TEME DS LINGEN BRIDGE,Teme DS Lingen Bridge,52.350611,-2.942513,14.85,2017-05-30,2017-10-19,0,[],upstream,26.4,False
+ukg2200-36060,River Teme in Ludlow,River Teme,ammonium,E03242A,TEME DS LINGEN BRIDGE,Teme DS Lingen Bridge,52.350611,-2.942513,14.85,2017-05-30,2017-10-19,0,[],upstream,26.4,False
+ukg2100-36070,River Severn at Ironbridge,River Severn,turbidity,E05326A,SEVERN_IRONBRIDGE POWER STATION DS_E_201912,Severn,52.633411,-2.507211,1.14,2019-12-06,2019-12-10,0,[],upstream,1.2,True
+ukg2100-36070,River Severn at Ironbridge,River Severn,ammonium,E05326A,SEVERN_IRONBRIDGE POWER STATION DS_E_201912,Severn,52.633411,-2.507211,1.14,2019-12-06,2019-12-10,0,[],upstream,1.2,True
+ukg2200-36071,River Severn in Shrewsbury,River Severn,turbidity,E01658A,SEVERN_SHRAWARDINE_E_202411,Severn,52.730946,-2.895207,9.6,2024-11-07,2025-04-24,0,[],upstream,24.6,False
+ukg2200-36071,River Severn in Shrewsbury,River Severn,ammonium,E01658A,SEVERN_SHRAWARDINE_E_202411,Severn,52.730946,-2.895207,9.6,2024-11-07,2025-04-24,0,[],upstream,24.6,False
+ukd6300-40752,"Sandy Lane, Chester",River Dee,turbidity,E01458A,DEE_IRONBRIDGE_E_202107,Dee,53.134843,-2.871386,5.85,2021-06-28,2021-09-14,0,[],upstream,7.4,True
+ukd6300-40752,"Sandy Lane, Chester",River Dee,ammonium,E01458A,DEE_IRONBRIDGE_E_202107,Dee,53.134843,-2.871386,5.85,2021-06-28,2021-09-14,0,[],upstream,7.4,True

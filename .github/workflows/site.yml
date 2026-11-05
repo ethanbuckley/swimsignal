@@ -12,8 +12,11 @@ on:
     branches: [main]
     # The two hand-checked data files change what is counted where, so a push of either builds too
     # (until 12 Oct 2026 they waited for the next scheduled run, a median 2.9 h).
+    # The four scripts build_site.py runs as files are listed too: #413's fix to build_any_point.py
+    # (27 Oct 2026) did not rebuild the site.
     paths: [spots.csv, spots-osm.csv, "src/**", scripts/build_site.py, .github/workflows/site.yml,
-            data/raw/overflow_joins.csv, data/raw/network_fixes.csv]
+            data/raw/overflow_joins.csv, data/raw/network_fixes.csv,
+            scripts/build_any_point.py, scripts/alerts.js, scripts/prerender_spots.js, scripts/prerender_verification.js]
 
 concurrency:
   group: site
@@ -108,6 +111,8 @@ jobs:
           DIPCAST_EMAIL_URL: ${{ vars.DIPCAST_EMAIL_URL }}
           # Reviews (reviews/README.md): the review Worker's address; unset = no reviews on the site.
           DIPCAST_REVIEWS_URL: ${{ vars.DIPCAST_REVIEWS_URL }}
+          # Ask SwimSignal (ask/README.md): the Ask Worker's address; unset = no question tile on Plan a swim.
+          DIPCAST_ASK_URL: ${{ vars.DIPCAST_ASK_URL }}
           # Tips (README, "Tips"): a Ko-fi page's address; unset = no support page or links.
           DIPCAST_KOFI_URL: ${{ vars.DIPCAST_KOFI_URL }}
           # Map tiles (README, "Map tiles"): a provider in build_site.TILE_PROVIDERS and its key; unset = OpenStreetMap.
@@ -115,6 +120,9 @@ jobs:
           DIPCAST_TILE_KEY: ${{ vars.DIPCAST_TILE_KEY }}
           # Scottish Water shadow (Scotland plan S4, S5): 1 polls and scores in state only, publishes nothing; unset = off.
           DIPCAST_SCOTTISH_WATER: ${{ vars.DIPCAST_SCOTTISH_WATER }}
+          # Scotland trial (src/dipcast/scotland_trial.py): 1 lists Scotland's trial spots and forecasts them with
+          # Scotland's overflows and calibration; needs the setting above too; unset = off.
+          DIPCAST_SCOTLAND_TRIAL: ${{ vars.DIPCAST_SCOTLAND_TRIAL }}
           # Open-Meteo's paid plan (README, "Rainfall API"): its key; unset = the free, non-commercial API.
           # In this step only, so the tests never hold it; the code keeps it out of logs and pages.
           DIPCAST_OPEN_METEO_KEY: ${{ secrets.DIPCAST_OPEN_METEO_KEY }}
@@ -138,8 +146,13 @@ jobs:
           # manual run. All files go up together, so the copy is one run's snapshot.
           max_h=12
           files=(state/live_history.parquet state/live_latest.parquet state/dipcast.duckdb state/verification_live.json)
-          for f in state/live_coverage.parquet state/poll_log.parquet state/ecoli_samples.parquet state/ecoli_samples_status.json; do
+          for f in state/live_coverage.parquet state/poll_log.parquet state/ecoli_samples.parquet state/ecoli_samples_status.json state/water_temp_estimates.parquet; do
             if [ -f "$f" ]; then files+=("$f"); fi   # later additions, uploaded once the build has written them
+          done
+          # The issued-forecast history, one file a month (src/dipcast/issue_history.py): every month's, so a cold
+          # cache gets them all back from the release.
+          for f in state/issued-*.parquet; do
+            if [ -f "$f" ]; then files+=("$f"); fi
           done
           # The files republish the water companies' feeds (CC BY 4.0) and EA samples (OGL v3), so the
           # notes carry the credits, and are rewritten on every publish.

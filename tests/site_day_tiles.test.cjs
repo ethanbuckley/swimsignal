@@ -46,9 +46,10 @@ test('with no day open, the forecast tiles give today, under a heading that says
   const ctx = page(), h = text(vm.runInContext('dayTiles(S)', ctx));
   assert.match(h, /^ Forecast for today /);
   assert.match(h, /Sewage spills 30 of 100/);
-  assert.match(h, /About 7 of the 45 overflows upstream are expected to spill today\./);
-  assert.match(h, /Rain here 17 mm .*In the 48 h to midday today\. The most ahead: 22 mm in the 48 h to midday tomorrow\./);
-  assert.match(h, /Weather 14°/);
+  // Not repeated here: the five days' sentence above the tiles says it (5 Nov 2026).
+  assert.doesNotMatch(h, /About 7 of the 45 overflows upstream are expected to spill today\./);
+  // The rain and the air are in each day's row and the conditions tiles since 31 Oct 2026 (dayWx, conditionsSummary).
+  assert.doesNotMatch(h, /Rain here|Weather/);
 });
 
 test('a picked day moves every forecast tile to that day, and names it', () => {
@@ -56,11 +57,7 @@ test('a picked day moves every forecast tile to that day, and names it', () => {
   assert.match(h, /^ Forecast for Saturday 24 October /);
   assert.match(h, /Sewage spills 39 of 100/);
   assert.match(h, /About 20 of the 45 overflows upstream are expected to spill on Saturday\./);
-  assert.match(h, /Rain here 17 mm .*In the 48 h to midday Saturday\./);
-  assert.doesNotMatch(h, /The most ahead/);   // said from today only
-  assert.match(h, /Weather 15°/);
-  assert.match(raw, /<span class="on"><i[^>]*><\/i><b>S<\/b><\/span>/);   // Saturday's rain column, in ink
-  assert.doesNotMatch(raw, /<circle[^>]*r="4.5"/);   // no "the sun is here now" dot on another day
+  assert.doesNotMatch(h, /Rain here|Weather/);   // in Saturday's row (dayWx)
   assert.doesNotMatch(h, /today/);
   // A day that has left the five days opens today's.
   assert.match(text(vm.runInContext('dayTiles(S, "2026-10-30")', ctx)), /^ Forecast for today .*Sewage spills 30 of 100/);
@@ -68,10 +65,24 @@ test('a picked day moves every forecast tile to that day, and names it', () => {
 
 test('the readings stay on now whichever day is open, under their own heading', () => {
   const ctx = page(), h = text(vm.runInContext('nowTiles(S)', ctx));
-  assert.match(h, /^ Latest readings Measured, not forecast: they stay the same whichever day you pick\. Right now 1 /);
-  assert.match(h, /River level 2\.09 m/);
+  assert.match(h, /^ Latest readings Measured, not forecast, so the same on every day\. Right now 1 /);
+  assert.doesNotMatch(h, /River level/);   // in the conditions tiles since 31 Oct 2026
   for (const iso of DAYS) {
     const day = text(vm.runInContext(`dayTiles(S, "${iso}")`, ctx));
     assert.doesNotMatch(day, /Right now|River level/);
   }
+});
+
+test("where recent spills raise right now above the day's level, today's spills tile gives right now's score, then the rain forecast's", () => {
+  // River Medway at Tonbridge, 31 Oct 2026: "3 of 100, Low risk" under "High risk from sewage spills".
+  const ctx = page();
+  vm.runInContext('S.now = {...S.now, label: "high", risk: 0.42, discharging_upstream: 0}; S.days[0] = {...S.days[0], risk: 0.03, label: "low"};', ctx);
+  const h = text(vm.runInContext('dayTiles(S)', ctx));
+  assert.match(h, /Sewage spills, right now 42 of 100 High risk/);
+  assert.match(h, /This sets the level above\./);
+  assert.match(h, /Spills upstream in the last 48 hours set it\. The rain forecast alone gives 3 of 100 for today, low risk\./);
+  // Another day keeps the rain forecast's own score; so does today where right now is no higher.
+  assert.match(text(vm.runInContext('dayTiles(S, "2026-10-23")', ctx)), /Sewage spills 31 of 100/);
+  vm.runInContext('S.now = {...S.now, label: "low", risk: 0.01};', ctx);
+  assert.match(text(vm.runInContext('dayTiles(S)', ctx)), /Sewage spills 3 of 100 Low risk/);
 });

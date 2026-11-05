@@ -97,6 +97,8 @@ test('after a spill the page says when the model expects low risk, and why then'
     + 'by about Monday afternoon, allowing for travel time: water from Appleby sewage works overflow takes about 30 hours to get here.');
   assert.match(run('clearSentence', {...far, now: {...far.now, clears_after: {site_id: 'X<1>', site_name: null, travel_h: 12}}}),
     /water from X&lt;1&gt; takes about 12 hours to get here\.$/);
+  // The overflow the source sentence already names and times is not named and timed again.
+  assert.match(plain(run('clearSentence', {...far, now: {...far.now, source: {site_id: 'UU9', travel_h: 30.2}}})), /by about Monday afternoon, allowing for its travel time\.$/);
   assert.match(plain(run('clearSentence', {...far, now: {...far.now, clears_after: undefined}})), /by about Monday afternoon\.$/);   // no name: no clause
   // A later day raised by spills after today alone is named; one raised only by today's is not.
   const wet = spot({risk: 0.62, label: 'high', discharging_upstream: 1, clears_at: '2026-10-05T09:10:00+01:00', clears_by: 'die-off'},
@@ -132,6 +134,10 @@ test('water still on its way: when it reaches here, counted when the page is rea
     + 'discharging now, 6.0 km upstream, about 5 hours away.Water from a spill 3.1 km upstream reaches here in about 20 minutes.'
     + 'If the overflow discharging upstream stops now, the model expects low risk from spills by about Monday morning.');
   assert.equal(tile(d, '2026-10-05'), '');
+  // The overflow the sentence before names: its latest spill, not a second distance and time for it (Swale, 5 Nov 2026).
+  const same = coming(10, {source: {...ILKLEY, site_id: 'YW2', status: 0, share: 1}});
+  assert.match(tile(same), /about 5 hours away\.Water from its latest spill, which started earlier, reaches here in about 10 minutes\./);
+  assert.equal(plain(run('arriveSentence', same)), 'Water from a spill 3.1 km upstream reaches here in about 10 minutes.');   // nothing named before it
   vm.runInContext('DAY = null', ctx);
 });
 
@@ -188,7 +194,10 @@ test('an overflow in the same lake is across it, a spill under way says since wh
 
 test('the page draws the tile before the overflows and fills it again for a picked day', () => {
   const at = s => { const i = html.indexOf(s); assert.ok(i >= 0, s); return i; };
-  assert.ok(at('h += `<div id="sources-host">${whereFrom(d)}</div>`;') < at('if (d.contributors.length) h += overflowTile(d, allUpstream(d));'));
+  // the phone's stack writes the host before the overflows; a desktop's forecast section holds it, the evidence the list
+  assert.ok(at('h += `<div id="sources-host">${whereFrom(d)}</div>`;') < at('h += ovs + replay + plume;'));
+  assert.ok(at("sources: `<div id=\"sources-host\">${whereFrom(d)}</div>`") > 0);
+  assert.ok(at("h += two('r-forecast', o.lead, (o.map || '') + (o.sources || ''));") < at("ev = (o.more || '') + (o.ovs || '')"));
   assert.ok(at("if (src) src.innerHTML = whereFrom(d);") > at('function showDay(d, iso) {'));
   assert.ok(at('#sources-host:empty { display:none; }') > 0);
   assert.ok(at('function whereFrom(d) {') < at('function overflowTile(d, total) {'));
@@ -212,7 +221,7 @@ test('the overflow list says "at the spot" under 0.1 km and "under half an hour"
   const henley = {...culham, site_id: 'TWL00191', site_name: 'Friday Street (Henley) SPS', position_source: 'live', snap_m: 66};
   const rivadale = {...culham, site_id: 'YWS00674', site_name: 'RIVADALE VIEW/CSO', position_source: 'live', distance_km: 0.5, travel_h: 0.3};
   const far = {...culham, site_id: 'YWS1', site_name: 'ILKLEY WwTW', position_source: 'live', distance_km: 6.0, travel_h: 5.2};
-  const rows = plain(vm.runInContext('overflowTile', c)({id: 'x', contributors: [culham, henley, rivadale, far]}, 4)).split('reach');
+  const rows = plain(vm.runInContext('overflowTile', c)({id: 'x', contributors: [culham, henley, rivadale, far]}, 4)).split('weight');
   assert.match(rows[0], /Culham sewage works overflow.* · at the spot: its stream joins the river here, to within the map's precision \(checked on a map\)\d/);
   assert.match(rows[1], /Friday Street \(Henley\) pumping station overflow.* · at the spot\d/);
   assert.match(rows[2], /Rivadale View storm overflow.* · 0\.5 km upstream, under half an hour away\d/);

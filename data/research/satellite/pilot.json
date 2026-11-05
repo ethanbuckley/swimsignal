@@ -1,0 +1,80 @@
+{
+ "chosen": "2026-10-31",
+ "why": "one tile each where possible (cost), five water bodies, three bathing waters and two shallow-lake chlorophyll points (2027 collection); docs/SATELLITE-PILOT-2026-11.md",
+ "sites": [
+  {
+   "lake_id": "bw-ukf2208-09702",
+   "name": "Rutland Water Sykes Lane",
+   "water_body": "Rutland Water",
+   "lat": 52.66320858080605,
+   "lon": -0.61313993149942,
+   "site_ids": {
+    "bathing_water": "ukf2208-09702",
+    "wqa_point": "AN-RUTSYKLN"
+   },
+   "lake_type": null,
+   "tiles": [
+    "MGRS-30UXD"
+   ]
+  },
+  {
+   "lake_id": "bw-ukd1101-45800",
+   "name": "Derwent Water at Crow Park",
+   "water_body": "Derwent Water",
+   "lat": 54.59499,
+   "lon": -3.14218,
+   "site_ids": {
+    "bathing_water": "ukd1101-45800",
+    "wqa_point": "NW-88010777"
+   },
+   "lake_type": null,
+   "tiles": [
+    "MGRS-30UVF"
+   ]
+  },
+  {
+   "lake_id": "bw-ukj2310-11945",
+   "name": "Frensham Great Pond",
+   "water_body": "Frensham Great Pond",
+   "lat": 51.15730922324361,
+   "lon": -0.791803740453079,
+   "site_ids": {
+    "bathing_water": "ukj2310-11945",
+    "wqa_point": "TH-PGWL0034"
+   },
+   "lake_type": "deeper",
+   "tiles": [
+    "MGRS-30UXB"
+   ]
+  },
+  {
+   "lake_id": "wqa-SW-50900003",
+   "name": "Little Sea",
+   "water_body": "Little Sea",
+   "lat": 50.659431,
+   "lon": -1.962202,
+   "site_ids": {
+    "wqa_point": "SW-50900003"
+   },
+   "lake_type": "shallow",
+   "tiles": [
+    "MGRS-30UWB"
+   ]
+  },
+  {
+   "lake_id": "wqa-AN-ANT160",
+   "name": "Barton Broad",
+   "water_body": "Barton Broad",
+   "lat": 52.744918,
+   "lon": 1.496544,
+   "site_ids": {
+    "wqa_point": "AN-ANT160"
+   },
+   "lake_type": "shallow",
+   "tiles": [
+    "MGRS-30UYD",
+    "MGRS-31UCU"
+   ]
+  }
+ ]
+}

@@ -29,6 +29,14 @@ const Record = (() => {
   const E = node ? require('./evidence.js') : { evidenceAge, evidenceOverflows, evidenceSample };
   const O = node ? require('./organisers.js') : Organisers;
   const P = node ? require('./printed.js') : Printed;
+  // Reviewed official advice, in the compact form the app's rows use (eatoday.js, eaTodayBrief).
+  const brief = node ? require('./eatoday.js').eaTodayBrief : typeof eaTodayBrief === 'function' ? eaTodayBrief : () => '';
+  const label = node ? require('./eatoday.js').eaTodayLabel : typeof eaTodayLabel === 'function' ? eaTodayLabel : () => 'Official notice';   // "Official advice" only where it restricts
+  const heed = node ? require('./eatoday.js').eaTodayFirst : typeof eaTodayFirst === 'function' ? eaTodayFirst : () => 'Read the official notice first';   // follow only a restricting notice
+  // Its first item's link, "Open the Environment Agency page", as the spot page's notice gives it (eaTodayOfficial).
+  const advice = node ? require('./eatoday.js').eaTodayAdvice : typeof eaTodayAdvice === 'function' ? eaTodayAdvice : () => [];
+  const officialLink = s => { const o = advice(s)[0];
+    return o && /^https:\/\/[^\s"<>]+$/.test(o.link || '') ? ` <a href="${esc(o.link)}">Open the ${esc(o.publisher)} page</a>.` : ''; };
   const PAGE_ID = /^[A-Za-z0-9_-]+$/;
   const ISO = /^\d{4}-\d{2}-\d{2}$/;
   const TZ = 'Europe/London';
@@ -113,9 +121,9 @@ const Record = (() => {
   }
 
   // ------------------------------------------------------------------ 2. the level and why
-  // The overflows most likely to affect the spot on day j (spill chance times reach, as the spot page
-  // picks them), each with how far upstream and how long its sewage takes to arrive. Where none is
-  // likely, the three with the most reach. Names and distances from organisers.js's table rows.
+  // The overflows that count most on day j (spill chance times model weight, as the spot page picks
+  // them), each with how far upstream and how long its sewage takes to arrive. Where none counts for
+  // much, the three with the largest model weight. Names and distances from organisers.js's table rows.
   function topOverflows(s, j) {
     const rows = new Map(O.overflowRows(s).map(o => [o.site_id, o]));
     const spill = c => c.p_spill_days ? c.p_spill_days[j] : j === 0 ? c.p_spill_today : j === 1 ? c.p_spill_tomorrow : undefined;
@@ -124,8 +132,8 @@ const Record = (() => {
     const list = likely.length ? likely : all.slice().sort((a, b) => b.c.weight - a.c.weight).slice(0, 3);
     if (!list.length) return '';
     const one = ({ c, p, o }) => `<li><b>${esc(o.plain)}</b>${o.own ? ` (${esc(o.own)})` : ''}: ${esc(o.where)}, sewage arrives in ${away(o.travel_h)}. `
-      + `${nil(p) ? '' : `Spill chance ${pct(p)}, `}reach ${pct(o.reach)}.${c.status === 1 ? ' Discharging when the forecast was issued.' : ''}</li>`;
-    return (likely.length ? '' : 'None is likely to reach the spot that day. The ones with the most reach: ') + `<ul class="r-ovs">${list.map(one).join('')}</ul>`;
+      + `${nil(p) ? '' : `Spill chance ${pct(p)}, `}model weight ${pct(o.reach)}.${c.status === 1 ? ' Discharging when the forecast was issued.' : ''}</li>`;
+    return (likely.length ? '' : 'None stands out that day. The ones with the largest model weight: ') + `<ul class="r-ovs">${list.map(one).join('')}</ul>`;
   }
   function levelBlock(s, iso, w, data) {
     const x = w.x, j = w.j, total = (s.upstream_summary || {}).overflows || 0;
@@ -182,7 +190,9 @@ const Record = (() => {
     if (x && !nil(x.rain_48h_mm)) add('Rain forecast', `${Math.round(x.rain_48h_mm)} mm in the 48 hours to midday on ${esc(longDate(iso))}.`, `Read with the forecast, ${at(data.generated_at)}`,
       'Open-Meteo.com, from Met Office forecasts');
     const cl = s.classification, ea = cl && /^https:\/\//.test(cl.url || '') ? `the <a href="${esc(cl.url)}">Environment Agency</a>` : 'the Environment Agency';
-    if (cl && cl.class) add('Environment Agency rating', `${cap(String(cl.class).toLowerCase())}, for ${esc(cl.year)}. ${String(cl.class).toLowerCase() === 'poor' ? R.poorAdvice(iso) : 'From its lab samples over up to four seasons.'}`, '', ea);
+    const sr = (s.sepa || {}).rating, sepaSrc = /^https:\/\//.test((s.sepa || {}).page || '') ? `<a href="${esc(s.sepa.page)}">SEPA</a>` : 'SEPA';
+    if (s.source === 'sepa') add('SEPA rating', sr?.value ? `${esc(sr.value)}, for ${esc(sr.year)}. From its lab samples over up to four seasons.` : 'None in this update.', '', sepaSrc);
+    else if (cl && cl.class) add('Environment Agency rating', `${cap(String(cl.class).toLowerCase())}, for ${esc(cl.year)}. ${String(cl.class).toLowerCase() === 'poor' ? R.poorAdvice(iso) : 'From its lab samples over up to four seasons.'}`, '', ea);
     else if (cl) add('Environment Agency rating', 'None yet: this bathing water is too new to have one.', '', ea);
     else add('Environment Agency rating', 'Not a designated bathing water, so the Environment Agency does not test it for bathing.', '', 'the Environment Agency\'s list of bathing waters');
     if (s.algae && s.algae.date) add('Algae at the last check', `${cap(esc(s.algae.phrase))}.`, when(s.algae.date), 'the Environment Agency\'s sampler, by eye, not a lab test');
@@ -227,7 +237,7 @@ const Record = (() => {
     if (!s) return first + `<p class="notice">${id ? `No spot with the id <b>${esc(id)}</b> is in this forecast: it may have been renamed or removed.` : 'Choose a spot.'}</p>`;
     iso = iso && ISO.test(iso) ? iso : R.today();
     const loc = s.location || {};
-    const meta = [cap(s.kind || 'river'), s.source === 'designated' ? 'Environment Agency designated bathing water' : null, loc.watercourse || null].filter(Boolean).map(esc).join(' · ');
+    const meta = [cap(s.kind || 'river'), s.source === 'designated' ? 'Environment Agency designated bathing water' : s.source === 'sepa' ? 'SEPA designated bathing water' : null, loc.watercourse || null].filter(Boolean).map(esc).join(' · ');
     let h = first + `<h2 class="r-spot">${esc(s.name)}</h2><p class="r-meta">${meta} · <a href="${esc(spotHref(s.id))}">${esc(base)}${esc(spotHref(s.id))}</a></p>`
       + `<p class="r-day">${esc(longDate(iso))}</p>`;
     const w = O.when(s, iso);
@@ -237,7 +247,9 @@ const Record = (() => {
     h += `<p class="r-meta">Issue id <b>${esc(issue)}</b>: the build and the forecast's issue time in UTC, to match this copy to SwimSignal's forecast log.</p>`;
     const m = (now - Date.parse(data.generated_at)) / 60000;
     if (m > O.STALE_MIN) h += `<p class="notice" role="alert"><b>Stale.</b> This forecast is ${ago(m)} old (issued ${esc(at(data.generated_at))}). The automatic update has not run since; treat everything below as out of date.</p>`;
-    return h + `<h3>The level and why</h3>${levelBlock(s, iso, w, data)}`
+    const official = brief(s);
+    return h + (official ? `<p class="r-official"><b>${label(s)}:</b> ${esc(official)}. Not part of the level below; ${heed(s).toLowerCase()}.${officialLink(s)}</p>` : '')
+      + `<h3>The level and why</h3>${levelBlock(s, iso, w, data)}`
       + `<h3>What it rests on, and how old each part is</h3><p class="r-note">Ages are counted from when this page was opened, ${esc(at(now))}.</p>${inputs(s, iso, data, now)}`
       + `<h3>What the forecast cannot see</h3><ul class="r-cannot">${cannotSee(s).map(t => `<li>${esc(t)}</li>`).join('')}</ul>`
       + decide(org)
@@ -273,6 +285,8 @@ const Record = (() => {
       document.title = s ? `${s.name}, ${new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}: decision record · SwimSignal` : 'Decision record · SwimSignal';
       out.innerHTML = view(s, iso, data, ver, base, Date.now(), st.spot || '', st.org || '');
       const pr = document.getElementById('print'); if (pr) pr.addEventListener('click', () => window.print());
+      // brief.js: the version of this record and the leader's "read" tick, on screen only, kept in this browser.
+      if (s && typeof BriefAck === 'object' && document.getElementById('r-decide')) BriefAck.draw(out, s, iso, data, P.issueId(data));
     };
     const go = () => { const addr = location.pathname + location.search + toHash(sel.value || null, ISO.test(date.value) ? date.value : null, fromHash(location.hash).org);
       if (addr !== location.pathname + location.search + location.hash) { history.replaceState(null, '', addr); draw(); } };

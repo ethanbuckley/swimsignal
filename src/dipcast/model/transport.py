@@ -1458,6 +1458,22 @@ def clear_time(ov: pd.DataFrame, now: pd.Timestamp, cut: float = CLEAR_CUT,
     return at, "window" if jumped else "die-off", None
 
 
+def carried_risk(ov: pd.DataFrame, now: pd.Timestamp, at: list[pd.Timestamp],
+                 recent_h: float = config.RECENT_SPILL_HOURS, t90_h: float = config.T90_HOURS) -> list[float]:
+    """Right now's spills' risk at each time in `at`, as clear_time runs live_now_risk forward: the spills running
+    now taken to stop now, the finished ones keeping their end times, and no new spill. Each is held at its full
+    weight until its water has passed the spot, then dies off with T90, and leaves the count recent_h after its
+    water passed. With no new spill the risk only falls, so a time before clear_time's is at or above its cut.
+    A later day's forecast counts the spills the rain makes likely, not these (5 Nov 2026: Swale above Richmond
+    Falls read Low on Friday while this said its water would pass by Saturday 13:02)."""
+    if ov.empty:
+        return [0.0] * len(at)
+    counted, w, end, travel = _counted(ov, now, recent_h)
+    w, passed = w[counted], (end + travel)[counted]
+    return [float(1.0 - np.prod(1.0 - np.clip(_contributions((t - now).total_seconds() / 3600.0, w, passed, recent_h, t90_h), 0, 1)))
+            for t in at]
+
+
 def shown_score(r: float) -> int:
     """The 0-100 score the page shows for risk r: the 3 dp figure in spots.json times 100, rounded half up
     as JavaScript's Math.round does it."""

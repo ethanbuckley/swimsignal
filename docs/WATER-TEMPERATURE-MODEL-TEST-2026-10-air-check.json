@@ -1,0 +1,22 @@
+{
+ "cells_compared": 62,
+ "daily_pairs": 1550,
+ "a7_pairs": 1178,
+ "daily_mean": -0.5008091397849462,
+ "daily_rms": 0.7777798091051302,
+ "a7_mean": -0.4836789554531491,
+ "a7_rms": 0.6080881607317971,
+ "cell_mean_min": -1.120166666666667,
+ "cell_mean_max": 0.21133333333333354,
+ "pass": true,
+ "rain": {
+  "cells": 62,
+  "hours": 55056,
+  "values_or_cells_differing": 0
+ },
+ "cells": 62,
+ "window": [
+  "2026-09-26",
+  "2026-10-26"
+ ]
+}

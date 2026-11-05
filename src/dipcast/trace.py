@@ -72,10 +72,46 @@ def encoded_lines(lines, tolerance_m: float = SIMPLIFY_M) -> list[str]:
     return out
 
 
+def cut_ends(net, pin, max_km: float = config.MAX_UPSTREAM_KM) -> list[list[float]]:
+    """Where the trace stops a river that goes on: [lat, lon] of each place transport.traced_lines cuts at
+    max_km, five decimal places, for the evidence map (src/dipcast/site/evmap.js), which draws a bar there.
+    The same arithmetic as traced_lines, and kept beside it rather than in it (the model's file is left
+    alone): a link is kept for `cap - dn - off` metres above its lower end, so where that is less than its
+    length the river is cut that far up it. A link with nothing to keep lies wholly past the cap, and the
+    link below it is the one cut. Without these the page could only guess, from the lines' lengths, which
+    ends were cut and which were a stream's source (it guessed 58.2 km or more; 25 m simplification
+    shortens a line). A source inside the cap is not a cut and is not listed."""
+    if pin.mode not in ("river", "lake") or pin.trace_node is None:
+        return []
+    cap = max_km * 1000.0
+    off = pin.trace_offset_m if pin.mode == "river" else 0.0
+    geom = net.links.geometry
+    xy = set()
+    for lid, dn in net.upstream_edges(pin.trace_node, cap).items():
+        if lid.startswith("repair:") or lid not in geom.index:
+            continue
+        line, keep = geom.loc[lid], cap - dn - off
+        if keep >= line.length or keep <= 0:   # whole, or wholly past the cap (the link below it is the one cut)
+            continue
+        p = line.interpolate(line.length - keep)
+        xy.add((round(p.x, 1), round(p.y, 1)))
+    if not xy:
+        return []
+    pts = sorted(xy)
+    lon, lat = _TO_WGS.transform([p[0] for p in pts], [p[1] for p in pts])
+    return [[round(a, 5), round(b, 5)] for a, b in zip(lat, lon, strict=True)]
+
+
+def spot_trace_parts(net, lat: float, lon: float, kind=None, river=None, name: str | None = None,
+                     max_km: float = config.MAX_UPSTREAM_KM) -> tuple[list[str], list[list[float]]]:
+    """spot_trace's lines and cut_ends for one spot, placing the pin once."""
+    kind_hint, river_hint = spot_hints(kind, river)
+    pin = locate_pin(net, lon, lat, kind_hint=kind_hint, river_hint=river_hint, name=name)
+    return encoded_lines(traced_lines(net, pin, max_km)), cut_ends(net, pin, max_km)
+
+
 def spot_trace(net, lat: float, lon: float, kind=None, river=None, name: str | None = None,
                max_km: float = config.MAX_UPSTREAM_KM) -> list[str]:
     """The encoded lines of what the forecast traces upstream of a listed spot, placed as forecast_point
     places it (the same hints from spots.csv)."""
-    kind_hint, river_hint = spot_hints(kind, river)
-    pin = locate_pin(net, lon, lat, kind_hint=kind_hint, river_hint=river_hint, name=name)
-    return encoded_lines(traced_lines(net, pin, max_km))
+    return spot_trace_parts(net, lat, lon, kind, river, name, max_km)[0]

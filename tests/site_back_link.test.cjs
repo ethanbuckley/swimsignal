@@ -24,7 +24,7 @@ function open({shown = 'saved', hash = '', many = false, fromMap = false} = {}) 
     history: {state: null, pushState(st, t, url) { pushed.push({st, url}); location.hash = ''; }, replaceState: noop},
     readShared: lists.readShared, planDates: () => ['2026-10-26'], manyLists: () => many, listNow: () => own[many ? 1 : 0],
     keepPlace: noop, mapMode: () => fromMap, setMapMode: noop, map: {getCenter: () => ({lat: 0, lng: 0}), getZoom: () => 9, fitBounds: noop},
-    spotPath: id => `/spot/${id}/`, render: noop, selLayer: {clearLayers: noop}, RING: noop, MOTION: () => ({}), scrollTop: noop, focusHeading: noop,
+    spotPath: id => `/spot/${id}/`, render: noop, selLayer: {clearLayers: noop}, RING: noop, MOTION: () => ({}), scrollTop: noop, focusHeading: noop, closePick: noop,
     L: {circleMarker: () => ({addTo: noop}), latLngBounds: x => x}});
   const location = ctx.location;
   vm.runInContext(between('function openSpot(', 'const focusHeading') + ';this.openSpot = openSpot;', ctx);

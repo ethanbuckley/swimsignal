@@ -44,7 +44,7 @@ test("a spot's opening: its name, its headline from levels.js, its five days, is
   assert.ok(h.startsWith('<div class="top-row"><a href="/swim/" class="back" id="back">All spots</a><button type="button" class="save" id="save" aria-pressed="false">'), h);
   assert.ok(h.includes('<h1 class="spot-name" tabindex="-1">A &amp; B</h1>'));
   // The headline names what it covers, the level keeping its noun (20 Oct 2026, levels.js HEAD_SCOPE).
-  assert.match(h, /<h2 class="big low" id="risk-headline">Low risk from sewage spills<\/h2><p class="why">Today and tomorrow<\/p>/);
+  assert.match(h, /<h2 class="big low" id="risk-headline">Low risk from sewage spills<\/h2><div class="wn"><p class="why">Today and tomorrow<\/p>/);
   assert.ok(h.includes('<p class="next">High risk on Thursday</p>'));   // the week, as levels.js weekNext says it
   assert.ok(h.includes('<p class="t-sent">Low risk today. High risk on Thursday. Back to low risk on Friday.</p>'));   // levels.js backToLow
   assert.equal((h.match(/<button class="drow /g) || []).length, 5);
@@ -54,11 +54,11 @@ test("a spot's opening: its name, its headline from levels.js, its five days, is
   // Raised by tomorrow's spills: the line under it says when, not the cause again.
   const raised = {...SPOT, days: SPOT.days.map((x, i) => i === 1 ? {...x, risk: 0.5, label: 'high'} : x)};
   assert.match(spots.prerender({generated_at: '2026-09-29T08:00:00+01:00', spots: [raised]}, 'https://example.org/swim/').a,
-    /<h2 class="big high" id="risk-headline">High risk from sewage spills<\/h2><p class="why">Tomorrow<\/p>/);
+    /<h2 class="big high" id="risk-headline">High risk from sewage spills<\/h2><div class="wn"><p class="why">Tomorrow<\/p>/);
   // Raised by a poor rating, which is not a forecast of spills: "High risk" over its cause, as before.
   const poor = {...SPOT, source: 'designated', classification: {class: 'poor', year: 2025}};
   assert.match(spots.prerender({generated_at: '2026-09-29T08:00:00+01:00', spots: [poor]}, 'https://example.org/swim/').a,
-    /<h2 class="big high" id="risk-headline">High risk<\/h2><p class="why">Rated poor, advice against bathing<\/p>/);   // 29 Sept: in the bathing season
+    /<h2 class="big high" id="risk-headline">High risk<\/h2><div class="wn"><p class="why">Rated poor, advice against bathing<\/p>/);   // 29 Sept: in the bathing season
 });
 
 // The Accuracy page's script, as tests/site_verification.test.cjs runs it, with <main>'s data-built.
@@ -85,6 +85,6 @@ test("the build's copy of the Accuracy page: its five boxes and when its scores 
   assert.equal(out.built, '2026-10-04T00:15:52+01:00');
   assert.ok(out.top.includes('<dd class="v">93 in 100</dd>') && out.short.includes('<h2 id="short-h">In short</h2>'));
   assert.ok(out.offline.includes('<section id="holdout"><h2>Offline test: held-out year</h2>'));
-  assert.ok(out.top.includes('<li><a href="#holdout">Offline test: held-out year</a></li>'), out.top);   // contents(), from the sections
+  assert.ok(out.short.includes('<li><a href="#holdout">Offline test: held-out year</a></li>'), out.short);   // contents(), from the sections, under In short
   await assert.rejects(accuracy.prerender(VER.replace(/main\(\)\.catch/, 'go().catch'), data), /no longer ends with main\(\)\.catch/);
 });

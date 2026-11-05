@@ -152,3 +152,23 @@ def test_the_committed_file_is_what_the_build_reads():
     assert all(v["by"] != "river line" or v["m"] <= make_rnags.RIVER_LINE_M for v in placed)
     assert set(pd.Series([v["id"] for v in placed]).str[:2]) == {"GB"}
     assert doc["licence"].startswith("Open Government Licence v3.0")
+
+
+def test_every_catalogue_spot_has_a_checked_registry_entry():
+    doc = json.loads(make_rnags.OUT.read_text())
+    ids = set(make_rnags.load_spots()["id"])
+    assert ids <= set(doc["spots"]), f"Missing RNAG placement checks: {sorted(ids - set(doc['spots']))}"
+    assert doc["spots"]["carding-mill-reservoir"] is None
+    for spot, wb in {"brothers-water": "GB30229116", "loweswater": "GB31228986", "bassenthwaite": "GB31228847"}.items():
+        assert doc["spots"][spot]["id"] == wb
+        assert wb in doc["water_bodies"]
+
+
+def test_new_lakes_publish_only_the_checked_pressure_context():
+    ids = ["brothers-water", "loweswater", "bassenthwaite", "carding-mill-reservoir"]
+    results = [{"id": spot} for spot in ids]
+    assert build_site.attach_water_body(results) == (3, [])
+    assert results[0]["water_body"] == {"id": "GB30229116", "name": "Brothers Water"}
+    assert results[1]["water_body"] == {"id": "GB31228986", "name": "Loweswater", "agriculture": "confirmed"}
+    assert results[2]["water_body"] == {"id": "GB31228847", "name": "Bassenthwaite Lake", "agriculture": "probable"}
+    assert "water_body" not in results[3]

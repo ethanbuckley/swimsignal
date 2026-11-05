@@ -95,6 +95,41 @@ def test_a_bad_guide_says_what_is_wrong(change, message):
         parse(GOOD.replace(*change, 1))
 
 
+DATED = 'source_name = "Example Council"\n'
+
+
+def test_a_fact_from_a_dated_record_keeps_its_month():
+    g = parse(GOOD.replace(DATED, DATED + 'source_date = "2026-02"\n', 1))
+    assert g["facts"][0]["source_date"] == "2026-02" and g["facts"][0]["source"].startswith("https://")
+    assert "source_date" not in parse(GOOD)["facts"][0]
+
+
+@pytest.mark.parametrize("value, message", [
+    ('"February 2026"', "must be a month"), ('2026-02-01', "must be a month"), ('"2026-13"', "must be a month"),
+    ('"2026-11"', "in the future"),
+])
+def test_a_bad_source_date_says_what_is_wrong(value, message):
+    with pytest.raises(gd.GuideError, match=message):
+        parse(GOOD.replace(DATED, DATED + f"source_date = {value}\n", 1))
+
+
+def test_a_source_date_needs_a_confirmed_fact_with_a_source():
+    seen_only = GOOD.replace('seen = 2026-08-20', 'seen = 2026-08-20\nsource_date = "2026-02"', 1)
+    with pytest.raises(gd.GuideError, match="needs a confirmed fact with a source"):
+        parse(seen_only)
+    suggested = GOOD.replace('on = 2026-09-12', 'on = 2026-09-12\nsource_date = "2026-02"', 1)
+    with pytest.raises(gd.GuideError, match="needs a confirmed fact with a source"):
+        parse(suggested)
+
+
+def test_every_fact_that_says_it_is_not_a_current_check_has_its_records_month():
+    """A fact whose words say it is a dated listing must not be labelled "Verified" on the page."""
+    for path in sorted((ROOT / "guides").glob("*.toml")):
+        for f in tomllib.loads(path.read_text()).get("fact", []):
+            if "not a current check" in f["text"]:
+                assert "source_date" in f, (path.name, f["text"])
+
+
 def test_a_photo_needs_its_file_size_credit_and_labels_on_the_picture(tmp_path):
     (tmp_path / "steps.jpg").write_bytes(b"\xff\xd8\xff")
     photo = """
@@ -102,6 +137,7 @@ def test_a_photo_needs_its_file_size_credit_and_labels_on_the_picture(tmp_path):
 file = "steps.jpg"
 width = 1600
 height = 1200
+topic = "entry"
 caption = "The steps from the path."
 credit = "Ethan Buckley"
 taken = 2026-08-20
@@ -113,7 +149,7 @@ y = 72.25
 text = "Steps in"
 """
     g = parse(GOOD + photo, tmp_path)
-    assert g["photos"] == [{"file": "steps.jpg", "w": 1600, "h": 1200, "caption": "The steps from the path.", "credit": "Ethan Buckley",
+    assert g["photos"] == [{"file": "steps.jpg", "w": 1600, "h": 1200, "topic": "entry", "caption": "The steps from the path.", "credit": "Ethan Buckley",
                             "taken": "2026-08-20", "status": "confirmed", "seen": "2026-08-20", "labels": [{"x": 30.0, "y": 72.2, "text": "Steps in"}]}]
     with pytest.raises(gd.GuideError, match="does not exist"):
         parse(GOOD + photo.replace("steps.jpg", "gone.jpg"), tmp_path)
@@ -123,6 +159,65 @@ text = "Steps in"
         parse(GOOD + photo.replace("width = 1600\n", ""), tmp_path)
     with pytest.raises(gd.GuideError, match="lower-case"):
         parse(GOOD + photo.replace('"steps.jpg"', '"../steps.jpg"'), tmp_path)
+    # Every photo says which topic it shows, so the arrival guide puts it in that step and no other.
+    with pytest.raises(gd.GuideError, match="topic"):
+        parse(GOOD + photo.replace('topic = "entry"\n', ""), tmp_path)
+    with pytest.raises(gd.GuideError, match="topic"):
+        parse(GOOD + photo.replace('topic = "entry"', 'topic = "beach"'), tmp_path)
+    assert parse(GOOD + photo.replace('topic = "entry"', 'topic = "overview"'), tmp_path)["photos"][0]["topic"] == "overview"
+
+
+HISTORICAL = """
+[[photo]]
+file = "gravel.jpg"
+width = 640
+height = 480
+topic = "entry"
+caption = "Gravel by the bridge, May 2023."
+credit = "Oliver Dixon"
+taken = 2023-05-16
+status = "historical"
+title = "Foot suspension bridge over the River Wharfe"
+source = "https://www.geograph.org.uk/photo/7486475"
+source_name = "Geograph"
+licence = "https://creativecommons.org/licenses/by-sa/2.0/"
+changes = "Re-encoded as a JPEG at the same size, with all metadata removed."
+"""
+
+
+def test_a_historical_photo_carries_its_photographer_page_date_licence_and_changes(tmp_path):
+    (tmp_path / "gravel.jpg").write_bytes(b"\xff\xd8\xff")
+    g = parse(GOOD + HISTORICAL, tmp_path)
+    assert g["photos"] == [{"file": "gravel.jpg", "w": 640, "h": 480, "topic": "entry", "caption": "Gravel by the bridge, May 2023.",
+                            "credit": "Oliver Dixon", "taken": "2023-05-16", "status": "historical",
+                            "source": "https://www.geograph.org.uk/photo/7486475", "source_name": "Geograph",
+                            "title": "Foot suspension bridge over the River Wharfe",
+                            "licence": "https://creativecommons.org/licenses/by-sa/2.0/",
+                            "changes": "Re-encoded as a JPEG at the same size, with all metadata removed.", "labels": []}]
+
+
+@pytest.mark.parametrize("change, message", [
+    (('licence = "https://creativecommons.org/licenses/by-sa/2.0/"', 'licence = "https://creativecommons.org/licenses/by-sa/4.0/"'), "exact deed link"),
+    (('licence = "https://creativecommons.org/licenses/by-sa/2.0/"\n', ""), "exact deed link"),
+    (('changes = "Re-encoded as a JPEG at the same size, with all metadata removed."\n', ""), "changes"),
+    (('title = "Foot suspension bridge over the River Wharfe"\n', ""), "title"),
+    (('source = "https://www.geograph.org.uk/photo/7486475"', 'source = "http://www.geograph.org.uk/photo/7486475"'), "https page"),
+    (('status = "historical"', 'status = "historical"\nseen = 2023-05-16'), "neither seen"),
+    (('status = "historical"', 'status = "historical"\nfrom = "Sam"\non = 2023-05-16'), "neither seen"),
+])
+def test_a_historical_photo_says_what_is_wrong(tmp_path, change, message):
+    (tmp_path / "gravel.jpg").write_bytes(b"\xff\xd8\xff")
+    with pytest.raises(gd.GuideError, match=message):
+        parse(GOOD + HISTORICAL.replace(*change, 1), tmp_path)
+
+
+def test_a_historical_photo_has_no_labels_and_other_photos_no_licence(tmp_path):
+    (tmp_path / "gravel.jpg").write_bytes(b"\xff\xd8\xff")
+    with pytest.raises(gd.GuideError, match="no labels"):
+        parse(GOOD + HISTORICAL + '[[photo.label]]\nx = 30\ny = 70\ntext = "Get in here"\n', tmp_path)
+    ours = HISTORICAL.replace('status = "historical"', 'status = "confirmed"\nseen = 2026-08-20')
+    with pytest.raises(gd.GuideError, match="for a historical photo"):
+        parse(GOOD + ours, tmp_path)
 
 
 def test_the_build_attaches_guides_warns_on_bad_ones_and_copies_only_used_photos(tmp_path):
@@ -130,7 +225,7 @@ def test_the_build_attaches_guides_warns_on_bad_ones_and_copies_only_used_photos
     (root / "photos").mkdir(parents=True)
     (root / "photos" / "used.jpg").write_bytes(b"jpeg")
     (root / "photos" / "spare.jpg").write_bytes(b"jpeg")
-    (root / "a.toml").write_text(GOOD + '[[photo]]\nfile = "used.jpg"\nwidth = 4\nheight = 3\ncaption = "c"\ncredit = "c"\n'
+    (root / "a.toml").write_text(GOOD + '[[photo]]\nfile = "used.jpg"\nwidth = 4\nheight = 3\ntopic = "entry"\ncaption = "c"\ncredit = "c"\n'
                                  'taken = 2026-08-20\nstatus = "suggested"\nfrom = "Sam"\non = 2026-08-21\n')
     (root / "b.toml").write_text("checked = 2026-10-03\nhow = 'desk'\n")      # no facts
     (root / "nobody.toml").write_text(GOOD)                                     # no such spot

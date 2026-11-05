@@ -1,0 +1,20 @@
+{
+  "C1": {
+    "1a gain, interval below zero": true,
+    "1b gain at least 2% of B1": true,
+    "2 no horizon clearly worse": true,
+    "3 no company clearly worse": true,
+    "4 reliability": false,
+    "5 not worse on new spills": true,
+    "passes": false
+  },
+  "C2 (ERA5 future rain)": {
+    "1a gain, interval below zero": true,
+    "1b gain at least 2% of B1": true,
+    "2 no horizon clearly worse": true,
+    "3 no company clearly worse": true,
+    "4 reliability": false,
+    "5 not worse on new spills": true,
+    "passes": false
+  }
+}

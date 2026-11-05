@@ -23,6 +23,18 @@ test('verified facts name their page; a suggestion says who, when, and that it i
   assert.match(html, /feedback\.html\?type=guide&amp;spot=Wharfe%20at%20Cromwheel%2C%20Ilkley/);
 });
 
+test('a fact from a dated record says Source and the month, not Verified', () => {
+  const dated = { topic: 'toilets', text: 'Listed in a February 2026 consultation. This is a February 2026 listing, not a current check.', status: 'confirmed',
+    source: 'https://consult.example.gov.uk/doc.pdf', source_name: 'Defra', source_date: '2026-02' };
+  assert.equal(g.guideSource(dated), '<span class="g-who">Source</span>: <a href="https://consult.example.gov.uk/doc.pdf">Defra</a>, February 2026.');
+  const html = g.guideTile(spot({ guide: guide({ facts: [...guide().facts, dated] }) }), '2026-10-04');
+  assert.match(html, /<span class="g-who">Verified<\/span>: <a href="https:\/\/www.example.gov.uk\/p">Example Council<\/a>\./, 'a current page still says Verified');
+  assert.doesNotMatch(html, /not a current check\.<\/p><p class="g-src"><span class="g-who">Verified/);
+  // A malformed month, or no page to name, falls back to the plain line rather than writing it.
+  assert.match(g.guideSource({ ...dated, source_date: '2026-2<b>' }), /^<span class="g-who">Verified<\/span>/);
+  assert.match(g.guideSource({ status: 'confirmed', seen: '2026-08-20', source_date: '2026-02' }), /^<span class="g-who">Verified<\/span>: seen on site 20 Aug 2026\.$/);
+});
+
 test('a site visit, a guide of suggestions only, and an old guide each say so', () => {
   assert.equal(g.guideChecked(guide({ how: 'visit' }), '2026-10-04'), 'Checked on site 3 Oct 2026.');
   const onlySuggested = guide({ facts: [guide().facts[0]] });
@@ -186,4 +198,49 @@ test('a different page, day, name or kind of source starts a new line; so does a
   assert.equal(lines([{ topic: 'parking', text: 'a', ...src }, { topic: 'fees', text: 'b', ...src }]), 2, 'never across topics');
   const html = g.guideFacts(guide({ facts: [{ topic: 'entry', text: 'a', ...src, lat: 53.93, lon: -1.82 }, { topic: 'entry', text: 'b', ...src, lat: 53.94, lon: -1.82 }] }));
   assert.equal((html.match(/On a map/g) || []).length, 2, 'two places on a map keep a link each');
+});
+
+// 30 October 2026: with bus and train a sixth topic, Who can swim must never go behind "Show all".
+test('who can swim stays in view wherever it falls, and the fold still never hides a single topic', () => {
+  const fact = k => ({ topic: k, text: `About ${k}.`, status: 'confirmed', source: `https://www.example.gov.uk/${k}`, source_name: 'Example Council' });
+  const shownRow = (html, label) => new RegExp(`<div class="g-row"><dt>${label}</dt>`).test(html);
+  // Cromwheel's six: parking, bus and train, path, getting in, toilets, who can swim. Only toilets would fold: so none does.
+  const six = g.guideTile(spot({ guide: guide({ facts: ['parking', 'transport', 'path', 'entry', 'toilets', 'rules'].map(fact) }) }), '2026-10-30');
+  assert.equal(hiddenRows(six), 0);
+  assert.doesNotMatch(six, /Show all/);
+  // Ten topics: the first four and who can swim show, the other five fold.
+  const ten = g.guideTile(spot({ guide: guide({ facts: g.GUIDE_TOPICS.slice(0, 10).map(([k]) => fact(k)) }) }), '2026-10-30');
+  assert.ok(shownRow(ten, 'Who can swim'), 'who can swim in view');
+  assert.equal(hiddenRows(ten), 5);
+  assert.match(ten, /Show all 10 topics/);
+  for (const label of ['Parking', 'Bus and train', 'Path to the water', 'Getting in']) assert.ok(shownRow(ten, label), label);
+});
+
+test('a historical photo is credited, licensed and limited to its day on the usual tile too', () => {
+  const photo = { file: 'gravel.jpg', w: 640, h: 480, topic: 'entry', caption: 'Gravel by the bridge.', credit: 'Oliver Dixon', taken: '2023-05-16',
+    status: 'historical', title: 'Foot suspension bridge', source: 'https://www.geograph.org.uk/photo/7486475', source_name: 'Geograph',
+    licence: 'https://creativecommons.org/licenses/by-sa/2.0/', changes: 'Re-encoded at the same size, metadata removed.', labels: [] };
+  const html = g.guideTile(spot({ guide: guide({ photos: [photo] }) }), '2026-10-30');
+  assert.match(html, /Historical photo<\/span> by Oliver Dixon, taken 16 May 2023: <a href="https:\/\/www\.geograph\.org\.uk\/photo\/7486475">Foot suspension bridge<\/a> on Geograph\./);
+  assert.match(html, /<a href="https:\/\/creativecommons\.org\/licenses\/by-sa\/2\.0\/">CC BY-SA 2\.0<\/a>; Re-encoded at the same size, metadata removed\. This copy is also under CC BY-SA 2\.0\./);
+  assert.match(html, /not today's access, permission, water level or conditions/);
+  assert.doesNotMatch(html.slice(html.indexOf("<figure")), /Verified|seen on site/, "the photo is not called verified");
+  assert.doesNotMatch(html, / Photo: Oliver Dixon/, 'the credit is said once, in the line');
+});
+
+test("a topic shows its first source's facts and folds the rest; who can swim shows two (5 Nov 2026)", () => {
+  const G = require('../src/dipcast/site/guide.js');
+  const f = (topic, text, n) => ({ topic, text, status: 'confirmed', source: `https://example.org/${n}`, source_name: `Source ${n}`, source_date: '2026-10' });
+  const row = (h, word) => h.split('<div class="g-row"').find(x => x.includes(word));
+  const g = { facts: [f('parking', 'Car park A.', 1), f('parking', 'Car park B.', 2), f('parking', 'Car park C.', 3),
+    f('toilets', 'Toilets A.', 4), f('toilets', 'Toilets B.', 5),
+    f('rules', 'Swimming allowed.', 6), f('rules', 'Byelaw on boats.', 7), f('rules', 'Event rules.', 8), f('rules', 'Busy lake.', 9)] };
+  const h = G.guideFacts(g);
+  const parking = row(h, 'Car park A.');
+  assert.match(parking, /Car park A\.<\/p><p class="g-src">.*?<\/dd><dd class="g-more"><details class="more"><summary>2 more from other sources<\/summary>/);
+  assert.ok(parking.indexOf('Car park B.') > parking.indexOf('<details class="more">'));
+  assert.ok(!row(h, 'Toilets A.').includes('<details'));   // one more is shown, not folded on its own
+  const rules = row(h, 'Swimming allowed.');
+  assert.ok(rules.indexOf('Byelaw on boats.') < rules.indexOf('<details'), 'two sources of who can swim in view');
+  assert.match(rules, /<summary>2 more from other sources<\/summary>/);
 });

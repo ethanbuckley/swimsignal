@@ -1,0 +1,25 @@
+name: Test Ask SwimSignal
+
+on:
+  pull_request:
+    paths: ["ask/**", "src/dipcast/site/levels.js", ".github/workflows/ask-tests.yml"]
+  push:
+    branches: [main]
+    paths: ["ask/**", "src/dipcast/site/levels.js", ".github/workflows/ask-tests.yml"]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"   # node:sqlite stands in for D1 in the tests; 24 has it without a flag
+      # No npm install: the tests use a scripted model and never load the Anthropic SDK. The eval set runs inside them.
+      - name: Test the Worker, its checks and the eval set (scripted model, no API calls)
+        run: node --test ask/test/*.test.js

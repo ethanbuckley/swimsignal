@@ -75,6 +75,7 @@ not share cost about 2,540 a day.
 from __future__ import annotations
 
 import hashlib
+import heapq
 import json
 import logging
 import math
@@ -90,6 +91,7 @@ import shapely
 
 from dipcast import config
 from dipcast.model import lake_water, transport
+from dipcast.model.forecast import day_grid
 from dipcast.model.transport import (
     ADOPT_MIN_M,
     ADOPT_RADIUS_M,
@@ -171,6 +173,66 @@ def reach_of(net: RiverNetwork, end_nodes, cap_m: float) -> set[str]:
     for e in pd.unique(pd.Series(list(end_nodes), dtype=object).dropna()):
         if e in net.graph:
             out.update(net.downstream_nodes(e, cap_m))
+    return out
+
+
+def wales_shares(net: RiverNetwork, cap_m: float = config.MAX_UPSTREAM_KM * 1000.0, wales=None) -> dict[str, float]:
+    """For each link not wholly in Wales with Welsh river within cap_m above its start, the share by length of the
+    network the trace walks from its start that lies in Wales (network/nations.py, traced_wales_share, as a listed
+    spot's upstream_summary.wales_share), rounded to 0.01, where at least nations.MIN_SHARE. Dŵr Cymru's overflows in
+    Wales are not in the data, so a click on the Severn at Montford Bridge read "no monitored overflow upstream" with
+    nothing said of Wales (29 Oct 2026). Only links within cap_m below a Welsh link can have one: 423 on the network
+    of 29 Oct 2026, in under a second after the outline's cut."""
+    from dipcast.network import nations
+    links, g = net.links, net.graph
+    wales = nations.wales_outline() if wales is None else wales
+    lines = links["geometry"].values
+    total = shapely.length(lines)
+    inside = shapely.intersects(wales, lines)
+    welsh = np.zeros(len(links))
+    welsh[inside] = shapely.length(shapely.intersection(lines[inside], wales))
+    t_of, w_of = dict(zip(links.index, total, strict=True)), dict(zip(links.index, welsh, strict=True))
+    # Every node within cap_m below the end of a Welsh link, the way water goes (all links, as upstream_edges walks).
+    dist = {n: 0.0 for n in links.loc[inside, "end_node"].unique()}
+    heap = [(0.0, n) for n in dist]
+    while heap:
+        d, n = heapq.heappop(heap)
+        if d > dist.get(n, math.inf):
+            continue
+        for m in g.successors(n):
+            nd = d + float(g.edges[n, m]["length"])
+            if nd <= cap_m and nd < dist.get(m, math.inf):
+                dist[m] = nd
+                heapq.heappush(heap, (nd, m))
+    out = {}
+    for lid, start, w, t in zip(links.index, links["start_node"].to_numpy(), welsh, total, strict=True):
+        if start not in dist or w >= 0.999 * t:   # nothing Welsh above it, or a link in Wales, where clicks are refused
+            continue
+        up = [u for u in net.upstream_edges(start, cap_m) if not u.startswith("repair:")]
+        tot = sum(t_of[u] for u in up)
+        share = sum(w_of[u] for u in up) / tot if tot > 0 else 0.0
+        if share >= nations.MIN_SHARE:
+            out[lid] = round(min(1.0, share), 2)
+    return out
+
+
+def english_names(links: pd.DataFrame) -> dict[str, str]:
+    """For a Welsh river name ("Afon Hafren"), the English one OS gives as its alternative ("River Severn"), as the
+    search box shows it (scripts/make_waters.py): the alternative on the greater length of that name's links that
+    have one, if it covers at least half of them, and is not itself Welsh. A click in England on the Severn at Upton
+    said "Afon Hafren" before (29 Oct 2026). Names with no such alternative are left out."""
+    if "watercourse_name_alternative" not in links:
+        return {}
+    named = links["watercourse_name"].astype(str).str.strip()
+    alt = links["watercourse_name_alternative"].where(links["watercourse_name_alternative"].notna(), "").astype(str).str.strip()
+    m = named.str.startswith("Afon ") & (alt != "")
+    df = pd.DataFrame({"name": named[m], "alt": alt[m], "length": links.loc[m, "length"]})
+    out: dict[str, str] = {}
+    for name, g in df.groupby("name"):
+        by = g.groupby("alt")["length"].sum().sort_values(ascending=False)
+        best, total = by.index[0], float(by.sum())
+        if not best.startswith("Afon ") and float(by.iloc[0]) >= 0.5 * total:
+            out[name] = best
     return out
 
 
@@ -467,6 +529,29 @@ def lake_link_sets(net: RiverNetwork, lakes) -> tuple[list[dict], dict[str, froz
     return wfd, comp_sets, link_comp
 
 
+def outline_names(wfd: list[dict], link_comp: dict[str, str]) -> dict[str, str]:
+    """A name for each centreline lake (comp id) from the WFD outlines its links lie in (wfd[].links), the only name
+    the page says for it (OS's names on lake links are streams'): a tap just off Coniston Water's outline was placed on its
+    centreline, which has no name, and said "Unnamed lake" (29 Oct 2026). Where its links lie in more than one
+    named outline, the name they share before a bracket ("Windermere (N Basin)" and "(S Basin)" are
+    "Windermere"), else none: a guess between two lakes would be worse than no name."""
+    by_comp: dict[str, set[str]] = {}
+    for w in wfd:
+        if w.get("name") and w.get("links"):
+            for lid in w["links"]:
+                c = link_comp.get(lid)
+                if c is not None:
+                    by_comp.setdefault(c, set()).add(w["name"])
+    out = {}
+    for c, names in by_comp.items():
+        bases = {n.split(" (")[0].strip() for n in names}
+        if len(names) == 1:
+            out[c] = next(iter(names))
+        elif len(bases) == 1:
+            out[c] = next(iter(bases))
+    return out
+
+
 def lake_rows(net: RiverNetwork, ov: pd.DataFrame, comp: frozenset, outlet: str,
               cap_m: float = config.MAX_UPSTREAM_KM * 1000.0,
               crossings: dict[str, tuple[int, float]] | None = None, tau: dict[int, float] | None = None) -> pd.DataFrame:
@@ -759,7 +844,10 @@ def write_files(out: Path, net: RiverNetwork, ov: pd.DataFrame, table: dict, net
     lake_ids = sorted(table["lake_rows"], key=lambda k: (k[0], int(k[1:])))
     lake_pos = {k: i for i, k in enumerate(lake_ids)}
     entry_links = set(records) | {l for l, c in table["link_comp"].items() if c in lake_pos}
-    covered |= set(home.loc[list(entry_links)])
+    # Links with Welsh river above them (wales_shares): their squares have files, so a click there is placed and
+    # told that overflows in Wales are not counted, not "no monitored overflow within 60 km".
+    welsh_above = wales_shares(net)
+    covered |= set(home.loc[list(entry_links | set(welsh_above))])
 
     # Lines in lon/lat, every vertex the network has, and every square each line's box touches. Lines
     # simplified to 30 m sit up to 30 m from the network's own: a click on a short side link 0.001 m from
@@ -791,6 +879,7 @@ def write_files(out: Path, net: RiverNetwork, ov: pd.DataFrame, table: dict, net
     own_name = links["watercourse_name"].to_numpy()
     in_tiles = sorted({i for ix in by_tile.values() for i in ix})
     river_names = link_names(net, [lids[i] for i in in_tiles if form_code[i] != 2])
+    english = english_names(links)   # "Afon Hafren" as "River Severn", as the search box says it
     upstream = links["start_node"].map(net.upstream_m).fillna(0.0).to_numpy()
     name_of = {}   # by position
     for i in in_tiles:
@@ -798,14 +887,15 @@ def write_files(out: Path, net: RiverNetwork, ov: pd.DataFrame, table: dict, net
             n = own_name[i]
             name_of[i] = n if isinstance(n, str) and n else None
         else:
-            name_of[i] = river_names[lids[i]]
+            n = river_names[lids[i]]
+            name_of[i] = english.get(n, n)
     # Side arms: where a click on one goes (arm_heads, encode_arm), in each square the arm is in.
     arms = arm_heads(net, [lids[i] for i in in_tiles])
     tiles_of: dict[str, list[str]] = {}
     for t, ix in sorted(by_tile.items()):
         for i in ix:
             tiles_of.setdefault(lids[i], []).append(t)
-    arm_names = link_names(net, sorted({ch for moves in arms.values() for ch in moves}))
+    arm_names = {k: english.get(n, n) for k, n in link_names(net, sorted({ch for moves in arms.values() for ch in moves})).items()}
 
     for d in ("link_index", "links"):
         (out / d).mkdir(parents=True, exist_ok=True)
@@ -837,9 +927,12 @@ def write_files(out: Path, net: RiverNetwork, ov: pd.DataFrame, table: dict, net
                 c = table["link_comp"].get(lid)
                 if c in lake_pos:
                     entries[str(int(lno))] = {"lake": lake_pos[c]}
-            elif lid in records:
-                entries[str(int(lno))] = encode_record(records[lid], pos)
-                n_rows += len(records[lid]["other"]) + len(records[lid]["same"])
+            else:
+                if lid in records:
+                    entries[str(int(lno))] = encode_record(records[lid], pos)
+                    n_rows += len(records[lid]["other"]) + len(records[lid]["same"])
+                if lid in welsh_above:   # ws: the share of the river above in Wales, where overflows are not counted
+                    entries.setdefault(str(int(lno)), {})["ws"] = welsh_above[lid]
         n_entries += len(entries)
         (out / "links" / f"{t}.json").write_text(json.dumps(
             {"ids": idv, "network": net_hash, **({"credits": credits["full"]} if credits and "full" in credits else {}), "links": entries,
@@ -854,6 +947,7 @@ def write_files(out: Path, net: RiverNetwork, ov: pd.DataFrame, table: dict, net
     held = max((hh for rec in records.values() for _, hh, _ in rec.get("hold", {}).values()), default=0.0)
     past = history_days(np.array([((cap - crossed) / v + crossed / v_lake) / 3600.0 + held]))   # held: an upper bound
     lakes_json = []
+    from_outline = outline_names(table["wfd"], table["link_comp"])   # a centreline lake's name where OS gives none
     (out / "lake_water").mkdir(parents=True, exist_ok=True)
     for f in (out / "lake_water").iterdir():
         f.unlink()
@@ -918,8 +1012,12 @@ def write_files(out: Path, net: RiverNetwork, ov: pd.DataFrame, table: dict, net
             past = max(past, history_days(np.array([travel])))
         name = None
         if k.startswith("c"):
-            own = [own_name[j] for j in sorted(links.index.get_indexer(list(comp)))]
-            name = next((n for n in own if isinstance(n, str) and n), None)
+            # The outline's name only: OS names a lake's centreline after a stream through it ("Fusedale Beck" in
+            # Ullswater, "Little Ings Sike" in Semer Water): of the 102 centreline lakes with both names on 29 Oct
+            # 2026, every OS name was a stream's, and of the 4,927 with only OS's, 96% end Brook, Burn, Beck and so on.
+            name = from_outline.get(k)
+        else:   # a WFD lake: its own outline's name
+            name = table["wfd"][int(k[1:])].get("name")
         outlet, out_way = {}, {}
         if out_xy:
             (olon,), (olat,) = _to_lonlat(np.array([out_xy[0]]), np.array([out_xy[1]]))
@@ -1049,12 +1147,33 @@ def cell_rain_48h(hourly: pd.DataFrame, days: pd.DatetimeIndex) -> dict[str, lis
     return out
 
 
+def water_air(hourly: pd.DataFrame, now: pd.Timestamp) -> dict | None:
+    """What the page needs to estimate the water at a clicked river or lake point (#492, stage 2; anypoint.js, waterAt):
+    the day, each cached cell's bridged 7-day air (water_temp.cell_air_7d, from the rain cache this build already reads:
+    no extra request), the river and lake curves, the months the model was tested in, and the curve-only route's error
+    measured in those months. None without the model; nothing here raises."""
+    from dipcast.model import water_temp
+    try:
+        model = water_temp.load()
+        if model is None:
+            return None
+        today = now.tz_convert("Europe/London").normalize().tz_localize(None)
+        return {"date": today.date().isoformat(), "cells": water_temp.cell_air_7d(model, hourly, today),
+                "curves": {k: list(model.curves[k]) for k in ("river", "lake")}, "months": sorted(model.months),
+                "typical_c": water_temp.AIR_CURVE_TYPICAL_C}
+    except Exception as e:  # noqa: BLE001 - the water beside the forecast must not stop the file
+        log.warning("any-point water air: %s", e)
+        return None
+
+
 def write_overflow_days(out: Path, ov: pd.DataFrame, ids: list[str], idv: str, past: int, now: pd.Timestamp,
                         probabilities, credits: dict | None = None, rain=any_point_rain) -> dict:
     """overflow_days.json. `probabilities(ov, days, rain)` is forecast.spill_probabilities with the
     model bound, the same call the spots use, given the rain from `rain(ov)`."""
     sub = ov.drop_duplicates("site_id").set_index("site_id").loc[ids].reset_index()
-    days = pd.date_range(now.floor("D") - pd.Timedelta(days=past), periods=past + DAYS_AHEAD + 1, freq="D")
+    # Calendar days, as the spots count them: 48 h back from the midnight after the clocks go back is 01:00
+    # on the repeated hour, which pandas cannot place, so no click-anywhere file was written from 25 Oct 2026.
+    days = day_grid(now, past, DAYS_AHEAD)
     hourly, rstats = rain(sub)
     if len(hourly):
         p, ok = probabilities(sub, days, hourly)
@@ -1123,6 +1242,7 @@ def write_overflow_days(out: Path, ov: pd.DataFrame, ids: list[str], idv: str, p
         "stale_rows": stale_rows, "last_running": last_running, "feed_updated": feed_updated,
         "rain_h": rain_h,
         "rain_48h": cell_rain_48h(hourly, days[past:]),
+        "water_air": water_air(hourly, now),   # a clicked river or lake's provisional water temperature (#492)
         "low": [int(i) for i in np.flatnonzero((sub.get("snap_confidence") == "low").to_numpy())],
         "assumptions": {"river_velocity_ms": river_velocity(None), "lake_velocity_ms": config.LAKE_VELOCITY_MS,
                         "t90_hours": config.T90_HOURS, "max_upstream_km": config.MAX_UPSTREAM_KM,

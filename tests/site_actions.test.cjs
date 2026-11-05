@@ -110,7 +110,7 @@ function pageContext(names, extra = {}) {
   vm.runInContext(pageDefs(names), ctx);
   return ctx;
 }
-const PAGE = ['esc', 'tone', 'headTone', 'rainSaid', 'answerParts', 'flowLine', 'ageMin', 'ago', 'issued', 'nextDay', 'yesterdayLine', 'answerWords',
+const PAGE = ['esc', 'tone', 'headTone', 'rainSaid', 'answerParts', 'flowLine', 'ageMin', 'ago', 'agoSpan', 'issued', 'nextDay', 'yesterdayLine', 'answerWords',
   'sinceTime', 'spillFor', 'overflowSaid', 'longSpillLine', 'coverWords', 'coverLine', 'answerAfter'];
 
 test('the answer puts the line under where the week goes, for today and for a picked day', () => {
@@ -122,17 +122,17 @@ test('the answer puts the line under where the week goes, for today and for a pi
   const s = week(['high', 'very high', 'low', 'low', 'low']);
   const h = words(s);
   // The spills set it, so the headline names them and the line says when (20 Oct 2026, levels.js HEAD_SCOPE).
-  assert.match(h, /<h2 class="big veryhigh" id="risk-headline">Very high risk from sewage spills<\/h2><p class="why">Tomorrow<\/p><p class="next">Low risk by Friday<\/p><p class="cover">All 3 overflows upstream report live\.<\/p><p class="issued">/);
+  assert.match(h, /<h2 class="big veryhigh" id="risk-headline">Very high risk from sewage spills<\/h2><div class="wn"><p class="why">Tomorrow<\/p><p class="next">Low risk by Friday<\/p><\/div><div class="ci"><p class="cover">All 3 overflows upstream report live, none spilling now\.<\/p><p class="issued">/);
   assert.doesNotMatch(h, /class="act"|class="scope"/);
   assert.match(after(s), /^<p class="act">Avoid swimming here tomorrow: choose a lower day or spot\.<\/p><p class="scope">/);
-  assert.match(words(s, DATES[0]), /<p class="next">Today, Wednesday 30 September<\/p><p class="cover">/);
+  assert.match(words(s, DATES[0]), /<p class="next">Today, Wednesday 30 September<\/p><\/div><div class="ci"><p class="cover">/);
   assert.match(after(s, DATES[0]), /^<p class="act">Better to choose a lower day or spot\. If you do swim, try not to swallow any water\.<\/p>/);
-  assert.match(words(s, DATES[3]), /<h2 class="big low"[^>]*>Low risk from sewage spills<\/h2><p class="next">Saturday 3 October<\/p><p class="issued">/);   // a later day: no live count
+  assert.match(words(s, DATES[3]), /<h2 class="big low"[^>]*>Low risk from sewage spills<\/h2><div class="wn"><p class="next">Saturday 3 October<\/p><\/div><div class="ci"><p class="issued">/);   // a later day: no live count
   assert.match(after(s, DATES[3]), /^<p class="act">Usual care: cover cuts/);
   // Under a plain level: the other risks, the rain, then the line.
   const clear = {...week(['low', 'low', 'low', 'low', 'low']), upstream_summary: {overflows: 0}};
   clear.days[0].rain_48h_mm = 12;
-  assert.match(words(clear), /<p class="why">Other risks apply: [^<]+<\/p><p class="next">12&nbsp;mm of rain in the last two days<\/p><p class="issued">/);
+  assert.match(words(clear), /<p class="why">Other risks apply: [^<]+<\/p><p class="next">12&nbsp;mm of rain in the last two days<\/p><\/div><div class="ci"><p class="issued">/);
   assert.equal(after(clear), '<p class="act">After heavy rain, wait a couple of days before swimming if you can.</p>');
   // Then what the level counts, once, under what to do; the issue time stays the answer's last line.
   assert.match(after(s), /<p class="act">[^<]+<\/p><p class="scope">This forecast counts [^<]+<\/p>$/);
@@ -140,7 +140,7 @@ test('the answer puts the line under where the week goes, for today and for a pi
   assert.doesNotMatch(after(clear), /class="scope"/);   // a plain level says it in its own line
   // A spot with no five days (a failed forecast) keeps what to do in the answer, and nothing under a week it has not got.
   const failed = {...s, error: 'forecast failed: open-meteo request failed', days: []};
-  assert.match(words(failed), /<p class="act">[^<]+<\/p><p class="issued">/);
+  assert.match(words(failed), /<p class="act">[^<]+<\/p><div class="ci"><p class="issued">/);
   assert.equal(after(failed), '');
 });
 
@@ -196,5 +196,5 @@ test('the embed card and the alerts file carry the line', () => {
   assert.match(h, /<p class="hl high">High risk today: sewage spills<\/p><p class="next">Low risk tomorrow<\/p><p class="act">Better to choose a lower day or spot\. If you do swim, try not to swallow any water\.<\/p>/);
   L.setToday('2026-09-30');   // the card sets the day from its data; put it back for the tests after
   const src = fs.readFileSync(path.join(__dirname, '../scripts/alerts.js'), 'utf8');
-  assert.match(src, /action: L\.levelAction\(s\)/);   // the file itself is built and checked in tests/test_site_pages.py
+  assert.match(src, /action: officialAction\(s\) \|\| L\.levelAction\(s\)/);   // the level's line unless a notice shows (site_official_consistency); the file itself is built and checked in tests/test_site_pages.py
 });

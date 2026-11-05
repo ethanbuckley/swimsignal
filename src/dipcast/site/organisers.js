@@ -13,8 +13,21 @@
 const Organisers = (() => {
   const R = typeof module === 'object' && module.exports ? require('./levels.js')
     : { ORDER, COVER, NO_FORECAST, NO_OVERFLOWS, NO_RIVER, OTHER_RISKS, setToday, today, rank, risk, level, dayHeadline, daily, ecoliBand, ecoliUntested, ECOLI_OFF_SAID, poorAdvice,
-      overflowNames, overflowWhere, companyName, allUpstream, tooFarSaid };   // levels.js's globals
+      overflowNames, overflowWhere, companyName, allUpstream, tooFarSaid, WEIGHT_SAID };   // levels.js's globals
   const PAGE_ID = /^[A-Za-z0-9_-]+$/;   // the app and build_site.py use the same rule
+  // spotdate.js: the calendar file and the alerts for a date, shared with a plan's outing (outing.js). Asked
+  // for when used, so the sites view and the decision record, which load this file for its words, need not load it.
+  const SD = () => typeof module === 'object' && module.exports ? require('./spotdate.js') : SpotDate;
+  // Reviewed official advice, in the compact form the app's rows use (eatoday.js, eaTodayBrief), above the
+  // day's level and apart from it. Without eatoday.js loaded, none.
+  const brief = typeof module === 'object' && module.exports ? require('./eatoday.js').eaTodayBrief
+    : typeof eaTodayBrief === 'function' ? eaTodayBrief : () => '';
+  // "Follow it first" only for a notice that restricts swimming (eatoday.js, eaTodayFirst); an older eatoday.js, read it.
+  const first = typeof module === 'object' && module.exports ? require('./eatoday.js').eaTodayFirst
+    : typeof eaTodayFirst === 'function' ? eaTodayFirst : () => 'Read the official notice first';
+  const label = typeof module === 'object' && module.exports ? require('./eatoday.js').eaTodayLabel
+    : typeof eaTodayLabel === 'function' ? eaTodayLabel : () => 'Official notice';   // "Official advice" only where it restricts swimming
+  const official = s => { const o = brief(s); return o ? `<p class="o-tag"><b>${label(s)}:</b> ${esc(o)}. Not part of the level below; ${first(s).toLowerCase()}.</p>` : ''; };
   const DAYS = 5, AHEAD = DAYS - 1;      // the forecast's days: the day it is issued for and the four after it
   const STALE_MIN = 8 * 60;              // the app's "Stale" notice waits as long (index.html, STALE_MIN)
   const ISO = /^\d{4}-\d{2}-\d{2}$/;
@@ -33,19 +46,20 @@ const Organisers = (() => {
 
   // How many of the overflows upstream are expected to spill on a day, as a clause, and how good a
   // forecast this far ahead has been: index.html's spilling() and howSure(), word for word, so that a
-  // day reads here as it does in the spot's own day detail. tests/site_organisers.test.cjs checks
-  // that index.html still has the same words.
+  // day reads here as it does in the spot's own day detail. This record gives howSure()'s figure in
+  // view; the spot's page puts it in words and folds the figure (#504). tests/site_organisers.test.cjs
+  // checks that index.html still has the same words.
   const spilling = (x, total) => { const e = x.expected_spilling_overflows; if (nil(e)) return '';
     const k = Math.round(e);
     return k >= total ? (total === 1 ? 'the overflow upstream is expected to spill' : `all ${total} overflows upstream are expected to spill`)
       : k >= 1 ? `about ${k} of the ${total} overflows upstream ${k === 1 ? 'is' : 'are'} expected to spill`
       : R.ORDER[x.label] ? 'a spill from a nearby overflow upstream is possible'
-      : `under one spill is expected from the ${total === 1 ? 'overflow' : `${total} overflows`} upstream`; };
+      : `a spill from ${total === 1 ? 'the overflow' : `one of the ${total} overflows`} upstream is possible, not expected`; };
   const r5 = x => Math.round(x * 20) * 5 + '%';
   const howSure = (k, j, water) => `In tests on past years, spill forecasts this far ahead were about ${r5(k.spill[j])} as good as same-day ones`
     + (water ? `, and water-quality ones about ${r5(k.water[j])}` : '') + '.';
-  // An overflow's chance of a spill on day j, and the three most likely to affect the spot that day
-  // (chance times reach), as index.html's dayOverflows() picks them.
+  // An overflow's chance of a spill on day j, and the three that count most that day (chance times
+  // model weight), as index.html's dayOverflows() picks them.
   const spillOn = (c, j) => c.p_spill_days ? c.p_spill_days[j] : j === 0 ? c.p_spill_today : j === 1 ? c.p_spill_tomorrow : undefined;
   const topOn = (s, j) => (s.contributors || []).map(c => [c, spillOn(c, j)]).filter(([c, p]) => !nil(p) && c.weight * p >= 0.001)
     .sort((a, b) => b[0].weight * b[1] - a[0].weight * a[1]).slice(0, 3);
@@ -65,6 +79,8 @@ const Organisers = (() => {
   // The Environment Agency's rating, on the event day: advice against bathing is named as levels.js
   // words it for that day (poorAdvice), in or out of the bathing season.
   function rating(s, iso) {
+    const sr = (s.sepa || {}).rating;
+    if (s.source === 'sepa') return row('SEPA rating', sr?.value ? `${esc(sr.value)}, for ${esc(sr.year)}. SEPA's page has its samples and any advice against bathing, which SwimSignal does not include.` : 'A SEPA designated bathing water; no rating in this update.');
     const cl = s.classification; if (!cl) return s.source === 'designated' ? '' : row('Bathing water', 'Not a designated bathing water, so the Environment Agency does not test it for bathing.');
     const page = cl.url ? ` <a href="${esc(cl.url)}">The Environment Agency's page</a> has its samples and any advice against bathing after pollution or algae, which SwimSignal does not include.` : '';
     if (!cl.class) return row('Environment Agency rating', `A designated bathing water too new to have a rating.${page}`);
@@ -83,7 +99,11 @@ const Organisers = (() => {
       if (nil(x.risk)) rows.push(row('Sewage spills upstream', 'The rainfall forecast for this day has not arrived, so there is no figure.'));
       else { const i = x.risk * 100, top = topOn(s, w.j);
         rows.push(row('Sewage spills upstream', `${cap(x.label)} risk: ${spilling(x, total)}. Sewage spill risk <b>${i > 0 && i < 0.5 ? 'under 1' : Math.round(i)}</b> of 100, after travel time, die-off and dilution.`
-          + (top.length ? ` Most likely to reach the spot: ${top.map(([c, p]) => `${esc(R.overflowNames(c).plain)} (spill chance ${pct(p)}, reach ${pct(c.weight)})`).join('; ')}.` : ''))); }
+          + (top.length ? ` Counting most that day: ${top.map(([c, p]) => `${esc(R.overflowNames(c).plain)} (spill chance ${pct(p)}, weight ${pct(c.weight)})`).join('; ')}.` : ''))); }
+      // What the overflows upstream are doing at the issue time, whatever day is picked: a release can change things
+      // quickly, and its water takes hours to days to arrive (30 Oct 2026, from an event organiser's comment). The ones
+      // not reporting are said as unknown, never as dry; the forecast's own issue time is under the rows.
+      if (total) rows.push(row('Spills at the last update', orgNow(s.now || {}, total)));
       const band = R.ecoliBand(s, x);
       // Out of season no figure: the words the spot's page gives in its place (levels.js, ECOLI_OFF).
       if (band && R.ecoliUntested(x)) rows.push(row('Water quality', esc(R.ECOLI_OFF_SAID)));
@@ -130,20 +150,12 @@ const Organisers = (() => {
       + '<p class="small muted screen-only">A calendar file for Apple Calendar, Google Calendar or Outlook, made in this browser: nothing is sent.</p>';
   }
 
-  // The dates as an iCalendar file (RFC 5545): all-day events, the tests that have not passed, the day
-  // the forecast first covers the event, and the event. Lines end in CRLF and fold at 75 octets; text
-  // escapes \ ; , and new lines. A UID per event and spot, so importing the file again updates the
-  // calendar's copies rather than adding more.
-  const icsEsc = v => String(v).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n');
-  const octets = ch => { const c = ch.codePointAt(0); return c < 0x80 ? 1 : c < 0x800 ? 2 : c < 0x10000 ? 3 : 4; };
-  function icsFold(line) {
-    const out = []; let cur = '', n = 0;
-    for (const ch of line) { const b = octets(ch); if (n + b > 75) { out.push(cur); cur = ' '; n = 1; } cur += ch; n += b; }
-    return [...out, cur].join('\r\n');
-  }
-  const icsDay = iso => iso.replace(/-/g, '');
-  const stamp = ms => new Date(ms).toISOString().replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z');
+  // The dates as an iCalendar file (RFC 5545; the lines, folding and escapes are spotdate.js's): all-day
+  // events, the tests that have not passed, the day the forecast first covers the event, and the event. A
+  // UID per event and spot, so importing the file again updates the calendar's copies rather than adding more.
+  const icsFold = line => SD().icsFold(line);
   function ics(s, iso, base, now = Date.now()) {
+    const { icsEsc, icsDay, icsStamp: stamp, icsCalendar } = SD();
     const t = R.today(), link = `${base}organisers.html${toHash(s.id, iso)}`, host = new URL(base).hostname;
     const say = {
       test: `${TESTS_SAY} Ask a UKAS-accredited laboratory what is worth doing. The event is on ${dateWords(iso)}.`,
@@ -152,30 +164,27 @@ const Organisers = (() => {
     const events = eventDates(iso).filter(d => d.date >= t).map(d => ['BEGIN:VEVENT', `UID:${iso}-${d.kind}-${s.id}@${host}`, `DTSTAMP:${stamp(now)}`,
       `DTSTART;VALUE=DATE:${icsDay(d.date)}`, `DTEND;VALUE=DATE:${icsDay(addDays(d.date, 1))}`, `SUMMARY:${icsEsc(`${d.summary}: ${s.name}`)}`,
       `DESCRIPTION:${icsEsc(`${say[d.kind.replace(/\d$/, '')]} ${link}`)}`, `URL:${link}`, 'TRANSP:TRANSPARENT', 'END:VEVENT']);
-    return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//SwimSignal//Event dates//EN', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', ...events.flat(), 'END:VCALENDAR']
-      .map(icsFold).join('\r\n') + '\r\n';
+    return icsCalendar('-//SwimSignal//Event dates//EN', events);
   }
 
   // ------------------------------------------------------------------ alerts for the date
   // "Alert me about this date" (push/README.md, "Alerts for a date"): the push Worker tells this
-  // browser when the day's forecast first appears and again each time its level changes. Shown only
+  // browser when the day's forecast first appears and again each time its level or official notice changes. Shown only
   // where the site's alerts are on and the build says the Worker takes dates (spots.json's
   // push.dates, set by the repository variable DIPCAST_PUSH_DATES),
   // and only in a browser that has alerts on already: turning them on, and its consent, is the Saved
-  // page's. The page sends the whole list each time, as the app sends its saved spots, and keeps it
-  // here to know what is on; the Worker keeps the saved spots and the weekly note as they were.
-  const DATES_KEY = 'dipcast.pushdates', MAX_DATES = 10;   // the Worker's cap (push/src/shared.js)
-  const dateAlertsOn = data => !!(data.push && data.push.url && data.push.dates === true);
-  // The list kept for this push address, without dates that have passed.
-  const keptDates = (raw, endpoint, t) => { let v = null; try { v = JSON.parse(raw || 'null'); } catch (e) { /* none */ }
-    return v && v.endpoint === endpoint && Array.isArray(v.dates) ? v.dates.filter(d => d && typeof d.spot === 'string' && realDate(d.date) && d.date >= t) : []; };
-  const hasDate = (list, spot, date) => list.some(d => d.spot === spot && d.date === date);
-  const withDate = (list, spot, date, on) => on ? (hasDate(list, spot, date) ? list : [...list, { spot, date }]) : list.filter(d => !(d.spot === spot && d.date === date));
+  // page's. The list, its cap, what is kept in this browser and the request are spotdate.js's, which a
+  // plan's outing (outing.js) shares, so the two add to and stop from one list of up to MAX_DATES.
+  const MAX_DATES = 10;   // SpotDate.MAX_DATES (the Worker's cap, push/src/dates.js), a test checks they agree
+  const dateAlertsOn = data => SD().dateAlertsOn(data);
+  const keptDates = (raw, endpoint, t) => SD().keptDates(raw, endpoint, t);
+  const hasDate = (list, spot, date) => SD().hasDate(list, spot, date);
+  const withDate = (list, spot, date, on) => SD().withDate(list, spot, date, on);
   // What the control says: sub, whether this browser has alerts on; list, the dates it has asked for.
   function dateAlert(sub, list, spot, iso, from) { return '<h3 id="alert-h">Alerts for this date</h3>' + dateAlertBody(sub, list, spot, iso, from); }
   function dateAlertBody(sub, list, spot, iso, from) {
-    const what = from ? `A notification when the forecast for this day first appears, on ${dateWords(from)}, and again each time its level changes.`
-      : 'A notification each time this day\'s level changes.';
+    const what = from ? `A notification when the forecast for this day first appears, on ${dateWords(from)}, and again each time its level or official notice changes.`
+      : 'A notification each time this day\'s level or official notice changes.';
     if (!sub) return '<p class="small">First turn on alerts in this browser, from the <a href="saved/">Saved page</a>.</p>';
     if (hasDate(list, spot, iso)) return `<p class="ev-say"><b>Alerts are on for this date.</b> ${what}</p>`
       + '<p class="actions"><button type="button" class="btn" id="date-alert-btn" data-on="1">Stop alerts for this date</button></p>';
@@ -206,6 +215,7 @@ const Organisers = (() => {
     const issued = new Date(data.generated_at).toLocaleString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
     let h = `<h3 id="day-h">${w.state === 'later' ? dateWords(iso) : longDate(iso)}</h3>`;
     if (w.state === 'past') return h + '<p>That day has passed. Pick the day of your event.</p>';
+    h += official(s);
     if (w.state === 'later') return h + later(s, iso, w.from) + eventWeek(s, iso) + alertSlot(data, w);
     if (age > STALE_MIN) h += `<p class="notice" role="alert"><b>Stale.</b> This forecast is ${ago(age)} old: the automatic update has not run since. Treat it as out of date.</p>`;
     return h + within(s, iso, w, data)
@@ -220,6 +230,8 @@ const Organisers = (() => {
   // one from data/upstream/<id>.json (build_site.write_upstream) and passes them as `full`: an array,
   // or 'loading' or 'failed' while it has not got them. An event weeks away is better ordered by reach
   // alone, which does not change with the weather.
+  // How many overflows the table shows before the fold, as the overflow history page does (profile.SHOWN).
+  const OVERFLOWS_SHOWN = 10;
   const listOf = (s, full) => Array.isArray(full) && full.length ? full : (s.contributors || []);
   // Each overflow's plain name first (levels.js, plainName: "Grassington sewage works overflow"), then the
   // company's, which is the one to look it up by: under it in the table, beside it in the CSV.
@@ -242,24 +254,31 @@ const Organisers = (() => {
     if (s.error) return h + '<p>This spot has no forecast in this update, so its overflows are not listed.</p>';
     if (!total) return h + `<p>No monitored storm overflow is within ${km} km upstream along the river network.</p>`;
     h += `<p>${total === 1 ? 'One monitored storm overflow is' : `${total} monitored storm overflows are`} within ${km} km upstream along the river network`
-      + (u.without_live_feed ? `: ${u.with_live_feed} report their status live, and ${u.without_live_feed} ${u.without_live_feed === 1 ? 'has' : 'have'} no live feed, so SwimSignal forecasts ${u.without_live_feed === 1 ? 'it' : 'them'} from rain and their yearly record alone`
-        : total === 1 ? ', with a live feed' : ', all with a live feed') + '.'
+      // with_live_feed is what reported live when the forecast was made (forecast.py, monitored_upstream), so the rest
+      // includes monitors that were offline in a feed: Henley's one "had no live feed" here while its history page
+      // and the spot's page said it was in Thames Water's feed and gave no reading (5 Nov 2026).
+      + (u.without_live_feed ? `: at the last update ${u.with_live_feed} reported ${u.with_live_feed === 1 ? 'its' : 'their'} status live and ${u.without_live_feed} gave no live reading, so SwimSignal forecasts ${u.without_live_feed === 1 ? 'it' : 'them'} from rain and ${u.without_live_feed === 1 ? 'its' : 'their'} yearly record alone`
+        : total === 1 ? ', reporting live at the last update' : ', all reporting live at the last update') + '.'
       + (u.max_travel_h ? ` Sewage from the farthest takes ${hoursAway(u.max_travel_h)} to arrive.` : '') + (R.tooFarSaid(s) ? ' ' + esc(R.tooFarSaid(s)) : '') + '</p>';
     if (list.length < all) h += full === 'loading' ? `<p>The table lists the ${list.length} that matter most in the current forecast while the other ${all - list.length} load.</p>`
       : `<p>The table lists the ${list.length} that matter most in the current forecast: the full list of ${all} could not be loaded. Try again later.</p>`;
     const cell = (l, v, cls = '') => `<td${cls ? ` class="${cls}"` : ''} data-l="${l}">${v}</td>`;
-    h += '<div class="tw"><table class="ovt"><thead><tr><th scope="col">Overflow</th><th scope="col">Company</th><th scope="col">Discharges into</th>'
-      + '<th scope="col" class="num">Distance</th><th scope="col" class="num">Travel</th><th scope="col" class="num">Reach</th>'
+    const table = rows => '<div class="tw"><table class="ovt"><thead><tr><th scope="col">Overflow</th><th scope="col">Company</th><th scope="col">Discharges into</th>'
+      + '<th scope="col" class="num">Distance</th><th scope="col" class="num">Travel</th><th scope="col" class="num">Weight</th>'
       + '<th scope="col" class="num">Spills a year</th><th scope="col" class="num">Hours spilling</th><th scope="col">Live feed</th></tr></thead><tbody>'
-      + list.map(o => `<tr><th scope="row" class="ov">${brk(o.plain)}${o.own ? ` <span class="own">${brk(o.own)}</span>` : ''}</th>${cell('Company', esc(o.company))}${cell('Into', brk(o.into))}`
+      + rows.map(o => `<tr><th scope="row" class="ov">${brk(o.plain)}${o.own ? ` <span class="own">${brk(o.own)}</span>` : ''}</th>${cell('Company', esc(o.company))}${cell('Into', brk(o.into))}`
         + cell('Distance', `${num(o.km, 1)} km${o.in_lake ? ' across the lake' : ''}`, 'num') + cell('Travel', o.travel_h < 1 ? 'under 1 h' : `${num(o.travel_h)} h`, 'num')
-        + cell('Reach', o.reach > 0 && o.reach < 0.005 ? '&lt;1%' : pct(o.reach), 'num')   // "under 1%" widened the column
+        + cell('Weight', o.reach > 0 && o.reach < 0.005 ? '&lt;1%' : pct(o.reach), 'num')   // "under 1%" widened the column
         + cell('Spills a year', num(o.spills), 'num') + cell('Hours spilling', num(o.spill_hours), 'num')
         + cell('Live feed', o.live ? 'Yes' : 'No') + '</tr>').join('') + '</tbody></table></div>';
+    // The ten with the most weight, then the rest in a fold (5 Nov 2026): a long table pushed the checklist out of
+    // reach on a phone. Opening the fold shows them all, in the same order.
+    h += table(list.slice(0, OVERFLOWS_SHOWN));
+    if (list.length > OVERFLOWS_SHOWN) h += `<details class="fold"><summary>The other ${list.length - OVERFLOWS_SHOWN} overflows</summary>${table(list.slice(OVERFLOWS_SHOWN))}</details>`;
     if (PAGE_ID.test(s.id)) h += `<p><a href="spot/${esc(s.id)}/profile/">Overflow history, 2021 to 2025</a>: each overflow's spills and spill hours a year.</p>`;   // build_site.write_profiles
     return h + '<p class="small muted"><b>Distance</b>: upstream along the river network, through any lake on the way; "across the lake" for one that drains into the same lake. '
       + '<b>Travel</b>: how long sewage takes to arrive, at the model\'s river speed, and across a lake at its slower lake speed. '
-      + '<b>Reach</b>: the share of a spill\'s bacteria the model expects to arrive here, after die-off over the travel time and dilution by the size of the river network upstream. An estimate, not a measured chance. '
+      + `<b>Weight</b>: ${R.WEIGHT_SAID.replace(/^Weight: /, '')} `
       + '<b>Spills a year</b>: its long-term average, from the Environment Agency\'s annual returns. <b>Hours spilling</b>: the total in its latest annual return. '
       + '<b>Live feed</b>: whether its water company reports its status as it happens.</p>';
   }
@@ -280,7 +299,9 @@ const Organisers = (() => {
       'Columns: site_id and site_name, the water company\'s id and name for the overflow; plain_name, SwimSignal\'s plain words for that name;',
       'company; receiving_watercourse, as the company names it;',
       'km_upstream, along the river network and through any lake, or across the lake for one in the same lake;',
-      'travel_hours, at the model\'s river speed and its slower lake speed; reach, 0 to 1, the chance a spill there affects the spot;',
+      'travel_hours, at the model\'s river speed and its slower lake speed; reach (the column keeps its name), 0 to 1, the model\'s relative',
+      'contribution weight for the spot, from its travel time, die-off and dilution assumptions: neither a measured bacterial concentration',
+      'nor a calibrated chance of contamination;',
       'spills_a_year, its long-term average from the Environment Agency\'s annual returns; spill_hours_latest_return, the hours it spilled in its',
       'latest annual return; live_feed, 1 if its water company reports its status live; lat, lon.',
       'Lines that start with # are notes: skip them when reading (pandas: comment=\'#\'; R: comment.char=\'#\').',
@@ -297,7 +318,7 @@ const Organisers = (() => {
   function view(s, iso, data, base, now = Date.now(), full) {
     R.setToday(String(data.generated_at).slice(0, 10));
     const loc = s.location || {}, page = spotHref(s.id), own = PAGE_ID.test(s.id);
-    const meta = [cap(s.kind || 'river'), s.source === 'designated' ? 'Environment Agency designated bathing water' : null, loc.watercourse ? esc(loc.watercourse) : null].filter(Boolean);
+    const meta = [cap(s.kind || 'river'), s.source === 'designated' ? 'Environment Agency designated bathing water' : s.source === 'sepa' ? 'SEPA designated bathing water' : null, loc.watercourse ? esc(loc.watercourse) : null].filter(Boolean);
     const links = [`<a href="${esc(page)}">The spot's forecast</a>`, ...(own ? [`<a href="spot/${esc(s.id)}/sign/">A sign to print</a>`] : []),
       `<a href="embed.html?spot=${esc(encodeURIComponent(s.id))}&amp;screen">A live sign for a screen</a>`];
     const total = (s.upstream_summary || {}).overflows || 0, n = (s.contributors || []).length;
@@ -327,7 +348,7 @@ const Organisers = (() => {
     let sub = null, mem = null;
     try { sub = await pushSubNow(); } catch (e) { sub = null; }
     if (!el.isConnected) return;   // the page was drawn again meanwhile
-    const read = () => { if (mem) return mem; try { return keptDates(localStorage.getItem(DATES_KEY), sub && sub.endpoint, t); } catch (e) { return []; } };
+    const read = () => { if (mem) return mem; try { return keptDates(localStorage.getItem(SD().DATES_KEY), sub && sub.endpoint, t); } catch (e) { return []; } };
     const paint = () => {
       el.innerHTML = dateAlert(sub, read(), s.id, iso, from);
       const b = document.getElementById('date-alert-btn'); if (!b) return;
@@ -335,11 +356,8 @@ const Organisers = (() => {
         const on = !b.dataset.on, dates = withDate(read(), s.id, iso, on);
         b.disabled = true; msg.textContent = '';
         try {
-          const res = await fetch(data.push.url + 'subscribe', { method: 'POST', signal: AbortSignal.timeout(15000), headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ subscription: sub.toJSON(), dates }) }).catch(() => { throw new Error('the alert service could not be reached. Check your connection and try again'); });
-          if (!res.ok) { const why = (await res.text().catch(() => '')).slice(0, 120); throw new Error(res.status === 400 && why ? why : `the alert service answered ${res.status}`); }
-          mem = dates;
-          try { localStorage.setItem(DATES_KEY, JSON.stringify({ endpoint: sub.endpoint, dates })); } catch (e) { /* kept in memory for this page */ }
+          await SD().sendDates(data.push.url, sub, dates);
+          mem = dates; SD().storeDates(sub, dates);
           paint(); msg.textContent = on ? 'Alerts are on for this date.' : 'Alerts for this date are off.';
         } catch (e) { b.disabled = false; msg.textContent = `Could not change alerts for this date: ${e.message}.`; }
       });
@@ -408,7 +426,16 @@ const Organisers = (() => {
     draw();
   }
 
-  return { when, view, forecast, overflows, overflowRows, csv, fromHash, toHash, spilling, howSure, start, STALE_MIN,
+  // The overflows upstream at the forecast's issue time, from the live feeds: how many of those reporting are discharging,
+  // and how many give no reading, which could be spilling unseen. What a monitor reports is under "Not known" on the spot's page.
+  function orgNow(now, total) {
+    const mon = Math.min(total, now.monitored_upstream ?? total), k = Math.min(mon, now.discharging_upstream || 0), off = total - mon;
+    if (!mon) return `None of the ${total} report live, so whether they are spilling is not known.`;
+    return `${k ? `<b>${k}</b> of the ${mon} that report live ${k === 1 ? 'was' : 'were'} discharging` : `None of the ${mon} that report live was discharging`}`
+      + `${off ? `; ${off} ${off === 1 ? 'gives' : 'give'} no live reading, so could be spilling unseen` : ''}. A spill's water takes hours to days to arrive, so look again the evening before and on the morning.`;
+  }
+
+  return { orgNow, when, view, forecast, overflows, overflowRows, csv, fromHash, toHash, spilling, howSure, start, STALE_MIN,
     realDate, monthBefore, eventDates, dateWords, ics, icsFold, dateAlert, keptDates, withDate, MAX_DATES };
 })();
 

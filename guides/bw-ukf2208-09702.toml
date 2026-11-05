@@ -1,6 +1,6 @@
-# Rutland Water, Sykes Lane. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026.
+# Rutland Water, Sykes Lane. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026; source passages reread for each fact on 26 October 2026 (private audit); one fact reworded to match its source, and Anglian Water's low-water notice added.
 # Prices and hours change by season: recheck every confirmed fact before changing "checked".
-checked = 2026-10-03
+checked = 2026-10-26
 how = "desk"
 
 [[fact]]
@@ -32,6 +32,13 @@ source = "https://anglianwaterparks.co.uk/rutland-water-park/other-activities/be
 source_name = "Anglian Water"
 
 [[fact]]
+topic = "entry"
+text = "Anglian Water's notice, read 26 Oct 2026: low water has left soft mud at the water's edge, and it asks visitors not to go onto exposed parts of the reservoir bed, inlets or water's edge. Check the page before you go."
+status = "confirmed"
+source = "https://anglianwaterparks.co.uk/rutland-water-park/other-activities/beach"
+source_name = "Anglian Water"
+
+[[fact]]
 topic = "hours"
 text = "The 2026 beach season ran from 23 May and closed on 17 September. Stay out of the water outside the opening periods."
 status = "confirmed"
@@ -47,7 +54,7 @@ source_name = "Anglian Water"
 
 [[fact]]
 topic = "rules"
-text = "Sykes Lane beach is the only place at Rutland Water where swimming is permitted."
+text = "Anglian Water says swimming at Rutland Water is only permitted in designated areas and during events it has consented to. The permitted swimming area is the beach at Sykes Lane."
 status = "confirmed"
 source = "https://anglianwaterparks.co.uk/faqs"
 source_name = "Anglian Water"

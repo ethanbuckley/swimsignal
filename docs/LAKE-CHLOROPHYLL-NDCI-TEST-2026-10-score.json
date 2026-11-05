@@ -1,0 +1,1432 @@
+{
+ "values": {
+  "measured": 839,
+  "censored": 6,
+  "above": 10,
+  "dropped": 0
+ },
+ "samples": 855,
+ "points_in_test": [
+  "AN-ANT160",
+  "AN-BUR170A",
+  "AN-BUR300",
+  "AN-FIL010",
+  "AN-FRT020E",
+  "AN-ORM010",
+  "AN-RAVENWFD",
+  "AN-ROL010",
+  "AN-ROL020",
+  "AN-SWANHWFD",
+  "AN-THR020",
+  "AN-THR030A",
+  "AN-THR061",
+  "AN-TMNRSFFD",
+  "MD-27942900",
+  "MD-28548100",
+  "MD-47301190",
+  "NE-40000385",
+  "NE-40000443",
+  "NE-44100119",
+  "NE-45100109",
+  "NW-88004556",
+  "NW-88005133",
+  "NW-88010011",
+  "NW-88010015",
+  "NW-88010023",
+  "NW-88010024",
+  "NW-88010089",
+  "NW-88010126",
+  "NW-88016103",
+  "NW-88016157",
+  "NW-88021658",
+  "NW-88022930",
+  "NW-88023689",
+  "NW-LSN0028",
+  "SO-E0004611",
+  "SW-50900003",
+  "TH-PGWL0034"
+ ],
+ "points_out": [
+  "AN-UPT010",
+  "NW-88010013"
+ ],
+ "samples_at_points_in_test": 813,
+ "samples_in_2022": 120,
+ "pairing": [
+  {
+   "wqa_point": "AN-ANT160",
+   "season": 2021,
+   "samples": 5,
+   "with_reading": 1
+  },
+  {
+   "wqa_point": "AN-ANT160",
+   "season": 2022,
+   "samples": 3,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "AN-ANT160",
+   "season": 2023,
+   "samples": 4,
+   "with_reading": 1
+  },
+  {
+   "wqa_point": "AN-ANT160",
+   "season": 2024,
+   "samples": 5,
+   "with_reading": 1
+  },
+  {
+   "wqa_point": "AN-ANT160",
+   "season": 2025,
+   "samples": 3,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "AN-ANT160",
+   "season": 2026,
+   "samples": 5,
+   "with_reading": 4
+  },
+  {
+   "wqa_point": "AN-BUR170A",
+   "season": 2021,
+   "samples": 5,
+   "with_reading": 1
+  },
+  {
+   "wqa_point": "AN-BUR170A",
+   "season": 2022,
+   "samples": 4,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "AN-BUR170A",
+   "season": 2023,
+   "samples": 4,
+   "with_reading": 2
+  },
+  {
+   "wqa_point": "AN-BUR170A",
+   "season": 2024,
+   "samples": 4,
+   "with_reading": 2
+  },
+  {
+   "wqa_point": "AN-BUR170A",
+   "season": 2025,
+   "samples": 3,
+   "with_reading": 1
+  },
+  {
+   "wqa_point": "AN-BUR170A",
+   "season": 2026,
+   "samples": 4,
+   "with_reading": 1
+  },
+  {
+   "wqa_point": "AN-BUR300",
+   "season": 2021,
+   "samples": 5,
+   "with_reading": 1
+  },
+  {
+   "wqa_point": "AN-BUR300",
+   "season": 2022,
+   "samples": 4,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "AN-BUR300",
+   "season": 2023,
+   "samples": 3,
+   "with_reading": 2
+  },
+  {
+   "wqa_point": "AN-BUR300",
+   "season": 2024,
+   "samples": 5,
+   "with_reading": 3
+  },
+  {
+   "wqa_point": "AN-BUR300",
+   "season": 2025,
+   "samples": 4,
+   "with_reading": 2
+  },
+  {
+   "wqa_point": "AN-BUR300",
+   "season": 2026,
+   "samples": 3,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "AN-FIL010",
+   "season": 2021,
+   "samples": 3,
+   "with_reading": 1
+  },
+  {
+   "wqa_point": "AN-FIL010",
+   "season": 2022,
+   "samples": 4,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "AN-FIL010",
+   "season": 2023,
+   "samples": 3,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "AN-FIL010",
+   "season": 2024,
+   "samples": 4,
+   "with_reading": 2
+  },
+  {
+   "wqa_point": "AN-FIL010",
+   "season": 2025,
+   "samples": 4,
+   "with_reading": 1
+  },
+  {
+   "wqa_point": "AN-FIL010",
+   "season": 2026,
+   "samples": 4,
+   "with_reading": 4
+  },
+  {
+   "wqa_point": "AN-FRT020E",
+   "season": 2023,
+   "samples": 3,
+   "with_reading": 1
+  },
+  {
+   "wqa_point": "AN-FRT020E",
+   "season": 2024,
+   "samples": 5,
+   "with_reading": 1
+  },
+  {
+   "wqa_point": "AN-FRT020E",
+   "season": 2025,
+   "samples": 5,
+   "with_reading": 2
+  },
+  {
+   "wqa_point": "AN-FRT020E",
+   "season": 2026,
+   "samples": 4,
+   "with_reading": 2
+  },
+  {
+   "wqa_point": "AN-ORM010",
+   "season": 2021,
+   "samples": 3,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "AN-ORM010",
+   "season": 2022,
+   "samples": 5,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "AN-ORM010",
+   "season": 2023,
+   "samples": 3,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "AN-ORM010",
+   "season": 2024,
+   "samples": 4,
+   "with_reading": 2
+  },
+  {
+   "wqa_point": "AN-ORM010",
+   "season": 2025,
+   "samples": 4,
+   "with_reading": 1
+  },
+  {
+   "wqa_point": "AN-ORM010",
+   "season": 2026,
+   "samples": 5,
+   "with_reading": 4
+  },
+  {
+   "wqa_point": "AN-RAVENWFD",
+   "season": 2024,
+   "samples": 4,
+   "with_reading": 2
+  },
+  {
+   "wqa_point": "AN-RAVENWFD",
+   "season": 2025,
+   "samples": 5,
+   "with_reading": 3
+  },
+  {
+   "wqa_point": "AN-RAVENWFD",
+   "season": 2026,
+   "samples": 4,
+   "with_reading": 3
+  },
+  {
+   "wqa_point": "AN-ROL010",
+   "season": 2021,
+   "samples": 3,
+   "with_reading": 1
+  },
+  {
+   "wqa_point": "AN-ROL010",
+   "season": 2022,
+   "samples": 5,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "AN-ROL010",
+   "season": 2023,
+   "samples": 4,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "AN-ROL010",
+   "season": 2024,
+   "samples": 4,
+   "with_reading": 2
+  },
+  {
+   "wqa_point": "AN-ROL010",
+   "season": 2025,
+   "samples": 4,
+   "with_reading": 1
+  },
+  {
+   "wqa_point": "AN-ROL010",
+   "season": 2026,
+   "samples": 5,
+   "with_reading": 4
+  },
+  {
+   "wqa_point": "AN-ROL020",
+   "season": 2021,
+   "samples": 3,
+   "with_reading": 1
+  },
+  {
+   "wqa_point": "AN-ROL020",
+   "season": 2022,
+   "samples": 5,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "AN-ROL020",
+   "season": 2023,
+   "samples": 4,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "AN-ROL020",
+   "season": 2024,
+   "samples": 4,
+   "with_reading": 2
+  },
+  {
+   "wqa_point": "AN-ROL020",
+   "season": 2025,
+   "samples": 4,
+   "with_reading": 1
+  },
+  {
+   "wqa_point": "AN-ROL020",
+   "season": 2026,
+   "samples": 4,
+   "with_reading": 4
+  },
+  {
+   "wqa_point": "AN-SWANHWFD",
+   "season": 2022,
+   "samples": 5,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "AN-SWANHWFD",
+   "season": 2024,
+   "samples": 4,
+   "with_reading": 1
+  },
+  {
+   "wqa_point": "AN-SWANHWFD",
+   "season": 2025,
+   "samples": 4,
+   "with_reading": 1
+  },
+  {
+   "wqa_point": "AN-SWANHWFD",
+   "season": 2026,
+   "samples": 5,
+   "with_reading": 2
+  },
+  {
+   "wqa_point": "AN-THR020",
+   "season": 2021,
+   "samples": 5,
+   "with_reading": 1
+  },
+  {
+   "wqa_point": "AN-THR020",
+   "season": 2022,
+   "samples": 3,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "AN-THR020",
+   "season": 2023,
+   "samples": 5,
+   "with_reading": 1
+  },
+  {
+   "wqa_point": "AN-THR020",
+   "season": 2024,
+   "samples": 4,
+   "with_reading": 2
+  },
+  {
+   "wqa_point": "AN-THR020",
+   "season": 2025,
+   "samples": 4,
+   "with_reading": 2
+  },
+  {
+   "wqa_point": "AN-THR020",
+   "season": 2026,
+   "samples": 4,
+   "with_reading": 2
+  },
+  {
+   "wqa_point": "AN-THR030A",
+   "season": 2021,
+   "samples": 6,
+   "with_reading": 1
+  },
+  {
+   "wqa_point": "AN-THR030A",
+   "season": 2022,
+   "samples": 3,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "AN-THR030A",
+   "season": 2023,
+   "samples": 5,
+   "with_reading": 2
+  },
+  {
+   "wqa_point": "AN-THR030A",
+   "season": 2024,
+   "samples": 5,
+   "with_reading": 2
+  },
+  {
+   "wqa_point": "AN-THR030A",
+   "season": 2025,
+   "samples": 4,
+   "with_reading": 1
+  },
+  {
+   "wqa_point": "AN-THR030A",
+   "season": 2026,
+   "samples": 4,
+   "with_reading": 2
+  },
+  {
+   "wqa_point": "AN-THR061",
+   "season": 2021,
+   "samples": 5,
+   "with_reading": 1
+  },
+  {
+   "wqa_point": "AN-THR061",
+   "season": 2022,
+   "samples": 3,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "AN-THR061",
+   "season": 2023,
+   "samples": 6,
+   "with_reading": 1
+  },
+  {
+   "wqa_point": "AN-THR061",
+   "season": 2024,
+   "samples": 4,
+   "with_reading": 2
+  },
+  {
+   "wqa_point": "AN-THR061",
+   "season": 2025,
+   "samples": 4,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "AN-THR061",
+   "season": 2026,
+   "samples": 3,
+   "with_reading": 1
+  },
+  {
+   "wqa_point": "AN-TMNRSFFD",
+   "season": 2024,
+   "samples": 4,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "AN-TMNRSFFD",
+   "season": 2025,
+   "samples": 5,
+   "with_reading": 1
+  },
+  {
+   "wqa_point": "AN-TMNRSFFD",
+   "season": 2026,
+   "samples": 4,
+   "with_reading": 1
+  },
+  {
+   "wqa_point": "MD-27942900",
+   "season": 2021,
+   "samples": 5,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "MD-27942900",
+   "season": 2022,
+   "samples": 3,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "MD-27942900",
+   "season": 2023,
+   "samples": 4,
+   "with_reading": 1
+  },
+  {
+   "wqa_point": "MD-27942900",
+   "season": 2024,
+   "samples": 4,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "MD-27942900",
+   "season": 2025,
+   "samples": 3,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "MD-27942900",
+   "season": 2026,
+   "samples": 1,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "MD-28548100",
+   "season": 2023,
+   "samples": 5,
+   "with_reading": 4
+  },
+  {
+   "wqa_point": "MD-28548100",
+   "season": 2024,
+   "samples": 4,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "MD-28548100",
+   "season": 2025,
+   "samples": 2,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "MD-28548100",
+   "season": 2026,
+   "samples": 4,
+   "with_reading": 2
+  },
+  {
+   "wqa_point": "MD-47301190",
+   "season": 2021,
+   "samples": 4,
+   "with_reading": 1
+  },
+  {
+   "wqa_point": "MD-47301190",
+   "season": 2022,
+   "samples": 5,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "MD-47301190",
+   "season": 2023,
+   "samples": 5,
+   "with_reading": 2
+  },
+  {
+   "wqa_point": "MD-47301190",
+   "season": 2026,
+   "samples": 4,
+   "with_reading": 2
+  },
+  {
+   "wqa_point": "NE-40000385",
+   "season": 2021,
+   "samples": 4,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "NE-40000385",
+   "season": 2022,
+   "samples": 5,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "NE-40000385",
+   "season": 2023,
+   "samples": 3,
+   "with_reading": 1
+  },
+  {
+   "wqa_point": "NE-40000385",
+   "season": 2024,
+   "samples": 5,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "NE-40000385",
+   "season": 2026,
+   "samples": 4,
+   "with_reading": 1
+  },
+  {
+   "wqa_point": "NE-40000443",
+   "season": 2021,
+   "samples": 5,
+   "with_reading": 1
+  },
+  {
+   "wqa_point": "NE-40000443",
+   "season": 2023,
+   "samples": 4,
+   "with_reading": 1
+  },
+  {
+   "wqa_point": "NE-40000443",
+   "season": 2026,
+   "samples": 5,
+   "with_reading": 1
+  },
+  {
+   "wqa_point": "NE-44100119",
+   "season": 2021,
+   "samples": 5,
+   "with_reading": 3
+  },
+  {
+   "wqa_point": "NE-44100119",
+   "season": 2022,
+   "samples": 1,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "NE-44100119",
+   "season": 2023,
+   "samples": 2,
+   "with_reading": 1
+  },
+  {
+   "wqa_point": "NE-44100119",
+   "season": 2024,
+   "samples": 5,
+   "with_reading": 3
+  },
+  {
+   "wqa_point": "NE-44100119",
+   "season": 2026,
+   "samples": 3,
+   "with_reading": 2
+  },
+  {
+   "wqa_point": "NE-45100109",
+   "season": 2021,
+   "samples": 4,
+   "with_reading": 1
+  },
+  {
+   "wqa_point": "NE-45100109",
+   "season": 2022,
+   "samples": 4,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "NE-45100109",
+   "season": 2023,
+   "samples": 1,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "NE-45100109",
+   "season": 2025,
+   "samples": 4,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "NE-45100109",
+   "season": 2026,
+   "samples": 4,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "NW-88004556",
+   "season": 2023,
+   "samples": 14,
+   "with_reading": 5
+  },
+  {
+   "wqa_point": "NW-88004556",
+   "season": 2024,
+   "samples": 19,
+   "with_reading": 2
+  },
+  {
+   "wqa_point": "NW-88004556",
+   "season": 2025,
+   "samples": 17,
+   "with_reading": 2
+  },
+  {
+   "wqa_point": "NW-88005133",
+   "season": 2021,
+   "samples": 4,
+   "with_reading": 1
+  },
+  {
+   "wqa_point": "NW-88005133",
+   "season": 2022,
+   "samples": 4,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "NW-88005133",
+   "season": 2023,
+   "samples": 3,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "NW-88005133",
+   "season": 2025,
+   "samples": 4,
+   "with_reading": 1
+  },
+  {
+   "wqa_point": "NW-88005133",
+   "season": 2026,
+   "samples": 3,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "NW-88010011",
+   "season": 2021,
+   "samples": 4,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "NW-88010011",
+   "season": 2022,
+   "samples": 4,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "NW-88010011",
+   "season": 2023,
+   "samples": 4,
+   "with_reading": 2
+  },
+  {
+   "wqa_point": "NW-88010011",
+   "season": 2025,
+   "samples": 4,
+   "with_reading": 2
+  },
+  {
+   "wqa_point": "NW-88010011",
+   "season": 2026,
+   "samples": 2,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "NW-88010015",
+   "season": 2021,
+   "samples": 3,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "NW-88010015",
+   "season": 2022,
+   "samples": 5,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "NW-88010015",
+   "season": 2023,
+   "samples": 3,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "NW-88010015",
+   "season": 2025,
+   "samples": 4,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "NW-88010015",
+   "season": 2026,
+   "samples": 3,
+   "with_reading": 2
+  },
+  {
+   "wqa_point": "NW-88010023",
+   "season": 2021,
+   "samples": 4,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "NW-88010023",
+   "season": 2022,
+   "samples": 4,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "NW-88010023",
+   "season": 2023,
+   "samples": 3,
+   "with_reading": 1
+  },
+  {
+   "wqa_point": "NW-88010023",
+   "season": 2025,
+   "samples": 4,
+   "with_reading": 1
+  },
+  {
+   "wqa_point": "NW-88010023",
+   "season": 2026,
+   "samples": 4,
+   "with_reading": 1
+  },
+  {
+   "wqa_point": "NW-88010024",
+   "season": 2021,
+   "samples": 2,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "NW-88010024",
+   "season": 2022,
+   "samples": 4,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "NW-88010024",
+   "season": 2023,
+   "samples": 4,
+   "with_reading": 2
+  },
+  {
+   "wqa_point": "NW-88010024",
+   "season": 2025,
+   "samples": 3,
+   "with_reading": 1
+  },
+  {
+   "wqa_point": "NW-88010024",
+   "season": 2026,
+   "samples": 5,
+   "with_reading": 2
+  },
+  {
+   "wqa_point": "NW-88010089",
+   "season": 2021,
+   "samples": 5,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "NW-88010089",
+   "season": 2022,
+   "samples": 5,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "NW-88010089",
+   "season": 2023,
+   "samples": 4,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "NW-88010089",
+   "season": 2026,
+   "samples": 5,
+   "with_reading": 1
+  },
+  {
+   "wqa_point": "NW-88010126",
+   "season": 2021,
+   "samples": 4,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "NW-88010126",
+   "season": 2022,
+   "samples": 5,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "NW-88010126",
+   "season": 2023,
+   "samples": 3,
+   "with_reading": 1
+  },
+  {
+   "wqa_point": "NW-88010126",
+   "season": 2025,
+   "samples": 4,
+   "with_reading": 1
+  },
+  {
+   "wqa_point": "NW-88010126",
+   "season": 2026,
+   "samples": 4,
+   "with_reading": 1
+  },
+  {
+   "wqa_point": "NW-88016103",
+   "season": 2021,
+   "samples": 4,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "NW-88016103",
+   "season": 2022,
+   "samples": 5,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "NW-88016103",
+   "season": 2023,
+   "samples": 2,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "NW-88016103",
+   "season": 2025,
+   "samples": 4,
+   "with_reading": 2
+  },
+  {
+   "wqa_point": "NW-88016103",
+   "season": 2026,
+   "samples": 4,
+   "with_reading": 1
+  },
+  {
+   "wqa_point": "NW-88016157",
+   "season": 2021,
+   "samples": 5,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "NW-88016157",
+   "season": 2022,
+   "samples": 4,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "NW-88016157",
+   "season": 2023,
+   "samples": 5,
+   "with_reading": 2
+  },
+  {
+   "wqa_point": "NW-88016157",
+   "season": 2025,
+   "samples": 5,
+   "with_reading": 1
+  },
+  {
+   "wqa_point": "NW-88016157",
+   "season": 2026,
+   "samples": 5,
+   "with_reading": 2
+  },
+  {
+   "wqa_point": "NW-88021658",
+   "season": 2021,
+   "samples": 5,
+   "with_reading": 2
+  },
+  {
+   "wqa_point": "NW-88021658",
+   "season": 2022,
+   "samples": 5,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "NW-88021658",
+   "season": 2023,
+   "samples": 2,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "NW-88021658",
+   "season": 2024,
+   "samples": 5,
+   "with_reading": 1
+  },
+  {
+   "wqa_point": "NW-88021658",
+   "season": 2025,
+   "samples": 4,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "NW-88021658",
+   "season": 2026,
+   "samples": 3,
+   "with_reading": 2
+  },
+  {
+   "wqa_point": "NW-88022930",
+   "season": 2021,
+   "samples": 6,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "NW-88022930",
+   "season": 2022,
+   "samples": 5,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "NW-88022930",
+   "season": 2023,
+   "samples": 5,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "NW-88022930",
+   "season": 2026,
+   "samples": 4,
+   "with_reading": 2
+  },
+  {
+   "wqa_point": "NW-88023689",
+   "season": 2023,
+   "samples": 15,
+   "with_reading": 8
+  },
+  {
+   "wqa_point": "NW-88023689",
+   "season": 2024,
+   "samples": 20,
+   "with_reading": 6
+  },
+  {
+   "wqa_point": "NW-88023689",
+   "season": 2025,
+   "samples": 18,
+   "with_reading": 4
+  },
+  {
+   "wqa_point": "NW-LSN0028",
+   "season": 2024,
+   "samples": 5,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "NW-LSN0028",
+   "season": 2025,
+   "samples": 4,
+   "with_reading": 2
+  },
+  {
+   "wqa_point": "NW-LSN0028",
+   "season": 2026,
+   "samples": 5,
+   "with_reading": 2
+  },
+  {
+   "wqa_point": "SO-E0004611",
+   "season": 2024,
+   "samples": 4,
+   "with_reading": 3
+  },
+  {
+   "wqa_point": "SO-E0004611",
+   "season": 2025,
+   "samples": 4,
+   "with_reading": 2
+  },
+  {
+   "wqa_point": "SO-E0004611",
+   "season": 2026,
+   "samples": 5,
+   "with_reading": 3
+  },
+  {
+   "wqa_point": "SW-50900003",
+   "season": 2021,
+   "samples": 2,
+   "with_reading": 1
+  },
+  {
+   "wqa_point": "SW-50900003",
+   "season": 2022,
+   "samples": 3,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "SW-50900003",
+   "season": 2023,
+   "samples": 3,
+   "with_reading": 1
+  },
+  {
+   "wqa_point": "SW-50900003",
+   "season": 2024,
+   "samples": 6,
+   "with_reading": 2
+  },
+  {
+   "wqa_point": "SW-50900003",
+   "season": 2025,
+   "samples": 3,
+   "with_reading": 2
+  },
+  {
+   "wqa_point": "SW-50900003",
+   "season": 2026,
+   "samples": 4,
+   "with_reading": 3
+  },
+  {
+   "wqa_point": "TH-PGWL0034",
+   "season": 2021,
+   "samples": 5,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "TH-PGWL0034",
+   "season": 2022,
+   "samples": 5,
+   "with_reading": 0
+  },
+  {
+   "wqa_point": "TH-PGWL0034",
+   "season": 2023,
+   "samples": 5,
+   "with_reading": 1
+  },
+  {
+   "wqa_point": "TH-PGWL0034",
+   "season": 2026,
+   "samples": 3,
+   "with_reading": 2
+  }
+ ],
+ "lag_days": {
+  "-1": 65,
+  "0": 76,
+  "1": 66
+ },
+ "result": {
+  "gate": {
+   "pairs": 207,
+   "lakes": 38,
+   "lakes_with_3": 30,
+   "seasons_with_10": 5,
+   "by_season": {
+    "2021": 19,
+    "2023": 43,
+    "2024": 41,
+    "2025": 38,
+    "2026": 66
+   },
+   "judged": true
+  },
+  "conditions": {
+   "1": {
+    "rho": 0.501672568828408,
+    "L": 0.29972132876118457,
+    "U": 0.6669206570899832,
+    "draws_without_value": 0,
+    "holds": false
+   },
+   "2": {
+    "real": 0.501672568828408,
+    "p95": 0.46864901000153447,
+    "rank_190th": 0.46854732660988274,
+    "at_or_above_real": 0,
+    "passes": true,
+    "lowest": 0.34234558634302936,
+    "median": 0.41370865488328856,
+    "highest": 0.4977310688965181,
+    "holds": true
+   },
+   "3": {
+    "skill": 0.15854142404759186,
+    "L": -0.057618810299818586,
+    "U": 0.3245356984420335,
+    "draws_without_value": 0,
+    "B": 0.1,
+    "H": 0.05,
+    "mse_fit": 0.31765170545269406,
+    "mse_ref": 0.37750129897144225,
+    "label": "Too uncertain",
+    "holds": false
+   },
+   "4": {
+    "labels": {
+     "shallow": "Better",
+     "deeper": "Too uncertain"
+    },
+    "holds": true
+   }
+  },
+  "groups": {
+   "shallow": {
+    "lakes": 14,
+    "pairs": 89,
+    "skill": 0.3012858128970065,
+    "L": 0.051511325118861334,
+    "U": 0.4748762071042437,
+    "draws_without_value": 0,
+    "B": 0.1,
+    "H": 0.05,
+    "mse_fit": 0.307004229684019,
+    "mse_ref": 0.43938456575058105,
+    "label": "Better"
+   },
+   "deeper": {
+    "lakes": 19,
+    "pairs": 92,
+    "skill": 0.06884228182535423,
+    "L": -0.2463332593867868,
+    "U": 0.2634153403804449,
+    "draws_without_value": 0,
+    "B": 0.1,
+    "H": 0.05,
+    "mse_fit": 0.2870804476574826,
+    "mse_ref": 0.3083048575489963,
+    "label": "Too uncertain"
+   }
+  },
+  "verdict": "Fails"
+ },
+ "description": {
+  "same_day": {
+   "pairs": 76,
+   "rho": 0.3846653430677302
+  },
+  "censored_left_out": {
+   "pairs": 204,
+   "rho": 0.48795229710802257
+  },
+  "rho_by_lake": {
+   "GB30228955": {
+    "pairs": 3,
+    "rho": 1.0
+   },
+   "GB30229116": {
+    "pairs": 5,
+    "rho": 0.3
+   },
+   "GB30328720": {
+    "pairs": 9,
+    "rho": 0.5166666666666667
+   },
+   "GB30329025": {
+    "pairs": 1,
+    "rho": NaN
+   },
+   "GB30429479": {
+    "pairs": 3,
+    "rho": 0.5
+   },
+   "GB30429844": {
+    "pairs": 2,
+    "rho": NaN
+   },
+   "GB30436536": {
+    "pairs": 5,
+    "rho": 0.3
+   },
+   "GB30533426": {
+    "pairs": 4,
+    "rho": -0.39999999999999997
+   },
+   "GB30535640": {
+    "pairs": 8,
+    "rho": 0.30952380952380953
+   },
+   "GB30535645": {
+    "pairs": 8,
+    "rho": 0.6904761904761906
+   },
+   "GB30535655": {
+    "pairs": 7,
+    "rho": 0.42857142857142866
+   },
+   "GB30535738": {
+    "pairs": 5,
+    "rho": 0.3
+   },
+   "GB30535953": {
+    "pairs": 8,
+    "rho": 0.6024533658898499
+   },
+   "GB30536050": {
+    "pairs": 7,
+    "rho": -0.28571428571428575
+   },
+   "GB30536989": {
+    "pairs": 6,
+    "rho": -0.5768179036829705
+   },
+   "GB30537913": {
+    "pairs": 2,
+    "rho": NaN
+   },
+   "GB30538230": {
+    "pairs": 8,
+    "rho": 0.4285714285714286
+   },
+   "GB30547009": {
+    "pairs": 7,
+    "rho": 0.8108437164260032
+   },
+   "GB30547010": {
+    "pairs": 8,
+    "rho": 0.8383383833392813
+   },
+   "GB30547011": {
+    "pairs": 8,
+    "rho": -0.023809523809523815
+   },
+   "GB30547012": {
+    "pairs": 8,
+    "rho": 0.523809523809524
+   },
+   "GB30644031": {
+    "pairs": 3,
+    "rho": 1.0
+   },
+   "GB30745055": {
+    "pairs": 8,
+    "rho": 0.7142857142857144
+   },
+   "GB30846102": {
+    "pairs": 9,
+    "rho": 0.4666666666666666
+   },
+   "GB30935211": {
+    "pairs": 1,
+    "rho": NaN
+   },
+   "GB30935724": {
+    "pairs": 6,
+    "rho": -0.6571428571428573
+   },
+   "GB31228847": {
+    "pairs": 2,
+    "rho": NaN
+   },
+   "GB31228986": {
+    "pairs": 3,
+    "rho": 1.0
+   },
+   "GB31229062": {
+    "pairs": 2,
+    "rho": NaN
+   },
+   "GB31229183": {
+    "pairs": 5,
+    "rho": 0.19999999999999998
+   },
+   "GB31229184": {
+    "pairs": 3,
+    "rho": 1.0
+   },
+   "GB31229270": {
+    "pairs": 5,
+    "rho": 0.39999999999999997
+   },
+   "GB31229321": {
+    "pairs": 4,
+    "rho": -0.39999999999999997
+   },
+   "GB31231013": {
+    "pairs": 4,
+    "rho": 0.7999999999999999
+   },
+   "GB31232650": {
+    "pairs": 2,
+    "rho": NaN
+   },
+   "GB31232744": {
+    "pairs": 1,
+    "rho": NaN
+   },
+   "GB31247007": {
+    "pairs": 18,
+    "rho": 0.1736436195465704
+   },
+   "GB31247008": {
+    "pairs": 9,
+    "rho": 0.41666666666666663
+   }
+  },
+  "rho_by_season": {
+   "2021": {
+    "pairs": 19,
+    "rho": 0.6087719298245614
+   },
+   "2023": {
+    "pairs": 43,
+    "rho": 0.4446123433901187
+   },
+   "2024": {
+    "pairs": 41,
+    "rho": 0.35065557645750894
+   },
+   "2025": {
+    "pairs": 38,
+    "rho": 0.6976413548533414
+   },
+   "2026": {
+    "pairs": 66,
+    "rho": 0.5125266245387954
+   }
+  },
+  "fit_all_pairs": {
+   "intercept": 1.0130477169454506,
+   "slope": 1.5960237719615673
+  }
+ },
+ "hashes": {
+  "features": "58bce46681d7b9dd8e1cb2851528dd38f2d28bee0b5ed4d9095f367464af9f44",
+  "values": "8327417da5c5e512fd81cdbf4f2e71239560573b57e257240a46549b9f2648fa"
+ }
+}

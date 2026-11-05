@@ -63,7 +63,7 @@ def test_every_spot_gets_its_own_page_and_preview(tmp_path):
     assert 'href="https://example.org/swim/icons/apple-touch-icon.png"' in lost
     assert (tmp_path / "robots.txt").read_text() == "User-agent: *\nAllow: /\nSitemap: https://example.org/swim/sitemap.xml\n"
     sm = (tmp_path / "sitemap.xml").read_text()
-    assert sm.count("<url>") == 18 and "<loc>https://example.org/swim/spot/tarn/</loc>" in sm   # with sites.html, record.html, clubs.html, quality.html, spots.html and two profiles
+    assert sm.count("<url>") == 29 + len(_build_site().lab_pages()) and "<loc>https://example.org/swim/spot/tarn/</loc>" in sm   # the Research Lab's pages, and sites.html, record.html, demo.html, clubs.html, quality.html, spots.html, research.html, lakes.html, lake-temperatures.html, durations.html (spill durations), samples.html, waterhead.html, research-catalogue.html, sampling-planner.html, partners.html, models.html and two profiles
     assert (tmp_path / "quality.html").exists()   # without an overflow table its lists say so (tests/test_quality.py)
     assert "<loc>https://example.org/swim/methods.html</loc>" in sm
     assert "<loc>https://example.org/swim/coverage.html</loc>" in sm
@@ -87,6 +87,13 @@ def test_every_spot_gets_its_own_page_and_preview(tmp_path):
     assert '<base href="../">' in head and "noindex" not in head and "<title>Plan a swim · SwimSignal</title>" in head
     assert '<link rel="canonical" href="https://example.org/swim/plan/">' in head and "<loc>https://example.org/swim/plan/</loc>" in sm
     assert '<h1 class="page-h">Plan a swim</h1>' in plan
+    # Without JavaScript, both say what they need and point to every spot's page, not "Loading…" for ever.
+    for page, needs in [(saved, "to show your saved spots"), (plan, "to read the forecasts")]:
+        body = page.split("</head>")[1]
+        note = re.search(r"<noscript>(.*?)</noscript>", body.split('<div id="result">')[1]).group(1)
+        assert f'<p class="notice">This page needs JavaScript {needs}' in note and '<a href="spots.html">Every spot</a>' in note
+        assert "<style>#result [data-wait]{display:none}</style>" in note and "data-wait>Loading" in body
+    assert (tmp_path / "spots.html").exists()
     places = json.loads((tmp_path / "data" / "places.json").read_text())
     assert places["credit"].startswith("Contains OS data") and len(places["places"]) > 20000
     assert ["Kendal", 54.33, -2.75] in places["places"]
@@ -113,23 +120,21 @@ def test_the_built_pages_open_on_the_views_opening_as_the_script_draws_it(tmp_pa
     assert "best-day" not in body and "data-notices" not in body   # these wait for the forecast
     page = (ROOT / "src" / "dipcast" / "site" / "index.html").read_text()
     lead = page.split("function renderList()", 1)[1].split("h += notices()", 1)[0]
-    for part in ['<h1>Check the water before you go</h1>', "Five-day pollution risk forecasts for ${DATA.spots.length} swim spots in England<span class=\"lede-map\">, and for any river or lake you ",
+    for part in ['<h1>Check the water before you go</h1>', "Five-day pollution risk forecasts for ${DATA.spots.length} swim spots ${spotsWhere()}<span class=\"lede-map\">, and for any river or lake you ",
                  " on the map</span>. <a href=\"#about\">How it works</a></p>",
                  'placeholder="River, lake or town" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search"',
-                 '<label class="sr" for="listday">When are you swimming?</label><select id="listday"><option value="">Today and tomorrow</option>',
-                 '<button type="button" class="chip-btn low" data-low aria-pressed="']:
+                 '<fieldset class="day-strip list-days" id="listday"><legend class="sr">When are you swimming?</legend>']:
         assert part in lead and part.split("${")[0] in body, part
-    # Near me under the search, the script's own markup; the row of controls is the last thing built in,
-    # and the line for groups is at the foot of the list since 14 Oct 2026, not in the opening.
-    assert f"const NEAR_CTA = '{bs.NEAR_CTA}';" in page and "(offerNear() ? NEAR_CTA" in lead and bs.NEAR_CTA in body
-    assert body.index(bs.NEAR_CTA) < body.index('<div class="toolbar">') < body.index('aria-busy="true"')
-    # Under it, the forecast for the water where you are (hereForecast), likewise word for word.
-    assert f"const HERE_CTA = '{bs.HERE_CTA}';" in page and "'geolocation' in navigator ? HERE_CTA" in lead
-    assert body.index(bs.NEAR_CTA) < body.index(bs.HERE_CTA) < body.index('<div class="toolbar">')
-    assert lead.index('<div class="toolbar">') < lead.index('<div id="answer-lines">')   # the answer and best-day lines (answerLines)
+    # Near me is a pin at the end of the search field, the script's own markup, word for word (29 Oct 2026);
+    # the link for the water where you are went with it, and the line for groups is at the foot of the list.
+    assert f"const NEAR_PIN = '{bs.NEAR_PIN}';" in page and "${'geolocation' in navigator ? NEAR_PIN : ''}</div>" in lead and bs.NEAR_PIN in body
+    assert body.index(bs.NEAR_PIN) < body.index('<div class="toolbar">') < body.index('aria-busy="true"')
+    assert "HERE_CTA" not in page and "here-cta" not in body
+    assert '<div id="answer-lines">' not in lead   # the strip's counts answer it (29 Oct 2026)
     assert "Tools for clubs, centres and events" not in body and "planner-note groups" not in page
     assert f"const SEARCH_ICON = '{bs.SEARCH_ICON}';" in page and "const lowLabel = () => 'Low\\u00a0risk only';" in page
-    assert "<span data-low-t>Low\u00a0risk only</span>" in body
+    # Low risk only is in the list's Filter sheet since 29 Oct 2026, not in the opening.
+    assert "data-low" not in body and '<button type="button" class="chip-btn low" data-low aria-pressed="' in page.split('id="filter-sheet"', 1)[1]
     spot = (tmp_path / "spot" / "wharfe-ilkley" / "index.html").read_text()
     assert '<section class="answer"><h2 class="spot-name">Wharfe at &quot;Cromwheel&quot; &amp; Ilkley</h2>' in spot
     # Under the opening, the script's two columns (cols): the list's shape, then the map's empty tile,
@@ -161,7 +166,7 @@ def test_a_spots_page_carries_its_answer_and_five_days_as_the_script_draws_them(
     assert '<h1 class="spot-name" tabindex="-1">A river</h1>' in page
     assert '<h2 class="big low" id="risk-headline">Low risk from sewage spills</h2>' in page
     assert '<p class="act">Usual care: cover cuts' in page
-    assert page.count('<button class="drow low" type="button" data-day=') == 5 and '<span class="d">Today</span>' in page
+    assert page.count('<button class="drow low" type="button" data-day=') == 5 and '<span class="d" aria-hidden="true">Today</span>' in page
     assert '<a href="/swim/" class="back" id="back">All spots</a>' in page   # the script's own back link
     # Issued when, without how long ago, which would be wrong by the time the page is read.
     assert '<p class="issued">Issued Tue 08:00</p>' in page
@@ -170,7 +175,7 @@ def test_a_spots_page_carries_its_answer_and_five_days_as_the_script_draws_them(
            "\u201cright now\u201d mean then, and the levels may have changed since. With JavaScript on, the page updates it " \
            "and adds the map, the overflows upstream and the rest of the detail."
     assert f'<div id="result" data-built data-nosnippet><noscript><p class="muted">{note}</p></noscript>' in page
-    assert page.index("<noscript>") < page.index('id="risk-hero"') < page.index('<span class="d">Today</span>')
+    assert page.index("<noscript>") < page.index('id="risk-hero"') < page.index('<span class="d" aria-hidden="true">Today</span>')
     # A spot without a forecast: its answer, no five days.
     tarn = (tmp_path / "spot" / "tarn" / "index.html").read_text().split('<div id="result"', 1)[1].split('<p class="about-line"', 1)[0]
     assert 'id="risk-headline">No monitored overflow found upstream</h2>' in tarn and 'id="days-h"' not in tarn
@@ -201,7 +206,7 @@ def test_the_accuracy_page_carries_its_figures_and_draws_them_again_only_from_ne
     (tmp_path / "data" / "verification.json").write_text(json.dumps(ver))
     bs.write_pages(tmp_path, SPOTS, root="https://example.org/swim/")
     page = (tmp_path / "verification.html").read_text()
-    assert '<main class="doc" data-built="2026-10-04T00:15:52+01:00">' in page
+    assert '<main class="doc" id="main" data-built="2026-10-04T00:15:52+01:00">' in page
     assert "the spill forecast warned of 21% of spills." in page and "Loading the scores…" not in page
     assert '<dl class="stats">' in page and '<h2 id="short-h">In short</h2>' in page   # the figure tiles and the list
     assert 'href="/' not in page.split("<script>")[0]   # the links in the figures are the static site's too
@@ -211,7 +216,7 @@ def test_the_accuracy_page_carries_its_figures_and_draws_them_again_only_from_ne
     (tmp_path / "data" / "verification.json").unlink()
     bs.write_pages(tmp_path, SPOTS, root="https://example.org/swim/")
     page = (tmp_path / "verification.html").read_text()
-    assert '<main class="doc">' in page and "Loading the scores…" in page
+    assert '<main class="doc" id="main">' in page and "Loading the scores…" in page
 
 
 def test_a_spot_with_a_share_card_previews_it_and_the_rest_keep_the_shared_picture(tmp_path):
@@ -230,8 +235,8 @@ def test_a_spot_with_a_share_card_previews_it_and_the_rest_keep_the_shared_pictu
 
 
 PROSE_PAGES = ["organisers.html", "verification.html", "spots.html", "about.html", "methods.html", "clubs.html", "coverage.html",
-               "privacy.html", "terms.html", "testing.html", "feedback.html", "data.html", "sites.html", "record.html",
-               "quality.html", "support.html"]
+               "privacy.html", "terms.html", "testing.html", "feedback.html", "data.html", "sites.html", "record.html", "demo.html",
+               "quality.html", "support.html", "durations.html", "samples.html", "sampling-planner.html"]
 
 
 def test_every_prose_page_has_its_own_share_preview(tmp_path):
@@ -471,6 +476,19 @@ def test_alerts_are_off_unless_both_settings_are_sound(monkeypatch):
     assert bs.push_config() is None
 
 
+def test_the_privacy_notice_covers_research_sessions_with_their_retention(tmp_path):
+    # docs/COMPREHENSION-TEST-2026-10-RUN-SHEET.md, section 6: the notice must match what the sessions keep.
+    bs = _build_site()
+    bs.write_pages(tmp_path, SPOTS[:1], root="https://example.org/")
+    privacy = (tmp_path / "privacy.html").read_text()
+    assert '<h2 id="research">Research sessions</h2>' in privacy
+    for kept in ["or 21 days after your session, whichever comes first", "no more than 7 days",
+                 "no later than 31 January 2027", "including after your contact details are deleted",
+                 "Only genuinely anonymised findings are published", "removed or corrected under your rights to erasure"]:
+        assert kept in privacy, kept
+    assert "Apart from what is kept for research sessions (above), SwimSignal holds none" in privacy
+
+
 def test_the_privacy_notice_describes_alerts_only_when_they_are_on(tmp_path):
     bs = _build_site()
     bs.write_pages(tmp_path, SPOTS[:1], root="https://example.org/")
@@ -495,6 +513,12 @@ def test_the_privacy_notice_describes_alerts_only_when_they_are_on(tmp_path):
     for before, after in bs.PUSH_DATES_SWAPS:
         assert after in dated and before not in dated, after
     assert "up to 10 pairs of a spot and a date" in dated
+    # A plan's outing asks for the same pairs (outing.js): the Alerts section and the plan's own sentence say so,
+    # only once date alerts are on.
+    assert "about an outing on Plan a swim" in dated and "about an outing on Plan a swim" not in on
+    for before, after in bs.PUSH_DATES_PAGE_SWAPS:
+        assert before in off and before in on and after not in on, before
+        assert after in dated and before not in dated, after
     assert (tmp_path / "levels.js").exists()
 
 
@@ -649,7 +673,7 @@ def test_weather_context_is_attached_per_spot_and_a_failed_call_leaves_none(tmp_
     spots = [{"id": "a", "name": "A", "lat": 54.0, "lon": -2.0}, {"id": "b", "name": "B", "lat": 54.1, "lon": -2.1},
              {"id": "d", "name": "Broken", "lat": 54.5, "lon": -3.1, "error": "forecast failed: boom"}]
     assert bs.attach_weather(spots, request=request, cache=tmp_path / "weather.json") == 2
-    assert seen[0]["daily"] == "temperature_2m_max,sunrise,sunset" and seen[0]["latitude"] == "54.000,54.100"
+    assert seen[0]["daily"] == "temperature_2m_max,sunrise,sunset,wind_speed_10m_max,wind_gusts_10m_max" and seen[0]["latitude"] == "54.000,54.100"
     assert spots[0]["weather"]["days"] == [{"date": "2026-10-01", "tmax": 11, "sunrise": "07:12", "sunset": "18:40"},
                                            {"date": "2026-10-02", "tmax": None, "sunrise": "07:14", "sunset": "18:38"}]
     assert spots[0]["weather"]["credit"] == "Weather data by Open-Meteo.com" and "weather" not in spots[2]
@@ -698,7 +722,22 @@ def test_the_data_page_lists_every_file_in_data_with_its_size(tmp_path):
     # An empty data/ (write_pages over a fresh folder): every described row says so, and nothing breaks.
     empty = tmp_path / "empty"
     empty.mkdir()
-    assert bs.write_data_page(empty) == [] and (empty / "data.html").read_text().count("Not in this build") == 19   # spot_scores.json makes 16, overflows/ 17, waters.json 18, verification_spots_live.csv 19
+    assert bs.write_data_page(empty) == [] and (empty / "data.html").read_text().count("Not in this build") == 20   # spot_scores.json makes 16, overflows/ 17, waters.json 18, verification_spots_live.csv 19, research/ (satellite lakes, spill durations and E. coli samples) 20
+
+
+def test_the_data_pages_sections_follow_its_table_and_fold_their_fields():
+    """Readability pass, 5 Nov 2026: the sections come in the order the table lists the files (spot/ with
+    spots-lite.json, overflows/ with overflows.geojson, the feeds after alerts.json), and every field list is
+    in a fold named Fields, so a reader scanning for a file sees its paragraph and its licence."""
+    page = (_build_site().STATIC / "data.html").read_text()
+    files = re.findall(r'<tr data-file="([^"]+)">', page)
+    joined = {"spot/": "spots-lite.json", "overflows/": "overflows.geojson"}
+    anchor = lambda f: f.rstrip("/").replace(".", "-").replace("_", "-")
+    want = list(dict.fromkeys(anchor(joined.get(f, f)) for f in files))
+    got = [h for h in re.findall(r'<h2 id="([^"]+)">', page) if h not in ("feeds", "credits")]
+    assert got == want, got
+    assert page.index('<h2 id="alerts-json">') < page.index('<h2 id="feeds">') < page.index('<h2 id="overflows-geojson">')
+    assert page.count('<dl class="fields">') == page.count('<details class="fold"><summary>Fields</summary>\n<dl class="fields">') > 10
 
 
 def test_the_embed_is_written_beside_the_app_with_its_scripts_versioned(tmp_path):
@@ -774,6 +813,12 @@ def test_about_documents_the_data_page_and_the_embed_and_the_terms_allow_it(tmp_
     assert 'href="data.html"' in terms
     embed = about[about.index('<h2 id="embed">'):]
     assert "non-commercial website" in embed and "Ask first about any other use" in embed and 'href="mailto:hello@swimsignal.co.uk"' in embed
+    # Readability pass, 5 Nov 2026: the code, sizes and terms are in a fold under the heading the links land on, and
+    # the overflow-name glossary is folded too; every word of both is still on the page.
+    fold = embed.split('<details class="fold"><summary>The code to paste, and the terms</summary>')[1].split("</details>")[0]
+    assert "<pre><code>" in fold and "the tallest card was" in fold and "Ask first about any other use" in fold
+    glossary = about.split('<details class="fold"><summary>Overflow name abbreviations</summary>')[1].split("</details>")[0]
+    assert "WwTW and STW are a wastewater (sewage) treatment works" in glossary and "SPS a sewage pumping station" in glossary
 
 
 def _modules(d: str, size: int, border: int = 4) -> list[list[int]]:
@@ -817,7 +862,8 @@ def test_write_pages_writes_the_sites_view_and_the_decision_record(tmp_path):
     bs = _build_site()
     bs.write_pages(tmp_path, SPOTS, token="abcdefghij0123456789", root="https://example.org/swim/", day="2026-10-04")
     sitemap = (tmp_path / "sitemap.xml").read_text()
-    for name, scripts, title in [("sites.html", bs.SITES_SCRIPTS, "Sites view · SwimSignal"), ("record.html", bs.RECORD_SCRIPTS, "Decision record · SwimSignal")]:
+    for name, scripts, title in [("sites.html", bs.SITES_SCRIPTS, "Sites view · SwimSignal"), ("record.html", bs.RECORD_SCRIPTS, "Decision record · SwimSignal"),
+                                 ("demo.html", bs.DEMO_SCRIPTS, "A worked example for organisers · SwimSignal")]:
         page = (tmp_path / name).read_text()
         v = re.search(r'<script src="levels\.js\?v=([0-9a-f]{8})"></script>', page).group(1)
         for f in scripts:   # every script at one version, a hash of the scripts, and beside the page
@@ -837,7 +883,7 @@ def test_write_pages_writes_the_sites_view_and_the_decision_record(tmp_path):
 @pytest.mark.skipif(shutil.which("node") is None, reason="needs Node")
 def test_the_sites_view_and_decision_record_rules():
     # sites.js and record.js run in a browser, so their tests are JavaScript.
-    for f in ("site_sites.test.cjs", "site_record.test.cjs"):
+    for f in ("site_sites.test.cjs", "site_record.test.cjs", "site_demo.test.cjs"):
         r = subprocess.run(["node", "--test", str(ROOT / "tests" / f)], capture_output=True, text=True, timeout=60, check=False)
         assert r.returncode == 0, r.stdout + r.stderr
 
@@ -875,9 +921,9 @@ def test_the_organisers_page_and_the_signs_stay_out_of_the_offline_copy():
     # so the worker does not store them ahead (build_site.py says why); a visited page is kept as any is.
     bs = _build_site()
     shell = re.search(r"const SHELL = \[(.*?)\];", (bs.TEMPLATE.parent / "sw.js").read_text(), re.DOTALL).group(1)
-    assert not any(w in shell for w in ("organisers", "sign.html", "sign/", "embed", "qr.svg", "sites", "record"))
+    assert not any(w in shell for w in ("organisers", "sign.html", "sign/", "embed", "qr.svg", "sites", "record", "demo"))
     assert not {bs.ORGANISERS, bs.TEMPLATE.parent / "organisers.js", bs.TEMPLATE.parent / "sign.html"} & set(bs.SHELL_SOURCES)
-    assert not {bs.TEMPLATE.parent / f for f in ("sites.html", "sites.js", "record.html", "record.js")} & set(bs.SHELL_SOURCES)
+    assert not {bs.TEMPLATE.parent / f for f in ("sites.html", "sites.js", "record.html", "record.js", "demo.html", "demo.js")} & set(bs.SHELL_SOURCES)
 
 
 @pytest.mark.skipif(shutil.which("node") is None, reason="needs Node")
@@ -925,7 +971,7 @@ def test_tips_add_a_page_a_link_in_every_foot_and_a_privacy_section_only_when_on
     assert ">Support SwimSignal</a>" in spot
     privacy = (tmp_path / "privacy.html").read_text()
     assert '<h2 id="tips">If you leave a tip</h2>' in privacy and bs.SUPPORT_RIGHTS[1] in privacy
-    assert "Last updated 20 October 2026 (page-view counter, tips)." in privacy   # after the counter's own note
+    assert "Last updated 31 October 2026 (page-view counter, tips)." in privacy   # after the counter's own note
     assert "(tips)" not in (tmp_path / "terms.html").read_text()
     assert 'href="support.html">How to tip' in (tmp_path / "about.html").read_text()
     assert "support.html" in (tmp_path / "sitemap.xml").read_text()
@@ -933,7 +979,7 @@ def test_tips_add_a_page_a_link_in_every_foot_and_a_privacy_section_only_when_on
     bs.write_pages(tmp_path, SPOTS[:1], root="https://example.org/swim/")   # turned off again
     assert not (tmp_path / "support.html").exists()
     assert not any("Support SwimSignal" in p.read_text() for p in tmp_path.rglob("*.html"))
-    assert "Last updated 20 October 2026." in (tmp_path / "privacy.html").read_text()
+    assert "Last updated 31 October 2026." in (tmp_path / "privacy.html").read_text()
 
 
 def test_map_tiles_stay_on_openstreetmap_unless_a_known_provider_has_a_key(monkeypatch):
@@ -983,7 +1029,7 @@ def test_another_tile_provider_reaches_the_map_the_privacy_notice_and_the_terms(
     privacy = (tmp_path / "privacy.html").read_text()
     assert "OpenStreetMap Foundation" not in privacy and "fetched from OpenStreetMap" not in privacy
     assert '<li><b>CARTO</b>, for the map images. Its <a href="https://carto.com/privacy/">privacy policy</a>' in privacy
-    assert "Last updated 20 October 2026 (page-view counter, map images, tips)." in privacy
+    assert "Last updated 31 October 2026 (page-view counter, map images, tips)." in privacy
     terms = (tmp_path / "terms.html").read_text()
     assert bs.OSM_TERMS not in terms and "map tiles from CARTO:" in terms
 
@@ -1141,3 +1187,33 @@ def test_the_issue_time_comes_from_the_file_the_built_answers_are_made_from(tmp_
     assert bs.built_issue_time(tmp_path) is None
     (tmp_path / "data" / "spots.json").write_text(json.dumps({"generated_at": "2026-10-25T17:48:31+00:00"}))
     assert bs.built_issue_time(tmp_path) == pd.Timestamp("2026-10-25T17:48:31+00:00")
+
+
+def test_information_pages_offer_mobile_navigation_and_map_handoff(tmp_path):
+    bs = _build_site()
+    bs.write_pages(tmp_path, SPOTS, root="https://example.org/swim/")
+    for name in ("coverage.html", "verification.html", "feedback.html"):
+        page = (tmp_path / name).read_text()
+        assert '<nav class="phone-nav" aria-label="Main">' in page
+        for href in ('index.html', 'index.html?map=1', 'plan/', 'saved/'):
+            assert f'href="{href}"' in page
+    app = (ROOT / "src/dipcast/site/index.html").read_text()
+    # More holds the header's links a phone hides (Research was only in the foot, 31 Oct 2026), and the app's bar
+    # lists the same ones as the prose pages'.
+    more = "".join(f'<li><a href="{h}">{label}</a></li>' for h, label in bs.MORE_LINKS)
+    assert [h for h, _ in bs.MORE_LINKS] == ["verification.html", "about.html", "lab/", "research.html", "feedback.html"]   # the Research Lab beside Research and data (1 Nov 2026)
+    assert f'<ul class="more-menu" id="more-menu" popover>{more}</ul>' in app
+    assert 'popovertarget="more-menu"' in app and 'popovertarget="more-menu"' in page
+    # Without popovers (iOS before 17) the button toggles the list itself, the same way in both bars.
+    assert f'onclick="{bs.MORE_FALLBACK}"' in app and f'onclick="{bs.MORE_FALLBACK}"' in page
+    assert ".more-menu.open { display:block; }" in app and ".more-menu.open { display:block; }" in (ROOT / "src/dipcast/pages/page.css").read_text()
+    assert f'<ul class="more-menu" id="more-menu" popover>{more}</ul></nav>' in page
+    # The pages that had no bar on a phone, since page.css hides their header's links there.
+    spot = SPOTS[0]["id"]
+    for path in (f"spot/{spot}/profile/index.html", f"spot/{spot}/sign/index.html", "404.html"):
+        page = (tmp_path / path).read_text()
+        assert page.count('<nav class="phone-nav" aria-label="Main">') == 1, path
+    lost = (tmp_path / "404.html").read_text()   # at any depth, so its bar's links are absolute
+    assert '<a href="https://example.org/swim/research.html">Research and data</a>' in lost and 'href="index.html"' not in lost
+    assert "url.searchParams.get('map') === '1'" in app
+    assert "url.searchParams.delete('map'); history.replaceState(history.state, '', url); setMapMode(true);" in app

@@ -361,3 +361,20 @@ def test_a_spots_now_carries_every_count_the_page_reads(monkeypatch):
     now = _forecast(monkeypatch, ov, _Steady())["now"]
     assert now["upstream_weight"] == round(float(ov["weight"].sum()), 4)
     assert 0 < now["monitored_weight"] <= now["upstream_weight"]
+
+
+def test_carried_risk_is_right_now_run_forward_and_agrees_with_the_clear_time():
+    """Right now's spills' risk at later times (5 Nov 2026): at now it is live_now_risk; it never rises with no new
+    spill; before clear_time's time it is at or above the cut and after it below, so a later day it carries is
+    never low by the same rule."""
+    carried = partial(transport.carried_risk, t90_h=T90)
+    ov = _ov([0.9, 0.6, 0.8, 0.5, 0.7, 0.4], [1, 0, 0, 0, -3, 0], [None, 3.0, 20.0, 60.0, 10.0, None]).assign(
+        travel_h=[2.0, 30.0, 5.0, 20.0, 1.0, 9.0])
+    assert abs(carried(ov, NOW, [NOW])[0] - live_now_risk(ov, NOW)[0]) < 1e-12
+    hours = [NOW + pd.Timedelta(hours=h) for h in range(0, 120, 3)]
+    rs = carried(ov, NOW, hours)
+    assert all(b <= a + 1e-12 for a, b in zip(rs, rs[1:]))
+    at, _, _ = clear_time(ov, NOW)
+    minute = pd.Timedelta(minutes=1)
+    assert carried(ov, NOW, [at - minute])[0] >= CLEAR_CUT > carried(ov, NOW, [at + minute])[0]
+    assert carried(ov.iloc[0:0], NOW, [NOW, NOW]) == [0.0, 0.0]

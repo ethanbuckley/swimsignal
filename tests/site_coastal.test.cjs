@@ -188,3 +188,42 @@ test('a fold with a malformed id, a closed fold or another element loads nothing
   e.open(other);
   assert.equal(other.children.length, 1);
 });
+
+test('a search from Explore opens only matching official directories and labels their scope', () => {
+  const inputs = {}, counts = {}, folds = {}, sites = {};
+  for (const region of ['coastal', 'wales', 'scotland', 'ireland', 'ni']) {
+    inputs[region] = {value: '', addEventListener(_event, fn) { this.oninput = fn; }, dispatchEvent() { this.oninput(); }};
+    counts[region] = {};
+    folds[region] = {open: false, addEventListener() {}};
+    sites[region] = [region === 'wales' ? 'Swansea Bay' : 'Other beach'].map(name => ({hidden: false, querySelector: () => ({textContent: name})}));
+  }
+  const status = {};
+  const document = {getElementById(id) {
+    if (id === 'regional-results') return status;
+    for (const region of Object.keys(inputs)) {
+      if (id === `${region}-search`) return inputs[region];
+      if (id === `${region}-count`) return counts[region];
+      if (id === `${region}-directory`) return folds[region];
+    }
+    return null;
+  }, querySelectorAll(q) {
+    const region = Object.keys(sites).find(r => q === `.${r}-site`);
+    return region ? sites[region] : [];
+  }};
+  vm.runInNewContext(script, {document, location: {search: '?q=Swansea'}, URLSearchParams, Event: class {}, Date, setInterval() {}});
+  assert.equal(folds.wales.open, true);
+  assert.equal(folds.coastal.open, false);
+  assert.equal(inputs.wales.value, 'Swansea');
+  assert.match(status.textContent, /1 official bathing-water site matches/);
+  assert.match(status.textContent, /not SwimSignal forecasts/);
+});
+
+test('a search with no inland spot points to the official directories, also when a town matches', () => {
+  const page = fs.readFileSync('src/dipcast/site/index.html', 'utf8');
+  const offers = page.slice(page.indexOf('async function offerOnMap('), page.indexOf('const WATER_ZOOM'));
+  assert.match(offers, /<li class="empty"><p class="below">\$\{regionalLink\(t\)\} Missing a spot\?/);
+  const vm = require('node:vm'), c = vm.createContext({});
+  vm.runInContext(page.slice(page.indexOf('const regionalLink ='), page.indexOf('function renderList(')), c);
+  assert.match(vm.runInContext('regionalLink', c)(' Swansea '), /href="coverage\.html\?q=Swansea#regional-results"/);
+  assert.match(vm.runInContext('regionalLink', c)(''), /href="coverage\.html#regional-results"/);
+});

@@ -471,6 +471,11 @@ primary score's units. Then, from the interval (L, U) and the point estimate d o
 
 The first label that fits, in this order, is the result.
 
+**Note, 26 October 2026 (Ethan's decision).** In this order "Harm" can never be the label: an interval wholly below
+zero is labelled "No useful difference" (L > −H) or "Possible harm" (L ≤ −H) first. So wherever a statement says "no
+secondary check is labelled harm", later tests read it as "labelled Possible harm or Harm". Found while writing the
+river-rises harness (PR #383). It changes no past verdict.
+
 ### Margins, set before the data
 
 - **B, the benefit margin,** is the smallest gain that changes what a swimmer sees. It is worked out from predictions

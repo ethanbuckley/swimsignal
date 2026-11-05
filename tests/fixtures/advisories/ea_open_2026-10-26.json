@@ -1,0 +1,138 @@
+{ "format" : "linked-data-api", "version" : "0.2", "result" : {"_about" : "https://environment.data.gov.uk/doc/bathing-water-quality/pollution-incident/open.json?_pageSize=100", "definition" : "https://environment.data.gov.uk/meta/doc/bathing-water-quality/pollution-incident/open.json", "extendedMetadataVersion" : "https://environment.data.gov.uk/doc/bathing-water-quality/pollution-incident/open.json?_pageSize=100&_metadata=all", "first" : "https://environment.data.gov.uk/doc/bathing-water-quality/pollution-incident/open.json?_pageSize=100&_page=0", "isPartOf" : {"_about" : "https://environment.data.gov.uk/doc/bathing-water-quality/pollution-incident/open.json", "definition" : "https://environment.data.gov.uk/meta/doc/bathing-water-quality/pollution-incident/open.json", "hasPart" : "https://environment.data.gov.uk/doc/bathing-water-quality/pollution-incident/open.json?_pageSize=100", "type" : ["http://purl.org/linked-data/api/vocab#ListEndpoint"]}
+    , "items" : [{"_about" : "http://environment.data.gov.uk/data/bathing-water-quality/pollution-incident/11945-20260619-142800/recordDateTime/20260619143046", "bathingWater" : {"_about" : "http://environment.data.gov.uk/id/bathing-water/ukj2310-11945", "eubwidNotation" : "ukj2310-11945", "label" : [{"_value" : "Frensham Great Pond", "_datatype" : "langString", "_lang" : "en"}
+        ], "name" : {"_value" : "Frensham Great Pond", "_datatype" : "langString", "_lang" : "en"}
+        , "notation" : "ukj2310-11945", "type" : ["http://environment.data.gov.uk/def/bathing-water/BathingWater", "http://environment.data.gov.uk/def/bathing-water/LakeBathingWater"]}
+      , "incidentNotation" : "11945-20260619-142800", "incidentType" : {"_about" : "http://environment.data.gov.uk/def/incident-type/014", "label" : [{"_value" : "harmful algae", "_datatype" : "langString", "_lang" : "en"}
+        ], "name" : {"_value" : "harmful algae", "_datatype" : "langString", "_lang" : "en"}
+        , "notation" : "014", "type" : ["http://environment.data.gov.uk/def/bwq-som/IncidentType", "http://www.w3.org/2004/02/skos/core#Concept"]}
+      , "label" : [{"_value" : "Pollution Incident - 11945-20260619-142800", "_datatype" : "string"}
+      ], "nirsRef" : "02518865", "notation" : ["11945-20260619-142800", "11945-20260619-142800"], "sampleYear" : {"_about" : "http://reference.data.gov.uk/id/year/2026", "label" : [{"_value" : "British Year:2026", "_datatype" : "langString", "_lang" : "en"}
+        ], "name" : {"_value" : "British Year:2026", "_datatype" : "langString", "_lang" : "en"}
+        , "type" : ["http://reference.data.gov.uk/def/intervals/CalendarYear", "http://reference.data.gov.uk/def/intervals/Year"]}
+      , "samplingPoint" : {"_about" : "http://location.data.gov.uk/so/ef/SamplingPoint/bwsp.eaew/11945", "label" : [{"_value" : "Sampling point at Frensham Great Pond", "_datatype" : "langString", "_lang" : "en"}
+        ], "name" : {"_value" : "Sampling point at Frensham Great Pond", "_datatype" : "langString", "_lang" : "en"}
+        , "notation" : "11945", "samplePointNotation" : "11945", "type" : ["http://location.data.gov.uk/def/ef/SamplingPoint/SamplingPoint"]}
+      , "som_recordDateTime" : {"_value" : "2026-06-19T14:30:46", "_datatype" : "dateTime"}
+      , "source" : "http://environment.data.gov.uk/sources/bwq/eaew/input/request-pi-csv-2026-06-19_14-30-46_061-0006.csv#row=000002", "startOfIncident" : {"_value" : "2026-06-19T14:28:00", "_datatype" : "dateTime"}
+      , "type" : [{"_about" : "http://environment.data.gov.uk/def/bwq-som/PollutionIncident", "label" : [{"_value" : "Pollution incident", "_datatype" : "langString", "_lang" : "en"}
+        ], "name" : {"_value" : "Pollution incident", "_datatype" : "langString", "_lang" : "en"}
+        , "type" : ["http://www.w3.org/2002/07/owl#Class"]}
+      ]}
+    , {"_about" : "http://environment.data.gov.uk/data/bathing-water-quality/pollution-incident/04600-20260811-171000/recordDateTime/20260811171031", "bathingWater" : {"_about" : "http://environment.data.gov.uk/id/bathing-water/ukc2103-04600", "eubwidNotation" : "ukc2103-04600", "label" : [{"_value" : "Blyth South Beach", "_datatype" : "langString", "_lang" : "en"}
+        ], "name" : {"_value" : "Blyth South Beach", "_datatype" : "langString", "_lang" : "en"}
+        , "notation" : "ukc2103-04600", "type" : ["http://environment.data.gov.uk/def/bathing-water/BathingWater", "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"]}
+      , "incidentNotation" : "04600-20260811-171000", "incidentType" : {"_about" : "http://environment.data.gov.uk/def/incident-type/015", "label" : [{"_value" : "oil or fuel", "_datatype" : "langString", "_lang" : "en"}
+        ], "name" : {"_value" : "oil or fuel", "_datatype" : "langString", "_lang" : "en"}
+        , "notation" : "015", "type" : ["http://environment.data.gov.uk/def/bwq-som/IncidentType", "http://www.w3.org/2004/02/skos/core#Concept"]}
+      , "label" : [{"_value" : "Pollution Incident - 04600-20260811-171000", "_datatype" : "string"}
+      ], "nirsRef" : "02544146", "notation" : ["04600-20260811-171000", "04600-20260811-171000"], "sampleYear" : {"_about" : "http://reference.data.gov.uk/id/year/2026", "label" : [{"_value" : "British Year:2026", "_datatype" : "langString", "_lang" : "en"}
+        ], "name" : {"_value" : "British Year:2026", "_datatype" : "langString", "_lang" : "en"}
+        , "type" : ["http://reference.data.gov.uk/def/intervals/CalendarYear", "http://reference.data.gov.uk/def/intervals/Year"]}
+      , "samplingPoint" : {"_about" : "http://location.data.gov.uk/so/ef/SamplingPoint/bwsp.eaew/04600", "label" : [{"_value" : "Sampling point at Blyth South Beach", "_datatype" : "langString", "_lang" : "en"}
+        ], "name" : {"_value" : "Sampling point at Blyth South Beach", "_datatype" : "langString", "_lang" : "en"}
+        , "notation" : "04600", "samplePointNotation" : "04600", "type" : ["http://location.data.gov.uk/def/ef/SamplingPoint/SamplingPoint"]}
+      , "som_recordDateTime" : {"_value" : "2026-08-11T17:10:31", "_datatype" : "dateTime"}
+      , "source" : "http://environment.data.gov.uk/sources/bwq/eaew/input/request-pi-csv-2026-08-11_17-10-30_960-0006.csv#row=000002", "startOfIncident" : {"_value" : "2026-08-11T17:10:00", "_datatype" : "dateTime"}
+      , "type" : [{"_about" : "http://environment.data.gov.uk/def/bwq-som/PollutionIncident", "label" : [{"_value" : "Pollution incident", "_datatype" : "langString", "_lang" : "en"}
+        ], "name" : {"_value" : "Pollution incident", "_datatype" : "langString", "_lang" : "en"}
+        , "type" : ["http://www.w3.org/2002/07/owl#Class"]}
+      ]}
+    , {"_about" : "http://environment.data.gov.uk/data/bathing-water-quality/pollution-incident/26500-20261014-222300/recordDateTime/20261014222349", "bathingWater" : {"_about" : "http://environment.data.gov.uk/id/bathing-water/ukk4100-26500", "eubwidNotation" : "ukk4100-26500", "label" : [{"_value" : "Plymouth Hoe West", "_datatype" : "langString", "_lang" : "en"}
+        ], "name" : {"_value" : "Plymouth Hoe West", "_datatype" : "langString", "_lang" : "en"}
+        , "notation" : "ukk4100-26500", "type" : ["http://environment.data.gov.uk/def/bathing-water/BathingWater", "http://environment.data.gov.uk/def/bathing-water/TransitionalBathingWater"]}
+      , "incidentNotation" : "26500-20261014-222300", "incidentType" : {"_about" : "http://environment.data.gov.uk/def/incident-type/010", "label" : [{"_value" : "sewage", "_datatype" : "langString", "_lang" : "en"}
+        ], "name" : {"_value" : "sewage", "_datatype" : "langString", "_lang" : "en"}
+        , "notation" : "010", "type" : ["http://environment.data.gov.uk/def/bwq-som/IncidentType", "http://www.w3.org/2004/02/skos/core#Concept"]}
+      , "label" : [{"_value" : "Pollution Incident - 26500-20261014-222300", "_datatype" : "string"}
+      ], "nirsRef" : "02570966", "notation" : ["26500-20261014-222300", "26500-20261014-222300"], "sampleYear" : {"_about" : "http://reference.data.gov.uk/id/year/2026", "label" : [{"_value" : "British Year:2026", "_datatype" : "langString", "_lang" : "en"}
+        ], "name" : {"_value" : "British Year:2026", "_datatype" : "langString", "_lang" : "en"}
+        , "type" : ["http://reference.data.gov.uk/def/intervals/CalendarYear", "http://reference.data.gov.uk/def/intervals/Year"]}
+      , "samplingPoint" : {"_about" : "http://location.data.gov.uk/so/ef/SamplingPoint/bwsp.eaew/26500", "label" : [{"_value" : "Sampling point at Plymouth Hoe West", "_datatype" : "langString", "_lang" : "en"}
+        ], "name" : {"_value" : "Sampling point at Plymouth Hoe West", "_datatype" : "langString", "_lang" : "en"}
+        , "notation" : "26500", "samplePointNotation" : "26500", "type" : ["http://location.data.gov.uk/def/ef/SamplingPoint/SamplingPoint"]}
+      , "som_recordDateTime" : {"_value" : "2026-10-14T22:23:49", "_datatype" : "dateTime"}
+      , "source" : "http://environment.data.gov.uk/sources/bwq/eaew/input/request-pi-csv-2026-10-14_22-23-49_731-0008.csv#row=000003", "startOfIncident" : {"_value" : "2026-10-14T22:23:00", "_datatype" : "dateTime"}
+      , "type" : [{"_about" : "http://environment.data.gov.uk/def/bwq-som/PollutionIncident", "label" : [{"_value" : "Pollution incident", "_datatype" : "langString", "_lang" : "en"}
+        ], "name" : {"_value" : "Pollution incident", "_datatype" : "langString", "_lang" : "en"}
+        , "type" : ["http://www.w3.org/2002/07/owl#Class"]}
+      ]}
+    , {"_about" : "http://environment.data.gov.uk/data/bathing-water-quality/pollution-incident/26400-20261014-222300/recordDateTime/20261014222349", "bathingWater" : {"_about" : "http://environment.data.gov.uk/id/bathing-water/ukk4100-26400", "eubwidNotation" : "ukk4100-26400", "label" : [{"_value" : "Plymouth Hoe East", "_datatype" : "langString", "_lang" : "en"}
+        ], "name" : {"_value" : "Plymouth Hoe East", "_datatype" : "langString", "_lang" : "en"}
+        , "notation" : "ukk4100-26400", "type" : ["http://environment.data.gov.uk/def/bathing-water/BathingWater", "http://environment.data.gov.uk/def/bathing-water/TransitionalBathingWater"]}
+      , "incidentNotation" : "26400-20261014-222300", "incidentType" : {"_about" : "http://environment.data.gov.uk/def/incident-type/010", "label" : [{"_value" : "sewage", "_datatype" : "langString", "_lang" : "en"}
+        ], "name" : {"_value" : "sewage", "_datatype" : "langString", "_lang" : "en"}
+        , "notation" : "010", "type" : ["http://environment.data.gov.uk/def/bwq-som/IncidentType", "http://www.w3.org/2004/02/skos/core#Concept"]}
+      , "label" : [{"_value" : "Pollution Incident - 26400-20261014-222300", "_datatype" : "string"}
+      ], "nirsRef" : "02570966", "notation" : ["26400-20261014-222300", "26400-20261014-222300"], "sampleYear" : {"_about" : "http://reference.data.gov.uk/id/year/2026", "label" : [{"_value" : "British Year:2026", "_datatype" : "langString", "_lang" : "en"}
+        ], "name" : {"_value" : "British Year:2026", "_datatype" : "langString", "_lang" : "en"}
+        , "type" : ["http://reference.data.gov.uk/def/intervals/CalendarYear", "http://reference.data.gov.uk/def/intervals/Year"]}
+      , "samplingPoint" : {"_about" : "http://location.data.gov.uk/so/ef/SamplingPoint/bwsp.eaew/26400", "label" : [{"_value" : "Sampling point at Plymouth Hoe East", "_datatype" : "langString", "_lang" : "en"}
+        ], "name" : {"_value" : "Sampling point at Plymouth Hoe East", "_datatype" : "langString", "_lang" : "en"}
+        , "notation" : "26400", "samplePointNotation" : "26400", "type" : ["http://location.data.gov.uk/def/ef/SamplingPoint/SamplingPoint"]}
+      , "som_recordDateTime" : {"_value" : "2026-10-14T22:23:49", "_datatype" : "dateTime"}
+      , "source" : "http://environment.data.gov.uk/sources/bwq/eaew/input/request-pi-csv-2026-10-14_22-23-49_731-0008.csv#row=000002", "startOfIncident" : {"_value" : "2026-10-14T22:23:00", "_datatype" : "dateTime"}
+      , "type" : [{"_about" : "http://environment.data.gov.uk/def/bwq-som/PollutionIncident", "label" : [{"_value" : "Pollution incident", "_datatype" : "langString", "_lang" : "en"}
+        ], "name" : {"_value" : "Pollution incident", "_datatype" : "langString", "_lang" : "en"}
+        , "type" : ["http://www.w3.org/2002/07/owl#Class"]}
+      ]}
+    , {"_about" : "http://environment.data.gov.uk/data/bathing-water-quality/pollution-incident/17900-20261024-200100/recordDateTime/20261024200235", "bathingWater" : {"_about" : "http://environment.data.gov.uk/id/bathing-water/ukj3400-17900", "eubwidNotation" : "ukj3400-17900", "label" : [{"_value" : "Ryde", "_datatype" : "langString", "_lang" : "en"}
+        ], "name" : {"_value" : "Ryde", "_datatype" : "langString", "_lang" : "en"}
+        , "notation" : "ukj3400-17900", "type" : ["http://environment.data.gov.uk/def/bathing-water/BathingWater", "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"]}
+      , "incidentNotation" : "17900-20261024-200100", "incidentType" : {"_about" : "http://environment.data.gov.uk/def/incident-type/010", "label" : [{"_value" : "sewage", "_datatype" : "langString", "_lang" : "en"}
+        ], "name" : {"_value" : "sewage", "_datatype" : "langString", "_lang" : "en"}
+        , "notation" : "010", "type" : ["http://environment.data.gov.uk/def/bwq-som/IncidentType", "http://www.w3.org/2004/02/skos/core#Concept"]}
+      , "label" : [{"_value" : "Pollution Incident - 17900-20261024-200100", "_datatype" : "string"}
+      ], "nirsRef" : "02573340", "notation" : ["17900-20261024-200100", "17900-20261024-200100"], "sampleYear" : {"_about" : "http://reference.data.gov.uk/id/year/2026", "label" : [{"_value" : "British Year:2026", "_datatype" : "langString", "_lang" : "en"}
+        ], "name" : {"_value" : "British Year:2026", "_datatype" : "langString", "_lang" : "en"}
+        , "type" : ["http://reference.data.gov.uk/def/intervals/CalendarYear", "http://reference.data.gov.uk/def/intervals/Year"]}
+      , "samplingPoint" : {"_about" : "http://location.data.gov.uk/so/ef/SamplingPoint/bwsp.eaew/17900", "label" : [{"_value" : "Sampling point at Ryde", "_datatype" : "langString", "_lang" : "en"}
+        ], "name" : {"_value" : "Sampling point at Ryde", "_datatype" : "langString", "_lang" : "en"}
+        , "notation" : "17900", "samplePointNotation" : "17900", "type" : ["http://location.data.gov.uk/def/ef/SamplingPoint/SamplingPoint"]}
+      , "som_recordDateTime" : {"_value" : "2026-10-24T20:02:35", "_datatype" : "dateTime"}
+      , "source" : "http://environment.data.gov.uk/sources/bwq/eaew/input/request-pi-csv-2026-10-24_20-02-35_594-0000.csv#row=000002", "startOfIncident" : {"_value" : "2026-10-24T20:01:00", "_datatype" : "dateTime"}
+      , "type" : [{"_about" : "http://environment.data.gov.uk/def/bwq-som/PollutionIncident", "label" : [{"_value" : "Pollution incident", "_datatype" : "langString", "_lang" : "en"}
+        ], "name" : {"_value" : "Pollution incident", "_datatype" : "langString", "_lang" : "en"}
+        , "type" : ["http://www.w3.org/2002/07/owl#Class"]}
+      ]}
+    , {"_about" : "http://environment.data.gov.uk/data/bathing-water-quality/pollution-incident/30100-20261026-105800/recordDateTime/20261026105855", "bathingWater" : {"_about" : "http://environment.data.gov.uk/id/bathing-water/ukk3105-30100", "eubwidNotation" : "ukk3105-30100", "label" : [{"_value" : "Perranuthnoe", "_datatype" : "langString", "_lang" : "en"}
+        ], "name" : {"_value" : "Perranuthnoe", "_datatype" : "langString", "_lang" : "en"}
+        , "notation" : "ukk3105-30100", "type" : ["http://environment.data.gov.uk/def/bathing-water/BathingWater", "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"]}
+      , "expectedEndOfIncident" : {"_value" : "2026-10-26", "_datatype" : "date"}
+      , "incidentNotation" : "30100-20261026-105800", "incidentType" : {"_about" : "http://environment.data.gov.uk/def/incident-type/010", "label" : [{"_value" : "sewage", "_datatype" : "langString", "_lang" : "en"}
+        ], "name" : {"_value" : "sewage", "_datatype" : "langString", "_lang" : "en"}
+        , "notation" : "010", "type" : ["http://environment.data.gov.uk/def/bwq-som/IncidentType", "http://www.w3.org/2004/02/skos/core#Concept"]}
+      , "label" : [{"_value" : "Pollution Incident - 30100-20261026-105800", "_datatype" : "string"}
+      ], "nirsRef" : "02573634", "notation" : ["30100-20261026-105800", "30100-20261026-105800"], "sampleYear" : {"_about" : "http://reference.data.gov.uk/id/year/2026", "label" : [{"_value" : "British Year:2026", "_datatype" : "langString", "_lang" : "en"}
+        ], "name" : {"_value" : "British Year:2026", "_datatype" : "langString", "_lang" : "en"}
+        , "type" : ["http://reference.data.gov.uk/def/intervals/CalendarYear", "http://reference.data.gov.uk/def/intervals/Year"]}
+      , "samplingPoint" : {"_about" : "http://location.data.gov.uk/so/ef/SamplingPoint/bwsp.eaew/30100", "label" : [{"_value" : "Sampling point at Perranuthnoe", "_datatype" : "langString", "_lang" : "en"}
+        ], "name" : {"_value" : "Sampling point at Perranuthnoe", "_datatype" : "langString", "_lang" : "en"}
+        , "notation" : "30100", "samplePointNotation" : "30100", "type" : ["http://location.data.gov.uk/def/ef/SamplingPoint/SamplingPoint"]}
+      , "som_recordDateTime" : {"_value" : "2026-10-26T10:58:55", "_datatype" : "dateTime"}
+      , "source" : "http://environment.data.gov.uk/sources/bwq/eaew/input/request-pi-csv-2026-10-26_10-58-55_828-0002.csv#row=000002", "startOfIncident" : {"_value" : "2026-10-26T10:58:00", "_datatype" : "dateTime"}
+      , "type" : [{"_about" : "http://environment.data.gov.uk/def/bwq-som/PollutionIncident", "label" : [{"_value" : "Pollution incident", "_datatype" : "langString", "_lang" : "en"}
+        ], "name" : {"_value" : "Pollution incident", "_datatype" : "langString", "_lang" : "en"}
+        , "type" : ["http://www.w3.org/2002/07/owl#Class"]}
+      ]}
+    , {"_about" : "http://environment.data.gov.uk/data/bathing-water-quality/pollution-incident/31500-20261026-130400/recordDateTime/20261026130442", "bathingWater" : {"_about" : "http://environment.data.gov.uk/id/bathing-water/ukk3103-31500", "eubwidNotation" : "ukk3103-31500", "label" : [{"_value" : "Portreath", "_datatype" : "langString", "_lang" : "en"}
+        ], "name" : {"_value" : "Portreath", "_datatype" : "langString", "_lang" : "en"}
+        , "notation" : "ukk3103-31500", "type" : ["http://environment.data.gov.uk/def/bathing-water/BathingWater", "http://environment.data.gov.uk/def/bathing-water/CoastalBathingWater"]}
+      , "expectedEndOfIncident" : {"_value" : "2026-10-26", "_datatype" : "date"}
+      , "incidentNotation" : "31500-20261026-130400", "incidentType" : {"_about" : "http://environment.data.gov.uk/def/incident-type/010", "label" : [{"_value" : "sewage", "_datatype" : "langString", "_lang" : "en"}
+        ], "name" : {"_value" : "sewage", "_datatype" : "langString", "_lang" : "en"}
+        , "notation" : "010", "type" : ["http://environment.data.gov.uk/def/bwq-som/IncidentType", "http://www.w3.org/2004/02/skos/core#Concept"]}
+      , "label" : [{"_value" : "Pollution Incident - 31500-20261026-130400", "_datatype" : "string"}
+      ], "nirsRef" : "02573702", "notation" : ["31500-20261026-130400", "31500-20261026-130400"], "sampleYear" : {"_about" : "http://reference.data.gov.uk/id/year/2026", "label" : [{"_value" : "British Year:2026", "_datatype" : "langString", "_lang" : "en"}
+        ], "name" : {"_value" : "British Year:2026", "_datatype" : "langString", "_lang" : "en"}
+        , "type" : ["http://reference.data.gov.uk/def/intervals/CalendarYear", "http://reference.data.gov.uk/def/intervals/Year"]}
+      , "samplingPoint" : {"_about" : "http://location.data.gov.uk/so/ef/SamplingPoint/bwsp.eaew/31500", "label" : [{"_value" : "Sampling point at Portreath", "_datatype" : "langString", "_lang" : "en"}
+        ], "name" : {"_value" : "Sampling point at Portreath", "_datatype" : "langString", "_lang" : "en"}
+        , "notation" : "31500", "samplePointNotation" : "31500", "type" : ["http://location.data.gov.uk/def/ef/SamplingPoint/SamplingPoint"]}
+      , "som_recordDateTime" : {"_value" : "2026-10-26T13:04:42", "_datatype" : "dateTime"}
+      , "source" : "http://environment.data.gov.uk/sources/bwq/eaew/input/request-pi-csv-2026-10-26_13-04-42_279-0004.csv#row=000002", "startOfIncident" : {"_value" : "2026-10-26T13:04:00", "_datatype" : "dateTime"}
+      , "type" : [{"_about" : "http://environment.data.gov.uk/def/bwq-som/PollutionIncident", "label" : [{"_value" : "Pollution incident", "_datatype" : "langString", "_lang" : "en"}
+        ], "name" : {"_value" : "Pollution incident", "_datatype" : "langString", "_lang" : "en"}
+        , "type" : ["http://www.w3.org/2002/07/owl#Class"]}
+      ]}
+    ], "itemsPerPage" : 100, "page" : 0, "startIndex" : 1, "type" : ["http://purl.org/linked-data/api/vocab#Page"]}
+}

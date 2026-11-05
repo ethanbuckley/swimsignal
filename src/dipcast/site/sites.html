@@ -16,6 +16,8 @@
   ol.sites { list-style:none; padding:0; margin:8px 0 0; border-top:1px solid var(--line); }
   .site { display:grid; grid-template-columns:minmax(0, 2fr) minmax(0, 3fr) 66px; gap:4px 20px; align-items:start; padding:12px 0; border-bottom:1px solid var(--line); margin:0; }
   .s-place { min-width:0; }
+  /* The name is an h2 (sites.js, row) for the outline, set as the link it holds: no h2 size or margins. */
+  main.doc h2.s-h { font:inherit; margin:0; }
   .s-name { display:block; font:600 var(--fs-body)/1.3 var(--font-display); }
   .s-meta { display:block; font-size:var(--fs-meta); color:var(--muted); margin-top:2px; }
   main.doc .s-say p { margin:0; }
@@ -24,6 +26,8 @@
   main.doc .s-head.low { color:var(--k-low); } main.doc .s-head.moderate { color:var(--k-moderate); } main.doc .s-head.high { color:var(--k-high); }
   main.doc .s-head.veryhigh { color:var(--k-veryhigh); } main.doc .s-head.clear { color:var(--k-clear); }
   main.doc .s-why { font-size:var(--fs-note); margin-top:2px; }
+  /* Official advice (eatoday.js, eaTodayBrief): a line of its own under the headline, marked by the notice's rule. */
+  main.doc .o-tag { margin:3px 0 4px; padding-left:7px; border-left:3px solid var(--notice-line); font-size:var(--fs-note); line-height:1.35; color:var(--ink); }
   main.doc .s-rec { font-size:var(--fs-meta); color:var(--muted); margin-top:4px; }
   .s-rec a { color:var(--link); }
   /* The five days as the list draws them (index.html, .week): a square bar a day, its letter under it. */
@@ -38,7 +42,7 @@
   .week.rain .wk i { height:var(--h, 3px); min-height:3px; background:var(--rain); opacity:.85; }
   .s-missing { font-size:var(--fs-note); margin:12px 0 0; }
   /* The data credits (printed.js): one source a line, at the meta size. */
-  main.doc .credits-h { font-size:var(--fs-note); margin:24px 0 4px; }
+  main.doc .credits-h { font:600 var(--fs-note)/1.3 var(--font-display); margin:24px 0 4px; }   /* an h2 (printed.js), at the h3 size it had */
   main.doc .credits { font-size:var(--fs-meta); color:var(--muted); }
   main.doc .credits ul { margin:0 0 6px; }
   main.doc .credits li { margin:2px 0; }
@@ -69,14 +73,14 @@
     main.doc .credits { columns:2; column-gap:24px; margin:0 0 4px; line-height:1.3; }
     main.doc .credits ul, main.doc .credits li { display:inline; margin:0; padding:0; }
     main.doc .credits p { margin:2px 0 0; }
-    main.doc h3.credits-h { display:none; }
+    main.doc .credits-h { display:none; }
     .credits-run { display:inline; font-weight:600; color:var(--ink); }
     a { color:var(--ink); text-decoration:none; }
   }
 </style>
 </head><body>
 <header class="top"><a class="brand" href="./"><svg viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" fill="#0f5a61"/><path d="M430-20C330 110 470 230 300 290S110 380 190 540" fill="none" stroke="#5CC2B5" stroke-width="70" stroke-linecap="round"/><circle cx="318" cy="138" r="38" fill="#F08A4B"/><circle cx="165" cy="358" r="46" fill="none" stroke="#fff" stroke-width="22"/></svg>SwimSignal</a>
-<nav aria-label="Site"><a href="./">Explore</a><a href="verification.html">Accuracy</a><a href="about.html">About</a><a href="feedback.html">Feedback</a></nav></header>
+<nav aria-label="Site"><a href="plan/">Plan a swim</a><a href="saved/">Saved</a><a href="verification.html">Accuracy</a><a href="about.html">About</a><a class="desk-only" href="lab/">Research Lab</a></nav></header>
 <main class="doc">
 <h1 id="sites-h">Sites view</h1>
 <p class="lead">Each spot's pollution risk forecast for the next five days, on one page to print before a session. The spots and the name are in the address, after the #, so they never reach a server.</p>
@@ -84,10 +88,11 @@
 <div id="sites" aria-live="polite"></div>
 </main>
 <footer class="site-foot"><div class="rule"><p>SwimSignal is a free, non-commercial pollution risk forecast for river and lake swim spots in England, run by Ethan Buckley. A forecast, not a water test: check the signs at the water before you swim.</p>
-<p><a href="terms.html">Terms of use</a> · <a href="privacy.html">Privacy</a> · <a href="feedback.html">Feedback</a> · <a href="methods.html">Method</a> · <a href="terms.html#data">Data credits</a> · <a href="https://github.com/ethanbuckley/swimsignal">Source code</a> (MIT)</p></div></footer>
+<p><a href="terms.html">Terms of use</a> · <a href="privacy.html">Privacy</a> · <a href="feedback.html">Feedback</a> · <a href="methods.html">Method</a> · <a href="research.html">Research and data</a> · <a href="terms.html#data">Data credits</a> · <a href="https://github.com/ethanbuckley/swimsignal">Source code</a> (MIT)</p></div></footer>
 <script src="levels.js"></script>
 <script src="lists.js"></script>
 <script src="organisers.js"></script>
 <script src="printed.js"></script>
+<script src="eatoday.js"></script>
 <script src="sites.js"></script>
 </body></html>

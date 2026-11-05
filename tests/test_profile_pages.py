@@ -2,6 +2,8 @@
 clubs, centres and leaders, clubs.html (T7). The profile pages are written from data/upstream/<id>.json and
 the annual returns, so these tests give both on disk, made up; the real Ilkley page was checked by hand
 against the returns (PR body)."""
+import csv
+import io
 import json
 import re
 import sys
@@ -70,7 +72,7 @@ def test_a_profile_page_joins_the_spots_overflows_to_their_returns(tmp_path):
     # overflowNames), with the phone layout's labels.
     a1, b2 = page.index("Grassington sewage works overflow"), page.index("Bridge Lane storm overflow")
     assert a1 < b2 and '<span class="muted">Grassington/STW · A1</span>' in page
-    assert '<td class="num" data-l="Reach">&lt;1%</td>' in page and '<td class="num" data-l="Monitor uptime 2025">67%</td>' in page
+    assert '<td class="num" data-l="Weight">&lt;1%</td>' in page and '<td class="num" data-l="Monitor uptime 2025">67%</td>' in page
     assert '<td class="num" data-l="Hours away">under 1</td>' in page and '<td class="num" data-l="Spills 2023">2</td>' in page
     # The short pages say why there is no list.
     short = {s["id"]: text((tmp_path / "spot" / s["id"] / "profile" / "index.html").read_text()) for s in SPOTS[1:]}
@@ -86,6 +88,32 @@ def test_without_the_annual_returns_the_pages_still_list_the_overflows(tmp_path)
     assert bs.write_profiles(tmp_path, SPOTS[:1], returns=tmp_path / "missing.parquet") == 1
     words = text((tmp_path / "spot" / "wharfe-ilkley" / "profile" / "index.html").read_text())
     assert "Grassington/STW" in words and "2021 0 0 0 0" in words
+
+
+def test_full_list_download_keeps_small_weights_missing_returns_and_scope(tmp_path):
+    upstream_file(tmp_path)
+    spot = {**SPOTS[0], "name": "Wharfe, Ilkley", "upstream_summary": {"overflows": 1, "too_far": 1}}
+    bs.write_profiles(tmp_path, [spot], returns=returns(tmp_path / "r.parquet"))
+    folder = tmp_path / "spot" / spot["id"] / "profile"
+    page = (folder / "index.html").read_text()
+    assert "The forecast counts 1 of these overflows; 1 has a model weight too small to count. This history includes all 2." in text(page)
+    assert 'href="spot/wharfe-ilkley/profile/monitored-storm-overflows.csv" download' in page
+    rows = list(csv.DictReader(io.StringIO((folder / "monitored-storm-overflows.csv").read_text(encoding="utf-8-sig"))))
+    assert [r["site_id"] for r in rows] == ["A1", "B2"]
+    assert rows[0]["spot_name"] == "Wharfe, Ilkley" and rows[1]["weight"] == "0.003"
+    assert rows[1]["spills_2021"] == "" and float(rows[1]["spills_2025"]) == 2
+    assert rows[0]["record_type"] == "monitored storm overflow; not a treated-effluent outlet inventory"
+    assert rows[0]["credits"] == pf.CREDITS and "status" not in rows[0]
+    assert not (tmp_path / "spot" / "tarn" / "profile" / "monitored-storm-overflows.csv").exists()
+
+
+def test_csv_preserves_unicode_and_quotes_external_formula_text():
+    t = pf.with_returns(pd.DataFrame([{"site_id": "X", "site_name": '=HYPERLINK("url")', "company": "Dŵr Cymru",
+                                      "distance_km": 1, "travel_h": 2, "weight": 0.5}]), wide=pf.yearly(pd.DataFrame(columns=pf.RETURN_FIELDS)))
+    data = pf.upstream_csv({"id": "x", "name": "A river"}, t)
+    assert data.startswith("\ufeff")
+    row = next(csv.DictReader(io.StringIO(data.lstrip("\ufeff"))))
+    assert row["site_name"] == '\'=HYPERLINK("url")' and row["company"] == "Dŵr Cymru"
 
 
 def test_write_pages_writes_a_profile_for_every_spot_page_and_lists_them(tmp_path):
@@ -164,6 +192,9 @@ def test_the_clubs_page_uses_the_sites_own_words_and_says_its_limits_first(tmp_p
     for k, line in action_lines().items():
         assert line in words, k
     assert words.index("What it cannot do") < words.index("The same level, different exposure")
+    # The tools second, straight after the limits (5 Nov 2026: they were ninth).
+    heads = re.findall(r"<h2[^>]*>([^<]+)</h2>", page.split("<main", 1)[1])
+    assert heads[:2] == ["What it cannot do", "Tools for planning a session"], heads
     assert "It is a forecast, not a water test." in words and "0800 80 70 60" in words
     for name in ("Swimming", "Ghyll scrambling and gorge walking", "Kayaking, canoeing and paddleboarding",
                  "Dinghy sailing and windsurfing", "Rowing"):
@@ -174,7 +205,7 @@ def test_the_clubs_page_uses_the_sites_own_words_and_says_its_limits_first(tmp_p
               '"No water based activity should proceed if there are any concerns around water contamination in the planned location."'):
         assert q in words, q
     for href in ("https://paddleuk.org.uk/water-quality-dont-get-sick-doing-what-you-love/",
-                 "https://www.scouts.org.uk/volunteers/running-your-section/programme-guidance/information-for-volunteers/general-activity-guidance-a-z/general-water-activities/water-safety-waterborne-diseases-and-immersion/",
+                 "https://www.scouts.org.uk/volunteers/running-your-section/programme-guidance/information-for-volunteers/general-activity-guidance-a-z/water-safety-waterborne-diseases-and-immersion",
                  "https://www.rya.org.uk/making-a-difference/water-quality-our-position/"):
         assert f'href="{href}"' in page, href
     for href in ("methods.html#level", "methods.html#actions", "organisers.html", "about.html#embed", "terms.html",
@@ -221,6 +252,15 @@ def test_the_clubs_page_fills_its_warning_figures_from_the_live_scores(tmp_path)
             "it warned of about one in six spills. About two in five of its warnings were followed by a spill. 208 of the 223 "
             "warnings that came true were at United Utilities, the one company the spill model learned from. At the other "
             "companies, so far, it warned of fewer than one in twenty spills.") in words
+    # The About page's "How good it is" gives the same figures (5 Nov 2026: it gave none).
+    assert ("At the high risk line, it warned of about one in six spills. About two in five of its warnings were followed "
+            "by a spill.") in text((tmp_path / "about.html").read_text())
+    # Counts over a thousand with commas, as the Accuracy page writes them (5 Nov 2026: "990 of the 2990").
+    big = {**oct11, "hits": 2990, "by_company": [{"company": "United Utilities", "hits": 990, "misses": 489}, *oct11["by_company"][1:]]}
+    (tmp_path / "data" / "verification.json").write_text(json.dumps({"live": {"warning_table": big}}))
+    bs.write_pages(tmp_path, SPOTS[:1], root="https://example.org/", day="2026-10-11")
+    for page in ("clubs.html", "about.html"):
+        assert "990 of the 2,990 warnings that came true" in text((tmp_path / page).read_text()), page
     # Without the table, or with a field missing, the page's own words stay.
     fallback = "it warned of about one in five spills. About two in five of its warnings were followed by a spill."
     for v in ({}, {"live": {"warning_table": {**table, "hit_rate": None}}}, None):
@@ -231,3 +271,43 @@ def test_the_clubs_page_fills_its_warning_figures_from_the_live_scores(tmp_path)
             f.write_text(json.dumps(v))
         bs.write_pages(tmp_path, SPOTS[:1], root="https://example.org/")
         assert fallback in text((tmp_path / "clubs.html").read_text()), v
+        assert fallback in text((tmp_path / "about.html").read_text()), v
+
+
+def test_an_overflow_at_the_spot_is_under_a_tenth_of_a_km_not_zero(tmp_path):
+    # Henley, 5 Nov 2026: Friday Street pumping station at distance 0.0 made "The nearest is 0.0 km upstream".
+    upstream_file(tmp_path)
+    f = tmp_path / "data" / "upstream" / "wharfe-ilkley.json"
+    d = json.loads(f.read_text())
+    d["overflows"][1].update(distance_km=0.0, lake_distance_km=0.0)
+    f.write_text(json.dumps(d))
+    (tmp_path / "spot" / "wharfe-ilkley").mkdir(parents=True)
+    bs.write_profiles(tmp_path, SPOTS[:1], returns=returns(tmp_path / "r.parquet"))
+    words = text((tmp_path / "spot" / "wharfe-ilkley" / "profile" / "index.html").read_text())
+    assert "The nearest is under 0.1 km upstream." in words and "0.0 km upstream" not in words
+
+
+def test_a_long_list_shows_the_ten_with_most_weight_and_folds_the_rest(tmp_path):
+    """Readability pass, 5 Nov 2026: past ten overflows the page shows the ten with the most model weight, then
+    the rest in a fold that says how many there are in all; the CSV keeps every one. Ten or fewer: no fold."""
+    (tmp_path / "data" / "upstream").mkdir(parents=True)
+    rows = [{"site_id": f"S{i:02d}", "site_name": f"Site {i}/CSO", "company": "Yorkshire Water", "distance_km": float(i),
+             "lake_distance_km": 0.0, "travel_h": float(i), "weight": round(1 - i / 20, 3), "has_live": True} for i in range(12)]
+    (tmp_path / "data" / "upstream" / "wharfe-ilkley.json").write_text(json.dumps({"id": "wharfe-ilkley", "overflows": rows}))
+    spot = {**SPOTS[0], "upstream_summary": {"overflows": 12}}
+    (tmp_path / "spot" / spot["id"]).mkdir(parents=True)
+    bs.write_profiles(tmp_path, [spot], returns=tmp_path / "missing.parquet")
+    page = (tmp_path / "spot" / spot["id"] / "profile" / "index.html").read_text()
+    shown, fold = page.split('<details class="fold"><summary>The other 2 overflows</summary>')
+    shown = shown.split("<h2>The overflows, by model weight</h2>")[1]
+    assert re.findall(r"· (S\d\d)</span>", shown) == [f"S{i:02d}" for i in range(10)]
+    assert re.findall(r"· (S\d\d)</span>", fold.split("</details>")[0]) == ["S10", "S11"]
+    assert "The 10 whose spills matter most here, in order; the other 2 are in the fold under them." in text(page)
+    assert 'href="spot/wharfe-ilkley/profile/monitored-storm-overflows.csv" download>Download all 12' in page
+    listed = (tmp_path / "spot" / spot["id"] / "profile" / "monitored-storm-overflows.csv").read_text(encoding="utf-8-sig")
+    assert len(list(csv.DictReader(io.StringIO(listed)))) == 12
+    # Two overflows: one table, no fold.
+    upstream_file(tmp_path)
+    bs.write_profiles(tmp_path, SPOTS[:1], returns=tmp_path / "missing.parquet")
+    two = (tmp_path / "spot" / "wharfe-ilkley" / "profile" / "index.html").read_text()
+    assert "All 2, the one whose spills matter most here first." in text(two) and "overflows</summary>" not in two

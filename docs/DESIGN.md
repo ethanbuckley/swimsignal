@@ -236,8 +236,12 @@ those sizes; they were taken off to keep the rule simple.)
     "It is a score, not a probability." Not "spill risk", "overflow exposure" or "the modelled
     chance", and not called a probability. Until 11 October 2026 the definition said "how likely
     sewage from upstream is to reach the spot", which read as a probability beside the Method
-    page's "not a probability". An overflow's reach is likewise a weight, the share of a spill's
-    bacteria the model expects to arrive, not "the chance a spill affects this spot".
+    page's "not a probability". An overflow's **weight** (30 October 2026; until then "reach", "the share of
+    a spill's bacteria the model expects to arrive") is a modelled relative contribution weight, from the
+    transport assumptions (travel time and die-off, and dilution): neither a measured bacterial
+    concentration nor a calibrated chance of contamination. Pages say "22% weight" or "model weight", define it
+    once in `levels.js` (`WEIGHT_SAID`), and never call it reach or a chance. File and column names
+    (`weight`, `reach` in the organisers' CSV) are kept.
     Its tile and rows keep their labels, "Sewage spills" and "Sewage spills upstream".
   - The E. coli figure is the **E. coli estimate** in prose, and its tile is **Water quality**.
     Not "E. coli chance", "E. coli risk", "E. coli > 900" or "water-quality estimate".
@@ -264,6 +268,15 @@ those sizes; they were taken off to keep the rule simple.)
   October" (or "Forecast for today"). The readings, Right now, River level, Water temperature and the
   algae check, sit apart under "Latest readings", which says they do not change with the day. An
   outside review had picked Saturday at Long Bridges and found the tiles below still on today.
+- The live status before the level (30 October 2026, review of PR #463; docs/EVIDENCE-MAP-2026-10.md). A
+  spot's answer opens, on today's view, with how many overflows upstream gave a status at the last poll, in
+  ink: "Live status from 13 of 16 overflows upstream: none spilling at the last poll; 3 do not report, so
+  could be spilling unseen." Where none did, it leads in bold with "Live sewage spill status unavailable",
+  and the level under it is labelled "Modelled forecast" with its inputs. The compact headline leads with
+  the status where right now is not known ("Live sewage spill status unavailable: low risk forecast"), and
+  a raised day with nothing reporting says "(modelled, no live status)". The words are `liveHead` and
+  `liveLine` in `levels.js`. "Forecast only: no overflow upstream reports live", under a big green "Low
+  risk", was read as an observation at the Wye at Symonds Yat.
 
 ### Icons
 
@@ -285,12 +298,14 @@ paper, as the site's first screen looked in the fifth round.
 ### Layout
 
 - **Header**, shared by every page: the slate bar (seventh round), the mark, the serif wordmark and
-  the main links (Explore, Accuracy, About, Feedback; the app adds Saved) in white. The current page
-  is underlined in white.
+  the main links in white (from 2 November 2026: Plan a swim, Saved, Accuracy, About, Research Lab; "Home and Plan
+  as reference screens", below). The current page is underlined in white.
 - **App, desktop:** every view is a page under the header from 1,100 px (20 Oct 2026). A spot opens as
   a page: the map moves into the spot's own tile, 400 px tall; the opening spans the page over the
   wide sky (`icons/fells-wide.webp`, `make_sky_image.py --wide`), and under it two columns, 5 to 7,
   1,180 px at most: the five days, nearby and the water on the left, the map and why on the right.
+  **Replaced 1 November 2026** by sections across the page ("The spot page on a desktop", at the end): the two
+  independent columns left a long left column beside an empty right half below the first screens.
   Before, a spot was 3,803 px tall in the 460 px column at 1,440 x 900, beside a map already used to
   pick it. The list, Saved and Plan a swim match it (`cols`, `col-list`, `col-map`): the opening
   (`.lead`) centred over the wide sky, 760 px at most, the back link at the left edge as on a spot;
@@ -625,6 +640,25 @@ days began 739 px down at Long Bridges and 802 px down at Ludlow, below the scre
 - Measured on the live data of 20 October 2026, the top of the five days' rows, before and after: Long
   Bridges 739 to 576 px at 375 x 812 and 684 to 543 px at 1440 x 900; River Dart, Spitchwick (low) 669 to
   529 and 677 to 558; Ludlow 802 to 600 and 740 to 585.
+- **29 October 2026:** the sentence over the five days had grown again where an overflow too far away
+  to count is named ("Grasmere sewage works overflow is upstream too, but too little of its water would
+  reach here to count"), and with a flood alert the rows fell below the bottom bar at Waterhead (777 px at
+  375 x 812, the bar at 748). That clause now ends what the level counts, under the five days
+  (`answerAfter`), word for word. On the live data of 29 October, spots whose first day row did not
+  clear the bar went from 7 to 3: Waterhead 777 to 706, Tonbridge 749 to 701, the three Windermere
+  bathing waters 716 to 669. Still below it: Frensham Great Pond (the EA's advice against bathing comes
+  first, on purpose), River Dart at Spitchwick (two overflows discharging now, 734) and Waterhead by 4 px.
+- **Later on 29 October 2026 (the v2 mock-up, Ethan: "Build all of it"):** the spot's name comes first
+  and the place (kind, water, size, `.kind`) moves under the issue time; why and when share a line
+  ("Right now · Low risk tomorrow", `.wn`), as do what the forecast could read and the issue time
+  (`.ci`). Words unchanged. On a phone the page is then the answer, the five days and "Lower risk
+  nearby"; everything else goes in three folds named for the question each answers (`phoneFolds`):
+  *Why this level* (where the risk comes from, the Upstream map, the day's tiles), *At the water*
+  (readings now, the phone's small map, the rating, the practical guide, then reviews, visit notes
+  and illness reports), *What this forecast cannot see* ("Not known here", what the level counts,
+  the water-test line, the folded detail). Waterhead at 375 x 812 went from 8.7 screens to 3.3, Henley
+  from 5.8 to 2.9. A desktop keeps its columns; crossing 800 px draws the page again. The Upstream map
+  is closed by default on a phone: the trade-off Ethan accepted for a short page.
 
 ### River high and flood alerts (3 October 2026)
 
@@ -751,6 +785,10 @@ Since 4 October 2026:
 - **One word.** "Verified" is the notes' word for checked against an official source, so the guide
   uses it too. Before that the tile said "Confirmed". The notes keep "confirm" for a swimmer saying
   something is still so. The files keep `status = "confirmed"`.
+- **A dated record says "Source".** A fact from a record of a past date, such as a Defra designation
+  consultation, says it is "a February 2026 listing, not a current check". Under it, "Verified"
+  would contradict it, so its line is "**Source**: Defra, February 2026." (the page linked), from the
+  file's `source_date` (since 27 October 2026).
 - **One line for a run.** Facts next to each other under one topic, with the same line of who says
   so, share it. It shows once, after the last of them. Facts in a run sit 4 px apart, closer than the
   10 px between runs, so the line reads as theirs. A new topic, page, day or swimmer starts a new
@@ -759,6 +797,25 @@ Since 4 October 2026:
   the rest, as the reviews and the notes do. At five or fewer all show, so the button never hides a
   single topic. "Not in this guide yet" and the photos stay below it. Farleigh Hungerford's tile was
   2,136 px tall on a 320 px phone; folded it is 789 px.
+- **Bus and train** (30 October 2026), after Parking, from an operator's or a council's own page. Not
+  listed under "Not in this guide yet", as the guides written before it would all gain the same gap.
+- **The arrival guide** (prototype, `?arrive=1` only, `arrive.js`; docs/ARRIVAL-GUIDE-2026-10.md). The
+  same facts and lines of who says so, in the guide tile's place, as a journey: getting there (by bus or
+  train, by car), the path, getting in, getting out, toilets and changing, seasons and fees, each step
+  numbered in the sans with its facts as the guide's rows. Then "Who can swim here", "The water" (a
+  link to the forecast, nothing restated) and "What nobody has checked", each under a serif heading at
+  the body size over a hairline, so that permission, the way in and the water read as three separate
+  things. A step with no fact says "Nothing in this guide yet."; a step a photo would make findable
+  says "No photo yet of the place to get in." beside a camera from the stroke set, muted, not boxed.
+  A photo sits in the step of its `topic` and no other; an overview leads the journey; a sign's photo
+  sits under "Who can swim here", after a line saying its wording now and its scope are not verified.
+- **Historical photos** (30 October 2026): Geograph's, under CC BY-SA 2.0. The line under one says
+  "**Historical photo** by Oliver Dixon, taken 16 May 2023", the title linked to its page, the licence
+  linked to its deed, the changes, that this copy is under the same licence, and that it is not
+  SwimSignal's and shows that day only, not today's access, permission, water level or conditions. No
+  labels on it, and no "Photo:" credit in the caption, which the line already gives.
+- **Who can swim stays in view** (30 October 2026). Past the fold, the first four topics and Who can
+  swim show, wherever it falls; the fold still opens only when two or more topics would go.
 
 ### Notes on a visit (3 October 2026)
 
@@ -1006,6 +1063,20 @@ The card is a listed spot's card (`render` in `index.html`) with these differenc
   coverage page, which links to Natural Resources Wales and the Scottish Environment Protection Agency.
   The words say who publishes what, and nothing about the water.
 
+### The list's order: lowest risk first (29 October 2026)
+
+The list opens lowest risk first, the question a swimmer asks ("where can I go?"), in place of A–Z by area.
+Four sorts: Lowest risk, Highest risk, A–Z, Near me (`SORTS`; Ethan: "surely we want to be able to sort for
+lowest risk, and even lowest risk near me?"). The order (`lowOrder`): low, moderate, high, very high, then
+spots with no level, then spots whose official notice restricts swimming, last of all whatever their level
+(the reverse of Highest risk, where they lead); the nearer first among equals once a place is given; then the
+name. A line over the list says "Spots with an official notice come last." while one is in it. A–Z keeps the
+areas; the other sorts are one list. Once a place is given, the cards over the list are the lowest-risk spots
+within 30 miles in that order (`nearCards`, "Lowest risk within 30 miles"); with none so near, the three
+nearest ("Near you"). Before, the three nearest of any level put River Avon, Warleigh Weir (high, 13 miles)
+above the Wye at Symonds Yat (low, 27 miles) for a Bristol location. The trade-off: a close moderate spot is
+not among the cards when low ones lie within 30 miles; the list, nearest first under Near me, still has it.
+
 ### A swimmer's order (6 October 2026)
 
 A spot's page had grown to 7,087 px at 375 px wide (Wharfe at Cromwheel, about nine screens), and its
@@ -1069,6 +1140,38 @@ of the Wharfe at Burnsall, and Hurley the Wey at Waverley in place of Wallingfor
 influence" is not a row's reason: under "Lower risk nearby" every row is lower by the card's own rule,
 and the note under the rows says so.
 
+### Four picks from mock-ups (29 October 2026)
+
+A review that day (Vercel's interface guidelines and the "taste" skill's rules, each finding checked)
+left four layout questions. Each was mocked up beside the current page, and Ethan picked:
+
+- **The counts go under the list.** Over the list: "Updated Thu 15:42." and any official notice
+  (`overviewTop`); the full counts (`overview`, less its issue time) follow the last row
+  (`#overview-foot`). The day's answer line above already gives the overall picture. At 375 x 812 the
+  first spot moved from 732 to 664 px down, clear of the bottom bar at 748; at 320 x 640 from 843 to 753,
+  still below the bar (576), where no option fitted. Rejected: three counts kept above (687 px).
+- **The opening on the left edge from 1,100 px.** The spot's answer and the list's, Saved's and Plan's
+  openings line up with the tiles below instead of centring over them, which gave a wide screen four
+  left edges. Phones keep the centred answer. Rejected: left on phones too.
+- **The prose pages take the app's links:** Plan a swim, Saved, Accuracy, About, Feedback. Explore
+  went (the wordmark goes home, as in the app). On a phone Feedback leaves the header row, so four fit,
+  and stays in every page's foot. Rejected: Explore added to every page, the app included.
+- **The Method page's opening:** the lead paragraph in ink, and "In short" on the paper under a hairline
+  instead of a white box (Rules for changes, 3). `p.lead` and `.summary` are shared, so every prose
+  page's opening is ink and every summary unboxed. From 1,100 px "On this page" sits beside the text
+  and stays in view while reading (Method only). Rejected: the same without the contents beside.
+
+### The list's choices in one sheet (29 October 2026)
+
+The sorts, the kinds of water and Low risk only were nine controls between the opening and the first spot
+(Hick's law: the more choices in view, the longer each decision). They are now behind one Filter button
+beside "All spots", in a sheet that rises from the foot of a phone's screen and sits centred on a wider one
+(`#filter-sheet`, a `<dialog>`; Escape or a tap on the backdrop closes it). Inside: Sort, Water, Risk, as
+labels in the sans, then "Show 13 spots", the count the list will show. The button carries a count of the
+choices that differ from how the list opens ("Filter, 2 on"). The day picker stays in the opening: it
+changes every level on the page, not just the list. "Low risk only" left the opening (and the build's copy
+of it, `home_lead`); the note under the opening that explains it still shows while it is on.
+
 ### What was kept on purpose
 
 The information architecture (list → spot → day), every word of the terms and privacy notice, the
@@ -1081,7 +1184,9 @@ how things look, not what the site says.
 1. Add a colour, size or radius only as a token in `page.css`, and mirror it in `index.html`. A
    font size is one of the six `--fs-*` tokens, or it is a seventh size. The two sets must stay
    equal (`tests/test_design_tokens.py`); only the app's layout and filter tokens (`--tile-filter`,
-   `--header-h`, `--nav-h`) live in `index.html` alone.
+   `--header-h`, `--nav-h`) live in `index.html` alone. The Research Lab's editorial variant (a warmer paper,
+   the deep frontispiece, the selected rust, the gap hatching) lives in `lab.css` alone, over `page.css`
+   ("The Research Lab", below); a Lab token never redefines the site's radius, ink, brand or type sizes.
 2. Place names, page titles and section headings in the serif, 600; risk levels, a row's headline,
    controls and numbers in the sans. No uppercase labels, no tracking.
 3. No new radius, shadow or gradient. In the app the answer is unboxed and everything after it is a
@@ -1103,7 +1208,8 @@ how things look, not what the site says.
    deleting a review or a note on a visit, and asking about one of yours that is waiting (the
    reviews Worker); opening the Welsh list on the coverage page (Natural Resources Wales's
    data service); and opening "Today's EA advice" on the coverage page or a bathing water's page
-   (the Environment Agency's own panel, in a frame with scripts off). A library is copied into `src/dipcast/site/vendor/` with its licence and pinned
+   (the Environment Agency's own panel, in a frame with scripts off); and pressing Ask in Ask SwimSignal, while
+   it is on (the Ask Worker, and Anthropic behind it). A library is copied into `src/dipcast/site/vendor/` with its licence and pinned
    by hash.
 
 ## Review refinements
@@ -1121,9 +1227,11 @@ gives all four navigation links a single full-width row.
 
 ## Plan a swim (3 October 2026)
 
-- `plan/` is a view of the app, as Saved is, reached from "Plan a swim" in the header: on a phone the
-  header's one link (the bar at the bottom keeps its three), hidden over the full map, where Back
-  needs the room. Its choices sit on the sky as the list's do: the day and the distance side by side,
+- `plan/` is a view of the app, as Saved is, reached from "Plan a swim" in the header. On a phone it
+  was the header's one link until 29 October 2026; it is now "Plan" in the bar at the bottom, which has
+  four places: Explore, Map, Plan, Saved, home on the left and yours on the right, each icon over its
+  label, as phone apps have them (Jakob's law: people expect an app to work like the ones they know).
+  A phone's header is the wordmark alone, and Map's "Back" over the full map. Its choices sit on the sky as the list's do: the day and the distance side by side,
   the starting place as a field with the pin icon where the search has the glass, the kinds of water
   as the list's chips. The distances read "20 miles", not "Within 20 miles", which did not fit a
   320 px phone; the count under the chips says "within".
@@ -1213,6 +1321,54 @@ gives all four navigation links a single full-width row.
   check's words and date, or "No access information"), local warnings and model limits. Each cell says
   what is not known rather than stay blank. The note above the table: "A lower forecast level does not
   mean safe water: check the signs at the water." No column is called the best.
+
+## The home page's opening, shorter (29 October 2026)
+
+The v2 mock-up's opening, built (Ethan: "Build all of it"). Before it a phone met 14 controls before the
+first spot's answer; the first row began 732 px down a 375 x 812 screen, under the tab bar at 748.
+
+- **Near me is a pin at the end of the search field** (`NEAR_PIN`, `.search-loc`, "Spots near me"), as a
+  maps app has it, in place of a full-width button. It stays once a place is given.
+- **"Or check the river or lake where you are" went**, with `hereForecast`: the map's tap on any river or
+  lake does the same. The trade-off Ethan accepted.
+- **The five days are a strip**, Plan's (`list-days`), each day with how many spots are at low risk that
+  day (`lowOn`, the same count Low risk only gives), and a line under it: "Under each day: the spots at
+  low risk, of 109." It replaced the select ("Today and tomorrow" first) and the line under it ("This
+  weekend, Sunday: 66 of 109 spots at low risk · Show", `answerLines`, removed). The list opens on today,
+  not today and tomorrow together (the other trade-off accepted); the map's own picker keeps both. A
+  link from the list carries `#day=` only for a day that is not today, so a spot opens on its own answer.
+- The build's copy (`home_lead`) has the pin and the strip, today checked, the counts waiting for the
+  forecast.
+
+At 375 x 812 the first spot now begins 544 px down (320 x 640: 555, the bar at 576).
+
+## Your outing, back on Explore (29 October 2026)
+
+An outing made on Plan a swim (a spot, a backup, a time, what for) was kept in this browser (`dipcast.plan`),
+but found again only by opening Plan. Explore now shows it above Saved spots, "Your outing", while its day is
+one of the five days, its spot is still listed and it has a starting place (`planOuting` in plan.js; without
+a starting place Plan draws no outing, so its link would open an empty plan). Under the heading, the plan's
+own words for when and what for and the backup by name (`outingResumeSaid`), then the spot as a saved card
+for the outing's day (`savedCard`: official advice first, then that day's level), then, where the spot has
+official advice, the spot page's line "This level is SwimSignal's forecast. The official advice above is
+separate." With paddling or paddleboarding, the plan's note "The level is for the water, the same whatever
+you do on it." "Open your plan" opens Plan a swim on the kept plan. Hidden while the list is narrowed, as
+Saved spots is. Nothing new is stored, and a day gone by takes it away.
+
+## How an outing's backup is joined to its spot (30 October 2026)
+
+A backup on the same water as the spot can be hit by the same spill, and the outing tile did not say so.
+The spot page's Nearby card already works out how two spots are joined (`joined`, `nearWhy`, from
+`src/dipcast/spot_links.py`), so the tile now says it in the card's words, in one plain line over the two
+columns (`outingJoin` in outing.js): "Backup: shares overflows with your spot." (with "same river" where
+both are on a river of one name), "same river, further downstream" or "upstream", "same catchment, another
+branch", or "different catchment". The line sits over the columns, not under them: each column runs on
+through its access guide, so under them it would be two phone screens from the names. A different catchment
+or branch gets a plain fact, never a reassuring word: "It has overflows and runoff of its own." Nothing is
+said where either spot has no catchment, or while a shared overflow cannot yet be ruled out (same catchment,
+neither spot's own file in). In the backup's list, a spot in another catchment than the spot's carries
+", different catchment" after its name; a long name loses the end of it in a closed select on a phone, and
+the line says it in full.
 
 ## Since you last looked (4 October 2026)
 
@@ -1363,6 +1519,9 @@ gives all four navigation links a single full-width row.
   margins 9 by 11 mm, rows 4 px apart, no site foot, since the issue line says what it said. Nine rows and
   the credits fit one page; ten rows did before the credits (5 October 2026), and now carry the credits' end
   to a second page for 13 of 41 lists of ten (live data of 20 October 2026).
+  Headings (27 October 2026): the name is the h1, each spot's name an h2 and "Data credits" an h2, so no
+  level is skipped and a screen reader steps from spot to spot. Both h2s keep the look they had: the name's
+  h2 (`.s-h`) takes no size or margins of its own, and the credits' heading is set at the notes size.
 - The link comes from "Make a sites link": under "Share this list" on the Saved page, for the list shown
   (`lists.js`, `sitesHash`), and in a fold on the organisers' page, where several spots are ticked in a box
   that scrolls on its own, in the order they were picked.
@@ -1445,6 +1604,28 @@ gives all four navigation links a single full-width row.
   `levels.js`'s word for word (a test checks), each quote is word for word from a page opened on the date
   given in the page's comment, and level words carry "risk".
 
+## Each overflow's record (31 October 2026)
+
+- **`overflow/<id>/`** (`src/dipcast/overflow_record.py`, template `src/dipcast/site/overflow.html`, written by
+  `write_overflow_pages` in `scripts/build_site.py`) is a prose page with no script, one for every overflow with an
+  annual-returns id upstream of a spot with a page. In order: the plain name, then the company, its own name and the id
+  as the dateline; the caveat (not a water test; a spill count is not a finding that a permit was broken); the record
+  as label-and-value rows (stacked on a phone); the spots downstream, each linked to its page and its overflow history;
+  spills each year as the Accuracy page's table; recent spills; improvements recorded; spills in dry weather only where
+  the spot page's rule notes them, labelled as SwimSignal's inference with the method linked; "Send this record"; the
+  sources.
+- Every figure is a source's, credited on the page. What a licence does not allow is named with its reason ("not
+  published here"): the consents register (internal use only), Southern's and Yorkshire's own event files and the
+  companies' plan layers (no licence), Water UK's plan (its terms forbid reuse).
+- Words: neutral and factual. Never "breach", "illegal" or "safe"; a WINEP date is "the date the action should be
+  delivered, a deadline, not a record that it was".
+- "Send this record" is the one filled button (`.btn.primary`). It is a `mailto:` with no address: the draft names the
+  company, the overflow, its last two years' counts, the improvement entry and the WINEP date, asks one question and
+  links the page. The company's own contact page and UK Parliament's "Find your MP" are ordinary links. The draft is
+  also shown in a fold for anyone without a mail app. SwimSignal sends nothing.
+- Linked from each overflow's name in the spot page's "Overflows that matter most" and on its overflow history. In
+  the sitemap; not in the offline copy or on the data page. Printed: no nav, no send section.
+
 ## The first screen (6 October 2026)
 
 - **The first saved spot fits on a 375 x 812 phone.** Before, the Saved tile began behind the bar at
@@ -1517,3 +1698,389 @@ live site's data.
   and level words in the text shades. No text under 28 px, since the card is seen at about a third of
   its size; every text colour is 4.5:1 or more on its ground (a test checks). The foot gives the issue
   time and "A forecast, not a water test."; the storm card adds the overflow data's CC BY 4.0 credit.
+
+## The map's dots, the list's key and the folds (31 October 2026)
+
+From a walk through the live site at 375 px. What was measured, and what changed:
+
+- **A tap lists the spots under it.** At the zoom a phone opens on, 100 of the 109 dots overlapped
+  another (each 18 px across, the nearest a median 4 px away), and a tap opened whichever was drawn
+  last. Now every dot within 20 px of the tap is listed in a card at the map's foot, as the list's own
+  rows; a row opens its spot, and past three, "Zoom in" fits the map to them (the Lakes went from one
+  pile to a median 19 px apart). On a phone even a lone dot gives a card, so you see what you hit
+  before the map goes; with a mouse, which can hover for the name, a lone dot opens at once. The dots
+  are not grouped under a count: a cluster's one colour would hide a high level among lows.
+- **One float at the map's foot.** "Forecast for any water" and "Search an area" moved into the key,
+  now "Map key, notices and help". A returning visitor's phone map had three floats there, a first
+  visit four (with the first-tap line); now one, or two.
+- **The list's key once.** "Risk L/M/H/VH" (#519) is on the first row with risk bars, in the list and
+  in the map's card; rain rows keep "Rain mm", the exception. Every row's letters and its full
+  description for screen readers stay. The bars sit at the row's edge, so they line up without the key.
+  Six rows fit on a 375 px screen where five did.
+- **Every folded tile alike.** Saved's "Activity preferences and swim journal" and "Learn about water
+  conditions" had the browser's triangle in the text face, beside "Open a shared list" in the display
+  face with the chevron. Every `details.sec.tile` now opens on its name in the display face with the
+  chevron.
+- **Plan's place field** kept 52 px on its right for the location pin it does not have, and read
+  "Starting fror" at 375 px.
+
+## Ask SwimSignal (31 October 2026, off until Ethan deploys it)
+
+A question in plain words on Plan a swim, answered from SwimSignal's own data (`ask/README.md`). One tile, "Ask
+SwimSignal", above the plan's groups, only while spots.json has `ask` (`DIPCAST_ASK_URL`): a field and an Ask
+button on one row, and one muted line saying an AI model answers from SwimSignal's data, that the question goes to
+SwimSignal and Anthropic, and to leave out personal details, with a link to the privacy section.
+
+- **The model's words apart from the data's.** The day as a small heading, the model's summary, then "Read as:"
+  with how it read the question, muted. Then the spots, one a row between hairlines: the name (a link to the
+  spot's page, on the day), distance, kind and area muted, the model's phrase on why it fits, then SwimSignal's lines
+  for the day, each with its source and date muted under it. The official advice line is first and in 600 weight;
+  the rest are regular. Then "Not known", a list, and the notes, muted. The last line says when the data was issued,
+  that an AI model wrote the answer, and links to Plan a swim with the same day, place and distance.
+- **No box for the answer**, no pill, no eyebrow, no callout: it is the tile's content, as the plan's groups are.
+- **Never "safe" or "clean"**, as everywhere on the site. The Worker refuses an answer whose words use them,
+  judge a spot for children, or name a condition or a number its data did not give.
+
+
+## The Research Lab, and its manner on the rest of the site (1 November 2026)
+
+Ethan chose the Research Lab's look as the reference for the deeper evidence: real satellite plates, drawn
+catchments, ink on paper, serif headings, numbered figures with captions, and gaps drawn as gaps. This pass made the
+Lab part of the same product and carried a restrained share of that manner into the forecast pages. The forecast
+answer, the five days and official advice keep their place and their look.
+
+**One shell.** Every Lab page loads `page.css` and then `prototypes/research-lab/lab.css`. The build puts the site's
+own header (`build_site.site_header`, with Research Lab as the current page) and the phone bar in place of the
+stand-in a repository preview shows. So the fonts, header, phone bar, fields, select arrows, tables and type sizes
+are the site's, written once. `lab.css` resets the few prose-page defaults that would otherwise reach its controls
+(labels, check boxes, range sliders, `.note`), each with `:where(.lab)` so any Lab class still wins.
+
+**The Lab's editorial variant.** These tokens differ from the site's on purpose, in `lab.css` alone:
+- a warmer paper (`--paper`, `--paper-2`) with its grain, and a warmer `--card`, `--line` and `--rule`;
+- the deep frontispiece (`--deep-2`, `--deep-ink`, `--deep-muted`; `--deep` itself is a shared token, since the
+  covers on the forecast pages sit on it while they load);
+- `--pick`, the selected state's rust, and `--gap`, the hatching for missing data;
+- `--fs-title` 44 px (32 on phones), an exhibit's one large line.
+
+Radius, ink, brand, bar and the six type sizes are the site's. The Lab's old 6 px radius and its 21 px heading
+size are gone.
+
+**Navigation.** The header's desktop links gained "Research Lab" (`lab/`) and renamed "Research" to "Research &amp;
+data" (`research.html`, now titled "Research and data"). The phone's More menu has both. The four primary phone
+destinations are unchanged. Under the header each Lab page has its own bar: "Research Lab", then the exhibits
+numbered (five from 2 November 2026, when sampling gaps was added). The page you are on is in white with a rule under it, so colour is not the only sign. On a phone the bar
+scrolls sideways, and the current one is scrolled into view. Each exhibit ends with the previous and next exhibit by
+name, the overview at either end, and "Back to the forecasts".
+
+**An exhibit's opening.** The order is the title, the question, then the answer in a sentence or two. "The figures
+behind it" are folded under the answer. Then one scope line (exploratory, the outcome cutoff), then "Data as of": the
+dates in one line, with how each part is refreshed and when the page was built inside the fold. A part past its
+refresh limit is said outside the fold, in amber, never hidden. A file that fails to load replaces the answer with a
+plain sentence. The repository-only advice ("serve the repository root") is in the README, not on the site.
+
+**Places.** A spot's page has "Explore the evidence" after its detail tiles, never above the answer. It lists only
+the exhibits that hold that spot's own record, each opened on it: its lake (`#lake=`), its overflows (`#spot=`), its
+bathing water (`#bw=`), and its workspace catchment with the spot in focus (`#c=…&spot=`). The keys come from
+`build_site.attach_lab_links`, in the spot's own file. A spot no exhibit holds is told so, with a link to all four.
+Each exhibit links back to "Today's forecast for" the place it shows. A link to a lake, bathing water, catchment or
+spot an exhibit lacks says so in a status line and names what is shown instead. It never swaps one in quietly. In
+exhibit 1 the wide picture follows the selected lake. Where that lake has no wide picture, the line under the
+pictures says which lake the picture is.
+
+**Covers.** The four exhibit covers are pictures (`prototypes/research-lab/assets/covers/*.jpg`, 320 px), taken from
+the Lab front page's own drawn covers. They appear on the Research page, on Accuracy (exhibit 3), in the spot page's
+tile and in the home page's invitation. On the Lab's front page each card is one link. Its cover is drawn inert
+(`drawMap({inert: true})`: no focusable points, `aria-hidden`), with `pointer-events: none` inside, so nothing in a
+card is a control of its own.
+
+**The manner on the forecast pages:**
+- **Routes** (`.routes`, in `page.css`, repeated in `index.html` as the tokens are): the cover in the plate's ink
+  hairline, "Exhibit n" in the monospaced face of a figure label, the name in the serif, one line, between hairlines.
+  There is no card.
+- **The home page:** one compact "Research Lab" block after the list and its footnotes, below the task of finding a
+  spot. It shows the four routes, two columns from 541 px.
+- **A spot's Upstream map:** a figure in the Lab's manner. The map is square-cornered in an ink hairline with the
+  plate's corner ticks, and its caption opens with its name in the serif ("Upstream of …"). Only this map: the small
+  phone map and the full map are unchanged.
+- **Accuracy:** one route to exhibit 3 under the lede, in place of a link in the lede's last sentence.
+
+**Words.** The Lab's pages say "exploratory" and keep their distinctions: a satellite index is not a toxin
+measurement; a hindsight estimate "would have flagged", it did not warn; the model's weight is a factor from 0 to 1,
+not a share arriving; the lake coverage is pooled over five sites. The spot page's tile says the Lab changes nothing
+in the forecast.
+
+## The spot page on a desktop (1 November 2026)
+
+Ethan's screenshot of River Eden, Armathwaite on a Mac showed the fault the two columns made: below the first screens
+the right column ("Latest readings") ended, and the left ran on alone for about 3,000 px at 1,440 px wide (the
+detail, history, spill map, nearby and the guide). The page is now a run of **sections, each across the width**
+(`index.html` `deskSections`, from 801 px; a phone keeps its one stack and `phoneFolds` unchanged):
+
+1. **The opening** (`spotTop`): the place, the level, the issue time and official advice when there is any; the
+   sky picture with 32 px under it, not 48.
+2. **Forecast and upstream:** the five days, beside the Upstream map, where the risk comes from and what the
+   level cannot see (5 to 7), so the two halves end near each other.
+3. **Conditions:** water temperature, river level, rain and air in one row of four; three or two in a row of three or
+   two, so no cell sits beside an empty one. Each keeps its unit, its estimate or source line and its corner button.
+4. **The open day:** its forecast ("Forecast for …", which showDay changes) beside the latest readings, measured
+   (7 to 5); alone across the width when there are no readings, with a lake's past temperatures and local samples
+   under it.
+5. **Evidence and history:** one paper surface, its tiles as sections between hairlines, not separate boxes: what the
+   level rests on, how the forecast has done here, past spills, the timeline, the overflows that matter most and the
+   day-by-day numbers, beside the spill map ("Where spill water may be", a model estimate) (7 to 5). Past spills by
+   month, a chart, opens on a desktop as it does on a phone. Without a spill
+   map (lakes, or no file) the evidence takes the width (`.row:has(> .col-b:empty)`).
+6. **At the water and nearby:** one paper surface: the EA's rating and any lab results beside the nearby spots, then
+   the practical guide across the section in two columns of its sections and pictures, and after it the notes and
+   reviews. Without a rating, the nearby spots pair with "Know this spot?".
+7. **The Research Lab's exhibits** on this spot, the routes side by side.
+
+Then the actions and the technical details, as before. Rules that hold for the whole page:
+- **No column outlives its section.** Two halves sit side by side only where they are of similar height, or where
+  the shorter one is the section's natural end. Never masonry, never equal-height boxes to hide a gap.
+- **Widths:** the page 1,320 px at most (the list, Saved and Plan too, and the foot on the same edges); paragraphs in
+  the evidence and water sections at most 68 characters. From 801 to 999 px each section is one 720 px column; the two
+  halves sit side by side from 1,000 px.
+- **DOM order is reading order**, and Tab order, in both layouts. The mount points (`#sources-host`, `#nearby-host`,
+  `#plume-host`, `#replay-host`, `#since-last-host`, `#evmap-host`, `#scores-host`) and tile ids are the same in both,
+  so later fills, showDay and the notes and reviews find them.
+- **Headings name the kind of evidence:** "Forecast for …" (forecast), "Latest readings" (measured), "Evidence and
+  history" (records, measurements and model estimates, each tile saying which), the spill map "a model estimate".
+
+**The rest of the product, in the same pass:** the home page's Research Lab block opens under an ink rule, as a Lab
+section does. Accuracy and Research and data open each section under an ink rule (`body.report`), so a long page
+reads as parts. The list, Saved and Plan a swim take the same 1,320 px width. Their own layouts are unchanged.
+
+**Checked:** headless Chrome at 390, 768, 1024, 1280, 1440 and 1920 px, whole pages, four spots (Armathwaite, Ilkley,
+Derwent Water, Janet's Foss with no overflow upstream). The tall captures were stitched from screenfuls: one
+capture taller than the screen painted a lazily drawn map as blank. Not checked: Safari on a Mac (the session had no
+Safari driver), a screen reader.
+
+## Home and Plan as reference screens (2 November 2026)
+
+Ethan approved a design pass making the working screens read as the Research Lab does, with no new theme and no
+change to a forecast. Home and Plan a swim set the pattern; Saved and the prose pages take its primitives.
+
+**Navigation.** The desktop header has five links: Plan a swim, Saved, Accuracy, About, Research Lab. Research and
+data and Feedback left it: they are in the phone's More menu, on the Lab's front page (Research and data) and in every
+page's foot, so neither is a dead end. The Lab stays one click away. Each link stays on one line.
+
+**Working screens: quieter scenery, opaque paper.** On the list, Plan a swim and Saved, the sky picture behind the
+opening is at 45% (`body:is(.view-list, .view-plan, .view-saved) .lead::before`). Their groups sit on opaque paper
+(`--card`) with a hairline, in place of frosted glass, so a row reads the same wherever it scrolls. A spot's page
+keeps both: there the picture is the place.
+
+**Home, from 1,100 px.** The title (at the level size, 30 px), one line under it, then the search and the five days
+on one row, then the count line and the freshness: the list and the map start about 290 px down at 1,440 x 900
+(about 440 before). The markup is the built page's (`home_lead`); only the layout changed, so nothing moves when the
+script draws. A phone is unchanged. After the list, the Research Lab block opens under an ink rule.
+
+**Plan a swim, from 1,100 px.** One planning bar on the paper, laid out in the order the Tab key moves (the phone's):
+- the day, beside what for (swim, kayak or canoe, paddleboard);
+- where from and how far, with the lines that answer them under it (where the plan starts, the count and Compare
+  spots), beside the kinds of water;
+- what the activity changes, at the foot under a hairline (it holds no control, so the Tab order is unaffected).
+
+The options, the outing and the results with the map start about 460 px down (about 610 before). The DOM order is
+the phone's, so a phone and the Tab order are unchanged. The activity a visitor chose is kept in their browser as
+before. It is never a default for anyone else.
+
+**Comparing.** The planner's main action.
+- Every result row has its Compare tick, always.
+- Nothing is chosen until ticked. The first three used to come pre-ticked, which read as a choice already made.
+- A tray at the head of the results (`planTray`) says what to do with none or one chosen. With some chosen it names
+  them, each with its distance and a cross to take it out, then "Compare 2 spots" and Clear.
+- The ticks are kept for the visit (`PLAN_PICKS`), so opening a spot and coming back keeps them. They are never
+  stored.
+- The table aligns the same fields for every spot: the five days, Distance, Water today, Right now, the EA's rating,
+  today's EA advice, water samples, algae, access, local warnings and model limits.
+- Water today says the temperature as measured or an estimate (provisional where it is), and the river or lake level
+  with its gauge named, since spots on one river often share one. Otherwise it says "No water temperature", "No
+  river gauge" or "No current level reading".
+
+**States.**
+- The forecast that did not load says so in a tile, with the reason, Try again, and where official advice is (the
+  Environment Agency's pages and the signs), and that no level is shown rather than an old one.
+- An empty Saved page says what saving does and that saved spots stay in the browser, with Find a spot and Plan a
+  swim.
+- The planner's empty, no-place and no-results states are unchanged. They already say what to do.
+
+**Checked:**
+- Real Safari 26.6.2 on this Mac, at 1,440 px:
+  - Plan from Oxford for kayak or canoe on Tuesday: two spots ticked, compared (Distance and Water today rows), a spot
+    opened (its page on Tuesday), and back (`history.back()`). The plan came back on the same day, activity and
+    place, with both ticks.
+  - Saved, empty and with three spots.
+- Headless Chrome, whole pages: Home and Plan at 1,440 px.
+- Not checked: a screen reader, a five-person usability study (later, by people, not invented here), and Safari at
+  increased zoom.
+
+## Plan a swim: caveats once, and what kind of value (2 November 2026)
+
+**Caveats said once.** A caveat that applies to every option, or to every row of a group, is said once above them.
+A line stays with an option only where it differs for that spot.
+- "Options today": the intro says "A forecast for the whole day, not by the hour, and not a water test: check the
+  signs at the water before you go in." Under it, "The same at all three" (or "both") holds the rows whose words
+  match at every option. Today these are water temperature, daylight and, for a boat or a board, wind. It also holds
+  the gaps every option has ("Not known at any of them: access."). See `dpShared` in `dayplan.js`.
+- Access, rules for boats and boards, launching, the river level and finishes stay with each option even when they
+  match. They are the spot's own facts, and "not confirmed" or "Not known" qualifies that spot's level.
+- Official advice stays above each option's level.
+- The result list: when every row in a group has "a spill … is possible, not expected", the group's line says it once.
+  Each row keeps its own count ("43 overflows upstream."). See `planQuiet` in `index.html`.
+
+**The comparison.**
+- Short labels, with official advice first: Today's official advice, Right now, Bathing-water rating, Latest lab
+  sample, Algae, Access, Flood warnings, Model limits.
+- The caveat every column shares is the row's note, in muted text under its label. Examples: "From up to four
+  seasons of samples; not today's water quality" and "A desk check of published sources; signs at the water not
+  inspected". It is the third field of `compareRows`.
+- A row whose cells all say the same is one cell across the columns.
+- Distance reads "1.1 miles".
+- Water today is two rows, Water temperature and Water level.
+- Figures use tabular numerals.
+
+**What kind of value.** One treatment, `valueTag(kind, words)` in `index.html` (classes `vt vt-<kind>`), wherever
+the planner or a comparison gives a reading:
+
+| kind | how it looks | words |
+|---|---|---|
+| `measured` | value, then a muted word at the meta size | its source and time: "Measured at Bowness, 2 h ago"; "Checked 3 Oct 2026"; "Seen 23 Sept 2026" |
+| `estimate` | value, then a muted word | "Estimate", "Provisional estimate" |
+| `stale` | a muted word after "Not known", led by a dash | past its age rule: "Last reading at Addingham 2 days ago: too old to use" |
+| `none` | the words are the value, in ink, semibold, at body size | "Not known", "No reading", "No gauge", "None recorded in this update" |
+
+- The word carries the kind, so colour is never the only cue.
+- The risk colours are not used and keep their meanings.
+- In the comparison, a value's kind sits on its own line under the value.
+- A gap is set in ink, not grey, so it never reads as small print (the 31 Oct 2026 rule that "Not known" is as plain
+  as a fact). `.vt-none` replaces the old `.dp-unk`.
+- When Node runs `dayplan.js` alone, `dpTag` writes the same markup. Saved and Conditions take the same helper.
+
+## The organisers' worked example (2 November 2026)
+
+`demo.html` (`demo.js`) is a prose page that walks one invented activity centre's session on four Windermere
+bathing waters through the existing tools, on the live forecast: the session, the briefing in `briefing.py`'s words,
+the sites view for the session's day, what changed since the previous update, the issue id with the decision record,
+and the signs. Each step is an h2 with a number; the part the script draws sits under a hairline (`.d-live`), so it
+reads as the tool's own output. The sites view's rows are `sites.js`'s markup with its CSS copied, without its print
+button (`view(..., { print: false })`). A "Free today" summary box opens the page: the tools are free, paid terms are
+only being explored, no organisation pays, swimmers' features stay free. Linked from the organisers' and clubs pages;
+in the sitemap, not in the offline copy. The commercial wording and the interview plan are in
+`docs/ORGANISER-INTERVIEWS-2026-11.md`.
+
+## Saved as a starting page (2 November 2026)
+
+Saved opened on a day-by-day grid and five tall cards beside a 480 px map. At 1,440 px the map ended about 420 px
+down and the right half stayed empty for about 2,800 px. It is now a page to start a visit from. It uses the
+primitives from "Home and Plan as reference screens": opaque paper, hairlines, the list chips. It adds no new
+colour, radius or box.
+
+**Order (one stack on a phone; the same DOM and Tab order on a desktop).**
+1. The opening, as before: the heading, the list chips when there are several lists, the lede ("kept in this
+   browser"), notices, the best-day line.
+2. **Since you last looked:** one tile, one sentence (`since.js`, `sinceSummary`). See below.
+3. **The places, grouped** (`lists.js`, `savedGroups`), each group a paper tile with its heading and the cards
+   between hairlines:
+   - With more than one list, the list shown is the group, under its name. Its chips already choose it, and Share,
+     Compare and Save act on it. Showing every list at once would cut those tools off from what is on screen.
+   - With one list, its spots are grouped by area. Inside an area they keep the order saved. The areas come in the
+     order their first spot was saved.
+4. Beside 2 and 3 on a desktop, the map. It is sticky, so it stays beside the places while they scroll, and it ends
+   with them.
+5. Then, each across the width (`.saved-secs`): Day by day; Alerts beside Share this list; Compare; Your lists;
+   Find a window; the journal beside Water-wise. Two tiles sit side by side (`.saved-pair`, from 1,000 px) only when
+   both are drawn and of similar height. A tile drawn alone takes the width. Paragraphs stop at 68 characters.
+
+**A card says less, in this order.**
+1. The name, and the kind of water.
+2. Official advice first (`eaTodayTag`).
+3. The level with its noun ("Low risk"), and the line under it, as before.
+4. The water now, only what is known: the temperature, and the river or lake level with its own words. Each is
+   tagged as measured or an estimate with the shared `valueTag` from the planner wording work. Where neither is
+   known, nothing is said. The spot's page says what is missing and why.
+5. Its own change line (`sinceSaid`), unchanged.
+6. Its alerts.
+
+**Since you last looked.** The summary uses the cards' own rules (`sinceLine`), so it never says more than they do,
+and it never says why something changed.
+- First look: "This browser has not shown these spots before, so there is nothing to compare yet."
+- Same forecast as last time: "No new forecast since you looked on Friday at 18:20."
+- Newer forecast, nothing the cards would say: it lists what was checked: no level, rating or official notice
+  changed, and no overflow upstream was reported starting or stopping. It never says "safe" or "all clear".
+- Changes: how many, and which spots by name, then "Each card says what changed and which forecasts it compares."
+  Names hold commas, so a list of them is separated with semicolons.
+- A time is given only when every note compared came from the same look. Otherwise it says "since you last looked
+  at each".
+- A spot saved since the last look is counted separately ("One spot has nothing to compare with yet").
+- The notes are read as they were when the page opened, so the summary and the lines stay for the whole visit.
+
+**Alerts on each card** (`lists.js`, `spotAlert`):
+- **On:** a tick, "Alerts for this spot", and "A notification if it reaches high or very high risk."
+  - Unticking leaves that spot out of the list sent to the alert service. Nothing else is sent. The left-out spots
+    are kept in the browser's alert record (`dipcast.push`, as `off`), so the page's re-sends leave them out too.
+    Turning alerts off forgets them with the rest.
+  - The saved lists and `dipcast.saved` are untouched.
+- **Off:** "Alerts are off." and a "Set up alerts" button. It brings the Alerts tile into view and focuses its
+  heading. The tile holds what turning alerts on sends, so nothing is turned on from a card.
+- **Blocked in the browser's settings:** says so.
+- **No notifications in this browser** (an iPhone outside the Home Screen app, Facebook's or Instagram's browser, the
+  offline copy turned off, no web push): says so, with "See Alerts", where the tile gives the steps. Where email
+  alerts exist, it says they cover the spots saved when you sign up. Email is not per spot.
+- **The alert service did not answer** (a network error, a time-out or a 5xx): "The alert service did not answer,
+  so alerts for this spot are as they were. Try again later." The Alerts tile says the same in its own message.
+  Before, it said "Could not change alerts: Failed to fetch."
+- **Nothing** where the site has no alerts.
+- Alerts for a date (`push.dates`, on since 31 Oct) are untouched. The app never sends dates, and the alert service
+  keeps the dates asked for on the organisers' page or an outing.
+
+**Unchanged:** the empty state from #600 ("Saved spots stay in this browser: nothing is sent to SwimSignal.", Find a
+spot, Plan a swim, no heading); a shared list's page; storage of the lists; one spot keeps its week on its card and
+has no grid.
+
+**Checked:**
+- Headless Chrome, whole pages at 390, 1,024 and 1,440 px, before and after: empty, one spot, and five spots in four
+  areas, two of which changed since a look on Friday (made by editing the kept notes, not the forecast).
+- Real Safari 26.6.2 at 1,440 px, five spots: the summary, four groups, the alert lines, both pairs side by side,
+  no sideways scroll.
+- Headless Chrome: the on, left-out, service-down and off states, and "Set up alerts" focusing the Alerts heading.
+  The states were set in the page. No subscription was made.
+- The Browser pane, where notifications are denied: the blocked state on each card, matching the tile.
+- Not checked: a real subscription (no notification is sent to anyone in testing), iPhone Safari, a screen reader.
+
+## Conditions for your outing (2 November 2026)
+
+On Plan a swim, the outing gains a panel under the spot and its backup (and a paddle's finish): **Conditions for your
+outing** (`outing.js`, `outingConditions`). It uses the primitives from "Home and Plan as reference screens": the
+spot page's figure-and-caption cells (`.cond`, `.cell`, `.cfig`, `.csub`) on the opaque paper of the working screens.
+Each spot has six cells, three to a line at every width: water temperature, river or lake level, air, wind, sunset,
+rain. The figures are a size down from the spot page's, since the outing shows two or three spots' worth.
+
+**Every value keeps its real resolution.**
+- A water sensor or a gauge reading says where it was read and how long ago. On a later day, one line says the
+  readings are the latest measured, not forecasts for that day.
+- The water estimate is today's only (`waterEstOk`). On a later day the cell says "Not known for Tuesday" and gives
+  today's estimate in words, never as Tuesday's figure.
+- The high, the wind, sunrise and sunset are the outing day's daily figures. They never carry an hour. The foot of the
+  panel says so.
+- A level trend is shown only from the gauge's own readings over the six hours to the build (`rise_6h_m`), with the
+  times it runs between. Without those readings the cell says "No recent trend from this gauge". For a lake it says
+  "No trend is read for a lake".
+- A reading over a day old is stale (`outingFresh`, as `conditionsSummary`). The cell shows no figure and no trend,
+  and says when it was last read.
+- With a time picked, the sunset cell says when all or part of that time is after sunset or before sunrise. It is a
+  fact about daylight, not a judgement on the swim.
+
+**Kinds of value.** Each cell's caption says what the value is through the page's shared `valueTag` (measured,
+estimate, stale, none), defined by the planner-wording work. Weather figures are worded as forecasts ("Forecast high
+today"). Missing data is said as "Not known", "No reading" or "No gauge", never as a value or as calm.
+
+**Wind.** The build asks Open-Meteo for each day's strongest wind and gust at 10 m alongside the high, sunrise and
+sunset (`WEATHER_DAILY`). Five daily variables over five days still weigh one call a location
+(`rainfall.call_weight`), so the ration does not change. The panel shows it in mph and says it is a model's figure for
+open ground: at the water it can be calmer, or gustier near hills and buildings. The day plan's Wind row
+(`dayplan.js`) uses the same figures where an update has them, and still says "Not known" where it does not.
+
+**What it is not.** No score and no overall verdict. None of it is part of the pollution level, and the panel says so.
+
+**Checked:** headless Chrome at 390 and 1,440 px; real Safari 26.6.2 at 1,440 px, for today and for tomorrow.

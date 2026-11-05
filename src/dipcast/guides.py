@@ -7,12 +7,25 @@ how to check a fact). Every fact says where it came from, and the page shows it:
 - **confirmed**: the landowner's, operator's or council's own published page says so (``source``,
   an https address), or someone from SwimSignal saw it on site (``seen``, the day). A desk check of
   a page is not an inspection: the page says which it was.
+  A confirmed fact from a dated record rather than a page kept current (a designation consultation,
+  say) also has ``source_date``, the record's month (2026-02): the page then says "Source", with
+  the month, not "Verified".
 - **suggested**: a swimmer told us (``from``, who, in words they agreed to; ``on``, the day). It
   has not been checked, and the page says so beside it.
 
-Photos sit in guides/photos/, with a caption, who took them, the day, and up to nine numbered
-labels placed on the picture as percentages across and down. The build copies the photos a guide
-uses into site/guides/photos/ and attaches each guide to its spot in spots.json.
+Photos sit in guides/photos/, with a caption, who took them, the day, the topic they show (``topic``,
+one of the topics or ``overview``), and up to nine numbered labels placed on the picture as
+percentages across and down. A photo is confirmed or suggested as a fact is, or:
+
+- **historical**: someone else's published photograph under an open licence (Geograph's, under CC
+  BY-SA 2.0), with its ``title``, its page (``source``, ``source_name``), the day it was taken as the
+  publisher gives it (``taken``), the exact ``licence`` link and the ``changes`` made to it. It shows
+  that day only. It never says anything about access, permission, the water's level or its
+  condition now, and it has no labels: a label would be SwimSignal's claim about a place with no
+  on-site check recorded.
+
+The build copies the photos a guide uses into site/guides/photos/ and attaches each guide to its spot
+in spots.json.
 
 A file that breaks these rules is left out of the build with a warning, rather than stopping the
 forecasts publishing; tests/test_guides.py checks every file in guides/ before a build runs.
@@ -37,6 +50,10 @@ GUIDES = config.ROOT / "guides"
 # the same list). Anything else in a file is an error, so a typo cannot hide a fact.
 TOPICS = {
     "parking": "Parking",
+    # Bus and train (30 October 2026, docs/ARRIVAL-GUIDE-2026-10.md): an operator's or a council's own page about
+    # getting there without a car. Shown where a guide has it, and, like the paddling topics, never listed as missing
+    # on the tile (guide.js, GUIDE_OPTIONAL): every guide written before it would otherwise grow the same new gap.
+    "transport": "Bus and train",
     "path": "Path to the water",
     "entry": "Getting in",
     "exit": "Getting out",
@@ -45,13 +62,25 @@ TOPICS = {
     "fees": "Fees and booking",
     "hours": "Opening times",
     "rules": "Who can swim",
+    # For boats and boards (Swim Together stage 3, docs/SWIM-TOGETHER-2026-10.md): after the swimmer's topics, and never
+    # listed as missing where a guide has none of them (guide.js, GUIDE_PADDLE), as most spots are swim spots.
+    "launch": "Launching a boat or board",
+    "carry": "Carrying to the water",
+    "paddle": "Paddling here",
 }
 STATUSES = ("confirmed", "suggested")
+# A photo's topic: one of TOPICS, where the arrival guide (arrive.js) shows it in its step, or "overview", a view of
+# the whole place. A step's photo is then only ever that step's: an overview never stands in for the way in.
+PHOTO_TOPICS = (*TOPICS, "overview")
+# The licences a historical photo may come under, by the deed's exact link, with the name the page gives. CC BY-SA 2.0
+# is Geograph's: reuse with the photographer's credit, and an adaptation under the same licence (guides/README.md).
+LICENCES = {"https://creativecommons.org/licenses/by-sa/2.0/": "CC BY-SA 2.0"}
 HOW = ("desk", "visit")
 MAX_TEXT, MAX_CAPTION, MAX_LABEL, MAX_LABELS, MAX_PHOTOS = 400, 160, 60, 9, 6
 SPOT_ID = re.compile(r"[A-Za-z0-9_-]{1,80}")   # the site's rule for a spot's id
 PHOTO = re.compile(r"[a-z0-9][a-z0-9-]{0,78}\.jpe?g")
 HTTPS = re.compile(r"https://[^\s<>\"']+")
+MONTH = re.compile(r"(\d{4})-(0[1-9]|1[0-2])")   # source_date: a dated record's month, 2026-02
 
 
 class GuideError(ValueError):
@@ -108,6 +137,39 @@ def _provenance(raw: dict, what: str, today: date) -> dict:
     return out
 
 
+def _source_date(v, fact: dict, what: str, today: date) -> str:
+    """A dated record's month ("2026-02"): the fact is as that record listed it, not a current
+    check, so the page says "Source", not "Verified". Only beside a source page."""
+    if fact["status"] != "confirmed" or "source" not in fact:
+        raise GuideError(f"{what}: source_date is the month of the source page's record; it needs a confirmed fact with a source")
+    m = MONTH.fullmatch(v) if isinstance(v, str) else None
+    if not m:
+        raise GuideError(f"{what}: source_date must be a month written as \"2026-02\", not {v!r}")
+    if (int(m[1]), int(m[2])) > (today.year, today.month):
+        raise GuideError(f"{what}: source_date is in the future ({v})")
+    return v
+
+
+def _photo_provenance(raw: dict, what: str, today: date) -> dict:
+    """A photo's who says so: as a fact's (confirmed or suggested), or historical: someone else's published photograph
+    under an open licence, with its title, its page, the licence's exact deed link and what was changed in it."""
+    if raw.get("status") != "historical":
+        if {"title", "licence", "changes"} & set(raw):
+            raise GuideError(f"{what}: title, licence and changes are for a historical photo, from another publisher")
+        return _provenance(raw, what, today)
+    if {"seen", "from", "on"} & set(raw):
+        raise GuideError(f"{what}: a historical photo was neither seen on site by SwimSignal nor sent by a swimmer: no seen, from or on")
+    if not isinstance(raw.get("source"), str) or not HTTPS.fullmatch(raw["source"]):
+        raise GuideError(f"{what}: a historical photo needs source, the https page it was published on")
+    if raw.get("licence") not in LICENCES:
+        raise GuideError(f"{what}: licence must be the exact deed link of one of {', '.join(LICENCES)}, not {raw.get('licence')!r}")
+    return {"status": "historical", "source": raw["source"],
+            "source_name": _text(raw.get("source_name"), f"{what}: source_name (who publishes the page)", 80),
+            "title": _text(raw.get("title"), f"{what}: title (the photo's own title where it was published)", MAX_CAPTION),
+            "licence": raw["licence"],
+            "changes": _text(raw.get("changes"), f"{what}: changes (what was done to the photo, as the licence asks)", MAX_CAPTION)}
+
+
 def parse_guide(raw: dict, spot_id: str, photos_dir: Path, today: date | None = None) -> dict:
     """One guide file, read and checked, in the shape the page draws. Raises GuideError."""
     today = today or datetime.now(ZoneInfo("Europe/London")).date()
@@ -124,10 +186,12 @@ def parse_guide(raw: dict, spot_id: str, photos_dir: Path, today: date | None = 
         what = f"fact {i}"
         if not isinstance(f, dict):
             raise GuideError(f"{what} is not a table")
-        _only(f, {"topic", "text", "status", "source", "source_name", "seen", "from", "on", "lat", "lon"}, what)
+        _only(f, {"topic", "text", "status", "source", "source_name", "source_date", "seen", "from", "on", "lat", "lon"}, what)
         if f.get("topic") not in TOPICS:
             raise GuideError(f"{what}: topic must be one of {', '.join(TOPICS)}, not {f.get('topic')!r}")
         fact = {"topic": f["topic"], "text": _text(f.get("text"), f"{what}: text", MAX_TEXT), **_provenance(f, what, today)}
+        if "source_date" in f:
+            fact["source_date"] = _source_date(f["source_date"], fact, what, today)
         if ("lat" in f) != ("lon" in f):
             raise GuideError(f"{what}: give both lat and lon, or neither")
         if "lat" in f:
@@ -148,7 +212,9 @@ def parse_guide(raw: dict, spot_id: str, photos_dir: Path, today: date | None = 
         if not isinstance(p, dict):
             raise GuideError(f"{what} is not a table")
         _only(p, {"file", "caption", "credit", "taken", "width", "height", "status", "from", "on", "seen",
-                  "source", "source_name", "label"}, what)
+                  "source", "source_name", "label", "topic", "title", "licence", "changes"}, what)
+        if p.get("topic") not in PHOTO_TOPICS:
+            raise GuideError(f"{what}: topic (what the photo shows) must be one of {', '.join(PHOTO_TOPICS)}, not {p.get('topic')!r}")
         name = p.get("file")
         if not isinstance(name, str) or not PHOTO.fullmatch(name):
             raise GuideError(f"{what}: file must be a lower-case name ending .jpg in guides/photos/")
@@ -157,10 +223,12 @@ def parse_guide(raw: dict, spot_id: str, photos_dir: Path, today: date | None = 
         w, h = p.get("width"), p.get("height")
         if not all(isinstance(x, int) and 0 < x <= 4000 for x in (w, h)):
             raise GuideError(f"{what}: width and height in pixels are needed, so the page keeps its place while it loads")
-        photo = {"file": name, "w": w, "h": h, "caption": _text(p.get("caption"), f"{what}: caption", MAX_CAPTION),
+        photo = {"file": name, "w": w, "h": h, "topic": p["topic"], "caption": _text(p.get("caption"), f"{what}: caption", MAX_CAPTION),
                  "credit": _text(p.get("credit"), f"{what}: credit (who took it)", 80),
-                 "taken": _day(p.get("taken"), f"{what}: taken", today), **_provenance(p, what, today), "labels": []}
+                 "taken": _day(p.get("taken"), f"{what}: taken", today), **_photo_provenance(p, what, today), "labels": []}
         labels = p.get("label") or []
+        if labels and photo["status"] == "historical":
+            raise GuideError(f"{what}: a historical photo has no labels; a label would say where to go at a place with no on-site check recorded")
         if not isinstance(labels, list) or len(labels) > MAX_LABELS:
             raise GuideError(f"{what}: up to {MAX_LABELS} labels")
         for n, lab in enumerate(labels, 1):
@@ -191,6 +259,22 @@ def load_guides(spot_ids: set[str] | None = None, root: Path = GUIDES, today: da
         except (GuideError, tomllib.TOMLDecodeError) as e:
             warnings.append(f"guide {path.name} left out: {e}")
     return guides, warnings
+
+
+# The topics for boats and boards, in the order Plan a swim shows the first of them on a spot's row (index.html, planActLine):
+# whether you can launch at all comes before the rules on the water and carrying to it.
+BOAT_TOPICS = ("launch", "paddle", "carry")
+
+
+def boat_note(guide: dict | None) -> dict | None:
+    """The first confirmed fact for boats and boards, for the plan's list in data/spots-lite.json, which has no guides:
+    {"topic", "text", "source" (its source's name, or None), "more" (the other facts on those topics)}. None if there is none."""
+    facts = [f for f in (guide or {}).get("facts", []) if f.get("topic") in BOAT_TOPICS]
+    sure = sorted((f for f in facts if f.get("status") == "confirmed"), key=lambda f: BOAT_TOPICS.index(f["topic"]))
+    if not sure:
+        return None
+    f = sure[0]
+    return {"topic": f["topic"], "text": f["text"], "source": f.get("source_name"), "more": len(facts) - 1}
 
 
 def attach_guides(results: list[dict], root: Path = GUIDES, today: date | None = None) -> dict:

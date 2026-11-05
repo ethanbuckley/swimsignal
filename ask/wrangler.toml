@@ -1,0 +1,33 @@
+name = "swimsignal-ask"
+main = "src/index.js"
+compatibility_date = "2026-09-01"
+workers_dev = true
+preview_urls = false
+
+# The rate-limit counts and the daily spend. Create it with
+#   npx wrangler d1 create swimsignal-ask --jurisdiction=eu
+# and paste the database_id it prints here. The tables come from migrations/ (README, "Deploying").
+[[d1_databases]]
+binding = "DB"
+database_name = "swimsignal-ask"
+database_id = "00000000-0000-0000-0000-000000000000"
+
+[triggers]
+crons = ["23 3 * * *"]   # once a day: forget the connections' counts from before yesterday
+
+[vars]
+SITE_URL = "https://swimsignal.co.uk/"
+ALLOWED_ORIGIN = "https://swimsignal.co.uk"
+# "on" answers questions; anything else answers 503. The two secrets must be set as well.
+ASK_ON = "off"
+# The model and how hard it thinks (README, "Model and cost"). A model must be in PRICES in src/index.js.
+ASK_MODEL = "claude-haiku-5-5"
+ASK_EFFORT = "medium"
+# The most the Worker may spend on the API in a UTC day, in US dollars, and the most questions in a day.
+ASK_DAILY_CAP_USD = "1"
+ASK_QUESTIONS_PER_DAY = "300"
+# Questions a day from one connection.
+ASK_PER_CONNECTION = "10"
+# Two secrets, never written in this file (it is committed, so anything here is public):
+#   npx wrangler secret put ANTHROPIC_API_KEY   # a key from a Claude Console workspace with its own spend limit
+#   npx wrangler secret put ASK_HASH_KEY        # any long random string: it keys the hash of each connection

@@ -18,6 +18,10 @@
 // page and its scripts come from one build: a page from the network never runs with a stored older
 // levels.js, and a stored page never with a newer one.
 //
+// An outing kept for offline use (outingpack.js) is in a cache of its own, PACK, not named dipcast-, so a new
+// build's worker leaves it alone. It answers only when the network and this build's cache both fail, and only
+// until the end of the outing's day (fromPack).
+//
 // To retire this worker, publish a sw.js that unregisters itself: a deleted file leaves the
 // installed worker running on visitors' devices.
 const BUILD = 'dev';
@@ -26,11 +30,25 @@ const TIMEOUT_MS = 4000;
 const SHELL = ['./', `app.js?v=${BUILD}`, `levels.js?v=${BUILD}`, `experience.js?v=${BUILD}`, `anypoint.js?v=${BUILD}`, `plan.js?v=${BUILD}`, `lists.js?v=${BUILD}`, 'feedback.html', 'page.css', 'data/spots-lite.json', 'manifest.webmanifest',
   'icons/icon.svg', 'icons/icon-192.png', 'icons/fells.webp', 'icons/fells-wide.webp',
   `since.js?v=${BUILD}`,   // what changed at a saved spot since you last looked
+  `outing.js?v=${BUILD}`,   // a plan's outing: when, the spot and a backup
+  `dayplan.js?v=${BUILD}`,   // the day plan: options, and the plan as a picture
+  `outingwatch.js?v=${BUILD}`,   // what would change the outing, and what has since it was planned
+  `findwindow.js?v=${BUILD}`,   // Find a window on Saved
+  `ask.js?v=${BUILD}`,   // Ask SwimSignal's tile on Plan a swim: the script only; questions and answers are never stored
+  `spotdate.js?v=${BUILD}`,   // the outing's calendar file and the alerts for its date
   'fonts/SourceSans3-latin.woff2', 'fonts/SourceSans3-italic-latin.woff2', 'fonts/SourceSerif4-latin.woff2',
   'vendor/leaflet/leaflet.css', 'vendor/leaflet/leaflet.js', `reviews.js?v=${BUILD}`, `visits.js?v=${BUILD}`, `illness.js?v=${BUILD}`, `guide.js?v=${BUILD}`, `evidence.js?v=${BUILD}`,
   `spotscores.js?v=${BUILD}`,   // how the forecast has done here; its data file is stored when a spot first asks for it
+  `seasonal.js?v=${BUILD}`,   // past spills upstream by month; its numbers come in the spot's own file
+  `outingpack.js?v=${BUILD}`,   // keeping a plan's outing for offline use (PACK, below)
   `measured.js?v=${BUILD}`,   // lab results an organisation sent (samples/)
+  `timeline.js?v=${BUILD}`,   // the evidence timeline; its files are fetched when its fold is opened
   `journal.js?v=${BUILD}`,
+  `passport.js?v=${BUILD}`,   // the swim passport on Saved
+  `arrive.js?v=${BUILD}`,   // the arrival guide (prototype, ?arrive=1 only); the guide is in the spot's own file
+  `replay.js?v=${BUILD}`,   // the catchment replay (prototype, ?replay=1 only); its data file is stored when first opened
+  `plume.js?v=${BUILD}`,   // the spill map on a spot's page; its route file is stored when first opened
+  `evmap.js?v=${BUILD}`,   // the evidence map (prototype, ?evidence=1 only); offline it draws from the spot's stored trace, or says it could not load
   `eatoday.js?v=${BUILD}`];   // today's EA advice: the script only; the EA's panel is the EA's, never stored
 
 self.addEventListener('install', e => {
@@ -72,14 +90,14 @@ async function networkFirst(req) {
   try {
     return await Promise.race([net, new Promise((_, no) => setTimeout(() => no(new Error('slow')), TIMEOUT_MS))]);
   } catch (err) {
-    const hit = await cache.match(k);
-    if (hit) return hit;
+    const hit = await cache.match(k) || await fromPack(k);
+    if (hit) return stored(hit);
     // A page never opened before (a spot's, say): the home page stands in and reads the spot from
     // the address. Its first <base>, at this worker's scope, keeps its links working at any depth.
-    const home = req.mode === 'navigate' ? await cache.match(self.registration.scope) : undefined;
+    const home = req.mode === 'navigate' ? await cache.match(self.registration.scope) || await fromPack(self.registration.scope) : undefined;
     if (!home) return net;
     const html = (await home.text()).replace('<head>', `<head>\n<base href="${self.registration.scope}">`);
-    return new Response(html, { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+    return new Response(html, { headers: { 'Content-Type': 'text/html; charset=utf-8', [STORED]: '1' } });
   }
 }
 
@@ -89,7 +107,7 @@ async function networkFirst(req) {
 const SPOT_FILE = /\/data\/spot\/([A-Za-z0-9_-]+)\.json$/;
 function withTrace(cache, k) {
   const u = new URL(k), m = u.pathname.match(SPOT_FILE);
-  if (!m || m[1].endsWith('-trace')) return;
+  if (!m || /-(trace|replay|plume)$/.test(m[1])) return;   // a trace, a replay (replay.js) or a spill map's routes (plume.js): none has a trace of its own
   u.pathname = u.pathname.replace(SPOT_FILE, '/data/spot/$1-trace.json'); u.search = '';
   fetch(u.href, { cache: 'no-cache', credentials: 'omit' }).then(res => { if (res.ok) cache.put(u.href, res); }).catch(() => {});
 }
@@ -100,8 +118,35 @@ async function storedFirst(req) {
   const net = fetch(req.url, { mode: 'cors', credentials: 'omit' })
     .then(res => { if (res.ok) cache.put(req.url, res.clone()); return res; })
     .catch(() => null);
-  return hit || (await net) || Response.error();
+  return hit || (await net) || (await fromPack(req.url)) || Response.error();
 }
+
+// A stored answer says so, so the page can tell a kept copy from a fresh one even when the phone says it is
+// online (one bar of signal, and the 4 s ran out): outingpack.js, seen.
+const STORED = 'X-SwimSignal-Stored';
+const stored = res => new Response(res.body, { status: res.status, statusText: res.statusText, headers: [...res.headers, [STORED, '1']] });
+
+// The outing kept for offline use (outingpack.js): its copy of k, while its day lasts on this device's clock.
+// Its note (PACK_META, which the page writes beside the files) gives the day; past it, or without one, the
+// pack is deleted rather than shown.
+const PACK = 'swimsignal-outing', PACK_META = 'outing-pack.json';
+const localDay = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+async function fromPack(k) {
+  try {
+    const hit = await caches.match(k, { cacheName: PACK });
+    if (!hit) return undefined;
+    const note = await caches.match(new URL(PACK_META, self.registration.scope).href, { cacheName: PACK });
+    const day = note ? await note.json().then(m => m && m.day, () => null) : null;
+    if (typeof day === 'string' && day >= localDay(new Date())) return hit;
+    await caches.delete(PACK);
+  } catch (err) { /* no pack */ }
+  return undefined;
+}
+
+// Keeping an outing (outingpack.js) asks for the files every page needs at this build, to keep them with it.
+self.addEventListener('message', e => {
+  if (e.data && e.data.outingPack === 'shell' && e.ports && e.ports[0]) e.ports[0].postMessage({ build: BUILD, shell: SHELL });
+});
 
 // Alerts (push/ sends them; index.html, "alerts"): show what arrived, and open its page when
 // tapped. Only this site's own pages open, whatever a message says.

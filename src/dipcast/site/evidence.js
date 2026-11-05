@@ -14,7 +14,7 @@
 
 const EVIDENCE_TZ = 'Europe/London';
 // The level rules (levels.js): the page loads them before this file, Node requires them.
-const evidenceRules = () => typeof sampleLevel === 'function' ? { sampleLevel, daily, nowUnknown, nowUnknownWhy, companyName } : require('./levels.js');
+const evidenceRules = () => typeof sampleLevel === 'function' ? { sampleLevel, daily, nowUnknown, nowUnknownWhy, companyName, liveHead } : require('./levels.js');
 const evidenceEsc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const evidenceNil = v => v === null || v === undefined || (typeof v === 'number' && Number.isNaN(v));
 const evidenceCap = s => s ? s[0].toUpperCase() + s.slice(1) : '';
@@ -66,6 +66,7 @@ function evidenceOverflows(d, generatedAt) {
   for (const f of n.feed_stale || []) not.push(f.records
     ? `${f.overflows} whose records on ${evidenceEsc(f.company)}'s feed ${f.since ? `have not updated since ${evidenceSince(f.since)}` : 'give no update time'}`
     : f.on_change && f.since ? `${f.overflows} on ${evidenceEsc(f.company)}'s feed, where no record has changed since ${evidenceSince(f.since)} (it changes a record only when an overflow's status does)`
+    : f.aged_here && f.since ? `${f.overflows} on ${evidenceEsc(f.company)}'s feed, whose readings on this page date from ${evidenceSince(f.since)}, over six hours ago`
     : `${f.overflows} on ${evidenceEsc(f.company)}'s feed, ${f.since ? `not updated since ${evidenceSince(f.since)}` : 'which gives no update time'}`);
   const live = mon >= total ? (total === 1 ? 'It reports live.' : `All ${total} report live.`)
     : `${mon || 'None'} of ${total} report live.${not.length ? ` Not reporting: ${not.join('; ')}.` : ''}`;
@@ -109,6 +110,17 @@ function evidenceSample(s, nowMs, html = false) {
     + (cmp ? `: ${html ? `<a href="#about-ecoli">${cmp}</a>` : cmp}` : '') + '.';
 }
 
+// The one link from the latest lab sample to every sample here (samples.html), where the build found this bathing
+// water in the research export (build_site.attach_sample_history, `sample_history`): " Every sample here since May
+// 2024." after the sample's sentence, in the tile only (evidenceTile; not the evidence map's copy of the row). Its
+// month is the first sample's. Empty without the field.
+function evidenceHistory(d) {
+  const h = d.sample_history;
+  if (!h || !/^\d{4}-\d{2}-\d{2}$/.test(h.first || '') || !/^[A-Za-z0-9_-]+$/.test(d.id || '')) return '';
+  const since = new Date(h.first + 'T12:00:00Z').toLocaleDateString('en-GB', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+  return ` <a href="samples.html#spot=${d.id}">Every sample here since ${since}</a>.`;
+}
+
 // Runoff from farms, which the forecast does not model at a particular spot, where the Environment Agency
 // lists it on the spot's water body: agriculture and rural land management as a confirmed or probable
 // reason the water body does not reach good status, under "Pollution from rural areas", in the Catchment
@@ -138,6 +150,10 @@ function evidenceItems(d, nowMs, generatedAt) {
   if (rain) rows.push(rain);
   const dry = (d.days || []).slice(0, 5).filter(x => evidenceNil(x.rain_48h_mm)).map(x => x.date === evidenceISO(nowMs) ? 'today' : evidenceDayName(x.date));
   if (dry.length) gaps.push(`No rain forecast arrived for ${dry.length > 1 ? dry.slice(0, -1).join(', ') + ' or ' + dry[dry.length - 1] : dry[0]}.`);
+  const sepa = d.source === 'sepa' ? d.sepa || {} : null, sepaSrc = sepa && /^https:\/\//.test(sepa.page || '') ? `<a href="${evidenceEsc(sepa.page)}">SEPA</a>` : 'SEPA';
+  if (sepa && sepa.rating && sepa.rating.value) rows.push({ what: 'SEPA rating', age: String(sepa.rating.year ?? ''),
+    say: `${evidenceCap(evidenceEsc(sepa.rating.value))}.`, src: `${sepaSrc}, from its lab samples over up to four seasons` });
+  if (sepa) gaps.push(`SEPA's lab samples are not in this forecast's data: ${sepaSrc}'s page has them.`);
   if (cl && cl.class) rows.push({ what: 'Environment Agency rating', age: String(cl.year ?? ''),
     say: `${evidenceCap(cl.class)}.`, src: `${ea}, from its lab samples over up to four seasons` });
   else if (cl) gaps.push('No Environment Agency rating yet: this bathing water is too new to have one.');
@@ -152,7 +168,7 @@ function evidenceItems(d, nowMs, generatedAt) {
   else if (designated && s === null) gaps.push('No lab sample here this season.');
   else if (designated) gaps.push(`The latest lab sample is not in this forecast's data${cl && /^https:\/\//.test(cl.url || '') ? `: <a href="${evidenceEsc(cl.url)}">the Environment Agency's page</a> has it` : ''}.`);
   // The facts only: the line under the five days (check, in index.html) already says why.
-  if (!designated) gaps.push('No lab samples, algae checks or rating here.');
+  if (!designated && !sepa) gaps.push('No lab samples, algae checks or rating here.');
   for (const r of rows) if (r.at) r.age = evidenceAge(r.at, nowMs);
   return { rows, gaps };
 }
@@ -166,7 +182,7 @@ function evidenceTile(d, nowMs, generatedAt) {
   if (!rows.length && !gaps.length) return '';
   return `<details class="tile fold" id="evidence"><summary><span class="t-lab" id="evidence-h">${evidenceIcon()}<span>What the level rests on</span></span></summary>`
     + (rows.length ? `<div class="factors">${rows.map(r => `<div class="factor"><div class="f-l">${r.what}</div><div class="f-v">${r.age}</div>`
-      + `<div class="f-d">${r.say}</div><div class="f-src">${r.src}.</div></div>`).join('')}</div>` : '')
+      + `<div class="f-d">${r.say}${r.what === 'Latest lab sample' ? evidenceHistory(d) : ''}</div><div class="f-src">${r.src}.</div></div>`).join('')}</div>` : '')
     + (gaps.length ? `<div class="ev-gap">${gaps.map(g => `<p>${g}</p>`).join('')}</div>` : '') + '</details>';
 }
 
@@ -174,7 +190,7 @@ function evidenceTile(d, nowMs, generatedAt) {
 // evidence coverage are two things. Plan a swim gives it under each row. Two parts, each only where it
 // applies:
 //  - live: on a plan for today, a low level whose right now is not known (levels.js, nowUnknown) is a forecast
-//    only, in the words a saved card uses;
+//    only, after the live status in counts, as a saved card and the answer lead with it (liveHead);
 //  - the track record: whose overflows these are, by their reach (evidenceCompanies), and the share of spills
 //    the live warnings caught there, from the Accuracy page's own figures (verification.json,
 //    live.warning_table: by_company and trained_on), the share linking to its table. The spill model learned
@@ -204,7 +220,7 @@ function evidenceCompanies(s) {
 const evidenceForecasts = s => Boolean(s && !s.unlisted && !s.error && evidenceRules().daily(s));
 function evidenceNowGap(s, isToday = false) {
   const R = evidenceRules();
-  return evidenceForecasts(s) && isToday && R.nowUnknown(s) ? `Forecast only: ${R.nowUnknownWhy(s)}.` : '';
+  return evidenceForecasts(s) && isToday && R.nowUnknown(s) ? `${R.liveHead(s) || 'Live sewage spill status not known'}: forecast only.` : '';   // levels.js, liveHead
 }
 function evidenceCompanyLine(s, W) {
   if (!evidenceForecasts(s)) return '';
@@ -229,6 +245,6 @@ const evidenceWarnings = () => EVIDENCE_WARNINGS || (EVIDENCE_WARNINGS = fetch(E
   .then(r => (r.ok ? r.json() : null)).then(v => ((v || {}).live || {}).warning_table || null).catch(() => null));
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { evidenceTile, evidenceItems, evidenceAge, evidenceOverflows, evidenceRain, evidenceSample, evidenceRunoff, evidenceCoverage, evidenceCompanies,
+  module.exports = { evidenceTile, evidenceItems, evidenceHistory, evidenceAge, evidenceSince, evidenceOverflows, evidenceRain, evidenceSample, evidenceRunoff, evidenceCoverage, evidenceCompanies,
     evidenceNowGap, evidenceCompanyLine };
 }

@@ -20,11 +20,15 @@ data/processed/*
 !data/processed/spill_model_holdout_2025.pkl
 # PR #254's live-status candidates, run in shadow only (model/live_status.py, docs/LIVE-STATUS-SHADOW-TEST-2026-10.md)
 !data/processed/live_status/
+# The regional routing shadow's frozen v2 model (shadow_regional.py, docs/REGIONAL-ROUTING-2026-11.md)
+!data/processed/regional/
 !data/processed/lead_calibration.json
 !data/processed/spill_day_ratio.json
 !data/processed/ecoli_model.json
 !data/processed/ecoli_model_sm.json
 !data/processed/ecoli_model_eval.json
+!data/processed/ecoli_lake_range.json
+!data/processed/water_temp_model.json
 !data/processed/verification_2025.csv
 !data/processed/reliability_2025.csv
 !data/processed/verification_leads_2025.csv
@@ -38,6 +42,15 @@ data/processed/*
 !data/processed/verification_live_oldrule_2026-09-28.json
 # Scottish covariates (Scotland plan S2). Contains Scottish Water data licensed under the Open Government Licence v3.0.
 !data/processed/sw_covariates.parquet
+!data/processed/scotland_calibration.json
+# Each overflow's longest spill in the EA's 2024-2025 start/stop records, for the data-quality page's long_run
+# list (scripts/make_longest_events.py, 154 KB). Contains Environment Agency data, Open Government Licence v3.0.
+!data/processed/longest_events.parquet
+# Each overflow's permit and improvement activity from the annual returns (279 KB), and the WINEP's storm overflow
+# improvement deadlines (77 KB), for the overflow record pages (scripts/make_overflow_record.py). Environment Agency
+# data, Open Government Licence v3.0.
+!data/processed/overflow_record.parquet
+!data/processed/winep_overflow_actions.parquet
 !data/raw/
 data/raw/*
 !data/raw/bathing_waters_inland.json
@@ -46,6 +59,8 @@ data/raw/*
 !data/raw/wales_bathing_waters.json
 !data/raw/coastal_catalogue.json
 !data/raw/coastal_wqa_points.json
+# Each English and Welsh bathing water's sampling point, for the directories' water temperature (scripts/refresh_bathing_water_points.py; OGL v3.0).
+!data/raw/bathing_water_points.json
 !data/raw/places.json
 # The rivers and lakes the home page's search finds on the map (scripts/make_waters.py).
 !data/raw/waters.json
@@ -64,7 +79,13 @@ data/raw/*
 !data/raw/rnags.json
 # Each overflow's dry-weather spill-days in a year (EA start/stop records, OGL v3.0): read by the page's note only, never the model (scripts/make_dry_weather_spills.py).
 !data/raw/dry_weather_spills.csv
+# Each spot's spill days upstream by month, 2021-2025 (EA start/stop records, OGL v3.0; Northumbrian, Wessex and United Utilities
+# layers, CC BY 4.0): read by the page's history fold only, never the model (scripts/make_seasonal_spills.py).
+!data/raw/seasonal_spills.json
 /site/
 .claude/
 /state/
 profiles/
+
+# The Workers' npm packages (ask/: the Anthropic SDK)
+node_modules/

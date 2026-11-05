@@ -143,7 +143,7 @@ function pageWith(withScript) {
   vm.runInContext(fs.readFileSync(join(SITE, 'levels.js'), 'utf8') + '\nsetToday("2026-10-04");', ctx);
   if (withScript) vm.runInContext(SRC, ctx);
   vm.runInContext(pageDefs(['esc', 'glyph', 'ICON', 'tone', 'tile', 'factorRow', 'explain', 'poorLine', 'ratingHistory',
-    'riverTile', 'waterTile', 'weatherOn', 'facts', 'standing', 'check', 'nowTile', 'noFeedSaid', 'ecoliName', 'ecoliFold', 'ecoliCheck', 'ecoliSaid', 'ecoliMore',
+    'riverTile', 'WT_ROUTES', 'waterEstOk', 'waterEstHow', 'waterEstSay', 'WT_AIR', 'WT_TAIL', 'waterEstMore', 'waterTile', 'weatherOn', 'facts', 'standing', 'check', 'nowTile', 'noFeedSaid', 'ecoliName', 'ecoliFold', 'ecoliCheck', 'ecoliSaid', 'ecoliMore', 'lakeRanged', 'rangeOf', 'ecoliReading', 'likely', 'rangeLine', 'RANGE_BASIS', 'rangeBasis', 'RANGE_MORE', 'RANGE_OFF_SAID', 'rangeFold', 'typicalLine', 'TYPICAL_SAID', 'TYPICAL_MORE',
     'sinceTime', 'spillFor', 'overflowSaid', 'longSpillLine', 'eaSaid', 'coverWords', 'coverLine', 'answerAfter']), ctx);
   return ctx;
 }
@@ -184,8 +184,8 @@ test("one fold per page, at the foot of the rating tile, rated or not yet; a pic
     assert.equal(rating.fold, ea.eaTodayFold(s));
     assert.ok(rating.fold.includes(`data-site="${s.id.slice(3)}"`));
     assert.equal(tiles.filter(t => t.fold).length, 1);
-    // The tile's sentence no longer says the page lacks the advice; the fold follows it.
-    assert.match(text(rating.say), /The EA's page has its latest samples and any short-term advice against bathing, after pollution or algae\.$/);
+    // The tile's sentence names the samples; the advice is the fold's to give, which follows it (5 Nov 2026).
+    assert.match(text(rating.say), /The EA's page has its latest samples\.$/);
     const day = standing(s, '2026-10-06');
     assert.doesNotMatch(day, /ea-today|which this page does not include/);
     assert.match(text(day), /any short-term advice against bathing, after pollution or algae\./);
@@ -203,10 +203,10 @@ test('the evidence panel says nothing of the fold: the advice is not part of the
   assert.doesNotMatch(fs.readFileSync(join(SITE, 'evidence.js'), 'utf8'), /ea-today|eaToday|Today's EA advice|short-term/);
 });
 
-test('the embed, the organisers\' page and sign, and the alerts do not load the panel', () => {
+test('the embed, the organisers\' page and sign, and the alerts do not load the panel (the embed and the organisers\' page load eatoday.js for the compact form alone)', () => {
   const files = ['embed.js', 'embed.html', 'organisers.js', 'organisers.html', 'sign.html'].map(f => join(SITE, f))
     .concat(fs.readdirSync(join(__dirname, '../push/src')).filter(f => f.endsWith('.js')).map(f => join(__dirname, '../push/src', f)));
-  for (const f of files) assert.doesNotMatch(fs.readFileSync(f, 'utf8'), /bwq\/widget|eatoday|ea-today/, f);
+  for (const f of files) assert.doesNotMatch(fs.readFileSync(f, 'utf8'), /bwq\/widget|ea-today|eaTodayFold|eaTodayOpen|eaTodayListen|eaTodayOfficial/, f);
 });
 
 test("no other script of the page defines one of eatoday.js's names, and the page loads it first", () => {
@@ -217,4 +217,87 @@ test("no other script of the page defines one of eatoday.js's names, and the pag
   assert.deepEqual(others.flatMap(src => [...names(src)].filter(n => mine.has(n))), []);
   assert.ok(mine.has('eaTodayFold') && [...mine].every(n => /^(eaToday|EA_TODAY)/.test(n)));
   assert.ok(html.indexOf('src="eatoday.js"') > 0 && html.indexOf('src="eatoday.js"') < html.indexOf('<script>\n'), 'loaded before the page script that calls it');
+});
+
+// Official advice (eaTodayOfficial): reviewed lines the build writes into spots.json from data/advisories/
+// (src/dipcast/official_advice.py). Fixture items only: no real approval is used here.
+const LINE = 'Environment Agency: advice against bathing (harmful algae) since 19 Jun 2026';
+const item = (extra = {}) => ({ line: LINE, publisher: 'Environment Agency', link: PROFILE, since: '2026-06-19', checked: '2026-10-26', state: 'checked', restricts: true, ...extra });
+
+test('official advice: the line, its link and when it was last checked, in a block of its own above the level', () => {
+  const html = ea.eaTodayOfficial(frensham({ official: [item()] }));
+  assert.equal(html, '<section class="notice official" id="official" aria-labelledby="official-h"><h2 id="official-h">Official advice</h2><ul>'
+    + `<li><p class="o-line">${LINE}</p><p class="o-src"><a href="${PROFILE}">Open the Environment Agency page</a>. Last checked 26 Oct 2026.</p></li></ul>`
+    + "<p class=\"o-sep\">Follow this advice first. It is not SwimSignal's, and the forecast below does not include it.</p></section>");
+  assert.equal(ea.eaTodayApart(frensham({ official: [item()] })), '<p class="gaps o-apart">This level is SwimSignal\'s forecast. The official advice above is separate.</p>');
+  assert.doesNotMatch(html, /risk|iframe|widget/i);   // it names no level and loads nothing
+});
+
+test('official advice: none, or none a page can show, draws nothing and changes nothing', () => {
+  for (const official of [undefined, null, [], 'x', [{}], [item({ state: 'approved' })], [item({ checked: 'soon' })], [item({ line: '' })], [item({ publisher: 7 })]]) {
+    assert.equal(ea.eaTodayOfficial(frensham({ official })), '', JSON.stringify(official));
+    assert.equal(ea.eaTodayApart(frensham({ official })), '');
+  }
+  assert.equal(ea.eaTodayOfficial(null), '');
+});
+
+test('official advice: an old or failed check still shows the advice, and says it was not re-checked', () => {
+  assert.equal(ea.eaTodayChecked(item({ state: 'stale', checked: '2026-10-19' })), 'Not re-checked since 19 Oct 2026.');
+  assert.equal(ea.eaTodayChecked(item({ state: 'unverified', checked: '2026-10-19' })),
+    'Not re-checked since 19 Oct 2026: the Environment Agency source could not be read.');
+  const html = ea.eaTodayOfficial(frensham({ official: [item({ state: 'unverified', checked: '2026-10-19' })] }));
+  assert.ok(html.includes(`<p class="o-line">${LINE}</p>`));
+  assert.match(html, /Not re-checked since 19 Oct 2026: the Environment Agency source could not be read\./);
+});
+
+test('official advice: two at once are both shown, in the order given (newest first), each with its own check', () => {
+  const council = item({ line: 'Waverley Borough Council: advice against swimming (harmful algae) since 20 Oct 2026', publisher: 'Waverley Borough Council',
+    link: 'https://www.waverley.gov.uk/x', since: '2026-10-20', state: 'stale' });
+  const html = ea.eaTodayOfficial(frensham({ official: [council, item()] }));
+  assert.equal((html.match(/<li>/g) || []).length, 2);
+  assert.ok(html.indexOf('Waverley') < html.indexOf(LINE));
+  assert.match(html, /Open the Waverley Borough Council page<\/a>\. Not re-checked since 26 Oct 2026\./);
+  assert.match(html, /Open the Environment Agency page<\/a>\. Last checked 26 Oct 2026\./);
+});
+
+test('official advice: its words are escaped, and a link that is not https is left out', () => {
+  const html = ea.eaTodayOfficial(frensham({ official: [item({ line: '<img src=x onerror=alert(1)>', publisher: 'A & "B"', link: 'javascript:alert(1)' })] }));
+  assert.match(html, /&lt;img src=x onerror=alert\(1\)&gt;/);
+  assert.doesNotMatch(html, /<img|javascript:|<a /);
+  assert.match(html, /Last checked 26 Oct 2026\./);
+  assert.doesNotMatch(ea.eaTodayOfficial(frensham({ official: [item({ link: 'https://x.org/"><script>' })] })), /<script>|<a /);
+});
+
+test('official advice: the coverage line says what was checked and when, in place of "not checked"', () => {
+  assert.equal(ea.eaTodayCover(frensham({ official: [item()] })),
+    'The Environment Agency\'s notice above was last checked 26 Oct. Open <a href="#ea-today">today\'s EA advice</a> for the latest');
+  assert.equal(ea.eaTodayCover(frensham({ official: [item({ state: 'unverified', checked: '2026-10-19' })] })),
+    'The Environment Agency\'s notice above has not been re-checked since 19 Oct. Open <a href="#ea-today">today\'s EA advice</a> for the latest');
+  assert.match(ea.eaTodayCover(frensham({ official: [item(), item({ since: '2026-01-01' })] })), /^The notices above were last checked 26 Oct\./);
+  // Not a bathing water (no fold): the publisher's own page instead.
+  assert.equal(ea.eaTodayCover({ id: 'osm-x', name: 'X', official: [item()] }),
+    `The Environment Agency's notice above was last checked 26 Oct. Open <a href="${PROFILE}">the Environment Agency page</a> for the latest`);
+  for (const d of [frensham(), frensham({ official: [] }), null]) assert.equal(ea.eaTodayCover(d), '');
+});
+
+test('official advice: gone from the open list, or changed since review, stays up and says so', () => {
+  assert.equal(ea.eaTodayChecked(item({ state: 'gone', checked: '2026-10-26' })),
+    "Not re-checked since 26 Oct 2026: no longer in the Environment Agency's open list; its end was not published.");
+  assert.equal(ea.eaTodayChecked(item({ state: 'changed', checked: '2026-10-26' })),
+    "Not re-checked since 26 Oct 2026: the Environment Agency's record has changed since it was reviewed.");
+  for (const state of ['gone', 'changed']) {
+    const html = ea.eaTodayOfficial(frensham({ official: [item({ state })] }));
+    assert.ok(html.includes(`<p class="o-line">${LINE}</p>`) && !html.includes('Last checked'), state);
+    assert.match(ea.eaTodayCover(frensham({ official: [item({ state })] })), /has not been re-checked since 26 Oct/);
+  }
+});
+
+
+test('on a spot page the level is said apart from official advice once, in its block', () => {
+  // 31 Oct 2026: Frensham said it three times (the block, a line under the level, the coverage line).
+  const app = require('node:fs').readFileSync(require('node:path').join(__dirname, '../src/dipcast/site/index.html'), 'utf8');
+  const answer = app.slice(app.indexOf('const answerWords = '), app.indexOf('\n// The live status', app.indexOf('const answerWords = ')));
+  assert.doesNotMatch(answer, /eaTodayApart/);
+  assert.match(app, /const reviewed = typeof eaTodayCover === 'function' \? eaTodayCover\(d\) : '';\n  if \(!reviewed && eaUnchecked\(d\)\) \{/);
+  assert.match(ea.eaTodayOfficial(frensham({ official: [item()] })), /It is not SwimSignal's, and the forecast below does not include it\./);
 });

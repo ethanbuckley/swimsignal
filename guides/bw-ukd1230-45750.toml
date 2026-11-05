@@ -1,4 +1,4 @@
-# Coniston Water, Boating Centre. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026.
+# Coniston Water, Boating Centre. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026. The park authority's rules for boats and boards (paddle) added 30 October 2026; the other facts were not rechecked then, so "checked" stays.
 # Prices and hours change by season: recheck every confirmed fact before changing "checked".
 checked = 2026-10-03
 how = "desk"
@@ -55,6 +55,13 @@ source_name = "Coniston Boating Centre"
 [[fact]]
 topic = "rules"
 text = "The National Park Authority says swimming is allowed on Coniston Water, and powered craft are allowed with a 10mph speed limit. The page is about the whole lake and does not name the bathing site."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/lakes-activities-guide/"
+source_name = "Lake District National Park Authority"
+
+[[fact]]
+topic = "paddle"
+text = "Canoes, kayaks and paddleboards are allowed on Coniston Water; powered craft have a 10 mph speed limit."
 status = "confirmed"
 source = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/lakes-activities-guide/"
 source_name = "Lake District National Park Authority"

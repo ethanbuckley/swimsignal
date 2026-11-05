@@ -122,7 +122,7 @@ function prerender(data, root) {
   for (const s of data.spots) {
     ctx.S = s;
     const h = vm.runInContext('ageReadings(S, Date.now()); spotTop(S) + (S.error ? "" : `<div class="stack">${daysTile(S)}</div>`)', ctx);
-    out[s.id] = h.replace(/(<p class="issued">Issued [^<,]+), [^<]* ago<\/p>/, '$1</p>');
+    out[s.id] = h.replace(/(<p class="issued">Issued [^<,]+), (<span data-ago="\d+">)?[^<]*(<\/span>)? ago<\/p>/, '$1</p>');
   }
   return out;
 }

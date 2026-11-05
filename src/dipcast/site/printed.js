@@ -58,10 +58,12 @@ const Printed = (() => {
 
   // The credits as a heading, one source a line, then the licences written out, that no provider endorses
   // SwimSignal, and where the full notices are. base: the site's address, for that last line.
-  function credits(data, spots, base, extra = []) {
+  // level: the heading's level, so the page's outline never skips one: 3 under the record's sections, 2 on
+  // the sites view, where the credits sit beside the spots' h2s (sites.js).
+  function credits(data, spots, base, extra = [], level = 3) {
     const C = data.credits || {}, full = C.full || `${base}terms.html#data`;
     // Printed, the heading runs into the text (credits-run), which saves a line on a full second page.
-    const head = '<h3 class="credits-h">Data credits</h3>', run = '<span class="credits-run">Data credits. </span>';
+    const head = `<h${level} class="credits-h">Data credits</h${level}>`, run = '<span class="credits-run">Data credits. </span>';
     if (!Array.isArray(C.sources)) {   // a file from before the sources were written: the one line every data file carries
       return head + `<div class="credits"><p>${run}${C.attribution ? `${esc(C.attribution)} ${esc(C.modified || '')} ` : ''}Full credits: ${esc(bare(full))}.</p></div>`;
     }

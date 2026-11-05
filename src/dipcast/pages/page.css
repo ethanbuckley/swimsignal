@@ -46,6 +46,8 @@
   /* The app's sky and glass (index.html): the picture's top colour, a frosted tile, the empty part of
      a bar, and an overflow quiet or not reporting. Here so that the two stylesheets keep one set. */
   --sky: #dfe6e7; --glass: rgba(255, 255, 255, .76); --track: rgba(27, 35, 40, .13); --ov-quiet: #5b6470; --ov-off: #b3bac2;
+  /* The Research Lab's deep ink (lab.css's frontispiece), behind a cover picture while it loads. */
+  --deep: #12232a;
   /* The app's map and what floats on it, and the rain bars (index.html); unused here, kept so that
      the two files hold one set (tests/test_design_tokens.py). */
   --map-bg: #e4e2dc; --float: #fff; --veil: rgba(255, 255, 255, .9); --scrim: rgba(20, 33, 43, .55);
@@ -62,6 +64,9 @@ a { color: var(--link); text-decoration-thickness: 1px; text-underline-offset: 2
 a:hover { text-decoration-thickness: 2px; }
 :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 a:focus-visible { border-radius: var(--radius-ring); }   /* a rounded ring on text links; controls keep their own radius */
+/* The app's skip link (index.html, .skip): out of sight until Tab reaches it, then over the header. */
+.skip { position: fixed; top: -100px; left: 16px; z-index: 3000; background: var(--card); border: 1px solid var(--line); padding: 12px 16px; border-radius: var(--radius); }
+.skip:focus { top: 8px; }
 b, strong { font-weight: 600; }
 code { font: var(--fs-note) var(--font-mono); }   /* file names on the terms page, at the note size: at the body size the monospaced face looks larger than the text round it */
 pre { margin: 0 0 14px; padding: 10px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.45; }   /* code to copy (the embed on About): wrapped, between hairlines, as a table */
@@ -76,10 +81,15 @@ pre { margin: 0 0 14px; padding: 10px 0; border-top: 1px solid var(--line); bord
 .top nav a:hover { color: var(--on-fill); background: var(--bar-hover); }
 .top nav a[aria-current=page] { color: var(--on-fill); box-shadow: inset 0 -2px 0 var(--on-fill); border-radius: 0; }
 .top :focus-visible { outline-color: var(--on-fill); }
+/* Five links from 2 November 2026 (Plan a swim, Saved, Accuracy, About, Research Lab): Research and data and Feedback
+   are in the More menu and every page's foot. One line each. */
+.top nav a { white-space: nowrap; }
 
-/* On a phone the brand and the four links each get a complete row. */
+/* On a phone the brand and the four links each get a complete row. The links are the app's (29 October
+   2026); Feedback, the fifth, is in every page's foot and leaves the row so four fit. */
 @media (max-width: 540px) {
   .top { gap:6px; padding:10px 16px 4px; }
+  .top nav .desk-only { display:none; }
   .top nav { width:100%; margin:0; gap:0; justify-content:space-between; }
   .top nav a { min-height:44px; display:flex; align-items:center; padding:8px; }
 }
@@ -97,7 +107,7 @@ main.doc h2, main.doc section[id] { scroll-margin-top: 16px; }   /* a linked hea
 :where(main.doc) ul, :where(main.doc) ol { padding-left: 22px; }
 :where(main.doc) li { margin: 6px 0; }
 :where(main.doc) ul ul { margin: 6px 0 0; }
-p.lead { font-size: var(--fs-head); line-height: 1.45; color: var(--muted); margin: 0 0 24px; }
+p.lead { font-size: var(--fs-head); line-height: 1.45; color: var(--ink); margin: 0 0 24px; }   /* ink since 29 October 2026: a page's first words are not secondary */
 .muted { color: var(--muted); }
 .small { font-size: var(--fs-note); }
 .dateline { font-size: var(--fs-note); color: var(--muted); margin: -8px 0 20px; }
@@ -106,12 +116,31 @@ p.lead { font-size: var(--fs-head); line-height: 1.45; color: var(--muted); marg
 @media (max-width: 540px) { main.doc { padding-top: 28px; padding-left: 16px; padding-right: 16px; } }   /* the header's gutter */
 @media (max-width: 360px) { p.lead { font-size: var(--fs-body); } }
 
-/* A summary box, for a page's answer in a few lines: the one white surface on its page, lifted off
-   the paper by its colour alone. */
-.summary { border-radius: var(--radius); background: var(--card); padding: 16px 20px 6px; margin: 0 0 8px; }
+/* A summary, for a page's answer in a few lines: on the paper under a hairline (29 October 2026). It was a
+   white box until then, the explainer callout the first redesign set out to remove (DESIGN.md, Rules for changes, 3). */
+.summary { border-top: 1px solid var(--line); padding: 16px 0 6px; margin: 0 0 8px; }
 main.doc .summary h2 { margin: 0 0 8px; }
 .summary ul { margin: 0 0 10px; }
 .summary li { margin: 8px 0; }
+
+/* Routes into the Research Lab (research.html, verification.html; the app repeats it for the home page): each
+   exhibit's cover in the Lab's plate frame, its number in the monospaced face of a figure label, its name in the
+   display face, one line. Between hairlines, no card (docs/DESIGN.md, "The Research Lab"). */
+.routes { list-style: none; padding: 0; margin: 14px 0 10px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 24px; }
+.routes.one { grid-template-columns: minmax(0, 1fr); }
+@media (max-width: 540px) { .routes { grid-template-columns: minmax(0, 1fr); } }
+:where(main.doc) .routes li { margin: 0; }
+.routes a { display: grid; grid-template-columns: 80px minmax(0, 1fr); gap: 14px; align-items: start; height: 100%; padding: 12px 0; border-top: 1px solid var(--line); color: var(--muted); text-decoration: none; font-size: var(--fs-note); line-height: 1.4; }
+.routes img { display: block; width: 80px; height: 80px; border: 1px solid var(--ink); background: var(--deep); }
+.routes small { display: block; font: 600 var(--fs-meta)/1.3 var(--font-mono); color: var(--muted); }
+.routes b { display: block; margin: 2px 0 4px; font: 600 var(--fs-body)/1.3 var(--font-display); color: var(--link); }
+.routes a:hover b { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 2px; }
+.routes a:focus-visible { border-radius: 0; }
+.jump { font-size: var(--fs-note); color: var(--muted); margin: -8px 0 8px; }
+/* A report (Accuracy, Research and data): each section opens under an ink rule, as the Lab's numbered sections do,
+   so a long page reads as parts, not one run of headings. */
+body.report main.doc h2 { border-top: 1px solid var(--ink); padding-top: 10px; margin-top: 44px; }
+body.report main.doc :is(h2#toc-h, .summary h2, nav h2) { border-top: 0; padding-top: 0; }
 
 /* Notices: something to read before the rest. */
 .notice { border: 1px solid var(--notice-line); background: var(--notice-bg); border-radius: var(--radius); padding: 12px 16px; margin: 12px 0 16px; }
@@ -159,7 +188,7 @@ textarea { min-height: 150px; resize: vertical; line-height: 1.5; }
 .btn.primary { color: var(--on-fill); background: var(--brand); border-color: var(--brand); }
 .btn.primary:hover { background: var(--brand-deep); border-color: var(--brand-deep); }
 .actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 0; }
-.panel { border-radius: var(--radius); background: var(--card); padding: 16px 20px; margin: 24px 0 0; }   /* the one white surface, as .summary */
+.panel { border-radius: var(--radius); background: var(--card); padding: 16px 20px; margin: 24px 0 0; }   /* the one white surface on its page */
 main.doc .panel h2 { margin-top: 0; }
 .panel label:first-of-type { margin-top: 12px; }
 [hidden] { display: none !important; }
@@ -206,3 +235,27 @@ details.ea-today iframe { display: block; width: 100%; max-width: 343px; height:
   tr, li, dl.fields dd { break-inside: avoid; }
   h2, h3 { break-after: avoid; }
 }
+
+/* Match the app's phone navigation without taking a second header row. */
+.phone-nav { display:none; }
+/* More's list (build_site.phone_nav): hidden until its button opens it. The rules are apart so that a browser
+   without popovers drops only the :popover-open one; there the button's MORE_FALLBACK sets .open instead. */
+.more-menu { display:none; }
+.more-menu:popover-open { display:block; }
+.more-menu.open { display:block; }
+@media screen and (max-width:800px) {
+  .top nav { display:none; }
+  body { padding-bottom:calc(64px + env(safe-area-inset-bottom, 0px)); }
+  .phone-nav { position:fixed; z-index:1200; left:0; right:0; bottom:0; display:grid; grid-template-columns:repeat(5, 1fr);
+    padding:4px 4px env(safe-area-inset-bottom, 0px); background:var(--card); box-shadow:var(--lift); }
+  .phone-nav > a, .phone-nav > button { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:48px;
+    border:0; background:none; font:inherit; cursor:pointer;
+    color:var(--ink); text-decoration:none; font-size:var(--fs-meta); font-weight:600; }
+  .phone-nav svg { width:19px; height:19px; fill:none; stroke:currentColor; stroke-width:1.75; stroke-linecap:round; stroke-linejoin:round; }
+}
+/* Over the bar's right end, where More is. Outside the media query, so a phone turned wide and back keeps it placed. */
+.more-menu { position:fixed; inset:auto max(8px, env(safe-area-inset-right, 0px)) calc(64px + env(safe-area-inset-bottom, 0px)) auto;
+  margin:0 0 8px; padding:4px 0; min-width:180px; list-style:none; background:var(--card); color:var(--ink);
+  border:1px solid var(--line); border-radius:var(--radius); }
+.more-menu a { display:flex; align-items:center; min-height:44px; padding:0 16px; color:var(--ink); text-decoration:none; font-weight:600; }
+.more-menu li + li a { border-top:1px solid var(--line); }

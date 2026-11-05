@@ -1,4 +1,4 @@
-# Windermere, Millerground Landing. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026.
+# Windermere, Millerground Landing. Desk check of the operator's pages and the Environment Agency profile, 3 October 2026. The park authority's rules for boats and boards (paddle) added 30 October 2026; the other facts were not rechecked then, so "checked" stays.
 # Prices and hours change by season: recheck every confirmed fact before changing "checked".
 checked = 2026-10-03
 how = "desk"
@@ -41,6 +41,13 @@ source_name = "Windermere and Bowness Town Council"
 [[fact]]
 topic = "rules"
 text = "The National Park Authority says swimming is allowed on Windermere. Powered craft must be registered, and there is a 10 nautical mph speed limit, or 6 in some places. The page is about the whole lake and does not name the bathing site."
+status = "confirmed"
+source = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/lakes-activities-guide/"
+source_name = "Lake District National Park Authority"
+
+[[fact]]
+topic = "paddle"
+text = "Canoes, kayaks and paddleboards are allowed on Windermere. Powered craft must be registered, and speed limits of 10 and 6 nautical miles an hour apply, depending on where you are."
 status = "confirmed"
 source = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/lakes-activities-guide/"
 source_name = "Lake District National Park Authority"

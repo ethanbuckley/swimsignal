@@ -2,7 +2,8 @@
 // the day they swam, what they wrote, a name to show and up to three photos. Every review waits
 // until the operator publishes it on /moderate. It also takes quick notes on a visit, what a spot was
 // like today or yesterday, which expire, and, when switched on, reports of illness after a swim, which
-// are published only as counts (both at the end of this file). The site's build fetches the published ones
+// are published only as counts, and files of partners' water-sample results, which are never published by the Worker
+// (all three at the end of this file). The site's build fetches the published ones
 // (GET /published) and their photos and serves them with the rest of the site, so a visitor who
 // only reads reviews never contacts this Worker. README.md has the setup and the reasons.
 //
@@ -12,8 +13,9 @@
 import { BadImage, cleanJpeg } from './jpeg.js';
 import { MODERATE_CSS, MODERATE_JS, moderatePage } from './moderate.js';
 import { ILLNESS_DAYS_BACK, ILLNESS_KEEP_DAYS, ILLNESS_MIN, ILLNESS_PER_DAY, ILLNESS_SPOT_DAY, ILLNESS_SYMPTOMS, LIMITS, MAX_NAME, MAX_PENDING,
-  MAX_PENDING_VISITS, MAX_PHOTOS, MAX_TEXT, MAX_VERIFIED, MAX_VISIT_TEXT, PHOTOS_PER_DAY, PHOTO_STORAGE_LIMIT,
-  PHOTO_STORAGE_WARN, PUBLISHED_LISTED, PUBLISH_TICKS_AT_ONCE, REASONS, VISIT_KINDS, VISIT_REASONS } from './rules.js';
+  MAX_PENDING_PARTNER, MAX_PENDING_VISITS, MAX_PARTNER_CSV, MAX_PARTNER_EMAIL, MAX_PARTNER_MESSAGE, MAX_PARTNER_NAME, MAX_PARTNER_ORG,
+  MAX_PARTNER_ROWS, MAX_PHOTOS, MAX_TEXT, MAX_VERIFIED, MAX_VISIT_TEXT, PARTNER_KEEP_DAYS, PHOTOS_PER_DAY,
+  PHOTO_STORAGE_LIMIT, PHOTO_STORAGE_WARN, PUBLISHED_LISTED, PUBLISH_TICKS_AT_ONCE, REASONS, SAMPLE_COLUMNS, SAMPLE_COLUMNS_V1, VISIT_KINDS, VISIT_REASONS } from './rules.js';
 
 const SPOT_ID = /^[A-Za-z0-9_-]{1,80}$/;   // the site's own rule for a spot's id (index.html PAGE_ID)
 const REVIEW_ID = /^[0-9a-f]{20}$/;
@@ -28,7 +30,8 @@ const WEB_ADDRESS = /https?:\/\/|www\.|\b[a-z0-9-]+\.(com|co\.uk|org|net|uk|io|l
 
 export default {
   fetch: (request, env) => handleRequest(request, env),
-  async scheduled(controller, env) { await forgetOldHits(env); await forgetEndedVisits(env); await cleanAbandonedPhotos(env); await forgetOldIllness(env); },
+  async scheduled(controller, env) { await forgetOldHits(env); await forgetEndedVisits(env); await cleanAbandonedPhotos(env); await forgetOldIllness(env);
+    await forgetOldPartnerFiles(env); },
 };
 
 // ---- replies ----
@@ -51,7 +54,9 @@ const nowISO = () => new Date().toISOString();
 const PUBLIC_POSTS = new Map([['/reviews', [submit, 201]], ['/reviews/status', [status, 200]], ['/reviews/delete', [removeOwn]],
   ['/reviews/report', [report]], ['/visits', [submitVisit, 201]], ['/visits/status', [visitStatus, 200]],
   ['/visits/delete', [removeOwnVisit]], ['/visits/confirm', [confirmVisit, 200]], ['/visits/report', [reportVisit]],
-  ['/illness', [submitIllness, 201]], ['/illness/delete', [removeOwnIllness]]]);
+  ['/illness', [submitIllness, 201]], ['/illness/delete', [removeOwnIllness]],
+  ['/partners/samples', [submitPartnerFile, 201]], ['/partners/samples/delete', [removeOwnPartnerFile]]]);
+const PARTNER_FILE_PATH = /^\/admin\/partners\/([0-9a-f]{20})\.csv$/;
 
 export async function handleRequest(request, env) {
   const url = new URL(request.url), path = url.pathname;
@@ -68,10 +73,17 @@ export async function handleRequest(request, env) {
       if (path === '/admin/queue') { await requireAdmin(request, env); return json(200, await queue(env)); }
       if (path === '/admin/summary') { await requireAdmin(request, env); return json(200, await summary(env)); }
       if (path === '/admin/illness.csv') { await requireAdmin(request, env); return await illnessCsv(env); }
+      const partnerFile = PARTNER_FILE_PATH.exec(path);
+      if (partnerFile) { await requireAdmin(request, env); return await servePartnerFile(env, partnerFile[1]); }
     }
     if (request.method === 'POST' && path === '/admin/decide') {
       await requireAdmin(request, env);
       await decide(await readJson(request), env);
+      return new Response(null, { status: 204, headers: SAFE });
+    }
+    if (request.method === 'POST' && path === '/admin/partners/decide') {
+      await requireAdmin(request, env);
+      await decidePartnerFile(await readJson(request), env);
       return new Response(null, { status: 204, headers: SAFE });
     }
     if (request.method === 'POST' && path === '/admin/illness/delete') {
@@ -424,6 +436,7 @@ async function queue(env) {
     published: recent.map(fromRow),
     visits: { pending: vPending.map(fromVisit), reported: vReported.map((v) => ({ ...fromVisit(v), ...reasons(v) })), published: vRecent.map(fromVisit) },
     illness: await illnessQueue(env),
+    partners: await partnerQueue(env),
   };
 }
 
@@ -764,4 +777,188 @@ export async function forgetOldIllness(env, now = Date.now()) {
   try {
     await env.DB.prepare('DELETE FROM illness WHERE received_on < ?').bind(addDays(londonDay(now), -ILLNESS_KEEP_DAYS)).run();
   } catch (err) { if (!noIllnessTable(err)) throw err; }
+}
+
+// ---- partners' water-sample files ----
+// A group, club or lab that samples the water sends a file of results in the samples/ format (samples/README.md, version
+// 2 for partners, docs/PARTNER-SAMPLES-CONTRACT-v1.md) from the partner page, with its name and an email address to
+// reply to. It is the existing intake's format, not a new one: the operator takes a file from here into
+// scripts/add_samples.py as it is. The Worker checks only the file's shape: the format's columns (rules.js,
+// SAMPLE_COLUMNS, or version 1's), one supplier, between one and MAX_PARTNER_ROWS samples. It keeps the file whole,
+// waiting for the operator, and never publishes it: no public route reads the table, and /published does not mention
+// it. On /moderate the operator downloads the file, runs add_samples.py --dry-run on it, and agrees the permissions with
+// the partner in writing before any result is used or shown; Accept then marks the file as taken, and Delete removes
+// it. Every file, with the sender's contact details, is deleted PARTNER_KEEP_DAYS after it arrived. The sender's browser
+// keeps a key that withdraws it at any time. Off until PARTNER_SAMPLES is "on"; the sender's delete, the operator's view
+// and the daily deletion work either way, so switching it off never strands what is held.
+// docs/PARTNER-PROGRAMME-2026-11.md has the rest.
+
+const partnersOn = (env) => env.PARTNER_SAMPLES === 'on';
+const EMAIL = /^[^\s@<>"]{1,64}@[^\s@<>"]+\.[^\s@<>".]{2,}$/;
+const noPartnerTable = (err) => /no such table: partner_submissions/.test(String(err && err.message));
+async function withPartnerTable(run) {
+  try { return await run(); } catch (err) {
+    if (noPartnerTable(err)) throw new Refused(503, 'The partner table is missing: npx wrangler d1 migrations apply swimsignal-reviews --remote');
+    throw err;
+  }
+}
+
+// A CSV file's rows, as RFC 4180 writes them: commas, quotes doubled inside quoted fields, line breaks inside quotes,
+// CRLF or LF. A spreadsheet's byte-order mark is dropped. Blank lines are left out. Throws on an unclosed quote.
+export function parseCsv(text) {
+  const rows = [];
+  let row = [], cell = '', quoted = false, i = 0;
+  const t = text.charCodeAt(0) === 0xfeff ? text.slice(1) : text;
+  const end = () => { row.push(cell); cell = ''; };
+  const line = () => { end(); if (row.length > 1 || row[0] !== '') rows.push(row); row = []; };
+  while (i < t.length) {
+    const c = t[i];
+    if (quoted) {
+      if (c === '"' && t[i + 1] === '"') { cell += '"'; i += 2; continue; }
+      if (c === '"') { quoted = false; i++; continue; }
+      cell += c; i++; continue;
+    }
+    if (c === '"' && cell === '') { quoted = true; i++; continue; }
+    if (c === ',') { end(); i++; continue; }
+    if (c === '\r' && t[i + 1] === '\n') { line(); i += 2; continue; }
+    if (c === '\n' || c === '\r') { line(); i++; continue; }
+    cell += c; i++;
+  }
+  check(!quoted, 'the file has a quote that is never closed');
+  if (cell !== '' || row.length) line();
+  return rows;
+}
+
+// A sampling day as the format writes it, "2026-10-17 08:30" or "17/10/2026", as YYYY-MM-DD; null if neither.
+const sampleDay = (v) => {
+  const s = String(v || '').trim(), iso = /^(\d{4}-\d{2}-\d{2})/.exec(s), uk = /^(\d{2})\/(\d{2})\/(\d{4})/.exec(s);
+  const day = iso ? iso[1] : uk ? `${uk[3]}-${uk[2]}-${uk[1]}` : null;
+  return day && realDay(day) ? day : null;
+};
+
+// The shape the Worker checks: the format's columns, each once, in any order (version 2's, or version 1's); every row as
+// long as the header; one supplier; one to MAX_PARTNER_ROWS samples. Returns the supplier, the row count and the first
+// and last sampling day. Everything else is for scripts/add_samples.py, on the operator's computer.
+export function partnerShape(text) {
+  const rows = parseCsv(text);
+  check(rows.length >= 2, 'the file needs the header row and at least one sample');
+  const head = rows[0].map((h) => h.trim());
+  const cols = head.length === SAMPLE_COLUMNS_V1.length ? SAMPLE_COLUMNS_V1 : SAMPLE_COLUMNS;
+  const missing = cols.filter((c) => !head.includes(c)), extra = head.filter((h) => !cols.includes(h));
+  check(!missing.length && !extra.length && new Set(head).size === head.length,
+    `the columns are not the template's${missing.length ? `: missing ${missing.join(', ')}` : ''}${extra.length ? `; not in the template: ${extra.join(', ')}` : ''}`);
+  const body = rows.slice(1);
+  check(body.length <= MAX_PARTNER_ROWS, `at most ${MAX_PARTNER_ROWS} samples in one file; send the rest in another`);
+  const bad = body.findIndex((r) => r.length !== head.length);
+  check(bad < 0, `row ${bad + 2} has ${bad < 0 ? 0 : body[bad].length} cells, not ${head.length}`);
+  const at = (name) => head.indexOf(name), names = new Set(body.map((r) => r[at('supplier')].trim()));
+  check(names.size === 1, 'one supplier per file: every row needs the same supplier');
+  const [supplier] = names;
+  check(supplier && supplier.length <= 80, 'each row needs the supplier, the organisation the results are from');
+  const days = body.map((r) => sampleDay(r[at('sampled_at')])).filter(Boolean).sort();
+  return { supplier, rows: body.length, first: days[0] || null, last: days[days.length - 1] || null };
+}
+
+async function submitPartnerFile(request, env) {
+  if (!partnersOn(env)) throw new Refused(404, 'Partner files are not switched on');
+  const length = Number(request.headers.get('Content-Length'));
+  check(length > 0, 'a file must say how long it is (Content-Length)');
+  if (length > MAX_PARTNER_CSV + 16 * 1024) throw new Refused(413, 'The file is too large: send it by email');
+  check((request.headers.get('Content-Type') || '').startsWith('multipart/form-data'), 'a file is sent as a form');
+  if (await overLimit(request, env, 'partner')) throw new Refused(429, 'Too many files from this connection today');
+  let form;
+  try { form = await request.formData(); } catch { throw new Invalid('the form could not be read'); }
+  const field = (name) => { const v = form.get(name); return typeof v === 'string' ? v : v === null ? '' : undefined; };
+  if (field('website')) return { id: randomHex(10), token: b64url(crypto.getRandomValues(new Uint8Array(32))) };   // the hidden field: a script
+
+  const organisation = cleanText(field('organisation'), MAX_PARTNER_ORG, true);
+  check(organisation, 'say which group, club or lab the results are from');
+  const contactName = cleanText(field('contact_name'), MAX_PARTNER_NAME, true);
+  const email = cleanText(field('email'), MAX_PARTNER_EMAIL, true);
+  check(EMAIL.test(email), 'give an email address SwimSignal can reply to');
+  const message = cleanText(field('message'), MAX_PARTNER_MESSAGE);
+  check(field('rights') === 'yes', 'confirm that these are your results, or that you may send them');
+  const file = form.get('file');
+  check(file && typeof file === 'object' && typeof file.arrayBuffer === 'function', 'attach the file of results');
+  check(file.size > 0 && file.size <= MAX_PARTNER_CSV, `the file must be at most ${MAX_PARTNER_CSV / 1024} KB`);
+  let text;
+  try { text = new TextDecoder('utf-8', { fatal: true }).decode(await file.arrayBuffer()); } catch { throw new Invalid('save the file as CSV (UTF-8)'); }
+  check(!/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(text), 'the file is not a CSV: save it as CSV (UTF-8)');
+  const shape = partnerShape(text);
+  const filename = cleanText(typeof file.name === 'string' ? file.name : '', 120, true) || 'results.csv';
+
+  const id = randomHex(10), token = b64url(crypto.getRandomValues(new Uint8Array(32)));
+  return withPartnerTable(async () => {
+    // Check and insert in one statement, so simultaneous files cannot both take the last place in the queue.
+    const stored = await env.DB.prepare(`INSERT INTO partner_submissions (id, organisation, contact_name, email, message, filename, csv, sha256,
+      supplier, rows, first_day, last_day, status, created_at, token_hash)
+      SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ? WHERE (SELECT count(*) FROM partner_submissions WHERE status = 'pending') < ? RETURNING id`)
+      .bind(id, organisation, contactName, email, message, filename, text, await sha256(text), shape.supplier, shape.rows, shape.first, shape.last,
+        nowISO(), await sha256(token), MAX_PENDING_PARTNER).first();
+    if (!stored) throw new Refused(503, 'Too many files are waiting to be checked just now. Send it to hello@swimsignal.co.uk instead');
+    return { id, token, rows: shape.rows };
+  });
+}
+
+// The sender's browser keeps the file's id and key, and can withdraw it, contact details and all, at any time.
+async function removeOwnPartnerFile(request, env) {
+  const data = await readJson(request);
+  check(isObject(data), 'body must be a JSON object');
+  const id = checkId(data.id);
+  check(typeof data.token === 'string' && data.token.length <= 100, 'bad key');
+  if (await overLimit(request, env, 'remove')) throw new Refused(429, 'Too many requests from this connection today');
+  return withPartnerTable(async () => {
+    const row = await env.DB.prepare('SELECT token_hash FROM partner_submissions WHERE id = ?').bind(id).first();
+    if (!row) return undefined;   // already gone: what was asked for is true
+    if (!(await same(row.token_hash, await sha256(data.token)))) throw new Refused(403, 'That key does not open this file');
+    await env.DB.prepare('DELETE FROM partner_submissions WHERE id = ?').bind(id).run();
+    return undefined;
+  });
+}
+
+// For /moderate: every file held, without its text, newest first, with the switch's state. Null before the migration.
+async function partnerQueue(env) {
+  try {
+    const { results } = await env.DB.prepare(`SELECT id, organisation, contact_name, email, message, filename, sha256, supplier, rows,
+      first_day, last_day, status, created_at, decided_at FROM partner_submissions ORDER BY status = 'pending' DESC, created_at DESC LIMIT 100`).all();
+    return { on: partnersOn(env), keep_days: PARTNER_KEEP_DAYS, pending: results.filter((r) => r.status === 'pending'),
+      accepted: results.filter((r) => r.status === 'accepted') };
+  } catch (err) {
+    if (noPartnerTable(err)) return null;
+    throw err;
+  }
+}
+
+// A supplier's file name, as samples.py's slug: 'Example Swim Club' -> 'example-swim-club'.
+const slugOf = (name) => String(name).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60) || 'partner';
+
+// The file as sent, for the operator to check and keep. Never cached, never shown as a page.
+async function servePartnerFile(env, id) {
+  return withPartnerTable(async () => {
+    const row = await env.DB.prepare('SELECT csv, supplier, created_at FROM partner_submissions WHERE id = ?').bind(id).first();
+    if (!row) return reply(404, 'Not found');
+    return new Response(row.csv, { headers: { 'Content-Type': 'text/csv; charset=utf-8', 'Cache-Control': 'private, no-store',
+      'Content-Disposition': `attachment; filename="${slugOf(row.supplier)}-${row.created_at.slice(0, 10)}-${id}.csv"`, ...SAFE } });
+  });
+}
+
+// Accept: the operator has checked the file and taken it to the private folder; it stays until its time to be deleted,
+// so the sender can still withdraw it here. Delete: it goes now. Neither publishes anything.
+async function decidePartnerFile(data, env) {
+  check(isObject(data), 'body must be a JSON object');
+  const id = checkId(data.id);
+  check(['accept', 'delete'].includes(data.action), 'action must be accept or delete');
+  return withPartnerTable(async () => {
+    const row = await env.DB.prepare('SELECT status FROM partner_submissions WHERE id = ?').bind(id).first();
+    if (!row) throw new Refused(404, 'No such file');
+    if (data.action === 'delete') return env.DB.prepare('DELETE FROM partner_submissions WHERE id = ?').bind(id).run();
+    await env.DB.prepare("UPDATE partner_submissions SET status = 'accepted', decided_at = ? WHERE id = ? AND status = 'pending'").bind(nowISO(), id).run();
+  });
+}
+
+// Daily: files older than PARTNER_KEEP_DAYS go, with the sender's contact details. Before the migration there is nothing.
+export async function forgetOldPartnerFiles(env, now = Date.now()) {
+  try {
+    await env.DB.prepare('DELETE FROM partner_submissions WHERE created_at < ?').bind(new Date(now - PARTNER_KEEP_DAYS * 86400_000).toISOString()).run();
+  } catch (err) { if (!noPartnerTable(err)) throw err; }
 }

@@ -423,6 +423,12 @@ def build_overflows(net: RiverNetwork) -> pd.DataFrame:
     df.loc[snapped, "end_node"] = net.links.loc[df.loc[snapped, "link_id"], "end_node"].to_numpy()
     df.loc[snapped, "link_length"] = net.links.loc[df.loc[snapped, "link_id"], "length"].to_numpy()
     df["on_named"] = on_named(net, df)
+    from dipcast import scotland_trial
+    if scotland_trial.enabled():   # Scottish Water's overflows, already snapped by Scotland's rules
+        sc = scotland_trial.overflow_rows(net)
+        if len(sc):
+            df = pd.concat([df, sc], ignore_index=True)
+            snapped = df["link_id"].notna()
     log.info("overflows: %d total, %d with live feed, %d snapped to network (%.0f%%); confidence %s; data states %s",
              len(df), int(df.has_live.sum()), int(snapped.sum()), 100 * snapped.mean(),
              df["snap_confidence"].value_counts(dropna=False).to_dict(), df["data_state"].value_counts().to_dict())

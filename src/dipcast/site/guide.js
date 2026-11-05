@@ -7,13 +7,21 @@
 // when, and that it has not been checked. The two are told apart in words, not colour: a colour on
 // this page means a risk level. "Verified" is the word the notes on a visit (visits.js) use for a
 // fact checked against an official source; there "confirmed" means a swimmer saying it is still so.
+// A fact from a dated record (source_date, a consultation's month, say) is as that record listed it,
+// not a current check, so it says "Source" and the month instead of "Verified".
 //
 // A plain script, like reviews.js: in the page its names are globals (each begins guide or GUIDE,
 // clear of the page's own), and in Node the last lines export them (tests/site_guide.test.cjs).
 
 // The topics in the order a swimmer meets them, as src/dipcast/guides.py lists them.
-const GUIDE_TOPICS = [['parking', 'Parking'], ['path', 'Path to the water'], ['entry', 'Getting in'], ['exit', 'Getting out'],
-  ['toilets', 'Toilets'], ['changing', 'Changing'], ['fees', 'Fees and booking'], ['hours', 'Opening times'], ['rules', 'Who can swim']];
+const GUIDE_TOPICS = [['parking', 'Parking'], ['transport', 'Bus and train'], ['path', 'Path to the water'], ['entry', 'Getting in'], ['exit', 'Getting out'],
+  ['toilets', 'Toilets'], ['changing', 'Changing'], ['fees', 'Fees and booking'], ['hours', 'Opening times'], ['rules', 'Who can swim'],
+  ['launch', 'Launching a boat or board'], ['carry', 'Carrying to the water'], ['paddle', 'Paddling here']];
+// The topics for boats and boards (guides.py, TOPICS): shown where a guide has them, never listed as missing.
+const GUIDE_PADDLE = new Set(['launch', 'carry', 'paddle']);
+// Bus and train (30 October 2026): shown where a guide has it, and not listed as missing here either, since the
+// guides written before it would all grow the same new gap. The arrival guide (arrive.js, ?arrive=1) does list it.
+const GUIDE_OPTIONAL = new Set(['transport']);
 const GUIDE_STALE_DAYS = 365;   // fees, hours and paths change: older than this, the guide says so
 const GUIDE_SHOW = 4;           // topics shown before "Show all", when at least two more would fold
 const guideEsc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
@@ -24,6 +32,10 @@ const guideHttps = u => /^https:\/\/[^\s<>"']+$/.test(String(u || ''));
 // file name or a number into an attribute.
 const guideFile = f => /^[a-z0-9][a-z0-9-]{0,78}\.jpe?g$/.test(String(f || ''));
 const guideNum = (v, lo, hi) => { const n = Number(v); return Number.isFinite(n) && n >= lo && n <= hi ? n : null; };
+
+// "2026-02" as "February 2026": a dated record's month (source_date).
+const guideMonth = ym => /^\d{4}-(0[1-9]|1[0-2])$/.test(String(ym || ''))
+  ? new Date(ym + '-15T12:00:00').toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }) : '';
 
 // Days between two ISO dates, b minus a.
 const guideDays = (a, b) => Math.round((Date.parse(b + 'T12:00:00Z') - Date.parse(a + 'T12:00:00Z')) / 864e5);
@@ -42,7 +54,8 @@ function guideChecked(g, today) {
 }
 
 // Under a fact or a photo: who says so. A verified fact names the page it came from, linked (the
-// guide's first line gives the day they were checked), or the day it was seen; a swimmer's
+// guide's first line gives the day they were checked), or the day it was seen; a fact from a dated
+// record names the page and the record's month, as "Source", not "Verified"; a swimmer's
 // suggestion says who, when, and that it is not checked.
 function guideSource(x) {
   if (x.status === 'suggested') {
@@ -50,6 +63,8 @@ function guideSource(x) {
   }
   const parts = [];
   if (guideHttps(x.source)) parts.push(`<a href="${guideEsc(x.source)}">${guideEsc(x.source_name || 'Source')}</a>`);
+  const month = guideMonth(x.source_date);
+  if (month && parts.length) return `<span class="g-who">Source</span>: ${parts[0]}, ${month}.`;
   if (x.seen) parts.push(`seen on site ${guideDay(x.seen)}`);
   return `<span class="g-who">Verified</span>: ${parts.join('; ')}.`;
 }
@@ -78,10 +93,20 @@ function guideRuns(facts) {
 function guideFacts(g) {
   const by = new Map();
   for (const f of g.facts || []) { if (!by.has(f.topic)) by.set(f.topic, []); by.get(f.topic).push(f); }
-  const topics = GUIDE_TOPICS.filter(([k]) => by.has(k)), fold = topics.length > GUIDE_SHOW + 1;
-  return '<dl class="g-facts">' + topics.map(([k, label], i) => `<div class="g-row"${fold && i >= GUIDE_SHOW ? ' hidden' : ''}><dt>${label}</dt>`
-    + guideRuns(by.get(k)).map(r => `<dd>${r.texts.map(t => `<p class="g-text">${guideEsc(t)}</p>`).join('')}<p class="g-src">${r.src}</p></dd>`).join('')
-    + '</div>').join('') + '</dl>'
+  // Who can swim stays in view wherever it falls (30 October 2026): with bus and train a sixth topic, Cromwheel's
+  // rules went behind "Show all", and permission is the one thing a first-time reader must not have to open.
+  const topics = GUIDE_TOPICS.filter(([k]) => by.has(k)), shown = (k, i) => i < GUIDE_SHOW || k === 'rules';
+  const fold = topics.filter(([k], i) => !shown(k, i)).length >= 2;
+  // In each topic its first source's facts show and the rest fold (5 Nov 2026: Windermere's guide ran to about 600 words,
+  // all open, 372 of them under Who can swim from six sources). Who can swim shows its first two, verified first
+  // (guides.py sorts them), so permission is in view; a fold of one is not worth its line, so one more shows instead.
+  const said = r => `${r.texts.map(t => `<p class="g-text">${guideEsc(t)}</p>`).join('')}<p class="g-src">${r.src}</p>`;
+  const facts = k => { const rs = guideRuns(by.get(k)), keep = k === 'rules' ? 2 : 1;
+    return rs.length <= keep + 1 ? rs.map(r => `<dd>${said(r)}</dd>`).join('')
+      : rs.slice(0, keep).map(r => `<dd>${said(r)}</dd>`).join('') + `<dd class="g-more"><details class="more"><summary>${rs.length - keep} more from other sources</summary>`
+        + rs.slice(keep).map(r => `<div class="g-run">${said(r)}</div>`).join('') + '</details></dd>'; };
+  return '<dl class="g-facts">' + topics.map(([k, label], i) => `<div class="g-row"${fold && !shown(k, i) ? ' hidden' : ''}><dt>${label}</dt>`
+    + facts(k) + '</div>').join('') + '</dl>'
     + (fold ? `<button type="button" class="btn quiet" id="g-all" aria-expanded="false">Show all ${topics.length} topics</button>` : '');
 }
 
@@ -105,8 +130,23 @@ if (typeof document === 'object' && document.addEventListener) document.addEvent
 // "Not in this guide yet: toilets, changing." So a missing topic reads as unknown, not as none.
 function guideGaps(g) {
   const have = new Set((g.facts || []).map(f => f.topic));
-  const gaps = GUIDE_TOPICS.filter(([k]) => !have.has(k)).map(([, label]) => label.toLowerCase());
+  const gaps = GUIDE_TOPICS.filter(([k]) => !have.has(k) && !GUIDE_PADDLE.has(k) && !GUIDE_OPTIONAL.has(k)).map(([, label]) => label.toLowerCase());
   return gaps.length ? `<p class="g-gap">Not in this guide yet: ${gaps.join(', ')}.</p>` : '';
+}
+
+// A historical photo (status "historical", guides.py): someone else's published photograph under an open licence,
+// Geograph's under CC BY-SA 2.0. Its line names the photographer, the day it was taken, its title linked to its page,
+// the licence linked to its deed, what was changed, and that the copy here is under the same licence. Then, beside it
+// every time, what it cannot show: it is not SwimSignal's, and it shows that day, not today's access, permission,
+// water level or conditions. A licence the page does not know is not linked or named.
+const GUIDE_LICENCES = { 'https://creativecommons.org/licenses/by-sa/2.0/': 'CC BY-SA 2.0' };
+function guideHistorical(p) {
+  const lic = GUIDE_LICENCES[p.licence], page = guideHttps(p.source)
+    ? `<a href="${guideEsc(p.source)}">${guideEsc(p.title || 'the photo')}</a> on ${guideEsc(p.source_name || 'its publisher')}` : guideEsc(p.title || '');
+  const terms = lic ? ` Licensed under <a href="${guideEsc(p.licence)}">${lic}</a>; ${guideEsc(String(p.changes || '').replace(/[.\s]+$/, ''))}. `
+    + `This copy is also under ${lic}.` : '';
+  return `<span class="g-who">Historical photo</span> by ${guideEsc(p.credit)}, taken ${guideDay(p.taken)}: ${page}.${terms} `
+    + 'Not taken by SwimSignal. It shows that day only, not today\'s access, permission, water level or conditions.';
 }
 
 // A photo at the tile's width, its numbered labels placed on it, and the key beneath: a number on the
@@ -119,10 +159,10 @@ function guidePhoto(p, i, g) {
   const key = labels.length ? `<ol class="g-key">${labels.map(l => `<li>${guideEsc(l.text)}</li>`).join('')}</ol>` : '';
   const alt = guideEsc(String(p.caption || '').replace(/[.\s]+$/, '')) + (labels.length ? `. Labelled: ${labels.map((l, n) => `${n + 1}, ${guideEsc(l.text)}`).join('; ')}.` : '.');
   const by = p.status === 'suggested' ? `A swimmer's photo, from ${guideEsc(p.from)}; the labels are theirs and not yet checked.`
-    : guideSource(p);
+    : p.status === 'historical' ? guideHistorical(p) : guideSource(p);
   return `<figure class="g-photo"><div class="g-pic" style="aspect-ratio:${w} / ${h}">`
     + `<img src="guides/photos/${p.file}" width="${w}" height="${h}" loading="lazy" decoding="async" alt="${alt}">${pins}</div>`
-    + `<figcaption>${key}<p class="g-cap">${guideEsc(p.caption)} Photo: ${guideEsc(p.credit)}, ${guideDay(p.taken)}.</p>`
+    + `<figcaption>${key}<p class="g-cap">${guideEsc(p.caption)}${p.status === 'historical' ? '' : ` Photo: ${guideEsc(p.credit)}, ${guideDay(p.taken)}.`}</p>`
     + `<p class="g-src">${by}</p></figcaption></figure>`;
 }
 
@@ -193,5 +233,5 @@ function knowOpen(kind, sec) {
 }
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { GUIDE_TOPICS, GUIDE_STALE_DAYS, GUIDE_SHOW, guideTile, knowTile, KNOW, guideChecked, guideSource, guideRuns, guideFacts, guideGaps, guidePhoto, guideDays, guideClick, showRest };
+  module.exports = { GUIDE_TOPICS, GUIDE_PADDLE, GUIDE_OPTIONAL, GUIDE_STALE_DAYS, GUIDE_SHOW, guideTile, knowTile, KNOW, guideChecked, guideSource, guideRuns, guideFacts, guideGaps, guidePhoto, guideHistorical, GUIDE_LICENCES, guideDays, guideClick, showRest };
 }

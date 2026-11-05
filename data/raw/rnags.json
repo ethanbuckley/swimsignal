@@ -1,5 +1,9 @@
 {"source":"Environment Agency, Catchment Data Explorer: reasons for not achieving good status, England (https://environment.data.gov.uk/catchment-planning/England/rnags); water body river lines and catchments, by river basin district (https://environment.data.gov.uk/catchment-planning/RiverBasinDistrict/<id>.geojson)","licence":"Open Government Licence v3.0 (https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/)","credit":"© Environment Agency copyright and/or database right. All rights reserved.","fetched":"2026-10-18","sha256":"553bb49f68f0b83af76d0722acaf2ebea40d075d5981119bda09d5c94ebada1a","rows":33732,"rows_kept":15959,"made":"Reasons for not achieving good status (Reason Type RNAG) whose sector is Confirmed or Probable, one pressure per water body, sector and issue with the strongest certainty of its rows. Spots: a river spot in the water body whose river line, named for its river, is nearest within 500 m, else the named catchment holding it; a lake spot in the WFD lake the forecast places it in. By scripts/make_rnags.py",
 "spots":{
+"brothers-water":{"id":"GB30229116","by":"lake","m":0},
+"loweswater":{"id":"GB31228986","by":"lake","m":0},
+"bassenthwaite":{"id":"GB31228847","by":"lake","m":0},
+"carding-mill-reservoir":null,
 "bw-uke4100-08901":{"id":"GB104027064257","by":"river line","m":3},
 "bw-uke2203-08903":{"id":"GB104027068298","by":"river line","m":9},
 "bw-uke4200-08904":{"id":"GB104027064255","by":"river line","m":30},

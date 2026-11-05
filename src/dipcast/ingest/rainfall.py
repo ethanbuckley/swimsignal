@@ -76,6 +76,10 @@ OUTAGE_COOLOFF_S = 600
 # 8,700 at a build every 30 minutes, and the rest is room for answers the ledger cannot see (a
 # request that timed out after Open-Meteo had counted it).
 DAILY_CALLS = float(os.environ.get("DIPCAST_OPEN_METEO_DAILY_CALLS", "9000"))
+# What the forecast request asks for: the rain, and the air temperature for the river water-temperature estimate
+# (model/water_temp.py). Adding the second leaves every rain value the same (checked on 62 cells, 27 Oct 2026) and
+# the weight at 1 a cell (forecast_weight).
+FORECAST_VARIABLES = "precipitation,temperature_2m"
 LEDGER_NAME = "open_meteo_calls.json"
 # A paid plan (OP1, docs/ORGANISER-PIVOT-2026-10.md): the free API is for non-commercial use only.
 # With KEY_ENV set, every request goes to the same path on the host with "customer-" in front
@@ -111,8 +115,10 @@ def call_weight(n_locations: int, days: float, variables: int = 1) -> float:
 
 def forecast_weight(n_cells: int, past_days: int = config.FORECAST_PAST_DAYS,
                     forecast_days: int = config.FORECAST_DAYS) -> float:
-    """What fetch_forecast's request for n_cells costs: one variable over past + forecast + 1 days."""
-    return call_weight(n_cells, past_days + forecast_days + 1)
+    """What fetch_forecast's request for n_cells costs: its FORECAST_VARIABLES over past + forecast + 1 days. Two
+    variables over 38 days are max(1, 0.2, 0.2 x 38/14 = 0.54) = 1 a cell, as one was: the air temperature rides on
+    the rain request free (docs/WATER-TEMPERATURE-MODEL-TEST-2026-10.md, "What follows")."""
+    return call_weight(n_cells, past_days + forecast_days + 1, variables=len(FORECAST_VARIABLES.split(",")))
 
 
 def _utc_day(now: float | None = None) -> str:
@@ -168,6 +174,69 @@ def may_spend(weight: float, what: str, now: float | None = None) -> bool:
     log.warning("open-meteo: %s request of %.0f calls not made; the day's ration (%.0f) is spent",
                 what, weight, DAILY_CALLS)
     return False
+
+
+# ------------------------------------------------------------------ the planned day
+def planned_day(spot_cells: int, anypoint_cells: int, weather_points: int, scotland_cells: int, soil_cells: int, *,
+                anypoint_refresh_h: float, weather_refresh_h: float, scotland_refresh_h: float,
+                soil_attempts: int) -> dict:
+    """The most each user of the forecast API can ask for in one UTC day at a build every 30 minutes,
+    by its refresh floor, and the total: what the ration (DAILY_CALLS) has to hold whatever the schedule
+    does. Each cell or point weighs one call a request (call_weight). `anypoint_cells` are the
+    click-anywhere cells the spots do not share: a spot cell is never 12 hours old, so click-anywhere
+    never asks for it. The weather can be asked for once more when the local day turns. The floors are
+    passed in because they live with their users (scripts/build_any_point.py, scripts/build_site.py,
+    scottish_shadow, soil). The ensemble and the directories' air (build_site.directory_air, about 91 cells
+    a day from 31 Oct 2026) are left out: they run on spare calls alone (spare_for)."""
+    by = {"spots": spot_cells * 24 * 3600 / FORECAST_TTL_S, "anypoint": anypoint_cells * 24 / anypoint_refresh_h,
+          "weather": weather_points * (24 / weather_refresh_h + 1), "scotland": scotland_cells * 24 / scotland_refresh_h,
+          "soil": soil_cells * soil_attempts}
+    return {"by": by, "calls": sum(by.values()), "spare": DAILY_CALLS - sum(by.values())}
+
+
+# Open-Meteo's free limits besides the day's, from its terms and pricing pages (read 27 Oct 2026): 5,000 calls an
+# hour, 600 a minute and 300,000 a month, counted by IP address and application, and for non-commercial use only.
+# Its terms count subscriptions, advertising and commercial promotion as commercial; a tip jar is allowed. So
+# this capacity is for a non-commercial prototype: a commercial launch needs a paid plan, and the ensemble and
+# archive APIs need Professional, not Standard (pricing page).
+# Only the day is enforced here (may_spend against DAILY_CALLS). The month follows from it: 31 days at
+# DAILY_CALLS is 279,000. The hour and the minute are NOT enforced, and not counted. planned_hour bounds the hour
+# from the floors; nothing bounds the minute, where two steps of one build run back to back can pass 600, and the
+# only answer is a 429 retried after its Retry-After (_request). A GitHub runner's address may be shared with
+# other users' jobs, whose calls this cannot see (inferred).
+FREE_HOUR_CALLS, FREE_MINUTE_CALLS, FREE_MONTH_CALLS = 5000, 600, 300_000
+
+
+def planned_hour(spot_cells: int, anypoint_cells: int, weather_points: int, scotland_cells: int, soil_cells: int,
+                 ensemble_cells: int, *, anypoint_per_build: int, scotland_per_build: int, soil_attempts: int,
+                 builds_per_hour: int = 2) -> dict:
+    """The most the builds can ask for in one hour. A bound, not a limit: nothing in the code stops an hour
+    passing it. Each floor is 2 hours or more, so a cell is asked for once in an hour at most, however many
+    builds run; the weather can be asked for twice (once more when the local day turns); soil each attempt.
+    The ensemble is counted, though it runs on spare calls alone.
+    - `any_builds`: from the floors alone, so it holds for any number of builds in the hour (schedule, push
+      or workflow_dispatch). It rests on each build starting from the last one's cache: site.yml runs one
+      build at a time and saves its state even when it fails; a runner lost before that save would break it.
+    - `scheduled`: `builds_per_hour` builds (2: the cron's every 30 minutes), also using the per-build caps of
+      click-anywhere and the Scottish shadow.
+    - `scheduled_crude`: `builds_per_hour` builds each asking for every cell and point, floors and caps ignored."""
+    every = spot_cells + anypoint_cells + weather_points + scotland_cells + soil_cells * soil_attempts + ensemble_cells
+    by = {"spots": spot_cells, "anypoint": min(anypoint_cells, builds_per_hour * anypoint_per_build),
+          "weather": 2 * weather_points, "scotland": min(scotland_cells, builds_per_hour * scotland_per_build),
+          "soil": soil_cells * soil_attempts, "ensemble": ensemble_cells}
+    return {"any_builds": every + weather_points, "scheduled": sum(by.values()), "scheduled_crude": builds_per_hour * every,
+            "by_scheduled": by}
+
+
+def new_spot_calls(new_cells: int, new_cells_from_anypoint: int, new_soil_cell: bool, *, anypoint_refresh_h: float,
+                   weather_refresh_h: float, soil_attempts: int) -> float:
+    """What one more listed spot adds to planned_day: its weather point; each rain cell no listed spot
+    has yet, at the spots' floor, less what click-anywhere paid for it where it was one of its cells
+    (`new_cells_from_anypoint`, a share of `new_cells`); and, for a river spot in a cell no river spot
+    has, its soil cell. Cells the spots already ask for cost nothing more."""
+    spots = 24 * 3600 / FORECAST_TTL_S
+    return ((24 / weather_refresh_h + 1) + new_cells * spots - new_cells_from_anypoint * 24 / anypoint_refresh_h
+            + (soil_attempts if new_soil_cell else 0))
 
 
 def api_key() -> str:
@@ -318,10 +387,16 @@ def reset_requests() -> None:
 
 
 def _to_frame(res: dict, cell_lat: float, cell_lon: float) -> pd.DataFrame:
+    """One cell's hourly rain, and, where the answer has them, its air temperature (`air_c`, for the river
+    water-temperature estimate, model/water_temp.py) and Open-Meteo's elevation for the cell (`elevation_m`). An answer
+    without them (the archive's, an older cached forecast) gets NaN there; the rain is the same either way."""
     h = res["hourly"]
     t = pd.to_datetime(h["time"], utc=True)
     p = np.asarray(h["precipitation"], dtype=float)
-    return pd.DataFrame({"cell_lat": cell_lat, "cell_lon": cell_lon, "time": t, "precip_mm": p})
+    air = np.asarray(h["temperature_2m"], dtype=float) if "temperature_2m" in h else np.full(len(p), np.nan)
+    elev = res.get("elevation")
+    return pd.DataFrame({"cell_lat": cell_lat, "cell_lon": cell_lon, "time": t, "precip_mm": p, "air_c": air,
+                         "elevation_m": float(elev) if isinstance(elev, (int, float)) else np.nan})
 
 
 # ------------------------------------------------------------------ archive
@@ -437,6 +512,7 @@ def fetch_errors() -> list[str]:
 def _empty_forecast() -> pd.DataFrame:
     return pd.DataFrame({"cell_lat": pd.Series(dtype=float), "cell_lon": pd.Series(dtype=float),
                          "time": pd.Series(dtype="datetime64[ns, UTC]"), "precip_mm": pd.Series(dtype=float),
+                         "air_c": pd.Series(dtype=float), "elevation_m": pd.Series(dtype=float),
                          "issued_at": pd.Series(dtype="datetime64[ns, UTC]")})
 
 
@@ -504,7 +580,7 @@ def fetch_forecast(cells: list[tuple[float, float]],
             params = {
                 "latitude": ",".join(f"{c[0]:.3f}" for c in chunk),
                 "longitude": ",".join(f"{c[1]:.3f}" for c in chunk),
-                "hourly": "precipitation",
+                "hourly": FORECAST_VARIABLES,
                 "past_days": past_days,
                 # One UTC day more than the local days shown. In summer time, from 23:00 UTC the
                 # local date is a day ahead of the UTC one, so the fifth local day ends an hour into

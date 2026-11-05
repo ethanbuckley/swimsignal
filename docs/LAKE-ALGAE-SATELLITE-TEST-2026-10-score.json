@@ -1,0 +1,1234 @@
+{
+ "unknown_wording_dropped": 0,
+ "checks": 1846,
+ "checks_at_sites_in_test": 1358,
+ "sites_in_test": [
+  "ukd1101-45800",
+  "ukd1203-45625",
+  "ukd1203-45650",
+  "ukd1203-45675",
+  "ukd1203-45700",
+  "ukd1230-45725",
+  "ukd1230-45750",
+  "ukd1230-45775",
+  "ukf1400-09750",
+  "ukf2208-09701",
+  "ukf2208-09702",
+  "uki1106-11940",
+  "ukj2310-11945",
+  "ukk1302-11760"
+ ],
+ "sizes": {
+  "ukf2208-09701": {
+   "name": "Rutland Water Whitwell Creek",
+   "water_body": "Rutland Water",
+   "tiles": {
+    "MGRS-30UXD": {
+     "n_core": 75,
+     "n_site": 122,
+     "items": 424,
+     "passes": true
+    }
+   },
+   "in_test": true
+  },
+  "ukf2208-09702": {
+   "name": "Rutland Water Sykes Lane",
+   "water_body": "Rutland Water",
+   "tiles": {
+    "MGRS-30UXD": {
+     "n_core": 163,
+     "n_site": 194,
+     "items": 424,
+     "passes": true
+    }
+   },
+   "in_test": true
+  },
+  "ukf1400-09750": {
+   "name": "Colwick Country Park (West Lake)",
+   "water_body": "Colwick Country Park, West Lake",
+   "tiles": {
+    "MGRS-30UXD": {
+     "n_core": 45,
+     "n_site": 74,
+     "items": 424,
+     "passes": true
+    }
+   },
+   "in_test": true
+  },
+  "ukk1302-11760": {
+   "name": "Cotswold Country Park and Beach",
+   "water_body": "Cotswold Country Park lake",
+   "tiles": {
+    "MGRS-30UWC": {
+     "n_core": 157,
+     "n_site": 231,
+     "items": 425,
+     "passes": true
+    }
+   },
+   "in_test": true
+  },
+  "uki1101-11910": {
+   "name": "Hampstead Heath (Ladies Pond)",
+   "water_body": "Hampstead Heath Ladies Pond",
+   "tiles": {
+    "MGRS-30UXC": {
+     "n_core": 0,
+     "n_site": 0,
+     "items": 430,
+     "passes": false
+    }
+   },
+   "in_test": false
+  },
+  "uki1101-11920": {
+   "name": "Hampstead Heath (Mens Pond)",
+   "water_body": "Hampstead Heath Men's Pond",
+   "tiles": {
+    "MGRS-30UXC": {
+     "n_core": 0,
+     "n_site": 0,
+     "items": 430,
+     "passes": false
+    }
+   },
+   "in_test": false
+  },
+  "uki1101-11930": {
+   "name": "Hampstead Heath (Mixed Pond)",
+   "water_body": "Hampstead Heath Mixed Pond",
+   "tiles": {
+    "MGRS-30UXC": {
+     "n_core": 0,
+     "n_site": 0,
+     "items": 430,
+     "passes": false
+    }
+   },
+   "in_test": false
+  },
+  "uki1106-11940": {
+   "name": "The Serpentine - Hyde Park",
+   "water_body": "The Serpentine",
+   "tiles": {
+    "MGRS-30UXC": {
+     "n_core": 69,
+     "n_site": 127,
+     "items": 429,
+     "passes": true
+    }
+   },
+   "in_test": true
+  },
+  "ukj2310-11945": {
+   "name": "Frensham Great Pond",
+   "water_body": "Frensham Great Pond",
+   "tiles": {
+    "MGRS-30UXB": {
+     "n_core": 201,
+     "n_site": 237,
+     "items": 214,
+     "passes": true
+    }
+   },
+   "in_test": true
+  },
+  "ukk1100-36050": {
+   "name": "Henleaze Lake",
+   "water_body": "Henleaze Lake",
+   "tiles": {
+    "MGRS-30UWC": {
+     "n_core": 0,
+     "n_site": 0,
+     "items": 425,
+     "passes": false
+    }
+   },
+   "in_test": false
+  },
+  "ukd1203-45625": {
+   "name": "Windermere, Lakeside YMCA",
+   "water_body": "Windermere",
+   "tiles": {
+    "MGRS-30UVF": {
+     "n_core": 184,
+     "n_site": 227,
+     "items": 431,
+     "passes": true
+    },
+    "MGRS-30UWF": {
+     "n_core": 182,
+     "n_site": 225,
+     "items": 431,
+     "passes": true
+    }
+   },
+   "in_test": true
+  },
+  "ukd1203-45650": {
+   "name": "Windermere, Millerground Landing",
+   "water_body": "Windermere",
+   "tiles": {
+    "MGRS-30UVF": {
+     "n_core": 322,
+     "n_site": 360,
+     "items": 432,
+     "passes": true
+    },
+    "MGRS-30UWF": {
+     "n_core": 322,
+     "n_site": 360,
+     "items": 432,
+     "passes": true
+    }
+   },
+   "in_test": true
+  },
+  "ukd1203-45675": {
+   "name": "Windermere, Rayrigg Meadow",
+   "water_body": "Windermere",
+   "tiles": {
+    "MGRS-30UVF": {
+     "n_core": 288,
+     "n_site": 325,
+     "items": 432,
+     "passes": true
+    },
+    "MGRS-30UWF": {
+     "n_core": 287,
+     "n_site": 324,
+     "items": 432,
+     "passes": true
+    }
+   },
+   "in_test": true
+  },
+  "ukd1203-45700": {
+   "name": "Windermere, Fellfoot",
+   "water_body": "Windermere",
+   "tiles": {
+    "MGRS-30UVF": {
+     "n_core": 51,
+     "n_site": 84,
+     "items": 431,
+     "passes": true
+    },
+    "MGRS-30UWF": {
+     "n_core": 51,
+     "n_site": 84,
+     "items": 431,
+     "passes": true
+    }
+   },
+   "in_test": true
+  },
+  "ukd1230-45725": {
+   "name": "Coniston Water, Brown Howe",
+   "water_body": "Coniston Water",
+   "tiles": {
+    "MGRS-30UVF": {
+     "n_core": 263,
+     "n_site": 298,
+     "items": 431,
+     "passes": true
+    }
+   },
+   "in_test": true
+  },
+  "ukd1230-45750": {
+   "name": "Coniston Water, Boating Centre",
+   "water_body": "Coniston Water",
+   "tiles": {
+    "MGRS-30UVF": {
+     "n_core": 239,
+     "n_site": 286,
+     "items": 434,
+     "passes": true
+    }
+   },
+   "in_test": true
+  },
+  "ukd1230-45775": {
+   "name": "Coniston Water, Monk Coniston",
+   "water_body": "Coniston Water",
+   "tiles": {
+    "MGRS-30UVF": {
+     "n_core": 129,
+     "n_site": 169,
+     "items": 434,
+     "passes": true
+    }
+   },
+   "in_test": true
+  },
+  "ukd1101-45800": {
+   "name": "Derwent Water at Crow Park",
+   "water_body": "Derwent Water",
+   "tiles": {
+    "MGRS-30UVF": {
+     "n_core": 130,
+     "n_site": 169,
+     "items": 432,
+     "passes": true
+    }
+   },
+   "in_test": true
+  }
+ },
+ "pairing": [
+  {
+   "bw_id": "ukd1101-45800",
+   "season": 2024,
+   "checks": 23,
+   "with_reading": 6,
+   "lag_days_median": 1.0
+  },
+  {
+   "bw_id": "ukd1101-45800",
+   "season": 2025,
+   "checks": 21,
+   "with_reading": 5,
+   "lag_days_median": 2.0
+  },
+  {
+   "bw_id": "ukd1101-45800",
+   "season": 2026,
+   "checks": 21,
+   "with_reading": 12,
+   "lag_days_median": 0.5
+  },
+  {
+   "bw_id": "ukd1203-45625",
+   "season": 2020,
+   "checks": 3,
+   "with_reading": 1,
+   "lag_days_median": 0.0
+  },
+  {
+   "bw_id": "ukd1203-45625",
+   "season": 2021,
+   "checks": 20,
+   "with_reading": 5,
+   "lag_days_median": 1.0
+  },
+  {
+   "bw_id": "ukd1203-45625",
+   "season": 2022,
+   "checks": 20,
+   "with_reading": 0,
+   "lag_days_median": null
+  },
+  {
+   "bw_id": "ukd1203-45625",
+   "season": 2023,
+   "checks": 20,
+   "with_reading": 9,
+   "lag_days_median": 1.0
+  },
+  {
+   "bw_id": "ukd1203-45625",
+   "season": 2024,
+   "checks": 20,
+   "with_reading": 6,
+   "lag_days_median": 2.5
+  },
+  {
+   "bw_id": "ukd1203-45625",
+   "season": 2025,
+   "checks": 20,
+   "with_reading": 5,
+   "lag_days_median": 1.0
+  },
+  {
+   "bw_id": "ukd1203-45625",
+   "season": 2026,
+   "checks": 22,
+   "with_reading": 9,
+   "lag_days_median": 1.0
+  },
+  {
+   "bw_id": "ukd1203-45650",
+   "season": 2020,
+   "checks": 3,
+   "with_reading": 1,
+   "lag_days_median": 0.0
+  },
+  {
+   "bw_id": "ukd1203-45650",
+   "season": 2021,
+   "checks": 20,
+   "with_reading": 8,
+   "lag_days_median": 1.5
+  },
+  {
+   "bw_id": "ukd1203-45650",
+   "season": 2022,
+   "checks": 20,
+   "with_reading": 0,
+   "lag_days_median": null
+  },
+  {
+   "bw_id": "ukd1203-45650",
+   "season": 2023,
+   "checks": 20,
+   "with_reading": 10,
+   "lag_days_median": 0.0
+  },
+  {
+   "bw_id": "ukd1203-45650",
+   "season": 2024,
+   "checks": 20,
+   "with_reading": 5,
+   "lag_days_median": 2.0
+  },
+  {
+   "bw_id": "ukd1203-45650",
+   "season": 2025,
+   "checks": 20,
+   "with_reading": 5,
+   "lag_days_median": 1.0
+  },
+  {
+   "bw_id": "ukd1203-45650",
+   "season": 2026,
+   "checks": 21,
+   "with_reading": 11,
+   "lag_days_median": 1.0
+  },
+  {
+   "bw_id": "ukd1203-45675",
+   "season": 2020,
+   "checks": 3,
+   "with_reading": 1,
+   "lag_days_median": 0.0
+  },
+  {
+   "bw_id": "ukd1203-45675",
+   "season": 2021,
+   "checks": 20,
+   "with_reading": 9,
+   "lag_days_median": 1.0
+  },
+  {
+   "bw_id": "ukd1203-45675",
+   "season": 2022,
+   "checks": 20,
+   "with_reading": 0,
+   "lag_days_median": null
+  },
+  {
+   "bw_id": "ukd1203-45675",
+   "season": 2023,
+   "checks": 20,
+   "with_reading": 10,
+   "lag_days_median": 0.0
+  },
+  {
+   "bw_id": "ukd1203-45675",
+   "season": 2024,
+   "checks": 20,
+   "with_reading": 4,
+   "lag_days_median": 1.5
+  },
+  {
+   "bw_id": "ukd1203-45675",
+   "season": 2025,
+   "checks": 21,
+   "with_reading": 6,
+   "lag_days_median": 1.5
+  },
+  {
+   "bw_id": "ukd1203-45675",
+   "season": 2026,
+   "checks": 21,
+   "with_reading": 12,
+   "lag_days_median": 1.0
+  },
+  {
+   "bw_id": "ukd1203-45700",
+   "season": 2020,
+   "checks": 3,
+   "with_reading": 1,
+   "lag_days_median": 0.0
+  },
+  {
+   "bw_id": "ukd1203-45700",
+   "season": 2021,
+   "checks": 20,
+   "with_reading": 2,
+   "lag_days_median": 1.0
+  },
+  {
+   "bw_id": "ukd1203-45700",
+   "season": 2022,
+   "checks": 20,
+   "with_reading": 0,
+   "lag_days_median": null
+  },
+  {
+   "bw_id": "ukd1203-45700",
+   "season": 2023,
+   "checks": 20,
+   "with_reading": 6,
+   "lag_days_median": 0.0
+  },
+  {
+   "bw_id": "ukd1203-45700",
+   "season": 2024,
+   "checks": 20,
+   "with_reading": 1,
+   "lag_days_median": 2.0
+  },
+  {
+   "bw_id": "ukd1203-45700",
+   "season": 2025,
+   "checks": 20,
+   "with_reading": 1,
+   "lag_days_median": 1.0
+  },
+  {
+   "bw_id": "ukd1203-45700",
+   "season": 2026,
+   "checks": 22,
+   "with_reading": 8,
+   "lag_days_median": 1.5
+  },
+  {
+   "bw_id": "ukd1230-45725",
+   "season": 2024,
+   "checks": 20,
+   "with_reading": 5,
+   "lag_days_median": 2.0
+  },
+  {
+   "bw_id": "ukd1230-45725",
+   "season": 2025,
+   "checks": 20,
+   "with_reading": 6,
+   "lag_days_median": 1.0
+  },
+  {
+   "bw_id": "ukd1230-45725",
+   "season": 2026,
+   "checks": 19,
+   "with_reading": 9,
+   "lag_days_median": 1.0
+  },
+  {
+   "bw_id": "ukd1230-45750",
+   "season": 2023,
+   "checks": 5,
+   "with_reading": 5,
+   "lag_days_median": 1.0
+  },
+  {
+   "bw_id": "ukd1230-45750",
+   "season": 2024,
+   "checks": 20,
+   "with_reading": 4,
+   "lag_days_median": 0.5
+  },
+  {
+   "bw_id": "ukd1230-45750",
+   "season": 2025,
+   "checks": 20,
+   "with_reading": 6,
+   "lag_days_median": 1.5
+  },
+  {
+   "bw_id": "ukd1230-45750",
+   "season": 2026,
+   "checks": 20,
+   "with_reading": 7,
+   "lag_days_median": 1.0
+  },
+  {
+   "bw_id": "ukd1230-45775",
+   "season": 2023,
+   "checks": 5,
+   "with_reading": 4,
+   "lag_days_median": 1.5
+  },
+  {
+   "bw_id": "ukd1230-45775",
+   "season": 2024,
+   "checks": 20,
+   "with_reading": 3,
+   "lag_days_median": 0.0
+  },
+  {
+   "bw_id": "ukd1230-45775",
+   "season": 2025,
+   "checks": 20,
+   "with_reading": 8,
+   "lag_days_median": 1.5
+  },
+  {
+   "bw_id": "ukd1230-45775",
+   "season": 2026,
+   "checks": 20,
+   "with_reading": 5,
+   "lag_days_median": 1.0
+  },
+  {
+   "bw_id": "ukf1400-09750",
+   "season": 2020,
+   "checks": 3,
+   "with_reading": 1,
+   "lag_days_median": 3.0
+  },
+  {
+   "bw_id": "ukf1400-09750",
+   "season": 2021,
+   "checks": 22,
+   "with_reading": 5,
+   "lag_days_median": 2.0
+  },
+  {
+   "bw_id": "ukf1400-09750",
+   "season": 2022,
+   "checks": 20,
+   "with_reading": 0,
+   "lag_days_median": null
+  },
+  {
+   "bw_id": "ukf1400-09750",
+   "season": 2023,
+   "checks": 20,
+   "with_reading": 4,
+   "lag_days_median": 1.0
+  },
+  {
+   "bw_id": "ukf1400-09750",
+   "season": 2024,
+   "checks": 15,
+   "with_reading": 1,
+   "lag_days_median": 3.0
+  },
+  {
+   "bw_id": "ukf1400-09750",
+   "season": 2025,
+   "checks": 15,
+   "with_reading": 7,
+   "lag_days_median": 1.0
+  },
+  {
+   "bw_id": "ukf1400-09750",
+   "season": 2026,
+   "checks": 20,
+   "with_reading": 7,
+   "lag_days_median": 1.0
+  },
+  {
+   "bw_id": "ukf2208-09701",
+   "season": 2023,
+   "checks": 22,
+   "with_reading": 9,
+   "lag_days_median": 2.0
+  },
+  {
+   "bw_id": "ukf2208-09701",
+   "season": 2024,
+   "checks": 20,
+   "with_reading": 2,
+   "lag_days_median": 1.5
+  },
+  {
+   "bw_id": "ukf2208-09701",
+   "season": 2025,
+   "checks": 23,
+   "with_reading": 8,
+   "lag_days_median": 1.5
+  },
+  {
+   "bw_id": "ukf2208-09701",
+   "season": 2026,
+   "checks": 16,
+   "with_reading": 8,
+   "lag_days_median": 1.0
+  },
+  {
+   "bw_id": "ukf2208-09702",
+   "season": 2023,
+   "checks": 22,
+   "with_reading": 9,
+   "lag_days_median": 1.0
+  },
+  {
+   "bw_id": "ukf2208-09702",
+   "season": 2024,
+   "checks": 20,
+   "with_reading": 4,
+   "lag_days_median": 1.5
+  },
+  {
+   "bw_id": "ukf2208-09702",
+   "season": 2025,
+   "checks": 23,
+   "with_reading": 10,
+   "lag_days_median": 1.0
+  },
+  {
+   "bw_id": "ukf2208-09702",
+   "season": 2026,
+   "checks": 11,
+   "with_reading": 5,
+   "lag_days_median": 1.0
+  },
+  {
+   "bw_id": "uki1106-11940",
+   "season": 2020,
+   "checks": 9,
+   "with_reading": 4,
+   "lag_days_median": 1.0
+  },
+  {
+   "bw_id": "uki1106-11940",
+   "season": 2021,
+   "checks": 20,
+   "with_reading": 5,
+   "lag_days_median": 3.0
+  },
+  {
+   "bw_id": "uki1106-11940",
+   "season": 2022,
+   "checks": 21,
+   "with_reading": 0,
+   "lag_days_median": null
+  },
+  {
+   "bw_id": "uki1106-11940",
+   "season": 2023,
+   "checks": 21,
+   "with_reading": 9,
+   "lag_days_median": 1.0
+  },
+  {
+   "bw_id": "uki1106-11940",
+   "season": 2024,
+   "checks": 20,
+   "with_reading": 6,
+   "lag_days_median": 2.0
+  },
+  {
+   "bw_id": "uki1106-11940",
+   "season": 2025,
+   "checks": 22,
+   "with_reading": 14,
+   "lag_days_median": 0.5
+  },
+  {
+   "bw_id": "uki1106-11940",
+   "season": 2026,
+   "checks": 21,
+   "with_reading": 12,
+   "lag_days_median": 0.5
+  },
+  {
+   "bw_id": "ukj2310-11945",
+   "season": 2020,
+   "checks": 3,
+   "with_reading": 0,
+   "lag_days_median": null
+  },
+  {
+   "bw_id": "ukj2310-11945",
+   "season": 2021,
+   "checks": 21,
+   "with_reading": 5,
+   "lag_days_median": 0.0
+  },
+  {
+   "bw_id": "ukj2310-11945",
+   "season": 2022,
+   "checks": 20,
+   "with_reading": 0,
+   "lag_days_median": null
+  },
+  {
+   "bw_id": "ukj2310-11945",
+   "season": 2023,
+   "checks": 20,
+   "with_reading": 4,
+   "lag_days_median": 2.0
+  },
+  {
+   "bw_id": "ukj2310-11945",
+   "season": 2024,
+   "checks": 15,
+   "with_reading": 5,
+   "lag_days_median": 2.0
+  },
+  {
+   "bw_id": "ukj2310-11945",
+   "season": 2025,
+   "checks": 10,
+   "with_reading": 1,
+   "lag_days_median": 3.0
+  },
+  {
+   "bw_id": "ukj2310-11945",
+   "season": 2026,
+   "checks": 12,
+   "with_reading": 5,
+   "lag_days_median": 0.0
+  },
+  {
+   "bw_id": "ukk1302-11760",
+   "season": 2020,
+   "checks": 2,
+   "with_reading": 2,
+   "lag_days_median": 2.0
+  },
+  {
+   "bw_id": "ukk1302-11760",
+   "season": 2021,
+   "checks": 20,
+   "with_reading": 4,
+   "lag_days_median": 2.0
+  },
+  {
+   "bw_id": "ukk1302-11760",
+   "season": 2022,
+   "checks": 20,
+   "with_reading": 0,
+   "lag_days_median": null
+  },
+  {
+   "bw_id": "ukk1302-11760",
+   "season": 2023,
+   "checks": 20,
+   "with_reading": 9,
+   "lag_days_median": 2.0
+  },
+  {
+   "bw_id": "ukk1302-11760",
+   "season": 2024,
+   "checks": 16,
+   "with_reading": 5,
+   "lag_days_median": 1.0
+  },
+  {
+   "bw_id": "ukk1302-11760",
+   "season": 2025,
+   "checks": 10,
+   "with_reading": 6,
+   "lag_days_median": 1.5
+  },
+  {
+   "bw_id": "ukk1302-11760",
+   "season": 2026,
+   "checks": 10,
+   "with_reading": 7,
+   "lag_days_median": 2.0
+  }
+ ],
+ "rows": 404,
+ "gate": {
+  "A": {
+   "events": 102,
+   "rows": 404,
+   "water_bodies_with_events": 7,
+   "seasons_with_5": 5,
+   "by_water_body": {
+    "Colwick Country Park, West Lake": 16,
+    "Coniston Water": 2,
+    "Cotswold Country Park lake": 3,
+    "Frensham Great Pond": 6,
+    "Rutland Water": 14,
+    "The Serpentine": 31,
+    "Windermere": 30
+   },
+   "by_season": {
+    "2020": 1,
+    "2021": 17,
+    "2023": 15,
+    "2024": 10,
+    "2025": 26,
+    "2026": 33
+   },
+   "judged": true
+  },
+  "B": {
+   "events": 20,
+   "rows": 404,
+   "water_bodies_with_events": 5,
+   "seasons_with_5": 1,
+   "by_water_body": {
+    "Colwick Country Park, West Lake": 2,
+    "Frensham Great Pond": 3,
+    "Rutland Water": 1,
+    "The Serpentine": 12,
+    "Windermere": 2
+   },
+   "by_season": {
+    "2021": 2,
+    "2023": 4,
+    "2024": 1,
+    "2025": 4,
+    "2026": 9
+   },
+   "judged": false
+  }
+ },
+ "outcomes": {
+  "A": {
+   "gate": {
+    "events": 102,
+    "rows": 404,
+    "water_bodies_with_events": 7,
+    "seasons_with_5": 5,
+    "by_water_body": {
+     "Colwick Country Park, West Lake": 16,
+     "Coniston Water": 2,
+     "Cotswold Country Park lake": 3,
+     "Frensham Great Pond": 6,
+     "Rutland Water": 14,
+     "The Serpentine": 31,
+     "Windermere": 30
+    },
+    "by_season": {
+     "2020": 1,
+     "2021": 17,
+     "2023": 15,
+     "2024": 10,
+     "2025": 26,
+     "2026": 33
+    },
+    "judged": true
+   },
+   "tables": {
+    "LOWO": {
+     "R1": {
+      "brier": 0.19929202642727614,
+      "auc": 0.26826061550447994,
+      "rows_without_prediction": 0
+     },
+     "R2": {
+      "brier": 0.17448825572589227,
+      "auc": 0.5733670951824439,
+      "rows_without_prediction": 0
+     },
+     "M1": {
+      "brier": 0.20241481101794437,
+      "auc": 0.36790676535514866,
+      "rows_without_prediction": 0
+     },
+     "M2": {
+      "brier": 0.17914273745943202,
+      "auc": 0.5924230619400078,
+      "rows_without_prediction": 0
+     }
+    },
+    "LOSO": {
+     "R1": {
+      "brier": 0.19105168156735639,
+      "auc": 0.4007758732632126,
+      "rows_without_prediction": 0
+     },
+     "R2": {
+      "brier": 0.16554116180484557,
+      "auc": 0.6605473315153875,
+      "rows_without_prediction": 0
+     },
+     "M1": {
+      "brier": 0.19321958610300063,
+      "auc": 0.5113296974418906,
+      "rows_without_prediction": 0
+     },
+     "M2": {
+      "brier": 0.1710502551298653,
+      "auc": 0.6547850928450851,
+      "rows_without_prediction": 0
+     }
+    }
+   },
+   "primary": {
+    "d": -0.004654481733539745,
+    "L": -0.02282099487664434,
+    "U": 0.0020348991685759836,
+    "draws_without_value": 0,
+    "label": "Possible harm",
+    "B": 0.0036,
+    "H": 0.0018
+   },
+   "groups": {
+    "Lake District": {
+     "d": -0.0002667618873990474,
+     "L": -0.0018770377618228251,
+     "U": 0.00324000301452583,
+     "draws_without_value": 0,
+     "label": "Possible harm"
+    },
+    "lowland": {
+     "d": -0.009953312804562187,
+     "L": -0.04514314810690692,
+     "U": 0.0025882493732145018,
+     "draws_without_value": 0,
+     "label": "Possible harm"
+    }
+   },
+   "conditions": {
+    "1": {
+     "auc": 0.6043695623944942,
+     "L": 0.39400196622679623,
+     "U": 0.7462584838079547,
+     "draws_without_auc": 0,
+     "holds": false
+    },
+    "2": {
+     "d": -0.003122784590668226,
+     "L": -0.02074376716348836,
+     "U": 0.006939503612032032,
+     "draws_without_value": 0,
+     "holds": false
+    },
+    "3": {
+     "pooled": -0.005509093325019726,
+     "by_season": {
+      "2021": -0.002198414237473162,
+      "2023": 0.0010746578820926833,
+      "2024": 0.0005733240963073094,
+      "2025": -0.023779135639223015,
+      "2026": -0.0010972195879171143
+     },
+     "positive": 2,
+     "needed": 4,
+     "holds": false
+    },
+    "4": {
+     "real": 0.6043695623944942,
+     "p95": 0.5911594273470977,
+     "rank_190th": 0.5910433709907804,
+     "at_or_above_real": 3,
+     "lowest": 0.4894656538111934,
+     "median": 0.552720425918712,
+     "highest": 0.6313628100246721,
+     "holds": true
+    },
+    "5": {
+     "labels": {
+      "Lake District": "Possible harm",
+      "lowland": "Possible harm"
+     },
+     "holds": true
+    },
+    "6": {
+     "mean_forecast": 0.24314637881223833,
+     "observed": 0.2524752475247525,
+     "tolerance": 0.03,
+     "holds": true
+    }
+   },
+   "verdict": "Fails",
+   "auc_by_water_body": {
+    "Colwick Country Park, West Lake": 0.3958333333333333,
+    "Coniston Water": 0.14166666666666666,
+    "Cotswold Country Park lake": 0.42222222222222217,
+    "Derwent Water": NaN,
+    "Frensham Great Pond": 0.9166666666666666,
+    "Rutland Water": 0.3484320557491289,
+    "The Serpentine": 0.7317487266553481,
+    "Windermere": 0.6352201257861635
+   }
+  },
+  "B": {
+   "gate": {
+    "events": 20,
+    "rows": 404,
+    "water_bodies_with_events": 5,
+    "seasons_with_5": 1,
+    "by_water_body": {
+     "Colwick Country Park, West Lake": 2,
+     "Frensham Great Pond": 3,
+     "Rutland Water": 1,
+     "The Serpentine": 12,
+     "Windermere": 2
+    },
+    "by_season": {
+     "2021": 2,
+     "2023": 4,
+     "2024": 1,
+     "2025": 4,
+     "2026": 9
+    },
+    "judged": false
+   },
+   "tables": {
+    "LOWO": {
+     "R1": {
+      "brier": 0.04924117700175454,
+      "auc": 0.16868489583333335,
+      "rows_without_prediction": 0
+     },
+     "R2": {
+      "brier": 0.04378728912791911,
+      "auc": 0.5789062500000001,
+      "rows_without_prediction": 0
+     },
+     "M1": {
+      "brier": 0.05146606138650364,
+      "auc": 0.34902343750000003,
+      "rows_without_prediction": 0
+     },
+     "M2": {
+      "brier": 0.044891198215899555,
+      "auc": 0.5624348958333334,
+      "rows_without_prediction": 0
+     }
+    },
+    "LOSO": {
+     "R1": {
+      "brier": 0.04732769975120889,
+      "auc": 0.3858072916666667,
+      "rows_without_prediction": 0
+     },
+     "R2": {
+      "brier": 0.04211968065741067,
+      "auc": 0.6684895833333333,
+      "rows_without_prediction": 0
+     },
+     "M1": {
+      "brier": 0.04762732140384492,
+      "auc": 0.7934244791666667,
+      "rows_without_prediction": 0
+     },
+     "M2": {
+      "brier": 0.04553784741727322,
+      "auc": 0.6518880208333333,
+      "rows_without_prediction": 0
+     }
+    }
+   },
+   "primary": {
+    "d": -0.0011039090879804425,
+    "L": -0.005212930425643482,
+    "U": 0.0009271987086590433,
+    "draws_without_value": 0,
+    "label": "Possible harm",
+    "B": 0.0009,
+    "H": 0.00046
+   },
+   "groups": {
+    "Lake District": {
+     "d": -0.0005874561467032486,
+     "L": -0.0009192737915715739,
+     "U": -4.541898071111982e-05,
+     "draws_without_value": 0,
+     "label": "Possible harm"
+    },
+    "lowland": {
+     "d": -0.0017276036236212045,
+     "L": -0.010119788322203366,
+     "U": 0.0017408384951275863,
+     "draws_without_value": 0,
+     "label": "Possible harm"
+    }
+   },
+   "conditions": {
+    "1": {
+     "auc": 0.8138671875000001,
+     "L": 0.3857765784130727,
+     "U": 0.9201633279996195,
+     "draws_without_auc": 0,
+     "holds": false
+    },
+    "2": {
+     "d": -0.002224884384749104,
+     "L": -0.0058408856457657695,
+     "U": 0.0026326899151807503,
+     "draws_without_value": 0,
+     "holds": false
+    },
+    "3": {
+     "pooled": -0.003418166759862555,
+     "by_season": {
+      "2026": 0.0012468813465336959
+     },
+     "positive": 1,
+     "needed": 1,
+     "holds": false
+    },
+    "4": {
+     "real": 0.8138671875000001,
+     "p95": 0.7680143229166665,
+     "rank_190th": 0.767578125,
+     "at_or_above_real": 0,
+     "lowest": 0.5223958333333333,
+     "median": 0.67509765625,
+     "highest": 0.8035807291666666,
+     "holds": true
+    },
+    "5": {
+     "labels": {
+      "Lake District": "Possible harm",
+      "lowland": "Possible harm"
+     },
+     "holds": true
+    },
+    "6": {
+     "mean_forecast": 0.04061053883803516,
+     "observed": 0.04950495049504951,
+     "tolerance": 0.01,
+     "holds": true
+    }
+   },
+   "verdict": "Too few to judge",
+   "auc_by_water_body": {
+    "Colwick Country Park, West Lake": 0.4782608695652174,
+    "Coniston Water": NaN,
+    "Cotswold Country Park lake": NaN,
+    "Derwent Water": NaN,
+    "Frensham Great Pond": 0.8823529411764706,
+    "Rutland Water": 0.16666666666666663,
+    "The Serpentine": 0.8717105263157895,
+    "Windermere": 0.5559701492537313
+   }
+  }
+ },
+ "description": {
+  "window_0": {
+   "A": {
+    "rows": 132,
+    "events": 35,
+    "auc": 0.6677466863033874
+   },
+   "B": {
+    "rows": 132,
+    "events": 10,
+    "auc": 0.8188524590163935
+   }
+  },
+  "window_7": {
+   "A": {
+    "rows": 640,
+    "events": 146,
+    "auc": 0.6230450335533249
+   },
+   "B": {
+    "rows": 640,
+    "events": 35,
+    "auc": 0.7687367178276269
+   }
+  },
+  "statutory_only": {
+   "A": {
+    "rows": 389,
+    "events": 98,
+    "auc": 0.6138929798723614
+   },
+   "B": {
+    "rows": 389,
+    "events": 19,
+    "auc": 0.8030583214793742
+   }
+  }
+ },
+ "hashes": {
+  "features": "41f234d3a953df246306aa7785978e7c3d76f82ed1765e5518923633c50b5d0e",
+  "checks": "f036b6ebf62e29a2569a9c6334f2305d1bed20068296b44322f29783e9a70413"
+ }
+}
