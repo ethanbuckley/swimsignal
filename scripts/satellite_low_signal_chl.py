@@ -4,7 +4,8 @@ seen pairs; the lab chlorophyll test's caches (PR #386) are read only.
 
     python scripts/satellite_low_signal_chl.py prepare --out DIR    # offline: the test's pairs, their scenes, the order
     python scripts/satellite_low_signal_chl.py read --out DIR       # one capped fetch of B4 and B5 for those scenes
-    python scripts/satellite_low_signal_chl.py report --out DIR     # offline: signal, the flag, the measures, the words
+    python scripts/satellite_low_signal_chl.py resume --out DIR     # amendment 1: the scenes the first run never reached
+    python scripts/satellite_low_signal_chl.py report --out DIR [--partial JSON]   # offline: signal, flag, measures, words
 
 Pixels stay in DIR (scratch). The report writes data/research/satellite_low_signal_chl_2026_11.json (values, no pixels).
 The rule, its thresholds and the inner-core reading are the exporter's and refresher's (contract 1.4), imported, so this
@@ -140,7 +141,19 @@ def prepare(out: Path) -> None:
 
 
 # ------------------------------------------------------------------ the one capped fetch
-def read(out: Path) -> None:
+def failed(ledger: Path) -> set[str]:
+    """Item ids of band reads the ledger holds with no status (a dropped connection): never requested again."""
+    ids = set()
+    for line in ledger.read_text().splitlines():
+        if line.strip() and json.loads(line)["status"] is None:
+            ids.add(json.loads(line)["url"].split("/")[-2])
+    return ids
+
+
+def read(out: Path, resume: bool = False) -> None:
+    """`read`: the one capped fetch. `resume` (amendment 1 of the record): a second run over the scenes the first run
+    never attempted, on the same ledger so the request and byte caps hold over both runs together; the scene whose read
+    failed is left out, so no request is retried. Refuses a third run."""
     import stac
     from net import Capped
     selection = json.loads((out / "selection.json").read_text())
@@ -148,15 +161,21 @@ def read(out: Path) -> None:
     if before != selection["fingerprint_sha256"]:
         raise ValueError("Inputs changed since selection")
     ledger = out / "network.jsonl"
-    if ledger.exists():
-        raise ValueError("A network run already exists; no retry under this protocol")
+    if ledger.exists() != resume:
+        raise ValueError("A network run already exists; no retry under this protocol" if ledger.exists()
+                         else "Nothing to resume: no first run")
+    if resume and (out / "run-resume.json").exists():
+        raise ValueError("A resumed run already exists; the amendment allows one")
     (out / "bands").mkdir(exist_ok=True)
+    skip = failed(ledger) if resume else set()
+    scenes = [s for s in selection["scenes"] if s["item_id"] not in skip
+              and not (out / "bands" / f"{s['point']}__{s['item_id']}.npz").exists()] if resume else selection["scenes"]
     net = Capped(ledger=ledger, max_requests=MAX_REQUESTS, max_requests_total=MAX_REQUESTS,
                  max_bytes=MAX_BYTES, max_bytes_total=MAX_BYTES)
     items: dict[str, dict] = {}
     done = []
     try:
-        for s in selection["scenes"]:
+        for s in scenes:
             if s["point"] not in items:
                 items[s["point"]] = {it["id"]: it for it in json.loads((CHL / "items" / f"{s['point']}.json").read_text())}
             it = items[s["point"]][s["item_id"]]
@@ -167,12 +186,13 @@ def read(out: Path) -> None:
             b4, b5 = stac.site_bands(net, it, s["lon"], s["lat"])
             np.savez_compressed(out / "bands" / f"{s['point']}__{s['item_id']}.npz", b4=b4, b5=b5)
             done.append(s["item_id"])
-            print(f"{len(done)}/{len(selection['scenes'])} {s['point']} {s['item_id']} "
+            print(f"{len(done)}/{len(scenes)} {s['point']} {s['item_id']} "
                   f"{net.requests} req {net.bytes / 1024**2:.1f} MiB", flush=True)
     finally:
         after = digest(input_files())
-        (out / "run.json").write_text(json.dumps({"network": net.summary(), "before": before, "after": after,
-                                                 "completed": len(done)}, indent=1) + "\n")
+        (out / ("run-resume.json" if resume else "run.json")).write_text(json.dumps(
+            {"network": net.summary(), "before": before, "after": after, "completed": len(done),
+             "scenes_in_run": len(scenes), "skipped_failed": sorted(skip)}, indent=1) + "\n")
         if after != before:
             raise ValueError("Inputs changed during network run")
 
@@ -343,9 +363,21 @@ def reading_in_words(share: float, flag_core: dict, inner_vs_core: dict, flag_in
 
 
 # ------------------------------------------------------------------ report
-def report(out: Path) -> None:
+def runs(out: Path) -> dict:
+    """The fetch runs' ledgers as one: the first run and, under amendment 1, the resumed one."""
+    first = json.loads((out / "run.json").read_text())
+    rs = [first]
+    if (out / "run-resume.json").exists():
+        rs.append(json.loads((out / "run-resume.json").read_text()))
+    last = rs[-1]["network"]
+    return {"runs": rs, "completed": sum(r["completed"] for r in rs),
+            "network": {"requests": last["requests_all_runs"], "bytes": last["bytes_all_runs"]},
+            "fingerprints": [v for r in rs for v in (r["before"], r["after"])]}
+
+
+def report(out: Path, partial: Path | None = None) -> None:
     selection = json.loads((out / "selection.json").read_text())
-    run = json.loads((out / "run.json").read_text())
+    run = runs(out)
     now = digest(input_files())
     rows = pd.DataFrame(selection["pairs"])
     signal = []
@@ -390,12 +422,18 @@ def report(out: Path) -> None:
         "protocol": "docs/SATELLITE-LOW-SIGNAL-CHLOROPHYLL-2026-11.md",
         "thresholds": {"low_signal": LOW_SIGNAL, "small": SMALL, "large": LARGE, "rare": RARE, "frequent": FREQUENT},
         "seed": SEED, "input_fingerprint_sha256": selection["fingerprint_sha256"],
-        "fingerprint_unchanged": run["before"] == run["after"] == selection["fingerprint_sha256"] == now,
-        "network": run["network"], "caps": selection["caps"], "completed": run["completed"],
+        "fingerprint_unchanged": all(v == selection["fingerprint_sha256"] for v in run["fingerprints"] + [now]),
+        "network": run["network"], "runs": run["runs"], "caps": selection["caps"], "completed": run["completed"],
         "selected": len(selection["scenes"]), "pairs": int(len(rows)), "pairs_read": int(len(read_rows)),
         "flag_share": share, "variants": variants, "differences": differences, "reading_in_words": words,
         "rows": json.loads(rows.to_json(orient="records")),
     }
+    if partial is not None:   # amendment 1: the first run's own figures, kept as they were before the resume
+        p = json.loads(partial.read_text())
+        result["run1_partial"] = {k: p[k] for k in ("network", "completed", "pairs_read", "flag_share", "differences",
+                                                    "reading_in_words")}
+        result["run1_partial"]["variants"] = {k: {kk: v.get(kk) for kk in ("pairs", "lakes", "pooled", "within_lake")}
+                                              for k, v in p["variants"].items()}
     OUTPUT.write_text(json.dumps(result, indent=1, default=_json_default) + "\n")
     brief = {k: result[k] for k in ("network", "completed", "pairs_read", "fingerprint_unchanged", "flag_share",
                                     "differences", "reading_in_words")}
@@ -416,10 +454,12 @@ def _json_default(o):
 
 def main() -> None:
     a = argparse.ArgumentParser()
-    a.add_argument("step", choices=("prepare", "read", "report"))
+    a.add_argument("step", choices=("prepare", "read", "resume", "report"))
     a.add_argument("--out", type=Path, required=True)
+    a.add_argument("--partial", type=Path)
     o = a.parse_args()
-    {"prepare": prepare, "read": read, "report": report}[o.step](o.out)
+    {"prepare": lambda: prepare(o.out), "read": lambda: read(o.out), "resume": lambda: read(o.out, resume=True),
+     "report": lambda: report(o.out, o.partial)}[o.step]()
 
 
 if __name__ == "__main__":

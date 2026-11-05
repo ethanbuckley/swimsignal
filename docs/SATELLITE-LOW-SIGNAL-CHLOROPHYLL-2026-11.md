@@ -113,6 +113,31 @@ samples' median shift was 0.004).
 lab chlorophyll test passes or fails under any variant, or that any threshold is right; the 2027 protocol review
 decides what to do with the flag, on 2027 pairs.
 
+### Amendment 1 (5 November 2026, 23:58 UTC, written before the resumed run)
+
+The first run (protocol commit `02c386ff`, 23:47 UTC; fetch from 23:52:28 UTC) stopped after 51 scenes at the 52nd,
+the B05 read of `S2A_T30UXD_20260709T112128_L2A` at Swanholme Lakes (AN-SWANHWFD): the server dropped the connection
+without a status ("Server disconnected without sending a response"), not an HTTP 429, 5xx or other status. 225
+requests, 125,606,991 bytes (119.8 MiB), every completed response 206; fingerprint unchanged
+(`8e2f4b20…3675321c`); all 51 recomputed readings equal the cached ones.
+
+The protocol said one run, and that a partial run stays partial. 51 pairs are too few for the within-lake measure as
+designed: the seeded order reads one scene per point first, so the 51 pairs sit at 38 lakes with at most two pairs
+each, and the within-lake Spearman rests on 26 demeaned pairs (13 lakes) in variant A and 10 pairs in B. The design
+was all 207 pairs, and the cost budget is 77% unspent. So this amendment allows **one resumed run** over the 155
+scenes the first run never attempted (`resume` step), on the same ledger so the caps of 1,000 requests and 600 MiB
+hold over both runs together. The failed scene is left out and counted: no request is retried. The reason is sample
+size, not the direction of the partial figures, which are recorded here as they stood and kept in the published file
+(`run1_partial`); the pre-stated reading, sizes and measures are unchanged. The amendment commit precedes the resumed run.
+
+The first run's figures (51 pairs, 38 lakes): flagged 14 (27.5%; 9 dark and spread, 5 spread only; 8 of 26 at deeper
+lakes, 3 of 18 at shallow, 3 of 7 with no depth). A: pooled 0.385 [0.094, 0.628], within-lake 0.038 [−0.413, 0.548] on
+26 pairs. B (37 pairs, 32 lakes): pooled 0.527 [0.157, 0.741], within-lake −0.636 on 10 pairs (59 of 2,000 draws
+without value). B − A paired: pooled +0.142 [−0.058, +0.352], within-lake −0.674 [−1.167, +0.405] (65 draws without
+value). C − A: pooled −0.002 [−0.028, +0.022]. D − C: pooled +0.136, within-lake −0.674. The pre-stated reading on
+these: flagged share common; "removes pairs that carry information" (by the within-lake fall, on 10 pairs); margin
+makes no difference.
+
 ## 4. Results
 
 To be written after the run.
