@@ -29,3 +29,14 @@ test('the repeated tiles are gone from the forecast and the readings: the condit
   assert.match(html, /const IN_CONDITIONS = o => o\.icon === ICON\.rain \|\| o\.icon === ICON\.sun \|\| o\.icon === ICON\.level \|\| o\.label === 'Water temperature';/);
   assert.match(html, /facts\(d\)\.filter\(o => o\.live && !IN_CONDITIONS\(o\)\)/);
 });
+
+test('the spots nearby stay high only when one is lower risk; the evidence goes under one heading (5 Nov 2026)', () => {
+  // A fixed anchor keeps the sections after Nearby in place wherever Nearby goes.
+  assert.match(fn, /near\.insertAdjacentHTML\('beforebegin', '<div id="near-at" hidden><\/div>'\)/);
+  assert.match(fn, /if \(\/Lower risk\/\.test\(\(near\.querySelector\('#nearby-h'\) \|\| \{\}\)\.textContent \|\| ''\)\) at0\.after\(near\); else at\.after\(near\);/);
+  assert.match(html, /const PHONE_EVIDENCE = \['#evidence', '#timeline', '#day-table', '\.lab-tile'\];/);
+  assert.match(fn, /<h2 class="ev-phone-h" id="ev-phone-h">Evidence and history<\/h2>/);
+  // The call for a guide follows the evidence; a guide itself (not section.know) stays where it is.
+  assert.match(fn, /const know = stack\.querySelector\('section\.know'\); if \(know\) e0\.after\(know\);/);
+  assert.match(html, /<details class="tile fold" id="day-table">/);
+});

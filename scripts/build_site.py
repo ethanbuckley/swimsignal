@@ -2790,7 +2790,7 @@ def not_found_page(root: str) -> str:
         f'<ul><li><a href="{r}">All spots</a>, each with its five-day forecast</li><li><a href="{r}saved/">Your saved spots</a></li>'
         f'<li><a href="{r}feedback.html?type=spot">Ask for a spot to be added</a></li></ul></main>\n'
         f'<footer class="site-foot"><div class="rule"><p>{BRAND} is a free, non-commercial pollution risk forecast for river and lake swim spots in England, run by Ethan Buckley. A forecast, not a water test.</p>'
-        f'<p><a href="{r}terms.html">Terms of use</a> · <a href="{r}privacy.html">Privacy</a> · <a href="{r}feedback.html">Feedback</a> · <a href="{r}research.html">Research</a></p></div></footer></body></html>\n')
+        f'<p><a href="{r}terms.html">Terms of use</a> · <a href="{r}privacy.html">Privacy</a> · <a href="{r}feedback.html">Feedback</a> · <a href="{r}research.html">Research and data</a></p></div></footer></body></html>\n')
 
 
 def robots(root: str) -> str:
@@ -3056,7 +3056,7 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
             s = s.replace(a, b)
         if name == "about.html":
             s = with_counts(s, results)
-        if name == "clubs.html":
+        if name in ("clubs.html", "about.html"):   # about.html since 5 Nov 2026: its "How good it is" gave no figure
             s = with_warning_words(s, site / "data" / "verification.json")   # build() writes it before the pages
         if name == "coverage.html":
             from dipcast.coastal import render

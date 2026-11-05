@@ -470,6 +470,7 @@
   .tiles > :is(.grp-h, .wide) + .tile:not(.wide):is(:last-child, :has(+ :is(.grp-h, .wide))) { grid-column:1 / -1; }
   /* The two groups of tiles on a spot's page: the open day's forecast, then the latest readings. */
   .tiles > .grp-h { grid-column:1 / -1; margin:12px 2px 0; font:600 var(--fs-head)/1.25 var(--font-display); }
+  .ev-phone-h { margin:12px 2px 0; font:600 var(--fs-head)/1.25 var(--font-display); }   /* phoneFolds: the evidence's heading */
   .tiles > .grp-sub { grid-column:1 / -1; margin:-4px 2px 0; color:var(--muted); font-size:var(--fs-note); }
   /* A lake spot's one link to its lake's past measured temperatures (lakeTempLine), after the latest readings. */
   .lt-past { margin:8px 2px 0; color:var(--muted); font-size:var(--fs-note); }
@@ -1628,7 +1629,7 @@
       </details>
     </section>
     <footer class="fine">
-      <p><a href="about.html">About SwimSignal</a> · <a href="verification.html">How accurate is it?</a> · <a href="methods.html">Method</a> · <a href="spots.html">Every spot</a> · <a href="research.html">Research</a> · <a href="coverage.html">Coasts, Wales, Scotland, Ireland and algae</a> · <a href="organisers.html">For event organisers</a> · <a href="clubs.html">For clubs, centres and leaders</a> · <a href="feedback.html">Feedback</a> · <a href="feedback.html?type=spot">Request a spot</a> · <a href="terms.html">Terms of use</a> · <a href="privacy.html">Privacy</a> · <a href="https://github.com/ethanbuckley/swimsignal">Source code</a> (MIT)</p>
+      <p><a href="about.html">About SwimSignal</a> · <a href="verification.html">How accurate is it?</a> · <a href="methods.html">Method</a> · <a href="spots.html">Every spot</a> · <a href="research.html">Research and data</a> · <a href="coverage.html">Coasts, Wales, Scotland, Ireland and algae</a> · <a href="organisers.html">For event organisers</a> · <a href="clubs.html">For clubs, centres and leaders</a> · <a href="feedback.html">Feedback</a> · <a href="feedback.html?type=spot">Request a spot</a> · <a href="terms.html">Terms of use</a> · <a href="privacy.html">Privacy</a> · <a href="https://github.com/ethanbuckley/swimsignal">Source code</a> (MIT)</p>
       <p>Data: storm overflow status from Anglian, Northumbrian, Severn Trent, South West, Southern, Thames, United Utilities, Wessex and Yorkshire Water via the National Storm Overflow Hub (<a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>; combined and modelled by SwimSignal) · Environment Agency data © Environment Agency copyright and/or database right (<a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/">OGL v3.0</a>); river levels: this uses Environment Agency flood and river level data from the real-time data API (Beta) · Contains OS data © Crown copyright and database right 2026 · <a href="https://open-meteo.com/">Weather data by Open-Meteo.com</a> (CC BY 4.0), from Met Office forecasts © Crown copyright (<a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>) · Map © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors. None of these bodies endorses SwimSignal. <a href="terms.html#data">All credits and licences</a>.</p>
     </footer>
   </main>
@@ -5119,7 +5120,7 @@ function tech(d) {
 // figures stay here, marked †, since this is the technical table a reader opens for the numbers; the main
 // view has none (levels.js, ECOLI_OFF), and the note says they are experimental.
 function dayTable(d, total, isLake, scope) {
-  let h = `<details class="tile fold"><summary><span class="t-lab">${ICON.table}<span>Day-by-day numbers</span></span></summary>`
+  let h = `<details class="tile fold" id="day-table"><summary><span class="t-lab">${ICON.table}<span>Day-by-day numbers</span></span></summary>`
     + `<table><tr><th>Day</th><th class="num">Sewage spill risk</th><th>Risk</th><th class="num">E.&nbsp;coli estimate</th><th class="num">Rain 48&nbsp;h</th></tr>`;
   let anyNoData = false, anyOffSeason = false;
   for (const day of d.days) {
@@ -5628,10 +5629,14 @@ function render(d) {
 // jumped about 4,000 px (5 Nov 2026).
 const PHONE_EARLY = ['#day-tiles', '#water-top', '#scores-host, #scores', '#limits'];
 const PHONE_ORDER = ['.spot-map-tile', '#overflows', '#plume-host', '#now-tiles', '#lt-past', '#ls-past', '#seasonal'];
+const PHONE_EVIDENCE = ['#evidence', '#timeline', '#day-table', '.lab-tile'];   // under "Evidence and history" (phoneFolds)
 const PHONE_OPEN = ['#seasonal'];   // a chart: open on a phone. The overflows' rows run to 800 px, so they keep their fold
 function phoneFolds() {
-  const stack = document.querySelector('#result .stack'), at0 = stack && stack.querySelector('#nearby-host');
-  if (!PHONE.matches || !at0) return;
+  const stack = document.querySelector('#result .stack'), near = stack && stack.querySelector('#nearby-host');
+  if (!PHONE.matches || !near) return;
+  // A fixed place where the spots nearby first stand: the sections below follow it, wherever Nearby then goes (5 Nov 2026).
+  let at0 = stack.querySelector('#near-at');
+  if (!at0) { near.insertAdjacentHTML('beforebegin', '<div id="near-at" hidden></div>'); at0 = stack.querySelector('#near-at'); }
   // Where the risk comes from, in words, straight under the five days, before the conditions: it is the answer's reason.
   const src = stack.querySelector('#sources-host'), days = stack.querySelector('#days-h');
   if (src && days) days.closest('section').after(src);
@@ -5645,6 +5650,17 @@ function phoneFolds() {
   if (early) for (const q of PHONE_EARLY) { const e = stack.querySelector(q); if (e) { early.after(e); early = e; } }
   let at = at0;
   for (const q of PHONE_ORDER) { const e = stack.querySelector(q); if (e) { at.after(e); at = e; } }
+  // The spots nearby stay high only where one is lower risk ("Lower risk nearby"); otherwise, the same level nearby,
+  // they follow the history (5 Nov 2026: three Low spots stood above Henley's map and said nothing new).
+  if (/Lower risk/.test((near.querySelector('#nearby-h') || {}).textContent || '')) at0.after(near); else at.after(near);
+  // The evidence under one heading, as a desktop has it; the call for a guide, where there is none yet, after it.
+  const evid = PHONE_EVIDENCE.map(q => stack.querySelector(q)).filter(Boolean);
+  if (evid.length) {
+    let h = stack.querySelector('#ev-phone-h');
+    if (!h) { evid[0].insertAdjacentHTML('beforebegin', '<h2 class="ev-phone-h" id="ev-phone-h">Evidence and history</h2>'); h = stack.querySelector('#ev-phone-h'); }
+    let e0 = h; for (const e of evid) { e0.after(e); e0 = e; }
+    const know = stack.querySelector('section.know'); if (know) e0.after(know);
+  }
   for (const q of PHONE_OPEN) { const e = stack.querySelector(q); if (e && !e.dataset.phoneOpened) { e.open = true; e.dataset.phoneOpened = '1'; } }
   // With the Upstream map shown, the small map of where the spot is says the same.
   const loc = stack.querySelector('.loc'); if (loc && stack.querySelector('.spot-map-tile:not(.desk-only)')) loc.hidden = true;
