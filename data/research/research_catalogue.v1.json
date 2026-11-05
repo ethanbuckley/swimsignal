@@ -753,6 +753,13 @@
    "branch": "research/sampling-planner-482",
    "branch_exists": true,
    "date": "2026-10-31"
+  },
+  "611": {
+   "n": 611,
+   "state": "open",
+   "branch": "claude/carry-spill-water-2026-11-05",
+   "branch_exists": true,
+   "date": null
   }
  },
  "entries": [
@@ -2520,6 +2527,34 @@
    "prs": [
     586,
     592
+   ]
+  },
+  {
+   "id": "carry-spill-water",
+   "title": "Carrying right now's spills onto later days",
+   "section": "negative",
+   "topics": [
+    "spills",
+    "transport",
+    "levels"
+   ],
+   "verdict": "Not supported under the pre-specified rule. On 632 affected spot-days (12 October to 4 November 2026) the error was 1.6% lower, with an interval including zero; exact level agreement fell from 404 to 396; at the High line it added 6 false alarms for 2 hits. Retrospective, on logged data.",
+   "scope": "Spot-day cells the Accuracy page scores, leads 1 to 4, where the issuing build's right-now risk was moderate or worse; 47 spots. The observed index does not count die-off after a spill's water has passed.",
+   "stage": "archived",
+   "stage_note": "Day levels are unchanged. The contradiction that started it was fixed in words in #609. The function is kept; the display change is on branch claude/carry-display-not-adopted.",
+   "reopen_when": "A check against measured E. coli on carried days (protocol before 1 May 2027, read at 30 samples or 30 September 2027), or an observed index that counts die-off.",
+   "records": [
+    {
+     "doc": "docs/CARRY-SPILL-WATER-CHECK-2026-11-05.md",
+     "quote": "**Decision under the rule: NOT SUPPORTED.**"
+    },
+    {
+     "doc": "docs/CARRY-SPILL-WATER-CHECK-2026-11-05.md",
+     "quote": "| Exact level agreement | 404 | **396** | 399 |"
+    }
+   ],
+   "prs": [
+    611
    ]
   }
  ]
