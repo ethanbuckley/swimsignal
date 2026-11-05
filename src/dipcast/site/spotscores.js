@@ -27,7 +27,8 @@ const scoresWanted = d => !!d && !d.unlisted && !d.error && ((d.upstream_summary
 
 // The tile's sentences for one spot's counts (s, from the file's spots) and the file's own fields (g).
 // Returns { say: [paragraphs], more: the fold's text }, or null when there is nothing to say.
-function scoresWords(s, g) {
+// counted: how many the forecast counts (upstream_summary.overflows), said beside a larger count, as on the history (seasonal.js).
+function scoresWords(s, g, counted = null) {
   if (!s || !s.overflows) return null;
   const M = s.overflows, K = s.scored_overflows || 0, min = g.min_spills || 10;
   const line = `the High risk line`;
@@ -39,8 +40,9 @@ function scoresWords(s, g) {
   if (!K) return { more, say: [M === 1
     ? `The overflow upstream has not been scored yet. It has no live feed, or no day that passed the ${rules}.`
     : `None of the ${scoresN(M)} overflows upstream has been scored yet. They have no live feed, or no day that passed the ${rules}.`] };
-  const where = K === M ? (M === 1 ? 'the overflow upstream' : M === 2 ? 'both overflows upstream' : `all ${scoresN(M)} overflows upstream`)
-    : `${scoresN(K)} of the ${scoresN(M)} overflows upstream`;
+  const also = Number.isInteger(counted) && counted > 0 && counted < M ? ` (the forecast counts ${scoresN(counted)})` : '';
+  const where = (K === M ? (M === 1 ? 'the overflow upstream' : M === 2 ? 'both overflows upstream' : `all ${scoresN(M)} overflows upstream`)
+    : `${scoresN(K)} of the ${scoresN(M)} overflows upstream`) + also;
   const SD = s.spill_days, fa = s.false_alarms, made = s.hits + s.misses;
   const first =`Since ${scoresDate(s.first_day || g.first_day)} the forecast has been checked at ${where}: `
     + `${scoresPlural(s.overflow_days, 'overflow-day', 'overflow-days')}, ${SD ? scoresN(SD) : 'none'} with a spill.`;
@@ -62,7 +64,7 @@ function scoresWords(s, g) {
 
 function scoresTile(d, data) {
   if (!scoresWanted(d) || !data || !data.spots) return '';
-  const w = scoresWords(data.spots[d.id], data);
+  const w = scoresWords(data.spots[d.id], data, (d.upstream_summary || {}).overflows);
   if (!w) return '';
   return `<section class="tile" id="scores" aria-labelledby="scores-h"><h2 class="t-lab" id="scores-h">${SCORES_ICON}<span>How the forecast has done here</span></h2>`
     + w.say.map(p => `<p class="t-say">${p}</p>`).join('')

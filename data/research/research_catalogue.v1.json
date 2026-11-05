@@ -756,10 +756,10 @@
   },
   "611": {
    "n": 611,
-   "state": "open",
+   "state": "merged",
    "branch": "claude/carry-spill-water-2026-11-05",
    "branch_exists": true,
-   "date": null
+   "date": "2026-11-05"
   }
  },
  "entries": [

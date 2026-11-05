@@ -65,7 +65,7 @@ test('a picked day moves every forecast tile to that day, and names it', () => {
 
 test('the readings stay on now whichever day is open, under their own heading', () => {
   const ctx = page(), h = text(vm.runInContext('nowTiles(S)', ctx));
-  assert.match(h, /^ Latest readings Measured, not forecast: they stay the same whichever day you pick\. Right now 1 /);
+  assert.match(h, /^ Latest readings Measured, not forecast, so the same on every day\. Right now 1 /);
   assert.doesNotMatch(h, /River level/);   // in the conditions tiles since 31 Oct 2026
   for (const iso of DAYS) {
     const day = text(vm.runInContext(`dayTiles(S, "${iso}")`, ctx));

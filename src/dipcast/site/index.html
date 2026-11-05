@@ -643,6 +643,10 @@
           border:0; border-top:1px solid var(--hair); border-radius:0; background:transparent; font:inherit; color:var(--ink); text-align:left; -webkit-appearance:none; appearance:none; }
   .drow:first-child { border-top:0; }
   button.drow { cursor:pointer; -webkit-tap-highlight-color:transparent; }
+  /* A day opens its detail: the folds' chevron, pointing right, says so (5 Nov 2026: nothing said a row could be picked). */
+  button.drow { position:relative; padding-right:20px; }
+  button.drow::after { content:""; position:absolute; right:7px; top:50%; width:6px; height:6px; margin-top:-3px; border-right:1.75px solid var(--muted); border-bottom:1.75px solid var(--muted); transform:rotate(-45deg); }
+  button.drow[aria-pressed=true]::after { transform:rotate(45deg); margin-top:-5px; }
   @media (hover: hover) { button.drow:hover { background:var(--hover); } }
   button.drow:focus-visible { outline-offset:-2px; }
   button.drow[aria-pressed=true] { background:var(--active); box-shadow:inset 3px 0 0 currentColor; }
@@ -3595,9 +3599,10 @@ function overview(spots) {
   // the counts are then named for what they are, the sewage forecast's.
   const advised = typeof eaTodayAdvice === 'function' ? spots.filter(s => eaTodayAdvice(s).length).length : 0;
   // The forecast's own tally, which counts a spot under advice restricting swimming by its sewage level; how many of its
-  // low spots that is, so it can be read beside the day strip's count, which leaves them out (lowToChoose).
+  // low spots that is, so it can be read beside the day strip's count, which leaves them out (lowToChoose). The first
+  // figure is the strip's (5 Nov 2026: "63 low risk" over "64 low (1 of them ...)" read as two counts of one thing).
   const lowBarred = rated.filter(s => mapLevel(s) === 'low' && typeof lowEligible === 'function' && !lowEligible(s)).length;
-  return `Updated ${issued()} · ${advised ? 'Sewage pollution risk' : 'Pollution risk'}: ${low} low${lowBarred ? ` (${lowBarred} of them under official advice restricting swimming)` : ''} · ${rated.length - low - high} moderate · ${high} high or very high`
+  return `Updated ${issued()} · ${advised ? 'Sewage pollution risk' : 'Pollution risk'}: ${low - lowBarred} low${lowBarred ? `, and ${lowBarred} more at low under official advice restricting swimming` : ''} · ${rated.length - low - high} moderate · ${high} high or very high`
     + `${clear ? ` · ${clear} with no monitored overflow found upstream` : ''}${none ? ` · ${none} without a level` : ''}`
     + `${none ? ': ' + Object.entries(why).sort((a, b) => b[1] - a[1]).map(([w, n]) => `${n} ${w}`).join(', ') : ''}. ${cap(mapWhen())}.`
     + (advised ? ` ${advised} with an official notice: ${noticeVerb(spots.filter(s => eaTodayAdvice(s).length))}.` : '');
@@ -3882,7 +3887,8 @@ function drawSpots() {
   const changed = [VIEW.sort !== SORT0, VIEW.filter !== 'all', VIEW.lowOnly].filter(Boolean).length, fn = document.getElementById('filter-n');
   if (fn) { fn.textContent = changed; fn.hidden = !changed; document.getElementById('filter-btn').setAttribute('aria-label', changed ? `Filter, ${changed} on` : 'Filter'); }
   const done = document.getElementById('filter-done'); if (done) done.textContent = `Show ${items.length} spot${items.length === 1 ? '' : 's'}`;
-  document.getElementById('overview-foot').textContent = overview(items).replace(/^Updated [^·]*· /, '');
+  // With nothing matching, no tally of zeros (5 Nov 2026: "0 low · 0 moderate · 0 high" under "No listed spot matches").
+  document.getElementById('overview-foot').textContent = items.length ? overview(items).replace(/^Updated [^·]*· /, '') : '';
   const firstNote = VIEW.sort === 'low' || (VIEW.sort === 'near' && !VIEW.here) ? lowLastNote(items) : byRisk ? riskFirstNote(items) : '';
   // Where the notice's spots go in this order, in the line over the list that names them (29 October 2026: a
   // paragraph of its own under it, two lines about notices one after the other on a phone's first screen).
@@ -3893,6 +3899,7 @@ function drawSpots() {
     : `<li class="empty"><p class="below">No inland forecasts match. SwimSignal forecasts ${DATA.spots.length} river and lake spots ${spotsWhere()}. ${regionalLink(VIEW.q)} Missing yours? <a href="feedback.html?type=spot">Request it</a>.</p>`
       + `<button type="button" class="btn" id="clear-filters">Clear search and filters</button></li>`;
   document.getElementById('count').textContent = items.length === DATA.spots.length ? `${items.length} spot${items.length === 1 ? '' : 's'}.` : `Showing ${items.length} of ${DATA.spots.length} spots.`;
+  document.getElementById('count').classList.toggle('sr', !items.length);   // still read out as a status; the page says it already
   bindClear();
   bindItems(ul);
   offerOnMap();
@@ -4567,6 +4574,9 @@ function planOptions(box, groups) {
   box.insertAdjacentHTML('afterbegin', dpSection(on, items, PLAN.act && OUTING_ACT_WORDS[PLAN.act] ? OUTING_ACT_WORDS[PLAN.act][1] : 'swimming', OUTING_FINISH_ACTS.includes(PLAN.act),
     opts.some(o => (groups[1] || []).includes(o)), shared));
   const tile = document.getElementById('dp');
+  // The options are in the full list below as well: their rows there say so, rather than read as a second set (5 Nov 2026).
+  opts.forEach((o, i) => box.querySelectorAll(`li > a.row[data-id="${CSS.escape(o.s.id)}"] .k`).forEach(k => { if (!tile.contains(k) && !k.dataset.opt) {
+    k.dataset.opt = '1'; k.insertAdjacentText('beforeend', ` · Option ${i + 1} above`); } }));
   tile.querySelectorAll('a[data-id]').forEach(a => a.addEventListener('click', e => { if (!plainClick(e)) return; e.preventDefault(); select(a.dataset.id, true, true, PLAN.day); }));
   tile.querySelectorAll('[data-dp-go]').forEach(b => b.addEventListener('click', () => {
     const id = b.dataset.dpGo, other = opts.find(o => o.s.id !== id), next = outingChanged(PLAN, 'spot');
@@ -5435,7 +5445,7 @@ const dayTiles = (d, iso = null) => { const x = iso ? (d.days || []).slice(0, 5)
 const IN_CONDITIONS = o => o.icon === ICON.rain || o.icon === ICON.sun || o.icon === ICON.level || o.label === 'Water temperature';
 const nowTiles = d => { const fx = facts(d).filter(o => o.live && !IN_CONDITIONS(o)); if (!fx.length) return '';
   return `<section class="tiles" id="now-tiles" aria-labelledby="now-tiles-h"><h2 class="grp-h" id="now-tiles-h">Latest readings</h2>`
-    + `<p class="grp-sub">Measured, not forecast: they stay the same whichever day you pick.</p>${fx.map(tile).join('')}</section>`; };
+    + `<p class="grp-sub">Measured, not forecast, so the same on every day.</p>${fx.map(tile).join('')}</section>`; };
 // The spot's conditions as four small tiles, figures first: the water's temperature, the river's or lake's level on its
 // usual range, the rain here and the day's air (31 Oct 2026: as sentences under "Water conditions" they read as small
 // print, and the rain and the air were folded away). Each says at the figure what kind it is, measured or an estimate,

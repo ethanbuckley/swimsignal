@@ -78,3 +78,11 @@ test("no other script of the page defines one of seasonal.js's names; the page l
   assert.match(html, /scoresHost\(d\) : ''\)[^\n]*\n\s+\+ \(typeof seasonalTile === 'function' \? seasonalTile\(d\) : ''\)/);   // the evidence timeline may follow it (timeline.js)
   assert.match(fs.readFileSync(join(site, 'sw.js'), 'utf8'), /`seasonal\.js\?v=\$\{BUILD\}`/);
 });
+
+test('a history of more overflows than the forecast counts says both (5 Nov 2026: "the 50" under "one of the 49")', () => {
+  const S = require('../src/dipcast/site/seasonal.js');
+  const s = { overflows: 50, years: [2024, 2025], days: Array(12).fill(62), spill: Array(12).fill(10), covered_min: 50 };
+  assert.match(S.seasonalWords(s, 49).lead, /at least one of the 50 monitored overflows upstream \(the forecast counts 49\) reported a spill\./);
+  assert.doesNotMatch(S.seasonalWords(s, 50).lead, /forecast counts/);
+  assert.doesNotMatch(S.seasonalWords(s).lead, /forecast counts/);
+});

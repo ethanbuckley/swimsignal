@@ -54,8 +54,8 @@ test('the day strip, the area lines and the plan\'s areas give one count, leavin
 
 test('the summary keeps the forecast\'s tally and says how many of its low spots are under advice', () => {
   const said = run('overview', SPOTS);
-  assert.match(said, /: 3 low \(1 of them under official advice restricting swimming\) · 1 moderate · 1 high or very high/);
-  // 3 low in the forecast's tally, less the 1 under advice: the strip's 2.
+  // The first figure is the strip's: 3 low in the forecast's tally, less the 1 under advice (5 Nov 2026).
+  assert.match(said, /: 2 low, and 1 more at low under official advice restricting swimming · 1 moderate · 1 high or very high/);
   assert.equal(3 - 1, run('lowOn', DATES[0]));
   // With no such spot, the summary says nothing of it.
   const plain = SPOTS.filter(s => !s.official);
