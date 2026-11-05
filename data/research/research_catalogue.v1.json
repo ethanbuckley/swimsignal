@@ -802,6 +802,13 @@
    "branch": "claude/satellite-pilot-signal",
    "branch_exists": true,
    "date": null
+  },
+  "625": {
+   "n": 625,
+   "state": "open",
+   "branch": "claude/loving-chebyshev-9168ae",
+   "branch_exists": true,
+   "date": null
   }
  },
  "entries": [
@@ -1134,6 +1141,35 @@
     342
    ],
    "register_note": "The register says the 235 line \"passed 6/7\", which reads as if only that line did; the doc says each line met six of the seven conditions."
+  },
+  {
+   "id": "lake-own-rate",
+   "title": "A lake over-900 chance from the lake's own sample rate",
+   "section": "negative",
+   "project": "LAKE-CONC",
+   "topics": [
+    "e. coli",
+    "lakes",
+    "model"
+   ],
+   "verdict": "Failed as stated. Skill over the usual lake rate was 0.042 against a margin of 0.10, with the interval on the Brier difference spanning zero (+0.00104, −0.00235 to +0.00574); production's form was not beaten with the interval below zero (−0.00138, −0.00610 to +0.00198); without Derwent Water, which held 12 of the 16 results over 900, skill was −0.010. The pooled AUC of 0.81 came from between lakes: within a lake the own rate from the other seasons ranked a season backwards (mean within-site AUC 0.15).",
+   "scope": "637 EA samples at 12 lake bathing waters on six water bodies, May-September 2024-26, already-read development data; the protocol, margin and schemes were committed before any score. 16 results over 900 give an interval about ±0.004 wide on a Brier of 0.025, so the test was underpowered for its margin. It does not rule out a daily lake chance of a different kind.",
+   "stage": "archived",
+   "stage_note": "This exceedance candidate is archived. No shadow log and no page change followed; the over-900 chance stays off lake pages. The lake range (concentration) stays in shadow_lake_range_v1 for its 2027 read, and the past-sample tile already states each lake's count over 900.",
+   "reopen_when": "The 2027 lake season's samples judged forward with the own history frozen before 1 May 2027; a candidate carrying a within-season signal at a lake (a lake-specific wet-day response, or a recalibrated line probability from the lake range model); or an account of Derwent Water's 2025 season. Each under its own protocol, not a rerun of this candidate.",
+   "records": [
+    {
+     "doc": "docs/LAKE-OWN-RATE-TEST-2026-11.md",
+     "quote": "| 1. Skill over the usual rate at least 0.10, interval above zero | skill **0.042**; Brier(usual) − Brier(candidate) +0.00104 [−0.00235, +0.00574] (ISO weeks: [−0.00116, +0.00363]) | **fail** |"
+    },
+    {
+     "doc": "docs/LAKE-OWN-RATE-TEST-2026-11.md",
+     "quote": "**The ranking gain is between lakes, not within one.**"
+    }
+   ],
+   "prs": [
+    625
+   ]
   },
   {
    "id": "lake-temperature",
