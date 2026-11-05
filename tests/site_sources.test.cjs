@@ -134,6 +134,10 @@ test('water still on its way: when it reaches here, counted when the page is rea
     + 'discharging now, 6.0 km upstream, about 5 hours away.Water from a spill 3.1 km upstream reaches here in about 20 minutes.'
     + 'If the overflow discharging upstream stops now, the model expects low risk from spills by about Monday morning.');
   assert.equal(tile(d, '2026-10-05'), '');
+  // The overflow the sentence before names: its latest spill, not a second distance and time for it (Swale, 5 Nov 2026).
+  const same = coming(10, {source: {...ILKLEY, site_id: 'YW2', status: 0, share: 1}});
+  assert.match(tile(same), /about 5 hours away\.Water from its latest spill, which started earlier, reaches here in about 10 minutes\./);
+  assert.equal(plain(run('arriveSentence', same)), 'Water from a spill 3.1 km upstream reaches here in about 10 minutes.');   // nothing named before it
   vm.runInContext('DAY = null', ctx);
 });
 

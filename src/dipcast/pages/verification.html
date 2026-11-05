@@ -124,7 +124,8 @@ function againstBoth(o, byCompany) {
     const flat = 1 - o.calibrated.brier / o.period_base_rate_brier;
     t += ` A flat forecast at the period's own rate, ${pct(o.calibrated.base_rate)} every day, is harder to beat. ${flat > 0 ? `Against it the error is ${(100 * flat).toFixed(1)}% lower` : `It scored ${(100 * -flat).toFixed(1)}% better than SwimSignal`}. It uses hindsight, so no one could have issued it.`;
   }
-  const C = (byCompany || []).filter(r => r.flat_brier !== undefined && r.brier_cal !== undefined), worse = C.filter(r => r.brier_cal > r.flat_brier);
+  // Not the overflows with no company (NO_COMPANY): "2 of the 10 companies" counted them as a tenth (5 Nov 2026).
+  const C = (byCompany || []).filter(r => r.flat_brier !== undefined && r.brier_cal !== undefined && r.company !== NO_COMPANY), worse = C.filter(r => r.brier_cal > r.flat_brier);
   if (C.length) t += ` At ${worse.length} of the ${C.length} companies, that flat forecast scored better than SwimSignal.`;
   return t;
 }

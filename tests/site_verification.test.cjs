@@ -197,6 +197,12 @@ test('11 Oct 2026: the climatology row has its own AUC, and the error is said ag
   assert.match(s, /which ran high: 9\.7% a day against 2\.8% observed\. It is 7\.6% lower than a flat forecast at this period's own rate\./);
 });
 
+test('5 Nov 2026: overflows with no company are not counted as a company against the flat forecast', async () => {
+  const unk = {company: 'unknown', brier_cal: 0.78, flat_brier: 0.11, sites: 1, n: 7, base_rate: 0.03, mean_forecast: 0.03, skill: -1, auc: 0.5};
+  const a = text((await render({live: {...OCT11, by_company: [...OCT11.by_company, unk]}})).answer.innerHTML);
+  assert.match(a, /At 5 of the 9 companies, that flat forecast scored better than SwimSignal\./);
+});
+
 test('11 Oct 2026: the warnings by company, and plainly that outside United Utilities the High line has caught few spills', async () => {
   const els = await render({live: OCT11});
   const a = text(els.answer.innerHTML), s = text(els.short.innerHTML);

@@ -571,8 +571,13 @@ test('the Right now tile and the alerts say it; the five days name the first day
   assert.equal(L.backToLow(week(['low', 'low', 'low', 'low', 'low'])), '');
   assert.equal(L.backToLow(week(['low', 'high', 'high', 'moderate', 'moderate'])), '');   // not back within the five days
   assert.equal(L.backToLow(week(['high', 'low', 'low', 'low', 'low'], { classification: { class: 'poor', year: 2025 } })), '');   // rated poor: never low
-  // Right now raises today: back at low the next day.
-  assert.equal(L.backToLow(spilt({}, ['low', 'low', 'low', 'low', 'low'])), 'Back to low risk tomorrow.');
+  // Right now raises today, and its spills' water passes after the clocks: not "back to low tomorrow" (Monday) beside
+  // "died off by Tuesday 22:47" (Swale above Richmond Falls, 5 Nov 2026), but the clearing time.
+  assert.equal(L.backToLow(spilt({}, ['low', 'low', 'low', 'low', 'low']), NOW), 'The spills upstream should have passed and died off by Tuesday 22:47.');
+  // Once that time has passed, the forecast's own first low day.
+  assert.equal(L.backToLow(spilt({}, ['low', 'low', 'low', 'low', 'low']), Date.parse('2026-10-14T09:00:00+01:00')), 'Back to low risk tomorrow.');
+  // Back on the day it clears: as before.
+  assert.equal(L.backToLow(s, NOW), 'Back to low risk on Tuesday.');
   // The alerts: scripts/alerts.js writes `clears` beside the headline and the action, at the build's time.
   const dir = fs.mkdtempSync(path.join(require('node:os').tmpdir(), 'alerts-'));
   const gen = new Date(Date.now() - 3600e3).toISOString(), later = new Date(Date.now() + 26 * 3600e3).toISOString();

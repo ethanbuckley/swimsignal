@@ -28,6 +28,6 @@ test('nothing is said without a page, dates or samples, and an odd link is refus
 
 test('in the page: after the lake temperatures, on a phone too, and asked for on a spot page', () => {
   assert.match(page, /\+ lakeTempHost\(d\) \+ localSamplesHost\(d\);/);
-  assert.match(page, /'#lt-past', '#ls-past', '#day-tiles'/);
+  assert.match(page, /'#now-tiles', '#lt-past', '#ls-past', '#seasonal'/);   // after the readings; the day's tiles moved up (PHONE_EARLY, 5 Nov 2026)
   assert.match(page, /lakeTempFor\(d\); localSamplesFor\(d\);/);
 });

@@ -1292,6 +1292,8 @@
     /* A section of one tile (the readings, now the river's level is with the conditions) gives it the full width. */
     .tiles > .tile:only-of-type { grid-column:1 / -1; }
     .limits #unknowns { margin:10px 0 0; padding:10px 0 0; border-radius:0; background:none; box-shadow:none; border-top:1px solid var(--hair); -webkit-backdrop-filter:none; backdrop-filter:none; }
+    /* Its own heading too, once inside: two headings with the same icon for one list (5 Nov 2026). Kept for its name. */
+    .limits #unknowns > .t-lab { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
     .fold-body > * + * { margin-top:12px; }
     .fold-body > .scope, .fold-body > .check { font-size:var(--fs-note); color:var(--ink); }
     dialog.sheet { margin:auto auto 0; border-radius:var(--radius) var(--radius) 0 0; padding-bottom:calc(20px + env(safe-area-inset-bottom)); }
@@ -2281,7 +2283,7 @@ const RANGE_BASIS = {
 };
 const rangeBasis = d => RANGE_BASIS[(d.ecoli_range_scope || {}).basis] || RANGE_BASIS['average lake'];
 const RANGE_MORE = 'For comparison, England rates an inland bathing water Excellent when about 95 in 100 of its samples, over four seasons, are under 500 per 100&nbsp;ml. The range does not set the level. <a href="#about-ecoli">What this counts</a>';
-const RANGE_OFF_SAID = 'Out of season. The lake estimate is tested only for May to September, when the Environment Agency takes samples. From October to April it is experimental and does not set the level.';
+const RANGE_OFF_SAID = 'The lake estimate is tested only for May to September, when the Environment Agency takes samples. From October to April it is experimental and does not set the level.';
 const rangeFold = ds => explain(ECOLI_FOLD, ds.map(x => rangeLine(x, dayWord(x.date))).join(' '));
 // Where there is no daily figure (no monitored overflow upstream, or an isolated water), a bathing water's own past
 // samples (build_site.typical_readings): what they read, never a forecast.
@@ -2812,7 +2814,8 @@ function facts(d, iso = null) {
   else if (!d.error && x0 && hasData(x0)) { const i = x0.risk * 100;
     out.push({ icon: ICON.spills, label: 'Sewage spills', fig: i > 0 && i < .5 ? '&lt;1' : Math.round(i), unit: 'of 100', word: `${cap(x0.label)} risk`, wordTone: tone(x0.label),
       vis: scaleBar(shownRisk(x0.risk), SPILL_CUTS, x0.label, `Sewage spill risk ${i > 0 && i < .5 ? 'under 1' : Math.round(i)} of 100: ${x0.label} risk`), rel: tileLine(d, 'spill', iso),
-      say: `${cap(spilling(x0, total))} ${when}.`,
+      // Not on today: the five days' sentence above starts with the same words (5 Nov 2026, said twice on every spot).
+      say: first ? '' : `${cap(spilling(x0, total))} ${when}.`,
       more: `The sewage spill risk, a 0–100 score for sewage from upstream reaching the spot, after travel time, die-off and dilution. A score, not a probability. ${bandWords(SPILL_CUTS, c => Math.round(c * 100))}. <a href="#about-exposure">What this counts</a>` }); }
   // Its label says what it and the level each count, and how far it has been tested (ecoliSaid): the full
   // width, as the rating's tile, since that is four sentences. Out of season (water, levels.js ECOLI_OFF) no
@@ -5199,13 +5202,17 @@ function clearSentence(d) {
 // start (transport.live_now_risk), so it does not read low while sewage is coming; this says when it
 // arrives, counted when the page is read. Moderate or worse only, as the clearing time; a time already
 // past says nothing (an old page).
-function arriveSentence(d) {
+function arriveSentence(d, named = null) {
   const n = d.now || {}, a = n.arriving;
   if (!a || !a.arrives_at || rank(n.label) < 1) return '';
   const min = (Date.parse(a.arrives_at) - Date.now()) / 6e4;
   if (!(min > 0)) return '';
   const when = min < 10 ? 'in a few minutes' : min < 55 ? `in about ${Math.round(min / 10) * 10} minutes`
     : min < 90 ? 'in about an hour' : min < 12 * 60 ? `in about ${Math.round(min / 60)} hours` : partOfDay(a.arrives_at);
+  // The overflow the sentence before names with its travel time (sourceSentence): "its latest spill", not a second
+  // distance. Swale read "1.5 km upstream, about 2 hours away" then "a spill 1.5 km upstream reaches here in about
+  // 10 minutes", two times for one overflow (5 Nov 2026): the spill had left it earlier.
+  if (a.site_id && a.site_id === named) return `Water from its latest spill, which started earlier, reaches here ${when}.`;
   return `Water from a spill ${overflowWhere(a)} reaches here ${when}.`;
 }
 // The tile, for the day shown (DAY, or today). The day's sources when it is moderate or worse; on
@@ -5219,7 +5226,8 @@ function whereFrom(d) {
   const own = src => ({ ...((d.contributors || []).find(c => c.site_id === src.site_id) || {}), ...src });
   const day = x && hasData(x) && x.source && rank(x.label) >= 1 ? sourceSentence(own(x.source), iso) : '';
   const now = first && n.source ? sourceSentence(own(n.source), 'now') : '';
-  const said = [now && (!day || n.risk >= x.risk) ? now : day, first ? arriveSentence(d) : '', first ? clearSentence(d) : ''].filter(Boolean);
+  const lead = now && (!day || n.risk >= x.risk) ? now : day, named = lead ? (lead === now ? n.source : x.source).site_id : null;
+  const said = [lead, first ? arriveSentence(d, named) : '', first ? clearSentence(d) : ''].filter(Boolean);
   return said.length ? `<section class="tile" aria-labelledby="whence-h"><h2 class="t-lab" id="whence-h">${ICON.spills}<span>Where the risk comes from</span></h2>`
     + said.map(t => `<p class="t-say">${t}</p>`).join('') + '</section>' : '';
 }
@@ -5598,7 +5606,11 @@ function render(d) {
 // Long method text keeps its own named folds (What the level rests on, Day-by-day numbers) and each tile's corner button.
 // A desktop keeps its columns. What the level counts and the water-test line join the limits section from under the five
 // days, where showDay puts them back (phoneFolds moves them again).
-const PHONE_ORDER = ['.spot-map-tile', '#overflows', '#plume-host', '#now-tiles', '#lt-past', '#ls-past', '#day-tiles', '#seasonal', '#scores-host, #scores', '#limits'];
+// 5 Nov 2026: why the level is what it is (the day's forecast tiles), how the forecast has done here and what it cannot
+// see come straight after where the risk comes from, before the conditions: they sat about 3,000 px down a phone,
+// below two maps. PHONE_EARLY goes there; PHONE_ORDER after the nearby spots, as before.
+const PHONE_EARLY = ['#day-tiles', '#scores-host, #scores', '#limits'];
+const PHONE_ORDER = ['.spot-map-tile', '#overflows', '#plume-host', '#now-tiles', '#lt-past', '#ls-past', '#seasonal'];
 const PHONE_OPEN = ['#seasonal'];   // a chart: open on a phone. The overflows' rows run to 800 px, so they keep their fold
 function phoneFolds() {
   const stack = document.querySelector('#result .stack'), at0 = stack && stack.querySelector('#nearby-host');
@@ -5612,6 +5624,8 @@ function phoneFolds() {
   if (!lim && parts.length) { at0.insertAdjacentHTML('afterend', `<section class="tile limits" id="limits" aria-labelledby="limits-h"><h2 class="t-lab" id="limits-h">${ICON.unknown}<span>What this forecast cannot see</span></h2></section>`);
     lim = document.getElementById('limits'); }
   if (lim) lim.append(...parts);
+  let early = src && days ? src : days ? days.closest('section') : null;
+  if (early) for (const q of PHONE_EARLY) { const e = stack.querySelector(q); if (e) { early.after(e); early = e; } }
   let at = at0;
   for (const q of PHONE_ORDER) { const e = stack.querySelector(q); if (e) { at.after(e); at = e; } }
   for (const q of PHONE_OPEN) { const e = stack.querySelector(q); if (e && !e.dataset.phoneOpened) { e.open = true; e.dataset.phoneOpened = '1'; } }

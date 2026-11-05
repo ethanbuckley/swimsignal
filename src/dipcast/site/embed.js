@@ -10,7 +10,7 @@
 // `Embed`, so no name here can clash with one of levels.js's.
 const Embed = (() => {
   const R = typeof module === 'object' && module.exports ? require('./levels.js')
-    : { ORDER, NO_OVERFLOWS, NO_RIVER, setToday, today, rank, risk, level, headline, weekNext, daily, levelAction, walesWords, trialWords, eaUnchecked, EA_UNCHECKED };   // levels.js's globals
+    : { ORDER, NO_OVERFLOWS, NO_RIVER, setToday, today, rank, risk, level, headline, weekNext, daily, levelAction, walesWords, trialWords, eaUnchecked, EA_UNCHECKED, liveCover, liveLine };   // levels.js's globals
   // Reviewed official advice, in the compact form the app's rows use (eatoday.js, eaTodayBrief), which
   // embed.html loads before this file. Without it (a page cached from before), none.
   const brief = typeof module === 'object' && module.exports ? require('./eatoday.js').eaTodayBrief
@@ -66,7 +66,10 @@ const Embed = (() => {
     // A reviewed notice on the card (brief) says when it was checked, so "could not be checked" is left out,
     // as the spot page's coverage line leaves it out (eatoday.js, eaTodayCover).
     const ea = R.eaUnchecked(s) && !brief(s) ? `${esc(R.EA_UNCHECKED)} ${/^https:\/\//.test(url || '') ? out(url, 'The Environment Agency’s page') : 'The Environment Agency’s page'} says when bathing is not advised.` : '';
-    const said = [esc(R.walesWords(s)), esc(R.trialWords(s)), ea].filter(Boolean);
+    // Overflows upstream that give no live reading, as the spot's page says under its five days (levels.js, liveLine):
+    // the card left them out, so it read as fully watched where they could be spilling unseen (5 Nov 2026).
+    const c = R.liveCover(s), live = c && (c.kind === 'none' || c.total > c.mon) ? `${esc(R.liveLine(s))}.` : '';
+    const said = [live, esc(R.walesWords(s)), esc(R.trialWords(s)), ea].filter(Boolean);
     return said.length ? `<p class="act">${said.join(' ')}</p>` : '';
   };
 
