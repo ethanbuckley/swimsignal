@@ -1,10 +1,10 @@
 name: Test site interactions
 on:
   pull_request:
-    paths: ["src/dipcast/site/**", "src/dipcast/pages/**", "tests/site_*.test.cjs", "reviews/src/rules.js", ".github/workflows/site-tests.yml"]
+    paths: ["src/dipcast/site/**", "src/dipcast/pages/**", "tests/site_*.test.cjs", "tests/browser_smoke.mjs", "tests/fixtures/smoke/**", "reviews/src/rules.js", ".github/workflows/site-tests.yml"]
   push:
     branches: [main]
-    paths: ["src/dipcast/site/**", "src/dipcast/pages/**", "tests/site_*.test.cjs", "reviews/src/rules.js", ".github/workflows/site-tests.yml"]
+    paths: ["src/dipcast/site/**", "src/dipcast/pages/**", "tests/site_*.test.cjs", "tests/browser_smoke.mjs", "tests/fixtures/smoke/**", "reviews/src/rules.js", ".github/workflows/site-tests.yml"]
 permissions:
   contents: read
 jobs:
@@ -17,3 +17,14 @@ jobs:
         with:
           node-version: "22"
       - run: node --test tests/site_*.test.cjs
+  # The pages in a real browser with a small fixed forecast: any uncaught script error fails (tests/browser_smoke.mjs).
+  # The tests above run each script in Node, which missed the organisers' page drawing nothing on 5 Nov 2026.
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+      - run: node tests/browser_smoke.mjs
