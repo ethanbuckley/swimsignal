@@ -23,6 +23,9 @@ from dipcast.overflow_names import overflow_names
 
 YEARS = [2021, 2022, 2023, 2024, 2025]
 NEAR_KM = 10
+# The overflows table shows this many, the most model weight first, and the rest in a fold (5 Nov 2026), as
+# organisers.js does (OVERFLOWS_SHOWN): a long list had pushed everything after it out of reach.
+SHOWN = 10
 RETURNS = config.PROCESSED / "annual_returns.parquet"
 RETURN_FIELDS = ["site_id", "year", "spills", "spill_hours", "edm_operational_pct"]
 CAVEAT = ("This profile lists the monitored storm overflows upstream of the point and how often each "
@@ -175,7 +178,7 @@ def _table(head: list[tuple[str, bool]], rows: list[list[str]], label: str) -> s
     """A table as the Accuracy page draws them, numbers right, in a box that scrolls sideways if it must. The
     overflows' table (class ovt, as on the organisers' page) has each overflow's name as its row's header,
     and each cell carries its column's name (data-l) for the phone layout in profile.html: a block an overflow."""
-    ovt = label in ("overflows", "spill lengths")   # the spill lengths (durations_section) take the same phone layout
+    ovt = label in ("overflows", "more overflows", "spill lengths")   # the spill lengths (durations_section) take the same phone layout
     num = ' class="num"'
 
     def cell(i: int, c: str) -> str:
@@ -317,7 +320,10 @@ def body(spot: dict, t: pd.DataFrame | None, durations: dict | None = None) -> s
                           [[str(r["year"]), str(r["with_return"]), f"{r['spills']:,}", fmt(r["hours"]), fmt(r["reach_hours"])]
                            for r in years], "yearly totals"))
         out.append(f'<p class="small muted">{escape(REACH_NOTE)} <a href="methods.html#weight">How the weight is worked out</a>.</p>')
-        out.append(f"<h2>The overflows, by model weight</h2><p>All {s['n']}, the one whose spills matter most here first. "
+        n, folded = s["n"], s["n"] > SHOWN
+        lead = f"The {SHOWN} whose spills matter most here, in order; the other {n - SHOWN} are in the fold under them" if folded \
+            else f"All {n}, the one whose spills matter most here first"
+        out.append(f"<h2>The overflows, by model weight</h2><p>{lead}. "
                    "km away is along the river network, through any lake on the way, or across the lake for one that drains "
                    "into the same lake. Hours away is how long sewage takes to arrive, at the model's river speed, and "
                    "across a lake at its slower lake speed.</p>")
@@ -327,9 +333,12 @@ def body(spot: dict, t: pd.DataFrame | None, durations: dict | None = None) -> s
                  hours_away(r.get("travel_h")), escape(reach(r.get("weight"))),
                  fmt(r.get("spills_2023")), fmt(r.get("spills_2024")), fmt(r.get("spills_2025")),
                  fmt(r.get("spill_hours_2025")), uptime(r.get("edm_operational_pct_2025"))] for (_, r), on_lake in zip(t.iterrows(), lake.to_numpy())]
-        out.append(_table([("Overflow and id", False), ("Company", False), ("km away", True), ("Hours away", True),
-                           ("Weight", True), ("Spills 2023", True), ("Spills 2024", True), ("Spills 2025", True),
-                           ("Spill hours 2025", True), ("Monitor uptime 2025", True)], rows, "overflows"))
+        head = [("Overflow and id", False), ("Company", False), ("km away", True), ("Hours away", True),
+                ("Weight", True), ("Spills 2023", True), ("Spills 2024", True), ("Spills 2025", True),
+                ("Spill hours 2025", True), ("Monitor uptime 2025", True)]
+        out.append(_table(head, rows[:SHOWN], "overflows"))
+        if folded:   # the rest, in the same order, in a fold that opens the list to all of them
+            out.append(f'<details class="fold"><summary>All {n} overflows</summary>{_table(head, rows[SHOWN:], "more overflows")}</details>')
         out.append('<p class="small muted">A dash: no annual return for that overflow in that year.</p>')
         if durations:
             out.append(durations_section(durations))

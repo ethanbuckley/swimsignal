@@ -230,6 +230,8 @@ const Organisers = (() => {
   // one from data/upstream/<id>.json (build_site.write_upstream) and passes them as `full`: an array,
   // or 'loading' or 'failed' while it has not got them. An event weeks away is better ordered by reach
   // alone, which does not change with the weather.
+  // How many overflows the table shows before the fold, as the overflow history page does (profile.SHOWN).
+  const OVERFLOWS_SHOWN = 10;
   const listOf = (s, full) => Array.isArray(full) && full.length ? full : (s.contributors || []);
   // Each overflow's plain name first (levels.js, plainName: "Grassington sewage works overflow"), then the
   // company's, which is the one to look it up by: under it in the table, beside it in the CSV.
@@ -261,14 +263,18 @@ const Organisers = (() => {
     if (list.length < all) h += full === 'loading' ? `<p>The table lists the ${list.length} that matter most in the current forecast while the other ${all - list.length} load.</p>`
       : `<p>The table lists the ${list.length} that matter most in the current forecast: the full list of ${all} could not be loaded. Try again later.</p>`;
     const cell = (l, v, cls = '') => `<td${cls ? ` class="${cls}"` : ''} data-l="${l}">${v}</td>`;
-    h += '<div class="tw"><table class="ovt"><thead><tr><th scope="col">Overflow</th><th scope="col">Company</th><th scope="col">Discharges into</th>'
+    const table = rows => '<div class="tw"><table class="ovt"><thead><tr><th scope="col">Overflow</th><th scope="col">Company</th><th scope="col">Discharges into</th>'
       + '<th scope="col" class="num">Distance</th><th scope="col" class="num">Travel</th><th scope="col" class="num">Weight</th>'
       + '<th scope="col" class="num">Spills a year</th><th scope="col" class="num">Hours spilling</th><th scope="col">Live feed</th></tr></thead><tbody>'
-      + list.map(o => `<tr><th scope="row" class="ov">${brk(o.plain)}${o.own ? ` <span class="own">${brk(o.own)}</span>` : ''}</th>${cell('Company', esc(o.company))}${cell('Into', brk(o.into))}`
+      + rows.map(o => `<tr><th scope="row" class="ov">${brk(o.plain)}${o.own ? ` <span class="own">${brk(o.own)}</span>` : ''}</th>${cell('Company', esc(o.company))}${cell('Into', brk(o.into))}`
         + cell('Distance', `${num(o.km, 1)} km${o.in_lake ? ' across the lake' : ''}`, 'num') + cell('Travel', o.travel_h < 1 ? 'under 1 h' : `${num(o.travel_h)} h`, 'num')
         + cell('Weight', o.reach > 0 && o.reach < 0.005 ? '&lt;1%' : pct(o.reach), 'num')   // "under 1%" widened the column
         + cell('Spills a year', num(o.spills), 'num') + cell('Hours spilling', num(o.spill_hours), 'num')
         + cell('Live feed', o.live ? 'Yes' : 'No') + '</tr>').join('') + '</tbody></table></div>';
+    // The ten with the most weight, then the rest in a fold (5 Nov 2026): a long table pushed the checklist out of
+    // reach on a phone. Opening the fold shows them all, in the same order.
+    h += table(list.slice(0, OVERFLOWS_SHOWN));
+    if (list.length > OVERFLOWS_SHOWN) h += `<details class="fold"><summary>All ${list.length} overflows</summary>${table(list.slice(OVERFLOWS_SHOWN))}</details>`;
     if (PAGE_ID.test(s.id)) h += `<p><a href="spot/${esc(s.id)}/profile/">Overflow history, 2021 to 2025</a>: each overflow's spills and spill hours a year.</p>`;   // build_site.write_profiles
     return h + '<p class="small muted"><b>Distance</b>: upstream along the river network, through any lake on the way; "across the lake" for one that drains into the same lake. '
       + '<b>Travel</b>: how long sewage takes to arrive, at the model\'s river speed, and across a lake at its slower lake speed. '

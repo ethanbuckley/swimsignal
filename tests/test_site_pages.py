@@ -725,6 +725,21 @@ def test_the_data_page_lists_every_file_in_data_with_its_size(tmp_path):
     assert bs.write_data_page(empty) == [] and (empty / "data.html").read_text().count("Not in this build") == 20   # spot_scores.json makes 16, overflows/ 17, waters.json 18, verification_spots_live.csv 19, research/ (satellite lakes, spill durations and E. coli samples) 20
 
 
+def test_the_data_pages_sections_follow_its_table_and_fold_their_fields():
+    """Readability pass, 5 Nov 2026: the sections come in the order the table lists the files (spot/ with
+    spots-lite.json, overflows/ with overflows.geojson, the feeds after alerts.json), and every field list is
+    in a fold named Fields, so a reader scanning for a file sees its paragraph and its licence."""
+    page = (_build_site().STATIC / "data.html").read_text()
+    files = re.findall(r'<tr data-file="([^"]+)">', page)
+    joined = {"spot/": "spots-lite.json", "overflows/": "overflows.geojson"}
+    anchor = lambda f: f.rstrip("/").replace(".", "-").replace("_", "-")
+    want = list(dict.fromkeys(anchor(joined.get(f, f)) for f in files))
+    got = [h for h in re.findall(r'<h2 id="([^"]+)">', page) if h not in ("feeds", "credits")]
+    assert got == want, got
+    assert page.index('<h2 id="alerts-json">') < page.index('<h2 id="feeds">') < page.index('<h2 id="overflows-geojson">')
+    assert page.count('<dl class="fields">') == page.count('<details class="fold"><summary>Fields</summary>\n<dl class="fields">') > 10
+
+
 def test_the_embed_is_written_beside_the_app_with_its_scripts_versioned(tmp_path):
     bs = _build_site()
     bs.write_pages(tmp_path, SPOTS[:1], token="abcdefghij0123456789", root="https://example.org/")
@@ -798,6 +813,12 @@ def test_about_documents_the_data_page_and_the_embed_and_the_terms_allow_it(tmp_
     assert 'href="data.html"' in terms
     embed = about[about.index('<h2 id="embed">'):]
     assert "non-commercial website" in embed and "Ask first about any other use" in embed and 'href="mailto:hello@swimsignal.co.uk"' in embed
+    # Readability pass, 5 Nov 2026: the code, sizes and terms are in a fold under the heading the links land on, and
+    # the overflow-name glossary is folded too; every word of both is still on the page.
+    fold = embed.split('<details class="fold"><summary>The code to paste, and the terms</summary>')[1].split("</details>")[0]
+    assert "<pre><code>" in fold and "the tallest card was" in fold and "Ask first about any other use" in fold
+    glossary = about.split('<details class="fold"><summary>Overflow name abbreviations</summary>')[1].split("</details>")[0]
+    assert "WwTW and STW are a wastewater (sewage) treatment works" in glossary and "SPS a sewage pumping station" in glossary
 
 
 def _modules(d: str, size: int, border: int = 4) -> list[list[int]]:
