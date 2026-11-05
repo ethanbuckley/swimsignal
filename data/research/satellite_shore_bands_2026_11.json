@@ -1,0 +1,411 @@
+{
+  "description": "Exploratory paired shoreline-margin observations; not algae, toxin, safety, or accuracy estimates.",
+  "source": "Copernicus Sentinel-2 L2A via Earth Search; existing SwimSignal water masks and scene-classification cache.",
+  "selection": "50 eligible site-scenes across 14 bathing-water sites; see docs/SATELLITE-SHORE-BANDS-2026-11.md.",
+  "input_fingerprint_sha256": "53233d33134b55ae47680809d32e51dae4c40ad1c6ba776363a3ef885a09efde",
+  "cache_files": 9275,
+  "network_requests": 222,
+  "network_bytes": 125478853,
+  "rows": [
+    {
+      "site_id": "ukd1101-45800",
+      "tile": "MGRS-30UVF",
+      "scene_id": "S2B_T30UVF_20210618T112114_L2A",
+      "scene_date": "2021-06-18",
+      "ndci_margin_1": -0.06169614,
+      "ndci_margin_2": -0.09124138
+    },
+    {
+      "site_id": "ukd1101-45800",
+      "tile": "MGRS-30UVF",
+      "scene_id": "S2B_T30UVF_20230906T112606_L2A",
+      "scene_date": "2023-09-06",
+      "ndci_margin_1": 0.13950673,
+      "ndci_margin_2": 0.14285714
+    },
+    {
+      "site_id": "ukd1101-45800",
+      "tile": "MGRS-30UVF",
+      "scene_id": "S2B_T30UVF_20250908T113316_L2A",
+      "scene_date": "2025-09-08",
+      "ndci_margin_1": -0.02319902,
+      "ndci_margin_2": -0.03059976
+    },
+    {
+      "site_id": "ukd1101-45800",
+      "tile": "MGRS-30UVF",
+      "scene_id": "S2B_T30UVF_20260722T112515_L2A",
+      "scene_date": "2026-07-22",
+      "ndci_margin_1": -0.1338766,
+      "ndci_margin_2": -0.13934426
+    },
+    {
+      "site_id": "ukd1203-45625",
+      "tile": "MGRS-30UWF",
+      "scene_id": "S2A_T30UWF_20200929T113454_L2A",
+      "scene_date": "2020-09-29",
+      "ndci_margin_1": -0.01696865,
+      "ndci_margin_2": -0.0247619
+    },
+    {
+      "site_id": "ukd1203-45625",
+      "tile": "MGRS-30UVF",
+      "scene_id": "S2A_T30UVF_20230904T113323_L2A",
+      "scene_date": "2023-09-04",
+      "ndci_margin_1": 0.01708385,
+      "ndci_margin_2": 0.01694915
+    },
+    {
+      "site_id": "ukd1203-45625",
+      "tile": "MGRS-30UVF",
+      "scene_id": "S2C_T30UVF_20250712T112136_L2A",
+      "scene_date": "2025-07-12",
+      "ndci_margin_1": -0.40880961,
+      "ndci_margin_2": -0.48477944
+    },
+    {
+      "site_id": "ukd1203-45625",
+      "tile": "MGRS-30UWF",
+      "scene_id": "S2C_T30UWF_20260717T112342_L2A",
+      "scene_date": "2026-07-17",
+      "ndci_margin_1": -0.26388667,
+      "ndci_margin_2": -0.28546883
+    },
+    {
+      "site_id": "ukd1203-45650",
+      "tile": "MGRS-30UVF",
+      "scene_id": "S2A_T30UVF_20200919T113454_L2A",
+      "scene_date": "2020-09-19",
+      "ndci_margin_1": 0.15145443,
+      "ndci_margin_2": 0.14737883
+    },
+    {
+      "site_id": "ukd1203-45650",
+      "tile": "MGRS-30UWF",
+      "scene_id": "S2A_T30UWF_20230713T112520_L2A",
+      "scene_date": "2023-07-13",
+      "ndci_margin_1": -0.03010753,
+      "ndci_margin_2": -0.03130148
+    },
+    {
+      "site_id": "ukd1203-45650",
+      "tile": "MGRS-30UWF",
+      "scene_id": "S2B_T30UWF_20250707T112116_L2A",
+      "scene_date": "2025-07-07",
+      "ndci_margin_1": -0.0463119,
+      "ndci_margin_2": -0.05047749
+    },
+    {
+      "site_id": "ukd1203-45650",
+      "tile": "MGRS-30UWF",
+      "scene_id": "S2B_T30UWF_20260712T112112_L2A",
+      "scene_date": "2026-07-12",
+      "ndci_margin_1": -0.05060358,
+      "ndci_margin_2": -0.06220096
+    },
+    {
+      "site_id": "ukd1203-45675",
+      "tile": "MGRS-30UVF",
+      "scene_id": "S2A_T30UVF_20200820T113607_L2A",
+      "scene_date": "2020-08-20",
+      "ndci_margin_1": 0.08229321,
+      "ndci_margin_2": 0.07985594
+    },
+    {
+      "site_id": "ukd1203-45675",
+      "tile": "MGRS-30UWF",
+      "scene_id": "S2B_T30UWF_20230621T113321_L2A",
+      "scene_date": "2023-06-21",
+      "ndci_margin_1": 0.00524096,
+      "ndci_margin_2": 0.00536968
+    },
+    {
+      "site_id": "ukd1203-45675",
+      "tile": "MGRS-30UVF",
+      "scene_id": "S2B_T30UVF_20250707T112116_L2A",
+      "scene_date": "2025-07-07",
+      "ndci_margin_1": -0.00391998,
+      "ndci_margin_2": -0.00597372
+    },
+    {
+      "site_id": "ukd1203-45675",
+      "tile": "MGRS-30UWF",
+      "scene_id": "S2B_T30UWF_20260712T112112_L2A",
+      "scene_date": "2026-07-12",
+      "ndci_margin_1": 0.01086957,
+      "ndci_margin_2": 0.00237123
+    },
+    {
+      "site_id": "ukd1203-45700",
+      "tile": "MGRS-30UVF",
+      "scene_id": "S2B_T30UVF_20200914T113320_L2A",
+      "scene_date": "2020-09-14",
+      "ndci_margin_1": 0.0885751,
+      "ndci_margin_2": 0.07889765
+    },
+    {
+      "site_id": "ukd1203-45700",
+      "tile": "MGRS-30UWF",
+      "scene_id": "S2A_T30UWF_20230825T113323_L2A",
+      "scene_date": "2023-08-25",
+      "ndci_margin_1": 0.01896243,
+      "ndci_margin_2": 0.01958654
+    },
+    {
+      "site_id": "ukd1203-45700",
+      "tile": "MGRS-30UVF",
+      "scene_id": "S2B_T30UVF_20250518T112113_L2A",
+      "scene_date": "2025-05-18",
+      "ndci_margin_1": -0.07716786,
+      "ndci_margin_2": -0.06730787
+    },
+    {
+      "site_id": "ukd1203-45700",
+      "tile": "MGRS-30UWF",
+      "scene_id": "S2C_T30UWF_20260717T112342_L2A",
+      "scene_date": "2026-07-17",
+      "ndci_margin_1": -0.19284802,
+      "ndci_margin_2": -0.21474872
+    },
+    {
+      "site_id": "ukd1230-45725",
+      "tile": "MGRS-30UVF",
+      "scene_id": "S2A_T30UVF_20200926T112452_L2A",
+      "scene_date": "2020-09-26",
+      "ndci_margin_1": -0.0989011,
+      "ndci_margin_2": -0.10081733
+    },
+    {
+      "site_id": "ukd1230-45725",
+      "tile": "MGRS-30UVF",
+      "scene_id": "S2B_T30UVF_20230817T112118_L2A",
+      "scene_date": "2023-08-17",
+      "ndci_margin_1": -0.04729725,
+      "ndci_margin_2": -0.04729725
+    },
+    {
+      "site_id": "ukd1230-45725",
+      "tile": "MGRS-30UVF",
+      "scene_id": "S2B_T30UVF_20250528T112114_L2A",
+      "scene_date": "2025-05-28",
+      "ndci_margin_1": -0.12967033,
+      "ndci_margin_2": -0.12967033
+    },
+    {
+      "site_id": "ukd1230-45725",
+      "tile": "MGRS-30UVF",
+      "scene_id": "S2B_T30UVF_20260715T113512_L2A",
+      "scene_date": "2026-07-15",
+      "ndci_margin_1": -0.02602855,
+      "ndci_margin_2": -0.02991715
+    },
+    {
+      "site_id": "ukd1230-45750",
+      "tile": "MGRS-30UVF",
+      "scene_id": "S2A_T30UVF_20210527T113320_L2A",
+      "scene_date": "2021-05-27",
+      "ndci_margin_1": -0.0308322,
+      "ndci_margin_2": -0.03081651
+    },
+    {
+      "site_id": "ukd1230-45750",
+      "tile": "MGRS-30UVF",
+      "scene_id": "S2A_T30UVF_20230703T112118_L2A",
+      "scene_date": "2023-07-03",
+      "ndci_margin_1": 0.00309136,
+      "ndci_margin_2": 0.00163618
+    },
+    {
+      "site_id": "ukd1230-45750",
+      "tile": "MGRS-30UVF",
+      "scene_id": "S2C_T30UVF_20250602T112133_L2A",
+      "scene_date": "2025-06-02",
+      "ndci_margin_1": 0.11276701,
+      "ndci_margin_2": 0.11385477
+    },
+    {
+      "site_id": "ukd1230-45750",
+      "tile": "MGRS-30UVF",
+      "scene_id": "S2A_T30UVF_20260712T113332_L2A",
+      "scene_date": "2026-07-12",
+      "ndci_margin_1": 0.00636042,
+      "ndci_margin_2": 0.00411297
+    },
+    {
+      "site_id": "ukd1230-45775",
+      "tile": "MGRS-30UVF",
+      "scene_id": "S2A_T30UVF_20200929T113454_L2A",
+      "scene_date": "2020-09-29",
+      "ndci_margin_1": 0.35095346,
+      "ndci_margin_2": 0.33333333
+    },
+    {
+      "site_id": "ukd1230-45775",
+      "tile": "MGRS-30UVF",
+      "scene_id": "S2B_T30UVF_20230611T113322_L2A",
+      "scene_date": "2023-06-11",
+      "ndci_margin_1": -0.16504854,
+      "ndci_margin_2": -0.1623562
+    },
+    {
+      "site_id": "ukd1230-45775",
+      "tile": "MGRS-30UVF",
+      "scene_id": "S2B_T30UVF_20250518T112113_L2A",
+      "scene_date": "2025-05-18",
+      "ndci_margin_1": -0.46680984,
+      "ndci_margin_2": -0.51682422
+    },
+    {
+      "site_id": "ukd1230-45775",
+      "tile": "MGRS-30UVF",
+      "scene_id": "S2B_T30UVF_20260715T113512_L2A",
+      "scene_date": "2026-07-15",
+      "ndci_margin_1": -0.04076739,
+      "ndci_margin_2": -0.05079608
+    },
+    {
+      "site_id": "ukf1400-09750",
+      "tile": "MGRS-30UXD",
+      "scene_id": "S2A_T30UXD_20210531T111450_L2A",
+      "scene_date": "2021-05-31",
+      "ndci_margin_1": 0.0338248,
+      "ndci_margin_2": 0.03937008
+    },
+    {
+      "site_id": "ukf1400-09750",
+      "tile": "MGRS-30UXD",
+      "scene_id": "S2A_T30UXD_20250512T111144_L2A",
+      "scene_date": "2025-05-12",
+      "ndci_margin_1": -0.04197531,
+      "ndci_margin_2": -0.04265403
+    },
+    {
+      "site_id": "ukf1400-09750",
+      "tile": "MGRS-30UXD",
+      "scene_id": "S2A_T30UXD_20260709T112128_L2A",
+      "scene_date": "2026-07-09",
+      "ndci_margin_1": -0.06443914,
+      "ndci_margin_2": -0.07203907
+    },
+    {
+      "site_id": "ukf2208-09701",
+      "tile": "MGRS-30UXD",
+      "scene_id": "S2B_T30UXD_20210529T112114_L2A",
+      "scene_date": "2021-05-29",
+      "ndci_margin_1": 0.02337023,
+      "ndci_margin_2": 0.02606882
+    },
+    {
+      "site_id": "ukf2208-09701",
+      "tile": "MGRS-30UXD",
+      "scene_id": "S2A_T30UXD_20240816T112407_L2A",
+      "scene_date": "2024-08-16",
+      "ndci_margin_1": 0.04173623,
+      "ndci_margin_2": 0.03759398
+    },
+    {
+      "site_id": "ukf2208-09701",
+      "tile": "MGRS-30UXD",
+      "scene_id": "S2A_T30UXD_20260706T111237_L2A",
+      "scene_date": "2026-07-06",
+      "ndci_margin_1": 0.12988651,
+      "ndci_margin_2": 0.12988651
+    },
+    {
+      "site_id": "ukf2208-09702",
+      "tile": "MGRS-30UXD",
+      "scene_id": "S2B_T30UXD_20200928T110901_L2A",
+      "scene_date": "2020-09-28",
+      "ndci_margin_1": -0.01176471,
+      "ndci_margin_2": -0.01348748
+    },
+    {
+      "site_id": "ukf2208-09702",
+      "tile": "MGRS-30UXD",
+      "scene_id": "S2B_T30UXD_20240722T112337_L2A",
+      "scene_date": "2024-07-22",
+      "ndci_margin_1": 0.01454545,
+      "ndci_margin_2": 0.01357466
+    },
+    {
+      "site_id": "ukf2208-09702",
+      "tile": "MGRS-30UXD",
+      "scene_id": "S2A_T30UXD_20260706T111237_L2A",
+      "scene_date": "2026-07-06",
+      "ndci_margin_1": 0.03629893,
+      "ndci_margin_2": 0.03365385
+    },
+    {
+      "site_id": "uki1106-11940",
+      "tile": "MGRS-30UXC",
+      "scene_id": "S2B_T30UXC_20210612T105913_L2A",
+      "scene_date": "2021-06-12",
+      "ndci_margin_1": 0.01690331,
+      "ndci_margin_2": 0.01043394
+    },
+    {
+      "site_id": "uki1106-11940",
+      "tile": "MGRS-30UXC",
+      "scene_id": "S2A_T30UXC_20240912T110712_L2A",
+      "scene_date": "2024-09-12",
+      "ndci_margin_1": -0.05535055,
+      "ndci_margin_2": -0.05683325
+    },
+    {
+      "site_id": "uki1106-11940",
+      "tile": "MGRS-30UXC",
+      "scene_id": "S2C_T30UXC_20260624T111341_L2A",
+      "scene_date": "2026-06-24",
+      "ndci_margin_1": 0.2415121,
+      "ndci_margin_2": 0.00684089
+    },
+    {
+      "site_id": "ukj2310-11945",
+      "tile": "MGRS-30UXB",
+      "scene_id": "S2B_T30UXB_20200928T110901_L2A",
+      "scene_date": "2020-09-28",
+      "ndci_margin_1": -0.04761905,
+      "ndci_margin_2": -0.05442928
+    },
+    {
+      "site_id": "ukj2310-11945",
+      "tile": "MGRS-30UXB",
+      "scene_id": "S2A_T30UXB_20240704T110901_L2A",
+      "scene_date": "2024-07-04",
+      "ndci_margin_1": -0.0187643,
+      "ndci_margin_2": -0.01997996
+    },
+    {
+      "site_id": "ukj2310-11945",
+      "tile": "MGRS-30UXB",
+      "scene_id": "S2B_T30UXB_20260619T111539_L2A",
+      "scene_date": "2026-06-19",
+      "ndci_margin_1": -0.03495545,
+      "ndci_margin_2": -0.0396493
+    },
+    {
+      "site_id": "ukk1302-11760",
+      "tile": "MGRS-30UWC",
+      "scene_id": "S2B_T30UWC_20210615T110621_L2A",
+      "scene_date": "2021-06-15",
+      "ndci_margin_1": 0.01650165,
+      "ndci_margin_2": -0.00674178
+    },
+    {
+      "site_id": "ukk1302-11760",
+      "tile": "MGRS-30UWC",
+      "scene_id": "S2A_T30UWC_20250502T111152_L2A",
+      "scene_date": "2025-05-02",
+      "ndci_margin_1": 0.0784141,
+      "ndci_margin_2": 0.07205853
+    },
+    {
+      "site_id": "ukk1302-11760",
+      "tile": "MGRS-30UWC",
+      "scene_id": "S2C_T30UWC_20260704T111004_L2A",
+      "scene_date": "2026-07-04",
+      "ndci_margin_1": 0.05182342,
+      "ndci_margin_2": 0.04260652
+    }
+  ]
+}
