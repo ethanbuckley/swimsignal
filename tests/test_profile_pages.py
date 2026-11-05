@@ -252,6 +252,9 @@ def test_the_clubs_page_fills_its_warning_figures_from_the_live_scores(tmp_path)
             "it warned of about one in six spills. About two in five of its warnings were followed by a spill. 208 of the 223 "
             "warnings that came true were at United Utilities, the one company the spill model learned from. At the other "
             "companies, so far, it warned of fewer than one in twenty spills.") in words
+    # The About page's "How good it is" gives the same figures (5 Nov 2026: it gave none).
+    assert ("At the high risk line, it warned of about one in six spills. About two in five of its warnings were followed "
+            "by a spill.") in text((tmp_path / "about.html").read_text())
     # Without the table, or with a field missing, the page's own words stay.
     fallback = "it warned of about one in five spills. About two in five of its warnings were followed by a spill."
     for v in ({}, {"live": {"warning_table": {**table, "hit_rate": None}}}, None):
@@ -262,6 +265,7 @@ def test_the_clubs_page_fills_its_warning_figures_from_the_live_scores(tmp_path)
             f.write_text(json.dumps(v))
         bs.write_pages(tmp_path, SPOTS[:1], root="https://example.org/")
         assert fallback in text((tmp_path / "clubs.html").read_text()), v
+        assert fallback in text((tmp_path / "about.html").read_text()), v
 
 
 def test_an_overflow_at_the_spot_is_under_a_tenth_of_a_km_not_zero(tmp_path):

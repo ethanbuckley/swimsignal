@@ -1214,6 +1214,6 @@ def test_information_pages_offer_mobile_navigation_and_map_handoff(tmp_path):
         page = (tmp_path / path).read_text()
         assert page.count('<nav class="phone-nav" aria-label="Main">') == 1, path
     lost = (tmp_path / "404.html").read_text()   # at any depth, so its bar's links are absolute
-    assert '<a href="https://example.org/swim/research.html">Research</a>' in lost and 'href="index.html"' not in lost
+    assert '<a href="https://example.org/swim/research.html">Research and data</a>' in lost and 'href="index.html"' not in lost
     assert "url.searchParams.get('map') === '1'" in app
     assert "url.searchParams.delete('map'); history.replaceState(history.state, '', url); setMapMode(true);" in app
