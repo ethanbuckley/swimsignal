@@ -2573,8 +2573,8 @@
     "benchmark",
     "bathing waters"
    ],
-   "verdict": "Release candidate 0, exploratory on seen 2023-26 data. On 1,537 samples with a hindsight estimate, the model's hindsight scored Brier 0.082 against 0.120 for the month-of-year rate (skill 0.315, interval 0.173 to 0.409; AUC 0.85); the last sample scored 0.110. The month rate ranks worse than chance (AUC 0.44).",
-   "scope": "38 inland bathing waters, May to September 2023-26, 2,265 Environment Agency samples; leave one season out; site bootstrap. The hindsight is the production model refitted leaving each year out, not the issued forecast.",
+   "verdict": "Release candidate 0, exploratory on seen 2023-26 data: retrospective hindcasts, not prospective performance. Fitted forward (2025-26, 1,023 samples), the production model's form scored Brier 0.076 against 0.093 for the month-of-year rate: skill 0.184, interval 0.068 to 0.319, AUC 0.79; the last sample showed no skill. The leave-one-year-out hindsight's skill of 0.315 is higher because it learned from later seasons too. The month rate ranks at or below chance.",
+   "scope": "38 inland bathing waters, May to September 2023-26, 2,265 Environment Agency samples; protocol fixed before scoring, forward-only and result-known variants added after a review; site bootstrap. Neither model estimate is an issued forecast.",
    "stage": "development",
    "stage_note": "One command reproduces the scores from a committed file; no new data published. The dataset licence, a DOI and outside submissions are Ethan's decisions.",
    "records": [
@@ -2585,6 +2585,10 @@
     {
      "doc": "docs/BENCH-ECOLI900-2026-11.md",
      "quote": "| 3. Model hindsight | 0.0824 [0.0542, 0.1135] | 0.315 [0.173, 0.409] | 0.854 [0.757, 0.913] |"
+    },
+    {
+     "doc": "docs/BENCH-ECOLI900-2026-11.md",
+     "quote": "| 3. Model, forward fit | 0.0756 [0.0478, 0.1074] | 0.184 [0.068, 0.319] | 0.785 [0.674, 0.880] |"
     }
    ],
    "prs": [

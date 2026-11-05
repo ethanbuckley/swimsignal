@@ -7,39 +7,56 @@ from a bootstrap of sites. Prints the scores as JSON. Offline; reads nothing els
 """
 from __future__ import annotations
 
+import csv
 import json
 import sys
+from datetime import datetime
 from pathlib import Path
 
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
 EVIDENCE = ROOT / "data" / "research" / "ecoli_evidence.v1.json"
+# The concentration study's rows (one of the evidence file's sources): p_fwd is the production model's form refitted
+# forward in time (2024 predicts 2025; 2024-25 predict 2026), p_loyo the hindsight the evidence file publishes.
+ATLAS = ROOT / "docs" / "CONCENTRATION-STUDY-2026-11-atlas-rows.csv"
 SEED, DRAWS = 20261105, 2000
 
 
-def rows(path: Path = EVIDENCE) -> list[dict]:
-    """One row a sample, in time order within each site, with the previous sample's result in the same season."""
+def rows(path: Path = EVIDENCE, gap_days: float = 0.0) -> list[dict]:
+    """One row a sample, in time order within each site, with the result of the latest earlier sample at the same site
+    in the same season taken at least gap_days before (None for none). gap_days 0 is the protocol's "previous sample";
+    3 is the review's "a result known by then" (an assumption about lab turnaround, not a checked one)."""
+    fwd = {}
+    with ATLAS.open() as f:
+        for a in csv.DictReader(f):
+            fwd[(a["bw_id"], datetime.fromisoformat(a["sample_time"]))] = (float(a["p_fwd"]) if a["p_fwd"] not in ("", "nan") else None,
+                                                                          float(a["p_loyo"]) if a["p_loyo"] not in ("", "nan") else None)
     out = []
     for s in json.loads(path.read_text())["sites"]:
-        prev, season = None, None
+        seen: list[tuple[datetime, bool]] = []
         for x in sorted(s["samples"], key=lambda x: x["t"]):
-            y = int(x["t"][:4])
-            if y != season:
-                prev, season = None, y
+            t, y = datetime.fromisoformat(x["t"]), int(x["t"][:4])
+            seen = [z for z in seen if z[0].year == y]
+            known = [o for (u, o) in seen if (t - u).total_seconds() >= gap_days * 86400 and u < t]
+            f, loyo = fwd.get((s["bw_id"], t), (None, None))
             out.append({"site": s["spot_id"], "kind": s["kind"], "season": y, "month": int(x["t"][5:7]),
-                        "over": bool(x["over"]), "prev": prev, "hindsight": x.get("hindsight")})
-            prev = bool(x["over"])
+                        "over": bool(x["over"]), "prev": known[-1] if known else None, "hindsight": x.get("hindsight"),
+                        "forward": f, "loyo": loyo})
+            seen.append((t, bool(x["over"])))
     return out
 
 
-def baselines(rs: list[dict]) -> dict[str, np.ndarray]:
-    """Each baseline's probability for every row; fitted on the other seasons (baseline 3 is as published, NaN where
-    missing)."""
+def baselines(rs: list[dict], forward: bool = False) -> dict[str, np.ndarray]:
+    """Each baseline's probability for every row; baselines 1 and 2 fitted on the other seasons (the protocol), or with
+    forward on the earlier seasons only (NaN for a season with none before it). Baseline 3 is as published, NaN where
+    missing; it is refitted leaving each year out, so it is never forward-only."""
     seasons = sorted({r["season"] for r in rs})
-    month, last = np.zeros(len(rs)), np.zeros(len(rs))
+    month, last = np.full(len(rs), np.nan), np.full(len(rs), np.nan)
     for y in seasons:
-        train = [r for r in rs if r["season"] != y]
+        train = [r for r in rs if (r["season"] < y if forward else r["season"] != y)]
+        if not train:
+            continue
         rate = {m: np.mean([r["over"] for r in train if r["month"] == m]) for m in {r["month"] for r in train}}
         overall = np.mean([r["over"] for r in train])
         after = {p: np.mean([r["over"] for r in train if r["prev"] is p]) for p in (True, False)}
@@ -49,6 +66,9 @@ def baselines(rs: list[dict]) -> dict[str, np.ndarray]:
             month[i] = rate.get(r["month"], overall)
             last[i] = month[i] if r["prev"] is None else after[r["prev"]]
     hind = np.array([np.nan if r["hindsight"] is None else float(r["hindsight"]) for r in rs])
+    if forward:   # the model's own forward fit (2025-26 only), never the leave-one-year-out hindsight
+        return {"month_rate": month, "last_sample": last,
+                "model_forward": np.array([np.nan if r["forward"] is None else r["forward"] for r in rs])}
     return {"month_rate": month, "last_sample": last, "model_hindsight": hind}
 
 
@@ -106,16 +126,26 @@ def score(sites: np.ndarray, y: np.ndarray, preds: dict[str, np.ndarray]) -> dic
     return out
 
 
-def run(path: Path = EVIDENCE) -> dict:
-    rs = rows(path)
-    preds = baselines(rs)
+def table(rs: list[dict], forward: bool = False) -> dict:
+    preds = baselines(rs, forward)
     y = np.array([r["over"] for r in rs], dtype=float)
     sites = np.array([r["site"] for r in rs])
-    has = ~np.isnan(preds["model_hindsight"])
-    return {"task": "E. coli over 900 at inland bathing waters, May-September 2023-26, leave one season out",
+    model = "model_forward" if forward else "model_hindsight"
+    scored = ~np.isnan(preds["month_rate"])
+    has = scored & ~np.isnan(preds[model])
+    return {"all_rows": score(sites[scored], y[scored], {k: preds[k][scored] for k in ("month_rate", "last_sample")}),
+            ("rows_with_model_forward" if forward else "rows_with_hindsight"): score(sites[has], y[has], {k: v[has] for k, v in preds.items()})}
+
+
+def run(path: Path = EVIDENCE) -> dict:
+    """The protocol's scores as fixed before the first run, then the review's two variants (5 Nov 2026, after it):
+    forward-only fitting, and a previous result counted only when its sample was 3 days older."""
+    return {"task": "E. coli over 900 at inland bathing waters, May-September 2023-26",
             "source": str(path.relative_to(ROOT)), "seed": SEED, "draws": DRAWS,
-            "all_rows": score(sites, y, {k: preds[k] for k in ("month_rate", "last_sample")}),
-            "rows_with_hindsight": score(sites[has], y[has], {k: v[has] for k, v in preds.items()})}
+            **table(rows(path)),
+            "review_forward_only": table(rows(path), forward=True),
+            "review_result_known_3_days": table(rows(path, gap_days=3.0)),
+            "review_forward_and_3_days": table(rows(path, gap_days=3.0), forward=True)}
 
 
 if __name__ == "__main__":
