@@ -12,7 +12,7 @@ const fn = html.slice(html.indexOf('function phoneFolds() {'), html.indexOf('\n}
 test("no outer folds: the sections follow the nearby spots in a swimmer's order", () => {
   assert.doesNotMatch(html, /fold-group|const FOLDS = /);
   // Why, how sure and what it cannot see first, after where the risk comes from (5 Nov 2026); the maps and history after the nearby spots.
-  assert.match(html, /const PHONE_EARLY = \['#day-tiles', '#scores-host, #scores', '#limits'\];/);
+  assert.match(html, /const PHONE_EARLY = \['#day-tiles', '#water-top', '#scores-host, #scores', '#limits'\];/);   // the rating with today's EA advice too
   assert.match(html, /const PHONE_ORDER = \['\.spot-map-tile', '#overflows', '#plume-host', '#now-tiles', '#lt-past', '#ls-past', '#seasonal'\];/);
   assert.match(fn, /for \(const q of PHONE_EARLY\)/);
   assert.match(html, /const PHONE_OPEN = \['#seasonal'\];/);

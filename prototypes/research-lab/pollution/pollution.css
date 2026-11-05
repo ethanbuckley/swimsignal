@@ -62,7 +62,7 @@
 .leg h3::before { counter-increment: leg; content: counter(leg) "  "; font: 600 var(--fs-note) var(--font-mono); color: var(--muted); }
 .leg .now { font-size: var(--fs-note); color: var(--muted); margin: 0 0 10px; }
 .leg .rec { border-top: 1px solid var(--hair); padding: 8px 0; font-size: 14px; }
-.leg .rec .st { font: 12px var(--font-mono); margin-right: 6px; }
+.leg .rec .st { font-weight: 600; }
 .leg .rec .st.adopted { color: var(--brand); }
 .leg .rec .st.archived { color: var(--muted); }
 .leg .rec .st.waiting, .leg .rec .st.scheduled, .leg .rec .st.development { color: #855817; }

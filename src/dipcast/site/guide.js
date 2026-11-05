@@ -97,9 +97,16 @@ function guideFacts(g) {
   // rules went behind "Show all", and permission is the one thing a first-time reader must not have to open.
   const topics = GUIDE_TOPICS.filter(([k]) => by.has(k)), shown = (k, i) => i < GUIDE_SHOW || k === 'rules';
   const fold = topics.filter(([k], i) => !shown(k, i)).length >= 2;
+  // In each topic its first source's facts show and the rest fold (5 Nov 2026: Windermere's guide ran to about 600 words,
+  // all open, 372 of them under Who can swim from six sources). Who can swim shows its first two, verified first
+  // (guides.py sorts them), so permission is in view; a fold of one is not worth its line, so one more shows instead.
+  const said = r => `${r.texts.map(t => `<p class="g-text">${guideEsc(t)}</p>`).join('')}<p class="g-src">${r.src}</p>`;
+  const facts = k => { const rs = guideRuns(by.get(k)), keep = k === 'rules' ? 2 : 1;
+    return rs.length <= keep + 1 ? rs.map(r => `<dd>${said(r)}</dd>`).join('')
+      : rs.slice(0, keep).map(r => `<dd>${said(r)}</dd>`).join('') + `<dd class="g-more"><details class="more"><summary>${rs.length - keep} more from other sources</summary>`
+        + rs.slice(keep).map(r => `<div class="g-run">${said(r)}</div>`).join('') + '</details></dd>'; };
   return '<dl class="g-facts">' + topics.map(([k, label], i) => `<div class="g-row"${fold && !shown(k, i) ? ' hidden' : ''}><dt>${label}</dt>`
-    + guideRuns(by.get(k)).map(r => `<dd>${r.texts.map(t => `<p class="g-text">${guideEsc(t)}</p>`).join('')}<p class="g-src">${r.src}</p></dd>`).join('')
-    + '</div>').join('') + '</dl>'
+    + facts(k) + '</div>').join('') + '</dl>'
     + (fold ? `<button type="button" class="btn quiet" id="g-all" aria-expanded="false">Show all ${topics.length} topics</button>` : '');
 }
 

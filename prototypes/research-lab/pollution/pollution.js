@@ -170,6 +170,7 @@ function renderTable() {
 }
 
 // ------------------------------------------------------------------ the research, by leg of the journey
+const STAGE_WORDS = { adopted: 'Adopted', live: 'Live', archived: 'Archived', waiting: 'Waiting for data', scheduled: 'Scheduled', development: 'In development', reference: 'Reference' };
 function renderJourney() {
   const set = IDX.settings, E = Object.fromEntries(CAT.entries.map(e => [e.id, e]));
   const legs = [
@@ -183,7 +184,8 @@ function renderJourney() {
   const first = t => { const m = String(t).match(/^.*?[.!?](\s|$)/); return m ? m[0] : t; };
   $('#journey').innerHTML = legs.map(([q, now, ids]) => `<div class="leg"><h3>${q}</h3><p class="now">${esc(now)}</p>${ids.filter(i => E[i]).map(i => {
     const e = E[i];
-    return `<div class="rec"><span class="st ${e.stage}">${e.stage}</span><b>${esc(e.title)}.</b> ${esc(first(e.verdict))}
+    // The stage in plain words, in the page's own type (5 Nov 2026: lowercase monospace tags read as pills).
+    return `<div class="rec"><span class="st ${e.stage}">${STAGE_WORDS[e.stage] || esc(e.stage)}.</span> <b>${esc(e.title)}.</b> ${esc(first(e.verdict))}
       <details><summary>The record</summary><p>${esc(e.verdict)}</p>${e.scope ? `<p>${esc(e.scope)}</p>` : ''}${e.stage_note ? `<p>${esc(e.stage_note)}</p>` : ''}${e.reopen_when ? `<p><i>Reopen when:</i> ${esc(e.reopen_when)}</p>` : ''}</details></div>`;
   }).join('')}</div>`).join('');
 }

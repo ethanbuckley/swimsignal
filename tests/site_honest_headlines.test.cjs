@@ -519,12 +519,13 @@ test('Not known here: a row for each gap, in the words it had, and no tile witho
   const ctx = page(UNKNOWN_PAGE, { DATA: { generated_at: GEN } }), rows = vm.runInContext('unknowns', ctx);
   const said = s => JSON.parse(JSON.stringify(rows(s).map(([l, v, w]) => [l, v, text(w)])));   // out of the page's realm
   assert.deepEqual(said(longBridges), [
-    ['Live readings', '1 of 45 not reporting', 'With no live reading, it could be spilling unseen. A monitor reports when it spills, not how much or what is in it.'],
+    ['Live readings', '1 of 45 not reporting', 'With no live reading, it could be spilling unseen.'],
     ['Access', 'Not confirmed', 'Oxford City Council lists Longbridges among places receiving water-safety signs and discourages wild swimming. Check the current signs; listing this place does not confirm permission or a maintained entry point. Authority guidance . Checked from published sources on 3 Oct 2026; signs at the water have not been inspected.']]);
   assert.deepEqual(said(hereford), [
-    ['Live readings', '14 of 14 not reporting', 'With no live reading, they could be spilling unseen. Dŵr Cymru Welsh Water has no live feed SwimSignal reads. A monitor reports when it spills, not how much or what is in it.'],
+    ['Live readings', '14 of 14 not reporting', 'With no live reading, they could be spilling unseen. Dŵr Cymru Welsh Water has no live feed SwimSignal reads.'],
     ['Overflows in Wales', 'Not counted', 'Overflows in Wales are not counted: about 29% of the river within 60 km above this spot is in Wales.']]);
-  assert.deepEqual(said(frensham), [["Today's EA advice", 'Not checked', "The Environment Agency's advice for today could not be checked. Open the EA's page before you swim: it says when bathing is not advised."]]);
+  // Today's EA advice not checked: said once, in the line beside the answer that links the advice (5 Nov 2026), not here too.
+  assert.deepEqual(said(frensham), []);
   // Every overflow reporting, no access note, not a bathing water: no gap, and no tile.
   const quiet = week(['low', 'low', 'low', 'low', 'low']);
   assert.equal(rows(quiet).length, 0);
