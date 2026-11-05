@@ -18,14 +18,17 @@ const seasonalYears = ys => ys.length === 1 ? String(ys[0]) : ys.every((y, i) =>
 
 // The tile's parts for one spot's d.seasonal: { lead, rows: [[month, share 0..1, spill days, days]], notes }.
 // null when there is nothing to show.
-function seasonalWords(s) {
+// counted: how many the forecast counts (upstream_summary.overflows). The history has every monitored overflow, one with a
+// weight too small to count too, so "the 50" sat under "one of the 49" on Henley's page (5 Nov 2026): said both ways.
+function seasonalWords(s, counted = null) {
   if (!s) return null;
   if (s.none) return { lead: 'No monitored storm overflow was found upstream of this spot, so there is no spill history to show.', rows: [], notes: [] };
   if (s.too_few) return { lead: `Too few of the ${seasonalN(s.overflows)} overflows upstream had a working monitor and a held record in any year from 2021 to 2025 `
     + `to give a fair count, so no history is shown.`, rows: [], notes: [] };
   if (!Array.isArray(s.years) || !s.years.length || !Array.isArray(s.days)) return null;
   const M = s.overflows, yrs = seasonalYears(s.years);
-  const which = M === 1 ? 'the monitored overflow upstream' : `at least one of the ${seasonalN(M)} monitored overflows upstream`;
+  const which = M === 1 ? 'the monitored overflow upstream' : `at least one of the ${seasonalN(M)} monitored overflows upstream`
+    + (Number.isInteger(counted) && counted > 0 && counted < M ? ` (the forecast counts ${seasonalN(counted)})` : '');
   const lead = `History, not a forecast. The share of days in each month, ${yrs}, when ${which} reported a spill.`;
   const rows = SEASONAL_MONTHS.map((m, i) => [m, s.days[i] ? s.spill[i] / s.days[i] : null, s.spill[i], s.days[i]]);
   const notes = [];
@@ -43,7 +46,7 @@ const seasonalPct = x => x === null ? '–' : (x > 0 && x < 0.005 ? '<1%' : Math
 
 function seasonalTile(d) {
   if (!d || d.unlisted || d.error) return '';
-  const w = seasonalWords(d.seasonal);
+  const w = seasonalWords(d.seasonal, (d.upstream_summary || {}).overflows);
   if (!w) return '';
   let h = `<details class="tile fold" id="seasonal"><summary><span class="t-lab">${SEASONAL_ICON}<span>Past spills upstream, by month</span></span></summary>`
     + `<p class="t-say">${w.lead}</p>`;

@@ -88,3 +88,11 @@ test("no other script of the page defines one of spotscores.js's names, and the 
   // Right after the evidence tile in render(), so the regroup can move the pair.
   assert.match(html, /evidenceTile\(d, Date\.now\(\), DATA\.generated_at\) : ''\)\n\s+\+ \(typeof scoresHost === 'function' \? scoresHost\(d\) : ''\)/);
 });
+
+test('scores over more overflows than the forecast counts say both (5 Nov 2026)', () => {
+  const T = require('../src/dipcast/site/spotscores.js');
+  const g = { min_spills: 10, first_day: '2026-09-29', warn_at: 0.4 };
+  const s = { overflows: 50, scored_overflows: 50, overflow_days: 1000, spill_days: 30, hits: 20, misses: 70, false_alarms: 100, days: 30, first_day: '2026-09-29' };
+  assert.match(T.scoresWords(s, g, 49).say[0], /checked at all 50 overflows upstream \(the forecast counts 49\):/);
+  assert.doesNotMatch(T.scoresWords(s, g).say[0], /forecast counts/);
+});

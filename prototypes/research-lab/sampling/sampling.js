@@ -208,9 +208,10 @@ function figures(pl) {
     offSeason: months.filter(m => !SEASON.includes(m)).length, areas: new Set(ss.map(s => s.area)).size };
 }
 
-function strip(pl, f) {
+// The hatch's pattern once on the page, with the first season's strip: two plans drew two of the same id (5 Nov 2026).
+function strip(pl, f, first = true) {
   const before = MM.map((_, j) => f.ss.reduce((t, s) => t + monthly(s.id)[j], 0)), cw = 26, W = 12 * cw + 70;
-  let g = `<defs><pattern id="sg-hatch-s" width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="4" height="4" fill="var(--card)"/><line x1="0" y1="0" x2="0" y2="4" stroke="var(--gap)" stroke-width="1.4"/></pattern></defs>`;
+  let g = first ? `<defs><pattern id="sg-hatch-s" width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="4" height="4" fill="var(--card)"/><line x1="0" y1="0" x2="0" y2="4" stroke="var(--gap)" stroke-width="1.4"/></pattern></defs>` : '';
   MM.forEach((m, j) => {
     const x = 70 + j * cw, add = pl.months.has(m) ? Math.round(f.ss.length * FREQ[pl.freq][1]) : 0;
     g += `<text x="${x + cw / 2}" y="10" text-anchor="middle">${MONTH[j][0]}</text>`;
@@ -233,7 +234,7 @@ function plans() {
       + `<ul class="sg-sites" aria-label="Spots in season ${k.toUpperCase()}">${f.ss.length ? f.ss.map(s => `<li><span>${esc(s.name)}<small>${status(s) === 'none' ? 'no samples' : plural(s.ea || s.local, 'sample')}${status(s) === 'local' ? ' (group)' : ''}</small></span><button type="button" class="rm" data-id="${esc(s.id)}" aria-label="Remove ${esc(s.name)}">Remove</button></li>`).join('') : '<li class="empty">No spots yet.</li>'}</ul>`
       + `<fieldset><legend>Months (dashed: no Environment Agency sample in any year)</legend><div class="sg-months">${MM.map((m, j) => `<label class="${SEASON.includes(m) ? '' : 'no-ea'}" title="${MONTH[j]}"><input type="checkbox" value="${m}"${pl.months.has(m) ? ' checked' : ''} aria-label="${MONTH[j]}">${MONTH[j].slice(0, 3)}</label>`).join('')}</div></fieldset>`
       + `<label>How often at each spot<select class="freq">${Object.entries(FREQ).map(([v, [t]]) => `<option value="${v}"${pl.freq === v ? ' selected' : ''}>${t}</option>`).join('')}</select></label>`
-      + `<div class="sg-strip">${strip(pl, f)}</div></div>`;
+      + `<div class="sg-strip">${strip(pl, f, i === 0)}</div></div>`;
   }).join('');
   $('#plans').querySelectorAll('.sg-plan').forEach(el => {
     const pl = PLANS[+el.dataset.i], redo = () => { pl.name = `Season ${KEYS[+el.dataset.i].toUpperCase()}`; plans(); if (SPOT) pick(SPOT); };

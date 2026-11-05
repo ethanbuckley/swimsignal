@@ -3586,7 +3586,10 @@ def write_lab(site: Path, token: str | None = None, lab: Path = LAB, research: P
             # The site's own header, icon and phone bar in place of the stand-in a repository preview shows: one product
             # shell, with Research Lab as the page you are on.
             s = LAB_HEADER.sub(lambda _: site_header(up, "lab/"), s, count=1)
-            s = s.replace("</head>", f'<meta name="theme-color" content="#3d5b5d">\n<link rel="icon" href="{up}icons/icon.svg" type="image/svg+xml">\n'
+            # Its published address, as every other page gives (page_meta); the Lab's pages had none (5 Nov 2026).
+            rel = f.relative_to(site).as_posix()
+            canon = '' if 'rel="canonical"' in s else f'<link rel="canonical" href="{escape(site_url() + (rel[:-len("index.html")] if rel.endswith("index.html") else rel))}">\n'
+            s = s.replace("</head>", f'{canon}<meta name="theme-color" content="#3d5b5d">\n<link rel="icon" href="{up}icons/icon.svg" type="image/svg+xml">\n'
                                      f'<link rel="apple-touch-icon" href="{up}icons/apple-touch-icon.png">\n</head>', 1)
             s = with_counter(with_phone_nav(s, up), token)
             pages += 1

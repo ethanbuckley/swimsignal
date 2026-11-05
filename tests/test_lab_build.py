@@ -212,3 +212,12 @@ def test_sampling_never_claims_every_spot(site):
         p = site / "lab" / f
         if p.is_file():
             assert "every SwimSignal spot" not in p.read_text() and "every spot" not in p.read_text().lower().replace("every spot's", ""), f
+
+
+def test_every_page_gives_its_published_address(site):
+    # A canonical link on each, as every other page has (page_meta); the Lab's had none (5 Nov 2026).
+    root = build_site.site_url()
+    for f in _files(site, ".html"):
+        rel = f.relative_to(site).as_posix()
+        want = root + (rel[: -len("index.html")] if rel.endswith("index.html") else rel)
+        assert re.findall(r'<link rel="canonical" href="([^"]+)">', f.read_text()) == [want], f

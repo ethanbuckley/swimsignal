@@ -82,7 +82,7 @@ const LAB = (() => {
       const mark = pt.mark ? pt.mark : pt.kind === 'pilot' ? `<circle r="5" class="pt-pilot"/>` : pt.kind === 'small' ? `<circle r="3.5" class="pt-small"/>` : `<circle r="3.5" class="pt-hist"/>`;
       g += opts.inert   // a cover inside a link: drawn, never a control of its own
         ? `<g transform="translate(${cx.toFixed(1)},${cy.toFixed(1)})">${mark}</g>`
-        : `<g class="pt${on ? ' on' : ''}" transform="translate(${cx.toFixed(1)},${cy.toFixed(1)})" data-id="${pt.id}" tabindex="0" role="button" aria-label="${esc(pt.name)}"><title>${esc(pt.name)}</title>${on ? '<circle r="10" class="pt-ring"/>' : ''}${mark}<circle r="11" fill="transparent"/></g>`;
+        : `<g class="pt${on ? ' on' : ''}" transform="translate(${cx.toFixed(1)},${cy.toFixed(1)})" data-id="${pt.id}" tabindex="0" role="button" aria-label="${esc(pt.name)}"><title>${esc(pt.name)}</title>${on ? '<circle r="10" class="pt-ring"/>' : ''}${mark}<circle r="12.5" fill="transparent"/></g>`;   // a 25 px target: 22 was under the 24 px minimum on a phone (5 Nov 2026)
     }
     const sel = points.find(pt => pt.id === opts.selected);
     if (sel) {

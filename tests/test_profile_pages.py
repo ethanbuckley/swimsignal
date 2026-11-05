@@ -205,7 +205,7 @@ def test_the_clubs_page_uses_the_sites_own_words_and_says_its_limits_first(tmp_p
               '"No water based activity should proceed if there are any concerns around water contamination in the planned location."'):
         assert q in words, q
     for href in ("https://paddleuk.org.uk/water-quality-dont-get-sick-doing-what-you-love/",
-                 "https://www.scouts.org.uk/volunteers/running-your-section/programme-guidance/information-for-volunteers/general-activity-guidance-a-z/general-water-activities/water-safety-waterborne-diseases-and-immersion/",
+                 "https://www.scouts.org.uk/volunteers/running-your-section/programme-guidance/information-for-volunteers/general-activity-guidance-a-z/water-safety-waterborne-diseases-and-immersion",
                  "https://www.rya.org.uk/making-a-difference/water-quality-our-position/"):
         assert f'href="{href}"' in page, href
     for href in ("methods.html#level", "methods.html#actions", "organisers.html", "about.html#embed", "terms.html",
