@@ -761,12 +761,19 @@
    "branch_exists": true,
    "date": "2026-11-05"
   },
-  "620": {
-   "n": 620,
+  "618": {
+   "n": 618,
    "state": "open",
-   "branch": "claude/satellite-shore-margin",
+   "branch": "claude/bench-ecoli900-rc0",
    "branch_exists": true,
    "date": null
+  },
+  "620": {
+   "n": 620,
+   "state": "merged",
+   "branch": "claude/satellite-shore-margin",
+   "branch_exists": true,
+   "date": "2026-11-05"
   }
  },
  "entries": [
@@ -2562,6 +2569,37 @@
    ],
    "prs": [
     611
+   ]
+  },
+  {
+   "id": "bench-ecoli900",
+   "title": "Open benchmark, first task: E. coli over 900 at inland bathing waters",
+   "section": "data",
+   "topics": [
+    "ecoli",
+    "benchmark",
+    "bathing waters"
+   ],
+   "verdict": "Release candidate 0, exploratory on seen 2023-26 data: retrospective hindcasts, not prospective performance. Fitted forward (2025-26, 1,023 samples), the production model's form had lower Brier than the month-of-year rate (paired difference 0.017, interval 0.006 to 0.032; skill 0.184) and than the last sample. The leave-one-year-out hindsight's skill of 0.315 uses a different sample and fitting scheme. Within each season the month rate ranks at about chance; the last sample's small edge depends on how soon a result is known.",
+   "scope": "38 inland bathing waters, May to September 2023-26, 2,265 Environment Agency samples; protocol fixed before scoring, forward-only and result-known variants added after a review; site bootstrap. Neither model estimate is an issued forecast.",
+   "stage": "development",
+   "stage_note": "One command reproduces the scores from committed files; no new data published. The model columns stay out of any release until their licence questions (Open-Meteo redistribution; which spill histories the exposure uses) are settled. The dataset licence, a DOI and outside submissions are Ethan's decisions.",
+   "records": [
+    {
+     "doc": "docs/BENCH-ECOLI900-2026-11.md",
+     "quote": "**Exploratory, on seen data:**"
+    },
+    {
+     "doc": "docs/BENCH-ECOLI900-2026-11.md",
+     "quote": "| 3. Model hindsight | 0.0824 [0.0542, 0.1135] | 0.315 [0.173, 0.409] | 0.854 [0.757, 0.913] |"
+    },
+    {
+     "doc": "docs/BENCH-ECOLI900-2026-11.md",
+     "quote": "| 3. Model, forward fit | 0.0756 [0.0478, 0.1074] | 0.184 [0.068, 0.319] | 0.801 [0.708, 0.881] |"
+    }
+   ],
+   "prs": [
+    618
    ]
   },
   {
