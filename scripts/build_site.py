@@ -2757,7 +2757,8 @@ def with_warning_words(html: str, verification: Path) -> str:
     rest = [r for r in rows if r is not own]
     spills = sum(r["hits"] + r["misses"] for r in rest)
     if own and own.get("hits") and w.get("hits") and spills:
-        said += (f" {own['hits']} of the {w['hits']} warnings that came true were at {escape(own['company'])}, the one company "
+        # Counts with thousands commas: "990 of the 2990 warnings" on About and Clubs (5 Nov 2026).
+        said += (f" {int(own['hits']):,} of the {int(w['hits']):,} warnings that came true were at {escape(own['company'])}, the one company "
                  f"the spill model learned from. At the other companies, so far, it warned of "
                  f"{share_words(sum(r['hits'] for r in rest) / spills)} spills.")
     return WARN_FIGURES.sub(lambda m: m.group(1) + said + m.group(2), html, count=1)
