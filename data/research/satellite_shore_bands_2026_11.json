@@ -1,6 +1,6 @@
 {
   "description": "Exploratory paired shoreline-margin observations; not algae, toxin, safety, or accuracy estimates.",
-  "source": "Copernicus Sentinel-2 L2A via Earth Search; existing SwimSignal water masks and scene-classification cache.",
+  "source": "Contains modified Copernicus Sentinel data 2020–2026. Sentinel-2 L2A via Earth Search; existing SwimSignal water masks and scene-classification cache.",
   "selection": "50 eligible site-scenes across 14 bathing-water sites; see docs/SATELLITE-SHORE-BANDS-2026-11.md.",
   "input_fingerprint_sha256": "53233d33134b55ae47680809d32e51dae4c40ad1c6ba776363a3ef885a09efde",
   "cache_files": 9275,

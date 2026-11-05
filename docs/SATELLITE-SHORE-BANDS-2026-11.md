@@ -42,6 +42,7 @@ The existing data were read without changing the shared caches: a SHA-256 over 9
 before selection, after selection, before the fetch and after it (`53233d33134b55ae47680809d32e51dae4c40ad1c6ba776363a3ef885a09efde`).
 The one run used **222 requests and 125,478,853 bytes** (119.7 MiB), below its limits; there were no retries. The
 data are Sentinel-2 L2A, accessed as public Earth Search windows with the existing scale, offset and mask rules.
+Contains modified Copernicus Sentinel data 2020–2026.
 
 **Decision:** keep the production margin and the 2027 evaluation frozen. Carry this sensitivity into the planned
 2027 protocol review, including the large outlier and the lost pixel counts. This check cannot show whether changing
