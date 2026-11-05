@@ -774,6 +774,13 @@
    "branch": "claude/satellite-shore-margin",
    "branch_exists": true,
    "date": "2026-11-05"
+  },
+  "621": {
+   "n": 621,
+   "state": "open",
+   "branch": "codex/shoreline-band-check",
+   "branch_exists": true,
+   "date": null
   }
  },
  "entries": [
@@ -2629,7 +2636,8 @@
     }
    ],
    "prs": [
-    620
+    620,
+    621
    ]
   }
  ]
