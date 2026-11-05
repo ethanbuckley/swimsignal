@@ -30,6 +30,8 @@ const PAGES = [
   [`record.html#spot=${IDS[0]}&day=${DAY}`, '#record h2, #record table, #record p'],
   // Plan a swim from a town, given by its place, so no place list is needed.
   [`plan/#day=${DAY}&from=Reading&at=51.45%2C-0.97&within=50`, '#dp, #plan-sum b'],
+  ['saved/', '.view-saved .empty-saved', 'empty'],
+  ['saved/', '#scards .places li', 'saved'],
 ];
 
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.json': 'application/json', '.css': 'text/css',
@@ -70,7 +72,7 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 const failures = [];
 for (const [w, h, mobile] of [[375, 812, true], [1440, 900, false]]) {
-  for (const [page, drawn] of PAGES) {
+  for (const [page, drawn, saved] of PAGES) {
     const { result: { targetId } } = await send('Target.createTarget', { url: 'about:blank' });
     const { result: { sessionId: s } } = await send('Target.attachToTarget', { targetId, flatten: true });
     const errors = [];
@@ -90,6 +92,8 @@ for (const [w, h, mobile] of [[375, 812, true], [1440, 900, false]]) {
     await send('Page.addScriptToEvaluateOnNewDocument', { source: `(() => { const T = ${NOW}, D = Date;
       class F extends D { constructor(...a) { super(...(a.length ? a : [T + (performance.now() | 0)])); } static now() { return T + (performance.now() | 0); } }
       globalThis.Date = F; })();` }, s);
+    // The Saved route needs a fresh browser state, then two saved spots for the comparison to exist.
+    if (saved) await send('Page.addScriptToEvaluateOnNewDocument', { source: `localStorage.clear(); ${saved === 'saved' ? `localStorage.setItem('dipcast.saved', ${JSON.stringify(JSON.stringify(IDS.slice(0, 2)))});` : ''}` }, s);
     await send('Page.navigate', { url: BASE + page }, s);
     let shown = false;
     for (let t = 0; t < 40 && !shown; t++) { await sleep(250);
@@ -103,10 +107,14 @@ for (const [w, h, mobile] of [[375, 812, true], [1440, 900, false]]) {
         for (const d of document.querySelectorAll('main details')) { d.open = true; d.dispatchEvent(new Event('toggle')); }
         await new Promise(r => setTimeout(r, 600)); })()` }, s);
     }
+    if (shown && saved === 'saved') {
+      const r = await send('Runtime.evaluate', { expression: `(() => { const d = document.querySelector('#compare'); if (!d) return false; d.open = true; d.dispatchEvent(new Event('toggle')); return !!document.querySelector('#compare-result table'); })()`, returnByValue: true }, s);
+      if (!r.result?.result?.value) errors.push('Saved comparison did not draw a table');
+    }
     await sleep(400);
     handlers.delete(on);
     await send('Target.closeTarget', { targetId });
-    const where = `${page} at ${w} px`;
+    const where = `${page}${saved ? ` (${saved})` : ''} at ${w} px`;
     if (!shown) failures.push(`${where}: never drew ${drawn}`);
     for (const e of errors) failures.push(`${where}: ${e}`);
     console.log(`${!shown || errors.length ? 'FAIL' : 'ok  '} ${where}`);
