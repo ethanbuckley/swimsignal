@@ -168,3 +168,25 @@ The state release is overwritten by every build. A later download has more days 
 results above are from the assets uploaded on 5 November 2026 at 12:44 UTC. The SHA-256 of `dipcast.duckdb` was
 3d8e70c9026f8ed85cba308b24dc5d4088bfb5850ae73e6f26afcd4fe5b8be86, and of `live_history.parquet`
 56119868a42bc0a99e6d07ff50028e54807d42932d300e4e82e824aa19c62408.
+
+## What the project does next (5 November 2026)
+
+This section is the development decision, kept apart from the verdict above (RESEARCH-WORKFLOW.md).
+
+- **Supported claim.** On these three weeks, carrying right now's spills onto later days moved the average forecast
+  toward the observed index but did not get more levels right, and at the High line it added more false alarms than
+  hits. The display rule is not adopted. Day levels stay as they were.
+- **Uncertainty.** The margins were small (8 cells of agreement, a net 4 false alarms), and the observed index cannot
+  see the die-off the candidate models. The check shows the change did not clear the bar on this data, not that it is
+  harmful.
+- **Already on the site instead.** The contradiction that started this (Swale above Richmond Falls, "Back to low risk
+  tomorrow" beside "should have passed and died off by Saturday 13:02") was fixed in words in
+  [#609](https://github.com/ethanbuckley/swimsignal/pull/609): the five days give the clearing time when the first low
+  day comes before right now's spills have passed. The day rows are unchanged.
+- **Kept.** `transport.carried_risk` and its test stay in the code for later checks. The display change (forecast.py
+  writing `now.carried`, levels.js lifting a later day to it) is kept on branch `claude/carry-display-not-adopted`
+  (ee08e4e0), not merged.
+- **Next useful deliverable.** A check against what the carry is about: measured bacteria. Lab E. coli samples taken
+  on a day that right now's spills would have carried, from bathing waters in the 2027 season, scored as a separate
+  log that does not touch the frozen 2027 primary evaluation. Owner: Claude, with Ethan's review. Milestone: protocol
+  written before 1 May 2027; read once 30 such samples exist or on 30 September 2027, whichever is first.
