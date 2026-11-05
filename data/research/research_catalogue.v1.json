@@ -767,6 +767,13 @@
    "branch": "claude/bench-ecoli900-rc0",
    "branch_exists": true,
    "date": null
+  },
+  "620": {
+   "n": 620,
+   "state": "merged",
+   "branch": "claude/satellite-shore-margin",
+   "branch_exists": true,
+   "date": "2026-11-05"
   }
  },
  "entries": [
@@ -2593,6 +2600,32 @@
    ],
    "prs": [
     618
+   ]
+  },
+  {
+   "id": "sat-shore-margin",
+   "title": "Satellite lake readings: the shore margin",
+   "section": "satellite",
+   "topics": [
+    "lakes",
+    "satellite"
+   ],
+   "verdict": "Exploratory, offline, on cached scene classification. In clear scenes the outermost ring of a site's water is classed as not water 7.3% of the time at the bathing lakes, the second ring 1.73% against 1.20% inside: under the pre-stated rule the one-pixel margin is kept. A two-pixel margin keeps every site and makes 10 to 12% more scenes usable; a three-pixel one drops 3 bathing lakes and 7 chlorophyll points.",
+   "scope": "18 bathing-water lakes (14 past the size rule) and 40 chlorophyll points, every cached scene 2020-26; the satellite tests' own caches, unchanged. No band pixels are cached, so the shift in the index itself is not measured. Not an algae or safety finding.",
+   "stage": "reference",
+   "stage_note": "Production keeps margin 1. A 50-scene band sample would measure how far the index moves at margin 2; the margin is a question for the 2027 lake protocol review.",
+   "records": [
+    {
+     "doc": "docs/SATELLITE-SHORE-MARGIN-2026-11.md",
+     "quote": "**Under the rule fixed above: no change recommended.**"
+    },
+    {
+     "doc": "docs/SATELLITE-SHORE-MARGIN-2026-11.md",
+     "quote": "| Bathing lakes | 7.26% (4,328 of 59,645) | 1.73% | 1.52% | 1.20% |"
+    }
+   ],
+   "prs": [
+    620
    ]
   }
  ]
