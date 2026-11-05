@@ -2698,7 +2698,11 @@ const liveSay = (now, total, mon) => { const fd = now.feed_down_upstream || 0, s
 // reporting live and are named as a stale feed; its quiet overflows in the list then say "no update
 // since". Done once per spot and per list of overflows; a forecast from before quiet_by_feed is left as it is.
 const FEED_CURRENT_MS = 6 * 3600e3;
-const ageReadings = (s, nowMs) => { const n = s.now; if (!n || !Array.isArray(n.quiet_by_feed)) return s;
+const ageReadings = (s, nowMs) => {
+  // River levels age where read too: their build-time age once stayed "under an hour" all morning
+  // in Saved and the comparison. Do this even for a spot without overflow feed records.
+  if (typeof outingFresh === 'function') s.river_state = outingFresh(s.river_state, nowMs);
+  const n = s.now; if (!n || !Array.isArray(n.quiet_by_feed)) return s;
   n.aged = n.aged || [];
   for (const f of n.quiet_by_feed) { const t = Date.parse(f.updated_at);
     if (!f.updated_at || !(nowMs - t > FEED_CURRENT_MS) || n.aged.includes(f.company)) continue;

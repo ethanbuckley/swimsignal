@@ -55,7 +55,7 @@ test('daily figures never carry an hour they do not have', () => {
 test('a reading over a day old is stale: no figure, no trend, and when it was read', () => {
   const old = {...RS, observed_at: '2026-10-31T10:00:00Z', rise_from: '2026-10-31T05:00:00Z', rise_to: '2026-10-31T10:00:00Z'};
   assert.equal(O.outingFresh(old, NOW).stale, true);
-  assert.equal(O.outingFresh(RS, NOW), RS);
+  assert.deepEqual(O.outingFresh(RS, NOW), {...RS, age_hours: 2.25});
   const h = panel({s: spot({river_state: old}), level: {label: 'River level', fig: '–'}}), t = text(h);
   assert.match(t, /River level – No current reading Last reading at Addingham 40 h ago: too old to use/);
   assert.match(h, /vt-stale/);

@@ -4464,6 +4464,9 @@ def write_profiles(site: Path, spots: list[dict], token: str | None = None, retu
         t = profile.with_returns(t, wide=wide) if t is not None and len(t) else None
         n += t is not None
         (site / "spot" / r["id"] / "profile").mkdir(parents=True, exist_ok=True)
+        if t is not None:
+            (site / "spot" / r["id"] / "profile" / "monitored-storm-overflows.csv").write_text(
+                profile.upstream_csv(r, t), encoding="utf-8")
         (site / "spot" / r["id"] / "profile" / "index.html").write_text(
             with_counter(with_phone_nav(profile.site_page(r, t, MARK, url=f"{root}spot/{r['id']}/profile/", root=root,
                                            durations=spill_durations_for(site, r["id"]) if t is not None else None)), token))

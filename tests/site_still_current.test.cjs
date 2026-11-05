@@ -18,7 +18,7 @@ function page({ nowMs, feedAt = BUILT, held = false, drafts = [], head = 'Fri, 3
   const spans = [{ dataset: { ago: String(T0) }, textContent: '0 min', closest: () => null },
     { dataset: { ago: String(T0) }, textContent: 'frozen', closest: sel => sel === '[role=alert]' ? {} : null }];
   const calls = { reload: 0, heads: 0, notices: 0 };
-  const ctx = vm.createContext({ Date: FixedDate, navigator: { onLine: true }, setInterval() {}, confirm: () => true,
+  const ctx = vm.createContext({ Date: FixedDate, outingFresh: require('../src/dipcast/site/outing.js').outingFresh, navigator: { onLine: true }, setInterval() {}, confirm: () => true,
     fetch: (url, o) => { calls.heads++; assert.equal(o.method, 'HEAD'); return Promise.resolve({ ok: true, headers: { get: k => k === 'last-modified' ? head : null } }); },
     document: { visibilityState: 'visible', activeElement: null, addEventListener() {},
       querySelector: sel => sel === '[data-keep-page]' && held ? {} : null,
@@ -50,6 +50,15 @@ test('a quiet feed passing six hours while the page is open reloads it, at the t
   await p.run(T0 + 6 * H + 60e3);
   assert.equal(p.calls.reload, 1);
   assert.equal(p.get('DATA.spots[0].now.stale_upstream'), 4);
+});
+
+test('the shared reading pass ages river levels even when no overflow feeds are listed', () => {
+  const p = page({nowMs: T0 + 7 * H});
+  p.ctx.rs = {observed_at: BUILT, age_hours: 0.1, stale: false, level_m: 0.11};
+  const got = vm.runInContext(`ageReadings({river_state: rs}, ${T0 + 7 * H}).river_state`, p.ctx);
+  assert.equal(got.age_hours, 7);
+  assert.equal(got.stale, false);
+  assert.equal(vm.runInContext(`ageReadings({river_state: rs}, ${T0 + 25 * H}).river_state.stale`, p.ctx), true);
 });
 
 test('with words being written, the page offers the reload once and does not reload', async () => {

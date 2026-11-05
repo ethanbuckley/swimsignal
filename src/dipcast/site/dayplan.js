@@ -77,7 +77,7 @@ function dpConditions(s, day, today, act, byId = new Map(), nowMs = Date.now()) 
     else if (!loading) { rows.push(['Launching', DP_UNKNOWN]); unk.push('launching', 'launching and access'); }
     if (!(b && b.topic === 'paddle')) missing.push('rules for boats and boards');
     // The river now, at the nearest gauge: an observation, not a forecast for the day.
-    const rs = s.river_state;
+    const rs = (typeof outingFresh === 'function' ? outingFresh : require('./outing.js').outingFresh)(s.river_state, nowMs);
     if (river && rs && !rs.stale && typeof rs.level_m === 'number') {
       const word = { low: 'Low water', normal: 'Usual level', high: 'High water', 'very high': 'Very high water' }[rs.label] || `${rs.level_m} m`;
       rows.push(['River level', `${word} at ${dpEsc(rs.station)}` + dpKind('measured', `Measured ${dpAgo(rs.age_hours ?? 0)}${day === today ? '' : '; a reading now, not a forecast'}`)]);

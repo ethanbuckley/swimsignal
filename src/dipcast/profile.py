@@ -10,6 +10,8 @@ lake_distance_m.
 """
 from __future__ import annotations
 
+import csv
+import io
 import re
 from html import escape
 from pathlib import Path
@@ -83,6 +85,28 @@ def with_returns(up: pd.DataFrame, returns: pd.DataFrame | None = None, wide: pd
     t = up.merge(wide, left_on="site_id", right_index=True, how="left")
     t["km"] = km_upstream(t)
     return t.sort_values("weight", ascending=False, kind="stable").reset_index(drop=True)
+
+
+def upstream_csv(spot: dict, t: pd.DataFrame) -> str:
+    """The full history table for reuse, including negligible-weight overflows. No live statuses:
+    a downloaded list must not turn an old quiet reading into a claim about the water now."""
+    out = io.StringIO(newline="")
+    writer = csv.writer(out)
+    fields = ["site_id", "site_name", "company", "receiving_watercourse", "lat", "lon", "km", "travel_h", "weight", "has_live"]
+    annual = [f"{field}_{year}" for year in YEARS for field in ("spills", "spill_hours", "edm_operational_pct")]
+    writer.writerow(["spot_id", "spot_name", "forecast_issued_at", "record_type", *fields, *annual, "credits"])
+
+    def cell(v):
+        if v is None or pd.isna(v):
+            return ""   # a missing return is not zero spills
+        # Company names and watercourses are external text; keep a spreadsheet from interpreting them.
+        return "'" + v if isinstance(v, str) and v.lstrip().startswith(("=", "+", "-", "@")) else v
+
+    for _, r in t.iterrows():
+        writer.writerow([cell(spot["id"]), cell(spot["name"]), cell((spot.get("query") or {}).get("issued_at")),
+                         "monitored storm overflow; not a treated-effluent outlet inventory",
+                         *(cell(r.get(k)) for k in fields + annual), CREDITS])
+    return "\ufeff" + out.getvalue()   # Excel recognises UTF-8, including Welsh names and credits
 
 
 def summary(t: pd.DataFrame) -> list[dict]:
@@ -279,6 +303,13 @@ def body(spot: dict, t: pd.DataFrame | None, durations: dict | None = None) -> s
                    f"<a href=\"spot/{sid}/\">The spot's page</a> says how many report right now.</li>"
                    f"<li>The nearest is {fmt(s['nearest_km'], 1)}&nbsp;km "
                    f"{'away, across the lake' if s['nearest_in_lake'] else 'upstream'}.</li></ul></aside>")
+        far = (spot.get("upstream_summary") or {}).get("too_far") or 0
+        if far and total + far == s["n"]:
+            out.append(f"<p>The forecast counts {total} of these overflows; {far} "
+                       f"{'has a model weight' if far == 1 else 'have model weights'} too small to count. "
+                       f"This history includes all {s['n']}.</p>")
+        out.append(f'<p><a href="spot/{sid}/profile/monitored-storm-overflows.csv" download>Download all {s["n"]} monitored storm overflows (CSV)</a>. '
+                   'Includes names, locations, model weights and annual spill records. This is not a list of treated-effluent outlets.</p>')
         out.append("<h2>Each year, all overflows upstream</h2>")
         out.append(_table([("Year", False), ("Overflows with a return", True), ("Spills", True), ("Spill hours", True),
                            ("Spill hours, weighted by model weight", True)],
