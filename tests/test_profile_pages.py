@@ -2,6 +2,8 @@
 clubs, centres and leaders, clubs.html (T7). The profile pages are written from data/upstream/<id>.json and
 the annual returns, so these tests give both on disk, made up; the real Ilkley page was checked by hand
 against the returns (PR body)."""
+import csv
+import io
 import json
 import re
 import sys
@@ -86,6 +88,32 @@ def test_without_the_annual_returns_the_pages_still_list_the_overflows(tmp_path)
     assert bs.write_profiles(tmp_path, SPOTS[:1], returns=tmp_path / "missing.parquet") == 1
     words = text((tmp_path / "spot" / "wharfe-ilkley" / "profile" / "index.html").read_text())
     assert "Grassington/STW" in words and "2021 0 0 0 0" in words
+
+
+def test_full_list_download_keeps_small_weights_missing_returns_and_scope(tmp_path):
+    upstream_file(tmp_path)
+    spot = {**SPOTS[0], "name": "Wharfe, Ilkley", "upstream_summary": {"overflows": 1, "too_far": 1}}
+    bs.write_profiles(tmp_path, [spot], returns=returns(tmp_path / "r.parquet"))
+    folder = tmp_path / "spot" / spot["id"] / "profile"
+    page = (folder / "index.html").read_text()
+    assert "The forecast counts 1 of these overflows; 1 has a model weight too small to count. This history includes all 2." in text(page)
+    assert 'href="spot/wharfe-ilkley/profile/monitored-storm-overflows.csv" download' in page
+    rows = list(csv.DictReader(io.StringIO((folder / "monitored-storm-overflows.csv").read_text(encoding="utf-8-sig"))))
+    assert [r["site_id"] for r in rows] == ["A1", "B2"]
+    assert rows[0]["spot_name"] == "Wharfe, Ilkley" and rows[1]["weight"] == "0.003"
+    assert rows[1]["spills_2021"] == "" and float(rows[1]["spills_2025"]) == 2
+    assert rows[0]["record_type"] == "monitored storm overflow; not a treated-effluent outlet inventory"
+    assert rows[0]["credits"] == pf.CREDITS and "status" not in rows[0]
+    assert not (tmp_path / "spot" / "tarn" / "profile" / "monitored-storm-overflows.csv").exists()
+
+
+def test_csv_preserves_unicode_and_quotes_external_formula_text():
+    t = pf.with_returns(pd.DataFrame([{"site_id": "X", "site_name": '=HYPERLINK("url")', "company": "Dŵr Cymru",
+                                      "distance_km": 1, "travel_h": 2, "weight": 0.5}]), wide=pf.yearly(pd.DataFrame(columns=pf.RETURN_FIELDS)))
+    data = pf.upstream_csv({"id": "x", "name": "A river"}, t)
+    assert data.startswith("\ufeff")
+    row = next(csv.DictReader(io.StringIO(data.lstrip("\ufeff"))))
+    assert row["site_name"] == '\'=HYPERLINK("url")' and row["company"] == "Dŵr Cymru"
 
 
 def test_write_pages_writes_a_profile_for_every_spot_page_and_lists_them(tmp_path):
@@ -231,3 +259,16 @@ def test_the_clubs_page_fills_its_warning_figures_from_the_live_scores(tmp_path)
             f.write_text(json.dumps(v))
         bs.write_pages(tmp_path, SPOTS[:1], root="https://example.org/")
         assert fallback in text((tmp_path / "clubs.html").read_text()), v
+
+
+def test_an_overflow_at_the_spot_is_under_a_tenth_of_a_km_not_zero(tmp_path):
+    # Henley, 5 Nov 2026: Friday Street pumping station at distance 0.0 made "The nearest is 0.0 km upstream".
+    upstream_file(tmp_path)
+    f = tmp_path / "data" / "upstream" / "wharfe-ilkley.json"
+    d = json.loads(f.read_text())
+    d["overflows"][1].update(distance_km=0.0, lake_distance_km=0.0)
+    f.write_text(json.dumps(d))
+    (tmp_path / "spot" / "wharfe-ilkley").mkdir(parents=True)
+    bs.write_profiles(tmp_path, SPOTS[:1], returns=returns(tmp_path / "r.parquet"))
+    words = text((tmp_path / "spot" / "wharfe-ilkley" / "profile" / "index.html").read_text())
+    assert "The nearest is under 0.1 km upstream." in words and "0.0 km upstream" not in words

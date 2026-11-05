@@ -409,9 +409,9 @@ const outMph = kmh => Math.round(kmh * 0.621371);
 // A gauge reading the build thought current but now over a day old is stale here too (as conditionsSummary).
 function outingFresh(rs, nowMs = Date.now()) {
   const t = rs && Date.parse(rs.observed_at);
-  if (!rs || rs.stale || !Number.isFinite(t)) return rs;
+  if (!rs || !Number.isFinite(t)) return rs;
   const age = Math.max(0, (nowMs - t) / 36e5);
-  return age > OUTING_STALE_H ? { ...rs, stale: true, age_hours: age } : rs;
+  return { ...rs, stale: !!rs.stale || age > OUTING_STALE_H, age_hours: age };
 }
 // The level's change over the six hours to its latest reading, in metres as the level is: '' without those readings.
 function outingTrend(rs) {

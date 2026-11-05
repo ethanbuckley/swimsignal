@@ -57,6 +57,15 @@ test('while the spot\'s own file loads, access says so and nothing is called mis
   assert.ok(D.dpConditions(lake('n', {detail_file: 'spot/n.json', detail_loaded: true}), TODAY, TODAY).missing.includes('access'));
 });
 
+test('river readings age at viewing time, including after the 24-hour limit', () => {
+  const s = {kind: 'river', river_state: {station: 'Hambleden Lock', label: 'normal', level_m: 0.11,
+    observed_at: '2026-11-05T04:00:00Z', age_hours: 0.5, stale: false}};
+  const rowAt = at => Object.fromEntries(D.dpConditions(s, '2026-11-05', '2026-11-05', 'paddle', new Map(), Date.parse(at)).rows)['River level'];
+  assert.match(rowAt('2026-11-05T11:30:00Z'), /Measured 8 h ago/);
+  assert.match(rowAt('2026-11-06T04:00:01Z'), /Not known.*Last reading at Hambleden Lock 24 h ago: too old to use/);
+  assert.equal(s.river_state.age_hours, 0.5); // the shared snapshot is not mutated
+});
+
 test('for a boat or a board on a river: rules, the river now, finishes, and the day\'s wind where the update has it', () => {
   const byId = new Map([['b', {id: 'b', name: 'Greenholme'}]]);
   const s = {id: 'a', name: 'Ilkley', kind: 'river', downstream: [['b', 5.5], ['gone', 9]], boat_note: {topic: 'launch', text: 'Launch at the steps.', source: 'Council'},

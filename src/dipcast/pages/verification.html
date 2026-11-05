@@ -95,9 +95,15 @@ const NOT_SCORED = {min_known_polls: 'too few runs to observe the overflows six 
   max_gap: 'the gaps between runs were longer than the scoring rule allows', feed_not_current: 'the companies\' feeds were not current',
   next_day_unobserved: 'the overflows had not yet been observed on the day after', missed_deadline: 'no forecast was out by 08:00',
   no_forecast: 'no forecast was logged'};
+// Days after the last scored day are said apart from the span's (5 Nov 2026: "between 29 Sept and 1 Nov ... 3 November
+// and 4 November are missing" put two days outside the span inside it).
 function daysMissing(L) {
-  const miss = ((L.scoring_window || {}).days_not_scored || []);
-  if (!miss.length) return '';
+  const W = L.scoring_window || {}, all = W.days_not_scored || [], last = W.last_scored_day;
+  if (!all.length) return '';
+  const inside = last ? all.filter(m => m.day <= last) : all, after = last ? all.filter(m => m.day > last) : [];
+  return [inside.length ? missingSay(inside) : '', after.length ? `After ${day(last)}, ${missingSay(after)}` : ''].filter(Boolean).join(' ');
+}
+function missingSay(miss) {
   const list = ds => ds.length === 1 ? ds[0] : `${ds.slice(0, -1).join(', ')} and ${ds[ds.length - 1]}`;
   const month = iso => new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', {month: 'long'});
   // "8 and 9 October", or "30 September and 1 October" across a month's end.

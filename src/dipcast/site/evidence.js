@@ -66,6 +66,7 @@ function evidenceOverflows(d, generatedAt) {
   for (const f of n.feed_stale || []) not.push(f.records
     ? `${f.overflows} whose records on ${evidenceEsc(f.company)}'s feed ${f.since ? `have not updated since ${evidenceSince(f.since)}` : 'give no update time'}`
     : f.on_change && f.since ? `${f.overflows} on ${evidenceEsc(f.company)}'s feed, where no record has changed since ${evidenceSince(f.since)} (it changes a record only when an overflow's status does)`
+    : f.aged_here && f.since ? `${f.overflows} on ${evidenceEsc(f.company)}'s feed, whose readings on this page date from ${evidenceSince(f.since)}, over six hours ago`
     : `${f.overflows} on ${evidenceEsc(f.company)}'s feed, ${f.since ? `not updated since ${evidenceSince(f.since)}` : 'which gives no update time'}`);
   const live = mon >= total ? (total === 1 ? 'It reports live.' : `All ${total} report live.`)
     : `${mon || 'None'} of ${total} report live.${not.length ? ` Not reporting: ${not.join('; ')}.` : ''}`;

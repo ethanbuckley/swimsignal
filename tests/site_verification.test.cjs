@@ -177,6 +177,15 @@ test('11 Oct 2026: forecasts are not overflow-days, and the days are counted, wi
   assert.match(l, /19,457 candidate forecasts were not scored/);
 });
 
+test('5 Nov 2026: days not scored after the last scored day are said after the span, not inside it', async () => {
+  const sw = OCT11.scoring_window;
+  const late = {...OCT11, scoring_window: {...sw, days_not_scored: [...sw.days_not_scored,
+    {day: '2026-10-11', reason: 'max_gap', n_candidates: 5000}, {day: '2026-10-12', reason: 'min_known_polls', n_candidates: 5000},
+    {day: '2026-10-13', reason: 'min_known_polls', n_candidates: 5000}]}};
+  const a = text((await render({live: late})).answer.innerHTML);
+  assert.match(a, /between 29 Sept? 2026 and 10 Oct 2026, too few to judge across different weather\. 8 and 9 October are missing: too few runs to observe the overflows six times a day, as the scoring rule needs\. After 10 Oct 2026, 11 October is missing: the gaps between runs were longer than the scoring rule allows\. 12 and 13 October are missing: too few runs/);
+});
+
 test('11 Oct 2026: the climatology row has its own AUC, and the error is said against both baselines', async () => {
   const els = await render({live: OCT11});
   const a = text(els.answer.innerHTML), l = text(els.live.innerHTML), s = text(els.short.innerHTML);
