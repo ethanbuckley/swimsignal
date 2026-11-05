@@ -777,8 +777,15 @@
   },
   "621": {
    "n": 621,
-   "state": "open",
+   "state": "merged",
    "branch": "codex/shoreline-band-check",
+   "branch_exists": true,
+   "date": "2026-11-05"
+  },
+  "622": {
+   "n": 622,
+   "state": "open",
+   "branch": "claude/shore-band-second-sample",
    "branch_exists": true,
    "date": null
   }
@@ -2620,7 +2627,7 @@
    "verdict": "Exploratory, offline, on cached scene classification. In clear scenes the outermost ring of a site's water is classed as not water 7.3% of the time at the bathing lakes, the second ring 1.73% against 1.20% inside: under the pre-stated rule the one-pixel margin is kept. A two-pixel margin keeps every site and makes 10 to 12% more scenes usable; a three-pixel one drops 3 bathing lakes and 7 chlorophyll points.",
    "scope": "18 bathing-water lakes (14 past the size rule) and 40 chlorophyll points, every cached scene 2020-26; the satellite tests' own caches, unchanged. The original classification check could not measure the index shift because no band pixels were cached; the separate follow-up measured 50 selected site-scenes. Not an algae or safety finding.",
    "stage": "reference",
-   "stage_note": "Production keeps margin 1. A follow-up 50-scene band comparison found a median absolute shift of 0.0041 and seven shifts of at least 0.02; it does not establish accuracy. Inspect the outliers and review the margin in the 2027 protocol before 1 May 2027.",
+   "stage_note": "Production keeps margin 1. A follow-up 50-scene band comparison found a median absolute shift of 0.0041 and seven shifts of at least 0.02; a second, nearly separate 50-scene sample gave the same median absolute shift (0.0041), mostly downwards. Neither establishes accuracy. Inspect the outliers and review the margin in the 2027 protocol before 1 May 2027.",
    "records": [
     {
      "doc": "docs/SATELLITE-SHORE-MARGIN-2026-11.md",
@@ -2633,11 +2640,16 @@
     {
      "doc": "docs/SATELLITE-SHORE-BANDS-2026-11.md",
      "quote": "Seven of 50 pairs changed by at least 0.02 in absolute value."
+    },
+    {
+     "doc": "docs/SATELLITE-SHORE-BANDS-2026-11.md",
+     "quote": "| margin 2 minus margin 1 | 50 | -0.0034 | -0.0093 to -0.0006 | 0.0041 | 0.0205 | 0.0614 | 44 of 50 |"
     }
    ],
    "prs": [
     620,
-    621
+    621,
+    622
    ]
   }
  ]

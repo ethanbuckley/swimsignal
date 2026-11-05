@@ -19,7 +19,7 @@ the 9-pixel size rule, and possibly fewer usable scenes.
   25,148 at the chlorophyll points), the saved core masks, and each scene's median NDCI.
 - **Not cached: B4 and B5 pixels**, anywhere. So NDCI cannot be recomputed at another margin offline. This check
   measures what the margin does to the pixels and scenes, and how the shore pixels are *classified*; how much it moves
-  the index itself needs a bounded band fetch (proposed at the end, not done).
+  the index itself needs a bounded band fetch (done afterwards; see the end).
 
 ## Protocol (fixed before running)
 
@@ -86,10 +86,9 @@ takes off the ring that the classification shows most often as land (about 7 to 
   inner 3.8%: the whole site reads mixed, not just its shore) and NE-44100119 (ring 2 5.4% against 1.1% inside).
   Whether two of 38 is more than ordinary variation between sites was not tested; noted, not acted on.
 
-**Proposed next step, not done (needs a network budget).** A band sample: B4 and B5 for 50 scenes usable at both
-k = 1 and k = 2 (about 50 × 5 requests and 135 MB, from the test's measured 2.7 MB a clear scene), to measure how far
-the median NDCI moves between the two margins. It would still not say which is closer to lab chlorophyll; that needs
-the 2027 confirmation data.
+**Band samples (done 5 November 2026).** Two 50-scene band samples measured the NDCI shift: see the
+[band comparison](SATELLITE-SHORE-BANDS-2026-11.md) ([#621](https://github.com/ethanbuckley/swimsignal/pull/621)) and its
+second sample. Neither says which margin is closer to lab chlorophyll; that needs the 2027 confirmation data.
 
 ## Not claimed
 

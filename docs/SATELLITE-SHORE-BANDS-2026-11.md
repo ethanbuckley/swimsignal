@@ -48,3 +48,41 @@ Contains modified Copernicus Sentinel data 2020–2026.
 2027 protocol review, including the large outlier and the lost pixel counts. This check cannot show whether changing
 the margin improves the index, predicts chlorophyll, detects toxins or makes water safe. A follow-up should inspect
 outlying images and decide the independent validation design before examining additional outcome labels.
+
+## Second sample, 5 November 2026 (a parallel session, run before #621 was seen)
+
+A parallel session ran the same comparison on a different selection, and ran it before #621 was seen there. It is
+recorded here as a second sample, not a new study. Same caches, same rules, same reader.
+
+**Protocol** (committed locally before the fetch; like the first, not independently timestamped). Eligible: bathing-lake
+scenes with a cached reading, usable at margins 1 and 2. Selection: seed 20261105, sites in a seeded order, each site's
+scenes in a seeded order, one per site in turn until 50 (`python scripts/satellite_shore_margin.py bands`). The k = 1
+reading must equal the cached one within 1e-6 or scoring stops. Measures: medians at margins 0, 1 and 2; the shifts'
+median, spread and direction; their size against the spread the readings already have (median over sites of the SD of
+margin-1 readings, sites with 10 or more scenes: 0.105 NDCI). Words fixed in advance: *barely moves* if the median
+absolute shift is at most 0.1 of that spread and its 90th percentile at most 0.25; *moves materially* if the median is
+at least 0.25; *moves somewhat* between.
+
+**Result.** 222 requests and 131,527,723 bytes, every response a 206; caches' SHA-256 unchanged before and after. All 50
+margin-1 readings equal the cached ones exactly. Only 2 of the 50 scenes are also in the first sample; on those 2 the two
+runs give the same values (to 6 decimal places). Paired values: [`data/research/satellite_shore_bands_2026_11_second.json`](../data/research/satellite_shore_bands_2026_11_second.json).
+
+| Change | Scenes | Median | Interquartile range | Median absolute | 90th percentile absolute | Largest absolute | Below zero |
+|---|---|---|---|---|---|---|---|
+| margin 2 minus margin 1 | 50 | -0.0034 | -0.0093 to -0.0006 | 0.0041 | 0.0205 | 0.0614 | 44 of 50 |
+| margin 0 minus margin 1 | 41 | +0.0072 | +0.0035 to +0.0157 | 0.0076 | 0.0378 | 0.1379 | 4 of 41 |
+
+Margin 0 has 41 scenes because 9 fail the 80%-clear rule once the shore pixels are counted. By the words fixed in
+advance: margin 2 *barely moves* the readings (median absolute shift 0.04 of the spread, 90th percentile 0.20);
+margin 0 *moves them somewhat* (90th percentile 0.36).
+
+**Read with the first sample (exploratory).**
+- Two nearly separate samples give the same typical shift to margin 2: median -0.0033 and -0.0034, median absolute
+  0.0041 in both. The first sample's -0.2347 outlier at the Serpentine shows the tail can be large; this sample's largest
+  was -0.0614 (Derwent Water at Crow Park).
+- Both lean one way: margin 2 is lower in 38 of 50 and 44 of 50 scenes, and margin 0 is higher in 37 of 41. Pixels
+  nearer the shore read a higher NDCI than the water inside. *Inferred, not measured:* land or plants in mixed pixels add
+  more red-edge light (B5) than red (B4). Shore water that really differs (shallower, weed, sediment, algae) would show
+  the same; these bands cannot tell the two apart.
+- Neither sample is random over all images, and scenes at one site are not independent: these describe the samples.
+  Production keeps margin 1; the 2027 protocol review takes both samples and the outliers.
