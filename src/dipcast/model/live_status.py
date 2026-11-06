@@ -264,3 +264,22 @@ def shadow_forecast(sd: pd.DataFrame, ov: pd.DataFrame, days: pd.DatetimeIndex, 
     known = status["status_known"].to_numpy(dtype=bool)
     p = np.where(known[:, None] & np.isfinite(cand), cand, p_cal)
     return {"p": p, "known": known, "inputs": status[STATUS].to_numpy(dtype=float)}
+
+
+# The nine English companies the candidates were fitted on (EA start/stop files); training.NINE, kept here so this
+# module does not import the training code into every build.
+ENGLISH_NINE = ("Anglian Water", "Northumbrian Water", "Severn Trent Water", "South West Water", "Southern Water",
+                "Thames Water", "United Utilities", "Wessex Water", "Yorkshire Water")
+
+
+def adopted(p_cal: np.ndarray, shadow: dict | None, ov: pd.DataFrame) -> np.ndarray:
+    """The published forecast with the live-status switch on (config.LIVE_STATUS): the shadow's forecast (lead k's
+    candidate where the status is known, production elsewhere) for overflows of the nine English companies, and
+    `p_cal` unchanged for every other overflow (Wales, Scotland), every day outside leads 0 to 4, and wherever the
+    shadow could not be computed. The candidates were tested on the nine only (docs/LIVE-STATUS-BACKTEST-2026-11.md)."""
+    if shadow is None or ov.empty:
+        return p_cal
+    english = ov["company"].isin(ENGLISH_NINE).to_numpy() if "company" in ov else np.zeros(len(ov), bool)
+    p = np.where(english[:, None] & np.isfinite(shadow["p"]), shadow["p"], p_cal)
+    return np.where(np.isfinite(p_cal), p, p_cal)   # no rain stays unknown (NaN), never a candidate's figure
+

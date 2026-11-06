@@ -105,6 +105,11 @@ SCOTTISH_WATER = os.environ.get("DIPCAST_SCOTTISH_WATER", "") == "1"
 # Scotland's own calibration map, and the Scottish spots (spots-scotland.csv) are listed. Off unless
 # DIPCAST_SCOTLAND_TRIAL=1, and only with DIPCAST_SCOTTISH_WATER=1, which polls the live feed it reads.
 SCOTLAND_TRIAL = os.environ.get("DIPCAST_SCOTLAND_TRIAL", "") == "1"
+# The live-status spill model (model/live_status.py, docs/LIVE-STATUS-BACKTEST-2026-11.md): with this on, the published
+# spill chance at leads 0 to 4 is the live-status candidate wherever an English overflow's polled status is known,
+# and production's everywhere else. Off unless DIPCAST_LIVE_STATUS=1. Ethan decides whether to set it, after the
+# shadow read on or after 23 Nov 2026. Switching it on changes model_version, so live scores split at that date.
+LIVE_STATUS = os.environ.get("DIPCAST_LIVE_STATUS", "") == "1"
 
 # ---------------------------------------------------------------------------
 # Rainfall: Open-Meteo. Archive is ERA5-Land reanalysis at ~0.1 deg. No key: the free hosts below;
