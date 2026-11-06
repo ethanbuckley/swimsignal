@@ -187,7 +187,7 @@ def action_lines() -> dict:
 def test_the_clubs_page_uses_the_sites_own_words_and_says_its_limits_first(tmp_path):
     bs.write_pages(tmp_path, SPOTS[:1], root="https://example.org/", day="2026-10-06")
     page = (tmp_path / "clubs.html").read_text()
-    assert "<title>Clubs, centres and leaders · SwimSignal</title>" in page and 'href="/' not in page
+    assert "<title>For organisations · SwimSignal</title>" in page and 'href="/' not in page
     words = text(page)
     for k, line in action_lines().items():
         assert line in words, k
@@ -215,10 +215,11 @@ def test_the_clubs_page_uses_the_sites_own_words_and_says_its_limits_first(tmp_p
     assert not re.search(r"\b(low|moderate|high|very high)\b(?! risk| and| or|,)", words.split("What the levels mean")[1].split("There are four levels")[0])
     sents = [s for s in re.split(r"(?<=[.?!])\s+", words) if len(s.split()) > 2]
     assert sum(len(s.split()) < 20 for s in sents) / len(sents) > 0.75
-    # Linked from About and from the home page's foot, beside the organisers' page.
-    assert 'href="clubs.html">For clubs, centres and leaders</a>' in (tmp_path / "about.html").read_text()
-    assert ('<a href="organisers.html">For event organisers</a> · <a href="clubs.html">For clubs, centres and leaders</a>'
-            in (tmp_path / "index.html").read_text())
+    # The one entry for organisations: linked from About, the home page's foot and the header; it links the organisers' page.
+    assert 'href="clubs.html">For organisations</a>' in (tmp_path / "about.html").read_text()
+    home = (tmp_path / "index.html").read_text()
+    assert '<a href="clubs.html">For organisations</a>' in home and '<a href="organisers.html">For event organisers</a>' not in home
+    assert 'href="organisers.html"' in page
 
 
 def test_a_share_is_said_as_the_nearest_simple_fraction():

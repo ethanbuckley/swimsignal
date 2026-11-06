@@ -4,8 +4,9 @@ SwimSignal forecasts the risk of sewage pollution at river and lake swim spots
 in England, for today and the next four days. It is free, with no adverts and
 no accounts.
 
-- Site: https://swimsignal.co.uk/. It covers 105 named spots, and you can click
-  any other point on a river.
+- Site: https://swimsignal.co.uk/. It covers 111 named spots in England, 12 more
+  in Scotland while that trial runs, and you can click any other point on a river
+  or lake. (`tests/test_readme_counts.py` checks these counts against the spot files.)
 - Code: this repository, under the MIT licence. The code and the Python package
   keep the working name `dipcast`.
 
@@ -100,7 +101,7 @@ The other tools were checked on their own pages on 3 Oct 2026.
 | EA Catchment Data Explorer | Reasons for not achieving good status per water body, and the water bodies' river lines and catchments: the water body each spot is in, and where agriculture and rural land management is a confirmed or probable reason, a line on its page (`data/raw/rnags.json`, `scripts/make_rnags.py`, off CI) | OGL v3 |
 | Water companies' own pages on overflow upgrades | One row per overflow a company says it has upgraded or is upgrading, with the page, a short quote and the day it was read (`data/raw/overflow_upgrades.csv`; six Yorkshire Water overflows above Ilkley). A note beside the overflow on a spot's page; the forecast never reads it (`docs/UPGRADED-OVERFLOWS-2026-10.md`, option C) | Short quotations, each linked to its source; nothing republished |
 | EA Water Quality Archive (Water Quality Explorer) | E. coli results and the sampler's visual algae check at the 38 inland bathing waters | OGL v3 |
-| OpenStreetMap (Overpass API) | 16 river and lake swim spots chosen one by one from 115 candidates (`spots-osm.csv`) | ODbL 1.0, © OpenStreetMap contributors |
+| OpenStreetMap (Overpass API) | 18 river and lake swim spots chosen one by one from 115 candidates (`spots-osm.csv`) | ODbL 1.0, © OpenStreetMap contributors |
 
 The notices each provider asks for are on the site's terms page ("Data sources
 and credits"), and `data/spots.json`, `data/overflows.geojson` and

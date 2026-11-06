@@ -36,7 +36,7 @@ def test_nothing_reaches_into_the_repository(site):
 
 # What a Lab page may link outside lab/: the site's own pages and files, which the rest of the build writes.
 SITE_FILES = {"", "index.html", "page.css", "icons/icon.svg", "icons/apple-touch-icon.png", "plan/", "saved/", "verification.html",
-              "about.html", "research.html", "feedback.html", "terms.html", "privacy.html", "sampling-planner.html"}
+              "about.html", "clubs.html", "research.html", "feedback.html", "terms.html", "privacy.html", "sampling-planner.html"}
 
 
 def test_every_read_resolves(site):
@@ -62,14 +62,13 @@ def test_every_read_resolves(site):
 
 
 def test_the_sites_shell(site):
-    # The site's stylesheet, header and phone bar on every page, Research Lab marked as the page you are on; the
-    # stand-in header a repository preview shows is gone.
+    # The site's stylesheet, header and phone bar on every page (the header no longer lists the Lab, 6 Nov 2026: the
+    # labnav marks the page you are on); the stand-in header a repository preview shows is gone.
     for f in _files(site, ".html"):
         s, up = f.read_text(), "../" * (len(f.relative_to(site).parts) - 1)
         assert f'<link rel="stylesheet" href="{up}page.css">' in s, f
         assert build_site.site_header(up, "lab/") in s and s.count('<header class="top">') == 1, f
-        assert f'aria-current="page" href="{up}lab/"' in s and s.count('<nav class="phone-nav" aria-label="Main">') == 1, f
-        assert f'<a href="{up}lab/">Research Lab</a>' in s, f   # the phone's More
+        assert s.count('<nav class="phone-nav" aria-label="Main">') == 1 and f'<a href="{up}clubs.html">For organisations</a>' in s, f   # the phone's More
         nav = re.search(r'<nav class="labnav".*?</nav>', s, re.S).group(0)
         assert nav.count('aria-current="page"') == 1 and nav.count("<a ") == 6, f
 
