@@ -837,6 +837,13 @@
    "branch": "claude/lake-usual-line",
    "branch_exists": true,
    "date": null
+  },
+  "638": {
+   "n": 638,
+   "state": "open",
+   "branch": "claude/backtest-release-candidate-ef93ca",
+   "branch_exists": true,
+   "date": "2026-11-06"
   }
  },
  "entries": [
@@ -2383,7 +2390,7 @@
    "scope": "Rivers May to September for the test. The year-round estimate everywhere else is labelled provisional.",
    "stage": "live",
    "stage_note": "River estimate shipped in #418. From 31 October 2026 a labelled provisional estimate runs all year at the named spots, clicked points and directory waters, each worded by what was measured.",
-   "next": "The winter error readout, and the sea curve's error outside England.",
+   "next": "The sea curve's error outside England. Winter was judged on past winters in #638 (entry water-temp-winter).",
    "records": [
     {
      "doc": "docs/WATER-TEMPERATURE-MODEL-TEST-2026-10.md",
@@ -2409,6 +2416,38 @@
     548
    ],
    "register_note": "The register says about 93 Open-Meteo calls a day; the baseline record says about 91."
+  },
+  {
+   "id": "water-temp-winter",
+   "title": "Water temperature, October to April: a frozen-model backtest on past winters",
+   "section": "adopted",
+   "topics": [
+    "temperature",
+    "rivers",
+    "lakes"
+   ],
+   "verdict": "The live October-April route (the summer curves in the 7-day air) read too warm in winters 2023-25: rivers RMSE 2.27 °C (interval 2.05 to 2.49), bias +1.54; lakes 3.64 °C (3.17 to 4.08), bias +3.08; inconclusive for rivers and a fail for lakes by the stated rule. A winter curve (W2), fitted on those winters and frozen before any older winter was fetched, passed on winters it had never seen: rivers 1.63 °C (1.43 to 1.85) on 2022-23, 0.80 better than the old route (0.39 to 1.14); lakes 1.76 °C (1.49 to 2.04) on 634 samples from 2020-23, 1.83 better (1.16 to 2.53), after the first 266 lake rows fell short of the 300-row gate (amendment 1, written before its requests). Lakes read about 2 °C cold in April.",
+   "scope": "EA spot samples (determinand 0076) at 149 cells in the primary test, two-way intervals by water group and month; air from Open-Meteo's Historical Forecast API through the model's bridge. A daily estimate against single samples at monitoring points, not swim spots; says nothing about safety or cold-water risk.",
+   "stage": "development",
+   "stage_note": "Built in #638: the winter curves at every river and lake spot, map click and directory water from October to April, worded 'typically within 2 °C in a test on past winters'. Not live until Ethan merges and a site build deploys. May-September routes, the sea curve and pollution levels unchanged.",
+   "next": "After 30 April 2027: the same script on winter 2026-27 at the same cells (monitoring; rollback if a type is more than 0.5 °C worse than its figure here).",
+   "records": [
+    {
+     "doc": "docs/WATER-TEMP-WINTER-BACKTEST-2026-11.md",
+     "quote": "| Lakes | 1,139 | 137 | **3.64 °C** [3.17, 4.08] | **+3.08 °C** [+2.34, +3.71] | 23% | **fail**, material bias |"
+    },
+    {
+     "doc": "docs/WATER-TEMP-WINTER-BACKTEST-2026-11.md",
+     "quote": "| Rivers | 2,468 | 325 | 2.43 °C [1.89, 2.92], bias +1.70 | **1.63 °C [1.43, 1.85]**, bias +0.07 [−0.35, +0.49] | **−0.80 °C [−1.14, −0.39]** | W2 passes; gain beyond 0.3, interval below zero: **adopt** |"
+    },
+    {
+     "doc": "docs/WATER-TEMP-WINTER-BACKTEST-2026-11.md",
+     "quote": "| W2 − frozen | **−1.83 °C [−2.53, −1.16]** | | | gain beyond 0.3, interval below zero: **adopt** |"
+    }
+   ],
+   "prs": [
+    638
+   ]
   },
   {
    "id": "advisories-anomalies",

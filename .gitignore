@@ -31,6 +31,8 @@ data/processed/*
 # Each lake bathing water's typical inputs for the "higher or lower than usual" line (lake_range.py)
 !data/processed/lake_range_usual.v1.json
 !data/processed/water_temp_model.json
+# The winter curves adopted by docs/WATER-TEMP-WINTER-BACKTEST-2026-11.md (model/water_temp.py, October to April)
+!data/processed/water_temp_winter.json
 !data/processed/verification_2025.csv
 !data/processed/reliability_2025.csv
 !data/processed/verification_leads_2025.csv
