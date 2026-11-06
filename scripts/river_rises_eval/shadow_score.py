@@ -208,6 +208,18 @@ def build_rows(rd, rk, measures: dict, frozen: dict, rains: dict, labels: dict, 
     return pd.concat(out, ignore_index=True) if out else pd.DataFrame()
 
 
+def etag_check(rk: pd.DataFrame, archive: pd.DataFrame) -> dict:
+    """The composites the records listed, against a listing of the archive made at read time (columns key, etag):
+    every listed key must still be there with the same ETag, or the radar values read later are not the files that
+    existed at issue time."""
+    logged = rk.drop_duplicates("key")[["key", "etag"]]
+    m = logged.merge(archive[["key", "etag"]], on="key", how="left", suffixes=("", "_now"))
+    gone = m["etag_now"].isna()
+    changed = ~gone & (m["etag"].astype(str).str.strip('"') != m["etag_now"].astype(str).str.strip('"'))
+    return {"listed": int(len(m)), "gone": m.loc[gone, "key"].tolist(), "changed": m.loc[changed, "key"].tolist(),
+            "ok": bool(not gone.any() and not changed.any())}
+
+
 def judge(ev: dict) -> dict:
     """The stated comparisons: C3 against R1 and against R3, river-system interval, B and H, the near-miss labels."""
     out = {}
@@ -227,6 +239,7 @@ def main(argv: list[str] | None = None) -> None:
     ap.add_argument("--frozen", type=Path)
     ap.add_argument("--labels", type=Path, help="Hydrology 15-minute series, <measure>.parquet (fetch.py's format)")
     ap.add_argument("--radar", type=Path, help="saved radar months")
+    ap.add_argument("--archive-listing", type=Path, help="score: CSV (key, etag) of the bucket listed at read time")
     args = ap.parse_args(argv)
     rd, rk, hours = load_records(args.records)
     args.out.mkdir(parents=True, exist_ok=True)
@@ -238,6 +251,11 @@ def main(argv: list[str] | None = None) -> None:
     if datetime.now(UTC) < READ_ON:
         raise SystemExit(f"the shadow is read on or after {READ_ON:%d %B %Y}; before that only `uptime` runs")
     from river_rises_eval import score as sc
+    if not args.archive_listing or not args.archive_listing.exists():
+        raise SystemExit("the read needs --archive-listing, to check the logged radar ETags against the archive")
+    tags = etag_check(rk, pd.read_csv(args.archive_listing, dtype=str))
+    if not tags["ok"]:
+        raise SystemExit(f"radar files changed or gone since issue time: {len(tags['changed'])} changed, {len(tags['gone'])} gone")
     frozen = json.loads(args.frozen.read_text())
     measures = json.loads(args.measures.read_text())
     issues = pd.date_range(WINDOW[0], WINDOW[1] - pd.Timedelta(hours=frozen["horizon_h"] - 1), freq="1h", inclusive="left")

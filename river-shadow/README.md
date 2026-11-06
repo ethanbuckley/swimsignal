@@ -1,5 +1,9 @@
 # River-rises shadow logger
 
+**Status, 6 November 2026: built and tested, not deployed.** A new Worker's availability, permissions and cost are
+unresolved (creating its namespace was refused by the session's permission layer), and the research workflow says not
+to require one until they are. Deploying it is Ethan's decision: `docs/RIVER-RISES-C3-2026-11.md`, "Amendment".
+
 A Cloudflare Worker that records, once an hour, the river levels and the radar file list that a research
 candidate would have had at that hour. The candidate and its scoring are in
 [docs/RIVER-RISES-C3-2026-11.md](../docs/RIVER-RISES-C3-2026-11.md), section "The shadow log". The site's builds run

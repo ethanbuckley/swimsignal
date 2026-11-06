@@ -94,6 +94,13 @@ def test_uptime_counts_records_and_the_longest_gap():
     assert u["records"] == 5 and u["ea_ok"] == 3 and u["longest_gap_h"] == 2
 
 
+def test_etag_check_refuses_changed_or_missing_files():
+    rk = pd.DataFrame({"issue": [0, 1, 2], "valid": [0, 0, 0], "key": ["a", "a", "b"], "etag": ['"x"', '"x"', '"y"']})
+    assert ss.etag_check(rk, pd.DataFrame({"key": ["a", "b"], "etag": ["x", "y"]}))["ok"]
+    bad = ss.etag_check(rk, pd.DataFrame({"key": ["a"], "etag": ["z"]}))
+    assert not bad["ok"] and bad["changed"] == ["a"] and bad["gone"] == ["b"]
+
+
 def test_no_score_before_the_read_date(tmp_path):
     _write(tmp_path, [])
     if pd.Timestamp.now(tz="UTC") < ss.READ_ON:
