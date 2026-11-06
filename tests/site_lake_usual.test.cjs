@@ -20,7 +20,7 @@ class FixedDate extends Date { constructor(...a) { if (!a.length) super(NOW); el
 // As tests/site_honest_headlines.test.cjs runs the tiles (facts).
 const PAGE = ['esc', 'glyph', 'ICON', 'tone', 'scaleBar', 'untested', 'explain', 'factorRow', 'ecoliName', 'ecoliFold', 'ecoliCheck', 'ecoliSaid', 'ecoliMore', 'lakeRanged', 'rangeOf', 'ecoliReading', 'likely', 'rangeLine', 'monthPart', 'usualLine', 'RANGE_BASIS', 'rangeBasis', 'RANGE_MORE', 'RANGE_OFF_SAID', 'rangeFold', 'typicalLine', 'TYPICAL_SAID', 'TYPICAL_MORE',
   'noFeedSaid', 'nowTile', 'feedDown', 'feedStale', 'liveSay', 'recentSay', 'overflowDots', 'runningAtLastAnswer', 'statusText', 'feedTime', 'fmt', 'riverTile', 'rangeBar',
-  'WT_ROUTES', 'waterEstOk', 'waterEstHow', 'waterEstSay', 'WT_AIR', 'WT_TAIL', 'waterEstMore', 'waterTile', 'weatherOn', 'spilling', 'bandWords', 'initial', 'rainCols', 'sunPath', 'facts', 'UNLISTED_ECOLI', 'water'];
+  'WT_ROUTES', 'waterEstOk', 'waterEstHow', 'waterEstSay', 'WT_AIR', 'WT_TAIL', 'waterEstMore', 'waterTile', 'weatherOn', 'spilling', 'bandWords', 'initial', 'rainCols', 'sunPath', 'facts', 'UNLISTED_ECOLI', 'water', 'polledMs', 'pollAt', 'pollSay'];
 function page(dates = DATES) {
   const ctx = vm.createContext({ Date: FixedDate, ROOT: { pathname: '/' }, DATA: { generated_at: `${dates[0]}T08:00:00+01:00`, ecoli_check: null },
     milesAway: m => `${m.toFixed(1)} miles away`, MILE_KM: 1.609 });
