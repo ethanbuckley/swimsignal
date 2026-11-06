@@ -311,6 +311,8 @@ So a second cron, every 30 minutes (`*/30 * * * *` in `wrangler.toml`), asks Git
 
 GitHub's own schedule stays in `site.yml` as the fallback. The workflow's `concurrency: site` runs one build at a time; a request that arrives while one runs waits, and a newer request replaces a waiting one, so builds never pile up. At :00 and :30 both of this Worker's crons fire, as two separate runs, each with its own limits.
 
+There is a second way that needs no token: the job `next-build` in `site.yml`, switched on by the repository variable `SELF_PACE` set to `1` (off by default). Each build asks for the next one 30 minutes after it started, with the workflow's own token. Turn on one of the two, not both: a run this Worker asks for counts as a manual run, and each manual run republishes the `state` release.
+
 ### The token
 
 A fine-grained personal access token, with:
