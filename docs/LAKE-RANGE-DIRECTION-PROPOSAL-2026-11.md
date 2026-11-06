@@ -132,7 +132,7 @@ usual file.
 
 **Evidence route.** A frozen-model backtest: lake-range-v1 was frozen on 2023-26 before #584 joined 2012-22, and on
 those 962 samples its median ordered each lake's own samples better than production's lake chance (within-site rho
-0.287 against 0.123, [LAKE-LINE-2012-22-CHECK-2026-11.md](LAKE-LINE-2012-22-CHECK-2026-11.md)), and again on 2024-26
+0.286 against 0.132 after the 6 November input correction, difference +0.155 [+0.094, +0.216]; first reported as 0.287 against 0.123; [LAKE-LINE-2012-22-CHECK-2026-11.md](LAKE-LINE-2012-22-CHECK-2026-11.md), #632), and again on 2024-26
 held out by lake and forward ([LAKE-LINE-CANDIDATES-2026-11.md](LAKE-LINE-CANDIDATES-2026-11.md)). That is ordering
 evidence for the estimate; the words themselves (higher / lower than usual) are not yet tested against samples. The
 2027 read above continues as monitoring: if either check fails on or after 15 October 2027, the line comes off for 2028
