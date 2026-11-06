@@ -5,6 +5,7 @@ and their signal examined in #626; the fresh check is pairs made after contract 
     python scripts/satellite_chl_candidates.py prepare --out DIR   # offline: scenes within 3 days of a lab sample, order
     python scripts/satellite_chl_candidates.py read --out DIR      # one capped fetch of B4 and B5 for those scenes
     python scripts/satellite_chl_candidates.py resume --out DIR    # once, after a dropped connection (section 3)
+    python scripts/satellite_chl_candidates.py continue --out DIR  # once, after an operator or wall-time stop (amendment 2)
     python scripts/satellite_chl_candidates.py report --out DIR    # offline: readings, candidates, holdouts, words
     python scripts/satellite_chl_candidates.py freeze --out DIR    # offline: the shadow model, only if one is supported
 
@@ -139,50 +140,74 @@ def failed(ledger: Path) -> set[str]:
     return ids
 
 
-def read(out: Path, resume: bool = False) -> None:
-    """The fetch. `resume`, allowed once and only after a run ended on a dropped connection (no HTTP status): the scenes
-    not yet read, the failed one left out, on the same ledger so the caps hold over both runs."""
+MAX_MINUTES = 60   # amendment 2: wall time for a run; reads already in flight finish, nothing new starts
+
+
+class Deadline(RuntimeError):
+    pass
+
+
+def read(out: Path, mode: str = "read") -> None:
+    """The fetch, 16 range reads at a time (amendment 2; #377's A1 for the two COG buckets), paired scenes submitted
+    first. `resume`, once, only after a run ended on a dropped connection (no HTTP status): the failed scene left out.
+    `continue`, once, only after a run stopped by its operator or the wall-time limit (amendment 2). Both read the
+    scenes not yet read, on the same ledger, so the caps hold over every run."""
     import stac
     from net import Capped
+    from stage1 import pmap
     selection = json.loads((out / "selection.json").read_text())
     before = digest(input_files())
     if before != selection["fingerprint_sha256"]:
         raise ValueError("Inputs changed since selection")
     ledger = out / "network.jsonl"
-    if ledger.exists() != resume:
-        raise ValueError("A network run already exists" if ledger.exists() else "Nothing to resume")
-    if resume:
-        if (out / "run-resume.json").exists():
-            raise ValueError("One resume only")
-        if not failed(ledger):
-            raise ValueError("The first run did not end on a dropped connection; no resume")
+    record = {"read": "run.json", "resume": "run-resume.json", "continue": "run-continue.json"}[mode]
+    if ledger.exists() != (mode != "read"):
+        raise ValueError("A network run already exists" if ledger.exists() else "Nothing to resume or continue")
+    if (out / record).exists():
+        raise ValueError(f"One {mode} only")
+    if mode == "resume" and not failed(ledger):
+        raise ValueError("The last run did not end on a dropped connection; no resume")
+    if mode == "continue" and failed(ledger):
+        raise ValueError("A run ended on a dropped connection: that is a resume, not a continuation")
     (out / "bands").mkdir(exist_ok=True)
-    skip = failed(ledger) if resume else set()
+    skip = failed(ledger) if mode != "read" else set()
     scenes = [s for s in selection["scenes"] if s["item_id"] not in skip
               and not (out / "bands" / f"{s['point']}__{s['item_id']}.npz").exists()]
     net = Capped(ledger=ledger, max_requests=MAX_REQUESTS, max_requests_total=MAX_REQUESTS,
                  max_bytes=MAX_BYTES, max_bytes_total=MAX_BYTES)
     items: dict[str, dict] = {}
-    done = []
+    for s in scenes:
+        if s["point"] not in items:
+            items[s["point"]] = {it["id"]: it for it in json.loads((CHL / "items" / f"{s['point']}.json").read_text())}
+        for asset in ("red", "rededge1"):
+            b = items[s["point"]][s["item_id"]]["assets"][asset]["raster:bands"][0]
+            if "scale" not in b or "offset" not in b:
+                raise ValueError(f"Missing scale or offset: {s['item_id']} {asset}")
+    import time
+    deadline = time.monotonic() + MAX_MINUTES * 60
+    done, stop = [], None
+
+    def one(s):
+        if time.monotonic() > deadline:
+            raise Deadline(f"wall time {MAX_MINUTES} minutes")
+        b4, b5 = stac.site_bands(net, items[s["point"]][s["item_id"]], s["lon"], s["lat"])
+        np.savez_compressed(out / "bands" / f"{s['point']}__{s['item_id']}.npz", b4=b4, b5=b5)
+        return s["item_id"]
+
     try:
-        for s in scenes:
-            if s["point"] not in items:
-                items[s["point"]] = {it["id"]: it for it in json.loads((CHL / "items" / f"{s['point']}.json").read_text())}
-            it = items[s["point"]][s["item_id"]]
-            for asset in ("red", "rededge1"):
-                b = it["assets"][asset]["raster:bands"][0]
-                if "scale" not in b or "offset" not in b:
-                    raise ValueError(f"Missing scale or offset: {s['item_id']} {asset}")
-            b4, b5 = stac.site_bands(net, it, s["lon"], s["lat"])
-            np.savez_compressed(out / "bands" / f"{s['point']}__{s['item_id']}.npz", b4=b4, b5=b5)
-            done.append(s["item_id"])
+        for item_id in pmap(one, scenes):
+            done.append(item_id)
             if len(done) % 25 == 0 or len(done) == len(scenes):
                 print(f"{len(done)}/{len(scenes)} {net.requests} req {net.bytes / 1024**2:.1f} MiB", flush=True)
+    except Deadline as e:
+        stop = str(e)
     finally:
         after = digest(input_files())
-        (out / ("run-resume.json" if resume else "run.json")).write_text(json.dumps(
-            {"network": net.summary(), "before": before, "after": after, "completed": len(done),
-             "scenes_in_run": len(scenes), "skipped_failed": sorted(skip)}, indent=1) + "\n")
+        read_now = sum((out / "bands" / f"{s['point']}__{s['item_id']}.npz").exists() for s in scenes)
+        (out / record).write_text(json.dumps(
+            {"network": net.summary(), "before": before, "after": after, "completed": read_now,
+             "scenes_in_run": len(scenes), "skipped_failed": sorted(skip), "stop": stop, "workers": 16,
+             "max_minutes": MAX_MINUTES}, indent=1) + "\n")
         if after != before:
             raise ValueError("Inputs changed during network run")
 
@@ -533,7 +558,8 @@ def sample_rows(pop: pd.DataFrame, scenes: pd.DataFrame) -> pd.DataFrame:
 
 def report(out: Path) -> None:
     selection = json.loads((out / "selection.json").read_text())
-    runs = [json.loads((out / f).read_text()) for f in ("run.json", "run-resume.json") if (out / f).exists()]
+    runs = [json.loads((out / f).read_text()) for f in ("run.json", "run-continue.json", "run-resume.json")
+            if (out / f).exists()]
     now = digest(input_files())
     scenes = scene_table(out, selection)
     pop = population()
@@ -562,7 +588,8 @@ def report(out: Path) -> None:
         "fingerprint_unchanged": all(v == selection["fingerprint_sha256"] for r in runs for v in (r["before"], r["after"]))
                                  and now == selection["fingerprint_sha256"],
         "runs": runs, "caps": selection["caps"],
-        "network": {"requests": runs[-1]["network"]["requests_all_runs"], "bytes": runs[-1]["network"]["bytes_all_runs"]},
+        "network": {"requests": max(r["network"]["requests_all_runs"] for r in runs),
+                    "bytes": max(r["network"]["bytes_all_runs"] for r in runs)},
         "scenes": {"selected": len(scenes), "read": int(scenes["read"].sum()),
                    "matched_cache": int(read_scenes["cached"].notna().sum()),
                    "low_signal": int(read_scenes["low_signal"].fillna(False).astype(bool).sum())},
@@ -633,10 +660,11 @@ def _json_default(o):
 
 def main() -> None:
     a = argparse.ArgumentParser()
-    a.add_argument("step", choices=("prepare", "read", "resume", "report", "freeze"))
+    a.add_argument("step", choices=("prepare", "read", "resume", "continue", "report", "freeze"))
     a.add_argument("--out", type=Path, required=True)
     o = a.parse_args()
-    {"prepare": lambda: prepare(o.out), "read": lambda: read(o.out), "resume": lambda: read(o.out, resume=True),
+    {"prepare": lambda: prepare(o.out), "read": lambda: read(o.out), "resume": lambda: read(o.out, "resume"),
+     "continue": lambda: read(o.out, "continue"),
      "report": lambda: report(o.out), "freeze": lambda: freeze(o.out)}[o.step]()
 
 

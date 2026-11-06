@@ -177,6 +177,29 @@ lab samples will be few.
   (gain's lower end above −0.05), the composite rule is written into the record as a **coverage improvement** for the
   2027 pairing protocol, whether or not E is supported.
 
+### Amendment 2 (6 November 2026, 12:05 UTC, after the first run was stopped, before any score)
+
+The first run (from 11:52:57 UTC) read serially, one range request at a time, and each B4 read took about 30 seconds:
+5 of 864 scenes in six minutes, 24 requests, 16,131,802 bytes, a measured rate of about 43 KB/s. At that pace the run
+would have held the shared heavy-run lock for about 14 hours. The protocol gave caps but no wall-time estimate, against
+Ethan's standing rule (26 October) to size requests × latency first. I stopped it at 11:59 UTC with an interrupt to
+its own process; it recorded its run file (fingerprint unchanged) and released the lock. #626's runs were serial too
+and read 155 scenes in four minutes, so the slowness is the connection today, not the code.
+
+Changes, before any score:
+- **Reads go 16 at a time** through the stage-1 thread pool (`stage1.pmap`), as #377's amendment A1 allows for the two
+  public COG buckets; the capped client counts every request under one lock. Paired scenes are still submitted first.
+- **A wall-time limit of 60 minutes per run.** Reads in flight finish; nothing new starts; the run is recorded with
+  its stop.
+- **One continuation** (`continue`) over the scenes not yet read, on the same ledger, so the 4,500-request and 2.5 GiB
+  caps hold over every run. The dropped-connection resume of section 3 still applies once, after the continuation.
+- **Wall time, estimated:** about 2.0 GiB remain. If the 43 KB/s holds per stream, 16 streams take about 50 minutes;
+  if it is the connection's total, the 60-minute limit stops the run after roughly 150 MiB, about 60 scenes.
+- **If the limit stops it short:** no second continuation. The analysis runs on what was read, labelled partial. The
+  paired population is complete only if all 207 paired scenes were read; the all-sample population and candidate E
+  then rest on fewer nearby scenes than selected, and say so. If fewer than all 207 paired scenes are read, the
+  paired results are reported on the paired samples read, and the shortfall is a blocker stated in the record.
+
 ## 4. Results
 
 To be written after the run.
