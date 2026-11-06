@@ -1,0 +1,120 @@
+at	status	bytes	url	params
+2026-11-05T23:44:16+00:00	200	1327	https://environment.data.gov.uk/flood-monitoring/id/stations/L1970/stageScale	{"_view": "full"}
+2026-11-05T23:44:19+00:00	200	1556	https://environment.data.gov.uk/flood-monitoring/id/stations/F2106/stageScale	{"_view": "full"}
+2026-11-05T23:44:21+00:00	200	1552	https://environment.data.gov.uk/flood-monitoring/id/stations/L2005/stageScale	{"_view": "full"}
+2026-11-05T23:44:25+00:00	200	1556	https://environment.data.gov.uk/flood-monitoring/id/stations/L2043/stageScale	{"_view": "full"}
+2026-11-05T23:44:27+00:00	200	1553	https://environment.data.gov.uk/flood-monitoring/id/stations/L2351/stageScale	{"_view": "full"}
+2026-11-05T23:44:30+00:00	200	1560	https://environment.data.gov.uk/flood-monitoring/id/stations/1993TH/stageScale	{"_view": "full"}
+2026-11-05T23:44:33+00:00	200	1555	https://environment.data.gov.uk/flood-monitoring/id/stations/3104TH/stageScale	{"_view": "full"}
+2026-11-05T23:44:37+00:00	200	1558	https://environment.data.gov.uk/flood-monitoring/id/stations/3090TH/stageScale	{"_view": "full"}
+2026-11-05T23:44:40+00:00	200	1326	https://environment.data.gov.uk/flood-monitoring/id/stations/1090TH/stageScale	{"_view": "full"}
+2026-11-05T23:44:42+00:00	200	1560	https://environment.data.gov.uk/flood-monitoring/id/stations/1465TH/stageScale	{"_view": "full"}
+2026-11-05T23:44:46+00:00	200	1556	https://environment.data.gov.uk/flood-monitoring/id/stations/43160/stageScale	{"_view": "full"}
+2026-11-05T23:44:48+00:00	200	1552	https://environment.data.gov.uk/flood-monitoring/id/stations/43111/stageScale	{"_view": "full"}
+2026-11-05T23:44:50+00:00	200	1554	https://environment.data.gov.uk/flood-monitoring/id/stations/52109/stageScale	{"_view": "full"}
+2026-11-05T23:44:52+00:00	200	1550	https://environment.data.gov.uk/flood-monitoring/id/stations/52110/stageScale	{"_view": "full"}
+2026-11-05T23:44:56+00:00	200	1558	https://environment.data.gov.uk/flood-monitoring/id/stations/531116/stageScale	{"_view": "full"}
+2026-11-05T23:44:57+00:00	200	1553	https://environment.data.gov.uk/flood-monitoring/id/stations/53119/stageScale	{"_view": "full"}
+2026-11-05T23:44:59+00:00	200	1314	https://environment.data.gov.uk/flood-monitoring/id/stations/2537/stageScale	{"_view": "full"}
+2026-11-05T23:45:02+00:00	200	1543	https://environment.data.gov.uk/flood-monitoring/id/stations/2054/stageScale	{"_view": "full"}
+2026-11-05T23:45:10+00:00	200	1547	https://environment.data.gov.uk/flood-monitoring/id/stations/2012/stageScale	{"_view": "full"}
+2026-11-05T23:45:17+00:00	200	1545	https://environment.data.gov.uk/flood-monitoring/id/stations/2005/stageScale	{"_view": "full"}
+2026-11-05T23:45:22+00:00	200	1549	https://environment.data.gov.uk/flood-monitoring/id/stations/2020/stageScale	{"_view": "full"}
+2026-11-05T23:45:29+00:00	200	1561	https://environment.data.gov.uk/flood-monitoring/id/stations/710102/stageScale	{"_view": "full"}
+2026-11-05T23:45:30+00:00	200	1323	https://environment.data.gov.uk/flood-monitoring/id/stations/710401/stageScale	{"_view": "full"}
+2026-11-05T23:45:34+00:00	200	1564	https://environment.data.gov.uk/flood-monitoring/id/stations/722242/stageScale	{"_view": "full"}
+2026-11-05T23:45:42+00:00	200	1561	https://environment.data.gov.uk/flood-monitoring/id/stations/724528/stageScale	{"_view": "full"}
+2026-11-05T23:45:44+00:00	200	1556	https://environment.data.gov.uk/flood-monitoring/id/stations/L1907/stageScale	{"_view": "full"}
+2026-11-05T23:45:46+00:00	200	1553	https://environment.data.gov.uk/flood-monitoring/id/stations/F2290/stageScale	{"_view": "full"}
+2026-11-05T23:45:48+00:00	200	1561	https://environment.data.gov.uk/flood-monitoring/id/stations/761659/stageScale	{"_view": "full"}
+2026-11-05T23:45:53+00:00	200	1562	https://environment.data.gov.uk/flood-monitoring/id/stations/760115/stageScale	{"_view": "full"}
+2026-11-05T23:45:56+00:00	200	1558	https://environment.data.gov.uk/flood-monitoring/id/stations/F3581/stageScale	{"_view": "full"}
+2026-11-05T23:45:58+00:00	200	1562	https://environment.data.gov.uk/flood-monitoring/id/stations/022014/stageScale	{"_view": "full"}
+2026-11-05T23:46:04+00:00	200	1561	https://environment.data.gov.uk/flood-monitoring/id/stations/022003/stageScale	{"_view": "full"}
+2026-11-05T23:46:11+00:00	200	1614	https://environment.data.gov.uk/flood-monitoring/id/stations/055811_TG_9303/stageScale	{"_view": "full"}
+2026-11-05T23:46:14+00:00	200	1607	https://environment.data.gov.uk/flood-monitoring/id/stations/055817_TG_323/stageScale	{"_view": "full"}
+2026-11-05T23:46:17+00:00	200	1613	https://environment.data.gov.uk/flood-monitoring/id/stations/055027_TG_328/stageScale	{"_view": "full"}
+2026-11-05T23:46:19+00:00	200	1555	https://environment.data.gov.uk/flood-monitoring/id/stations/53155/stageScale	{"_view": "full"}
+2026-11-05T23:46:22+00:00	200	1327	https://environment.data.gov.uk/flood-monitoring/id/stations/E71283/stageScale	{"_view": "full"}
+2026-11-05T23:46:28+00:00	200	1561	https://environment.data.gov.uk/flood-monitoring/id/stations/E22539/stageScale	{"_view": "full"}
+2026-11-05T23:46:30+00:00	200	1564	https://environment.data.gov.uk/flood-monitoring/id/stations/E22548/stageScale	{"_view": "full"}
+2026-11-05T23:46:32+00:00	200	1565	https://environment.data.gov.uk/flood-monitoring/id/stations/0190TH/stageScale	{"_view": "full"}
+2026-11-05T23:46:36+00:00	200	1564	https://environment.data.gov.uk/flood-monitoring/id/stations/0290TH/stageScale	{"_view": "full"}
+2026-11-05T23:46:38+00:00	200	1312	https://environment.data.gov.uk/flood-monitoring/id/stations/4682/stageScale	{"_view": "full"}
+2026-11-05T23:46:40+00:00	200	1560	https://environment.data.gov.uk/flood-monitoring/id/stations/3015TH/stageScale	{"_view": "full"}
+2026-11-05T23:46:43+00:00	200	11934479	https://environment.data.gov.uk/hydrology/id/measures/030af469-37dd-408b-95b0-5cdf25d388a8-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:46:47+00:00	200	11835368	https://environment.data.gov.uk/hydrology/id/measures/05d6cc02-753d-44ec-83b6-145aa26af900-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:46:50+00:00	200	11750140	https://environment.data.gov.uk/hydrology/id/measures/117e5055-a68d-4cbb-8824-cc0caf0889b0-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:46:54+00:00	200	11740427	https://environment.data.gov.uk/hydrology/id/measures/12ebc12e-43be-4599-ac5b-57c6d357cc47-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:46:58+00:00	200	11672145	https://environment.data.gov.uk/hydrology/id/measures/13d2950b-9382-4c47-a378-875a2e2f10de-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:47:02+00:00	200	11859498	https://environment.data.gov.uk/hydrology/id/measures/1aa8057c-7be4-4c7c-8a7d-0616effaea2b-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:47:06+00:00	200	11626277	https://environment.data.gov.uk/hydrology/id/measures/1c5d6c4d-e4b1-4c9a-ab47-b899f67aa53f-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:47:11+00:00	200	11669434	https://environment.data.gov.uk/hydrology/id/measures/244c170e-922f-4e33-8b7d-d02dd50888d3-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:47:16+00:00	200	11748483	https://environment.data.gov.uk/hydrology/id/measures/24a5617c-4044-4906-908c-1d877e36c983-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:47:21+00:00	200	11626161	https://environment.data.gov.uk/hydrology/id/measures/2629abeb-e504-49f7-9996-080f37e15930-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:47:26+00:00	200	11798359	https://environment.data.gov.uk/hydrology/id/measures/29434d59-1597-4783-b0b6-9f9a821d30d8-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:47:30+00:00	200	11867688	https://environment.data.gov.uk/hydrology/id/measures/2df2593d-17b3-4251-8145-5a7fb0fdf93c-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:47:35+00:00	200	10329792	https://environment.data.gov.uk/hydrology/id/measures/2e294ffc-fcf4-4111-9487-19f10cf7b3f1-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:47:39+00:00	200	11642898	https://environment.data.gov.uk/hydrology/id/measures/30863aae-d76a-4ee8-acd3-9231d38c752b-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:47:44+00:00	200	11833680	https://environment.data.gov.uk/hydrology/id/measures/30b20164-0eb7-49cf-b8fc-5b8e7ef6caf9-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:47:48+00:00	200	11928155	https://environment.data.gov.uk/hydrology/id/measures/31eb9af5-6e07-4f03-ae21-5a1c05fb6d27-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:47:54+00:00	200	11779779	https://environment.data.gov.uk/hydrology/id/measures/37772543-7410-45ad-aa14-75d97aaffe1d-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:47:58+00:00	200	935331	https://environment.data.gov.uk/hydrology/id/measures/37f9d60e-0bdc-4578-b03b-77103b250a09-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:48:00+00:00	200	11749997	https://environment.data.gov.uk/hydrology/id/measures/391e028e-270a-46fb-beb2-424a1d1cd1ff-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:48:04+00:00	200	11973751	https://environment.data.gov.uk/hydrology/id/measures/3e1bef32-b715-4899-b58a-78b6d13f3f30-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:48:09+00:00	200	11906757	https://environment.data.gov.uk/hydrology/id/measures/42f6b554-875a-4528-b33a-336c5aed523e-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:48:14+00:00	200	11850658	https://environment.data.gov.uk/hydrology/id/measures/46f89365-2297-4dca-adc4-092ff08c53ce-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:48:19+00:00	200	11951396	https://environment.data.gov.uk/hydrology/id/measures/481f8042-997a-44cc-b425-51340d4cee9c-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:48:23+00:00	200	11652676	https://environment.data.gov.uk/hydrology/id/measures/4879595c-8a89-41e4-8b6a-00db4b4312ea-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:48:27+00:00	200	11816982	https://environment.data.gov.uk/hydrology/id/measures/48f022f0-31d1-4e13-98f0-f70aacd05ca3-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:48:31+00:00	200	11846495	https://environment.data.gov.uk/hydrology/id/measures/49076770-98e9-47b2-89b0-aa90d60ecdc1-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:48:35+00:00	200	11923564	https://environment.data.gov.uk/hydrology/id/measures/494645cb-c766-4b71-bd70-dc69fe8e7778-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:48:39+00:00	200	11707929	https://environment.data.gov.uk/hydrology/id/measures/497b4131-a273-4e6b-a0ad-27a8dd0b559e-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:48:43+00:00	200	11639797	https://environment.data.gov.uk/hydrology/id/measures/4c154254-e415-4eb4-9194-16a54ef7386d-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:48:46+00:00	200	11856018	https://environment.data.gov.uk/hydrology/id/measures/57e8d163-310e-4d4c-a0f2-86055cc91da0-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:48:50+00:00	200	11780578	https://environment.data.gov.uk/hydrology/id/measures/57f6d273-427d-4f3b-8ce9-1bc17c8b11df-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:48:54+00:00	200	11739742	https://environment.data.gov.uk/hydrology/id/measures/585e49e0-7070-4d85-9c52-ccd18a5a1e65-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:48:58+00:00	200	11959478	https://environment.data.gov.uk/hydrology/id/measures/5b89dfe2-d43e-4b67-b3df-98eb116a2c74-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:49:02+00:00	200	11776072	https://environment.data.gov.uk/hydrology/id/measures/5fa09f4f-6e71-4c96-9cfe-06d3b69fb5f8-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:49:06+00:00	200	11677927	https://environment.data.gov.uk/hydrology/id/measures/610a151f-b0b4-4aad-8b80-80a89e2e0e92-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:49:11+00:00	200	11652841	https://environment.data.gov.uk/hydrology/id/measures/62a5f097-03e7-4dca-91cc-cb3cf6f1c1c7-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:49:14+00:00	200	11754346	https://environment.data.gov.uk/hydrology/id/measures/67596a0e-e4c6-414b-96c6-89ba861f4517-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:49:19+00:00	200	11769066	https://environment.data.gov.uk/hydrology/id/measures/685ef580-464e-4ac0-8ccc-4e767085f469-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:49:23+00:00	200	11627440	https://environment.data.gov.uk/hydrology/id/measures/6b80bd1c-6c19-4c26-875d-108bf8ef1a84-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:49:27+00:00	200	11638317	https://environment.data.gov.uk/hydrology/id/measures/7237e282-1104-4e3a-bb60-795c90646313-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:49:31+00:00	200	11927956	https://environment.data.gov.uk/hydrology/id/measures/733a1439-f3a2-41e3-b053-8a11b21091f6-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:49:36+00:00	200	11698043	https://environment.data.gov.uk/hydrology/id/measures/74713051-677a-460e-9efe-0310287ff611-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:49:40+00:00	200	11673184	https://environment.data.gov.uk/hydrology/id/measures/792ad854-8a0d-4925-91e6-47c548ab0d47-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:49:45+00:00	200	11793775	https://environment.data.gov.uk/hydrology/id/measures/7bf83a70-c20d-48fd-9989-597dfd219eb9-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:49:49+00:00	200	11965228	https://environment.data.gov.uk/hydrology/id/measures/7d218531-610d-479d-b8f7-6a69cb99e3c8-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:49:52+00:00	200	11816552	https://environment.data.gov.uk/hydrology/id/measures/80e4ce66-6404-4311-9ece-0eac64d73907-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:49:56+00:00	200	11683431	https://environment.data.gov.uk/hydrology/id/measures/92bda817-ccf4-4847-a7c2-87160c7b1dff-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:49:59+00:00	200	11843559	https://environment.data.gov.uk/hydrology/id/measures/9a4460ac-e999-483d-96b6-51523f7bc4b8-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:50:04+00:00	200	11968940	https://environment.data.gov.uk/hydrology/id/measures/9ad5d28c-7cfe-46db-b39d-58701689cd59-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:50:08+00:00	200	11734641	https://environment.data.gov.uk/hydrology/id/measures/a0f7197c-79e8-4a9e-9242-5e97fc7ef471-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:50:13+00:00	200	11896586	https://environment.data.gov.uk/hydrology/id/measures/a4d15eec-2466-43aa-af4c-84f59d291e30-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:50:16+00:00	200	11669004	https://environment.data.gov.uk/hydrology/id/measures/a99b0223-fd15-4a76-8c45-4958137fa2ed-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:50:22+00:00	200	11723907	https://environment.data.gov.uk/hydrology/id/measures/aded6ffd-1b3c-4fce-ad90-ec995a90a2a7-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:50:25+00:00	200	11738939	https://environment.data.gov.uk/hydrology/id/measures/af27ed26-9dc7-4837-8235-a788b39c70d4-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:50:29+00:00	200	11677479	https://environment.data.gov.uk/hydrology/id/measures/b0713e87-cab3-46e4-bfb3-f0bbb91cedf6-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:50:35+00:00	200	11880404	https://environment.data.gov.uk/hydrology/id/measures/bce8bf9b-9b67-4bee-9c90-3c7f65c3444e-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:50:39+00:00	200	11725572	https://environment.data.gov.uk/hydrology/id/measures/bf85754c-4e6e-481b-9f58-a4fe2bf249cd-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:50:43+00:00	200	11956000	https://environment.data.gov.uk/hydrology/id/measures/c6a93e30-dca7-4919-8269-47c10653f0fd-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:50:46+00:00	200	11765074	https://environment.data.gov.uk/hydrology/id/measures/c71a6b65-e6f4-4245-a50b-e884e3edbef2-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:50:50+00:00	200	11979905	https://environment.data.gov.uk/hydrology/id/measures/cd22e98d-55dc-455d-afa8-21ea6017084e-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:50:56+00:00	200	11702418	https://environment.data.gov.uk/hydrology/id/measures/d7ea5745-0ca5-40fa-b5c9-3f788256411b-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:50:59+00:00	200	11846932	https://environment.data.gov.uk/hydrology/id/measures/d7f3cb01-358c-4342-8538-615b85694131-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:51:04+00:00	200	11941615	https://environment.data.gov.uk/hydrology/id/measures/de59cc50-5443-4a4e-a560-352a4e1d9df0-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:51:09+00:00	200	11756649	https://environment.data.gov.uk/hydrology/id/measures/dea2b321-7f1c-4acc-8839-99cf945d61d5-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:51:13+00:00	200	11591191	https://environment.data.gov.uk/hydrology/id/measures/defba4e0-fb05-42e7-aec6-f5088f98ae68-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:51:17+00:00	200	11679043	https://environment.data.gov.uk/hydrology/id/measures/e1167305-106b-4cd6-adbb-83d90590079e-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:51:20+00:00	200	11897070	https://environment.data.gov.uk/hydrology/id/measures/e30939ae-a87c-487a-bd4c-a6258655707e-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:51:25+00:00	200	11801762	https://environment.data.gov.uk/hydrology/id/measures/e6f51f9c-14c9-4ee4-8bbe-9a934236492a-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:51:30+00:00	200	11770513	https://environment.data.gov.uk/hydrology/id/measures/f409c5a2-5d4f-41d2-a734-b0707c778dd5-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:51:34+00:00	200	11738398	https://environment.data.gov.uk/hydrology/id/measures/f44bf96d-3953-4fec-88bd-30ef4e12e523-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:51:39+00:00	200	11655633	https://environment.data.gov.uk/hydrology/id/measures/f5b37267-c78d-4e3e-9fca-0a380d46ffc8-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:51:43+00:00	200	11844579	https://environment.data.gov.uk/hydrology/id/measures/f85b0f2b-36a9-4e9e-bad2-ca889240b88c-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:51:48+00:00	200	11768439	https://environment.data.gov.uk/hydrology/id/measures/fa869369-4a45-4377-8d05-ec4f3a530e46-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:51:52+00:00	200	11628352	https://environment.data.gov.uk/hydrology/id/measures/fad760ef-0c6e-48df-a1c5-01d3f471cbb0-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:51:57+00:00	200	11668662	https://environment.data.gov.uk/hydrology/id/measures/fc82d49c-8b70-4e21-b1e3-0b648bf5b835-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}
+2026-11-05T23:52:01+00:00	200	11701475	https://environment.data.gov.uk/hydrology/id/measures/fd8ea26c-8052-48c5-a1bb-bbd5ebbbb3d3-level-i-900-m-qualified/readings.csv	{"_limit": 200000, "max-date": "2026-10-25", "mineq-date": "2024-11-20"}

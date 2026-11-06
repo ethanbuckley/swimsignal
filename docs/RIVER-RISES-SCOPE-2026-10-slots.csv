@@ -1,0 +1,56 @@
+gauge,slot,up,up_label,up_river,along_km,area_ratio,low,high,measure,lat,lon
+F1902,same,F1903,Addingham,River Wharfe,3.21,0.954,0.189,1.87,f5b37267-c78d-4e3e-9fca-0a380d46ffc8-level-i-900-m-qualified,53.939721,-1.862096
+F1902,trib,L1970,Skirfare Bridge,River Skirfare,33.82,0.165,0.057,0.582,5fa09f4f-6e71-4c96-9cfe-06d3b69fb5f8-level-i-900-m-qualified,54.118204,-2.044904
+L2105,same,F2106,Birstwith,River Nidd,16.65,0.681,0.105,2.1,117e5055-a68d-4cbb-8824-cc0caf0889b0-level-i-900-m-qualified,54.038156,-1.650292
+F2004,same,L2005,Collingham,River Wharfe,6.7,0.952,0.345,3.0,a0f7197c-79e8-4a9e-9242-5e97fc7ef471-level-i-900-m-qualified,53.912329,-1.418426
+F2004,trib,L2043,Bardsey,Bardsey Beck,11.34,0.022,0.121,1.8,67596a0e-e4c6-414b-96c6-89ba861f4517-level-i-900-m-qualified,53.883728,-1.440943
+L2307,trib,L2351,Reeth,Arkle Beck,15.48,0.201,0.0,0.9,cd22e98d-55dc-455d-afa8-21ea6017084e-level-i-900-m-qualified,54.387346,-1.936039
+2200TH,same,1800TH,Sutton Courtenay,River Thames,44.89,0.772,1.911,3.51,b0713e87-cab3-46e4-bfb3-f0bbb91cedf6-level-i-900-m-qualified,51.647821,-1.254167
+2200TH,trib,1993TH,Dorchester,River Thame,35.08,0.156,0.223,1.376,792ad854-8a0d-4925-91e6-47c548ab0d47-level-i-900-m-qualified,51.641035,-1.163757
+3404TH,same,3104TH,Thames Ditton Island,River Thames,4.77,0.99,4.46,5.7,4c154254-e415-4eb4-9194-16a54ef7386d-level-i-900-m-qualified,51.393384,-0.331228
+3404TH,trib,3090TH,Weybridge,River Wey,18.9,0.172,0.96,1.4,2629abeb-e504-49f7-9996-080f37e15930-level-i-900-m-qualified,51.37248,-0.466322
+1100TH,same,0569TH,Hannington Bridge,River Thames,43.38,0.301,2.07,3.81,62a5f097-03e7-4dca-91cc-cb3cf6f1c1c7-level-i-900-m-qualified,51.663588,-1.749677
+1100TH,trib,1090TH,Newbridge GS,River Windrush,9.88,0.205,3.495,3.771,37f9d60e-0bdc-4578-b03b-77103b250a09-level-i-900-m-qualified,51.715253,-1.41933
+1800TH,same,1100TH,Farmoor,River Thames,32.95,0.446,0.5,1.3,6b80bd1c-6c19-4c26-875d-108bf8ef1a84-level-i-900-m-qualified,51.757544,-1.366384
+1800TH,trib,1465TH,Thrupp,River Cherwell,37.43,0.164,0.654,2.12,610a151f-b0b4-4aad-8b80-80a89e2e0e92-level-i-900-m-qualified,51.840425,-1.30005
+43123,same,43160,Salisbury Harnham Bridge,River Avon,23.66,0.682,0.286,0.94,c6a93e30-dca7-4919-8269-47c10653f0fd-level-i-900-m-qualified,51.061054,-1.794476
+43123,trib,43111,South Newton,River Wylye,34.09,0.188,0.135,0.65,de59cc50-5443-4a4e-a560-352a4e1d9df0-level-i-900-m-qualified,51.107453,-1.878102
+52111,same,52109,Bishops Hull,River Tone,3.14,0.634,0.088,0.9,d7ea5745-0ca5-40fa-b5c9-3f788256411b-level-i-900-m-qualified,51.019081,-3.133644
+52111,trib,52110,Halsewater,Halse Water,3.18,0.27,0.197,1.4,f409c5a2-5d4f-41d2-a734-b0707c778dd5-level-i-900-m-qualified,51.021033,-3.132608
+53120,same,531116,Frome Rodden,Somerset Frome,13.58,0.422,0.364,2.55,48f022f0-31d1-4e13-98f0-f70aacd05ca3-level-i-900-m-qualified,51.230803,-2.308252
+53120,trib,53119,Vallis,Mells River,12.61,0.366,0.084,1.5,497b4131-a273-4e6b-a0ad-27a8dd0b559e-level-i-900-m-qualified,51.240687,-2.349087
+2625,same,2537,Criftin Ford bridge,River Teme,18.42,0.482,0.826,2.25,9a4460ac-e999-483d-96b6-51523f7bc4b8-level-i-900-m-qualified,52.343165,-2.852812
+2625,trib,2054,Onibury,River Onny,11.45,0.269,0.7,1.7,e30939ae-a87c-487a-bd4c-a6258655707e-level-i-900-m-qualified,52.405995,-2.80328
+2134,same,2077,Welsh Bridge,River Severn,34.79,0.706,0.422,2.7,92bda817-ccf4-4847-a7c2-87160c7b1dff-level-i-900-m-qualified,52.709797,-2.75808
+2134,trib,2012,Walcot,River Tern,23.38,0.145,0.386,1.3,aded6ffd-1b3c-4fce-ad90-ec995a90a2a7-level-i-900-m-qualified,52.706629,-2.60558
+2077,same,2005,Montford,River Severn,22.45,0.924,0.287,4.8,7237e282-1104-4e3a-bb60-795c90646313-level-i-900-m-qualified,52.724474,-2.872198
+2077,trib,2020,Yeaton,River Perry,20.81,0.049,0.106,0.7,31eb9af5-6e07-4f03-ae21-5a1c05fb6d27-level-i-900-m-qualified,52.76777,-2.839715
+710301,same,710102,Penny Bridge,River Ribble,38.51,0.282,0.086,2.484,1c5d6c4d-e4b1-4c9a-ab47-b899f67aa53f-level-i-900-m-qualified,54.065287,-2.285676
+710301,trib,710401,Chatburn Pendle Avenue,hey,7.24,0.01,0.02,0.9,685ef580-464e-4ac0-8ccc-4e767085f469-level-i-900-m-qualified,53.891887,-2.350346
+722421,same,722242,Lunes Bridge,River Lune,14.82,0.593,0.215,2.7,dea2b321-7f1c-4acc-8839-99cf945d61d5-level-i-900-m-qualified,54.420034,-2.599286
+724629,trib,724528,Hornby,River Wenning,9.53,0.203,0.2,1.8,42f6b554-875a-4528-b33a-336c5aed523e-level-i-900-m-qualified,54.109696,-2.63518
+F1903,same,F1906,Netherside Hall,River Wharfe,24.87,0.431,0.3,2.2,30863aae-d76a-4ee8-acd3-9231d38c752b-level-i-900-m-qualified,54.080705,-2.024779
+F1903,trib,L1970,Skirfare Bridge,River Skirfare,30.6,0.173,0.057,0.582,5fa09f4f-6e71-4c96-9cfe-06d3b69fb5f8-level-i-900-m-qualified,54.118204,-2.044904
+F1906,same,L1907,Kettlewell,River Wharfe,8.13,0.465,0.172,1.8,05d6cc02-753d-44ec-83b6-145aa26af900-level-i-900-m-qualified,54.143807,-2.050474
+F1906,trib,L1970,Skirfare Bridge,River Skirfare,5.74,0.401,0.057,0.582,5fa09f4f-6e71-4c96-9cfe-06d3b69fb5f8-level-i-900-m-qualified,54.118204,-2.044904
+L2208,trib,F2290,Low Houses,Snaizeholme Beck,13.84,0.064,0.068,0.6,37772543-7410-45ad-aa14-75d97aaffe1d-level-i-900-m-qualified,54.290034,-2.258043
+762505,same,760502,Temple Sowerby,River Eden,40.74,0.482,0.2,3.0,4879595c-8a89-41e4-8b6a-00db4b4312ea-level-i-900-m-qualified,54.648336,-2.614388
+762505,trib,761659,Eamont Bridge Farm,River Eamont,46.37,0.173,0.35,1.7,c71a6b65-e6f4-4245-a50b-e884e3edbef2-level-i-900-m-qualified,54.651055,-2.743236
+760502,same,760115,Appleby,River Eden,16.75,0.609,0.251,1.8,7bf83a70-c20d-48fd-9989-597dfd219eb9-level-i-900-m-qualified,54.579834,-2.491428
+F3505,trib,F3581,Harwood,Harwood Beck,14.44,0.1,0.13,0.578,fa869369-4a45-4377-8d05-ec4f3a530e46-level-i-900-m-qualified,54.672926,-2.234106
+022009,same,022014,Alwinton Bridge,River Coquet,25.18,0.497,0.223,1.6,391e028e-270a-46fb-beb2-424a1d1cd1ff-level-i-900-m-qualified,55.344803,-2.122952
+022009,trib,022003,Shilmoor,Usway Burn,31.43,0.067,0.039,1.0,12ebc12e-43be-4599-ac5b-57c6d357cc47-level-i-900-m-qualified,55.363152,-2.180351
+055807_TG 320,same,055811_TG 9303,Bredwardine,River Wye,25.6,0.957,0.27,3.8,5b89dfe2-d43e-4b67-b3df-98eb116a2c74-level-i-900-m-qualified,52.096497,-2.969481
+2320,same,055817_TG 323,Ross On Wye,River Wye,12.55,0.989,0.254,3.2,030af469-37dd-408b-95b0-5cdf25d388a8-level-i-900-m-qualified,51.915339,-2.587573
+2320,trib,055027_TG 328,Sandford Bridge,Rudhall Brook,18.02,0.001,0.075,0.313,494645cb-c766-4b71-bd70-dc69fe8e7778-level-i-900-m-qualified,51.928793,-2.524006
+53129,same,53155,Bradford on Avon,River Avon,11.12,0.552,1.007,1.578,585e49e0-7070-4d85-9c52-ccd18a5a1e65-level-i-900-m-qualified,51.34297,-2.266608
+53129,trib,53120,Tellisford,Somerset Frome,16.37,0.229,0.542,3.2,29434d59-1597-4783-b0b6-9f9a821d30d8-level-i-900-m-qualified,51.30679,-2.280873
+46122,trib,E71283,Buckfastleigh Kingcombe Court,Dean Burn,1.22,0.045,0.562,1.0,e6f51f9c-14c9-4ee4-8bbe-9a934236492a-level-i-900-m-qualified,50.48107,-3.775926
+E22678,same,E22539,Westmill,River Stour,37.42,0.34,0.104,1.6,bce8bf9b-9b67-4bee-9c90-3c7f65c3444e-level-i-900-m-qualified,52.085266,0.665897
+E22678,trib,E22548,Glemsford,River Glem,36.81,0.166,0.063,1.04,a4d15eec-2466-43aa-af4c-84f59d291e30-level-i-900-m-qualified,52.09308,0.693213
+0569TH,same,0190TH,Cricklade,River Thames,11.96,0.264,0.058,1.083,bf85754c-4e6e-481b-9f58-a4fe2bf249cd-level-i-900-m-qualified,51.646694,-1.865536
+0569TH,trib,0290TH,Cerney Wick,River Churn,15.11,0.242,0.015,0.6,af27ed26-9dc7-4837-8235-a788b39c70d4-level-i-900-m-qualified,51.665333,-1.891795
+L2009,same,F1902,Ilkley,River Wharfe,12.0,0.805,0.09,1.8,57f6d273-427d-4f3b-8ce9-1bc17c8b11df-level-i-900-m-qualified,53.929346,-1.83091
+L2009,trib,L1970,Skirfare Bridge,River Skirfare,45.81,0.133,0.057,0.582,5fa09f4f-6e71-4c96-9cfe-06d3b69fb5f8-level-i-900-m-qualified,54.118204,-2.044904
+4197,trib,4682,Buxton,Hogshaw Brook,0.96,0.351,0.008,0.5,d7f3cb01-358c-4342-8538-615b85694131-level-i-900-m-qualified,53.261791,-1.906782
+3040TH,trib,3015TH,Caker Stream,Caker Stream,27.89,0.035,0.0,0.52,fc82d49c-8b70-4e21-b1e3-0b648bf5b835-level-i-900-m-qualified,51.140148,-0.959908

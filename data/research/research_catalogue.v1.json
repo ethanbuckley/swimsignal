@@ -1480,19 +1480,30 @@
   },
   {
    "id": "river-rises",
-   "title": "River rises from upstream gauges",
+   "title": "River rises from upstream gauges and radar",
    "section": "scheduled",
    "topics": [
     "rivers",
     "gauges"
    ],
-   "verdict": "Not yet run. The programme notes give a median arrival of 1.5 hours, which becomes about an hour of warning at most river spots once publication delay is taken off.",
-   "scope": "River spots with an upstream EA gauge. A river-rise figure is not a swimming-safety forecast.",
-   "stage": "scheduled",
-   "stage_note": "Scope and harness are in an open draft PR; fetch and scoring refuse to run before 2 November 2026.",
-   "next": "Review, then fetch, on or after 2 November 2026.",
-   "read_on": "2026-11-02",
+   "verdict": "Failed as stated, run 5 to 6 November 2026 on 33 spot gauges in 13 river systems (hindcast, archived 15-minute series, 20 November 2024 to 24 October 2026). C1 (upstream gauges added to the spot gauge's own trend): Brier skill 0.0199, 95% interval −0.1849 to 0.0723, labelled \"Too uncertain\"; worse when read three hours late (−0.0617, \"Possible harm\"). C2 (radar added): skill against C1 0.0415, interval 0.0017 to 0.0826, below the 0.05 needed, hit rate 0.115 at the 0.5 line; labelled \"Better\" against C1 only, with no shown gain over the spot's own trend. Median lead gained 1 h on 100 of 677 onsets. The base rate by gauge and month ranked the next three hours best (AUC 0.815). 119 EA requests, all within the caps.",
+   "scope": "River spots with an upstream EA level gauge on the Hydrology API; the next 3 h (6 h secondary) at hours when the site shows no word. A rare target (0.6% of hours). Says nothing about swimming safety, the real-time feed's own gaps, or a model that includes the base rate, which was not fitted.",
+   "stage": "waiting",
+   "stage_note": "Not adopted; no page line, no shadow, no early-warning wording. The upstream-gauge-only early warning is closed. The radar candidate waits on two dependencies: the site's builds actually running every 30 minutes (scheduled builds ran a median 5.9 h apart in the week to 5 Nov) and radar at build time. Then a new dated protocol adding the gauge-month base rate, with a target a rare event can meet.",
+   "next": "Check on 1 February 2027: archive the radar candidate too if the build cadence is unchanged. A plain upstream-gauge observation with no forecast remains a product decision for Ethan.",
    "records": [
+    {
+     "doc": "docs/RIVER-RISES-SCOPE-2026-10.md",
+     "quote": "**Both candidates fail the stated conditions. Nothing is adopted. Nothing on the site changes.**"
+    },
+    {
+     "doc": "docs/RIVER-RISES-SCOPE-2026-10.md",
+     "quote": "| 1. Brier skill, 95% cluster interval (13 river systems, 2,000 draws) | ≥ 0.05, lower end > 0 | **0.0199 [−0.1849, 0.0723]** | fails |"
+    },
+    {
+     "doc": "docs/RIVER-RISES-SCOPE-2026-10.md",
+     "quote": "**Verdict: fails** (conditions 1 and 3). **Near-miss label: Better** (d 0.0415 ≥ B 0.02, lower end 0.0017 > 0)."
+    },
     {
      "doc": "docs/AI-PROGRAMME-2026-10.md",
      "quote": "- Upstream gauges give about an hour of warning at most river spots (median arrival 1.5 h, before a 0.5 h median"
@@ -1501,7 +1512,7 @@
    "prs": [
     383
    ],
-   "register_note": "The register says \"median lead around 1.5 h\"; the doc says median arrival 1.5 h and about an hour of warning. The primary record is in open PR #383, not on main."
+   "register_note": "The register's one-line summary rounds the figures; the record holds the intervals, the by-system table and the latency accounting. The AI programme's rows for #383 still describe the pre-run state."
   },
   {
    "id": "missing-event-end",

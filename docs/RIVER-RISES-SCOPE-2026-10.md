@@ -3,6 +3,10 @@
 Written 26 October 2026. Research only. Nothing here changes the live site, a level, the words "high" or "rising
 fast", or any shadow or test window. **This is not a swimming-safety forecast.** No model has been fitted or scored.
 
+**Run 5 to 6 November 2026.** The plan below was run as stated; the result is in "Results, 6 November 2026" at the end.
+Everything above that section is the plan and the answers as written on 26 October, unchanged. **Not adopted.** Nothing on
+the site changes; no "early warning" wording follows from this file.
+
 ## Why
 
 Spot pages already say "high" or "rising fast" from the nearest Environment Agency level gauge on the spot's own river
@@ -517,3 +521,248 @@ Ethan adopted the recommendations of 26 October ("Adopt all the recommendations 
   test period must be saved before about 21 November, while the oldest months are still on AWS.
 - **No upstream-rise line on spot pages before the test.** A median lead of about 1.5 h is too short to justify a new
   line without evidence that it helps.
+
+## Results, 6 November 2026
+
+Run on 5 and 6 November 2026 from commit `1beaedc0` (the 26 October branch `proto/river-rises-scope` at `6c3f29d8`,
+merged with main `a4afe82f`; the harness files are byte-identical to the branch). Every threshold, margin, window,
+seed and answer above was left as stated. Nothing in this section changes the plan; it reports what the plan
+produced. **Both candidates fail the stated conditions. Nothing is adopted. Nothing on the site changes.**
+
+### What the plan fixed, and what it left open (read before the run)
+
+Fixed by the plan and the answers, and used unchanged: the 72 river spots and the site's own gauge pick; the pairing
+rule (`same` nearest on the same river name, at least 3 km up, at least a quarter of the catchment; `trib` the
+largest-catchment tributary); the rise definition (more than 0.2 of the EA usual range, the site's `RISING_SHARE`);
+issue times hourly, label windows 3 h (primary) and 6 h; publication delay d = 1 h with d = 3 h as the sensitivity;
+populations P and A; the training and test periods; 5 river-system folds, seed 20261026; the logistic model with
+C = 1; references R1, R2, R3; the gate; the six conditions; the placebo; B = 0.02 and H = 0.01; the datum rule;
+tributary-only gauges reported apart; the gate's share pooled. The eight harness answers of 26 October were all
+applied as written.
+
+Left open by the plan, and settled here before the run without touching any threshold: which cache directory
+(a cloned copy of the 26 October coverage cache, so the original stayed read-only; see "How it was run"); that
+the fetch asked for 15-minute readings from 20 November 2024 (the plan's `FETCH_FROM`) in one CSV request per
+series; and that the run statement names the predictions' SHA-256 and the fixed margins only. The plan asked for
+stage 1 "alone on the machine": at 23:52 UTC another session's network-bound satellite fetch held the group's
+heavy-run lock. Both stages are offline and seeded, so this cannot change a figure; it is recorded as a deviation
+from the stated running condition, not from the protocol.
+
+### How it was run
+
+- **Fetch:** `scripts/river_rises_eval/run_fetch.sh`, 5 November 2026 23:43:00 to 23:52:02 UTC, under the heavy-run
+  lock, with scratch `DIPCAST_ROOT`, `DIPCAST_STATE` and `DIPCAST_CACHE` (the state and cache folders were empty
+  afterwards). **119 requests, all HTTP 200, 883.0 MB**: 43 stage scales (flood-monitoring API) and 76 readings
+  CSVs (Hydrology API, 0.9 to 12.0 MB each, median 11.8 MB). One run; no stop, no retry; 119 of the 300-request
+  cap. No Open-Meteo request. The ledger is `RIVER-RISES-SCOPE-2026-10-requests-2026-11-05.tsv` (one line per
+  request: time, status, bytes, URL, parameters). The station picks, the national station list and the Hydrology
+  station list came from the coverage run's cached answers, so the 219 requests of 26 October plus these 119 make
+  338 in all for the scope and the evaluation together.
+- **Caches, fingerprinted before and after.** The 26 October coverage cache (439 files, 271 MB) was cloned
+  (`cp -c`) to a new directory and the fetch wrote only into the clone. SHA-256 of all 439 original files, taken
+  before the fetch and again after stage 2: identical (digest of the list `5538c28c…916a`). The saved radar months
+  (11,976 files) and `river_network.pkl` were linked read-only into the scratch root; their name, size and
+  modification time lists before and after: identical.
+- **Stage 1** (`score.py predict`): 23:52:55 to 23:53:11 UTC. **Stage 2** (`score.py score`): 23:53:59 to 00:04:13
+  UTC on 6 November, 200 placebo refits per candidate. Predictions SHA-256
+  `a1f304431d49a6a7c398665de446bb31f769bfaace6c93546c0853a187b4f8e3`; the run statement
+  (`RIVER-RISES-SCOPE-2026-10-statement.json`) was written between the two stages, before any test outcome was read,
+  and names that hash and Ethan's margins. Outputs beside this file: `-gate.json`, `-datum.json`,
+  `-prediction_summary.json`, `-result.json`, `-report.md`, `-fetch-summary.json`, `-gauges.csv`, `-slots.csv`,
+  `-upstream.csv`, `-radar_cells.csv`. The series, predictions and row tables (about 1 GB) are in the private
+  folder, not in git.
+
+### Gauges and series
+
+- 55 usable spot gauges (the site's own test). **33 entered the run** (41 spots), in **13 river systems**: 26 with a
+  `same` gauge (the paired ones), 7 with a tributary only. Left out: 11 with no EA station upstream along the
+  network (Bellever, Carnwood, Ulpha, Hug Bridge, Izaak Walton, Barcombe, Lamarsh, Locks Weir, Salisbury Ashley
+  Road, Yorkshire Bridge, Hindley Wrae Ford), 10 with no Hydrology 15-minute series (Hambleden Lock, Temple Lock,
+  Houghton, Brownshill, Cambridge Jesus Lock, Town Lock, Wherwell, Wharf Mill, Beccles Quay, Chagford), and 1
+  (Brushford on the Barle) with no upstream gauge that had both a series and a range. All 33 have saved radar for
+  their cells.
+- **76 series** of 67,584 15-minute slots (20 November 2024 to 24 October 2026). Share of slots with a usable
+  reading: median 1.00, mean 0.95; 13 series under 95%; the worst (8%) stops on 15 January 2025. 72 of 76 end at
+  23:45 UTC on 24 October 2026.
+- **Datum rule:** one drop. `1090TH` (the tributary slot of Farmoor `1100TH`) has a training-period index median of
+  1.536, above 1.5; its slot became missing. No spot gauge was dropped; none was unchecked.
+
+### Gate: met
+
+| Check | Needs | Found |
+|---|---|---|
+| Spot gauges with a pair | 25 | **26** |
+| Hourly issue times with a 3 h label, pooled | 0.80 in both periods | training **0.947**, test **0.954** |
+| Label-1 episodes in P, test period | 150, at 15 gauges in 6 systems | **596**, at 25 gauges in 10 systems |
+
+Six gauges have their own share under 0.80 in one period (reported, no condition): Old Wye Bridge 0.71 (training),
+Buxton 0.46 (training), Low Moor 0.38 and 0.74, Langham 0.70 (training), Knaresborough 0.34 (test), Richmond 0.64
+(test). The full per-gauge table is in `-report.md`.
+
+**Populations and label rates (test period).** 308,022 hourly issue times at the 33 gauges; A holds 294,146; P holds
+285,120 (at 96.9% of the hours in A the site shows no word; "high" 2.2%, "rising fast" 0.8%). In P the 3 h label is 1
+at **0.59%** of hours (1,667 events; training 0.55%, 1,263 events); the 6 h label at 1.44% (4,111). Trowlock Island
+(`3404TH`, the Thames above Teddington, the pair the scope called "not a river wave") holds 492 of the 1,667 events.
+
+### C1 (upstream gauges) against R3 (the spot gauge's own trend): fails
+
+Population P, 3 h, d = 1 h. Brier R3 0.00588, C1 0.00576.
+
+| Condition | Needs | Found | |
+|---|---|---|---|
+| 1. Brier skill, 95% cluster interval (13 river systems, 2,000 draws) | ≥ 0.05, lower end > 0 | **0.0199 [−0.1849, 0.0723]** | fails |
+| 2. Skill above 0 in river systems with 5+ episodes | 6 of 9 | 6 of 9 | holds |
+| 3. At the 0.5 line | hit rate ≥ 0.5, false-alarm ratio ≤ 0.5 | hit rate **0.106** (177 hits, 1,490 misses), false-alarm ratio **0.608** (274 false alarms) | fails |
+| 4. Median lead gained on the onsets caught | ≥ 1 h | 1.00 h, on **100 of 677** onsets | holds |
+| 5. With d = 3 h | skill > 0 | **−0.0617** | fails |
+| 6. Placebo (200 week shifts of the upstream series) | real gain above the 95th percentile | 0.00012 against 0.00002; 0 of 200 at or above | holds |
+
+**Verdict: fails** (conditions 1, 3 and 5). **Near-miss label: Too uncertain** (B 0.02, H 0.01). Secondary
+comparisons, each with its own bootstrap: d = 3 h **−0.0617 [−0.1459, −0.0059], Possible harm**; population A
+0.0436 [−0.0553, 0.0800], Too uncertain. At 6 h: 0.0651 [−0.0516, 0.1108]. AUC: R3 0.574, C1 0.637.
+
+### C2 (radar added) against C1: fails the conditions, labelled "Better"
+
+| Condition | Needs | Found | |
+|---|---|---|---|
+| 1. Brier skill, 95% interval | ≥ 0.05, lower end > 0 | **0.0415 [0.0017, 0.0826]** | fails (below 0.05) |
+| 2. Systems with 5+ episodes | 6 of 9 | 7 of 9 | holds |
+| 3. At the 0.5 line | hit rate ≥ 0.5, false-alarm ratio ≤ 0.5 | hit rate **0.115** (191 hits, 1,476 misses), false-alarm ratio **0.578** | fails |
+| 4. Median lead gained | ≥ 1 h | 1.00 h, on 99 of 677 onsets | holds |
+| 5. With d = 3 h | skill > 0 | 0.0308 | holds |
+| 6. Placebo (200 week shifts of the radar) | above the 95th percentile | 0.00024 against 0.00001; 0 of 200 at or above | holds |
+
+**Verdict: fails** (conditions 1 and 3). **Near-miss label: Better** (d 0.0415 ≥ B 0.02, lower end 0.0017 > 0).
+Secondary: d = 3 h 0.0308 [−0.0053, 0.0853], Promising, not shown; population A 0.0292 [−0.0031, 0.0641], Promising,
+not shown. At 6 h: 0.0335 [−0.0008, 0.0643]. Brier C2 0.00552; AUC 0.682.
+
+The label and the verdict sit side by side, as the harness choices say: radar carries information that upstream gauges
+do not, at a size the plan did not count as useful (0.05), against a reference (C1) that itself showed nothing against
+the spot gauge's own trend. The "Better" label is relative to C1 only. It is not evidence that C2 beats what the site
+already shows: C2 against R3 is 0.0606 pooled, and its cluster interval, computed after the result and entering no
+condition, is [−0.1202, 0.1190].
+
+### What every model did, pooled
+
+| Config | Model | Brier | Skill vs R3 | Skill vs R1 | AUC | Hit rate at 0.5 | False-alarm ratio |
+|---|---|---|---|---|---|---|---|
+| P, 3 h, d = 1 | R1 base rate by gauge and month | 0.00567 | 0.035 | 0 | **0.815** | 0.000 | n/a |
+| | R3 spot trend | 0.00588 | 0 | −0.036 | 0.574 | 0.001 | 0.970 |
+| | C1 | 0.00576 | 0.020 | −0.016 | 0.637 | 0.106 | 0.608 |
+| | C2 | 0.00552 | 0.061 | 0.027 | 0.682 | 0.115 | 0.578 |
+| P, 6 h, d = 1 | R1 | 0.01367 | 0.051 | 0 | 0.787 | 0.000 | n/a |
+| | R3 | 0.01440 | 0 | −0.053 | 0.577 | 0.002 | 0.905 |
+| | C1 | 0.01346 | 0.065 | 0.015 | 0.656 | 0.118 | 0.507 |
+| | C2 | 0.01301 | 0.096 | 0.048 | 0.717 | 0.147 | 0.515 |
+| P, 3 h, d = 3 | R1 | 0.00590 | 0.030 | 0 | 0.810 | 0.000 | n/a |
+| | R3 | 0.00608 | 0 | −0.031 | 0.480 | 0.001 | 0.875 |
+| | C1 | 0.00646 | −0.062 | −0.094 | 0.566 | 0.029 | 0.833 |
+| | C2 | 0.00626 | −0.029 | −0.061 | 0.687 | 0.051 | 0.789 |
+| A, 3 h, d = 1 | R1 | 0.00588 | 0.053 | 0 | 0.801 | 0.000 | n/a |
+| | R2 the site's words | 0.00602 | 0.030 | −0.024 | 0.403 | 0.000 | n/a |
+| | R3 | 0.00621 | 0 | −0.056 | 0.546 | 0.004 | 0.927 |
+| | C1 | 0.00594 | 0.044 | −0.010 | 0.646 | 0.089 | 0.626 |
+| | C2 | 0.00577 | 0.072 | 0.020 | 0.694 | 0.099 | 0.591 |
+
+Three things the table says that the conditions do not test:
+- **The base rate by gauge and month (R1) ranks the hours best of all** (AUC 0.815 against 0.682 for C2), and its
+  Brier is better than R3's and C1's in every configuration. Where and when a gauge is, which no candidate was given,
+  tells more about whether it will rise in the next three hours than the last six hours of readings do. R1 enters no
+  condition, as answered on 26 October.
+- **The spot gauge's own trend (R3) says almost nothing** about the next three hours: AUC 0.574 at d = 1 h and 0.480
+  at d = 3 h. So "beating R3" is a low bar, and C1 did not clear it with any confidence.
+- **The 0.5 warning line is almost never reached.** At a 0.6% label rate the candidates put 0.16% of hours at or
+  above 0.5, and those hours were right under half the time (C2's 0.9 to 1.0 bin: 189 hours, forecast 0.97, observed
+  0.57; C1's: 230 hours, 0.97 against 0.45). Below 0.5 both candidates are close to reliable. Condition 3 as stated
+  cannot be met by a rare event at this line; that is a property of the plan, kept as written.
+
+### By river system, upstream gauge kind and the five longer pairs
+
+| River system | Test episodes | C1 skill vs R3 | C2 skill vs C1 |
+|---|---|---|---|
+| Wharfe, Nidd, Ure, Swale, Derbyshire Wye (Humber) | 236 | 0.081 | 0.066 |
+| Thames, Wey | 182 | 0.043 | 0.003 |
+| Lune | 52 | 0.023 | 0.090 |
+| Tees | 34 | 0.157 | −0.012 |
+| Dart | 30 | −0.024 | 0.072 |
+| Severn, Teme, Wye | 20 | −0.185 | −0.019 |
+| Eden | 20 | 0.188 | 0.003 |
+| Ribble | 12 | −0.921 | 0.267 |
+| Coquet | 9 | 0.153 | 0.077 |
+| Avon (Hampshire), Stour, Tone, Bristol Avon and Frome | 0, 0, 0, 1 | not judged | not judged |
+
+By upstream gauge kind (answer 7; reported apart, no condition): same river, 26 gauges, 1,173 events, C1 vs R3
+**−0.009**, C2 vs C1 0.043; tributary only, 7 gauges, 494 events, C1 vs R3 0.091, C2 vs C1 0.036. The paired gauges,
+the ones the scope was about, gained nothing from their upstream gauge.
+
+The scope named five pairs with median lags of 3 to 7 hours as the likeliest to pass. C1 skill against R3 at each:
+Addingham (Wharfe) 0.352, Great Corby (Eden) 0.347, Rothbury (Coquet) 0.153, Old Wye Bridge (Hereford) −0.008, Low
+Moor (Ribble) **−0.921** (Low Moor's own series is 38% present in training and 74% in test, the worst in the run).
+Three of the five gained; this is a subgroup named in advance as "most likely", not a condition, and the pooled
+result stands.
+
+**Exploratory, after the result (seen data, no condition, nothing follows from it):** without Trowlock Island, C1
+against R3 is 0.0145 [−0.256, 0.086] and C2 against C1 is 0.0587 [0.0021, 0.0958] on 1,175 events. C2 against R1 is
+0.0266 [−0.1457, 0.1199]. These were computed once each, after the verdicts, and are reported so no one reruns them
+to find a pass.
+
+### Latency: what a one-hour lead is worth on the site
+
+Everything in this run already counts the publication delay (d = 1 h; measured 0.5 h median, 0.75 h at the 75th
+percentile, on one evening). The lead the candidates gained over the site's own word, on top of that:
+
+| Step | Figure | Source |
+|---|---|---|
+| Onsets of "rising fast" at the spot gauge, test period | 677 | condition 4 |
+| Onsets where C1 was at or above 0.5 at least an hour before | **100 (15%)**; 37 (5%) two hours or more before | condition 4, `-result.json` leads |
+| Lead among the onsets caught | 25th percentile 1 h, median 1 h, 75th 2 h, longest 6 h | the same |
+| Site builds (each build polls the gauges), intended | every 30 min (`site.yml`), plus the Worker's dispatch when a token is set | `docs/AI-PROGRAMME-2026-10.md`, cadence section |
+| Scheduled builds, 30 Oct to 5 Nov 2026 (`gh run list`, 30 runs) | gaps **median 5.9 h**, 25th 4.0 h, 75th 7.5 h, longest 10.1 h | measured 5 Nov 23:40 UTC |
+| All successful builds in the same week, including pushes to main (92) | median 0.5 h, 75th 2.2 h | the same; pushes are development, not a cadence anyone can rely on |
+| Build and publish time | not measured here | |
+
+Reading: with the 1 h publication delay already taken, the candidates gave a one-hour notice on about one onset in
+seven. Against the scheduled cadence as it has actually run (a median 5.9 h between builds, so about 3 h to wait on
+average), that hour is gone before a build could show it, at every spot. At the intended 30 minutes, the mean wait
+of 15 minutes plus build and publish time would leave roughly half an hour, on the 15% of onsets caught and none of
+the rest. No "early warning" is supported at any cadence.
+
+### What this evaluation supports, and what it does not
+
+Supported, on these 33 gauges, 20 November 2024 to 24 October 2026, hindcast from the archived Hydrology series:
+- Upstream EA gauges, read an hour late, do not improve on the spot gauge's own trend at a shown level for the next
+  three hours (C1: skill 0.020, interval −0.185 to 0.072; Too uncertain), and are worse when read three hours late
+  (Possible harm). The paired, same-river gauges in particular gained nothing (−0.009).
+- Saved radar rain adds a small, real signal over the upstream gauges (C2 against C1: 0.042, interval 0.002 to 0.083;
+  placebo passed; 7 of 9 systems), below the plan's useful size and with no shown gain over the spot's own trend or
+  the base rate.
+- The base rate by gauge and month ranks the next three hours better than any trend input. The target is rare
+  (0.6% of hours) and seasonal; a 0.5 warning line is not reachable with it.
+- A lead of about an hour, where it exists, is smaller than the site's actual polling interval by a wide margin.
+
+Not supported, and not claimed: any forecast of a river rise at a spot; any "early warning" line; anything about
+swimming safety; anything about gauges, rivers or seasons outside the run; the behaviour of the real-time feed (the
+hindcast read the archived, corrected series, which the scope said makes it optimistic); any model that includes
+the base rate, which was not fitted.
+
+### Continuation (decided 6 November 2026 under docs/RESEARCH-WORKFLOW.md)
+
+- **Not adopted.** Both verdicts stand as the plan's. No page line, no shadow log, no wording. The plan's own
+  words on a plain upstream-gauge observation with no forecast ("a product decision for Ethan") still hold; nothing
+  here asks for it and nothing here builds it.
+- **The upstream-gauge-only early warning (C1) is closed.** Reopen only with a shadow on the real-time feed at a
+  polling interval of an hour or less, after the site's builds actually run at that interval for a stated window;
+  not with a rerun of this hindcast.
+- **The radar candidate (C2) waits on a named dependency**, as development, not as a scheduled window: (a) the
+  site's builds running at the intended 30 minutes for at least seven days (the Worker's `GITHUB_DISPATCH_TOKEN`,
+  a configuration decision that is Ethan's), and (b) radar at build time, which the build does not fetch today
+  (the saved months come from a separate script). A shadow before both would log forecasts nobody could have seen.
+- **Next useful deliverable, bounded:** when (a) and (b) hold, a dated protocol, written before any fit, for a
+  candidate that adds the gauge-month base rate to the radar inputs (what R1 showed), with a target that a rare
+  event can meet (a stated alert rate or a lower warning line, chosen from predictions alone, not this result), a
+  grouped time-embargoed development split, and a prospective window on the real-time feed. Nothing from this run's
+  test period may serve as its confirmation.
+- **Check on 1 February 2027:** if the cadence has not changed by then, archive the radar candidate too, with the
+  same reopen condition, and say so in the register.
+- **Re-measured here, for the record:** the build cadence figures above are the first measured over a week; the
+  scope's "builds every 30 minutes" was the intention, not the observed rate.
