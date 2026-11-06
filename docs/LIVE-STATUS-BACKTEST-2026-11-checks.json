@@ -1,0 +1,194 @@
+{
+ "inputs": {
+  "zip2026_sha256": "d0dbf32fb8622f98fe072466598d706590e5f8e667619cba7d0639c6555a1a8f",
+  "coverage_sha256": "67731cce7d8cbb422ea8b840c5816267ce57e67a463a14467066f053c1a0d446",
+  "annual_returns_sha256": "9f8604f9bbea29b993deadaf70ca92ae9a08050aaa717a731c58e8269db45065",
+  "event_files": {
+   "<main checkout>/data/processed/ea_events_anglian_water.parquet": "9d6b7f9d245e8ef7c0158d8c7a76bc67fa7369c9c71263f4d82a2f3ab8e96505",
+   "<main checkout>/data/processed/ea_events_northumbrian_water.parquet": "db27541813d2798672113a73a0703c87cd1309550f13cc697a162dc4ef0cd237",
+   "<main checkout>/data/processed/ea_events_severn_trent_water.parquet": "750c3482b16bb320c5b9b655ae3dd3ff96535d8e06397f9a514726889f96e504",
+   "<main checkout>/data/processed/ea_events_south_west_water.parquet": "b6452a8038c70d96c2b27adf6821c442553542b75dfda5547afd0a5ecc12ce51",
+   "<main checkout>/data/processed/ea_events_southern_water.parquet": "0dc7648a1f1736a2c168749ffaa05c8edf41751fe9df7f0f2de2d5a81b0ea525",
+   "<main checkout>/data/processed/ea_events_thames_water.parquet": "4c8afc5a013c943034b9ee916911154eadd826514eb621e6a9fb012478e6ef2e",
+   "<main checkout>/data/processed/ea_events_united_utilities.parquet": "c245fb7cd382d3f42c4603f7d8b7f98ce6cf119422f13b4ba6b09f56c5809d9c",
+   "<main checkout>/data/processed/ea_events_wessex_water.parquet": "26ca5cd0a0060d0e85b1314cea8509cf6037fea4d85ecccafdb68a17c35a02e3",
+   "<main checkout>/data/processed/ea_events_yorkshire_water.parquet": "dca57cf63abca6781224c608b85f509b715b150b57b5aa5f0e901da1c8cbbe78",
+   "<scratch>/root/data/processed/ea_events_anglian_water.parquet": "55b839a6ab3a4cd6b988db237b7626550964211944d792a179d8a28189092124",
+   "<scratch>/root/data/processed/ea_events_northumbrian_water.parquet": "616f3cd44d626c705f03a67f86659936076e5c73af20a652ad79fdd49bb86a4b",
+   "<scratch>/root/data/processed/ea_events_severn_trent_water.parquet": "db2c544f77da5dafacec8997469239f361fd135d4edec0c26cceddd4e5c26d2d",
+   "<scratch>/root/data/processed/ea_events_south_west_water.parquet": "64d1ef08f71afbcaa0bbc3001d6b000a7e04bd36c5830e1613c8feaf78490b11",
+   "<scratch>/root/data/processed/ea_events_southern_water.parquet": "f244dce63bd4f78cd7cc7c8399cd4e54be953652844393651b087835d4882997",
+   "<scratch>/root/data/processed/ea_events_thames_water.parquet": "5da64ec6a4302928b93267454c515fa27538aad67caeb5cd620d14983bb8c268",
+   "<scratch>/root/data/processed/ea_events_united_utilities.parquet": "5163bd9eacd8159767cad10c42fcb7f1c2180e2c22b0ba1b01a4cec304526f38",
+   "<scratch>/root/data/processed/ea_events_wessex_water.parquet": "15d0dda9e73fa1408120ddd3091005fad404da88bfe779bd37adbfed5a31810e",
+   "<scratch>/root/data/processed/ea_events_yorkshire_water.parquet": "bf372136a14d172cb7eb33a02d299db7a631ab267da90226fbd27abc8f930386"
+  },
+  "rain_2026": {
+   "cells": 1606,
+   "files": 3212,
+   "shared_2026": 196,
+   "fetched_2026a": 1410,
+   "file_list_sha256": "4054e2c6b5096f782ce5e5aba96f2ac921ea9d7924145c11d74bf278e036c650"
+  },
+  "lead_rain_2026": {
+   "files": 206,
+   "cells": 206,
+   "file_list_sha256": "53a74e9c7528745347faa26a9c7e9fdf960056d6f9b5a24d364742248f6553da"
+  }
+ },
+ "window_e": {
+  "reference": "2026-10-05 to 2026-11-01",
+  "reference_days": 28,
+  "days_needed": 20,
+  "candidates": 13972,
+  "pass": 13426,
+  "edm_50_not_ilkley": 13972
+ },
+ "merged_events": 3674298,
+ "models": {
+  "candidates": {
+   "0": "deb5e1e5ee64df0e48e789b9b8eba9bb0be76fba4a23e6745f6a259cec436d00",
+   "1": "e0756b1e97485d458bafb868480d73b8c95c502f4136aa05937cb166d3909c3e",
+   "2": "ed5bb2b9a39ee222303e3c923b824deffde00e1c63eca89371a3800e51c894da",
+   "3": "5180de7086c682fcfebcc9b02e12e197bbd7fb09d5aeb7dfeb940350d8a1360f",
+   "4": "ecc835c96d707534d88dbecf6f286c59adb90839f31985926110b85ec4824066"
+  },
+  "d2": "1603678923ccdd1553830fa67c2069714c0a836c9df7e8c52578aabd729b5bcc",
+  "production": "faa7917e2be725a9441b277fc111091c5bdffe45c80ab4fd042682aa9de4210e",
+  "lead_map": "734202bc7f22af38fd72d65c4038bb51828b11f5436ed1de40ffa0f381ad0f09"
+ },
+ "status_unknown": {
+  "lead 0": {
+   "spilling_at_issue": 0,
+   "spill_hours_24h": 3,
+   "spill_days_7d": 21
+  },
+  "lead 1": {
+   "spilling_at_issue": 3,
+   "spill_hours_24h": 6,
+   "spill_days_7d": 24
+  },
+  "lead 2": {
+   "spilling_at_issue": 6,
+   "spill_hours_24h": 9,
+   "spill_days_7d": 27
+  },
+  "lead 3": {
+   "spilling_at_issue": 9,
+   "spill_hours_24h": 12,
+   "spill_days_7d": 30
+  },
+  "lead 4": {
+   "spilling_at_issue": 12,
+   "spill_hours_24h": 15,
+   "spill_days_7d": 33
+  }
+ },
+ "face": {},
+ "conditions": {
+  "Q1 vs D2": {
+   "0": {
+    "1 gain with forecast rain": true,
+    "2 gain with ERA5-Land rain": true,
+    "3 no company clearly worse": true,
+    "4 reliability": true,
+    "5 not worse at a dry start": true,
+    "companies clearly worse": [],
+    "ECE failures": [],
+    "all five": true
+   },
+   "1": {
+    "1 gain with forecast rain": true,
+    "2 gain with ERA5-Land rain": true,
+    "3 no company clearly worse": true,
+    "4 reliability": true,
+    "5 not worse at a dry start": true,
+    "companies clearly worse": [],
+    "ECE failures": [],
+    "all five": true
+   },
+   "2": {
+    "1 gain with forecast rain": true,
+    "2 gain with ERA5-Land rain": true,
+    "3 no company clearly worse": true,
+    "4 reliability": true,
+    "5 not worse at a dry start": true,
+    "companies clearly worse": [],
+    "ECE failures": [],
+    "all five": true
+   },
+   "3": {
+    "1 gain with forecast rain": true,
+    "2 gain with ERA5-Land rain": true,
+    "3 no company clearly worse": true,
+    "4 reliability": true,
+    "5 not worse at a dry start": true,
+    "companies clearly worse": [],
+    "ECE failures": [],
+    "all five": true
+   },
+   "4": {
+    "1 gain with forecast rain": true,
+    "2 gain with ERA5-Land rain": true,
+    "3 no company clearly worse": true,
+    "4 reliability": true,
+    "5 not worse at a dry start": true,
+    "companies clearly worse": [],
+    "ECE failures": [],
+    "all five": true
+   }
+  },
+  "Q2 vs production": {
+   "0": {
+    "1 gain with forecast rain": true,
+    "2 gain with ERA5-Land rain": true,
+    "3 no company clearly worse": true,
+    "4 reliability": true,
+    "5 not worse at a dry start": true,
+    "companies clearly worse": [],
+    "ECE failures": [],
+    "all five": true
+   },
+   "1": {
+    "1 gain with forecast rain": true,
+    "2 gain with ERA5-Land rain": true,
+    "3 no company clearly worse": true,
+    "4 reliability": true,
+    "5 not worse at a dry start": true,
+    "companies clearly worse": [],
+    "ECE failures": [],
+    "all five": true
+   },
+   "2": {
+    "1 gain with forecast rain": true,
+    "2 gain with ERA5-Land rain": true,
+    "3 no company clearly worse": true,
+    "4 reliability": true,
+    "5 not worse at a dry start": true,
+    "companies clearly worse": [],
+    "ECE failures": [],
+    "all five": true
+   },
+   "3": {
+    "1 gain with forecast rain": true,
+    "2 gain with ERA5-Land rain": true,
+    "3 no company clearly worse": true,
+    "4 reliability": true,
+    "5 not worse at a dry start": true,
+    "companies clearly worse": [],
+    "ECE failures": [],
+    "all five": true
+   },
+   "4": {
+    "1 gain with forecast rain": true,
+    "2 gain with ERA5-Land rain": true,
+    "3 no company clearly worse": true,
+    "4 reliability": true,
+    "5 not worse at a dry start": true,
+    "companies clearly worse": [],
+    "ECE failures": [],
+    "all five": true
+   }
+  }
+ }
+}
