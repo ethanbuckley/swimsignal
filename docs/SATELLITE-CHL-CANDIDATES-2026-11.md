@@ -177,7 +177,7 @@ lab samples will be few.
   (gain's lower end above −0.05), the composite rule is written into the record as a **coverage improvement** for the
   2027 pairing protocol, whether or not E is supported.
 
-### Amendment 2 (6 November 2026, 12:05 UTC, after the first run was stopped, before any score)
+### Amendment 2 (6 November 2026, 12:00 UTC, after the first run was stopped, before any score)
 
 The first run (from 11:52:57 UTC) read serially, one range request at a time, and each B4 read took about 30 seconds:
 5 of 864 scenes in six minutes, 24 requests, 16,131,802 bytes, a measured rate of about 43 KB/s. At that pace the run
