@@ -844,6 +844,13 @@
    "branch": "claude/backtest-release-candidate-ef93ca",
    "branch_exists": true,
    "date": "2026-11-06"
+  },
+  "639": {
+   "n": 639,
+   "state": "open",
+   "branch": "claude/live-status-2026-backtest-6e8c93",
+   "branch_exists": true,
+   "date": "2026-11-06"
   }
  },
  "entries": [
@@ -1527,11 +1534,11 @@
     "spills",
     "live data"
    ],
-   "verdict": "On 2025 data the status input helped at every lead; at lead 0 Brier 0.0265 against 0.0362 (−27%, interval −0.0125 to −0.0070). About half the lead-0 gain comes from how the label is defined. With status missing the candidate is worse, so it needs a fallback.",
-   "scope": "2025 EA event data, retrospective; needs confirmation on SwimSignal's own polls.",
+   "verdict": "Two held-out periods say the status input helps. On 2025 it beat the same model without status at every lead (lead 0 Brier 0.0265 against 0.0362). On January to August 2026, as a frozen-model backtest, it passed all five conditions at every lead against that model and against production with the fallback (lead 1: 0.0316 against production's 0.0419). Not better than production at United Utilities beyond lead 0. About half the lead-0 gain comes from how the label is defined.",
+   "scope": "EA start/stop records for 2025 and January to August 2026, status rebuilt at 00:00 UTC; the poll-based status is tested only by the shadow.",
    "stage": "scheduled",
-   "stage_note": "Running in shadow beside the live forecast, 25 October to 21 November 2026. Not adopted and not dropped.",
-   "next": "Read on or after 23 November 2026.",
+   "stage_note": "Running in shadow beside the live forecast, 25 October to 21 November 2026. A switch is drafted, off by default (PR 639). Not adopted and not dropped.",
+   "next": "Read the shadow on or after 23 November 2026; then Ethan decides the switch and United Utilities.",
    "read_on": "2026-11-23",
    "records": [
     {
@@ -1541,11 +1548,16 @@
     {
      "doc": "docs/LIVE-STATUS-SHADOW-TEST-2026-10.md",
      "quote": "- **Runs** 28 target days, 25 Oct to 21 Nov 2026. **Read** on or after 23 Nov 2026."
+    },
+    {
+     "doc": "docs/LIVE-STATUS-BACKTEST-2026-11.md",
+     "quote": "Both questions pass all five of #254's conditions at every lead, 0 to 4."
     }
    ],
    "prs": [
     254,
-    262
+    262,
+    639
    ]
   },
   {
