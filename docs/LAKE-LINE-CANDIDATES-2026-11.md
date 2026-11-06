@@ -291,3 +291,24 @@ rebuilt, which needs about 200 weighted Open-Meteo archive calls (a quota decisi
   fifth candidate (D, a lake-specific seasonal response) that the diagnosis suggested:
   [DERWENT-WATER-DIAGNOSIS-2026-11.md](DERWENT-WATER-DIAGNOSIS-2026-11.md). D failed; the Derwent line chance is archived
   there with what would reopen it.
+
+## Colwick's old-pin exposure in the frozen file's rows: materiality rule (committed before any refit)
+
+Added 6 November 2026. The 1,537 rows behind `lake_line_frozen.v1.json` were built on 14 September, before #199. They
+carry Colwick Country Park's 45 samples with exposure from the superseded Trent pin; the site's pin since #199 has no
+monitored overflow upstream. The effect is sized here offline, with no request.
+
+- **Reproduction first.** Refit plain and B on all 1,537 rows exactly as `export` did; the refit must reproduce the
+  frozen file's check values to one part in a million. If not, stop and record why.
+- **Variants:** (a) the same fit without Colwick's 45 rows; (b) the same fit with Colwick's exposure set as its current
+  pin gives it: no overflow upstream, so exposure 0, which `ecoli.features` holds at logit(0.001).
+- **Where the effect is measured.** The 11 bathing waters that `shadow_lake_range_v1` logs (the frozen file's lake sites
+  other than Colwick), on each site's own 2024-26 sample-day inputs (592 rows). The shadow's logged rows are not used:
+  they are all out of season so far, and the state database stays undownloaded.
+- **Materiality rule, fixed now:** a variant is **material** if, at any of the 11 sites, the mean absolute relative
+  change of plain's or B's median over that site's rows exceeds **10%**, or the mean absolute change of P(over 500)
+  exceeds **0.005**. Coefficients (the shared exposure, rain and lake terms, noise and spreads) are reported, not judged.
+- **What follows, fixed now.** **Immaterial under both variants:** record it; `lake_line_frozen.v1.json` stays the file
+  the 2027 read uses. **Material under either:** v1 is not edited. A `lake_line_frozen.v2.json` is frozen beside it,
+  fitted without Colwick's rows, with a dated note, before any 2027 sample exists. The 2027 read then uses v2, because
+  its training rows match the site's pins, and reports v1 beside it.
