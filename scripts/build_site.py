@@ -3137,6 +3137,7 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     write_sampling_planner(site, token, root)   # where samples are thin, and the sampling simulation's results (Research)
     write_model_scorecard(site, token, root)   # each model's test record and stage: before the data page lists data/research/
     write_lake_temperatures(site)   # data/research/lake-temperatures/, before the data page lists data/
+    write_rise_history(site)   # data/research/river_rise_history.json, before the data page lists data/research/
     write_data_page(site, token, root)   # lists what is in data/, so build() writes the data files first
     write_quality_page(site, overflows, generated, token, root=root)
     write_embed(site)
@@ -3323,7 +3324,7 @@ def write_traces(site: Path, traces: dict[str, list[str]], upstream: dict[str, l
 # spot's page asks for its own data/spot/<id>.json. spots.json itself stays whole, for anyone who
 # reads it, for the organisers' page and the decision record, and for scripts/alerts.js. The lab
 # results an organisation sent (measured) are a spot page's alone too.
-DETAIL_FIELDS = ("contributors", "guide", "measured", "linked", "seasonal", "stretches", "sample_history", "lab")   # linked: spot_links, the Nearby card's; seasonal: past spills by month; stretches: an outing's finish (stretches.py); sample_history: the link to every EA sample (attach_sample_history)
+DETAIL_FIELDS = ("contributors", "guide", "measured", "linked", "seasonal", "stretches", "sample_history", "lab", "rise_history")   # linked: spot_links, the Nearby card's; seasonal: past spills by month; stretches: an outing's finish (stretches.py); sample_history: the link to every EA sample (attach_sample_history)
 
 
 def reach_by_company(contributors: list[dict]) -> list[list]:
@@ -3763,6 +3764,89 @@ def write_lake_temperatures_page(site: Path, token: str | None = None, root: str
     """lake-temperatures.html and lake-temperatures.js beside the app, which read data/research/lake-temperatures/
     (write_lake_temperatures, run before the data page). Returns the script's version."""
     return write_scripted_page(site, "lake-temperatures.html", ("lake-temperatures.js",), ("lake-temperatures.js",), token, root)
+
+
+# River rise history (docs/RIVER-RISE-HISTORY-CONTRACT-v1.md): for each river gauge of the river-rises run and each
+# calendar month, 21 Nov 2024 to 24 Oct 2026, how many hours (when the site would have shown no word) were followed
+# within 3 hours by a rise of more than a fifth of the gauge's usual range. The research side exports one file,
+# data/research/river_rise_history.v1.json (scripts/export_river_rise_history.py, from the C3 record's committed table:
+# the build fetches nothing). It is history, not a forecast: the River level tile says one line of it for the month
+# (index.html, riseHistoryLine). A spot gets the line only where its tile's gauge is the gauge the history is for
+# (river_state.measure's station), and only the months the export's display rule allows (enough hours counted, both
+# years): any other month is null, and the page says nothing for it. Per spot, in its own file (DETAIL_FIELDS), not in
+# the list's. The export is copied whole to data/research/river_rise_history.json for the data page and the Research
+# page. A file of another schema, or another major version, is not used.
+RISE_HISTORY = config.ROOT / "data" / "research" / "river_rise_history.v1.json"
+RISE_HISTORY_SCHEMA, RISE_HISTORY_MAJOR = "swimsignal.river-rise-history", "1"
+
+
+def read_rise_history(path: Path | None = None) -> tuple[dict | None, str | None]:
+    """The export and None, or None and why it is not used."""
+    path = path or RISE_HISTORY
+    if not path.is_file():
+        return None, "no export in this build"
+    try:
+        doc = json.loads(path.read_text())
+    except ValueError:
+        return None, "export is not JSON"
+    if doc.get("schema") != RISE_HISTORY_SCHEMA or str(doc.get("version", "")).split(".")[0] != RISE_HISTORY_MAJOR:
+        return None, f"export is {doc.get('schema')} {doc.get('version')}, not {RISE_HISTORY_SCHEMA} {RISE_HISTORY_MAJOR}.x"
+    return doc, None
+
+
+def gauge_ref(measure: str | None) -> str | None:
+    """The station of a flood-monitoring level measure ("F1903-level-stage-i-15_min-m" is F1903), with spaces as
+    underscores: the measure of Old Wye Bridge is 055807_TG_320, the station list's reference 055807_TG 320."""
+    if not measure or "-level-" not in measure:
+        return None
+    return re.sub(r"\s+", "_", measure.split("-level-", 1)[0])
+
+
+def rise_month_shown(m: dict | None, display: dict) -> bool:
+    """The export's display rule (`display`): at least min_hours hours counted, and readings in min_years years."""
+    return bool(m) and isinstance(m.get("hours"), int) and m["hours"] >= int(display.get("min_hours") or 10**9) \
+        and (m.get("years_in_month") or 0) >= int(display.get("min_years") or 2) and isinstance(m.get("years"), list)
+
+
+def attach_rise_history(results: list[dict], path: Path | None = None) -> dict:
+    """`rise_history` on each river spot the export serves whose River level tile shows the same gauge: the gauge, the
+    period, and the twelve months in order, each as counted or null where the display rule says nothing. Lakes, spots
+    with no gauge reading, and spots whose tile shows another gauge get none. Returns the build's health entry."""
+    doc, why = read_rise_history(path)
+    for r in results:
+        r.pop("rise_history", None)
+    if why:
+        return {"available": False, "why": why}
+    display = doc.get("display") or {}
+    by_spot = {s: g for g in doc.get("gauges") or [] for s in g.get("spots") or []}
+    n, other = 0, []
+    for r in results:
+        g, rs = by_spot.get(r.get("id")), r.get("river_state")
+        if not g or not rs or rs.get("water") == "lake" or r.get("kind") == "lake":
+            continue
+        if gauge_ref(rs.get("measure")) != re.sub(r"\s+", "_", str(g.get("gauge"))):
+            other.append(r["id"])   # the tile names another gauge: its history would be read as this one's
+            continue
+        months = {m.get("month"): m for m in g.get("months") or []}
+        r["rise_history"] = {"gauge": g.get("gauge"), "station": g.get("label"), "river": g.get("river"),
+                             "period": doc.get("period"),
+                             "months": [{k: months[i][k] for k in ("hours", "rise_hours", "rises", "years")}
+                                        if rise_month_shown(months.get(i), display) else None for i in range(1, 13)]}
+        n += 1
+    return {"available": True, "version": doc.get("version"), "spots": n, "other_gauge": other}
+
+
+def write_rise_history(site: Path, path: Path | None = None) -> dict:
+    """data/research/river_rise_history.json: the export whole, or saying it is not published (`available` false, with
+    why). Run before the data page lists data/research/. Returns the build's health entry."""
+    out = site / "data" / "research"
+    out.mkdir(parents=True, exist_ok=True)
+    doc, why = read_rise_history(path)
+    if why:
+        (out / "river_rise_history.json").write_text(json.dumps({"schema": RISE_HISTORY_SCHEMA, "available": False, "why": why}))
+        return {"available": False, "why": why}
+    (out / "river_rise_history.json").write_text(json.dumps({**doc, "available": True}, separators=(",", ":"), ensure_ascii=False))
+    return {"available": True, "gauges": len(doc.get("gauges") or [])}
 
 
 # Spill durations (docs/SPILL-DURATIONS-CONTRACT-v1.md): how long each storm overflow's spills lasted in 2024 and 2025,
@@ -4705,6 +4789,7 @@ def build(refresh: bool = True) -> dict:
     water_est = attach_water_temperature_estimate(results) if refresh else {"estimated": 0, "routes": {}, "missing": {"no refresh": 1}}   # every river and lake spot, all year (#492); cached rain cells
     n_levels = attach_river_levels(results) if refresh else 0   # observations beside the forecast, network only
     n_flows = attach_flow_state(results, any_alerts=any_floods) if refresh else {}   # river high or rising, flood alerts: not part of the level
+    rise_history = attach_rise_history(results)   # past quick rises at the tile's gauge, from a file: history, never a level
     n_weather = attach_weather(results) if refresh else 0
     generated = pd.Timestamp.now(tz="Europe/London")
     # Raises before anything is written if the build is bad. The live check needs this run's poll.
@@ -4723,6 +4808,7 @@ def build(refresh: bool = True) -> dict:
     health["lab_samples"] = n_lab
     health["sample_history"] = n_history
     health["lab_links"] = n_lab_links
+    health["river_rise_history"] = rise_history
     health["typical_readings"] = n_typical
     if water_body is None:
         health["warnings"].append("data/raw/rnags.json is missing or unreadable: no spot says what the Environment Agency lists on its water body")
