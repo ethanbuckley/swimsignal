@@ -274,7 +274,7 @@ met, so nothing is adopted for lakes on this result.
 up), with this test named. The lake off-season route stays the frozen curve, with its measured wording (typically
 3.6 °C out, reading about 3 °C too warm), until amendment 1 decides.
 
-## Amendment 1, 6 November 2026, about 21:20 UTC: more unseen lake rows (before any of its requests)
+## Amendment 1, 6 November 2026, 21:12 UTC: more unseen lake rows (before any of its requests)
 
 **Why.** Lakes were "too few to judge" on the reserved winter. The protocol's answer for that case is more winters or
 more cells under a new cap. Winter 2022 holds 402 lake rows in all, but 266 are already scored. Counted without reading
@@ -313,3 +313,50 @@ hash order. EA: winters 2020 and 2021, about 28 more requests, inside the existi
 - **Otherwise,** or too few again: the lake route keeps its measured wording. W2 for lakes is then scored, unchanged,
   on winter 2026 (October 2026 to April 2027) with this script after 30 April 2027. The Historical Forecast API keeps
   that winter's air, so no live logger is needed.
+
+### Amendment 1, result (6 November 2026, 21:12 to 21:16 UTC)
+
+- Amendment pushed as `21ec0307` at 21:12 UTC, before its first request.
+- **Probes:** both 200 with 48 of 48 hours (1–2 October 2020 and 2021). So both winters use the Historical Forecast
+  API, like the rest of the test; no ERA5-Land.
+- **EA:** 22 requests (91 in all, cap 160), all 200, 34,869 rows.
+- **Cells** (no result read): 15 lake cells in winter 2020, 37 in 2021, 22 in 2022 outside the scored 149.
+- **Open-Meteo:** 6 requests including the probes, all 200, **118.3 weighted calls** (cap 400). This Mac's total for
+  the test: 1,055.9.
+- **Score:** one run at 21:16 UTC (`score-lakes`), frozen hashes and `c86720d0…` checked. Output
+  `docs/WATER-TEMP-WINTER-BACKTEST-2026-11-lakes.json` (SHA-256 `ee3e15ec…`). Point tables unchanged.
+
+Lake rows only, winters 2020 (64 rows), 2021 (434) and 2022 outside the scored cells (136): **634 rows, 94 water
+groups, 21 months.** Every row had `a7`.
+
+| | RMSE | Bias (too warm +) | Within 2 °C | Verdict |
+|---|---|---|---|---|
+| Frozen route | 3.59 °C [3.09, 4.13] | +3.08 [+2.43, +3.79] | 29% | fail |
+| **W2** | **1.76 °C [1.49, 2.04]** | −0.11 [−0.64, +0.41] | 77% | **pass** |
+| W2 − frozen | **−1.83 °C [−2.53, −1.16]** | | | gain beyond 0.3, interval below zero: **adopt** |
+
+- W2 by winter: 2020 2.20 °C (64 rows), 2021 1.73, 2022 1.63.
+- W2 by month: 1.4 to 2.0 °C from October to March; **April 2.39 °C, reading 1.9 °C too cold**. February reads 0.7 warm.
+- W2 by lake size: under 1 km² 1.57 °C, 1 km² and over 1.94 °C (bias −0.63), unmatched 1.90.
+- The reference "water equals last week's air": 2.03 °C, bias −0.79.
+
+**What this establishes.** On lake rows from three winters it had never seen, the lake winter curve was typically
+1.8 °C out with no material bias, against 3.6 °C and +3.1 °C for today's route. With the reserved-winter river result,
+both water types now pass the stated backtest.
+
+**Limits.** 2020 is thin (64 rows; COVID-era sampling). April is the weak month for lakes: the curve reads too cold as
+lakes warm in spring. Large lakes carry most of that. Winter 2020 and 2021 used older forecast models than today's.
+
+## Release (decided by the rules above)
+
+- **Rivers and lakes, October to April:** the off-season route uses W2's curve (`data/processed/water_temp_winter.json`,
+  the frozen candidate's curves). Every place that shows the off-season estimate uses it: spot pages, the planner,
+  clicked points and the directory waters of Wales, Scotland and Ireland.
+- **Wording:** "provisional estimate; typically within 2 °C in a test on past winters" (rivers 1.6 °C, lakes 1.8 °C,
+  from the held-out rows above). `tested` stays false for these routes: only the river model's summer test sets it.
+  The longer text says what the test was, which winters, and that lakes read cold in April.
+- **Unchanged:** May to September routes, the sea curve, and anything to do with pollution levels.
+- **Monitoring, not a gate.** The live log `state/water_temp_estimates.parquet` keeps saving each estimate. After 30
+  April 2027 this script scores winter 2026 (October 2026 to April 2027) at the same cells, for W2 and the old route.
+  **Rollback:** if a type's RMSE there is more than 0.5 °C above its figure here (rivers 2.13, lakes 2.26 °C), that type
+  goes back to the old curve and the "not yet checked" wording until a new record.
