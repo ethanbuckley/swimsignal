@@ -510,7 +510,8 @@ def stage_fresh(args) -> dict:
     y = f"y{h}"
     out = {"made": datetime.now(UTC).isoformat(timespec="seconds"), "frozen_sha256": sha, "window": [str(FRESH[0]), str(FRESH[1])],
            "own": evaluate(res[res["gauge"].isin(own)], y, MODELS["own"], PAIRS["own"], bootstrap=False),
-           "all": evaluate(res, y, MODELS["all"], PAIRS["all"], bootstrap=False),
+           # The frozen R3 was fitted on the 33 gauges only, so on all 45 C3n is compared with R1 and R1s.
+           "all": evaluate(res, y, ("R1", "R1s", "C3n"), (("C3n", "R1"), ("C3n", "R1s")), bootstrap=False),
            "label_share": float(res.loc[res["in_P"], y].notna().mean())}
     args.out.mkdir(parents=True, exist_ok=True)
     res.to_parquet(args.out / "c3_fresh_predictions.parquet", index=False)
