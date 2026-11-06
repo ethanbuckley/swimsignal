@@ -29,12 +29,14 @@ line only; the table is an option.
 
 ## What it rests on
 
-All seen data, labelled as development evidence. The measure is the within-site Spearman correlation between a model's
+All seen data, labelled as development evidence. The 2012-22 figures were corrected on 6 November 2026: the first
+rebuild of those rows had uncalibrated exposure (`LAKE-LINE-2012-22-CHECK-2026-11.md`, "Correction"); the
+conclusion is unchanged. The measure is the within-site Spearman correlation between a model's
 daily figure and the lab result at the same lake.
 
 | Data | lake-range family median | Production's lake chance | Difference |
 |---|---|---|---|
-| 2012-22, Windermere ×4 and Frensham, 962 samples (out-of-time; previously examined by #584) | lake-range-v1 0.287; frozen plain 0.279 | 0.123 | plain +0.156 [+0.090, +0.218] |
+| 2012-22, Windermere ×4 and Frensham, 962 samples (out-of-time; previously examined by #584; corrected 6 Nov) | lake-range-v1 0.286; frozen plain 0.279 | 0.132 | lake-range-v1 +0.155 [+0.094, +0.216]; plain +0.147 [+0.082, +0.210] |
 | 2024-26, 12 lake bathing waters, 637 samples, lake held out of fitting | plain 0.180 | −0.042 | +0.222 [+0.105, +0.332] |
 | 2024-26, forward in time | plain 0.222 | −0.078 | +0.300 [+0.132, +0.472] |
 

@@ -28,8 +28,8 @@ becoming a forecast. A candidate can collect shadow predictions while its model 
 | Bounded exploration | Reproducible analysis, mechanism check, improved candidate | A plausible question; inspectable data; a stated time/data budget; an explicit exploratory label on reused data | Deliver a candidate, a data/coverage product, a collection plan, or an archive reason at the milestone |
 | Running comparison (shadow) | Predictions saved alongside the current model before outcomes arrive | Correct timestamps and features available at issue time, isolated versioned logs, missing-data fallback, manageable cost | Read at the agreed date against production **and** useful simple references |
 | Public research observations | Dated measurements, satellite indices, coverage and historical patterns | Correct extraction, identity/units/source/method, visible age and missingness, understandable limits; relevant source terms checked | Publish through a discoverable Research page; improve coverage and usability; forecast claims need their own evidence |
-| Limited forecast | A calibrated estimate for specified lakes/companies/seasons/horizons | Evidence for that population and claim, honest uncertainty and failure behaviour, prospective confirmation where selection used seen outcomes | Staged rollout with fallback and monitoring; unsupported groups keep their existing output |
-| Main forecast | A default used to guide the existing product | Pre-stated useful improvement or justified non-inferiority, appropriate calibration, subgroup guardrails, prospective operation and a reviewed rollout | Monitor drift, coverage and incidents; keep a reproducible rollback |
+| Limited forecast | A calibrated estimate for specified lakes/companies/seasons/horizons | Evidence for that population and claim, honest uncertainty and failure behaviour, and a confirmation the selection could not have seen: a **frozen-model backtest** on held-out years (below) or a prospective window | Staged rollout with fallback and monitoring; unsupported groups keep their existing output |
+| Main forecast | A default used to guide the existing product | Pre-stated useful improvement or justified non-inferiority, appropriate calibration, subgroup guardrails, a frozen-model backtest on held-out years or prospective operation, and a reviewed rollout | Monitor drift, coverage and incidents; keep a reproducible rollback |
 
 For satellite work, the first public output can be an **historical, dated NDCI observation series**, not an estimate
 of harmful algae. A historical release must say so prominently; becoming “latest observations” requires an actual
@@ -61,8 +61,8 @@ forecast claim merely because its underlying observations can be displayed.
   entire routing rule on new data, including its fallback and coverage, before claiming confirmed improvement.
 - Reused 2024–26 outcomes remain usable for development and diagnosis. They cannot become unseen confirmation by
   changing the model's name, reshuffling folds, changing the threshold, or publishing a new document. Use grouped
-  or time-embargoed development splits where shared events would leak; freeze the candidate before collecting a
-  fresh confirmation window.
+  or time-embargoed development splits where shared events would leak; freeze the candidate before scoring it on
+  held-out years (a frozen-model backtest, below) or collecting a fresh confirmation window.
 - Negative results get a precise scope. “This dynamic-flow variant did not help these sites” is useful;
   “hydrology cannot help” is unsupported. Keep the data and reusable extraction code discoverable.
 
@@ -131,6 +131,26 @@ already seen (leave-one-lake-out, leave-one-season-out, forward splits, river-sy
 threshold and weight) is legitimate development evidence. It can rank candidates, size an effect with an interval and
 check calibration and coverage. It cannot be fresh confirmation, because the outcomes were seen. Say which figures are
 which in every record. Never relabel seen data as unseen, and never move an old threshold.
+
+**Backtest instead of waiting (Ethan, 6 November 2026).** SwimSignal has years of history: EA samples from 2012,
+rain archives for decades, gauge series and spill files for several years. A release does not wait for a future
+season when a **frozen-model backtest** can answer the question now. It counts as the confirmation for the "Limited
+forecast" and "Main forecast" routes when all of these hold:
+
+- the model (code, parameters, thresholds) is frozen and its hash committed **before** the test years' outcomes are
+  joined;
+- the test years were not used to fit, select, tune or design it. Years already scored for a different model may be
+  reused for this one only if nothing about this model was chosen after seeing them; say so in the record;
+- the metric, the references, the margin and what each outcome leads to are committed before the run;
+- inputs are rebuilt as they would have been available at issue time (archive rain, not later corrections where the
+  live feed would differ), and any known difference from the live inputs is stated;
+- the result is reported with intervals clustered as the sampling demands (lake or river system, and season).
+
+When every available year was used to choose the model, either rebuild older years (often a few hundred free archive
+requests) or run a shadow. A prospective window still runs after release as **monitoring**, with a stated rollback
+rule. It is not a gate. The 2027 primary evaluation stays as scheduled and frozen; no release waits on it when a
+frozen-model backtest supports the claim. A backtest that supports a claim does not lower the bar for what a swimmer
+is told: the wording must say only what the backtest showed (for example "orders days" is not "predicts exceedance").
 
 **An interval that includes zero does not show non-inferiority.** "Not worse" needs a non-inferiority margin stated
 before the comparison and an interval that excludes harm beyond it. A point estimate near zero with a wide interval

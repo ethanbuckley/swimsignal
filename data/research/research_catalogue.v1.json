@@ -1160,7 +1160,7 @@
     "lakes",
     "model"
    ],
-   "verdict": "The primary question held for both frozen models. On 962 samples at Windermere and Frensham, 2012-22, the concentration model's median ordered a lake's own samples better than production's lake chance: mean within-site rho difference +0.156 (interval +0.090 to +0.218) for the plain model and +0.182 (+0.122 to +0.244) for the lake wet-response model. The live lake-range-v1 ordered as well and fitted the spread best. With 9 results over 900, a line chance could not be judged.",
+   "verdict": "The primary question held for every frozen model. On 962 samples at Windermere and Frensham, 2012-22, the concentration model's median ordered a lake's own samples better than production's lake chance. Corrected figures (6 Nov 2026), mean within-site rho difference: +0.147 (interval +0.082 to +0.210) for the plain model, +0.176 (+0.116 to +0.237) for the lake wet-response model, and +0.155 (+0.094 to +0.216) for the live lake-range-v1 (0.286 against 0.132). The first report used rows with uncalibrated exposure (+0.156 and +0.182); the conclusion did not change. With 9 results over 900, a line chance could not be judged.",
    "scope": "An out-of-time development comparison on outcomes #584 had already examined; the models were frozen on 2024-26 data before these rows were joined. Five sampling sites on two water bodies. #584 had already published a close relative of this ordering result for its own candidate.",
    "stage": "development",
    "stage_note": "Built in #630, live once Ethan merges and deploys: in season, the lake tile at the 11 lake bathing waters with their own samples says whether today's likely reading from lake-range-v1 is higher (at least twice), lower (at most half) or about the lake's usual for that time of year, usual being the same estimate at the lake's median 2023-26 inputs. Not at average-lake spots, out of season or at Colwick. No level, colour or line chance; the lake range shadow is unchanged.",
@@ -1173,6 +1173,10 @@
     {
      "doc": "docs/LAKE-RANGE-DIRECTION-PROPOSAL-2026-11.md",
      "quote": "It is a product decision for Ethan."
+    },
+    {
+     "doc": "docs/LAKE-LINE-2012-22-CHECK-2026-11.md",
+     "quote": "**Does the conclusion change? No.** The primary question still **holds for every frozen model**, with intervals above"
     },
     {
      "doc": "docs/LAKE-RANGE-DIRECTION-PROPOSAL-2026-11.md",

@@ -29,7 +29,7 @@ def test_committed_rows_reproduce_the_point_estimates(monkeypatch):
     assert got["rows"] == 962 and got["over_900"]["results"] == 9 and got["over_500"]["brier"] == REC["over_500"]["brier"] and got["clusters"] == 52
     assert got["mean_site_rho"] == REC["mean_site_rho"]
     assert got["logscore"] == REC["logscore"]
-    assert {k: v["mean"] for k, v in got["primary"].items()} == {k: v["mean"] for k, v in REC["primary"].items()}
+    assert {k: got["primary"][k]["mean"] for k in REC["primary"]} == {k: v["mean"] for k, v in REC["primary"].items()}
 
 
 def test_recorded_answer_and_label():
@@ -42,3 +42,20 @@ def test_the_fetch_stayed_inside_its_caps():
     led = json.loads(Path(f"{m.DOC}-ledger.json").read_text())
     assert sum(r["weight"] for r in led["open_meteo"]) <= 300 and all(r["ok"] for r in led["open_meteo"])
     assert len(led["ea"]) <= 10 and all(r["ok"] for r in led["ea"])
+
+
+COR = json.loads(Path(f"{m.CORRECTED}-scores.json").read_text())
+
+
+def test_corrected_run_reproduces_and_holds(monkeypatch):
+    """The correction (6 Nov 2026): rows rebuilt to match #584's (calibrated exposure). The point estimates recompute
+    from the committed corrected rows, every frozen model still holds against production's form, and the original files
+    are kept beside it."""
+    assert m.sha(Path(f"{m.CORRECTED}-rows.csv")) == COR["rows_sha256"]
+    assert COR["inputs_sha256"]["lake_line_frozen.v2.json"] == m.FROZEN_V2_SHA
+    monkeypatch.setattr(m, "DRAWS", 20)
+    got = m.score(pd.read_csv(f"{m.CORRECTED}-rows.csv"))
+    assert got["mean_site_rho"] == COR["mean_site_rho"]
+    assert all(COR["holds"].values()) and set(COR["holds"]) == {"plain_med", "B_med", "plain2_med", "B2_med", "range_med"}
+    assert COR["mean_site_rho"]["range_med"] == 0.2862 and COR["mean_site_rho"]["production"] == 0.1316
+    assert Path(f"{m.DOC}-scores.json").exists()   # the first report stays as the record

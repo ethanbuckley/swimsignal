@@ -31,13 +31,18 @@ from lake_own_rate_test import auc  # noqa: E402
 DOC = ROOT / "docs" / "LAKE-LINE-2012-22-CHECK-2026-11"
 FROZEN = ROOT / "data" / "research" / "lake_line_frozen.v1.json"
 FROZEN_SHA = "83a3a8d0929afb1ff178cc064e4fb8b4ec0af64810b5a2a1435108e3594a1c23"
+FROZEN_V2 = ROOT / "data" / "research" / "lake_line_frozen.v2.json"
+FROZEN_V2_SHA = "d0cb162044a05504524f24eb9b3bed6b8afb5bcdef7e42c5e1963c94f1ad8f93"
+# The corrected run (6 Nov 2026): rows rebuilt with the archive's full data tree, so they match #584's. Its outputs sit
+# beside the original run's under this stem; the original files are kept as the record of what was first reported.
+CORRECTED = ROOT / "docs" / "LAKE-LINE-2012-22-CHECK-2026-11-corrected"
 RANGE = ROOT / "data" / "processed" / "ecoli_lake_range.json"
 DEPLOYED = ROOT / "data" / "processed" / "ecoli_model.json"
 EVID = ROOT / "data" / "research" / "ecoli_evidence.v1.json"
 SEED, DRAWS = 20261106, 2000
 LOW, HIGH = 10.0, 10_000.0
 PROD = ["lrain48", "lrain24", "logit_risk", "lake", "lake_x_lrain48", "doy_sin", "doy_cos"]
-SCORES = ("plain_med", "B_med", "range_med", "production", "deployed")
+SCORES = ("plain_med", "B_med", "plain2_med", "B2_med", "range_med", "production", "deployed")
 
 
 def sha(p: Path) -> str:
@@ -85,7 +90,7 @@ def summaries(w, mu, s, y, cens) -> dict:
 # ------------------------------------------------------------------ rows and forecasts
 def build(out_dir: Path) -> pd.DataFrame:
     from dipcast.model.ecoli import EcoliModel, fit
-    f, rng_f = json.loads(FROZEN.read_text()), json.loads(RANGE.read_text())
+    f, rng_f, f2 = json.loads(FROZEN.read_text()), json.loads(RANGE.read_text()), json.loads(FROZEN_V2.read_text())
     tr, te = pd.read_parquet(out_dir / "rows_train.parquet"), pd.read_parquet(out_dir / "rows_test.parquet")
     tr = tr.drop_duplicates(["bw_id", "sample_time"])
     te = te.reset_index(drop=True)
@@ -94,18 +99,20 @@ def build(out_dir: Path) -> pd.DataFrame:
     tr_over = (tr["ecoli"] > 900).astype(int).to_numpy()
     te["production"] = fit(tr, tr_over, PROD).predict(te)       # refitted on #584's 2023-26 rows, as #584 did
     te["deployed"] = EcoliModel.from_json(DEPLOYED).predict(te)
-    Xw = add_wet(te, f["B"]["wet"])
+    Xw, Xw2 = add_wet(te, f["B"]["wet"]), add_wet(te, f2["B"]["wet"])
     y, c = te["y"].to_numpy(), te["cens"].to_numpy()
     for bw, idx in te.groupby("bw_id").groups.items():
         idx = np.asarray(idx)
-        for kind, X, src in (("plain", te, f), ("B", Xw, f), ("range", te, rng_f)):
+        for name, kind, X, src in (("plain", "plain", te, f), ("B", "B", Xw, f), ("plain2", "plain", te, f2),
+                                   ("B2", "B", Xw2, f2), ("range", "range", te, rng_f)):
             s = summaries(*mixture(src, X.loc[idx], bw, kind), y[idx], c[idx])
             for k, v in s.items():
-                te.loc[idx, f"{kind}_{k}"] = v
+                te.loc[idx, f"{name}_{k}"] = v
     te["year"] = pd.to_datetime(te["sample_time"], utc=True).dt.year
     te["cluster"] = te["bw_id"] + "|" + te["year"].astype(str)
     keep = ["bw_id", "name", "sample_time", "year", "cluster", "ecoli", "qual", "y", "cens", "rain_48h", "rain_24h",
-            "risk_model", "production", "deployed"] + [f"{k}_{s}" for k in ("plain", "B", "range") for s in ("med", "ls", "F", "p900", "p500")]
+            "risk_model", "production", "deployed"] + [f"{k}_{s}" for k in ("plain", "B", "plain2", "B2", "range")
+                                                      for s in ("med", "ls", "F", "p900", "p500")]
     return te[keep]
 
 
@@ -140,28 +147,30 @@ def score(d: pd.DataFrame) -> dict:
     res = {"rows": int(len(d)), "sites": int(d["bw_id"].nunique()), "clusters": int(d["cluster"].nunique()),
            "over_900": int((d["ecoli"] > 900).sum()), "over_500": int((d["ecoli"] > 500).sum()),
            "below_limit": int((d["cens"] < 0).sum())}
-    rho = {k: mean_site_rho(d, k) for k in SCORES}
+    have = [k for k in SCORES if k in d]
+    rho = {k: mean_site_rho(d, k) for k in have}
     res["mean_site_rho"] = {k: round(v[0], 4) for k, v in rho.items()}
     res["site_rho"] = {k: {bw: round(x, 3) for bw, x in v[1].items()} for k, v in rho.items()}
     res["primary"] = {}
-    for a in ("plain_med", "B_med"):
+    for a in [k for k in ("plain_med", "B_med", "plain2_med", "B2_med", "range_med") if k in d]:
         for b in ("production", "deployed"):
             res["primary"][f"{a}_minus_{b}"] = {"mean": round(rho[a][0] - rho[b][0], 4), "ci95": boot_rho_diff(d, a, b)}
     res["primary"]["B_med_minus_plain_med"] = {"mean": round(rho["B_med"][0] - rho["plain_med"][0], 4),
                                                 "ci95": boot_rho_diff(d, "B_med", "plain_med")}
     res["by_season"] = {}
     for yv, g in d.groupby("year"):
-        r = {k: round(mean_site_rho(g, k)[0], 3) for k in SCORES}
+        r = {k: round(mean_site_rho(g, k)[0], 3) for k in have}
         res["by_season"][str(yv)] = {"rows": int(len(g)), "over_500": int((g["ecoli"] > 500).sum()), **r}
     # the concentration
-    ls = {k: d[f"{k}_ls"].to_numpy() for k in ("plain", "B", "range")}
+    kinds = [k for k in ("plain", "B", "plain2", "B2", "range") if f"{k}_ls" in d]
+    ls = {k: d[f"{k}_ls"].to_numpy() for k in kinds}
     res["logscore"] = {k: round(float(v.mean()), 4) for k, v in ls.items()}
     res["logscore_diff"] = {f"{a}_minus_{b}": {"mean": round(float((ls[a] - ls[b]).mean()), 4),
                                                "ci95": boot_mean(ls[a] - ls[b], d["cluster"].to_numpy())}
                             for a, b in (("plain", "range"), ("B", "range"), ("B", "plain"))}
     rng = np.random.default_rng(SEED)
     cov = {}
-    for k in ("plain", "B", "range"):
+    for k in kinds:
         F = d[f"{k}_F"].to_numpy()
         pit = np.where(d["cens"].to_numpy() < 0, rng.uniform(size=len(d)) * 2 * F, F)   # F stored as F(10)/2 for "<10"
         cov[k] = round(float(((pit >= 0.1) & (pit <= 0.9)).mean()), 4)
@@ -172,8 +181,8 @@ def score(d: pd.DataFrame) -> dict:
               for s in ev["sites"] if s["bw_id"] in set(d["bw_id"])}
     f = json.loads(FROZEN.read_text())
     o5 = (d["ecoli"] > 500).astype(int).to_numpy()
-    p = {"plain": d["plain_p500"].to_numpy(), "B": d["B_p500"].to_numpy(), "range": d["range_p500"].to_numpy(),
-         "usual": np.full(len(d), f["usual_rate_2023_26"]["500"]), "own": d["bw_id"].map(own500).to_numpy()}
+    p = {k: d[f"{k}_p500"].to_numpy() for k in kinds} | {"usual": np.full(len(d), f["usual_rate_2023_26"]["500"]),
+                                                          "own": d["bw_id"].map(own500).to_numpy()}
     b = {k: round(float(((v - o5) ** 2).mean()), 5) for k, v in p.items()}
     res["over_500"] = {"brier": b, "skill_vs_usual": {k: round(1 - b[k] / b["usual"], 4) for k in b},
                        "auc": {k: round(auc(v, o5), 3) for k, v in p.items()},
@@ -185,9 +194,12 @@ def score(d: pd.DataFrame) -> dict:
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--from-rows", action="store_true")
+    ap.add_argument("--corrected", action="store_true", help="write the corrected run's files beside the original's")
     args = ap.parse_args()
-    assert sha(FROZEN) == FROZEN_SHA, "the frozen file changed"
-    inputs = [FROZEN, RANGE, DEPLOYED, EVID]
+    global DOC
+    DOC = CORRECTED if args.corrected else DOC
+    assert sha(FROZEN) == FROZEN_SHA and sha(FROZEN_V2) == FROZEN_V2_SHA, "a frozen file changed"
+    inputs = [FROZEN, FROZEN_V2, RANGE, DEPLOYED, EVID]
     before = {p.name: sha(p) for p in inputs}
     if args.from_rows:
         d = pd.read_csv(f"{DOC}-rows.csv")
@@ -197,9 +209,12 @@ def main() -> None:
         d = pd.read_csv(f"{DOC}-rows.csv")   # score exactly what is committed
     res = {"schema": "swimsignal.lake-line-2012-22-check", "version": "1.0.0", "protocol": "docs/LAKE-LINE-2012-22-CHECK-2026-11.md",
            "protocol_commit": "96392731", "label": "out-of-time development comparison on previously examined outcomes",
+           **({"correction": "6 Nov 2026: rows rebuilt with #584's full data tree (calibrated exposure); the first run's rows "
+                              "lacked lead_calibration.json. Same protocol; both sets kept."} if args.corrected else {}),
            "seed": SEED, "draws": DRAWS, "inputs_sha256": before, "rows_sha256": sha(Path(f"{DOC}-rows.csv")), **score(d)}
     p = res["primary"]
-    res["holds"] = {k: bool(p[f"{k}_minus_production"]["ci95"][0] > 0) for k in ("plain_med", "B_med")}
+    res["holds"] = {k.removesuffix("_minus_production"): bool(v["ci95"][0] > 0) for k, v in p.items()
+                    if k.endswith("_minus_production")}
     assert before == {q.name: sha(q) for q in inputs}
     if not args.from_rows:
         Path(f"{DOC}-scores.json").write_text(json.dumps(res, indent=1, default=float) + "\n")
