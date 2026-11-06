@@ -188,8 +188,10 @@ design fault of this protocol, recorded, not corrected after the fact.** B also 
   every interval against the usual rate spans zero ([−0.0032, +0.0075] for B). Nothing approaches #625's 0.10.
 - **Recalibration did not help.** The plain line chance was already calibrated (slope 1.00) except for being too high on
   average (+0.010). The inner maps moved it to +0.0014, but with 7-13 inner events their intercepts ranged from −0.85
-  to +0.22 between folds, and the Brier rose (A − plain +0.0002 [−0.0014, +0.0026]). #625's note that the concentration
-  model "sat too high at the line" was about #466's model (one noise level), whose slope was 0.60.
+  to +0.22 between folds, and the Brier rose (A − plain +0.0002 [−0.0014, +0.0026]). **Correction to #625's wording:** it
+  said the concentration model "sat too high at the line". That model was #466's (one noise level); here its
+  calibration slope is 0.60 and its mean forecast 0.005 below the observed rate, so it was too extreme, not too high.
+  The plain model with its own lake noise is the one that sat high (+0.010).
 - **Pooled AUC near 0.89 is between lakes again,** as #625 found for the own rate. Within a site, with 4 sites holding
   any result over 900, the AUCs (0.40-0.48) are noise.
 
@@ -206,15 +208,15 @@ Central 80% coverage, main scheme: plain 78.0%, B 77.9%.
 - **The finding that holds across schemes is not a candidate's: the concentration model's median orders a lake's own
   samples better than production's line chance does.** Production's lake chance ranks a lake's samples slightly
   backwards (mean rho −0.04 to −0.08); the plain model's median ranks them forwards (0.08 to 0.22), with the
-  difference's interval above zero at unseen lakes and forward. The size is modest: a rho of 0.2 orders pairs of samples
-  correctly about 56% of the time.
+  difference's interval above zero at unseen lakes and forward. The size is modest: a rho of 0.2 puts a pair of samples in the
+  right order about 57% of the time.
 - **B's lake-specific wet response fits known lakes' spread better but does not order their samples better.** Its log
   score gain in the main scheme (interval above zero by water-body season, spanning zero by ISO week) comes with no
   within-site rho gain, and at unseen lakes it is worse than plain: its fitted all-lake wet term misleads where the
   lake's own slope is unknown. The slope spread was about 0.2 log10 per unit of the wet index in every fold. The lakes
-  with the steepest own slopes were Coniston Brown Howe and Monk Coniston and Windermere Millerground (+0.17 to +0.26);
-  the flattest were Colwick (−0.27 to −0.34), Frensham and **Derwent Water (−0.06 to −0.11): the lake with most results
-  over 900 responds less to wet days than the average lake.**
+  with the steepest own slopes were Coniston Brown Howe and Monk Coniston and Windermere Millerground (+0.09 to +0.26
+  across folds); the flattest were Colwick (−0.18 to −0.34), Frensham (−0.11 to −0.20) and **Derwent Water (−0.06 to
+  −0.11): the lake with most results over 900 responds less to wet days than the average lake.**
 
 ### Derwent Water's 2025 season (diagnosis, described only)
 
