@@ -1940,6 +1940,12 @@ A line stays with an option only where it differs for that spot.
   inspected". It is the third field of `compareRows`.
 - A row whose cells all say the same is one cell across the columns.
 - Distance reads "1.1 miles".
+- On a phone it opens on the answer (6 November 2026). The three spot selects fold under "Choose the spots" (a
+  `details.more`, `compare-pick`) once two spots are chosen; the table's heads already name them. At 375 x 812 the
+  first day's row moved from 660-721 px to 470-532 px, clear of the tab bar at 748 px. The fold opens by itself while
+  fewer than two are chosen and closes again when two are, unless the change came from its own selects or it was
+  opened by hand (`comparePick`). Wider than 800 px it is drawn open with no line, so a desktop is unchanged. The
+  status line and the note ("Issued …. A lower forecast level does not mean safe water …") stay above the table.
 - Water today is two rows, Water temperature and Water level.
 - Figures use tabular numerals.
 

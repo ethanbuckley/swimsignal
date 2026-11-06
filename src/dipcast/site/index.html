@@ -1096,6 +1096,9 @@
     .compare-pin.on > div { visibility:visible; }
   }
   .compare-note { margin:0; padding:0 0 10px; }
+  /* The selects' fold (compareSection): a phone's. Wider, it is drawn open and its line is not drawn, so a desktop's
+     table starts where it did before 6 Nov 2026. A fold closed on a phone turned wide keeps its line, to open it by. */
+  @media (min-width: 801px) { details[open].compare-pick > summary { display:none; } }
   details.comparison { scroll-margin-top:calc(var(--header-h) + 8px); }
   /* Every folded tile (Saved's activity choices and Water-wise too, which had the browser's triangle in the
      text face beside "Open a shared list") opens on its name in the display face with the folds' chevron. */
@@ -4062,8 +4065,14 @@ function compareSection(c) {
   COMPARING = c;
   const opts = i => c.groups.map(([h, g]) => (h ? `<optgroup label="${esc(h)}">` : '')
     + g.map(s => `<option value="${esc(s.id)}"${s.id === c.ids[i] ? ' selected' : ''}>${esc(s.name)}</option>`).join('') + (h ? '</optgroup>' : '')).join('');
+  // The three selects fold under "Choose the spots" on a phone once two are chosen (6 Nov 2026): open, they took
+  // 246 px and put the first day's levels under the tab bar at 375 x 812. The table's heads name the spots chosen.
+  // Open on a wider screen, and open whenever fewer than two are chosen, as the selects are then the step
+  // (comparePick); opened for that, it is marked auto and folds again once two are chosen.
+  const auto = PHONE.matches && c.ids.filter(Boolean).length < 2;
   return `<details class="sec tile comparison" id="compare"${c.open ? ' open' : ''}><summary>${c.title}</summary><p class="sub">${c.sub}</p>`
-    + `<div class="compare-fields">${[0, 1, 2].map(i => `<label>Spot ${i + 1}${i === 2 ? ' (optional)' : ''}<select data-compare="${i}"><option value="">Choose a spot</option>${opts(i)}</select></label>`).join('')}</div>`
+    + `<details class="more compare-pick"${!PHONE.matches || auto ? ' open' : ''}${auto ? ' data-auto="1"' : ''}><summary>Choose the spots</summary>`
+    + `<div class="compare-fields">${[0, 1, 2].map(i => `<label>Spot ${i + 1}${i === 2 ? ' (optional)' : ''}<select data-compare="${i}"><option value="">Choose a spot</option>${opts(i)}</select></label>`).join('')}</div></details>`
     + `<p class="small muted" id="compare-status" role="status"></p><div id="compare-result"></div></details>`;
 }
 // The table: a column a spot, so that two sit side by side on a phone; each row's label a band across it; the
@@ -4132,12 +4141,22 @@ function compareToPlan(s, day) {
   }
   PLAN_NEW = true; openPlan(planFromSpot(s, planBase(), planDates().includes(day) ? day : null));
 }
-function drawComparison() {
+// The fold over the selects (compareSection): opened while fewer than two spots are chosen, and marked auto; folded
+// again on a phone once two are, unless the change came from its own selects or someone opened it themselves, so a
+// fold in use never closes under the hand.
+function comparePick(n, e) {
+  const pick = document.querySelector('.compare-pick'); if (!pick) return;
+  if (e && e.target && pick.contains(e.target)) delete pick.dataset.auto;
+  if (n < 2) { if (!pick.open) { pick.open = true; pick.dataset.auto = '1'; } }
+  else if (pick.dataset.auto && PHONE.matches) { pick.open = false; delete pick.dataset.auto; }
+}
+function drawComparison(e) {
   const box = document.getElementById('compare-result'), c = COMPARING; if (!box || !c) return;
   const offered = compareOffered(c), ids = comparisonIds([...document.querySelectorAll('[data-compare]')].map(el => el.value), offered);
   c.chose(ids);
   const spots = ids.map(id => offered.find(s => s.id === id));
   box.innerHTML = spots.length < 2 ? '' : compareTable(spots, c.day, c.meta);
+  comparePick(spots.length, e);
   const sc = box.querySelector('.compare-scroll'), wide = sc && sc.scrollWidth > sc.clientWidth;
   document.getElementById('compare-status').textContent = spots.length < 2 ? 'Choose at least two different spots.'
     : `${spots.length} spots side by side.${wide ? ' Scroll sideways to see every column.' : ''}`;
@@ -4171,6 +4190,7 @@ function bindComparison() {
   const details = document.querySelector('.comparison'), c = COMPARING;
   if (!details || !c) return;
   details.addEventListener('toggle', () => { c.toggled(details.open); if (details.open) drawComparison(); });   // drawn open, as the table needs its width
+  const pick = details.querySelector('.compare-pick > summary'); if (pick) pick.addEventListener('click', () => delete pick.parentElement.dataset.auto);
   document.querySelectorAll('[data-compare]').forEach(el => el.addEventListener('change', drawComparison));
   drawComparison();
 }
