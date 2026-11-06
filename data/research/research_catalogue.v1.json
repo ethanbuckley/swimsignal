@@ -802,6 +802,13 @@
    "branch": "claude/satellite-pilot-signal",
    "branch_exists": true,
    "date": null
+  },
+  "626": {
+   "n": 626,
+   "state": "open",
+   "branch": "claude/priceless-sanderson-55f620",
+   "branch_exists": true,
+   "date": null
   }
  },
  "entries": [
@@ -2698,6 +2705,42 @@
    "prs": [
     623,
     624
+   ]
+  },
+  {
+   "id": "sat-low-signal-chlorophyll",
+   "title": "Satellite lake readings: the low-signal rule against lab chlorophyll",
+   "section": "satellite",
+   "topics": [
+    "lakes",
+    "satellite"
+   ],
+   "project": "SAT-OBS",
+   "verdict": "Exploratory, on the lab chlorophyll test's seen pairs; 206 of 207 scenes read (897 requests, 463.8 MiB, caches unchanged; the one run became two after a dropped connection, with the amendment recorded first). Contract 1.4's rule flags 43 of 206 pairs (21%; deeper lakes 28%, shallow 12%), the flagged readings low at low-chlorophyll lakes. Without them the pooled Spearman is 0.580 against 0.501 (paired difference +0.080, interval −0.023 to +0.176) and the within-lake Spearman 0.395 against 0.292 (+0.102, −0.037 to +0.255): under the pre-stated reading, mixed, not shown. The inner-core reading in place of the core reading changes the pooled Spearman by +0.004.",
+   "scope": "38 EA chlorophyll monitoring points, May to September 2021-2026 scenes within a day of a lab sample; thresholds fixed on bathing-lake scenes before any lab pair was seen with them, but the pairs and lab values were seen in #386. Not a pass of #386 (the four conditions recomputed on the unflagged subset hold as figures, which is description of a post-hoc subset), not an algae, toxin or safety finding. One pair of 207 unread.",
+   "stage": "reference",
+   "stage_note": "Nothing adopted; the display rule, readings and /lakes.html note stay as contract 1.4 wrote them. The 2027 shallow-lake protocol review gets the direction, size and flagged-share expectation to pre-state, and the exclusion as a candidate secondary analysis.",
+   "next": "2027 shallow-lake protocol review before 1 May 2027: pre-state the flag exclusion as a secondary analysis with a margin below +0.08; the inner-core variant need not be carried.",
+   "records": [
+    {
+     "doc": "docs/SATELLITE-LOW-SIGNAL-CHLOROPHYLL-2026-11.md",
+     "quote": "**43 of 206 pairs (20.9%)** would carry the low-signal mark: 19 dark and spread, 21 spread only, 3 dark only."
+    },
+    {
+     "doc": "docs/SATELLITE-LOW-SIGNAL-CHLOROPHYLL-2026-11.md",
+     "quote": "| B − A: the flag's effect, core reading | **+0.080** [−0.023, +0.176] | **+0.102** [−0.037, +0.255] |"
+    },
+    {
+     "doc": "docs/SATELLITE-LOW-SIGNAL-CHLOROPHYLL-2026-11.md",
+     "quote": "beforehand the result is **mixed, not shown**."
+    },
+    {
+     "doc": "docs/SATELLITE-LOW-SIGNAL-CHLOROPHYLL-2026-11.md",
+     "quote": "**This is not a pass.** B is a subset chosen by a rule applied to seen pairs,"
+    }
+   ],
+   "prs": [
+    626
    ]
   }
  ]
