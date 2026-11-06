@@ -2742,6 +2742,42 @@
    "prs": [
     626
    ]
+  },
+  {
+   "id": "sat-chl-candidates",
+   "title": "Satellite lake readings: quality-aware chlorophyll candidates against the lab chlorophyll baseline",
+   "section": "satellite",
+   "topics": [
+    "lakes",
+    "satellite"
+   ],
+   "project": "SAT-OBS",
+   "verdict": "Development on seen 2021-2026 pairs, not fresh confirmation. 183 of 207 paired scenes read (803 requests, 418.4 MiB; the fetch ended on a second dropped connection, as pre-stated). Out-of-fold skill gain over #386's baseline on held-out lakes: A, low-signal readings excluded, +0.143 [+0.005, +0.306] at 81% coverage; C, brightness and pixel spread as covariates, +0.137 [+0.034, +0.233]; both keep the direction on held-out seasons and forward years, so both meet the pre-stated bar for a shadow log. B, weighting by a fitted noise model, +0.017 [−0.066, +0.139], is not supported; D, a per-pixel brightness floor, +0.034 [−0.122, +0.178], is inconclusive (its lower end is beyond the −0.05 harm margin). E, a three-day composite, was not tested. The lake's own training mean scores higher than every candidate on held-out seasons and years.",
+   "scope": "38 EA chlorophyll monitoring points, May to September 2021-2026, samples with a usable scene within a day. A was proposed after #626 showed the unflagged subset agreeing better on these same pairs, so its support is not independent of that; C uses brightness partly as a chlorophyll signal. No claim of a chlorophyll measurement, or about algae, toxins or safety; #386's verdict and #626's readout unchanged.",
+   "stage": "development",
+   "stage_note": "Frozen model (B0, A, C) and a versioned shadow log kept off the site built; the weekly pilot and the refresher write it from the first run after the PR merges. Weekly reads at the 38 points in 2027 need the runner the register lists as open.",
+   "next": "Shadow read on 2027 pairs on or after 1 Feb 2028 (not worse: gain lower end above −0.05; better: gain +0.03 with lower end above 0; at least 60 pairs at 10 lakes). Meanwhile a lake-history-plus-satellite candidate on the same holdouts, and a refetch with a pre-stated retry rule to test E.",
+   "records": [
+    {
+     "doc": "docs/SATELLITE-CHL-CANDIDATES-2026-11.md",
+     "quote": "| A | **+0.143 [+0.005, +0.306]** | +0.148 [−0.002, +0.326] | +0.127 [−0.031, +0.299] | yes |"
+    },
+    {
+     "doc": "docs/SATELLITE-CHL-CANDIDATES-2026-11.md",
+     "quote": "| C | **+0.137 [+0.034, +0.233]** | +0.133 [+0.029, +0.227] | +0.096 [−0.102, +0.230] | yes |"
+    },
+    {
+     "doc": "docs/SATELLITE-CHL-CANDIDATES-2026-11.md",
+     "quote": "**candidate E was not tested.**"
+    },
+    {
+     "doc": "docs/SATELLITE-CHL-CANDIDATES-2026-11.md",
+     "quote": "2. **A's support is not independent of #626.**"
+    }
+   ],
+   "prs": [
+    626
+   ]
   }
  ]
 }

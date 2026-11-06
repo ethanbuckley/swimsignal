@@ -200,6 +200,159 @@ Changes, before any score:
   then rest on fewer nearby scenes than selected, and say so. If fewer than all 207 paired scenes are read, the
   paired results are reported on the paired samples read, and the shortfall is a blocker stated in the record.
 
-## 4. Results
+## 4. Results (6 November 2026)
 
-To be written after the run.
+All figures below are **development on seen data** (section 1). None is fresh confirmation.
+
+### 4.1 The fetch, and what it did not read
+
+Three runs, as the protocol and amendment 2 allow: the first, serial (5 scenes, 24 requests, 16.1 MB, stopped by me
+for its pace); the continuation, 16 reads at a time (60 scenes, 267 requests, 142.6 MB, ended by a dropped
+connection at 12:07 UTC); the one resume (118 scenes, 512 requests, 280.0 MB, ended by a second dropped connection at
+12:15 UTC). Under section 3 the second drop ends the fetch. In all **803 requests and 438,679,528 bytes (418.4 MiB)**,
+under the 4,500-request and 2.5 GiB caps; 801 responses 206, two connections dropped with no status, nothing retried.
+The fingerprint over the 25,234 cached input files was `8e2f4b20…3675321c` before selection, before and after each run
+and at the report. All 183 recomputed core readings equal the cached ones. With 16 streams the rate was about
+0.54 MB/s, twelve times the serial run's.
+
+**Read: 183 of the 207 paired scenes, and none of the 657 other scenes within three days.** So:
+- the paired population is **183 samples at 38 lakes** (24 paired samples dropped for every candidate, as section 3
+  says): 22 were the last 22 in the seeded order and 2 were the scenes whose connections dropped (positions 37 and 166),
+  so no outcome chose them;
+- **candidate E was not tested.** With no scene other than a sample's own paired scene, every composite is that scene's
+  unmarked reading and E's figures equal A's exactly (183 of 183; 148 composites, the same 148 readings as A). The
+  rule that marks E "not tested" (`e_tested`) was written **after the first report** showed this, not before any
+  score: amendment 2 foresaw E resting "on fewer nearby scenes", not on none. It only removes a support, and the
+  published file keeps E's mechanical conditions; `freeze` leaves E out. Amendment 1's coverage clause is **not met**:
+  E covers no more samples than A;
+- the all-sample population has readings only where the paired scene was read (26% of 693 samples), so its figures
+  mostly measure the cost of the reference on unread samples. Its pooled Spearman is negative on the lake holdout for
+  that reason (the reference left after removing a high-chlorophyll lake is lower, so the many reference-only rows rank
+  backwards); skill and RMSE are the useful measures there.
+
+### 4.2 The candidates on the paired samples
+
+Skill against #386's lake-mean reference, out of fold, with cluster intervals by lake; RMSE in log10 units:
+
+| Candidate | Coverage | Held-out lakes | Held-out seasons | Forward (2025-26) | RMSE, lakes |
+|---|---|---|---|---|---|
+| B0 baseline | 100% | 0.163 [−0.067, 0.333] | 0.156 [−0.082, 0.337] | 0.221 [0.033, 0.359] | 0.579 |
+| A exclude low-signal | 81% | 0.306 [0.117, 0.467] | 0.304 [0.123, 0.461] | 0.348 [0.191, 0.479] | 0.527 |
+| B weight by signal | 100% | 0.180 [0.054, 0.278] | 0.198 [0.073, 0.304] | 0.289 [0.154, 0.395] | 0.573 |
+| C brightness and spread as covariates | 100% | 0.300 [0.057, 0.484] | 0.290 [0.046, 0.475] | 0.317 [0.025, 0.515] | 0.530 |
+| D dark pixels dropped | 93% | 0.197 [−0.130, 0.435] | 0.198 [−0.118, 0.435] | 0.281 [0.006, 0.471] | 0.567 |
+
+Paired skill gain over B0 (the support rule's measure):
+
+| Candidate | Held-out lakes | Held-out seasons | Forward | Supported |
+|---|---|---|---|---|
+| A | **+0.143 [+0.005, +0.306]** | +0.148 [−0.002, +0.326] | +0.127 [−0.031, +0.299] | yes |
+| B | +0.017 [−0.066, +0.139] | +0.042 [−0.045, +0.164] | +0.068 [−0.003, +0.161] | no: gain under +0.03, lower end below −0.05 |
+| C | **+0.137 [+0.034, +0.233]** | +0.133 [+0.029, +0.227] | +0.096 [−0.102, +0.230] | yes |
+| D | +0.034 [−0.122, +0.178] | +0.041 [−0.116, +0.196] | +0.060 [−0.141, +0.223] | no: lower end −0.122 |
+| E | not tested (4.1) | | | no |
+
+On the all-sample population the same ordering holds at a third of the size (A +0.047 [+0.001, +0.103], C +0.045
+[+0.010, +0.079] on held-out lakes). D chose the top floor of its grid, 0.020, in 37 of 38 lake folds: the grid's edge,
+so a higher floor might have been chosen had it been offered; that was not tested.
+
+The script's words (`words` in the published file): A and C "supported for a shadow log (conditions met on
+the paired samples)"; B and D "not supported: fails condition 1"; E "not tested".
+
+**Context that decides nothing but matters for use:** on held-out seasons the lake's own training mean scores skill
+0.461 against the same reference, and 0.400 on the forward years. Every satellite candidate here is below that
+(A 0.304 and 0.348). These candidates do not use which lake a sample is from; at a lake with a lab history, that
+history is a better guess of its chlorophyll level than any of these satellite calibrations.
+
+### 4.3 Diagnosis (amendment 1)
+
+For A, the candidate with the largest held-out-lake gain, out of fold:
+- **Where the gain is:** 80% of it is at shallow lakes (mean squared error 0.304 to 0.203); deeper lakes lose a little
+  (0.329 to 0.336); lakes with no depth carry 25%. By season, 2024 and 2026 carry most of it; 2021 loses slightly.
+- **Lakes most helped:** Filby, Barton and Martham Broads, Groby Pool, Fritton Decoy. **Most hurt:** Wast Water,
+  Frensham Great Pond, Ranworth Broad, Ravensthorpe Reservoir, Ormesby Little Broad. At Wast Water, a clear deep lake,
+  removing its dark readings leaves the reference, which is far too high for it.
+- **Low-signal readings carry the baseline's largest errors:** they are 19% of the paired rows (35 of 183), 29% of the
+  baseline's squared error and 37% of its top tenth of errors (baseline mean squared error 0.50 flagged against 0.30
+  unflagged).
+
+### 4.4 What this means
+
+1. **Two candidates meet the pre-stated bar for a shadow log: A and C.** Both gain about 0.14 in skill over the
+   baseline on held-out lakes, with paired intervals above zero, and keep the direction on held-out seasons and years.
+2. **A's support is not independent of #626.** A was proposed because #626 showed, on these same pairs, that the
+   unflagged subset agrees better with lab chlorophyll. Holding out lakes and seasons tests the calibration's transfer,
+   not that choice. Its thresholds are contract 1.4's, set from shore-margin scenes without reference to lab
+   chlorophyll; the decision to try them here was made after #626 had seen these pairs.
+3. **C partly uses brightness as a chlorophyll signal**, not only as a quality signal. On the 183 paired samples,
+   log10 brightness has a Spearman of 0.387 with log10 chlorophyll and 0.255 with the baseline's residual, but 0.089
+   within lakes: brightness mostly separates greener, more turbid lakes from clear ones. In the frozen model C's slope
+   on the reading is 5.80 + 2.55 × log10 brightness, about zero at brightness 0.005 and negative below it, so C ignores
+   or inverts the darkest readings. Its within-lake Spearman (0.274) is no better than the baseline's (0.280). Its
+   forward-year interval reaches −0.10.
+4. **B (weighting) is not supported:** its gain (+0.017) is under the +0.03 bar. **D (pixel filtering) is
+   inconclusive** in amendment 1's sense: its gain (+0.034) meets the bar but its lower end (−0.122) is beyond the
+   −0.05 harm margin, and it chose the edge of its floor grid in 37 of 38 folds, so it is under-explored. Neither gets
+   a shadow; neither is archived (amendment 1 archives only when every candidate fails). E is untested.
+5. The useful satellite signal is concentrated in shallow lakes, as #386 found, and the low-signal mark identifies the
+   readings that carry the baseline's worst errors.
+
+### 4.5 What is built and what runs
+
+- **Frozen model** `data/research/satellite/chl_shadow_model.v1.json` (version 1.0.0): B0, A and C fitted once on the
+  183 paired rows, and the fallback (the lake-mean reference, 1.018 in log10 units). Coefficients: B0 1.032 + 1.589 x;
+  A 0.878 + 3.514 x on unmarked readings; C on x, log10 brightness, IQR and x × log10 brightness.
+- **Shadow log** `data/research/satellite/chl_shadow_log.v1.json` (`scripts/lake_chl_shadow.py`), committed empty with
+  the model's SHA-256 and the unit of its values (log10 of the determinand 7887 result). It is committed to the public
+  repository by the pilot's bot, like the pilot's other data, but not shown on the site. After each weekly pilot run (`satellite_pilot.run`) and each refresher run
+  (`refresh_lake_observations.run`, into its own research root), every new usable reading gets a row: site, scene,
+  acquisition time, time read, model version, inputs (reading, brightness, IQR, mark) and the values of B0, A, C and the
+  fallback. No request is added. The pilot's workflow commits the file with its other data. A shadow failure is
+  printed and never changes a reading or the run record; it is not yet surfaced in the workflow summary, so a failing
+  log would be noticed only in the job's output. The file is replaced whole on each write and left alone when nothing
+  is new. A local pilot trial with `DIPCAST_PILOT_RUNS` set writes the log beside its scratch run record, never into the
+  checkout. The site build does not copy it and no page reads it (checked by `tests/test_lake_chl_shadow.py`).
+- **Which rows the 2028 read uses (clarified now, before any row exists):** the log holds every usable reading,
+  including some the published file excludes (for example in low sun). The read uses only rows whose scene also passes
+  the published file's quality rules (contract 1.1 and later). Refresher rows land in the operator's research root;
+  if they are lost, the values can be recomputed from the frozen model and the published reading, brightness, IQR and
+  mark, which 1.4 stores for every new reading.
+- **Checked against the merged section "Develop promising work now":** inputs exist at reading time (1.4 measures
+  them); acquisition and read times are logged; the log is its own versioned file, not the published reading or the
+  run record the Lab publishes; the baseline and fallback are logged on the same readings; no request is added; the
+  read is fixed in amendment 1 (paired 2027 samples, skill gain over the frozen baseline, not-worse margin −0.05,
+  better at +0.03 with lower end above 0, at least 60 pairs at 10 lakes, on or after 1 February 2028).
+- **Running:** nothing yet. The log starts with the first weekly pilot run after this PR merges (Mondays about 06:17
+  UTC). Run on the existing pilot logs, the logger writes 10 rows for the 10 usable readings, with A and C empty
+  because those readings predate 1.4's measurements; that is the expected behaviour.
+
+## 5. Limitations
+
+- **Seen data.** Every lab value was seen in #386 and the signal on these pairs in #626; the candidate list was written
+  after #626. Out-of-fold fitting controls the candidates' own parameters, not that history.
+- **Partial read** (labelled `partial` in the published file). 183 of 207 paired scenes and none of the 657 other
+  nearby scenes. E is untested and the all-sample results rest on paired scenes only.
+- **Small, clustered sample.** 183 pairs at 38 lakes; intervals are by lake and wide (A's held-out-lake gain runs from
+  +0.005 to +0.306). The season and forward conditions are point estimates by design; their intervals include zero for
+  A and, on the forward years, for C.
+- **The shadow's pairs depend on reads at the 38 points.** The weekly pilot reads five bathing sites, which are not the
+  chlorophyll points; its rows check that the logger works but will add few or no pairs to the 2028 read.
+- The lab outcome is EA acetone-extract chlorophyll (determinand 7887), spectrophotometric, phaeopigment correction
+  not stated. Nothing here is a chlorophyll measurement, or about algae, toxins or whether water is safe.
+
+## 6. Next steps and blockers
+
+- **Ethan merges #626** (this PR); the shadow log then starts on the next pilot run. Nothing in it is shown anywhere.
+- **Blocker, named:** pairs for the 2028 read need refresher runs at the 38 chlorophyll points from May 2027, on a
+  runner the register already lists as open. The refresher logs shadow rows into its own research root today; who runs
+  it weekly, and where, is a LABS or Ethan decision.
+- **Next comparison, development (owner: this session family, Claude):** a candidate that uses the lake's own history (the lake's training mean plus a
+  satellite anomaly, A's quality rule kept), against both B0 and the lake-mean reference, on the same holdouts. The
+  lake's own mean beat every candidate here on seasons and years, so this is the comparison that says whether the
+  satellite adds anything at a lake already sampled.
+- **Blocker (amendment 2), data:** the 24 unread paired scenes and the 657 nearby scenes. Earth Search's S3 dropped
+  two connections in 13 minutes today with no HTTP status, and the protocol ends a fetch on the second. Testing E,
+  and the coverage question, needs a new fetch under a protocol that allows a no-response drop to be retried once per
+  request, stated before it runs. Owner: this session family (Claude); no decision of Ethan's is needed.
+- **Not archived:** B (not supported) and D (inconclusive) stay open. D's next test is a wider floor grid (above
+  0.020) on the same holdouts; B needs a noise model that adds something beyond the low-signal mark.

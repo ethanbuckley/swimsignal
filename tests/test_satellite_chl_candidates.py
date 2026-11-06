@@ -136,3 +136,10 @@ def test_diagnosis_finds_the_noisy_rows():
     ls = g["low_signal"]
     assert ls["baseline_mse_flagged"] > ls["baseline_mse_unflagged"] and ls["share_of_baseline_error"] > ls["share_of_rows"]
     assert len(g["lakes_most_helped"]) == 5 and g["lakes_most_helped"][0]["gain"] >= g["lakes_most_hurt"][0]["gain"]
+
+
+def test_e_is_not_tested_without_other_scenes():
+    d = pd.DataFrame({"item_id": ["a", "b", None], "paired_scene_read": [True, True, False],
+                      "xe": [0.1, np.nan, np.nan], "n_e": [1, 0, 0]})
+    assert not K.e_tested(d)
+    assert K.e_tested(d.assign(n_e=[2, 0, 0])) and K.e_tested(d.assign(xe=[0.1, np.nan, 0.2]))

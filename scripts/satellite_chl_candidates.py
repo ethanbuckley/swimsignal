@@ -465,10 +465,21 @@ def support(results: dict) -> dict:
     return out
 
 
+def e_tested(d: pd.DataFrame) -> bool:
+    """E differs from A only through scenes other than a sample's paired scene: a composite of more than one scene, or
+    one for a sample with no paired scene. With neither, E's figures are A's, and E is not tested (amendment 2's partial
+    read; record, section 4)."""
+    unpaired = ~(d["item_id"].notna() & d["paired_scene_read"])
+    return bool((d["n_e"] > 1).any() or (unpaired & d["xe"].notna()).any())
+
+
 def words(results: dict, sup: dict) -> list[str]:
     out = []
     for c in CANDIDATES[1:]:
         s, lk = sup[c], results["paired"]["lake"][c]
+        if s.get("tested") is False:
+            out.append(f"{c} ({WORDS[c]}): not tested. {s['reason']}")
+            continue
         line = (f"{c} ({WORDS[c]}): held-out lakes, paired samples, skill {lk['skill']['value']:+.3f} against the "
                 f"baseline's {results['paired']['lake']['B0']['skill']['value']:+.3f}, gain {lk['vs_B0']['skill']['d']:+.3f} "
                 f"[{lk['vs_B0']['skill']['L']:+.3f}, {lk['vs_B0']['skill']['U']:+.3f}], coverage {lk['coverage']:.0%}; ")
@@ -598,7 +609,13 @@ def report(out: Path) -> None:
             oof[(name, h)] = run_holdout(frame, h)
             results[name][h] = measures(frame, oof[(name, h)])
     sup = support(results)
-    best = max(CANDIDATES[1:], key=lambda c: results["paired"]["lake"][c]["vs_B0"]["skill"]["d"])
+    if not e_tested(d):
+        sup["E"].update({"supported": False, "tested": False,
+                         "reason": "No scene other than a sample's paired scene was read (the fetch ended at 183 of the "
+                                   "207 paired scenes), so every composite is the paired scene's unmarked reading and "
+                                   "E's figures are A's."})
+    best = max((c for c in CANDIDATES[1:] if sup[c].get("tested", True)),
+               key=lambda c: results["paired"]["lake"][c]["vs_B0"]["skill"]["d"])
     diagnosis = diagnose(paired, oof[("paired", "lake")], best)
     read_scenes = scenes[scenes["read"]]
     doc = {
@@ -623,6 +640,12 @@ def report(out: Path) -> None:
         "scenes": {"selected": len(scenes), "read": int(scenes["read"].sum()),
                    "matched_cache": int(read_scenes["cached"].notna().sum()),
                    "low_signal": int(read_scenes["low_signal"].fillna(False).astype(bool).sum())},
+        "partial": {"paired_scenes_read": int(scenes.iloc[:selection["paired_scenes"]]["read"].sum()),
+                    "paired_scenes": selection["paired_scenes"],
+                    "other_scenes_read": int(scenes.iloc[selection["paired_scenes"]:]["read"].sum()),
+                    "other_scenes": len(scenes) - selection["paired_scenes"],
+                    "note": "The fetch ended on a second dropped connection (section 3), so results rest on the scenes "
+                            "read; amendment 2 labels them partial."},
         "samples": {"all": len(d), "paired": len(paired), "paired_scene_unread": int((d["item_id"].notna() & ~d["paired_scene_read"]).sum()),
                     "with_composite": int(d["xe"].notna().sum())},
         "results": results, "support": sup, "diagnosis": diagnosis, "words": words(results, sup),
@@ -668,8 +691,11 @@ def freeze(out: Path) -> None:
              "description": "Frozen research shadow model: coefficients relating a reading to log10 of the EA's "
                             "acetone-extract chlorophyll result (determinand 7887), fitted on seen 2021-2026 pairs, "
                             "for prospective comparison only. Not a measurement, not shown on the site, not validated.",
-             "protocol": "docs/SATELLITE-CHL-CANDIDATES-2026-11.md", "fitted_on": {"paired": len(paired), "all": len(d)},
+             "protocol": "docs/SATELLITE-CHL-CANDIDATES-2026-11.md", "fitted_on": {"paired_samples": len(paired)},
+             "values_unit": "log10 of the EA Water Quality Archive result for determinand 7887 (chlorophyll, acetone extract)",
              "low_signal": LOW_SIGNAL, "bright_floor": BRIGHT_FLOOR, "iqr_floor": IQR_FLOOR, "min_pixels": MIN_PIXELS,
+             "reference": ref, "reference_note": "the fallback: the value a sample gets when a model has no reading "
+                                                 "(the lake-mean reference over the paired rows)",
              "models": models}
     MODEL.parent.mkdir(parents=True, exist_ok=True)
     MODEL.write_text(json.dumps(model, indent=1) + "\n")

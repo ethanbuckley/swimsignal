@@ -153,6 +153,13 @@ def run(root: Path, days: int, max_requests: int, max_mb: int, max_minutes: floa
     (root / "run.json").write_text(json.dumps({k: v for k, v in rec.items() if k != "rows"}, indent=1))
     runs.append(rec)
     RUNS.write_text(json.dumps(runs, separators=(",", ":")) + "\n")
+    try:   # the research shadow log (docs/SATELLITE-CHL-CANDIDATES-2026-11.md): its own file, never the run record
+        from lake_chl_shadow import log_run
+        n = log_run(rows, "pilot", "lake_id", rec["finished"], RUNS.parent / "chl_shadow_log.v1.json")
+        if n is not None:
+            print(f"shadow log: {n} new rows")
+    except Exception as e:  # noqa: BLE001 - the shadow log never changes a reading or the run's own record
+        print(f"shadow log not written: {type(e).__name__}: {e}"[:300])
     return rec
 
 
