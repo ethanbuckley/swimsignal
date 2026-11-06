@@ -151,7 +151,10 @@ def test_attach_gives_every_river_and_lake_spot_an_estimate_all_year_with_its_ro
     assert h["routes"] == {"river_off_season": 1, "lake_off_season": 2}
     for x in october[:3]:
         e = x["water_temp_est"]
-        assert e["tested"] is False and e["typical_c"] is None and e["temp_c"] >= 0   # not measured in October: no error said
+        # October: the winter curve tested on past winters (docs/WATER-TEMP-WINTER-BACKTEST-2026-11.md); `tested` stays
+        # for the river model's summer test alone
+        assert e["tested"] is False and e["test"] == "winter" and e["within_c"] == 2 and e["temp_c"] >= 0
+        assert e["typical_c"] == (1.63 if x["kind"] == "river" else 1.76)
 
 
 def test_a_spot_without_its_air_says_why_and_never_gets_an_old_estimate():
@@ -255,7 +258,8 @@ def test_an_inland_directory_water_takes_its_own_curve_and_the_error_measured_fo
     m = water_temp.load()
     cells = {"53.2,-8.6": 9.0}
     lake = water_temp.directory_estimate(m, cells, "2026-10-31", 53.19, -8.56, "lake")
-    assert lake["route"] == "lake_air_curve" and lake["typical_c"] is None and lake["air_km"] == 0
+    assert lake["route"] == "lake_air_curve" and lake["typical_c"] == 1.76 and lake["test"] == "winter" and lake["air_km"] == 0
+    assert lake["temp_c"] == round(float(water_temp.mohseni(9.0, *m.winter["curves"]["lake"])))
     assert water_temp.directory_estimate(m, cells, "2026-07-14", 53.19, -8.56, "river")["typical_c"] == 1.85
     assert water_temp.directory_estimate(m, cells, "2026-07-14", 53.19, -8.56, "coast")["route"] == "sea_air_curve"
     assert water_temp.directory_estimate(m, cells, "2026-07-14", 53.19, -8.56, "canal") is None
@@ -365,3 +369,42 @@ def test_each_nations_card_says_the_estimate():
     assert scotland._water({}) == ""
     for mod in (ireland, northern_ireland):
         assert "from dipcast.coastal import water_line" in __import__("inspect").getsource(mod.render)
+
+
+# ---- October to April: the winter curves (docs/WATER-TEMP-WINTER-BACKTEST-2026-11.md) -------------------------------
+def test_the_winter_file_holds_the_frozen_candidates_curves_and_the_tested_errors():
+    w = json.loads((ROOT / "data" / "processed" / "water_temp_winter.json").read_text())
+    cand = json.loads((ROOT / "data" / "research" / "water_temp_winter_candidate.v1.json").read_text())
+    assert w["candidate_sha256"] == "c86720d0c1557f2fb14c6733ab0d5e0014ba122366be64e1e2847a74808d729d"
+    for k in ("river", "lake"):
+        assert cand["types"][k]["arm"] == "W2" and w["curves"][k] == cand["types"][k]["curve"]
+    assert w["typical_c"] == {"river": 1.63, "lake": 1.76} and w["within_c"] == 2
+    assert sorted(w["months"]) == [1, 2, 3, 4, 10, 11, 12]
+    m = water_temp.load()
+    assert not (set(w["months"]) & m.months)     # never touches the summer routes
+
+
+def test_off_season_uses_the_winter_curve_and_says_its_test():
+    m = water_temp.load()
+    for kind in ("river", "lake"):
+        e = water_temp.estimate_any(m, hourly_air(31, end="2026-12-10"), pd.Timestamp("2026-12-10"), kind)
+        a7 = e["air_7d_c"]
+        assert e["route"] == f"{kind}_off_season" and e["test"] == "winter" and e["within_c"] == 2
+        assert abs(e["temp_c"] - float(water_temp.mohseni(a7, *m.winter["curves"][kind]))) <= 0.55
+    july = water_temp.estimate_any(m, hourly_air(31), pd.Timestamp("2026-07-14"), "river")
+    assert july["route"] == "river_model" and "test" not in july
+
+
+def test_without_the_winter_file_october_falls_back_to_the_summer_curve_unchecked(tmp_path):
+    m = water_temp.load(winter_path=tmp_path / "missing.json")
+    assert m.winter is None
+    e = water_temp.estimate_any(m, hourly_air(31, end="2026-10-27"), pd.Timestamp("2026-10-27"), "lake")
+    assert e["route"] == "lake_off_season" and e["typical_c"] is None and "test" not in e
+    assert abs(e["temp_c"] - float(water_temp.mohseni(e["air_7d_c"], *m.curves["lake"]))) <= 0.55
+
+
+def test_a_directory_waters_winter_line_names_the_winter_test():
+    from dipcast.coastal import water_line
+    est = {"temp_c": 6, "date": "2026-12-10", "route": "river_air_curve", "tested": False, "typical_c": 1.63,
+           "within_c": 2, "test": "winter", "air_7d_c": 4.1, "air_km": 0}
+    assert water_line({"water_temp_est": est}).endswith("Provisional: typical error 1.6 °C at rivers in a test on past winters")

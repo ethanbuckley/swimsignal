@@ -23,8 +23,9 @@ def test_the_frozen_files_are_the_ones_named_in_the_record():
     wtw.check_frozen()
 
 
-def test_the_score_is_the_live_off_season_estimate_to_the_degree():
-    model = water_temp.load(wtw.MODEL_FILE)
+def test_the_score_is_the_old_off_season_estimate_to_the_degree():
+    # The route under test, as live before the release: the module without the winter file
+    model = water_temp.load(wtw.MODEL_FILE, winter_path=None)
     rng = np.random.default_rng(1)
     idx = pd.date_range("2024-11-01", "2024-12-15 23:00", freq="h", tz="UTC")
     hourly = pd.Series(4 + 3 * np.sin(np.arange(len(idx)) / 40) + rng.normal(0, 1, len(idx)), index=idx)
@@ -121,3 +122,16 @@ def test_shown_estimates_never_go_below_zero(kind):
     model = water_temp.load(wtw.MODEL_FILE)
     raw, shown = wtw.frozen_estimate(model, kind, -60.0)
     assert raw < 0 and shown == 0
+
+
+def test_the_released_winter_route_is_the_frozen_candidate_to_the_degree():
+    model = water_temp.load(wtw.MODEL_FILE, winter_path=ROOT / "data" / "processed" / "water_temp_winter.json")
+    cand = __import__("json").loads(wtw.CANDIDATE_FILE.read_text())
+    idx = pd.date_range("2024-11-01", "2024-12-15 23:00", freq="h", tz="UTC")
+    hourly = pd.Series(3 + 3 * np.sin(np.arange(len(idx)) / 40), index=idx)
+    a7 = wtw.a7_by_day(model, hourly)
+    for day in pd.date_range("2024-12-01", "2024-12-14"):
+        for kind in ("river", "lake"):
+            live = water_temp.estimate_any(model, pd.DataFrame({"time": idx, "air_c": hourly.values}), day, kind)
+            assert live["test"] == "winter"
+            assert live["temp_c"] == int(wtw.shown(wtw.predict_arm(cand["types"][kind], [float(a7[day])]))[0])

@@ -328,11 +328,15 @@ const AnyPoint = (() => {
       if (!best || km < best.km) best = { a7, km: Math.round(km) };
     }
     if (!best) return { miss: { why: 'air', date: w.date } };
-    const [mu, alpha, beta, gamma] = w.curves[kind], t = mu + (alpha - mu) / (1 + Math.exp(gamma * (beta - best.a7)));
+    // October to April: the winter curve tested on past winters (docs/WATER-TEMP-WINTER-BACKTEST-2026-11.md), where the
+    // file has it; else the summer curve with no error claimed.
+    const month = +String(w.date).slice(5, 7), inSeason = (w.months || []).includes(month);
+    const win = !inSeason && w.winter && (w.winter.months || []).includes(month) && w.winter.curves && w.winter.curves[kind] ? w.winter : null;
+    const [mu, alpha, beta, gamma] = win ? win.curves[kind] : w.curves[kind], t = mu + (alpha - mu) / (1 + Math.exp(gamma * (beta - best.a7)));
     if (!Number.isFinite(t)) return { miss: { why: 'error', date: w.date } };
-    const inSeason = (w.months || []).includes(+String(w.date).slice(5, 7));
+    const typical = inSeason ? ((w.typical_c || {})[kind] ?? null) : win ? ((win.typical_c || {})[kind] ?? null) : null;
     return { est: { temp_c: Math.round(Math.max(0, t)), date: w.date, route: `${kind}_air_curve`, tested: false,
-      typical_c: inSeason ? ((w.typical_c || {})[kind] ?? null) : null, air_7d_c: Math.round(best.a7 * 10) / 10, air_km: best.km } };
+      typical_c: typical, ...(win ? { within_c: win.within_c, test: 'winter' } : {}), air_7d_c: Math.round(best.a7 * 10) / 10, air_km: best.km } };
   }
 
   // ------------------------------------------------------------------ where a click goes

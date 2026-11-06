@@ -360,3 +360,40 @@ lakes warm in spring. Large lakes carry most of that. Winter 2020 and 2021 used 
   April 2027 this script scores winter 2026 (October 2026 to April 2027) at the same cells, for W2 and the old route.
   **Rollback:** if a type's RMSE there is more than 0.5 °C above its figure here (rivers 2.13, lakes 2.26 °C), that type
   goes back to the old curve and the "not yet checked" wording until a new record.
+
+### Release, as built (same PR)
+
+- `data/processed/water_temp_winter.json`: W2's curves (equal to the frozen candidate file's, checked by a test), the
+  typical errors 1.63 (rivers) and 1.76 °C (lakes), `within_c` 2, months October to April.
+- `src/dipcast/model/water_temp.py`: `load` reads the file; `off_season_curve` gives the winter curve and its fields
+  (`typical_c`, `within_c`, `test: "winter"`) to `estimate_any` and `directory_estimate`. Without the file, the old
+  behaviour: summer curve, nothing claimed.
+- `scripts/build_any_point.py`: `water_air` publishes `winter` (curves, months, typical error), so `anypoint.js` uses
+  the winter curve for a clicked river or lake point from October to April.
+- `index.html`, `coastal.py`, `data.html`: the wording above.
+- The harness accepts the released `water_temp.py` hash beside the protocol's; a test checks that the old route it
+  scores is still the module's summer curve, and another that the live winter estimate equals the frozen candidate to
+  the degree.
+- **Not checked:** a built page in a browser. The page code is tested in Node with the page's own functions; the
+  build was not run (it would spend Open-Meteo calls).
+
+## Candidates considered (6 November 2026)
+
+The protocol said this table would be in the register; it is here and in the PR body, and the register row links here.
+"Unused" means not used to fit, choose, tune or design the candidate, per the workflow.
+
+| Candidate (record) | Next step in the records | Held-out years unused? | Inputs rebuildable at issue time, free? | Release it could support | Decision |
+|---|---|---|---|---|---|
+| **Water temperature, October to April** (`WATER-TEMPERATURE-BASELINE-2026-10.md`) | Winter error readout from the live log as the winter goes on (3 sensors) | **Yes:** every October to April; the model was fitted and scored on May to September only | **Yes:** Historical Forecast API (what the live build's past days are) and the EA archive; about 1,000 weighted calls | The off-season wording, and curve, at every river and lake spot, click and directory water | **Picked:** shown at every spot now, with no error measured |
+| Spill duration still-running table (register row 4) | Same check on November polls, 1 Dec; refit on live elapsed time about 28 Dec; wording waits on task 3b | Partly: B1 was fitted on 2024-25; some companies have 2020-23 EA files (#258) | Yes, offline | An "often still running" figure beside the clearing time | Not picked: the open question is the live poll timing against EA-recorded elapsed time, which old EA years cannot answer |
+| Live-status input (#254, #262) | Shadow read on or after 23 Nov | Trained 2024, scored 2025; 2023 files exist for only some companies | Partly | A change to spill probabilities, so to risk levels | Not picked: not a limited labelled release; its window reads this month |
+| Lake temperature model (register row 5) | A local or lake-type model judged on 2027 readings | No: 2023-26 summers scored; a new design would react to those scores | Yes (HadUK-Grid cached for summers) | A better summer lake estimate | Not picked now: needs a new model, for a season that starts in May. This backtest covers lakes in winter |
+| River rises C3 (#627, #631) | Winter shadow 1 Dec to 28 Feb, read 8 Mar 2027; logger deployment is Ethan's | No: the record's radar hindcast (20 Nov 2024 to 24 Oct 2026) was all used to develop C3 | Radar archive only from Nov 2024 | An early-warning line, not shown better than the base rate | Not feasible: no unused radar year |
+| Nine-company / regional routing (#357), A8 (#333) | Shadow read 28 Nov; A8 read 25 Nov | Trained 2024-25, tested Jan to Aug 2026; no further all-company year | Partly | A change to spill forecasts, so to risk levels | Not picked: risk levels; reads this month |
+| Satellite chlorophyll candidates (#626) | Shadow read on 2027 pairs, on or after 1 Feb 2028 | Yes in principle: pre-2021 pairs never joined (how many exist: not checked) | Yes, but hundreds of MiB of imagery | Nothing on the site even on a pass (not a chlorophyll measurement) | Not picked: least swimmer value. A good later backtest |
+| Lake range and lake lines (#584, #625, #630) | 2027 read | No: 2012-22 already used; #630 shipped from it | - | Already shipped | Done |
+| Scotland trial, Gate B (#591) | From its shadow after Nov to Jan | Possibly Scottish Water's 2026 records (not checked whether published) | Not checked | The trial's scope or label; the switch is the owner's | Not picked: next candidate to check |
+| Waterhead models (Tim Boden) | 2027 shadow | - | - | - | Waits on his files (outside contact) |
+| Ensemble rain D4 | Read 21 Nov | No: ensemble members are not archived (record) | No | - | Not feasible |
+| Lead calibration B, winter calibration, upgraded overflows B, missing event ends | Reads 16 Nov, Dec to Mar, 2 Dec, 9 Nov | - | - | Risk levels or data handling | Not picked: active windows, left alone |
+| Carry right now's spills (archived) | Measured E. coli on carried days, 2027 | Possibly 2024-25 samples with EA spill status | - | A change to levels | Not picked: risk levels |

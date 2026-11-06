@@ -29,6 +29,10 @@ from dipcast import config
 log = logging.getLogger(__name__)
 
 MODEL_PATH = config.PROCESSED / "water_temp_model.json"
+# October to April, rivers and lakes: the winter curves adopted by docs/WATER-TEMP-WINTER-BACKTEST-2026-11.md. The
+# summer curves read about 1.5 C (rivers) and 3 C (lakes) too warm in past winters; these were fitted on winters
+# 2023-25 and tested on winters they never saw (rivers 1.63 C, lakes 1.76 C typical error, no material bias).
+WINTER_PATH = config.PROCESSED / "water_temp_winter.json"
 LOCAL_TZ = "Europe/London"
 RIVER_SNAP_M = 250.0          # the test's rule for putting a point on a river (wt_protocol.RIVER_SNAP_M)
 
@@ -116,12 +120,36 @@ class WaterTempModel:
         return s1 + self.correction(df[self.features].to_numpy(float))
 
 
-def load(path: Path = MODEL_PATH) -> WaterTempModel | None:
+def load(path: Path = MODEL_PATH, winter_path: Path | None = WINTER_PATH) -> WaterTempModel | None:
     try:
-        return WaterTempModel(json.loads(Path(path).read_text()))
+        model = WaterTempModel(json.loads(Path(path).read_text()))
     except (OSError, ValueError, KeyError) as e:
         log.warning("water temperature model not loaded (%s): no estimates", e)
         return None
+    model.winter = load_winter(winter_path) if winter_path else None
+    return model
+
+
+def load_winter(path: Path = WINTER_PATH) -> dict | None:
+    """The tested winter curves ({"curves", "typical_c", "within_c", "months"}), or None: without them October to April
+    falls back to the summer curves, worded as not checked in these months, as before the test."""
+    try:
+        d = json.loads(Path(path).read_text())
+        return {"curves": {k: tuple(float(x) for x in d["curves"][k]) for k in ("river", "lake")},
+                "typical_c": {k: float(d["typical_c"][k]) for k in ("river", "lake")},
+                "within_c": int(d["within_c"]), "months": set(int(m) for m in d["months"])}
+    except (OSError, ValueError, KeyError, TypeError) as e:
+        log.warning("winter water temperature curves not loaded (%s): summer curves, unchecked, from October to April", e)
+        return None
+
+
+def off_season_curve(model: WaterTempModel, kind: str, month: int) -> tuple[tuple, dict]:
+    """(curve, extra fields) for a river or lake outside the summer months: the tested winter curve with its typical
+    error and test, or the type's summer curve with nothing claimed."""
+    w = getattr(model, "winter", None)
+    if w and kind in w["curves"] and month in w["months"]:
+        return w["curves"][kind], {"typical_c": w["typical_c"][kind], "within_c": w["within_c"], "test": "winter"}
+    return model.curves[kind], {"typical_c": None}
 
 
 def daily_air(hourly: pd.DataFrame) -> pd.Series:
@@ -196,9 +224,10 @@ def estimate(model: WaterTempModel | None, hourly: pd.DataFrame, today: pd.Times
 #                 as a whole (1.82 C); at these lakes its typical error there was 1.70 C (exploratory, seen data)
 #   lake_curve    lakes of 1 km2 or more, May to September: the lake curve in the 7-day air alone, which beat the full
 #                 model at large lakes in that test (1.98 C against 2.18; exploratory, seen data)
-#   *_off_season  any water, October to April: its type's curve in the 7-day air. Not measured in those months at all:
-#                 every test row was May to September. The saved estimates (build_site.log_water_temp_estimates) are
-#                 compared with the EA's sensors as the winter goes on.
+#   *_off_season  a river or lake, October to April: the type's winter curve in the 7-day air (off_season_curve), tested
+#                 on past winters (docs/WATER-TEMP-WINTER-BACKTEST-2026-11.md): typically within 2 C. Without the winter
+#                 file, the summer curve, worded as not checked. The saved estimates (build_site.log_water_temp_estimates)
+#                 are compared with the EA's sensors as the winter goes on.
 # Water is never estimated below 0 C. The air needs all 30 days, as before; without them, None, and the build says so.
 TYPICAL_C = {"river_model": 1.56, "lake_model": 1.70, "lake_curve": 1.98}
 LARGE_LAKE_KM2 = 1.0
@@ -229,8 +258,10 @@ def estimate_any(model: WaterTempModel | None, hourly: pd.DataFrame, today: pd.T
         return None
     in_season = today.month in model.months
     large = lake_area_km2 is not None and lake_area_km2 >= LARGE_LAKE_KM2
+    extra: dict = {}
     if not in_season:
-        route, t = f"{kind}_off_season", float(mohseni(air["a7"], *model.curves[kind]))
+        curve, extra = off_season_curve(model, kind, today.month)
+        route, t = f"{kind}_off_season", float(mohseni(air["a7"], *curve))
     elif kind == "lake" and large:
         route, t = "lake_curve", float(mohseni(air["a7"], *model.curves["lake"]))
     else:
@@ -247,6 +278,8 @@ def estimate_any(model: WaterTempModel | None, hourly: pd.DataFrame, today: pd.T
            "tested": route == "river_model", "typical_c": TYPICAL_C.get(route), "air_7d_c": round(air["a7"], 1)}
     if route == "river_model":
         out["within_c"] = model.within_c   # the page's tested wording, as before
+    elif extra.get("test"):
+        out.update(extra)
     return out
 
 
@@ -335,9 +368,11 @@ def directory_estimate(model: WaterTempModel, cells: dict[str, float], day: str,
     if near is None:
         return None
     a7, km = near
-    t = float(mohseni(a7, *model.curves[kind]))
+    month = int(day[5:7])
+    curve, extra = (model.curves[kind], {"typical_c": AIR_CURVE_TYPICAL_C[kind]}) if month in model.months \
+        else off_season_curve(model, kind, month)
+    t = float(mohseni(a7, *curve))
     if not np.isfinite(t):
         return None
     return {"temp_c": int(round(max(0.0, t))), "date": day, "route": f"{kind}_air_curve", "tested": False,
-            "typical_c": AIR_CURVE_TYPICAL_C[kind] if int(day[5:7]) in model.months else None,
-            "air_7d_c": round(a7, 1), "air_km": km}
+            **extra, "air_7d_c": round(a7, 1), "air_km": km}

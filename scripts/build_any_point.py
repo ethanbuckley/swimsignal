@@ -1151,16 +1151,22 @@ def water_air(hourly: pd.DataFrame, now: pd.Timestamp) -> dict | None:
     """What the page needs to estimate the water at a clicked river or lake point (#492, stage 2; anypoint.js, waterAt):
     the day, each cached cell's bridged 7-day air (water_temp.cell_air_7d, from the rain cache this build already reads:
     no extra request), the river and lake curves, the months the model was tested in, and the curve-only route's error
-    measured in those months. None without the model; nothing here raises."""
+    measured in those months; and, October to April, the winter curves with their tested error. None without the model;
+    nothing here raises."""
     from dipcast.model import water_temp
     try:
         model = water_temp.load()
         if model is None:
             return None
         today = now.tz_convert("Europe/London").normalize().tz_localize(None)
-        return {"date": today.date().isoformat(), "cells": water_temp.cell_air_7d(model, hourly, today),
-                "curves": {k: list(model.curves[k]) for k in ("river", "lake")}, "months": sorted(model.months),
-                "typical_c": water_temp.AIR_CURVE_TYPICAL_C}
+        out = {"date": today.date().isoformat(), "cells": water_temp.cell_air_7d(model, hourly, today),
+               "curves": {k: list(model.curves[k]) for k in ("river", "lake")}, "months": sorted(model.months),
+               "typical_c": water_temp.AIR_CURVE_TYPICAL_C}
+        w = getattr(model, "winter", None)
+        if w:   # October to April: the tested winter curves (docs/WATER-TEMP-WINTER-BACKTEST-2026-11.md)
+            out["winter"] = {"curves": {k: list(v) for k, v in w["curves"].items()}, "months": sorted(w["months"]),
+                             "typical_c": w["typical_c"], "within_c": w["within_c"]}
+        return out
     except Exception as e:  # noqa: BLE001 - the water beside the forecast must not stop the file
         log.warning("any-point water air: %s", e)
         return None

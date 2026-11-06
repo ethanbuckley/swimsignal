@@ -29,6 +29,8 @@ data/processed/*
 !data/processed/ecoli_model_eval.json
 !data/processed/ecoli_lake_range.json
 !data/processed/water_temp_model.json
+# The winter curves adopted by docs/WATER-TEMP-WINTER-BACKTEST-2026-11.md (model/water_temp.py, October to April)
+!data/processed/water_temp_winter.json
 !data/processed/verification_2025.csv
 !data/processed/reliability_2025.csv
 !data/processed/verification_leads_2025.csv

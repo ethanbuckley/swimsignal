@@ -42,6 +42,9 @@ import wt_protocol as wp  # noqa: E402
 # ---- frozen before any request (the record, "The frozen model") --------------------------------------------------
 MODEL_SHA256 = "637674ae2b60631d0589a9eceec1ef4fd7fc9ed21d344c397dff7820e0e2087d"
 CODE_SHA256 = "938060d0d6588c7bb0e73e5f0d815174c59d21ef6023c64808935717254a3f5a"
+# The release (record, "Release") added the winter curves to water_temp.py; the summer curve, the bridge and daily_air
+# the frozen route reads are unchanged, which tests/test_water_temp_winter_backtest.py checks against the module itself.
+CODE_SHA256_RELEASE = "29306b88330f064e478fd8fda224ef4f53a14d50943d74cbc11acd35133cd139"
 MODEL_FILE = WORKTREE / "data" / "processed" / "water_temp_model.json"
 CODE_FILE = WORKTREE / "src" / "dipcast" / "model" / "water_temp.py"
 
@@ -76,9 +79,9 @@ def sha256_file(p: Path) -> str:
 
 
 def check_frozen() -> None:
-    got = (sha256_file(MODEL_FILE), sha256_file(CODE_FILE))
-    if got != (MODEL_SHA256, CODE_SHA256):
-        raise SystemExit(f"frozen files changed: {got}")
+    model, code = sha256_file(MODEL_FILE), sha256_file(CODE_FILE)
+    if model != MODEL_SHA256 or code not in (CODE_SHA256, CODE_SHA256_RELEASE):
+        raise SystemExit(f"frozen files changed: {model}, {code}")
 
 
 def winter_months(winter: int) -> list[tuple[str, str]]:
