@@ -802,6 +802,13 @@
    "branch": "claude/satellite-pilot-signal",
    "branch_exists": true,
    "date": null
+  },
+  "627": {
+   "n": 627,
+   "state": "open",
+   "branch": "claude/river-rises-readout",
+   "branch_exists": true,
+   "date": null
   }
  },
  "entries": [
@@ -1510,7 +1517,8 @@
     }
    ],
    "prs": [
-    383
+    383,
+    627
    ],
    "register_note": "The register's one-line summary rounds the figures; the record holds the intervals, the by-system table and the latency accounting. The AI programme's rows for #383 still describe the pre-run state."
   },
