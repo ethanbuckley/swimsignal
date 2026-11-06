@@ -5,6 +5,7 @@ root holding copies of the cached inputs that concentration_study.load_rows read
     export DIPCAST_ROOT=<scratch root> DIPCAST_STATE=<scratch>/state LAKE_LINE_OUT=<scratch>/out
     uv run python scripts/lake_line_candidates.py rows       # the study's 1,537 rows, checked against the atlas
     uv run python scripts/lake_line_candidates.py run        # every model in every fold; scores and conditions
+    LAKE_SLOPE=season uv run python scripts/lake_line_candidates.py run   # candidate D (lake-specific season slope)
     uv run python scripts/lake_line_candidates.py diagnose   # Derwent Water 2025, described only
     uv run python scripts/lake_line_candidates.py export     # freeze plain and B for the 2027 read (not a logger)
 
@@ -41,6 +42,11 @@ log = logging.getLogger("lake_line_candidates")
 
 OUT = Path(os.environ.get("LAKE_LINE_OUT", "lake_line_out"))
 DOC = ROOT / "docs" / "LAKE-LINE-CANDIDATES-2026-11"
+# The slope variable of B: "wet" (B, the line-candidates protocol 3717a7aa) or "season" (candidate D, the lake-specific
+# seasonal response, protocol d8063382 in docs/DERWENT-WATER-DIAGNOSIS-2026-11.md). With "season", `run` writes
+# -season-scores.json and -season-rows.csv, and its "B" and "C" columns are D and D recalibrated.
+SLOPE = os.environ.get("LAKE_SLOPE", "wet")
+RUN_DOC = DOC if SLOPE == "wet" else ROOT / "docs" / "LAKE-LINE-CANDIDATES-2026-11-season"
 STEM = ROOT / "docs" / "CONCENTRATION-STUDY-2026-11"
 ATLAS = Path(f"{STEM}-atlas-rows.csv")
 PRED = {s: Path(f"{STEM}-predictions-{s}.csv") for s in ("loyo", "cxy", "fwd")}
@@ -179,9 +185,19 @@ class LakeSlopeRI:
         return dict(zip(self.sites, (w @ (self.tau_v * self.gv)).round(4).tolist(), strict=True))
 
 
+def day_of_year(X: pd.DataFrame) -> pd.Series:
+    """The day of year behind ecoli.features' doy_sin and doy_cos (season_day, held inside May-September)."""
+    return (np.arctan2(X["doy_sin"], X["doy_cos"]) % (2 * np.pi)) * 365.25 / (2 * np.pi)
+
+
 def add_wet(X: pd.DataFrame, ref: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
-    """wet = mean of standardised lrain48 and logit_risk, standardised again, all on ref's lake rows."""
+    """B's slope variable, standardised on ref's lake rows. "wet": the mean of standardised lrain48 and logit_risk,
+    standardised again. "season": the day of year (candidate D)."""
     lk = ref[ref["lake"] == 1]
+    if SLOPE == "season":
+        d = day_of_year(lk)
+        w = {"kind": "season", "mw": float(d.mean()), "sw": float(d.std(ddof=0)) or 1.0}
+        return add_wet_with(X, w), w
     m48, s48 = float(lk["lrain48"].mean()), float(lk["lrain48"].std(ddof=0)) or 1.0
     mr, sr = float(lk["logit_risk"].mean()), float(lk["logit_risk"].std(ddof=0)) or 1.0
     raw = lambda d: ((d["lrain48"] - m48) / s48 + (d["logit_risk"] - mr) / sr) / 2   # noqa: E731
@@ -256,6 +272,8 @@ def line_probs(plain, b, wet, te: pd.DataFrame) -> dict:
 
 
 def add_wet_with(X: pd.DataFrame, w: dict) -> pd.DataFrame:
+    if w.get("kind") == "season":
+        return X.assign(lake_x_wet=X["lake"] * (day_of_year(X) - w["mw"]) / w["sw"])
     raw = ((X["lrain48"] - w["m48"]) / w["s48"] + (X["logit_risk"] - w["mr"]) / w["sr"]) / 2
     return X.assign(lake_x_wet=X["lake"] * (raw - w["mw"]) / w["sw"])
 
@@ -395,7 +413,7 @@ def stage_run() -> None:
     lake_sites = sorted(df.loc[df.lake == 1, "bw_id"].unique())
     hist = load_history(set(lake_sites))
     res = {"schema": "swimsignal.lake-line-candidates", "version": "1.0.0", "protocol": "docs/LAKE-LINE-CANDIDATES-2026-11.md",
-           "protocol_commit": "3717a7aa", "seed": SEED, "draws": DRAWS,
+           "protocol_commit": "3717a7aa" if SLOPE == "wet" else "d8063382", "slope": SLOPE, "seed": SEED, "draws": DRAWS,
            "inputs_sha256": {Path(k).name: v for k, v in before.items()}, "schemes": {}}
     all_rows = []
     for scheme in SCHEMES:
@@ -433,11 +451,11 @@ def stage_run() -> None:
                                                       for k in ("A", "B", "C", "plain", "usual")},
                                     plain_med=pr["plain_med"].to_numpy(), B_med=pr["B_med"].to_numpy()))
         log.info("scheme %s done", scheme)
-    res["checks"], res["logged"] = conditions(res)
+    res["checks"], res["logged"] = conditions(res) if SLOPE == "wet" else (conditions_season(res), [])
     after = {str(p): hashlib.sha256(p.read_bytes()).hexdigest() for p in inputs}
     assert before == after, "an input changed during the run"
-    Path(f"{DOC}-scores.json").write_text(json.dumps(res, indent=1, default=float) + "\n")
-    pd.concat(all_rows, ignore_index=True).round(6).to_csv(f"{DOC}-rows.csv", index=False)
+    Path(f"{RUN_DOC}-scores.json").write_text(json.dumps(res, indent=1, default=float) + "\n")
+    pd.concat(all_rows, ignore_index=True).round(6).to_csv(f"{RUN_DOC}-rows.csv", index=False)
     print(json.dumps({"checks": res["checks"], "logged": res["logged"]}, indent=1))
 
 
@@ -467,6 +485,21 @@ def conditions(res: dict) -> tuple[dict, list]:
         if n1 and n2 and n3 and n4:
             logged.append(c)
     return out, logged
+
+
+def conditions_season(res: dict) -> dict:
+    """Candidate D's conditions (docs/DERWENT-WATER-DIAGNOSIS-2026-11.md); "B" in the scores is D."""
+    S = res["schemes"]
+    con, cxy = S[MAIN]["concentration"], S["cxy"]["concentration"]
+    m9 = S[MAIN]["line"]["900"]
+    return {
+        "D1 log score above plain, interval above zero": bool(con["B_minus_plain"]["ci95"][0] > 0),
+        "D2 mean within-site rho above plain, by-site interval above zero": bool(con["rho_B_minus_plain"]["ci95_by_site"][0] > 0),
+        "G unseen lakes: log score minus plain, lower end above -0.02": bool(cxy["B_minus_plain"]["ci95"][0] > N3_MARGIN),
+        "reported: non-inferior to production at 900 (upper end below +0.002)": bool(m9["B_minus"]["production"]["ci95"][1] < N1_MARGIN),
+        "reported: skill over the usual rate at least 0.10 with interval above zero": bool(
+            m9["skill_vs_usual"]["B"] >= SKILL_MARGIN and m9["usual_minus_B"]["ci95"][0] > 0),
+    }
 
 
 # ------------------------------------------------------------------ diagnosis (described only)

@@ -89,3 +89,98 @@ on these same seen rows (after A, B and C); any figure below is development, and
   plain and B for the 2027 read, computed from `shadow_lake_range_v1`'s logged inputs (it needs no new logger: its only
   new input, the day, is logged). D1 or D2 fails → D is archived with its figures. The Derwent diagnosis stands either
   way.
+
+---
+
+## Diagnosis results
+
+Run 6 November 2026 by `scripts/derwent_diagnosis.py` after the plan was pushed (4489eedc). The United Utilities event
+file was read from a scratch copy; it and the committed inputs had the same SHA-256 before and after. Figures are in
+`DERWENT-WATER-DIAGNOSIS-2026-11.json`. **Seen samples, described; not a test of any model.**
+
+**Answer by the plan's rule: not explained by recorded spills at these overflows.** All three parts point the same
+way:
+
+| Plan criterion | Result | |
+|---|---|---|
+| 30-day or 60-day rho at least 0.3, interval above zero | 30-day 0.28 [−0.19, +0.58]; 60-day 0.17 [−0.30, +0.53] | no |
+| May-September 2025 recorded spill hours above 2024's | 172 h in 2025, 220 h in 2024 | no |
+| At least 2 of the 4 dry-day results over 900 with a recorded spill in the 7 days before | 1 of 4 (9 July 2025: 0.75 h); the others 8-18 days after the last spill | no |
+
+**Recorded spills by lake** (Spearman rho with log10 E. coli, 2024-25, intervals from calendar-month blocks):
+
+| Lake (samples, over 900) | 1 day | 3 days | 7 days | 30 days | 60 days |
+|---|---|---|---|---|---|
+| Derwent Water (40, 9) | 0.01 [−0.33, +0.36] | 0.08 [−0.33, +0.44] | 0.20 [−0.23, +0.52] | 0.28 [−0.19, +0.58] | 0.17 [−0.30, +0.53] |
+| Coniston Water (120, 3) | **0.53 [+0.17, +0.69]** | **0.48 [+0.19, +0.63]** | **0.48 [+0.27, +0.62]** | **0.33 [+0.08, +0.55]** | 0.08 [−0.26, +0.42] |
+| Windermere (160, 0) | 0.30 [−0.05, +0.56] | **0.30 [+0.01, +0.55]** | 0.24 [−0.07, +0.51] | 0.07 [−0.17, +0.32] | −0.04 [−0.29, +0.25] |
+
+May-September recorded spill hours, 2024 / 2025: Derwent 220 / 172 (Grange Bridge 110 / 115, Stonethwaite 88 / 48,
+Rosthwaite 22 / 8); Coniston 606 / 605; Windermere 1,058 / 1,261.
+
+- **At Coniston and Windermere, recorded spills track counts over a day to a week; at Derwent they do not.** Derwent's
+  overflows spilled less in its worst season than in its best.
+- **Exploratory, after the plan, same samples:** at Coniston the modelled exposure (rho 0.42 [+0.24, +0.58]) and
+  reanalysis rain at the lake (0.56 [+0.35, +0.67]) track counts about as well as recorded spills, and at Windermere
+  (0.23 and 0.36) likewise. Recorded spills would add little there, so no recorded-spill candidate follows. At Derwent
+  neither tracks (0.05 and 0.10).
+- **Season and warmth (Q4):** water temperature at Crow Park on the sample day ranks Derwent's counts (rho 0.37
+  [+0.15, +0.56], 59 samples, 2024-26), as does day of season (0.36 [+0.03, +0.59]). July was warmer in 2025 (20.0 °C)
+  and 2026 (20.4 °C) than in 2024 (17.5 °C); the results over 900 had a median of 18.9 °C against 17.3 °C for the rest.
+  This is an association; warmth and day of season move together, and the file cannot say which, or either, matters.
+- **Enterococci,** described only: 9 of the 12 results over 900 also had enterococci of 750 or more (the other
+  samples' median was 91). Three did not (140, 280 and 380), all three on dry days (0.6 mm or less in 48 hours). A source cannot be read from
+  this.
+
+**The EA's 2026 bathing water profile for Crow Park** (EA linked-data API, read 6 November 2026, OGL v3) names the upper
+catchment's "private discharges ... from private dwellings, hotels and campsites", sheep farming, and runoff "during or
+after periods of heavy rainfall". It says improvements were made to sewage discharges at Grange in Borrowdale and
+Rosthwaite, and that investigations "will be undertaken during the bathing water season". It gives no source for
+dry-weather results.
+
+## Candidate D results
+
+Run 6 November 2026 after its protocol was pushed (d8063382): `LAKE_SLOPE=season uv run python
+scripts/lake_line_candidates.py run`, files `LAKE-LINE-CANDIDATES-2026-11-season-scores.json` and `-season-rows.csv`
+(their "B" and "C" columns are D and D recalibrated). The same command without `LAKE_SLOPE` reproduced B's committed
+scores exactly, apart from timings and a new label field.
+
+| Condition | Result | |
+|---|---|---|
+| D1. Log score D − plain above zero, interval above zero | −0.003 [−0.018, +0.010] | **fail** |
+| D2. Mean within-site rho D − plain, by-site interval above zero | +0.011 [−0.024, +0.050] | **fail** |
+| G. Unseen lakes: log score D − plain, lower end above −0.02 | −0.006 [−0.023, +0.004] | **fail** |
+| Reported: non-inferior to production at 900 | −0.0005 [−0.0073, +0.0052]: not shown | |
+| Reported: skill over the usual rate at 900 | 0.005 | |
+
+The fitted spread of lake seasonal slopes was small (0.06 to 0.11 log10 per standard deviation of day of year, against
+about 0.2 for B's wet slopes), so partial pooling shrank Derwent's own season slope nearly to the average (+0.02 to
++0.09). Derwent's within-site rho rose from −0.11 to 0.01 and its Brier at 900 did not improve (0.191 against 0.189).
+**D is archived:** with three seasons, a lake-specific season shape cannot be told from noise by this model.
+
+## What it means, and the deliverable chosen
+
+**Chosen deliverable: an evidence-backed archive of a Derwent line chance from the data the model reads, with this
+diagnosis.** Why, under "Develop promising work now":
+
+- The mechanism the forecast models, rain-driven spills from the monitored overflows upstream, is contradicted at
+  Derwent by the measurements: recorded spills were fewer in the worst season, three of the four dry-day results over 900 in
+  2024-25 came 8 to 18 days after the last recorded spill, and rain at the lake does not track counts. Five variants
+  (the own rate, A, B, C and D) have now failed on these rows. No further model on these inputs is justified.
+- At Coniston and Windermere the opposite holds: rain, modelled exposure and recorded spills track counts.
+- **Inferred, not established:** a dry-weather source near Crow Park or in the upper catchment that rises in warm
+  summers, consistent with the EA's named private discharges from dwellings, hotels and campsites, which peak with
+  tourism, or with wildlife on the shore. These files cannot tell them apart.
+
+**What would test each, and who would take it:**
+
+| Possible source | Data that would test it | Who |
+|---|---|---|
+| Private discharges, hotels and campsites in the upper catchment | The EA's register of these permits and their locations; occupancy by month | EA register (public, offline read possible); a request is an outside contact (Ethan) |
+| A source at the sampling point (boats, landing stages, wildfowl, swimmers) | Paired samples at Crow Park and a second point on the same day; shore bird counts | The EA's in-season investigation the profile names; ask the EA what it found (Ethan) |
+| Warm-water persistence | Hourly lake temperature (a buoy) beside samples; the 2027 season | Lake temperature data already held (LAKE-TEMP) if a buoy record exists for Derwent |
+| Something the overflow records miss (an unmonitored discharge) | The EA's 2025-26 investigation results for this bathing water | Ethan (outside contact) |
+
+**Reopen the archived Derwent line chance when** one of these supplies a dated input that tracks Derwent's dry-weather
+results, judged under its own protocol. The frozen plain and B models (line-candidates record) are unaffected and
+keep their 2027 read.

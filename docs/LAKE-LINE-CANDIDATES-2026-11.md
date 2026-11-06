@@ -276,3 +276,18 @@ rebuilt, which needs about 200 weighted Open-Meteo archive calls (a quota decisi
 | Next deliverable | The 2027 read of the frozen file, on or after 15 Oct 2027, from `shadow_lake_range_v1`'s logged inputs |
 | Budget | None spent: offline, cached inputs, no request |
 | Release route | None live. The frozen file is research data; removing it changes nothing on the site |
+
+## Against the merged workflow section "Develop promising work now" (#628, 6 November 2026)
+
+- **Non-inferiority.** No candidate here is described as "not worse than production". An interval that includes harm
+  beyond the stated +0.002 is not non-inferiority, and with 16 events a margin that narrow will rarely be met; the point
+  estimates below production's are not evidence of safety.
+- **No shadow log was started.** The frozen-file read for 2027 is not a shadow log. It adds no table, job or request.
+  Its inputs (rain over 48 and 24 hours, exposure, day, bathing water) are already logged at issue time in
+  `shadow_lake_range_v1`, and production's lake chance is logged on the same issues in `forecast_points.p_ecoli`. A
+  sample with no logged row is counted, not filled. Its read date, metrics and the 0.10 margin are fixed above. It uses
+  no Open-Meteo quota.
+- **The next deliverable chosen after this readout** is a concrete diagnosis of Derwent Water's high results, with a
+  fifth candidate (D, a lake-specific seasonal response) that the diagnosis suggested:
+  [DERWENT-WATER-DIAGNOSIS-2026-11.md](DERWENT-WATER-DIAGNOSIS-2026-11.md). D failed; the Derwent line chance is archived
+  there with what would reopen it.

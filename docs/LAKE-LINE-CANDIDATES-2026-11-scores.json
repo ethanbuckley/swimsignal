@@ -3,6 +3,7 @@
  "version": "1.0.0",
  "protocol": "docs/LAKE-LINE-CANDIDATES-2026-11.md",
  "protocol_commit": "3717a7aa",
+ "slope": "wet",
  "seed": 20261106,
  "draws": 2000,
  "inputs_sha256": {
@@ -67,7 +68,7 @@
       "_events900": 13,
       "_events500": 21
      },
-     "seconds": 5.0
+     "seconds": 4.8
     },
     {
      "fold": "2025",
@@ -120,7 +121,7 @@
       "_events900": 7,
       "_events500": 18
      },
-     "seconds": 5.1
+     "seconds": 4.9
     },
     {
      "fold": "2026",
@@ -173,7 +174,7 @@
       "_events900": 12,
       "_events500": 21
      },
-     "seconds": 5.0
+     "seconds": 4.7
     }
    ],
    "line": {
@@ -3925,7 +3926,7 @@
       "_events900": 13,
       "_events500": 21
      },
-     "seconds": 4.8
+     "seconds": 4.6
     },
     {
      "fold": "Colwick|2025",
@@ -3977,7 +3978,7 @@
       "_events900": 7,
       "_events500": 18
      },
-     "seconds": 4.8
+     "seconds": 4.7
     },
     {
      "fold": "Colwick|2026",
@@ -4029,7 +4030,7 @@
       "_events900": 12,
       "_events500": 21
      },
-     "seconds": 4.8
+     "seconds": 4.7
     },
     {
      "fold": "Coniston Water|2024",
@@ -4129,7 +4130,7 @@
       "_events900": 4,
       "_events500": 10
      },
-     "seconds": 4.2
+     "seconds": 4.1
     },
     {
      "fold": "Coniston Water|2026",
@@ -4179,7 +4180,7 @@
       "_events900": 9,
       "_events500": 14
      },
-     "seconds": 4.2
+     "seconds": 4.1
     },
     {
      "fold": "Derwent Water|2024",
@@ -4283,7 +4284,7 @@
       "_events900": 3,
       "_events500": 10
      },
-     "seconds": 4.3
+     "seconds": 4.6
     },
     {
      "fold": "Derwent Water|2026",
@@ -4335,7 +4336,7 @@
       "_events900": 3,
       "_events500": 10
      },
-     "seconds": 4.2
+     "seconds": 4.1
     },
     {
      "fold": "Frensham|2024",
@@ -4387,7 +4388,7 @@
       "_events900": 13,
       "_events500": 21
      },
-     "seconds": 4.8
+     "seconds": 4.6
     },
     {
      "fold": "Frensham|2025",
@@ -4439,7 +4440,7 @@
       "_events900": 7,
       "_events500": 18
      },
-     "seconds": 4.6
+     "seconds": 4.5
     },
     {
      "fold": "Frensham|2026",
@@ -4491,7 +4492,7 @@
       "_events900": 12,
       "_events500": 21
      },
-     "seconds": 4.6
+     "seconds": 4.5
     },
     {
      "fold": "Rutland Water|2024",
@@ -4542,7 +4543,7 @@
       "_events900": 13,
       "_events500": 20
      },
-     "seconds": 4.8
+     "seconds": 4.5
     },
     {
      "fold": "Rutland Water|2025",
@@ -4593,7 +4594,7 @@
       "_events900": 7,
       "_events500": 17
      },
-     "seconds": 4.6
+     "seconds": 4.5
     },
     {
      "fold": "Rutland Water|2026",
@@ -4644,7 +4645,7 @@
       "_events900": 12,
       "_events500": 19
      },
-     "seconds": 4.2
+     "seconds": 4.1
     },
     {
      "fold": "Windermere|2024",
@@ -4693,7 +4694,7 @@
       "_events900": 13,
       "_events500": 21
      },
-     "seconds": 4.0
+     "seconds": 3.8
     },
     {
      "fold": "Windermere|2025",
@@ -4742,7 +4743,7 @@
       "_events900": 7,
       "_events500": 17
      },
-     "seconds": 3.9
+     "seconds": 3.8
     },
     {
      "fold": "Windermere|2026",
@@ -4791,7 +4792,7 @@
       "_events900": 12,
       "_events500": 20
      },
-     "seconds": 3.9
+     "seconds": 3.8
     }
    ],
    "line": {
@@ -8524,7 +8525,7 @@
       }
      },
      "maps": null,
-     "seconds": 1.5
+     "seconds": 1.6
     },
     {
      "fold": "2026",
@@ -8577,7 +8578,7 @@
       "_events900": 12,
       "_events500": 21
      },
-     "seconds": 4.7
+     "seconds": 5.0
     }
    ],
    "line": {

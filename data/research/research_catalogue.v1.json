@@ -1097,6 +1097,35 @@
    ]
   },
   {
+   "id": "derwent-water-diagnosis",
+   "title": "Derwent Water's high E. coli results: diagnosis and a lake seasonal response",
+   "section": "promising",
+   "project": "LAKE-CONC",
+   "topics": [
+    "e. coli",
+    "lakes",
+    "overflows"
+   ],
+   "verdict": "By the plan's rule, Derwent Water's results over 900 are not explained by recorded spills at its three monitored overflows upstream: 30-day spill hours ranked its counts with rho 0.28 (interval −0.19 to +0.58), its overflows spilled less in its worst season (172 hours) than in 2024 (220), and 1 of its 4 dry-day results over 900 had a recorded spill in the 7 days before. At Coniston Water recorded spills did track counts (7-day rho 0.48, interval +0.27 to +0.62). Derwent's counts rose with water temperature and day of season (rho 0.37, interval +0.15 to +0.56). A lake-specific seasonal response (candidate D) failed all three of its conditions.",
+   "scope": "Derwent Water at Crow Park, 40 samples in 2024-25 for recorded spills (no 2026 event records) and 59 in 2024-26 for temperature, with Coniston Water and Windermere for comparison; seen samples, described. The EA's 2026 bathing water profile was read for named sources. A source is inferred, not established.",
+   "stage": "archived",
+   "stage_note": "A Derwent line chance from the inputs the model reads is archived: five variants failed on these rows and the measurements contradict the rain-driven spill mechanism there. The diagnosis is the deliverable. The frozen plain and B models keep their 2027 read.",
+   "reopen_when": "A dated input that tracks Derwent Water's dry-weather results, judged under its own protocol: the EA's private-discharge permits for the upper catchment with occupancy, the EA's in-season investigation results for this bathing water (an outside contact for Ethan), or a lake temperature record beside the samples.",
+   "records": [
+    {
+     "doc": "docs/DERWENT-WATER-DIAGNOSIS-2026-11.md",
+     "quote": "**Answer by the plan's rule: not explained by recorded spills at these overflows.**"
+    },
+    {
+     "doc": "docs/DERWENT-WATER-DIAGNOSIS-2026-11.md",
+     "quote": "| D1. Log score D − plain above zero, interval above zero | −0.003 [−0.018, +0.010] | **fail** |"
+    }
+   ],
+   "prs": [
+    625
+   ]
+  },
+  {
    "id": "spill-duration",
    "title": "How long a running spill goes on",
    "section": "promising",
