@@ -94,6 +94,8 @@ file was written to the shared cache. The heavy-run lock was held throughout.
 upstream, 14 repeats, 1 rain window). Rerunning #584's `run` stage gave the same verdicts on all three conditions, with
 the candidate's 80% coverage 78.9% and log score −0.9049 against #584's −0.9048. One contrast (candidate − shared
 spread) moved from +0.0678 to +0.0700. Inferred: the rows are #584's, refitted under newer numerical libraries.
+**[Corrected 6 November 2026: that inference was wrong. These rows were not #584's; their exposure was
+uncalibrated. See "Correction" at the end.]**
 **Correction to the protocol:** there are 52 site × season clusters, not 55, because Rayrigg Meadow has no samples in
 2012-14.
 
@@ -198,3 +200,75 @@ range. Consequences, stated now:
 
 **Short re-check at the season's start:** in the first week of May 2027, confirm that `shadow_lake_range_v1` rows are
 marked in season and still have no null inputs. A gap found then can be fixed before most of the season's samples.
+
+---
+
+## Correction (6 November 2026): the rebuilt rows were not #584's
+
+**What was wrong.** The results above say the rebuilt rows were #584's. They were not. My scratch root held only three
+processed files (the river network, the overflow table and the spill model), not the processed files git tracked at
+0be59d2d. Without `data/processed/lead_calibration.json` the hindcast exposure was left uncalibrated: the archived
+`forecast._lead_calibration` returns no map when the file is missing, and `calibrate_at_lead` then passes the spill
+model's raw chances through. **Confirmed, not inferred:** the old root with only that one file added rebuilds the
+corrected training and test rows to within 6e-16. Every row's
+exposure was off: the training rows' mean logit exposure was −3.496 against #584's −3.680, and the test rows' −5.048
+against −5.224. Rain, samples and counts were right. The reproduction check missed it. Row counts do not depend on the
+calibration, and #584's scores barely moved, because the calibration shifts the exposure almost monotonically and the
+models standardise it. Content should have been compared (input means against the frozen lake-range-v1 file), not
+counts and scores.
+
+**How it was found.** The session building the lake "usual" line (PR #630) rebuilt lake-range-v1's training rows with
+#584's code and the archive's full data tree. Its rows matched the frozen `ecoli_lake_range.json` to the last bit, and
+the training rows left by this check did not.
+
+**What was redone.** The rows were rebuilt with #584's code (0be59d2d) and the archive's full data tree. The network,
+overflow table and two raw files not tracked by git were copied from the shared checkout, with SHA-256 unchanged before
+and after. The 2012-22 archive rain was already in this check's scratch cache. The run was offline with the network
+blocked: **no request.** Checks:
+
+- Training rows: input means and standard deviations equal lake-range-v1's file (largest difference 4e-16). They equal
+  #630's independent rebuild except in the last bit of floating-point sums: 167 rows, relative difference at most 4e-14.
+- #584's `run` stage on the corrected rows reproduces its committed scores: coverage 78.9%, log score −0.9048, Brier
+  0.00928 and 0.02823, and the shared-spread contrast +0.0678 [+0.0407, +0.0953]. The first rebuild gave +0.0700 there.
+- Test rows: the same 962 samples and the same rain; only the exposure differs. Its order within each site barely
+  changes (mean rank correlation between old and corrected exposure 0.9987); its level shifts by about +0.18 on the
+  logit scale.
+
+**The comparison rerun** under the protocol of 96392731, unchanged. The frozen files are unchanged (v1 `83a3a8d0…`,
+v2 `d0cb1620…`, lake-range-v1 `5566b12e…`). Production's form is refitted on the corrected training rows. The original
+files stay as the record of what was first reported; the corrected run is in `LAKE-LINE-2012-22-CHECK-2026-11-corrected-
+scores.json` and `-corrected-rows.csv` (`scripts/lake_line_2012_22.py --corrected`).
+
+| Mean within-site rho, 2012-22 | First reported (uncalibrated exposure) | Corrected |
+|---|---|---|
+| plain median (v1) | 0.279 | 0.279 |
+| B median (v1) | 0.305 | 0.308 |
+| plain median (v2) | 0.280 (reported only) | 0.281 |
+| B median (v2) | 0.304 (reported only) | 0.305 |
+| lake-range-v1 median | 0.287 | 0.286 |
+| production form, refitted | 0.123 | 0.132 |
+| deployed production | 0.074 | 0.102 |
+
+| Difference against production's form (95% interval, site × season clusters) | First reported | Corrected |
+|---|---|---|
+| plain v1 | +0.156 [+0.090, +0.218] | **+0.147 [+0.082, +0.210]** |
+| B v1 | +0.182 [+0.122, +0.244] | **+0.176 [+0.116, +0.237]** |
+| plain v2 | not computed | +0.150 [+0.085, +0.213] |
+| B v2 | not computed | +0.173 [+0.118, +0.227] |
+| **lake-range-v1** | not computed | **+0.155 [+0.094, +0.216]** |
+| B v1 − plain v1 | +0.026 [−0.010, +0.063] | +0.029 [−0.007, +0.065] |
+
+Concentration, corrected: log score plain −0.933, B −0.935, plain v2 −0.940, B v2 −0.950, lake-range-v1 −0.905 (first
+reported −0.903). Central 80%: plain 80.2%, B 79.5%, lake-range-v1 79.0%. Over 500 (28 results): skill over the usual
+rate −0.001 to 0.009, still no line chance. Over 900: 9 results, too few.
+
+**Does the conclusion change? No.** The primary question still **holds for every frozen model**, with intervals above
+zero. The differences shrink by 0.006-0.009 because production's chance ranks slightly better on calibrated exposure
+(0.132 against 0.123). The one figure #630 cites, "lake-range-v1 0.287 against production 0.123", is corrected to
+**lake-range-v1 0.286 against production 0.132**, a difference of +0.155 [+0.094, +0.216]. #630's evidence statement
+stands with the corrected numbers. The wording proposal's table is corrected the same way. The Colwick sensitivity's
+report-only figures (v2 0.280 and 0.304) were on the uncalibrated rows; corrected, they are 0.281 and 0.305, against
+v1's 0.279 and 0.308.
+
+**Lesson recorded:** a rebuild from an archived commit needs that commit's full data tree, not only the files a run
+obviously reads. Check rebuilt rows' content against a frozen artifact before scoring anything on them.
