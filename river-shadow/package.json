@@ -1,0 +1,8 @@
+{
+  "name": "swimsignal-river-shadow",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  }
+}

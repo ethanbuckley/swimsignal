@@ -1,0 +1,19 @@
+{
+ "stopped": null,
+ "started": "2026-11-05T23:43:00+00:00",
+ "spot_gauges_usable": 55,
+ "why": {
+  "used": 33,
+  "no upstream gauge": 11,
+  "no Hydrology series": 10,
+  "no upstream gauge with a series and a range": 1
+ },
+ "gauges_used": 33,
+ "gauges_paired": 26,
+ "with_trib": 29,
+ "systems": 13,
+ "series": 76,
+ "gauges_with_radar": 33,
+ "requests_this_run": 119,
+ "finished": "2026-11-05T23:52:02+00:00"
+}
