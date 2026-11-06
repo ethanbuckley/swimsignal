@@ -164,7 +164,7 @@ of `shadow_lake_range_v1`. Nothing is shown until Ethan decides the wording.
 | Read | Inputs it needs | Where they come from | Status |
 |---|---|---|---|
 | lake-range-v1 range and order (the existing 2027 read, `docs/LAKE-RANGE-WORDING-2026-11.md`) | its logged median and range | `shadow_lake_range_v1`, written by every build since #585 (merged 1 Nov 2026) | **Logging, checked 6 Nov** (below) |
-| Frozen plain, B, A, C (`lake_line_frozen.v1.json`) | rain over 48 and 24 hours, exposure, day, bathing water | the same `shadow_lake_range_v1` rows, computed by `frozen_probs` at read time | Runnable: needs no logger |
+| Frozen plain, B, A, C (`lake_line_frozen.v2.json`, read with v1 beside it; see the line-candidates record) | rain over 48 and 24 hours, exposure, day, bathing water | the same `shadow_lake_range_v1` rows, computed by `frozen_probs` at read time | Runnable: needs no logger |
 | Production's lake chance, the comparator | `p_ecoli` | `forecast_points` in the same state database, same issues | Logged since 15 Sep 2026 |
 | The usual and own rates | frozen 2023-26 rates | the frozen file and `ecoli_evidence.v1.json` | Frozen |
 | 2027 outcomes | EA samples, May-September 2027 | the EA's bathing-water service | From May 2027 |

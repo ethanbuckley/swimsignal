@@ -574,8 +574,24 @@ def frozen_probs(f: dict, rain_48h, rain_24h, risk, when, bw: str | None) -> dic
 def stage_export() -> None:
     """Freeze plain and B (with A's and C's maps), fitted on all 1,537 rows, for the 2027 read in the record. Not a
     logger and not loaded by the site: the 2027 read computes them from shadow_lake_range_v1's logged inputs."""
-    res = json.loads(Path(f"{DOC}-scores.json").read_text())
+    _export(load(), FROZEN, "lake-line-frozen-v1", None)
+
+
+FROZEN_V2 = ROOT / "data" / "research" / "lake_line_frozen.v2.json"
+
+
+def stage_export_v2() -> None:
+    """v2: the same fit without Colwick's 45 rows, whose exposure came from the pin #199 replaced. Frozen beside v1 on
+    6 Nov 2026 because the materiality rule (0072cecc) found the difference material; v1 is not edited."""
     df = load()
+    _export(df[df["bw_id"] != COLWICK].reset_index(drop=True), FROZEN_V2, "lake-line-frozen-v2",
+            "Fitted 6 Nov 2026 without Colwick Country Park's 45 rows (exposure from the Trent pin that #199 replaced); "
+            "frozen beside v1 under the materiality rule committed in 0072cecc, before any 2027 sample. The 2027 read "
+            "uses this file and reports v1 beside it.")
+
+
+def _export(df: pd.DataFrame, path: Path, rule: str, note: str | None) -> None:
+    res = json.loads(Path(f"{DOC}-scores.json").read_text())
     plain, b, wet = fit_both(df)
     assert plain.converged and b.converged
     maps = inner_maps(df)
@@ -587,7 +603,7 @@ def stage_export() -> None:
         return {bw: np.round(post[m.sites.get_loc(bw)], 8).tolist() for bw in lake_sites}
 
     dw, _ = add_wet(df, df)
-    out = {"rule": "lake-line-frozen-v1", "record": "docs/LAKE-LINE-CANDIDATES-2026-11.md",
+    out = {"rule": rule, **({"note": note} if note else {}), "record": "docs/LAKE-LINE-CANDIDATES-2026-11.md",
            "status": "frozen for the 2027 read; not logged, not shown, not loaded by the site",
            "guardrails_met": res["logged"],
            "target": "P(E. coli over 900 and over 500 per 100 ml) in a lake sample; B also the median",
@@ -624,10 +640,85 @@ def stage_export() -> None:
             ck["B_median"] = float(10 ** median_of(b, Xw, site)[i])
             checks.append(ck)
     out["checks"] = checks
-    FROZEN.write_text(json.dumps(out, indent=1) + "\n")
-    print(FROZEN, hashlib.sha256(FROZEN.read_bytes()).hexdigest())
+    path.write_text(json.dumps(out, indent=1) + "\n")
+    print(path, hashlib.sha256(path.read_bytes()).hexdigest())
     print(json.dumps(checks, indent=1))
 
 
+# ------------------------------------------------------------------ Colwick's old-pin exposure (materiality check)
+COLWICK = "ukf1400-09750"
+
+
+def _predict_sites(plain, b, wet, X: pd.DataFrame) -> pd.DataFrame:
+    s = X["bw_id"].to_numpy()
+    Xw = add_wet_with(X, wet)
+    return pd.DataFrame({"bw_id": s, "plain_med": median_of(plain, X, s), "B_med": median_of(b, Xw, s),
+                         "plain_p500": plain.p_over(X, s, np.log10(500)), "B_p500": b.p_over(Xw, s, np.log10(500))})
+
+
+def stage_colwick() -> None:
+    """Refit plain and B as frozen, then (a) without Colwick's rows and (b) with its exposure at zero; compare at the
+    other 11 lake bathing waters on their own 2024-26 inputs (the rule in the record, committed in 0072cecc)."""
+    df = load()
+    f = json.loads(FROZEN.read_text())
+    plain, b, wet = fit_both(df)
+    # reproduction: the frozen file's check values
+    from dipcast.model.ecoli import features
+    when = pd.Series(pd.Timestamp("2026-07-01 12:00", tz="Europe/London"), index=range(2))
+    X = features([0.0, 25.0], [0.0, 15.0], [0.002, 0.08], [1.0, 1.0], when)
+    worst = 0.0
+    for ck in f["checks"]:
+        i = 0 if ck["rain_48h"] == 0.0 else 1
+        site = np.array([ck["site"]] * 2)
+        for line in LINES:
+            got = (plain.p_over(X, site, np.log10(line))[i], b.p_over(add_wet_with(X, wet), site, np.log10(line))[i])
+            for g, k in zip(got, (f"plain_{line}", f"B_{line}"), strict=True):
+                worst = max(worst, abs(g - ck[k]) / max(abs(ck[k]), 1e-12))
+    assert worst < 1e-6, f"refit does not reproduce the frozen file ({worst:.2e})"
+    sites = sorted(set(df.loc[df["lake"] == 1, "bw_id"]) - {COLWICK})
+    X11 = df[df["bw_id"].isin(sites)].reset_index(drop=True)
+    base = _predict_sites(plain, b, wet, X11)
+    zero = df.copy()
+    m = zero["bw_id"] == COLWICK
+    zero.loc[m, "logit_risk"] = float(np.log(1e-3 / (1 - 1e-3)))   # ecoli.features clips exposure at 0.001
+    variants = {"a_without_colwick": df[~(df["bw_id"] == COLWICK)].reset_index(drop=True), "b_colwick_exposure_zero": zero}
+    names = ["intercept", *PROD]
+    res = {"rule_commit": "0072cecc", "reproduction_max_rel_diff": worst, "colwick_rows": int(m.sum()),
+           "evaluated_rows": int(len(X11)), "sites": sites,
+           "frozen": {"plain_coef_std": dict(zip(names, np.round(plain.theta[:plain.p], 5).tolist(), strict=True)),
+                      "plain_sigma_lake": round(plain.sigma_lake, 5), "plain_tau": round(plain.tau, 5),
+                      "B_tau_v": round(b.tau_v, 5)}, "variants": {}}
+    material_any = False
+    for name, rows in variants.items():
+        p2, b2, w2 = fit_both(rows)
+        new = _predict_sites(p2, b2, w2, X11)
+        per = {}
+        for bw in sites:
+            k = base["bw_id"] == bw
+            per[bw] = {f"{nm}_median_rel": round(float(np.mean(np.abs(10 ** (new.loc[k, f"{nm}_med"] - base.loc[k, f"{nm}_med"]) - 1))), 5)
+                       for nm in ("plain", "B")}
+            per[bw].update({f"{nm}_p500_abs": round(float(np.mean(np.abs(new.loc[k, f"{nm}_p500"] - base.loc[k, f"{nm}_p500"]))), 6)
+                            for nm in ("plain", "B")})
+        worst_med = max(max(v["plain_median_rel"], v["B_median_rel"]) for v in per.values())
+        worst_p = max(max(v["plain_p500_abs"], v["B_p500_abs"]) for v in per.values())
+        material = bool(worst_med > 0.10 or worst_p > 0.005)
+        material_any |= material
+        res["variants"][name] = {
+            "rows": int(len(rows)), "converged": bool(p2.converged and b2.converged),
+            "plain_coef_std": dict(zip(names, np.round(p2.theta[:p2.p], 5).tolist(), strict=True)),
+            "plain_coef_change": dict(zip(names, np.round(p2.theta[:p2.p] - plain.theta[:plain.p], 5).tolist(), strict=True)),
+            "plain_sigma_lake": round(p2.sigma_lake, 5), "plain_tau": round(p2.tau, 5), "B_tau_v": round(b2.tau_v, 5),
+            "by_site": per, "worst_median_rel": round(worst_med, 5), "worst_p500_abs": round(worst_p, 6), "material": material}
+    res["material"] = material_any
+    res["answer"] = "material: freeze v2 beside v1" if material_any else "immaterial: keep v1"
+    Path(f"{DOC}-colwick.json").write_text(json.dumps(res, indent=1) + "\n")
+    print(json.dumps({k: res[k] for k in ("reproduction_max_rel_diff", "colwick_rows", "evaluated_rows", "material", "answer")}, indent=1))
+    for name, v in res["variants"].items():
+        print(name, v["rows"], v["converged"], "worst median", v["worst_median_rel"], "worst p500", v["worst_p500_abs"],
+              "material", v["material"])
+        print("   coef change", v["plain_coef_change"], "sigma_lake", v["plain_sigma_lake"], "tau", v["plain_tau"], "tau_v", v["B_tau_v"])
+
+
 if __name__ == "__main__":
-    {"rows": stage_rows, "run": stage_run, "diagnose": stage_diagnose, "export": stage_export}[sys.argv[1]]()
+    {"rows": stage_rows, "run": stage_run, "diagnose": stage_diagnose, "export": stage_export,
+     "colwick": stage_colwick, "export_v2": stage_export_v2}[sys.argv[1]]()

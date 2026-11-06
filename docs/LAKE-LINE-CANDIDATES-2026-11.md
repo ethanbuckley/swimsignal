@@ -312,3 +312,32 @@ monitored overflow upstream. The effect is sized here offline, with no request.
   the 2027 read uses. **Material under either:** v1 is not edited. A `lake_line_frozen.v2.json` is frozen beside it,
   fitted without Colwick's rows, with a dated note, before any 2027 sample exists. The 2027 read then uses v2, because
   its training rows match the site's pins, and reports v1 beside it.
+
+## Colwick's old-pin exposure: results (6 November 2026)
+
+Run by `LAKE_LINE_OUT=<scratch> uv run python scripts/lake_line_candidates.py colwick` after the rule was pushed
+(0072cecc); figures in `LAKE-LINE-CANDIDATES-2026-11-colwick.json`. The refit reproduced v1's check values exactly
+(largest relative difference 0). Evaluated on 592 rows at the 11 bathing waters the shadow logs.
+
+| Variant | Largest per-site change in the median (plain / B) | Largest per-site change in P(over 500) (plain / B) | Rule |
+|---|---|---|---|
+| (a) without Colwick's 45 rows | 5.8% / **13.0%** (Frensham) | **0.013** (Derwent) / **0.021** (Derwent) | **material** |
+| (b) Colwick's exposure set to zero | 4.1% / **11.7%** (Derwent) | **0.009** (Derwent) / **0.024** (Derwent) | **material** |
+
+- **Plain is nearly unaffected; B is not.** Plain's medians move by 6% or less at every site. Its P(over 500) passes
+  the 0.005 line only at Derwent Water and, in (a), Coniston Boating Centre (0.006). B's lake-slope spread falls from
+  0.212 to 0.154 (a) and 0.161 (b), which moves its medians by 3-13% at every site. **One lake's 45 rows shift B's
+  slope spread by a quarter: B's lake-specific wet response is fragile**, consistent with its failure at unseen lakes.
+- Shared terms move little: the standardised exposure coefficient rises by 0.022 (a) and 0.028 (b) from 0.167; rain
+  over 48 hours falls by 0.019 in both; the lake noise level moves from 0.713 to 0.696 and 0.703.
+- **Reported only, no new test:** v2 on the committed 2012-22 rows gives mean within-site rho 0.280 (plain) and 0.304 (B),
+  against v1's 0.279 and 0.305, so the ordering result does not depend on Colwick's rows. v2's log scores there are
+  slightly lower (−0.941 and −0.951 against −0.933 and −0.937).
+
+**By the rule: material.** `lake_line_frozen.v1.json` is unchanged (SHA-256 still `83a3a8d0…`).
+**`data/research/lake_line_frozen.v2.json`** (SHA-256 `d0cb162044a05504524f24eb9b3bed6b8afb5bcdef7e42c5e1963c94f1ad8f93`)
+is frozen beside it, fitted on the 1,492 rows without Colwick, with its own recalibration maps and usual rates over its
+11 lake sites, and a dated note in the file. **The 2027 read uses v2**, because its training rows match the site's pins
+and the lakes the shadow logs. It reports v1 beside it. Both were frozen before any 2027 sample exists.
+`scripts/lake_line_candidates.py export_v2` rebuilds it. Lake-range-v1, live on the page, is unaffected: its rows were
+built on 1 November with the site's pins, which give Colwick no overflow upstream.

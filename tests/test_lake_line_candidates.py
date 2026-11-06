@@ -94,3 +94,20 @@ def test_the_recorded_verdict_and_inputs():
         assert hashlib.sha256(path.read_bytes()).hexdigest() == rec["inputs_sha256"][path.name], path.name
     main = rec["schemes"]["loyo"]["line"]["900"]
     assert main["n"] == 637 and main["events"] == 16 and main["clusters"] == 18
+
+
+def test_v1_unchanged_and_v2_reproduces_its_fit():
+    """Colwick's old-pin rows were material (docs/LAKE-LINE-CANDIDATES-2026-11.md, rule 0072cecc): v1 is kept as frozen
+    and v2, fitted without them, is frozen beside it; the 2027 read uses v2."""
+    assert hashlib.sha256(m.FROZEN.read_bytes()).hexdigest() == "83a3a8d0929afb1ff178cc064e4fb8b4ec0af64810b5a2a1435108e3594a1c23"
+    f = json.loads(m.FROZEN_V2.read_text())
+    assert f["rule"] == "lake-line-frozen-v2" and "0072cecc" in f["note"] and m.COLWICK not in f["sites"]
+    assert f["fitted_on"]["rows"] == 1492 and len(f["sites"]) == 11
+    for ck in f["checks"]:
+        when = pd.Series(pd.Timestamp(f"{ck['day']} 12:00", tz="Europe/London"), index=range(1))
+        bw = None if ck["site"] == "unsampled" else ck["site"]
+        got = m.frozen_probs(f, [ck["rain_48h"]], [ck["rain_24h"]], [ck["risk"]], when, bw)
+        for k in ("plain_900", "B_900", "A_900", "C_900", "plain_500", "B_500", "B_median"):
+            assert got[k][0] == pytest.approx(ck[k], rel=1e-5), (ck["site"], k)
+    rec = json.loads(Path(f"{m.DOC}-colwick.json").read_text())
+    assert rec["material"] is True and rec["reproduction_max_rel_diff"] < 1e-6 and rec["colwick_rows"] == 45
