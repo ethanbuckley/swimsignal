@@ -116,11 +116,11 @@ def test_the_built_pages_open_on_the_views_opening_as_the_script_draws_it(tmp_pa
     # picture is painted once, at the first paint, and that paint is the page's largest (LCP).
     body = home.split('<div id="result" data-built data-nosnippet>', 1)[1].split('<p class="about-line"', 1)[0]
     assert body.startswith('<div class="lead"><section class="intro"><h1>Check the water before you go</h1>')
-    assert "Five-day pollution risk forecasts for 3 swim spots in England<span class=\"lede-map\">, and for any river or lake you " in body and 'aria-busy="true"' in body
+    assert "Pollution risk for the next five days at 3 river and lake swim spots in England<span class=\"lede-map\">, and anywhere you " in body and 'aria-busy="true"' in body
     assert "best-day" not in body and "data-notices" not in body   # these wait for the forecast
     page = (ROOT / "src" / "dipcast" / "site" / "index.html").read_text()
     lead = page.split("function renderList()", 1)[1].split("h += notices()", 1)[0]
-    for part in ['<h1>Check the water before you go</h1>', "Five-day pollution risk forecasts for ${DATA.spots.length} swim spots ${spotsWhere()}<span class=\"lede-map\">, and for any river or lake you ",
+    for part in ['<h1>Check the water before you go</h1>', "Pollution risk for the next five days at ${DATA.spots.length} river and lake swim spots ${spotsWhere()}<span class=\"lede-map\">, and anywhere you ",
                  " on the map</span>. <a href=\"#about\">How it works</a></p>",
                  'placeholder="River, lake or town" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search"',
                  '<fieldset class="day-strip list-days" id="listday"><legend class="sr">When are you swimming?</legend>']:
@@ -851,9 +851,10 @@ def test_the_organisers_page_is_a_prose_page_with_its_scripts_versioned_and_link
     assert "events.britishtriathlon.org/uploads/content/Water%20Quality%20Guidance.pdf" in page
     assert "swimming.org/swimengland/running-your-club/" in page
     assert '<ol class="checklist">' in page.split('<script src="levels')[0] and "@page { size:A4 portrait" in page
-    # Linked from the app's foot, from every spot's actions (one line in index.html) and from About.
+    # Linked from the organisations page (the app's foot links that, 6 Nov 2026), from every spot's actions (one line in
+    # index.html) and from About.
     template = bs.TEMPLATE.read_text()
-    assert '<a href="organisers.html">For event organisers</a>' in template
+    assert '<a href="clubs.html">For organisations</a>' in template and 'href="organisers.html"' in (tmp_path / "clubs.html").read_text()
     assert template.count('organisers.html#spot=${encodeURIComponent(d.id)}') == 1
     assert 'href="organisers.html"' in (tmp_path / "about.html").read_text()
 
@@ -1201,7 +1202,7 @@ def test_information_pages_offer_mobile_navigation_and_map_handoff(tmp_path):
     # More holds the header's links a phone hides (Research was only in the foot, 31 Oct 2026), and the app's bar
     # lists the same ones as the prose pages'.
     more = "".join(f'<li><a href="{h}">{label}</a></li>' for h, label in bs.MORE_LINKS)
-    assert [h for h, _ in bs.MORE_LINKS] == ["verification.html", "about.html", "lab/", "research.html", "feedback.html"]   # the Research Lab beside Research and data (1 Nov 2026)
+    assert [h for h, _ in bs.MORE_LINKS] == ["verification.html", "about.html", "clubs.html", "feedback.html"]   # the Research Lab and Research and data left the bar for About and the foot (6 Nov 2026)
     assert f'<ul class="more-menu" id="more-menu" popover>{more}</ul>' in app
     assert 'popovertarget="more-menu"' in app and 'popovertarget="more-menu"' in page
     # Without popovers (iOS before 17) the button toggles the list itself, the same way in both bars.
