@@ -30,6 +30,10 @@ Document dates are names, not proof of when an analysis ran: several â€œ2026-11â
   windows, the 2027 primary and the evidence bar for public guidance are unchanged. Applied first to #625 (lake E.
   coli), #626 (satellite quality signal) and #627 (radar river rises), whose continuation lines are superseded for
   development.
+- **Backtest instead of waiting (Ethan, 6 November 2026).** A model frozen before it is scored on held-out years that
+  played no part in choosing it can support a release now; prospective windows continue as monitoring, not gates
+  (workflow, "Backtest instead of waiting"). The 2027 primary evaluation and active windows are unchanged. First use:
+  the lake "higher or lower than usual" line, on lake-range-v1's 2012-22 backtest.
 - **Give useful work a public destination.** Research/Labs navigation and an actual satellite observation series
   are the first release. A merged methods document or permanently hidden query flag is not completion.
 

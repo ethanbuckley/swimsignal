@@ -28,6 +28,9 @@ The register distinguishes historical test verdicts from current development dec
   comparator and fallback, and known resource and permission limits. An interval including zero does not show
   non-inferiority. Do not require a new Worker or scheduler while its availability, permissions or cost are
   unresolved; record the blocker instead.
+- Do not wait for a future season when history can answer: a model frozen before it is scored on held-out years
+  that played no part in choosing it (a frozen-model backtest) is enough to release a limited forecast or observation
+  now, with the prospective window kept as monitoring. See "Backtest instead of waiting" in the workflow.
 - Public swimming guidance keeps its full evidence bar. Development and shadow logging never change issued
   predictions, frozen windows or what a swimmer is told.
 - A public research label does not justify misleading claims. Missing imagery is not a negative algae
