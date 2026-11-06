@@ -89,8 +89,9 @@ test('alerts: each state a card can be in says what it is, plainly', () => {
   assert.equal(down.kind, 'down'); assert.equal(down.toggle, true);
   assert.match(down.text, /^The alert service did not answer/);
   assert.match(st({on: false, down: true}).text, /^The alert service did not answer, so alerts could not be checked/);
-  assert.equal(st({can: 'blocked'}).text, 'Notifications are blocked for this site in your browser settings.');
-  assert.equal(st({can: 'blocked'}).link, false);
+  // Blocked in the browser's settings: the Alerts tile says so once (index.html, bindAlerts), not each card.
+  assert.deepEqual(st({can: 'blocked'}), {kind: 'blocked', text: '', toggle: false, checked: false, link: false});
+  assert.deepEqual(Li.spotAlert({push: true, email: true, can: 'blocked'}), {kind: 'blocked', text: '', toggle: false, checked: false, link: false});
   for (const can of ['ios', 'inapp', 'offline', 'none']) assert.equal(st({can}).text, 'Notifications cannot be had in this browser.', can);
   // Where email alerts exist, a browser without notifications is pointed to them, and what they cover is said.
   const mail = Li.spotAlert({push: true, email: true, can: 'ios'});

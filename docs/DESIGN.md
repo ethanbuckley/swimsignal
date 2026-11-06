@@ -2023,7 +2023,8 @@ and it never says why something changed.
   - The saved lists and `dipcast.saved` are untouched.
 - **Off:** "Alerts are off." and a "Set up alerts" button. It brings the Alerts tile into view and focuses its
   heading. The tile holds what turning alerts on sends, so nothing is turned on from a card.
-- **Blocked in the browser's settings:** says so.
+- **Blocked in the browser's settings:** nothing on the card. The Alerts tile says it once (6 November 2026: every
+  card said it, and the tile again).
 - **No notifications in this browser** (an iPhone outside the Home Screen app, Facebook's or Instagram's browser, the
   offline copy turned off, no web push): says so, with "See Alerts", where the tile gives the steps. Where email
   alerts exist, it says they cover the spots saved when you sign up. Email is not per spot.
@@ -2084,3 +2085,22 @@ open ground: at the water it can be calmer, or gustier near hills and buildings.
 **What it is not.** No score and no overall verdict. None of it is part of the pollution level, and the panel says so.
 
 **Checked:** headless Chrome at 390 and 1,440 px; real Safari 26.6.2 at 1,440 px, for today and for tomorrow.
+
+## The phone journey's wording (6 November 2026)
+
+An audit of the phone journey (find a spot, save it, compare) found the same thing said four different ways. Each now
+has one wording:
+
+- **Compare names the days as the rest of the site does:** "Today", then the weekday ("Sat"), from `shortDay` in
+  `levels.js`. The home day strip, Saved's day by day and the plan's day chips already did. Compare said "Tomorrow"
+  and "Sun 8 Nov" for the same days.
+- **Compare's Right now row says "no monitored overflow" one way:** "No monitored overflow found upstream, so no
+  spills to report. Other pollution sources may still affect this water." This applies whether the trace found
+  nothing within 60 km (Brothers Water) or the lake is isolated (Loughrigg Tarn). The isolated lake's cell had
+  dropped the second sentence. Neither reads as a low risk.
+- **A plan row for an isolated lake gives its reason**, `ISOLATED_WHY`: the river network draws no river or beck
+  into the lake, so no monitored overflow can be traced to it, and small becks it does not draw are not checked. In
+  the plan's "No monitored overflow found upstream" group, Loughrigg Tarn had no reason line. The other rows gave
+  "No monitored storm overflow within 60 km upstream."
+- **"Notifications are blocked for this site in your browser settings." is said once,** in the Alerts tile. Each
+  saved card said it too.

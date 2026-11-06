@@ -77,8 +77,12 @@ function weekCells(s, dates) {
 const overflowWords = () => typeof evidenceOverflows === 'function' ? evidenceOverflows : require('./evidence.js').evidenceOverflows;
 function compareNow(s, generatedAt = null) {
   const R = rules(), total = s.upstream_summary?.overflows || 0, n = s.now || {};
-  if (s.error) return htmlText(`${R.coverage(s)}.`);
-  if (!total) return `${R.FOUND_NONE}, so no spills to report. Other pollution sources may still affect this water.`;
+  // No monitored overflow found upstream, whether the trace found none or the lake is isolated (the river network
+  // draws nothing into it, so its forecast is an error with the same words, levels.js, coverage): one sentence, with
+  // its caveat. Until 6 Nov 2026 Loughrigg Tarn's cell dropped "Other pollution sources" that Brothers Water's had.
+  const none = `${R.FOUND_NONE}, so no spills to report. Other pollution sources may still affect this water.`;
+  if (s.error) return R.coverage(s) === R.FOUND_NONE ? none : htmlText(`${R.coverage(s)}.`);
+  if (!total) return none;
   if (n.monitored_upstream == null) return `Not known: this update has no live status for the ${total} overflow${total === 1 ? '' : 's'} upstream.`;
   const mon = Math.min(total, n.monitored_upstream);
   return (R.nowUnknown(s) && mon ? `${R.liveHead(s)}: right now not known here. ` : '') + overflowWords()(s, generatedAt).say

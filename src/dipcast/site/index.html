@@ -4026,8 +4026,10 @@ function compareTable(spots, day, meta = null) {
       // From comparing to planning without choosing the spot again (compareToPlan): not for a spot the planner cannot place.
       + `${typeof canPlanHere === 'function' && canPlanHere(s) ? `<button type="button" class="linkbtn cmp-plan" data-compare-plan="${esc(s.id)}" aria-label="Plan an outing at ${esc(s.name)}">Plan here</button>` : ''}</th>`).join('')}</tr></thead><tbody>`
     + lab('cmp-days', `Pollution risk, next ${dates.length === 4 ? 'four' : 'five'} days`)
+    // Each day as the home day strip, Saved's day by day and the plan's day chips name it, "Today", "Sat" (levels.js,
+    // shortDay): until 6 Nov 2026 compare alone said "Tomorrow" and "Sun 8 Nov" for the same days.
     + dates.map((iso, i) => `<tr${iso === day ? ' class="on" aria-current="true"' : ''}>` + days.map((d, j) => !d.same
-        ? `<td${j ? '' : ' class="d0"'}${hd('cmp-days', j)}><span class="day">${dateLabel(iso)}</span>${cell(d.days[i])}</td>`
+        ? `<td${j ? '' : ' class="d0"'}${hd('cmp-days', j)}><span class="day">${shortDay(iso)}</span>${cell(d.days[i])}</td>`
         : i ? '' : `<td class="same" rowspan="${dates.length}"${hd('cmp-days', j)}>${cell(d.days[0])}. The same on every day.</td>`).join('') + '</tr>').join('')
     // Distance (the plan's) and the water now, as the spot's Conditions say them, aligned with the rest (2 Nov 2026).
     // Distance in miles, short ("1.1 miles"); the label says what it is.
@@ -4511,6 +4513,10 @@ function planWhy(s, day, quiet = false) {
     else if (t) out.push(`${cap(t)}${lowSpill ? `, but sewage from ${total === 1 ? 'it' : 'them'} is unlikely to reach here` : ''}.`);
     if (ecoliLevel(s, x)) out.push(`${Math.round(x.p_ecoli_gt900 * 100)}% chance a sample would show E.\u00a0coli over 900 per 100\u00a0ml.`); }
   else if (!s.error && !total) out.push(`No monitored storm overflow within ${(s.assumptions || {}).max_upstream_km ?? 60}\u00a0km upstream.`);
+  // An isolated lake has no trace to have found nothing within 60 km: its reason is that the river network draws
+  // nothing into it (levels.js, ISOLATED_WHY). Until 6 Nov 2026 its row in the plan's "No monitored overflow found
+  // upstream" group had no reason line, beside rows that each gave theirs.
+  else if (isolated(s)) out.push(ISOLATED_WHY);
   if (c && !/\brated /i.test(head)) out.push(`Rated ${c} by the Environment Agency${(s.classification || {}).year ? ` for ${s.classification.year}` : ''}.`);
   if (algaeLevel(s) && !/algae/.test(head)) out.push('Algae seen at the last check.');
   if (s.access) out.push(ACCESS_WORDS[s.access.status] || ACCESS_WORDS.unconfirmed);   // experience.js, as the comparison's
