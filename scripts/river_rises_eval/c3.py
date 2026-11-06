@@ -454,7 +454,11 @@ def stage_freeze(args) -> dict:
         r1, r1s = rates(full, [g] * 12, list(range(1, 13)))
         frozen["base_rates"][g] = {"R1": dict(zip(range(1, 13), map(float, r1), strict=True)),
                                    "R1s": dict(zip(range(1, 13), map(float, r1s), strict=True))}
+    gtab = pd.read_csv(args.data / "gauges.csv", dtype={"gauge": str, "measure": str}).set_index("gauge")
+    ctab = pd.read_csv(args.data / "radar_cells.csv", dtype={"gauge": str, "cell": str})
     frozen["gauges"] = [{"gauge": g.ref, "system": g.system, "low": g.low, "high": g.high, "own": g.ref in own,
+                         "hydrology_measure": gtab.at[g.ref, "measure"],
+                         "radar_cells": sorted(ctab.loc[ctab["gauge"] == g.ref, "cell"].astype(str)),
                          "same": None if g.same is None else {"ref": g.same.ref, "low": g.same.low, "high": g.same.high},
                          "trib": None if g.trib is None else {"ref": g.trib.ref, "low": g.trib.low, "high": g.trib.high}}
                         for g in gauges]
