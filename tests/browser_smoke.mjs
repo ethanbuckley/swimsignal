@@ -109,9 +109,25 @@ for (const [w, h, mobile] of [[375, 812, true], [1440, 900, false]]) {
         for (const d of document.querySelectorAll('main details')) { d.open = true; d.dispatchEvent(new Event('toggle')); }
         await new Promise(r => setTimeout(r, 600)); })()` }, s);
     }
+    // Opened and brought to the top of the screen, the comparison's first two days are in view: on a phone above the tab
+    // bar, its selects folded (6 Nov 2026: the selects, the status line and the note had put today's row against the bar,
+    // 663 to 748 px here, and the next day under it); on a desktop with its selects shown and no line over them, and no
+    // column out of sight.
     if (shown && saved === 'saved') {
-      const r = await send('Runtime.evaluate', { expression: `(() => { const d = document.querySelector('#compare'); if (!d) return false; d.open = true; d.dispatchEvent(new Event('toggle')); return !!document.querySelector('#compare-result table'); })()`, returnByValue: true }, s);
-      if (!r.result?.result?.value) errors.push('Saved comparison did not draw a table');
+      const r = await send('Runtime.evaluate', { awaitPromise: true, returnByValue: true, expression: `(async () => {
+        const d = document.querySelector('#compare'); if (!d) return 'no comparison';
+        d.open = true; d.dispatchEvent(new Event('toggle')); await new Promise(r => setTimeout(r, 300));
+        if (!document.querySelector('#compare-result table')) return 'Saved comparison did not draw a table';
+        d.scrollIntoView({ block: 'start' }); await new Promise(r => setTimeout(r, 200));
+        const row = d.querySelectorAll('.compare-scroll tbody tr:not(.lab)')[1].getBoundingClientRect(), pick = d.querySelector('.compare-pick');
+        const nav = document.querySelector('.bottom-nav'), floor = nav && getComputedStyle(nav).display !== 'none' ? nav.getBoundingClientRect().top : innerHeight;
+        const sc = d.querySelector('.compare-scroll'), note = d.querySelector('.compare-note');
+        if (!note || !/^Issued .+ A lower forecast level does not mean safe water/.test(note.textContent)) return 'the issue time and caveat are not above the table';
+        if (row.bottom > floor) return 'the second day of the comparison ends below the screen (' + Math.round(row.bottom) + ' px, screen ends at ' + Math.round(floor) + ')';
+        if (innerWidth <= 800) return !pick || pick.open ? 'the selects did not fold' : true;
+        if (pick && (!pick.open || getComputedStyle(pick.querySelector('summary')).display !== 'none')) return 'the selects are folded on a desktop';
+        return sc.scrollWidth <= sc.clientWidth || 'two spots scroll sideways on a desktop'; })()` }, s);
+      const v = r.result?.result?.value; if (v !== true) errors.push(typeof v === 'string' ? v : 'Saved comparison did not draw a table');
     }
     // "Marlow" names no spot; Henley-on-Thames is 5.6 miles away, so it is listed under "Near Marlow" with its own level.
     if (shown && saved === 'search') {
