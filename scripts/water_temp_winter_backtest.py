@@ -402,9 +402,110 @@ def cmd_score(ea: Path, air: Path, plan_path: Path, points: list[Path], out: Pat
     print(json.dumps(res, indent=1, default=float))
 
 
+# ================================================================== the candidate step (record, "The candidate step")
+CANDIDATE_FILE = WORKTREE / "data" / "research" / "water_temp_winter_candidate.v1.json"
+TIE_C = 0.05
+ADOPT_GAIN = 0.3
+
+
+def shown(t) -> np.ndarray:
+    return np.array([int(round(max(0.0, float(x)))) for x in np.atleast_1d(t)], dtype=float)
+
+
+def fit_arm(arm: str, d: pd.DataFrame, curve: tuple) -> dict:
+    """W1: the frozen curve less one constant, the mean unrounded error on these rows. W2: the Mohseni form refitted to
+    these rows (wt_protocol.fit_mohseni)."""
+    if arm == "W1":
+        return {"arm": "W1", "curve": list(curve), "offset": float((d["est_raw"] - d["temp"]).mean())}
+    p, ok = wp.fit_mohseni(d["a7"].to_numpy(), d["temp"].to_numpy())
+    return {"arm": "W2", "curve": list(p), "offset": 0.0, "fit_ok": bool(ok)}
+
+
+def predict_arm(m: dict, a7) -> np.ndarray:
+    return np.asarray(wp.mohseni(np.asarray(a7, float), *m["curve"]), float) - m["offset"]
+
+
+def cmd_candidate(primary_rows: Path, out_file: Path) -> None:
+    from dipcast.model import water_temp as wt
+    check_frozen()
+    model = wt.load(MODEL_FILE)
+    rows = pd.read_parquet(primary_rows)
+    out = {"what": "Winter water-temperature candidate, docs/WATER-TEMP-WINTER-BACKTEST-2026-11.md: fitted on winters "
+                   "2023-25 (seen), frozen before winter 2022 was fetched", "rows_sha256": sha256_file(primary_rows),
+           "types": {}}
+    for kind in TYPES:
+        d = rows[rows["type"].eq(kind)].copy()
+        d["fold"] = d["group"].map(wp.fold_of)
+        cv = {}
+        for arm in ("W1", "W2"):
+            err = np.full(len(d), np.nan)
+            fits_ok = []
+            for k in sorted(d["fold"].unique()):
+                tr, te = d["fold"].ne(k).to_numpy(), d["fold"].eq(k).to_numpy()
+                m = fit_arm(arm, d[tr], model.curves[kind])
+                fits_ok.append(m.get("fit_ok", True))
+                err[te] = shown(predict_arm(m, d.loc[te, "a7"])) - d.loc[te, "temp"].to_numpy()
+            cv[arm] = {"rmse": float(np.sqrt(np.mean(err ** 2))), "bias": float(np.mean(err)),
+                       "folds_fit_ok": int(sum(fits_ok)), "folds": len(fits_ok)}
+        cv["frozen"] = {"rmse": float(np.sqrt(np.mean(d["err"] ** 2))), "bias": float(d["err"].mean())}
+        arm = "W2" if cv["W2"]["rmse"] < cv["W1"]["rmse"] - TIE_C else "W1"
+        m = fit_arm(arm, d, model.curves[kind])
+        out["types"][kind] = {**m, "cv": cv, "rows": int(len(d)), "waters": int(d["group"].nunique())}
+    out_file.parent.mkdir(parents=True, exist_ok=True)
+    out_file.write_text(json.dumps(out, indent=1) + "\n")
+    print(json.dumps(out, indent=1))
+    print("sha256", sha256_file(out_file))
+
+
+def two_way_diff(groups, blocks, err_a: np.ndarray, err_b: np.ndarray, n_boot: int = N_BOOT,
+                 seed: int = SEED) -> dict:
+    """RMSE(a) - RMSE(b) with the two-way cluster bootstrap's 95% interval (same draws for both)."""
+    gc, gu = pd.factorize(pd.Series(groups).astype(str))
+    bc, bu = pd.factorize(pd.Series(blocks).astype(str))
+    rng = np.random.default_rng(seed)
+    a, b = np.asarray(err_a, float) ** 2, np.asarray(err_b, float) ** 2
+    diff = np.empty(n_boot)
+    for k in range(n_boot):
+        wg = np.bincount(rng.integers(0, len(gu), len(gu)), minlength=len(gu)).astype(float)
+        wb = np.bincount(rng.integers(0, len(bu), len(bu)), minlength=len(bu)).astype(float)
+        w = wg[gc] * wb[bc]
+        s = w.sum()
+        diff[k] = math.sqrt((w * a).sum() / s) - math.sqrt((w * b).sum() / s) if s else np.nan
+    return {"diff": float(np.sqrt(a.mean()) - np.sqrt(b.mean())), "lo": float(np.nanpercentile(diff, 2.5)),
+            "hi": float(np.nanpercentile(diff, 97.5))}
+
+
+def adopt(cand: dict, diff: dict) -> bool:
+    """The record's adoption rule on the reserved winter."""
+    return (cand["verdict"]["verdict"] == "pass" and diff["diff"] <= -ADOPT_GAIN and diff["hi"] < 0)
+
+
+def cmd_reserved(ea: Path, air: Path, plan_path: Path, points: list[Path], cand_file: Path, out: Path) -> None:
+    check_frozen()
+    cand = json.loads(cand_file.read_text())
+    plan = json.loads(plan_path.read_text())
+    rows, counts = build_rows(ea, air, plan, points, list(RESERVED_WINTERS))
+    res = {"winters": list(RESERVED_WINTERS), "counts": counts, "candidate_sha256": sha256_file(cand_file),
+           "frozen": score(rows), "candidate": {}, "difference": {}, "adopt": {}}
+    for kind in TYPES:
+        m = cand["types"][kind]
+        d = rows[rows["type"].eq(kind)].copy()
+        d["err"] = shown(predict_arm(m, d["a7"])) - d["temp"].to_numpy()
+        c = score(d)[kind]
+        diff = two_way_diff(d["group"], d["block"], d["err"], rows.loc[d.index, "err"])
+        res["candidate"][kind], res["difference"][kind] = c, diff
+        res["adopt"][kind] = adopt(c, diff)
+    out.mkdir(parents=True, exist_ok=True)
+    rows.to_parquet(out / "rows.parquet")
+    (out / "score.json").write_text(json.dumps(res, indent=1, default=float))
+    print(json.dumps({k: res[k] for k in ("counts", "difference", "adopt")}, indent=1, default=float))
+
+
 def main(argv=None) -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("what", choices=["ea", "plan", "air", "score"])
+    ap.add_argument("what", choices=["ea", "plan", "air", "score", "candidate", "reserved"])
+    ap.add_argument("--rows", type=Path)
+    ap.add_argument("--candidate", type=Path, default=CANDIDATE_FILE)
     ap.add_argument("--cache", type=Path)
     ap.add_argument("--ea", type=Path)
     ap.add_argument("--air", type=Path)
@@ -421,6 +522,10 @@ def main(argv=None) -> None:
         cmd_plan(a.ea, a.points, a.out)
     elif a.what == "air":
         cmd_air(a.cache, a.plan, winters, a.fetch)
+    elif a.what == "candidate":
+        cmd_candidate(a.rows, a.candidate)
+    elif a.what == "reserved":
+        cmd_reserved(a.ea, a.air, a.plan, a.points, a.candidate, a.out)
     else:
         cmd_score(a.ea, a.air, a.plan, a.points, a.out, winters)
 

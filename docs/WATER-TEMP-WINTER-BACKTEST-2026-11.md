@@ -200,8 +200,8 @@ Shown estimate minus EA reading, October to April 2023–26. Intervals: two-way 
 Group-only intervals are narrower: rivers RMSE [2.19, 2.33], lakes [3.55, 3.74].
 
 **What this establishes.** In the last three winters the off-season estimate read too warm, at rivers by about
-1.5 °C and at lakes by about 3 °C on average. The river figure misses the pass by its upper end (2.49 against 2.5 is
-inside, but the point 2.27 is above 2.0). Lakes fail outright.
+1.5 °C and at lakes by about 3 °C on average. Rivers miss the pass on the point (2.27 against 2.0); the upper end,
+2.49, is just inside 2.5, so the result is inconclusive, not a fail. Lakes fail outright.
 
 **Reported, deciding nothing:**
 
@@ -224,3 +224,21 @@ is set by the bounds of the fit, not by data. That matches the error growing wit
   direction ("reads too warm"), and no "within".
 - Both types: **the candidate step runs.** W1 and W2 are developed on the primary winters (now seen), the chosen one
   is frozen and committed, and only then is winter 2022 fetched and scored.
+
+### The candidate step: development on the primary winters (seen), 6 November 2026, 21:10 UTC
+
+`water_temp_winter_backtest.py candidate` on the primary rows (`rows.parquet` of the scoring run). 5-fold group-out
+cross-validation (`wt_protocol.fold_of` on the water group), RMSE of the shown whole-degree value. **Development
+figures on seen winters, not a test.**
+
+| | Frozen route | W1 (frozen curve less a constant) | W2 (curve refitted to winter rows) | Chosen |
+|---|---|---|---|---|
+| Rivers (9,990 rows, 494 groups) | 2.27 °C, bias +1.54 | 1.66 °C, bias 0.00 | **1.57 °C**, bias −0.01 | W2 (beats W1 by more than 0.05) |
+| Lakes (1,139 rows, 137 groups) | 3.64 °C, bias +3.07 | 1.97 °C, bias +0.03 | **1.84 °C**, bias −0.02 | W2 (beats W1 by more than 0.05) |
+
+Every W2 fold's fit converged (5 of 5 for each type). W2, refitted on all primary rows, is frozen in
+`data/research/water_temp_winter_candidate.v1.json`, SHA-256 `c86720d0c1557f2fb14c6733ab0d5e0014ba122366be64e1e2847a74808d729d`,
+committed and pushed **before** any request for winter 2022.
+
+Next, as stated: fetch winter 2022 (EA about 19 requests; Open-Meteo about 235 weighted calls, which keeps the total
+under the 1,000 cap) and score the frozen route and W2 on it with the rules above.

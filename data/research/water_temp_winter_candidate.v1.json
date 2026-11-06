@@ -1,0 +1,68 @@
+{
+ "what": "Winter water-temperature candidate, docs/WATER-TEMP-WINTER-BACKTEST-2026-11.md: fitted on winters 2023-25 (seen), frozen before winter 2022 was fetched",
+ "rows_sha256": "6b286ac4f10d5ab4896e6a48f91436172e929e7cf88bb2db1532398988b32f0d",
+ "types": {
+  "river": {
+   "arm": "W2",
+   "curve": [
+    0.5430378011587952,
+    20.658083686365085,
+    10.25747839101004,
+    0.16624538331499503
+   ],
+   "offset": 0.0,
+   "fit_ok": true,
+   "cv": {
+    "W1": {
+     "rmse": 1.6622023944834263,
+     "bias": -0.0030798722882055675,
+     "folds_fit_ok": 5,
+     "folds": 5
+    },
+    "W2": {
+     "rmse": 1.5747968158764634,
+     "bias": -0.009586378794712096,
+     "folds_fit_ok": 5,
+     "folds": 5
+    },
+    "frozen": {
+     "rmse": 2.2668316793126695,
+     "bias": 1.5399631707548374
+    }
+   },
+   "rows": 9990,
+   "waters": 494
+  },
+  "lake": {
+   "arm": "W2",
+   "curve": [
+    2.4891750947069116,
+    16.16853478737081,
+    8.665315496039446,
+    0.35722429726119065
+   ],
+   "offset": 0.0,
+   "fit_ok": true,
+   "cv": {
+    "W1": {
+     "rmse": 1.966889430993213,
+     "bias": 0.02565115598478197,
+     "folds_fit_ok": 5,
+     "folds": 5
+    },
+    "W2": {
+     "rmse": 1.842352108469309,
+     "bias": -0.023514779045946763,
+     "folds_fit_ok": 5,
+     "folds": 5
+    },
+    "frozen": {
+     "rmse": 3.6437369678422735,
+     "bias": 3.0748170910155106
+    }
+   },
+   "rows": 1139,
+   "waters": 137
+  }
+ }
+}
