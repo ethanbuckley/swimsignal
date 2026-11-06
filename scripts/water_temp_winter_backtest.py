@@ -211,8 +211,8 @@ def cmd_air(cache: Path, plan_path: Path, winters: list[int], fetch: bool) -> No
     import wt_fetch as wf
     plan = json.loads(plan_path.read_text())
     cells = plan["cells"]
-    c = wf.OMClient(cache, fetch, total_cap=OM_CAP, day_cap=OM_CAP, hour_cap=OM_HOUR_CAP, pause_s=OM_PAUSE_S,
-                    model=None)
+    cap = EXT_OM_CAP if plan_path.name.startswith("plan-lakes") else OM_CAP   # amendment 1: its own cache and cap
+    c = wf.OMClient(cache, fetch, total_cap=cap, day_cap=cap, hour_cap=OM_HOUR_CAP, pause_s=OM_PAUSE_S, model=None)
     n = 0
     for w in winters:
         days = air_days(w)
@@ -224,7 +224,7 @@ def cmd_air(cache: Path, plan_path: Path, winters: list[int], fetch: bool) -> No
                       "start_date": f"{w}-{AIR_START}", "end_date": f"{w + 1}-{AIR_END}",
                       "hourly": "temperature_2m", "timezone": "UTC"}
             ans = c.check_get(name, wf.HISTORICAL_FORECAST_URL, params, len(batch),
-                              wp.om_weight(len(batch), days=days), OM_CAP, tag=OM_TAG)
+                              wp.om_weight(len(batch), days=days), cap, tag=OM_TAG)
             for a in ans:
                 if "hourly" not in a or "temperature_2m" not in a["hourly"]:
                     raise wf.Stop("answer has no hourly temperature_2m: stopping")
@@ -232,13 +232,13 @@ def cmd_air(cache: Path, plan_path: Path, winters: list[int], fetch: bool) -> No
     print(json.dumps({"batches": n, "spent": c.spent()}), flush=True)
 
 
-def load_air(cache: Path, cells: list[str], winters: list[int]) -> dict[tuple[str, int], pd.Series]:
+def load_air(cache: Path, cells: list[str], winters: list[int], prefix: str = "") -> dict[tuple[str, int], pd.Series]:
     """{(cell, winter): hourly UTC air series} from the cached answers."""
     out = {}
     for w in winters:
         for i in range(0, len(cells), wp.OM_BATCH):
             batch = cells[i:i + wp.OM_BATCH]
-            name = f"{w}_" + hashlib.sha1(",".join(batch).encode()).hexdigest()[:16]
+            name = f"{prefix}{w}_" + hashlib.sha1(",".join(batch).encode()).hexdigest()[:16]
             f = Path(cache) / "check" / f"{name}.json"
             if not f.exists():
                 continue
@@ -332,7 +332,8 @@ def describe(err: np.ndarray) -> dict:
             "within_3": float((np.abs(e) <= 3).mean()) if len(e) else None}
 
 
-def build_rows(ea: Path, air: Path, plan: dict, points: list[Path], winters: list[int]) -> tuple[pd.DataFrame, dict]:
+def build_rows(ea: Path, air: Path, plan: dict, points: list[Path], winters: list[int],
+               prefix: str = "") -> tuple[pd.DataFrame, dict]:
     from dipcast.model import water_temp as wt
     model = wt.load(MODEL_FILE)
     raw = read_ea(ea, with_result=True)
@@ -343,7 +344,7 @@ def build_rows(ea: Path, air: Path, plan: dict, points: list[Path], winters: lis
     counts["point_days_known_point"] = int(len(rows))
     rows = rows[rows["cell"].isin(plan["cells"])].copy()
     counts["point_days_in_planned_cells"] = int(len(rows))
-    series = load_air(air, plan["cells"], winters)
+    series = load_air(air, plan["cells"], winters, prefix)
     a7s = {k: a7_by_day(model, s) for k, s in series.items()}
     a7 = []
     for cell, w, d in zip(rows["cell"], rows["winter"], rows["date"], strict=True):
@@ -501,9 +502,103 @@ def cmd_reserved(ea: Path, air: Path, plan_path: Path, points: list[Path], cand_
     print(json.dumps({k: res[k] for k in ("counts", "difference", "adopt")}, indent=1, default=float))
 
 
+# ================================================================== amendment 1: the lake extension
+EXT_OM_CAP = 400.0               # weighted calls for the extension, its own cache and log (record, amendment 1)
+EXT_WINTERS = (2020, 2021, 2022)
+SOURCES = {"hist": ("HISTORICAL_FORECAST_URL", None, "h"), "era5": ("OM_URL", "era5_land", "e")}
+
+
+def ext_cells(rows: pd.DataFrame, pts: pd.DataFrame, planned: list[str]) -> dict[int, list[str]]:
+    """Amendment 1: per winter, every cell with a row at a lake point; for winter 2022 only cells outside the 149
+    already scored. Hash order. If the cap would be passed, cells are dropped from the end of the oldest winter's list."""
+    r = rows.merge(pts[["point", "type", "cell"]], on="point")
+    r = r[r["type"].eq("lake")]
+    by = {}
+    for w in EXT_WINTERS:
+        cells = set(r.loc[r["winter"].eq(w), "cell"])
+        if w in RESERVED_WINTERS:
+            cells -= set(planned)
+        by[w] = sorted(cells, key=cell_hash)
+
+    def weight(b):
+        return sum(wp.om_weight(min(wp.OM_BATCH, len(c) - i), days=air_days(w))
+                   for w, c in b.items() for i in range(0, len(c), wp.OM_BATCH))
+    for w in EXT_WINTERS:
+        while weight(by) > EXT_OM_CAP and by[w]:
+            by[w] = by[w][:-1]
+    return by
+
+
+def cmd_plan_lakes(ea: Path, points: list[Path], plan_path: Path, out: Path) -> None:
+    plan = json.loads(plan_path.read_text())
+    rows, _ = winter_rows(read_ea(ea, with_result=False), with_result=False)
+    by = ext_cells(rows, load_points(points), plan["cells"])
+    weight = sum(wp.om_weight(min(wp.OM_BATCH, len(c) - i), days=air_days(w))
+                 for w, c in by.items() for i in range(0, len(c), wp.OM_BATCH))
+    ext = {"by_winter": {str(w): c for w, c in by.items()}, "weight": weight,
+           "cells_by_winter": {str(w): len(c) for w, c in by.items()}}
+    (out / "plan-lakes.json").write_text(json.dumps(ext, indent=1))
+    print(json.dumps({k: v for k, v in ext.items() if k != "by_winter"}, indent=1))
+
+
+def cmd_air_lakes(cache: Path, plan_path: Path, fetch: bool, source_by_winter: dict[int, str]) -> None:
+    import wt_fetch as wf
+    plan = json.loads(plan_path.read_text())
+    c = wf.OMClient(cache, fetch, total_cap=EXT_OM_CAP, day_cap=EXT_OM_CAP, hour_cap=OM_HOUR_CAP,
+                    pause_s=OM_PAUSE_S, model=None)
+    n = 0
+    for w_s, cells in plan["by_winter"].items():
+        w = int(w_s)
+        base_name, model, prefix = SOURCES[source_by_winter[w]]
+        for i in range(0, len(cells), wp.OM_BATCH):
+            batch = cells[i:i + wp.OM_BATCH]
+            name = f"{prefix}{w}_" + hashlib.sha1(",".join(batch).encode()).hexdigest()[:16]
+            params = {"latitude": ",".join(x.split("_")[0] for x in batch),
+                      "longitude": ",".join(x.split("_")[1] for x in batch),
+                      "start_date": f"{w}-{AIR_START}", "end_date": f"{w + 1}-{AIR_END}",
+                      "hourly": "temperature_2m", "timezone": "UTC"}
+            if model:
+                params["models"] = model
+            ans = c.check_get(name, getattr(wf, base_name), params, len(batch),
+                              wp.om_weight(len(batch), days=air_days(w)), EXT_OM_CAP, tag=OM_TAG)
+            for a in ans:
+                if "hourly" not in a or "temperature_2m" not in a["hourly"]:
+                    raise wf.Stop("answer has no hourly temperature_2m: stopping")
+            n += 1
+    print(json.dumps({"batches": n, "spent": c.spent()}), flush=True)
+
+
+def cmd_score_lakes(ea: Path, air: Path, plan_path: Path, points: list[Path], cand_file: Path, out: Path,
+                    source_by_winter: dict[int, str]) -> None:
+    check_frozen()
+    cand = json.loads(cand_file.read_text())
+    plan = json.loads(plan_path.read_text())
+    frames, counts = [], {}
+    for w_s, cells in plan["by_winter"].items():
+        w = int(w_s)
+        rows, cnt = build_rows(ea, air, {"cells": cells}, points, [w], SOURCES[source_by_winter[w]][2])
+        frames.append(rows[rows["type"].eq("lake")])
+        counts[w_s] = cnt
+    rows = pd.concat(frames, ignore_index=True)
+    m = cand["types"]["lake"]
+    cand_rows = rows.copy()
+    cand_rows["err"] = shown(predict_arm(m, rows["a7"])) - rows["temp"].to_numpy()
+    res = {"counts": counts, "candidate_sha256": sha256_file(cand_file), "sources": source_by_winter,
+           "frozen": score(rows)["lake"], "candidate": score(cand_rows)["lake"],
+           "difference": two_way_diff(rows["group"], rows["block"], cand_rows["err"], rows["err"])}
+    res["adopt"] = adopt(res["candidate"], res["difference"])
+    out.mkdir(parents=True, exist_ok=True)
+    rows.to_parquet(out / "rows.parquet")
+    (out / "score.json").write_text(json.dumps(res, indent=1, default=float))
+    print(json.dumps({k: res[k] for k in ("difference", "adopt")}, indent=1, default=float))
+
+
 def main(argv=None) -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("what", choices=["ea", "plan", "air", "score", "candidate", "reserved"])
+    ap.add_argument("what", choices=["ea", "plan", "air", "score", "candidate", "reserved", "plan-lakes", "air-lakes",
+                                     "score-lakes"])
+    ap.add_argument("--sources", default="2020:hist,2021:hist,2022:hist",
+                    help="amendment 1: the air source per winter, hist or era5, as the probe decided")
     ap.add_argument("--rows", type=Path)
     ap.add_argument("--candidate", type=Path, default=CANDIDATE_FILE)
     ap.add_argument("--cache", type=Path)
@@ -522,6 +617,14 @@ def main(argv=None) -> None:
         cmd_plan(a.ea, a.points, a.out)
     elif a.what == "air":
         cmd_air(a.cache, a.plan, winters, a.fetch)
+    elif a.what == "plan-lakes":
+        cmd_plan_lakes(a.ea, a.points, a.plan, a.out)
+    elif a.what in ("air-lakes", "score-lakes"):
+        src = {int(k): v for k, v in (x.split(":") for x in a.sources.split(","))}
+        if a.what == "air-lakes":
+            cmd_air_lakes(a.cache, a.plan, a.fetch, src)
+        else:
+            cmd_score_lakes(a.ea, a.air, a.plan, a.points, a.candidate, a.out, src)
     elif a.what == "candidate":
         cmd_candidate(a.rows, a.candidate)
     elif a.what == "reserved":

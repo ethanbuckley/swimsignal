@@ -225,7 +225,7 @@ is set by the bounds of the fit, not by data. That matches the error growing wit
 - Both types: **the candidate step runs.** W1 and W2 are developed on the primary winters (now seen), the chosen one
   is frozen and committed, and only then is winter 2022 fetched and scored.
 
-### The candidate step: development on the primary winters (seen), 6 November 2026, 21:10 UTC
+### The candidate step: development on the primary winters (seen), 6 November 2026, 21:05 UTC
 
 `water_temp_winter_backtest.py candidate` on the primary rows (`rows.parquet` of the scoring run). 5-fold group-out
 cross-validation (`wt_protocol.fold_of` on the water group), RMSE of the shown whole-degree value. **Development
@@ -242,3 +242,74 @@ committed and pushed **before** any request for winter 2022.
 
 Next, as stated: fetch winter 2022 (EA about 19 requests; Open-Meteo about 235 weighted calls, which keeps the total
 under the 1,000 cap) and score the frozen route and W2 on it with the rules above.
+
+### Reserved winter 2022: the frozen-model backtest of W2 (6 November 2026, 21:07 to 21:10 UTC)
+
+- **Fetch** under the group lock: EA 13 requests (69 in all, cap 160), all 200, 22,992 rows; Open-Meteo 6 requests,
+  all 200, 234.1 weighted calls (**937.6 in all**, cap 1,000).
+- **Score:** one run at 21:09 UTC, `water_temp_winter_backtest.py reserved`, frozen hashes and the candidate's
+  (`c86720d0…`) checked. Output `docs/WATER-TEMP-WINTER-BACKTEST-2026-11-reserved.json` (SHA-256 `e7886eba…`). Point
+  tables unchanged. 2,734 point-days in the planned cells. (Its `counts` before the winter filter include the primary
+  winters' pages, which the run read and then dropped.)
+
+1 October 2022 to 30 April 2023, the same 149 cells. Intervals two-way (water group and month; 7 months).
+
+| | Rows | Groups | Frozen route | W2 | W2 − frozen | Rule |
+|---|---|---|---|---|---|---|
+| Rivers | 2,468 | 325 | 2.43 °C [1.89, 2.92], bias +1.70 | **1.63 °C [1.43, 1.85]**, bias +0.07 [−0.35, +0.49] | **−0.80 °C [−1.14, −0.39]** | W2 passes; gain beyond 0.3, interval below zero: **adopt** |
+| Lakes | 266 | 41 | 3.33 °C [2.58, 4.03], bias +2.81 | 1.64 °C [1.23, 2.07], bias −0.36 | −1.69 °C [−2.63, −0.62] | **too few to judge** (266 rows, gate 300): **not adopted** |
+
+- Rivers, W2 by month: 1.3 to 2.0 °C in every month; bias from −0.9 (April) to +0.9 (February). The frozen route:
+  3.3 °C in January and February.
+- Lakes, W2 by month: 1.0 to 2.3 °C. It reads cold in March and April (−1.3, −2.0) and slightly warm in January and
+  February (+0.5).
+- The reference "water equals last week's air": rivers 2.13 °C, lakes 2.03 °C.
+
+**What this establishes.** For rivers, a winter curve chosen and frozen on 2023–26 was typically 1.6 °C out on a winter
+it had never seen, with no material bias. Today's route was 2.4 °C out and read 1.7 °C too warm. That is the
+frozen-model backtest the workflow asks for. For lakes the direction and size are the same, but the stated gate was not
+met, so nothing is adopted for lakes on this result.
+
+**What follows, as stated.** The river off-season route becomes W2, worded "typically within 2 °C" (RMSE 1.63 rounded
+up), with this test named. The lake off-season route stays the frozen curve, with its measured wording (typically
+3.6 °C out, reading about 3 °C too warm), until amendment 1 decides.
+
+## Amendment 1, 6 November 2026, about 21:20 UTC: more unseen lake rows (before any of its requests)
+
+**Why.** Lakes were "too few to judge" on the reserved winter. The protocol's answer for that case is more winters or
+more cells under a new cap. Winter 2022 holds 402 lake rows in all, but 266 are already scored. Counted without reading
+any result: the other 136 (26 groups) are too few alone.
+
+**What is unchanged.** The frozen route, W2 (`c86720d0…`, not refitted), the metric, the intervals, the gate, the pass
+rule and the adoption rule. The river decision stands as scored. The 266 lake rows already scored are not reused.
+
+**Rows.** Lake points only, from three sets, none used to fit, choose or score anything so far:
+
+- winter 2022 at lake cells outside the 149 already scored (the 136 rows above);
+- winters 2020 and 2021 (1 October 2020 to 30 April 2022) at every lake cell with a lake row in that winter.
+
+The same point tables, parsing and cell rule (hash order). The gate and both rules apply to the union of these rows.
+
+**Air.**
+
+- **The Historical Forecast API, as before,** for each winter it serves. Before anything else, one probe request
+  decides this: one cell (54.4, −3.0), hourly `temperature_2m`, 1 to 2 October 2020 and 1 to 2 October 2021 (two
+  requests, weight 1 each). A winter uses the Historical Forecast API if its probe answers 200 with all 48 hours present.
+- **Otherwise ERA5-Land hourly** through the archive API (`models=era5_land`, the same hourly request), and the record
+  says which winters used it. *Known difference:* in the 2025 season the archived forecast ran about 0.25 °C cooler
+  than ERA5-Land, and about 0.5 °C cooler in late September and October 2026. So an ERA5-Land winter feeds the curves
+  slightly warmer air than the live site would have had. Nothing is corrected for it. The effect is reported by winter.
+- Days with any hour missing give no `a7`, as before, and are counted.
+
+**Cap.** A new, separate cap of **400 weighted calls** for this amendment, on its own cache log
+(`winter-2026-11/air-lakes`), probes included, with the same pace, hour cap and stop rules. With the first 937.6 that is
+at most 1,337.6 from this Mac today. If the cells would pass it, cells are dropped from the end of the oldest winter's
+hash order. EA: winters 2020 and 2021, about 28 more requests, inside the existing cap of 160.
+
+**What follows.**
+
+- **W2 passes and the adoption rule holds on these rows:** the lake off-season route becomes W2 as well, worded by these
+  rows' figure.
+- **Otherwise,** or too few again: the lake route keeps its measured wording. W2 for lakes is then scored, unchanged,
+  on winter 2026 (October 2026 to April 2027) with this script after 30 April 2027. The Historical Forecast API keeps
+  that winter's air, so no live logger is needed.
