@@ -1126,6 +1126,31 @@
    ]
   },
   {
+   "id": "lake-order-2012-22",
+   "title": "Lake E. coli order on 2012-2022 seasons: the frozen concentration models against production's chance",
+   "section": "promising",
+   "project": "LAKE-CONC",
+   "topics": [
+    "e. coli",
+    "lakes",
+    "model"
+   ],
+   "verdict": "The primary question held for both frozen models. On 962 samples at Windermere and Frensham, 2012-22, the concentration model's median ordered a lake's own samples better than production's lake chance: mean within-site rho difference +0.156 (interval +0.090 to +0.218) for the plain model and +0.182 (+0.122 to +0.244) for the lake wet-response model. The live lake-range-v1 ordered as well and fitted the spread best. With 9 results over 900, a line chance could not be judged.",
+   "scope": "An out-of-time development comparison on outcomes #584 had already examined; the models were frozen on 2024-26 data before these rows were joined. Five sampling sites on two water bodies. #584 had already published a close relative of this ordering result for its own candidate.",
+   "stage": "development",
+   "stage_note": "No model or page changed. Next is a wording proposal for Ethan: whether today's likely lake reading is higher or lower than the lake's usual, from lake-range-v1, judged by the existing 2027 read of the lake range shadow.",
+   "next": "Ethan's wording decision; a readiness check of the lake range shadow's rows in April 2027; the 2027 read on or after 15 Oct 2027.",
+   "records": [
+    {
+     "doc": "docs/LAKE-LINE-2012-22-CHECK-2026-11.md",
+     "quote": "| **plain − production form** | **+0.156 [+0.090, +0.218]: holds** |"
+    }
+   ],
+   "prs": [
+    625
+   ]
+  },
+  {
    "id": "spill-duration",
    "title": "How long a running spill goes on",
    "section": "promising",

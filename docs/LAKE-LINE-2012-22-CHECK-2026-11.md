@@ -70,3 +70,105 @@ weakness), so exposure before 2020 is approximate.
 - **Fails for both:** the ordering found on 2024-26 does not carry back in time at these lakes. Record it; keep only the
   2027 reads already fixed; no display proposal.
 - **Holds for one only:** recorded with both figures; the proposal names that model only.
+
+---
+
+## Results
+
+Run 6 November 2026 after the protocol was pushed (96392731). Label: **an out-of-time development comparison on
+previously examined 2012-22 outcomes.**
+
+**Cost and feasibility.** The fetch was feasible within the stated caps.
+
+| Request | Count | Cap |
+|---|---|---|
+| Open-Meteo archive (6 cells, 2012-2022, ten cells a request, half a second apart, strict) | 11 requests, **172.2 weighted calls**, none refused | 300 |
+| EA bathing-water listings (one per sampling point) | 5 | 10 |
+
+The ledger is `LAKE-LINE-2012-22-CHECK-2026-11-ledger.json`. Every 2023-26 archive file was copied read-only from the
+shared cache into a scratch cache first. The 2,469 shared input files had the same SHA-256 before and after, and no
+file was written to the shared cache. The heavy-run lock was held throughout.
+
+**Reproduction check (before any new score).** #584's own code (an archive of 0be59d2d) rebuilt **962 test rows and
+1,672 training rows**, with the same drops at every rule (994 listed, 32 repeats; 478 training rows with no overflow
+upstream, 14 repeats, 1 rain window). Rerunning #584's `run` stage gave the same verdicts on all three conditions, with
+the candidate's 80% coverage 78.9% and log score −0.9049 against #584's −0.9048. One contrast (candidate − shared
+spread) moved from +0.0678 to +0.0700. Inferred: the rows are #584's, refitted under newer numerical libraries.
+**Correction to the protocol:** there are 52 site × season clusters, not 55, because Rayrigg Meadow has no samples in
+2012-14.
+
+**Population.** 962 rows at 5 sites (Windermere ×4, Frensham Great Pond), 2012-22; 477 below the lab's limit; 28 over
+500; **9 over 900, too few to judge a line chance: counts only.**
+
+### Primary: within-lake order
+
+| Score | Mean within-site rho | Lakeside YMCA | Millerground | Rayrigg Meadow | Fellfoot | Frensham |
+|---|---|---|---|---|---|---|
+| plain median (frozen) | **0.279** | 0.335 | 0.329 | 0.418 | 0.134 | 0.179 |
+| B median (frozen) | **0.305** | 0.335 | 0.337 | 0.393 | 0.161 | 0.300 |
+| lake-range-v1 median (frozen, live on the page) | 0.287 | 0.347 | 0.346 | 0.431 | 0.137 | 0.173 |
+| production form, refitted on 2023-26 | 0.123 | 0.191 | 0.221 | 0.238 | −0.021 | −0.014 |
+| deployed production | 0.074 | 0.083 | 0.119 | 0.122 | −0.025 | 0.070 |
+
+| Difference (95% interval, site × season clusters) | |
+|---|---|
+| **plain − production form** | **+0.156 [+0.090, +0.218]: holds** |
+| **B − production form** | **+0.182 [+0.122, +0.244]: holds** |
+| plain − deployed production | +0.205 [+0.127, +0.287] |
+| B − deployed production | +0.231 [+0.165, +0.305] |
+| B − plain | +0.026 [−0.010, +0.063] |
+
+**By season** (mean within-site rho, plain / B / production form): 2012 0.40 / 0.42 / 0.09; 2013 0.06 / 0.24 / −0.05;
+2014 0.04 / 0.11 / 0.04; 2015 0.12 / 0.21 / 0.19; 2016 0.33 / 0.34 / 0.17; 2017 0.25 / 0.32 / 0.31; 2018 0.32 / 0.41 /
+0.07; 2019 0.47 / 0.47 / 0.11; 2021 0.30 / 0.27 / 0.01; 2022 0.29 / 0.26 / 0.27. 2020 had 15 samples (3 per site):
+too few. Plain's median ranks above production's chance in 8 of 10 seasons (not 2015 or 2017); B's in 9 of 10 (not
+2022, by 0.003).
+
+### Reported: the concentration and the 500 line
+
+| | plain | B | lake-range-v1 |
+|---|---|---|---|
+| Mean censored log score | −0.933 | −0.937 | **−0.903** |
+| Inside the central 80% range | 80.3% | 79.4% | 78.9% |
+
+plain − lake-range-v1: −0.031 [−0.048, −0.012]; B − lake-range-v1: −0.035 [−0.055, −0.012]; B − plain: −0.004
+[−0.017, +0.010]. **The live lake-range-v1 fits these seasons' spread better than either frozen model.** It was fitted
+on archive rain, as these rows are; the frozen models were fitted on archived forecast rain (stated in the protocol).
+
+Over 500 (28 results, weak): Brier plain 0.02829, B 0.02821, lake-range-v1 0.02816, usual rate 0.02846, own rate
+0.02890; skill over the usual rate 0.006 to 0.011. No line chance is supported.
+
+## What it means
+
+- **Established, as development evidence:** at Windermere and Frensham, over 11 seasons none of these models was fitted
+  on, the concentration models' median orders a lake's own samples better than production's lake chance. Both frozen
+  models hold, with intervals clear of zero. This matches the 2024-26 result (+0.22 and +0.30 at unseen lakes and
+  forward).
+- **Less independent than it looks:** #584 already published per-site rho for its candidate, a close relative of
+  lake-range-v1, against production's chance on these rows (0.34 against 0.18 at Lakeside, and so on). What is new
+  here: two models frozen on 2024-26 data, an interval, and the per-season breakdown.
+- **Not established:** a line chance (9 results over 900); that B's wet response adds order (+0.026, interval spanning
+  zero); anything at lakes other than Windermere and Frensham.
+
+**Next deliverable, by the stated rule ("holds"):** a proposal to show the day-to-day direction of the concentration
+median at lake spots, judged by the existing 2027 read of `shadow_lake_range_v1`. It is a wording proposal for Ethan,
+not a line chance and not built here. **Proposal:** the lake-range tile already shows "most likely about X". Add one
+line saying whether today's likely reading is higher or lower than this lake's usual for the time of year, from
+lake-range-v1 itself (its median against its own median on a dry day at the same date). No new model is needed:
+lake-range-v1 is the best-fitting of the three here and orders samples as well as plain. **Its 2027 check, fixed now:**
+the same within-site rho comparison against production's logged lake chance, on 2027 samples paired with lead-0 rows
+of `shadow_lake_range_v1`. Nothing is shown until Ethan decides the wording.
+
+## What can actually run in 2027 from the shadow inputs
+
+| Read | Inputs it needs | Where they come from | Status |
+|---|---|---|---|
+| lake-range-v1 range and order (the existing 2027 read, `docs/LAKE-RANGE-WORDING-2026-11.md`) | its logged median and range | `shadow_lake_range_v1`, written by every build since #585 (merged 1 Nov 2026) | **Running, not verified by row count here:** the state database in the rolling `state` release was updated 6 Nov 01:17 UTC (239 MB); checking the table's rows needs that download |
+| Frozen plain, B, A, C (`lake_line_frozen.v1.json`) | rain over 48 and 24 hours, exposure, day, bathing water | the same `shadow_lake_range_v1` rows, computed by `frozen_probs` at read time | Runnable: needs no logger |
+| Production's lake chance, the comparator | `p_ecoli` | `forecast_points` in the same state database, same issues | Logged since 15 Sep 2026 |
+| The usual and own rates | frozen 2023-26 rates | the frozen file and `ecoli_evidence.v1.json` | Frozen |
+| 2027 outcomes | EA samples, May-September 2027 | the EA's bathing-water service | From May 2027 |
+
+**Readiness step before the season (named, not done here):** in April 2027, read the state database once and check
+that `shadow_lake_range_v1` holds rows at all 11 lake bathing waters with non-null inputs. A gap found then can still
+be fixed before the first 2027 sample.

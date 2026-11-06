@@ -184,3 +184,27 @@ diagnosis.** Why, under "Develop promising work now":
 **Reopen the archived Derwent line chance when** one of these supplies a dated input that tracks Derwent's dry-weather
 results, judged under its own protocol. The frozen plain and B models (line-candidates record) are unaffected and
 keep their 2027 read.
+
+## Measured-series inventory (6 November 2026)
+
+A bounded inventory, not a model, at the research session's request. Four metadata requests were made (EA Hydrology
+API stations within 7 km of the lake, EA flood-monitoring stations, the EA Water Quality Archive's Crow Park point,
+and UKCEH's data catalogue); no series was downloaded. The Water Quality Archive refused the request's format and was
+not retried.
+
+| Series | Source and terms | Period | Cadence | What it could test |
+|---|---|---|---|---|
+| **Lake level, Derwent Water at Lodore** | EA Hydrology API, OGL v3 | 1995 on | 15-minute and daily | Low summer water: longer residence, less flushing |
+| **River Derwent at Portinscale** (the lake's outflow): flow and level | EA Hydrology API, OGL v3 | 1976 on | 15-minute and daily | Flushing rate in dry spells; residence time by season |
+| Rain gauges in the catchment: Seathwaite Farm, Honister, Dale Head, Keswick, Force Crag | EA Hydrology API, OGL v3 | 1994-97 on (Keswick 2018, Force Crag 2022) | 15-minute | Whether the 0.1° grid rain misses local showers |
+| Water temperature at Crow Park on sample days | EA Water Quality Archive, OGL v3 (held: `lake_temperature_obs.v1.json`) | 2024-26 | With each sample | Done above: rho 0.37 [+0.15, +0.56] |
+| Recorded spills at Grange Bridge, Rosthwaite, Stonethwaite | United Utilities detailed EDM files (held 2023-25); live status feed (polled from 18 Oct 2026) | 2023 on | Event start and stop | Done above: not explanatory |
+| UKCEH Derwent Water monitoring: surface temperature, oxygen, clarity, chemistry, chlorophyll | UKCEH EIDC, OGL | 1990-2018 | About fortnightly | No overlap with Crow Park's E. coli record (designated 2024). Background only |
+| EA water-quality sondes (temperature, oxygen, pH, conductivity, turbidity) | EA Hydrology API | St John's Beck, 2024-26 | 15-minute | Not upstream of the lake (drains to the Greta): not useful here |
+| Private discharges from dwellings, hotels and campsites | EA consented discharges register: **conditional licence, internal use only, no publishing** | Current | Static | Where and how large the upper catchment's private discharges are. Use needs Ethan's decision (his 13 Oct decision covered a different test) |
+| The EA's in-season investigation at Crow Park | The EA; the profile says investigations "will be undertaken" | 2025-26 | Report | The most direct test; an outside contact for Ethan |
+
+**The runnable next step** is the lake level at Lodore and the outflow at Portinscale for May-September 2024-26 beside
+Derwent's samples: about 4 EA Hydrology requests, OGL, no quota. It would test whether the summer rise follows low,
+slow water, the one mechanism this inventory can check without an outside contact. It needs its own short plan before
+any join, as above.
