@@ -1487,17 +1487,17 @@
   },
   {
    "id": "river-rises",
-   "title": "River rises from upstream gauges and radar",
+   "title": "River rises from upstream gauges, radar and the gauge's own history",
    "section": "scheduled",
    "topics": [
     "rivers",
     "gauges"
    ],
-   "verdict": "Failed as stated, run 5 to 6 November 2026 on 33 spot gauges in 13 river systems (hindcast, archived 15-minute series, 20 November 2024 to 24 October 2026). C1 (upstream gauges added to the spot gauge's own trend): Brier skill 0.0199, 95% interval −0.1849 to 0.0723, labelled \"Too uncertain\"; worse when read three hours late (−0.0617, \"Possible harm\"). C2 (radar added): skill against C1 0.0415, interval 0.0017 to 0.0826, below the 0.05 needed, hit rate 0.115 at the 0.5 line; labelled \"Better\" against C1 only, with no shown gain over the spot's own trend. Median lead gained 1 h on 100 of 677 onsets. The base rate by gauge and month ranked the next three hours best (AUC 0.815). 119 EA requests, all within the caps.",
+   "verdict": "Failed as stated, run 5 to 6 November 2026 on 33 spot gauges in 13 river systems (hindcast, archived 15-minute series, 20 November 2024 to 24 October 2026). C1 (upstream gauges added to the spot gauge's own trend): Brier skill 0.0199, 95% interval −0.1849 to 0.0723, labelled \"Too uncertain\"; worse when read three hours late (−0.0617, \"Possible harm\"). C2 (radar added): skill against C1 0.0415, interval 0.0017 to 0.0826, below the 0.05 needed, hit rate 0.115 at the 0.5 line; labelled \"Better\" against C1 only, with no shown gain over the spot's own trend. Median lead gained 1 h on 100 of 677 onsets. The base rate by gauge and month ranked the next three hours best (AUC 0.815). 119 EA requests, all within the caps. C3 (development on seen data, 6 November 2026; radar plus the gauge-month base rate, blocked and embargoed splits): skill against the base rate 0.077, river-system interval −0.062 to 0.174, and against the spot gauge's trend 0.103, interval −0.033 to 0.175; not shown better than either. Better than C2 (0.030, interval 0.013 to 0.106). The gain is mostly one river system, about 0.02 with forward-only training, and gone with a 3-hour delay.",
    "scope": "River spots with an upstream EA level gauge on the Hydrology API; the next 3 h (6 h secondary) at hours when the site shows no word. A rare target (0.6% of hours). Says nothing about swimming safety, the real-time feed's own gaps, or a model that includes the base rate, which was not fitted.",
    "stage": "waiting",
-   "stage_note": "Not adopted; no page line, no shadow, no early-warning wording. The upstream-gauge-only early warning is closed. The radar candidate waits on two dependencies: the site's builds actually running every 30 minutes (scheduled builds ran a median 5.9 h apart in the week to 5 Nov) and radar at build time. Then a new dated protocol adding the gauge-month base rate, with a target a rare event can meet.",
-   "next": "Check on 1 February 2027: archive the radar candidate too if the build cadence is unchanged. A plain upstream-gauge observation with no forecast remains a product decision for Ethan.",
+   "stage_note": "Not adopted; no page line, no shadow running, no early-warning wording. Delivered: a gauge-month base-rate table (history, for a research page). C3 and its references are frozen. A shadow logger (river-shadow/) is built and tested but not deployed: deploying it, setting GITHUB_DISPATCH_TOKEN for 30-minute builds, or declining is Ethan's decision.",
+   "next": "Ethan's decision on the logger; then a winter shadow 1 Dec 2026 to 28 Feb 2027, read on or after 8 March 2027 (it can only show a gain of about 0.14). Meanwhile a regulated-reach fallback rule, stated before any score.",
    "records": [
     {
      "doc": "docs/RIVER-RISES-SCOPE-2026-10.md",
@@ -1512,15 +1512,19 @@
      "quote": "**Verdict: fails** (conditions 1 and 3). **Near-miss label: Better** (d 0.0415 ≥ B 0.02, lower end 0.0017 > 0)."
     },
     {
-     "doc": "docs/AI-PROGRAMME-2026-10.md",
-     "quote": "- Upstream gauges give about an hour of warning at most river spots (median arrival 1.5 h, before a 0.5 h median"
+     "doc": "docs/RIVER-RISES-C3-2026-11.md",
+     "quote": "**C3 is not shown better than the gauge-month base rate (R1). Under the outcome map above, the deliverable is the"
+    },
+    {
+     "doc": "docs/RIVER-RISES-C3-2026-11.md",
+     "quote": "| **C3 vs R1** | **0.077** | **−0.062 to 0.174** | 0.047 to 0.108 |"
     }
    ],
    "prs": [
     383,
     627
    ],
-   "register_note": "The register's one-line summary rounds the figures; the record holds the intervals, the by-system table and the latency accounting. The AI programme's rows for #383 still describe the pre-run state."
+   "register_note": "The register's row rounds the figures; both records hold the intervals, the per-system diagnosis and the latency figures."
   },
   {
    "id": "missing-event-end",

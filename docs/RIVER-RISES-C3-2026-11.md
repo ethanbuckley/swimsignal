@@ -184,3 +184,145 @@ against R3, river-system intervals:
   reopen condition "a target or input that changes the mechanism" (for example rain forecasts at 6 h or more), and
   build the observation above.
 In every case the frozen file, the fresh week and the coverage table are produced.
+
+## Results, 6 November 2026
+
+**C3 is not shown better than the gauge-month base rate (R1). Under the outcome map above, the deliverable is the
+base-rate observation table; C3 is frozen for any later shadow. Nothing reaches the site.** Every figure in
+"Development" is retrospective, on data seen through #627. The fresh week is one week: description only.
+
+### How it was run
+
+- **Fetch** (`fetch_c3.py`), 6 November 2026 11:52 to 12:02 UTC under the heavy-run lock: **88 requests, all HTTP 200,
+  141.6 MB**, one run plus one request from a first attempt that stopped on a date-argument bug (that answer was
+  cached and reused). 12 full series for the extra spot gauges, and the 76 #627 series extended from 24 October to
+  1 November. Five answers were empty: Barcombe (no readings in the window; it enters with no rows), and four series
+  that had already stopped before 24 October. Ledger: `RIVER-RISES-C3-2026-11-requests.tsv`. No Open-Meteo request.
+- **Probes:** one listing of the radar bucket (11:47 UTC) and one local run of the logger against the live sources
+  (12:07 UTC: 2 requests; the EA answer held 4,108 readings, 91 kept; 12 radar keys listed). No Worker was deployed.
+- **Inputs fingerprinted before and after:** the 26 October coverage cache (SHA-256 digest of its 439 files'
+  hashes `5538c28c…916a`, unchanged), the #627 fetch folder (83 files, unchanged), the saved radar months and
+  `river_network.pkl` (name, size and time lists, unchanged). Scratch `DIPCAST_ROOT`, `DIPCAST_STATE` and
+  `DIPCAST_CACHE`; the state and cache folders were empty afterwards.
+- **Development** (`c3.py develop`) from commit `9a40fc52`, 12:15:48 to 12:18:14 UTC, under the lock. A first attempt
+  from `d1db95fb` (12:07:09 to 12:07:44) crashed in the first evaluation ("output array is read-only") before any
+  figure was computed or printed; it wrote only its timestamps. Fixed in `9a40fc52` and rerun; nothing was discarded.
+  Predictions SHA-256 `76c8ee98…5d3f`. Output: `RIVER-RISES-C3-2026-11-dev.json` and `-dev.md`.
+- **Frozen models** (`c3.py freeze`): `RIVER-RISES-C3-2026-11-frozen.json`, SHA-256 `35707391…cd81`, committed in
+  `e475c2d9` with the statement `-fresh-statement.json`, before any label of the fresh week was read.
+- **Fresh week** (`c3.py fresh`). One change after its first run: the all-gauge comparison had silently kept only the
+  33 gauges, because the frozen R3 was fitted on those only; it now compares C3n with R1 and R1s on all 45
+  (`2240f4fa`, after `e475c2d9`). The 33-gauge figures did not change.
+
+### Development, H1 (33 gauges, 3 h, d = 1 h): 513,307 labelled hours, 2,928 events, 13 river systems
+
+| Model | Brier | AUC | Calibration-in-the-large | Calibration slope |
+|---|---|---|---|---|
+| R1 base rate | 0.00556 | 0.809 | +0.00036 | 0.32 |
+| R1s smoothed base rate | 0.00553 | 0.833 | +0.00011 | 0.97 |
+| R3 spot trend | 0.00573 | 0.482 | +0.00005 | 0.21 |
+| C2 (#627's radar candidate) | 0.00530 | 0.691 | −0.00041 | 0.73 |
+| **C3** | **0.00514** | **0.861** | +0.00019 | 0.73 |
+
+| Comparison | Skill | 95% interval, river systems | 95% interval, time blocks |
+|---|---|---|---|
+| **C3 vs R1** | **0.077** | **−0.062 to 0.174** | 0.047 to 0.108 |
+| **C3 vs R3** | **0.103** | **−0.033 to 0.175** | 0.075 to 0.127 |
+| C3 vs R1s | 0.070 | −0.076 to 0.173 | 0.041 to 0.103 |
+| C3 vs C2 | 0.030 | 0.013 to 0.106 | 0.010 to 0.044 |
+| R1 vs R3 | 0.028 | −0.007 to 0.064 | 0.009 to 0.047 |
+
+The protocol's primary intervals are the river-system ones. Both include zero, so **C3 is not shown better than R1 or
+R3**. The time-block intervals exclude zero; they treat the 13 systems as fixed, so they say the gain is steady over
+time at these rivers, not that it would carry to other rivers. Against C2, C3 is better on both. The base-rate input
+is what C3 adds: AUC rises from 0.691 (C2) to 0.861.
+
+**Calibration.** On average C3 is right (mean forecast 0.00589 against 0.00570 observed). Its slope of 0.73 means its
+high forecasts are too high: at the top it is overconfident. R1s is close to calibrated (slope 0.97); R1 and R3 are
+not (0.32, 0.21).
+
+**Warnings at fixed alert rates** (thresholds from training predictions only; 1,044 label-1 episodes and 1,160 onsets
+of the site's "rising fast"):
+
+| Model | Alert rate asked | Hours alerted | Hit rate | False-alarm ratio | Episodes warned at their first hour | Onsets caught (median lead) |
+|---|---|---|---|---|---|---|
+| C3 | 0.5% | 0.53% | 0.306 | 0.673 | 243 | 375 (3 h) |
+| C3 | 1% | 1.03% | 0.393 | 0.782 | 340 | 476 (4 h) |
+| C3 | 2% | 2.24% | 0.496 | 0.873 | 447 | 605 (5 h) |
+| C2 | 1% | 0.97% | 0.381 | 0.775 | 311 | 474 (3 h) |
+| R1 | 1% | 1.86% | 0.255 | 0.922 | 248 | 218 (6 h) |
+| R3 | 1% | 1.08% | 0.083 | 0.956 | 35 | 575 (1 h) |
+
+At a 1% alert rate C3 warns 340 of 1,044 episodes at their first hour, and 78% of its warnings are false. R1's
+"leads" of 6 h are an artefact: a gauge-month rate is either on all month or off, so its lead is the look-back's
+limit. R1's realised alert share overshoots the asked rate because its values tie.
+
+**Latency.** Gauges read 0.5 h late (H05): C3 vs R1 0.086 [−0.113, 0.205], vs R3 0.108 [−0.090, 0.207]. Read 3 h late
+(H3): C3 vs R1 **−0.028** [−0.055, 0.042], vs R3 −0.003 [−0.036, 0.062]. **Any gain is gone with a 3-hour delay.**
+
+**6-hour horizon (H6):** C3 vs R3 0.131 [**0.029**, 0.202], vs R1 0.095 [−0.045, 0.198]. Against the spot trend, the
+6-hour figure is the only river-system interval above zero for C3.
+
+**Forward-only training** (blocks 3 to 8, training only on earlier blocks): C3 vs R1 **0.019** [−0.068, 0.080], vs R3
+0.045 [−0.049, 0.081]. On the same rows with blocked training: 0.075 and 0.102. **About three quarters of the gain
+over R1 depends on training with later seasons.** A model deployed now would only have the past, so 0.02 is the more
+realistic size.
+
+**Where the gain comes from (diagnosis, after the result).** Of C3's total Brier gain over R1 (219 of 2,857 in summed
+squared error), the Yorkshire Ouse system (Wharfe, Ure, Swale, Nidd and the Derbyshire Wye gauge that drains to the
+same outlet) gives 215. Without that one system, C3 vs R1 is **0.003**. Without the Thames system it is 0.133. The
+largest losses: Trowlock Island on the Thames (−52, the lock-and-weir pair #627 already flagged), Taunton on the Tone
+(−44 on 2 events: C3 put 82 hours at 0.2 or more after a real rise of about a quarter of the range that then
+levelled off) and Low Moor on the Ribble (−10; its series is 38% complete in training). **Inferred, not checked:**
+C3 helps on free-flowing upland rivers and hurts at regulated reaches (locks, town weirs). That is a hypothesis drawn
+from seen data, not a finding.
+
+### Coverage (N1, all gauges): 684,547 labelled hours, 4,241 events, 44 gauges, 18 river systems
+
+C3n (no upstream gauges) vs R3 **0.051 [0.005, 0.071]**, vs R1 0.031 [−0.023, 0.070]; AUC 0.899; calibration slope
+0.93. Against the spot trend this is the one primary-interval gain above zero in the run. Against the base rate it
+is not shown.
+
+| Of the 72 river spots | Gauges | Spots |
+|---|---|---|
+| C3 and C3n (an upstream gauge with a series and a range) | 33 | 41 |
+| C3n only (no usable upstream gauge) | 12 | 12 |
+| None: the spot gauge has no Hydrology series for the base rate's history | 10 | 13 |
+| None: no usable gauge on the spot's own river | | 6 |
+
+Of the 12, Barcombe had no readings in the window, so 11 had rows. Four of the 12 have no saved radar for their cell
+(Hindley Wrae Ford, Carnwood, Brushford, Hug Bridge); their radar input is the missing flag.
+
+### The fresh week, 25 to 31 October 2026 (description only)
+
+33 gauges: 5,018 labelled hours, **43 events in 17 episodes**, 31 gauges with a row, 13 systems. Brier: C3 0.00790,
+C2 0.00789, R1 0.00842, R3 0.00854; C3 vs R1 0.061, vs R3 0.075, vs C2 −0.002; C3's AUC 0.960. At the frozen 1%
+threshold C3 alerted 1.3% of hours: 17 hits and 49 false alarms, 5 of 17 episodes warned at their first hour. R1's
+frozen thresholds never fired (October's rates sit below them). All 45 gauges (39 with a row, 55 events): C3n vs R1
+**−0.007**. One autumn week of 17 episodes, mostly in two river systems: this neither supports nor undermines the
+development figures.
+
+### What this supports, and what it does not
+
+Supported, on seen data at these gauges: radar plus the gauge's own history ranks the next three hours far better
+than the spot trend or #627's C2 (AUC 0.86 against 0.48 and 0.69). It beats C2 with an interval above zero. Its gain
+over the base rate is concentrated in one river system, shrinks to about 0.02 when only the past is used, and
+vanishes when gauges are read 3 hours late.
+
+Not supported: that C3 beats the base rate at rivers in general; any warning; anything about swimming safety. The
+river-system intervals include zero, and that does not show "not worse" either.
+
+### Continuation (the outcome map's branch "C3 not shown better than R1")
+
+- **Delivered now:** `RIVER-RISES-C3-2026-11-base-rates.csv`, 525 gauge-months at 44 gauges (21 Nov 2024 to 24 Oct
+  2026): the hours the site showed no word, how many were followed within 3 hours by a rise of more than a fifth of
+  the usual range, the episodes and the share, and how many years each month covers. Seasonal: 1.5% of December
+  hours and 1.4% of November hours, 0.13% of April and August hours. Trowlock Island's 5.4% is the lock pair, not a
+  river wave. It is history for a research page, worded as history. Building that page is a separate change.
+- **Frozen for a shadow:** C3, C3n, C2 and R3 with R1 and R1s, file `35707391…`. The shadow does not open until
+  Ethan takes one of the decisions in the amendment (deploy `river-shadow/`, set `GITHUB_DISPATCH_TOKEN`, or
+  decline). With 19 river systems it can only show a gain of about 0.14 or more, so a fresh "Better" is unlikely
+  even if C3 is useful.
+- **Next development step, bounded:** test the regulated-reach hypothesis as a stated rule (gauges at locks or town
+  weirs fall back to R1s), written before any score and judged on the shadow's fresh hours only, since it was chosen
+  after seeing this run. Owner: the next river-rises session.
