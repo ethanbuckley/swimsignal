@@ -12,6 +12,13 @@ the spot, the exposure, season), so it costs no request.
 
 It sets no level, colour or alert. Without the model file, or with a file of another hash, it is off and the page
 says "Not estimated", as before.
+
+Each in-season day at a lake bathing water with its own samples also carries `usual` and `direction`
+(docs/LAKE-RANGE-DIRECTION-PROPOSAL-2026-11.md): usual is lake-range-v1's likely reading for the same lake on the same
+date with the lake's typical inputs (USUAL_FILE: the median rain over 48 h and 24 h and the median exposure on its own
+2023-26 sample days, scripts/lake_range_usual.py); direction is "higher" at twice usual or more, "lower" at half or
+less, else "about", on the figures as published. Not at "average lake" spots, not out of season, not without the file.
+Neither is logged: the shadow table is unchanged.
 """
 
 from __future__ import annotations
@@ -37,6 +44,10 @@ SHA256 = "5566b12e5fc6acc1686f2aeb201ec2b9f8cd7e38a39f4352de314c5e32c3fcca"
 TESTED = frozenset({"ukd1203-45625", "ukd1203-45650", "ukd1203-45675", "ukd1203-45700", "ukj2310-11945"})
 SITE_RADIUS_M = 100        # a spot this close to a bathing water's spots.csv position is that bathing water
 SEASON = range(5, 10)      # the months the EA samples, and the test's
+USUAL_FILE = config.PROCESSED / "lake_range_usual.v1.json"
+USUAL_SHA256 = "8be2d127bc168d0dca73fdc6ef3ba53e926a92263aec6349475c8b107fdfb040"
+HIGHER, LOWER = 2.0, 0.5   # fixed in the proposal before any 2027 sample
+LAB_LIMIT = 10             # the page says "under 10" below it
 COLUMNS = ("issued_at", "issue_day", "lat", "lon", "bw_id", "basis", "target_day", "lead", "in_season",
            "rain_48h", "rain_24h", "risk", "median", "low", "high", "rule", "model_sha", "version")
 
@@ -54,8 +65,24 @@ def model() -> dict | None:
     return json.loads(FILE.read_text())
 
 
+@lru_cache(maxsize=1)
+def usual_inputs() -> dict | None:
+    """Each lake bathing water's typical inputs, or None (no usual line) when the file is missing, is not the
+    committed one, or was made for another model file."""
+    if not USUAL_FILE.exists():
+        log.info("lake usual line off: %s missing", USUAL_FILE.name)
+        return None
+    got = hashlib.sha256(USUAL_FILE.read_bytes()).hexdigest()
+    if got != USUAL_SHA256:
+        log.warning("lake usual line off: %s is %s, not %s", USUAL_FILE.name, got[:12], USUAL_SHA256[:12])
+        return None
+    u = json.loads(USUAL_FILE.read_text())
+    return u if u.get("model_sha256") == SHA256 else None
+
+
 def clear_cache() -> None:
     model.cache_clear()
+    usual_inputs.cache_clear()
 
 
 def site_for(m: dict, lat: float, lon: float) -> str | None:
@@ -101,7 +128,43 @@ def ranges(lat: float, lon: float, X: pd.DataFrame, m: dict | None = None) -> di
     ok = np.isfinite(X[m["cols"]].to_numpy(dtype=float)).all(axis=1)
     q = _quantiles(m, X.fillna(0.0), bw)
     nan = lambda a: np.where(ok, a, np.nan)   # noqa: E731
-    return {"bw_id": bw, "basis": basis(bw), "low": nan(q[0.1]), "median": nan(q[0.5]), "high": nan(q[0.9])}
+    return {"bw_id": bw, "basis": basis(bw), "low": nan(q[0.1]), "median": nan(q[0.5]), "high": nan(q[0.9]),
+            "usual": usual(m, bw, X)}
+
+
+def usual(m: dict, bw: str | None, X: pd.DataFrame, typical: dict | None = None) -> np.ndarray:
+    """The likely reading on each row's date with the lake's typical inputs in place of the day's (the date terms
+    are X's own); all NaN at a lake with no typical inputs (no own samples, or the file off)."""
+    from dipcast.model.ecoli import features
+    typical = typical if typical is not None else usual_inputs()
+    t = ((typical or {}).get("sites") or {}).get(bw) if bw is not None else None
+    if t is None or not len(X):
+        return np.full(len(X), np.nan)
+    f = features([t["rain_48h"]], [t["rain_24h"]], [t["risk"]], [1.0], [pd.Timestamp("2026-07-01")])
+    Xu = X.copy()
+    for c in ("lrain48", "lrain24", "logit_risk", "lake", "lake_x_lrain48"):
+        Xu[c] = float(f[c].iloc[0])
+    return _quantiles(m, Xu[m["cols"]].fillna(0.0), bw, qs=(0.5,))[0.5]
+
+
+def direction(today: float | None, usual_: float | None) -> str | None:
+    """Higher, lower or about usual, on the figures as published (two significant figures). Both under the lab's
+    limit read "under 10" alike, so about usual. None without both figures."""
+    if today is None or usual_ is None or not (np.isfinite(today) and np.isfinite(usual_)) or usual_ <= 0:
+        return None
+    if today < LAB_LIMIT and usual_ < LAB_LIMIT:
+        return "about"
+    return "higher" if today >= HIGHER * usual_ else "lower" if today <= LOWER * usual_ else "about"
+
+
+def compared(out: dict, j: int, day) -> dict:
+    """`usual` and `direction` for day j's published range, or {}: only in season, at a lake bathing water with its
+    own samples, with a range and a usual reading."""
+    if out.get("basis") not in ("tested", "own samples") or pd.Timestamp(day).month not in SEASON:
+        return {}
+    today, u = sig2(out["median"][j]), sig2(out.get("usual", np.full(j + 1, np.nan))[j])
+    d = direction(today, u)
+    return {} if d is None else {"usual": u, "direction": d}
 
 
 def basis(bw: str | None) -> str:
