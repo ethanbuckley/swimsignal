@@ -550,7 +550,9 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
                 row["rain_48h_coverage"] = round(float(cov48[j]), 3)   # finite share of the window's 48 hours
                 row["p_ecoli_gt900"] = round(float(p_ec[j]), 3) if ok else None
                 if ranges is not None:   # E. coli per 100 ml, two significant figures; None where an input is missing
-                    row["ecoli_range"] = ({k: lake_range.sig2(ranges[k][j]) for k in ("low", "median", "high")}
+                    # In season at a sampled lake, also the lake's usual reading for the date and higher/lower/about.
+                    row["ecoli_range"] = ({**{k: lake_range.sig2(ranges[k][j]) for k in ("low", "median", "high")},
+                                           **lake_range.compared(ranges, j, days[j])}
                                           if np.isfinite(ranges["median"][j]) else None)
                 if not ok and row["data_status"] == "ok":
                     row["data_status"] = "rain unavailable"

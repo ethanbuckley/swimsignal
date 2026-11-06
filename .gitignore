@@ -28,6 +28,8 @@ data/processed/*
 !data/processed/ecoli_model_sm.json
 !data/processed/ecoli_model_eval.json
 !data/processed/ecoli_lake_range.json
+# Each lake bathing water's typical inputs for the "higher or lower than usual" line (lake_range.py)
+!data/processed/lake_range_usual.v1.json
 !data/processed/water_temp_model.json
 !data/processed/verification_2025.csv
 !data/processed/reliability_2025.csv
