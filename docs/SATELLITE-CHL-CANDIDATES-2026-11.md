@@ -141,6 +141,42 @@ or two candidates are supported.
 **Not claimed:** that any candidate measures chlorophyll, that a supported one is validated, that a flagged reading is
 wrong, anything about algae, toxins or safety, or anything about #386's verdict.
 
+### Amendment 1 (6 November 2026, written during the fetch, before any score)
+
+Main now holds the workflow section "Develop promising work now" (#628, merged as f13f04de). Two of its rules bear on
+this protocol and were not fully written above; they are added here before any candidate has been scored. Nothing
+above changes.
+
+**The shadow log, if one starts.** The pilot's run record (`data/research/satellite/pilot_runs.json`) is copied to the
+public Research Lab by the site build, so shadow values must not go there. If a candidate is supported, its shadow
+values and the baseline's go into their own versioned file, `data/research/satellite/chl_shadow_log.v1.json`, which
+no page reads and the build does not copy; each row holds the scene's acquisition time, the time it was read, the
+model version, every input (reading, brightness, IQR, mark, pixel-filtered reading) and each model's value, plus the
+**fallback**: the frozen reference, the value a sample gets when a model has no reading. Inputs are from the scene's
+own windows at reading time; no request is added. The refresher writes the same rows into its research root.
+
+**The read of a shadow, fixed now.** Population: lab samples (determinand 7887) at the 38 points with a scene read by
+the refresher or the pilot after contract 1.4, within a day, May to September 2027; frozen models, no refit; a model
+with no reading is charged the frozen reference. Metric: skill gain over the frozen baseline against the frozen
+reference, cluster bootstrap by lake (2,000 draws). A candidate is **not worse** than the baseline if the gain's
+interval lower end is above −0.05 (#386's H), and **better** if in addition the gain is at least +0.03 and the lower
+end above 0. Too few to judge below 60 pairs at 10 lakes. Read on or after **1 February 2028**, when the season's lab
+values should be published; later if the minimum is not met then. A blocker known now: weekly reads at the 38 points
+in 2027 need the runner the register already lists as open; the pilot covers five bathing sites, and its pairs with
+lab samples will be few.
+
+**What follows for each outcome** (the merged section's list):
+- **Supported:** the shadow log above, and the read above.
+- **Not supported, and some candidate's gain on held-out lakes is at least +0.03 with its lower end at or below −0.05
+  (inconclusive):** no shadow. The deliverable is a **diagnosis**: which lakes, lake types and seasons drive the
+  difference between that candidate and the baseline out of fold, and whether low-signal readings carry the
+  baseline's largest errors; with the next comparison it implies stated in the record.
+- **Not supported, and every candidate's gain is below +0.03 (fail):** the same diagnosis for the best candidate, and
+  each variant whose interval excludes a gain of +0.03 archived in the catalogue with what would reopen it.
+- **In every case:** if E's composite covers more samples without loss beyond the margin on the all-sample population
+  (gain's lower end above −0.05), the composite rule is written into the record as a **coverage improvement** for the
+  2027 pairing protocol, whether or not E is supported.
+
 ## 4. Results
 
 To be written after the run.
