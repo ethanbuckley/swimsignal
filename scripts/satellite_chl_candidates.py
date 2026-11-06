@@ -493,6 +493,33 @@ def words(results: dict, sup: dict) -> list[str]:
     return out
 
 
+def diagnose(d: pd.DataFrame, res: dict, cand: str) -> dict:
+    """Amendment 1's diagnosis, on out-of-fold predictions: where the candidate's squared error differs from the
+    baseline's (by lake type, season and lake), and whether low-signal readings carry the baseline's largest errors."""
+    m = res["rows"]
+    f = d[m].reset_index(drop=True).assign(e0=(res["pred"]["B0"][m] - d["log_chl"].to_numpy(dtype=float)[m]) ** 2,
+                                            e1=(res["pred"][cand][m] - d["log_chl"].to_numpy(dtype=float)[m]) ** 2)
+    f["gain"] = f["e0"] - f["e1"]
+    total = float(f["gain"].sum())
+
+    def by(col):
+        g = f.groupby(f[col].fillna("none").astype(str))
+        return {k: {"rows": int(len(x)), "baseline_mse": float(x["e0"].mean()), "candidate_mse": float(x["e1"].mean()),
+                    "share_of_gain": None if total == 0 else float(x["gain"].sum() / total)} for k, x in g}
+    lakes = f.groupby("lake_name").agg(rows=("gain", "size"), gain=("gain", "sum")).sort_values("gain")
+    flagged = f["flag0"].astype(bool) & f["x0"].notna()
+    top = f["e0"] >= f["e0"].quantile(0.9)
+    return {"candidate": cand, "rows": int(len(f)), "total_squared_error_gain": total,
+            "by_lake_type": by("lake_type"), "by_season": by("season"),
+            "lakes_most_helped": [{"lake": k, "rows": int(r.rows), "gain": float(r.gain)} for k, r in lakes[::-1].head(5).iterrows()],
+            "lakes_most_hurt": [{"lake": k, "rows": int(r.rows), "gain": float(r.gain)} for k, r in lakes.head(5).iterrows()],
+            "low_signal": {"rows": int(flagged.sum()), "share_of_rows": float(flagged.mean()),
+                           "share_of_baseline_error": float(f.loc[flagged, "e0"].sum() / f["e0"].sum()),
+                           "baseline_mse_flagged": float(f.loc[flagged, "e0"].mean()) if flagged.any() else None,
+                           "baseline_mse_unflagged": float(f.loc[~flagged, "e0"].mean()),
+                           "share_of_top_tenth_errors": float(flagged[top].mean())}}
+
+
 # ------------------------------------------------------------------ report
 def _arrays(point: str, item_id: str, tile: str, npz: Path, items: dict):
     it = items[item_id]
@@ -565,11 +592,14 @@ def report(out: Path) -> None:
     pop = population()
     d = sample_rows(pop, scenes)
     paired = d[d["item_id"].notna() & d["paired_scene_read"]].reset_index(drop=True)
-    results = {"paired": {}, "all": {}}
+    results, oof = {"paired": {}, "all": {}}, {}
     for name, frame in (("paired", paired), ("all", d)):
         for h in HOLDOUTS:
-            results[name][h] = measures(frame, run_holdout(frame, h))
+            oof[(name, h)] = run_holdout(frame, h)
+            results[name][h] = measures(frame, oof[(name, h)])
     sup = support(results)
+    best = max(CANDIDATES[1:], key=lambda c: results["paired"]["lake"][c]["vs_B0"]["skill"]["d"])
+    diagnosis = diagnose(paired, oof[("paired", "lake")], best)
     read_scenes = scenes[scenes["read"]]
     doc = {
         "description": "Development on seen data: quality-aware candidates for relating Sentinel-2 NDCI to EA lab "
@@ -595,7 +625,7 @@ def report(out: Path) -> None:
                    "low_signal": int(read_scenes["low_signal"].fillna(False).astype(bool).sum())},
         "samples": {"all": len(d), "paired": len(paired), "paired_scene_unread": int((d["item_id"].notna() & ~d["paired_scene_read"]).sum()),
                     "with_composite": int(d["xe"].notna().sum())},
-        "results": results, "support": sup, "words": words(results, sup),
+        "results": results, "support": sup, "diagnosis": diagnosis, "words": words(results, sup),
         "sample_rows": json.loads(d.drop(columns=["tile"], errors="ignore").to_json(orient="records", date_format="iso")),
     }
     OUTPUT.write_text(json.dumps(doc, indent=1, default=_json_default) + "\n")

@@ -125,3 +125,14 @@ def test_settings_are_the_stated_ones():
     assert (K.MAX_REQUESTS, K.MAX_BYTES, K.SEED, K.WINDOW) == (4500, int(2.5 * 1024**3), 20261106, 3)
     assert K.PIXEL_GRID == (0.005, 0.010, 0.015, 0.020) and K.MIN_PIXELS == 9
     assert (K.GAIN, K.HARM) == (0.03, -0.05) and K.FORWARD_TRAIN == (2021, 2023, 2024)
+
+
+def test_diagnosis_finds_the_noisy_rows():
+    d = frame(lakes=12, per_lake=10).assign(lake_type=lambda f: np.where(f["wb_id"].str[1:].astype(int) % 2, "shallow", "deeper"),
+                                            lake_name=lambda f: f["wb_id"])
+    g = K.diagnose(d, K.run_holdout(d, "lake"), "A")
+    assert g["rows"] == len(d) and g["total_squared_error_gain"] > 0
+    assert abs(sum(v["share_of_gain"] for v in g["by_lake_type"].values()) - 1) < 1e-9
+    ls = g["low_signal"]
+    assert ls["baseline_mse_flagged"] > ls["baseline_mse_unflagged"] and ls["share_of_baseline_error"] > ls["share_of_rows"]
+    assert len(g["lakes_most_helped"]) == 5 and g["lakes_most_helped"][0]["gain"] >= g["lakes_most_hurt"][0]["gain"]
