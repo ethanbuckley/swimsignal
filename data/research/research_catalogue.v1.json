@@ -845,6 +845,13 @@
    "branch_exists": true,
    "date": "2026-11-06"
   },
+  "640": {
+   "n": 640,
+   "state": "open",
+   "branch": "claude/radar-per-overflow-test",
+   "branch_exists": true,
+   "date": null
+  },
   "639": {
    "n": 639,
    "state": "open",
@@ -1797,7 +1804,7 @@
    "scope": "A model trained on United Utilities applied to other companies in 2025.",
    "stage": "waiting",
    "stage_note": "The cached radar and extraction are kept.",
-   "next": "Reuse for river-rise and event-timing questions where resolution matters.",
+   "next": "Reuse for river-rise and event-timing questions where resolution matters. Rain at each overflow's own position was tested on 6 November 2026 (#640): no gain over the cell. That run found full-day cell radar 7.8% better than the lead-0 forecast once the model is refitted; radar up to the issue hour is the next stated test.",
    "records": [
     {
      "doc": "docs/RADAR-RAIN-CHECK-2026-10.md",
@@ -1805,9 +1812,32 @@
     }
    ],
    "prs": [
-    343
+    343,
+    640
    ],
    "register_note": "The register's \"even perfect rain added little\" holds only against same-day forecast rain; the doc says perfect rain would recover most of the loss at leads 1 to 4."
+  },
+  {
+   "id": "radar-per-overflow",
+   "title": "Radar rain at each overflow's own position",
+   "section": "negative",
+   "topics": [
+    "rain"
+   ],
+   "verdict": "Not shown, run 6 November 2026 (verdict N). With the spill model's form refitted on each rain source and scored out of fold on 2025 (3,778 overflows, 1,374,430 overflow-days), rain from the 3 x 3 block of 1 km radar pixels around each overflow scored Brier 0.0342 against 0.0341 for the 10 km cell's radar: a difference of +0.00012, 95% interval −0.00020 to +0.00044 (overflow × week). A gain of 1% is ruled out. The overflow's own pixel did slightly worse. Thames Water January to August 2026, with models frozen on 2025: −0.00056, interval −0.00211 to +0.00056. Refitted on full-day cell radar, the model beat the same model on the lead-0 forecast by 7.8%; with radar only for the two days before, by 0.9%, interval including zero.",
+   "scope": "Nine English companies' overflows in cells with cell radar and lead-0 forecasts, 2025 (labels already scored in #343, so development evidence, not confirmation), and Thames Water in 2026. Same-day and two-day rain only; longer rain from ERA5-Land in every arm. Says nothing about river rises, event timing or a model that knows each company.",
+   "stage": "archived",
+   "stage_note": "Archived as a spill-model input. The per-overflow radar stays private for river-rise and event-timing questions. The next deliverable from this run is radar for the day up to issue time at cell scale, which needs its own stated test.",
+   "reopen_when": "A model that knows each company is adopted (A8, upgraded-overflow option B or a nine-company refit), or the EA 2026 start/stop files give a second labelled year with per-overflow radar.",
+   "records": [
+    {
+     "doc": "docs/RADAR-PER-OVERFLOW-TEST-2026-11.md",
+     "quote": "**Verdict N: rain at the overflow's own position is not shown to beat the cell's radar. The interval also rules out a\ngain of 1%.**"
+    }
+   ],
+   "prs": [
+    640
+   ]
   },
   {
    "id": "glofas",
