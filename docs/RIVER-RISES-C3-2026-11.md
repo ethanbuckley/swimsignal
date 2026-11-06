@@ -131,3 +131,56 @@ Nothing reaches the site from this file. If the winter read labels C3 "Better" a
 proposal for a research-page observation (not a warning) would be written then, with its own wording review. The
 #627 continuation (archive the radar line on 1 February 2027 if nothing changes) is superseded for development by
 this work; its verdict is not.
+
+## Amendment, 6 November 2026, before any C3 fit or score: the merged rule "Develop promising work now"
+
+Written after main's workflow section "Develop promising work now" (#628) was merged and before the development run.
+Nothing above about the candidates, splits or reported figures changes. The shadow section changes as follows.
+
+**The logger is built and tested, not deployed.** A separate Worker's availability, permissions and cost are not
+resolved: creating its storage namespace on Ethan's Cloudflare account was refused by the session's permission layer
+on 6 November 2026, and the merged rule says not to require a new Worker or scheduler while that is unresolved. The
+site's existing build schedule is not adequate for a 3-hour target (scheduled builds a median 5.9 h apart, 30 October
+to 5 November 2026). That cadence is reported as a finding. **Decision needed (Ethan), one of:**
+- deploy `river-shadow/` as it stands (its README, "Deploying", gives the four commands); or
+- make the site's builds run every 30 minutes (the push Worker's `GITHUB_DISPATCH_TOKEN`), after which a logger inside
+  the build could be written and tested; it is not written now; or
+- decline both, and the shadow does not open.
+Until one is taken, the shadow window below does not open, and nothing is logged.
+
+**Conditions of the merged rule, checked for this logger.**
+- *Inputs at issue time from a source readable then.* Gauge levels: the EA latest-readings call made at the issue
+  time, each reading with its own `dateTime`. Radar: the composites are in the public bucket about 6 minutes after
+  their valid time (measured on 6 November 2026), and the logger lists them, with their ETags, at the issue time; the
+  values are computed later from those same files, and the scorer refuses a file whose ETag differs. **Open point,
+  stated:** the radar value itself is computed after the issue time, from a file that existed then. Computing it at
+  issue time needs an HDF5 reader, which the Worker does not have.
+- *Issue time and each input's own time.* The record holds the issue time, the fetch time, each reading's own time,
+  and each composite's key, `LastModified` and ETag. `shadow_score.py` uses only records made at or before the issue
+  time.
+- *Independent and versioned.* Its own KV namespace and record schema (`swimsignal.river-shadow.hour`, version 1); no
+  issued forecast, no public text.
+- *Comparator and fallback on the same issues.* R1 (the frozen gauge-month table) and R3 (the frozen trend model) are
+  computed from the same records as C3, on the same issue times. Fallback when an input is missing: each input group
+  has its trained missing flag (spot trend, each upstream slot, radar); with no spot-gauge reading at most 24 h old the
+  issue time is outside population P, as the site shows nothing then.
+- *Limits.* Two or three requests an hour, one record (about 16.5 kB) an hour, a stop after 6 failed hours. The
+  Cloudflare free-plan figures in its README are partly unverified; that is part of the unresolved cost question.
+- *Read date, metric and margin* are fixed above (1 Dec 2026 to 28 Feb 2027, read on or after 8 March 2027, Brier
+  skill, B 0.02, H 0.01). If the logger opens later, the window starts at its first full UTC day.
+
+**No non-inferiority claim.** Every comparison here is a gain with its interval and the near-miss labels. An interval
+that includes zero is reported as that, never as "not worse".
+
+**What each development outcome leads to (fixed now).** In H1, C3 against R1 (the strongest reference in #627) and
+against R3, river-system intervals:
+- **C3 better than both** (both lower ends above 0): freeze C3 as stated, and it is the candidate the shadow scores
+  once a logger runs. Also build the research observation below.
+- **C3 not shown better than R1** (R1's interval includes 0 or C3 is worse), whatever it does against R3: the
+  deliverable is the **gauge-month base rate as an observation**, a per-gauge table of how often the gauge rose by a
+  fifth of its range within 3 hours in each month (20 Nov 2024 to 24 Oct 2026), for a research page later, worded as
+  history, not a forecast. C3 is still frozen and scored by any shadow, since the shadow is the only fresh check.
+- **C3 worse than R1 with its interval below 0:** archive the trend-and-radar model line for this target, with the
+  reopen condition "a target or input that changes the mechanism" (for example rain forecasts at 6 h or more), and
+  build the observation above.
+In every case the frozen file, the fresh week and the coverage table are produced.
