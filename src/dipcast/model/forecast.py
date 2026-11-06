@@ -158,7 +158,8 @@ def model_version() -> str:
 
     from dipcast import __version__
     return (f"spill={h(MODEL_PATH)};cal={h(config.PROCESSED / 'lead_calibration.json')};"
-            f"ecoli={h_ecoli()};code={__version__}+{code_commit()};rain=open-meteo-forecast")
+            f"ecoli={h_ecoli()};code={__version__}+{code_commit()};rain=open-meteo-forecast"
+            + (";status=live-status-v1" if config.LIVE_STATUS else ""))
 
 
 @lru_cache(maxsize=1)
@@ -456,12 +457,16 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
     p = scotland_trial.calibrate(p, p_raw, ov)   # Scottish Water's rows: Scotland's own map
     # The live-status shadow (docs/LIVE-STATUS-SHADOW-TEST-2026-10.md): for the forecast log only, from the
     # same site-day frame, so it costs no rain request. Nothing below reads it but log_forecast.
+    # With DIPCAST_LIVE_STATUS=1 (off by default; docs/LIVE-STATUS-BACKTEST-2026-11.md) the same figure becomes the
+    # published forecast for English overflows, and production stays wherever it cannot be computed.
     shadow = None
-    if log_to_store and frame is not None:
+    if (log_to_store or config.LIVE_STATUS) and frame is not None:
         try:
             shadow = live_status.shadow_forecast(frame, ov, days, today_idx, now, p)
         except Exception as e:  # noqa: BLE001 - a shadow must never fail the forecast
             log.warning("live-status shadow skipped: %s", e)
+    if config.LIVE_STATUS:
+        p = live_status.adopted(p, shadow, ov)
     # The regional routing shadow (docs/REGIONAL-ROUTING-2026-11.md): regional-v1's chance from the same frame, for
     # its own table only. Nothing below reads it but its logger.
     regional = None
