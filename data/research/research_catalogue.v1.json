@@ -1106,11 +1106,11 @@
     "lakes",
     "overflows"
    ],
-   "verdict": "By the plan's rule, Derwent Water's results over 900 are not explained by recorded spills at its three monitored overflows upstream: 30-day spill hours ranked its counts with rho 0.28 (interval −0.19 to +0.58), its overflows spilled less in its worst season (172 hours) than in 2024 (220), and 1 of its 4 dry-day results over 900 had a recorded spill in the 7 days before. At Coniston Water recorded spills did track counts (7-day rho 0.48, interval +0.27 to +0.62). Derwent's counts rose with water temperature and day of season (rho 0.37, interval +0.15 to +0.56). A lake-specific seasonal response (candidate D) failed all three of its conditions.",
+   "verdict": "By the plan's rule, Derwent Water's results over 900 are not explained by recorded spills at its three monitored overflows upstream: 30-day spill hours ranked its counts with rho 0.28 (interval −0.19 to +0.58), its overflows spilled less in its worst season (172 hours) than in 2024 (220), and 1 of its 4 dry-day results over 900 had a recorded spill in the 7 days before. At Coniston Water recorded spills did track counts (7-day rho 0.48, interval +0.27 to +0.62). Derwent's counts rose with water temperature and day of season (rho 0.37, interval +0.15 to +0.56). A lake-specific seasonal response (candidate D) failed all three of its conditions. Low lake level at Lodore did not track its results either (rho −0.12, interval −0.48 to +0.36); outflow at Portinscale could not be judged because the EA holds no 2024-25 flow there.",
    "scope": "Derwent Water at Crow Park, 40 samples in 2024-25 for recorded spills (no 2026 event records) and 59 in 2024-26 for temperature, with Coniston Water and Windermere for comparison; seen samples, described. The EA's 2026 bathing water profile was read for named sources. A source is inferred, not established.",
    "stage": "archived",
    "stage_note": "A Derwent line chance from the inputs the model reads is archived: five variants failed on these rows and the measurements contradict the rain-driven spill mechanism there. The diagnosis is the deliverable. The frozen plain and B models keep their 2027 read.",
-   "reopen_when": "A dated input that tracks Derwent Water's dry-weather results, judged under its own protocol: the EA's private-discharge permits for the upper catchment with occupancy, the EA's in-season investigation results for this bathing water (an outside contact for Ethan), or a lake temperature record beside the samples.",
+   "reopen_when": "A dated input that tracks Derwent Water's dry-weather results, judged under its own protocol: the EA's private-discharge permits for the upper catchment with occupancy, the EA's in-season investigation results for this bathing water (an outside contact for Ethan), a lake temperature record beside the samples, or Portinscale's 2024-25 daily flow once the EA publishes it.",
    "records": [
     {
      "doc": "docs/DERWENT-WATER-DIAGNOSIS-2026-11.md",
@@ -1119,6 +1119,10 @@
     {
      "doc": "docs/DERWENT-WATER-DIAGNOSIS-2026-11.md",
      "quote": "| D1. Log score D − plain above zero, interval above zero | −0.003 [−0.018, +0.010] | **fail** |"
+    },
+    {
+     "doc": "docs/DERWENT-WATER-DIAGNOSIS-2026-11.md",
+     "quote": "**Answer by the stated rule: low lake level does not track Derwent's high results.**"
     }
    ],
    "prs": [
@@ -1138,12 +1142,16 @@
    "verdict": "The primary question held for both frozen models. On 962 samples at Windermere and Frensham, 2012-22, the concentration model's median ordered a lake's own samples better than production's lake chance: mean within-site rho difference +0.156 (interval +0.090 to +0.218) for the plain model and +0.182 (+0.122 to +0.244) for the lake wet-response model. The live lake-range-v1 ordered as well and fitted the spread best. With 9 results over 900, a line chance could not be judged.",
    "scope": "An out-of-time development comparison on outcomes #584 had already examined; the models were frozen on 2024-26 data before these rows were joined. Five sampling sites on two water bodies. #584 had already published a close relative of this ordering result for its own candidate.",
    "stage": "development",
-   "stage_note": "No model or page changed. Next is a wording proposal for Ethan: whether today's likely lake reading is higher or lower than the lake's usual, from lake-range-v1, judged by the existing 2027 read of the lake range shadow.",
+   "stage_note": "No model or page changed. A wording proposal is written for Ethan: say whether today's likely lake reading is higher or lower than the lake's usual (twice or half), from lake-range-v1, at sampled lakes in season, judged by the existing 2027 read of the lake range shadow and a direction check fixed in the proposal.",
    "next": "Ethan's wording decision; a readiness check of the lake range shadow's rows in April 2027; the 2027 read on or after 15 Oct 2027.",
    "records": [
     {
      "doc": "docs/LAKE-LINE-2012-22-CHECK-2026-11.md",
      "quote": "| **plain − production form** | **+0.156 [+0.090, +0.218]: holds** |"
+    },
+    {
+     "doc": "docs/LAKE-RANGE-DIRECTION-PROPOSAL-2026-11.md",
+     "quote": "It is a product decision for Ethan."
     }
    ],
    "prs": [

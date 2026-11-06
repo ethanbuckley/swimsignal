@@ -246,3 +246,40 @@ seed 20261106):
 - **L1 fails:** low water does not track Derwent's high results. Recorded; the remaining routes are the two that need
   Ethan (the private-discharge register, the EA's investigation).
 - **Power:** 59 samples give a single rho a standard error of about 0.13; one lake, three seasons.
+
+## Lake level and outflow: results
+
+Run 6 November 2026 after the protocol was pushed (f1bcde59), with the heavy-run lock held. The research session had
+released it by then. Files: `-levelflow.json`, the daily series `-levelflow-daily.csv` (EA, OGL v3), the ledger
+`-levelflow-ledger.json`.
+
+**Requests: 3 of the cap of 10**, all answered: Lodore's daily minimum level and Portinscale's daily mean flow, then one
+availability check of Portinscale's daily minimum flow after the mean came back for 2026 only. That check also had no
+2024-25 values and is not used.
+
+**Data limitation:** the EA Hydrology API holds no Portinscale flow for 2024 or 2025 in either daily measure. This agrees
+with #584's lake spill file, which found no Portinscale flow readings on 2023-25 spill days. Lodore's level covers
+2024-26 with gaps: 46 of the 59 samples have a level on the sample day.
+
+**Implementation fix before the result was read:** the first run dropped every sample missing either series, which left
+15 samples for both measures. The protocol computes each measure on its own samples; the script was corrected and rerun.
+The answer was the same both times.
+
+| Rule | Result | |
+|---|---|---|
+| L1. rho of level or 7-day flow at most −0.3, interval below zero | level −0.12 [−0.48, +0.36] (46 samples); flow −0.50 [−0.75, +0.10] (19 samples, 2026 only) | **no** |
+| L2. Same after removing each month's median | level −0.05 [−0.41, +0.33]; flow −0.35 [−0.63, +0.04] | **no** |
+| L3. Seasons separated (level and flow lower in July-August 2025 than 2024; 4 of 6 dry-day results at low flow) | level 0.78 m in 2025 against 0.91 m in 2024; flow **not computable** for 2024-25 | **no** |
+
+The six dry-day results over 900 had Lodore levels from 0.58 m to 1.37 m: two of them (30 June and 9 July 2025) at
+levels above 2025's July-August median. Low water is not a common thread.
+
+**Answer by the stated rule: low lake level does not track Derwent's high results.** Outflow cannot be judged for
+2024-25. In 2026 alone, low outflow went with higher counts (−0.50, interval spanning zero; 3 results over 900), which
+is worth checking again when the EA publishes 2024-25 flow for Portinscale or after the 2027 season. Inferred: Lodore is
+at the lake's south end and Crow Park at its north, so the gauge is a lake-wide measure, not a local one.
+
+**What follows, by the protocol:** no candidate E. The remaining routes are the two that need Ethan (the
+private-discharge register's terms, an outside contact with the EA about its investigation at Crow Park) and one data
+check that needs no one: whether Portinscale's 2024-25 daily flow appears in the EA Hydrology API, to be rerun with
+`scripts/derwent_level_flow.py` after the EA's next data release, at about 2 requests.
