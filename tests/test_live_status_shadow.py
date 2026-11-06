@@ -174,7 +174,9 @@ def test_the_log_keeps_the_shadow_beside_the_forecast(tmp_path, monkeypatch):
 
 
 # ------------------------------------------------------------------ nothing published changes
-def test_the_published_forecast_and_the_rain_requests_do_not_change(tmp_path, monkeypatch):
+def _point(tmp_path, monkeypatch):
+    """forecast_point on two Yorkshire overflows with fixed rain and a stand-in model (A1 0.55, B2 0.33), both
+    watched every 2 h for nine days. Returns run(models) -> (the result without its issue time, rain requests)."""
     from dipcast.model import forecast
     from dipcast.model.transport import PinLocation, clear_time, live_now_risk
 
@@ -227,6 +229,11 @@ def test_the_published_forecast_and_the_rain_requests_do_not_change(tmp_path, mo
         out["query"].pop("issued_at")
         return out, len(calls)
 
+    return run
+
+
+def test_the_published_forecast_and_the_rain_requests_do_not_change(tmp_path, monkeypatch):
+    run = _point(tmp_path, monkeypatch)
     off, n_off = run({})
     on, n_on = run({k: _ByStatus() for k in ls.LEADS})
     assert n_on == n_off                     # the shadow asks for no rain of its own
@@ -237,6 +244,43 @@ def test_the_published_forecast_and_the_rain_requests_do_not_change(tmp_path, mo
     assert len(rows) == 10 and all(r[4] for r in rows)
     assert [r[3] for r in rows] == pytest.approx([0.9] * 5 + [0.05] * 5)   # A1 spilling at issue, B2 not
     assert [r[2] for r in rows] == pytest.approx([0.55] * 5 + [0.33] * 5)  # production unchanged beside it
+
+
+# ------------------------------------------------------------------ the switch (docs/LIVE-STATUS-BACKTEST-2026-11.md)
+def test_the_switch_takes_the_candidate_for_english_overflows_only():
+    ov = pd.DataFrame({"site_id": ["A", "B", "C", "D"],
+                       "company": ["Yorkshire Water", "Yorkshire Water", "Dwr Cymru Welsh Water", "United Utilities"]})
+    p_cal = np.array([[0.2, 0.2], [0.3, 0.3], [0.4, 0.4], [np.nan, 0.1]])
+    shadow = {"p": np.array([[0.9, 0.2], [0.3, 0.3], [0.8, 0.8], [0.7, np.nan]]), "known": np.array([True, False, True, True]),
+              "inputs": np.zeros((4, 3))}
+    got = ls.adopted(p_cal, shadow, ov)
+    assert got[0].tolist() == [0.9, 0.2]            # known English overflow: the candidate where it has one
+    assert got[1].tolist() == [0.3, 0.3]            # status not known: the shadow is production's figure already
+    assert got[2].tolist() == [0.4, 0.4]            # Wales: production, whatever the shadow says
+    assert np.isnan(got[3][0]) and got[3][1] == 0.1   # no rain stays unknown; no candidate figure keeps production
+    assert ls.adopted(p_cal, None, ov) is p_cal     # shadow failed or off: production unchanged
+
+
+def test_the_switch_is_off_by_default_and_changes_the_forecast_and_stamp_when_on(tmp_path, monkeypatch):
+    from dipcast.model import forecast
+    assert config.LIVE_STATUS is False         # off unless DIPCAST_LIVE_STATUS=1
+    run = _point(tmp_path, monkeypatch)
+    models = {k: _ByStatus() for k in ls.LEADS}
+    forecast.model_version.cache_clear()
+    off, _ = run(models)
+    assert "status=" not in forecast.model_version()
+    monkeypatch.setattr(config, "LIVE_STATUS", True)
+    forecast.model_version.cache_clear()
+    try:
+        on, _ = run(models)
+        assert forecast.model_version().endswith(";status=live-status-v1")
+    finally:
+        forecast.model_version.cache_clear()
+    assert on["days"] != off["days"]          # A1 is spilling at issue: its candidate raises the risk
+    con = duckdb.connect(str(tmp_path / "t.duckdb"))
+    last = con.execute("SELECT site_id, lead, p_cal, p_status FROM forecast_overflows WHERE p_status IS NOT NULL "
+                       "ORDER BY issued_at DESC, site_id, lead LIMIT 10").fetchall()
+    assert [r[2] for r in last] == pytest.approx([r[3] for r in last])   # with it on, the log's forecast is the candidate's
 
 
 # ------------------------------------------------------------------ the check (scripts/live_status_shadow_check.py)

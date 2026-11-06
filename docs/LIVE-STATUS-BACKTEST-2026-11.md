@@ -416,6 +416,21 @@ Decisions for Ethan before any switch, none of them taken here:
 2. **Wording.** A spill already running would now raise the next days' levels too (#262, "What follows").
 3. **The model stamp.** Switching on changes `model_version`, so the live scores split at that date.
 
+### The switch (drafted in this PR, off)
+
+- `config.LIVE_STATUS`, set only by `DIPCAST_LIVE_STATUS=1`. Nothing sets it: not `site.yml`, not any repository
+  variable. With it unset the build is unchanged (`tests/test_live_status_shadow.py` checks the published forecast
+  and the rain requests are the same with the shadow on and off).
+- With it on, `forecast_point` publishes `live_status.adopted`: #262's shadow figure (lead *k*'s candidate where the
+  polled status is known, production's `p_cal` elsewhere) for overflows of the nine English companies only. Wales,
+  Scotland, past days and leads beyond 4 keep production. Where the shadow cannot be computed, production stays.
+  A day with no rain stays unknown.
+- `model_version` gains `;status=live-status-v1`, so the live scores split at the switch.
+- With it on, the forecast log's `p_cal` is the switched figure, so the #262 comparison ends that day. Switch only
+  after the 23 Nov read.
+- It costs no Open-Meteo request: the shadow runs on the rain production already fetched.
+- No United Utilities exception is built in (decision 1 above).
+
 ### What was not done
 
 - The shadow log (`forecast_overflows`, #262) was not downloaded or read. #262's window, read date and conditions,
