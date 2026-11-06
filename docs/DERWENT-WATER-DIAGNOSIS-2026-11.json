@@ -1,0 +1,884 @@
+{
+ "plan": "docs/DERWENT-WATER-DIAGNOSIS-2026-11.md",
+ "plan_commit": "4489eedc",
+ "inputs_sha256": {
+  "CONCENTRATION-STUDY-2026-11-atlas-rows.csv": "3dad94f4323f6c141872575eb75ec4274ed182291efee3046d51d0502c9fb0ae",
+  "ecoli_evidence.v1.json": "4b706230bb532d61e60d791f8d08b6e4b4ecf0883ffa55026f49ca855b5e302f",
+  "lake_temperature_obs.v1.json": "267d1a53a7e263ae672206324e51f5672096ab8bc154f2812a07e4527c7ce00f",
+  "edm_events.parquet": "4ef2c254706f06ce619371a8e8061c1da2a8b5c6f2a39e9b4f5c791c18f31983"
+ },
+ "edm_years": [
+  2023,
+  2024,
+  2025
+ ],
+ "upstream": {
+  "ukd1101-45800": [
+   "UUP00823",
+   "UUP01690",
+   "UUP01875"
+  ],
+  "ukd1230-45725": [
+   "UUP01954",
+   "UUP00534"
+  ],
+  "ukd1230-45750": [
+   "UUP00534",
+   "UUP01954"
+  ],
+  "ukd1230-45775": [
+   "UUP00534",
+   "UUP01954"
+  ],
+  "ukd1203-45625": [
+   "UUP00804",
+   "UUP01370",
+   "UUP00919",
+   "UUP00114",
+   "UUP00702",
+   "UUP00829"
+  ],
+  "ukd1203-45650": [
+   "UUP00804",
+   "UUP00114",
+   "UUP00702",
+   "UUP00829"
+  ],
+  "ukd1203-45675": [
+   "UUP00804",
+   "UUP00114",
+   "UUP00702",
+   "UUP00829"
+  ],
+  "ukd1203-45700": [
+   "UUP00804",
+   "UUP01370",
+   "UUP00919",
+   "UUP00114",
+   "UUP00702",
+   "UUP00829"
+  ]
+ },
+ "rho": {
+  "Coniston Water": {
+   "1d": {
+    "rho": 0.528,
+    "ci95": [
+     0.169,
+     0.691
+    ],
+    "n": 120,
+    "blocks": 10
+   },
+   "3d": {
+    "rho": 0.484,
+    "ci95": [
+     0.194,
+     0.632
+    ],
+    "n": 120,
+    "blocks": 10
+   },
+   "7d": {
+    "rho": 0.475,
+    "ci95": [
+     0.269,
+     0.622
+    ],
+    "n": 120,
+    "blocks": 10
+   },
+   "30d": {
+    "rho": 0.332,
+    "ci95": [
+     0.082,
+     0.553
+    ],
+    "n": 120,
+    "blocks": 10
+   },
+   "60d": {
+    "rho": 0.076,
+    "ci95": [
+     -0.258,
+     0.418
+    ],
+    "n": 120,
+    "blocks": 10
+   },
+   "samples": 120,
+   "over_900": 3
+  },
+  "Derwent Water": {
+   "1d": {
+    "rho": 0.01,
+    "ci95": [
+     -0.326,
+     0.357
+    ],
+    "n": 40,
+    "blocks": 10
+   },
+   "3d": {
+    "rho": 0.08,
+    "ci95": [
+     -0.329,
+     0.444
+    ],
+    "n": 40,
+    "blocks": 10
+   },
+   "7d": {
+    "rho": 0.198,
+    "ci95": [
+     -0.227,
+     0.515
+    ],
+    "n": 40,
+    "blocks": 10
+   },
+   "30d": {
+    "rho": 0.276,
+    "ci95": [
+     -0.189,
+     0.583
+    ],
+    "n": 40,
+    "blocks": 10
+   },
+   "60d": {
+    "rho": 0.167,
+    "ci95": [
+     -0.304,
+     0.531
+    ],
+    "n": 40,
+    "blocks": 10
+   },
+   "samples": 40,
+   "over_900": 9
+  },
+  "Windermere": {
+   "1d": {
+    "rho": 0.298,
+    "ci95": [
+     -0.052,
+     0.564
+    ],
+    "n": 160,
+    "blocks": 10
+   },
+   "3d": {
+    "rho": 0.3,
+    "ci95": [
+     0.009,
+     0.545
+    ],
+    "n": 160,
+    "blocks": 10
+   },
+   "7d": {
+    "rho": 0.244,
+    "ci95": [
+     -0.071,
+     0.511
+    ],
+    "n": 160,
+    "blocks": 10
+   },
+   "30d": {
+    "rho": 0.072,
+    "ci95": [
+     -0.173,
+     0.315
+    ],
+    "n": 160,
+    "blocks": 10
+   },
+   "60d": {
+    "rho": -0.04,
+    "ci95": [
+     -0.286,
+     0.249
+    ],
+    "n": 160,
+    "blocks": 10
+   },
+   "samples": 160,
+   "over_900": 0
+  }
+ },
+ "dry_day_over_900": [
+  {
+   "date": "2025-08-22",
+   "ecoli": 1300,
+   "spill_h_7d": 0.0,
+   "spill_h_30d": 2.81,
+   "days_since_spill": 18.07
+  },
+  {
+   "date": "2025-08-14",
+   "ecoli": 1000,
+   "spill_h_7d": 0.0,
+   "spill_h_30d": 7.69,
+   "days_since_spill": 10.06
+  },
+  {
+   "date": "2025-07-09",
+   "ecoli": 1200,
+   "spill_h_7d": 0.75,
+   "spill_h_30d": 14.41,
+   "days_since_spill": 4.7
+  },
+  {
+   "date": "2025-06-30",
+   "ecoli": 1000,
+   "spill_h_7d": 0.0,
+   "spill_h_30d": 28.94,
+   "days_since_spill": 7.88
+  }
+ ],
+ "dry_day_over_900_with_spill_7d": 1,
+ "derwent_samples_2024_25": [
+  {
+   "t": "2025-09-17 12:08",
+   "ecoli": 360,
+   "rain_48h": 26.3,
+   "risk_lead0": 0.081,
+   "spill_h_1d": 0.0,
+   "spill_h_3d": 57.337,
+   "spill_h_7d": 59.134,
+   "spill_h_30d": 61.089,
+   "spill_h_60d": 63.895,
+   "days_since_spill": 1.0
+  },
+  {
+   "t": "2025-09-10 10:55",
+   "ecoli": 170,
+   "rain_48h": 1.4,
+   "risk_lead0": 0.012,
+   "spill_h_1d": 0.0,
+   "spill_h_3d": 0.0,
+   "spill_h_7d": 0.0,
+   "spill_h_30d": 1.955,
+   "spill_h_60d": 11.161,
+   "days_since_spill": 8.49
+  },
+  {
+   "t": "2025-09-03 11:37",
+   "ecoli": 7500,
+   "rain_48h": 7.4,
+   "risk_lead0": 0.038,
+   "spill_h_1d": 0.0,
+   "spill_h_3d": 0.878,
+   "spill_h_7d": 1.955,
+   "spill_h_30d": 1.955,
+   "spill_h_60d": 11.161,
+   "days_since_spill": 1.52
+  },
+  {
+   "t": "2025-08-28 09:05",
+   "ecoli": 960,
+   "rain_48h": 6.9,
+   "risk_lead0": 0.041,
+   "spill_h_1d": 0.0,
+   "spill_h_3d": 0.0,
+   "spill_h_7d": 0.0,
+   "spill_h_30d": 2.806,
+   "spill_h_60d": 9.953,
+   "days_since_spill": 23.95
+  },
+  {
+   "t": "2025-08-22 12:00",
+   "ecoli": 1300,
+   "rain_48h": 0.3,
+   "risk_lead0": 0.0,
+   "spill_h_1d": 0.0,
+   "spill_h_3d": 0.0,
+   "spill_h_7d": 0.0,
+   "spill_h_30d": 2.806,
+   "spill_h_60d": 9.953,
+   "days_since_spill": 18.07
+  },
+  {
+   "t": "2025-08-14 11:43",
+   "ecoli": 1000,
+   "rain_48h": 0.1,
+   "risk_lead0": 0.0,
+   "spill_h_1d": 0.0,
+   "spill_h_3d": 0.0,
+   "spill_h_7d": 0.0,
+   "spill_h_30d": 7.689,
+   "spill_h_60d": 10.939,
+   "days_since_spill": 10.06
+  },
+  {
+   "t": "2025-08-03 09:55",
+   "ecoli": 410,
+   "rain_48h": 8.7,
+   "risk_lead0": 0.002,
+   "spill_h_1d": 0.0,
+   "spill_h_3d": 0.0,
+   "spill_h_7d": 0.0,
+   "spill_h_30d": 7.147,
+   "spill_h_60d": 20.811,
+   "days_since_spill": 18.62
+  },
+  {
+   "t": "2025-07-30 11:37",
+   "ecoli": 1300,
+   "rain_48h": 6.5,
+   "risk_lead0": 0.004,
+   "spill_h_1d": 0.0,
+   "spill_h_3d": 0.0,
+   "spill_h_7d": 0.0,
+   "spill_h_30d": 7.147,
+   "spill_h_60d": 36.092,
+   "days_since_spill": 14.69
+  },
+  {
+   "t": "2025-07-24 12:55",
+   "ecoli": 480,
+   "rain_48h": 1.5,
+   "risk_lead0": 0.001,
+   "spill_h_1d": 0.0,
+   "spill_h_3d": 0.0,
+   "spill_h_7d": 0.0,
+   "spill_h_30d": 7.147,
+   "spill_h_60d": 36.758,
+   "days_since_spill": 8.75
+  },
+  {
+   "t": "2025-07-17 10:48",
+   "ecoli": 360,
+   "rain_48h": 18.5,
+   "risk_lead0": 0.01,
+   "spill_h_1d": 0.0,
+   "spill_h_3d": 6.4,
+   "spill_h_7d": 6.4,
+   "spill_h_30d": 8.133,
+   "spill_h_60d": 39.092,
+   "days_since_spill": 1.66
+  },
+  {
+   "t": "2025-07-09 10:57",
+   "ecoli": 1200,
+   "rain_48h": 4.6,
+   "risk_lead0": 0.001,
+   "spill_h_1d": 0.0,
+   "spill_h_3d": 0.0,
+   "spill_h_7d": 0.747,
+   "spill_h_30d": 14.411,
+   "spill_h_60d": 32.692,
+   "days_since_spill": 4.7
+  },
+  {
+   "t": "2025-06-30 11:53",
+   "ecoli": 1000,
+   "rain_48h": 2.4,
+   "risk_lead0": 0.001,
+   "spill_h_1d": 0.0,
+   "spill_h_3d": 0.0,
+   "spill_h_7d": 0.0,
+   "spill_h_30d": 28.944,
+   "spill_h_60d": 31.944,
+   "days_since_spill": 7.88
+  },
+  {
+   "t": "2025-06-25 09:46",
+   "ecoli": 230,
+   "rain_48h": 11.1,
+   "risk_lead0": 0.021,
+   "spill_h_1d": 0.0,
+   "spill_h_3d": 0.567,
+   "spill_h_7d": 0.986,
+   "spill_h_30d": 29.344,
+   "spill_h_60d": 31.944,
+   "days_since_spill": 2.79
+  },
+  {
+   "t": "2025-06-15 09:52",
+   "ecoli": 790,
+   "rain_48h": 33.4,
+   "risk_lead0": 0.063,
+   "spill_h_1d": 6.4,
+   "spill_h_3d": 12.678,
+   "spill_h_7d": 12.678,
+   "spill_h_30d": 30.958,
+   "spill_h_60d": 30.958,
+   "days_since_spill": 0.73
+  },
+  {
+   "t": "2025-06-10 09:15",
+   "ecoli": 160,
+   "rain_48h": 20.5,
+   "risk_lead0": 0.076,
+   "spill_h_1d": 0.0,
+   "spill_h_3d": 0.0,
+   "spill_h_7d": 0.0,
+   "spill_h_30d": 18.28,
+   "spill_h_60d": 18.28,
+   "days_since_spill": 7.03
+  },
+  {
+   "t": "2025-06-06 11:40",
+   "ecoli": 260,
+   "rain_48h": 10.5,
+   "risk_lead0": 0.015,
+   "spill_h_1d": 0.0,
+   "spill_h_3d": 0.0,
+   "spill_h_7d": 15.28,
+   "spill_h_30d": 18.28,
+   "spill_h_60d": 18.28,
+   "days_since_spill": 3.13
+  },
+  {
+   "t": "2025-06-03 10:35",
+   "ecoli": 4200,
+   "rain_48h": 23.9,
+   "risk_lead0": 0.01,
+   "spill_h_1d": 15.28,
+   "spill_h_3d": 15.28,
+   "spill_h_7d": 15.414,
+   "spill_h_30d": 18.28,
+   "spill_h_60d": 18.28,
+   "days_since_spill": 0.09
+  },
+  {
+   "t": "2025-06-02 12:21",
+   "ecoli": 91,
+   "rain_48h": 6.6,
+   "risk_lead0": 0.031,
+   "spill_h_1d": 0.0,
+   "spill_h_3d": 0.0,
+   "spill_h_7d": 0.4,
+   "spill_h_30d": 3.0,
+   "spill_h_60d": 3.0,
+   "days_since_spill": 4.18
+  },
+  {
+   "t": "2025-05-21 09:39",
+   "ecoli": 73,
+   "rain_48h": 3.9,
+   "risk_lead0": 0.002,
+   "spill_h_1d": 0.5,
+   "spill_h_3d": 0.5,
+   "spill_h_7d": 0.5,
+   "spill_h_30d": 0.5,
+   "spill_h_60d": 0.5,
+   "days_since_spill": 0.74
+  },
+  {
+   "t": "2025-05-06 10:02",
+   "ecoli": 45,
+   "rain_48h": 0.2,
+   "risk_lead0": 0.0,
+   "spill_h_1d": 0.0,
+   "spill_h_3d": 0.0,
+   "spill_h_7d": 0.0,
+   "spill_h_30d": 0.0,
+   "spill_h_60d": 0.0,
+   "days_since_spill": 71.58
+  },
+  {
+   "t": "2024-09-05 14:06",
+   "ecoli": 45,
+   "rain_48h": 9.8,
+   "risk_lead0": 0.004,
+   "spill_h_1d": 0.0,
+   "spill_h_3d": 0.0,
+   "spill_h_7d": 0.0,
+   "spill_h_30d": 203.754,
+   "spill_h_60d": 218.922,
+   "days_since_spill": 7.87
+  },
+  {
+   "t": "2024-08-28 09:56",
+   "ecoli": 55,
+   "rain_48h": 23.5,
+   "risk_lead0": 0.076,
+   "spill_h_1d": 44.46,
+   "spill_h_3d": 79.347,
+   "spill_h_7d": 172.721,
+   "spill_h_30d": 202.896,
+   "spill_h_60d": 210.298,
+   "days_since_spill": 0.0
+  },
+  {
+   "t": "2024-08-22 10:02",
+   "ecoli": 470,
+   "rain_48h": 38.0,
+   "risk_lead0": 0.055,
+   "spill_h_1d": 24.646,
+   "spill_h_3d": 27.748,
+   "spill_h_7d": 34.856,
+   "spill_h_30d": 55.286,
+   "spill_h_60d": 62.223,
+   "days_since_spill": 0.0
+  },
+  {
+   "t": "2024-08-18 11:00",
+   "ecoli": 140,
+   "rain_48h": 5.8,
+   "risk_lead0": 0.001,
+   "spill_h_1d": 0.0,
+   "spill_h_3d": 5.156,
+   "spill_h_7d": 19.307,
+   "spill_h_30d": 27.734,
+   "spill_h_60d": 34.475,
+   "days_since_spill": 2.83
+  },
+  {
+   "t": "2024-08-12 11:50",
+   "ecoli": 300,
+   "rain_48h": 0.6,
+   "risk_lead0": 0.001,
+   "spill_h_1d": 0.0,
+   "spill_h_3d": 0.0,
+   "spill_h_7d": 7.766,
+   "spill_h_30d": 8.428,
+   "spill_h_60d": 15.169,
+   "days_since_spill": 6.56
+  },
+  {
+   "t": "2024-08-09 11:10",
+   "ecoli": 1400,
+   "rain_48h": 20.0,
+   "risk_lead0": 0.013,
+   "spill_h_1d": 0.0,
+   "spill_h_3d": 0.0,
+   "spill_h_7d": 7.766,
+   "spill_h_30d": 14.879,
+   "spill_h_60d": 15.169,
+   "days_since_spill": 3.53
+  },
+  {
+   "t": "2024-08-02 12:15",
+   "ecoli": 220,
+   "rain_48h": 0.5,
+   "risk_lead0": 0.002,
+   "spill_h_1d": 0.0,
+   "spill_h_3d": 0.0,
+   "spill_h_7d": 0.465,
+   "spill_h_30d": 7.402,
+   "spill_h_60d": 7.402,
+   "days_since_spill": 6.21
+  },
+  {
+   "t": "2024-07-23 09:00",
+   "ecoli": 160,
+   "rain_48h": 7.7,
+   "risk_lead0": 0.013,
+   "spill_h_1d": 0.0,
+   "spill_h_3d": 0.196,
+   "spill_h_7d": 0.196,
+   "spill_h_30d": 6.937,
+   "spill_h_60d": 6.937,
+   "days_since_spill": 2.63
+  },
+  {
+   "t": "2024-07-16 11:36",
+   "ecoli": 270,
+   "rain_48h": 6.6,
+   "risk_lead0": 0.014,
+   "spill_h_1d": 0.0,
+   "spill_h_3d": 0.0,
+   "spill_h_7d": 6.741,
+   "spill_h_30d": 6.741,
+   "spill_h_60d": 7.491,
+   "days_since_spill": 5.68
+  },
+  {
+   "t": "2024-07-11 13:40",
+   "ecoli": 110,
+   "rain_48h": 30.9,
+   "risk_lead0": 0.037,
+   "spill_h_1d": 4.576,
+   "spill_h_3d": 6.741,
+   "spill_h_7d": 6.741,
+   "spill_h_30d": 6.741,
+   "spill_h_60d": 8.087,
+   "days_since_spill": 0.77
+  },
+  {
+   "t": "2024-07-01 12:15",
+   "ecoli": 160,
+   "rain_48h": 7.0,
+   "risk_lead0": 0.003,
+   "spill_h_1d": 0.0,
+   "spill_h_3d": 0.0,
+   "spill_h_7d": 0.0,
+   "spill_h_30d": 0.0,
+   "spill_h_60d": 1.346,
+   "days_since_spill": 39.44
+  },
+  {
+   "t": "2024-06-25 11:30",
+   "ecoli": 140,
+   "rain_48h": 1.7,
+   "risk_lead0": 0.0,
+   "spill_h_1d": 0.0,
+   "spill_h_3d": 0.0,
+   "spill_h_7d": 0.0,
+   "spill_h_30d": 0.0,
+   "spill_h_60d": 2.262,
+   "days_since_spill": 33.41
+  },
+  {
+   "t": "2024-06-20 10:20",
+   "ecoli": 36,
+   "rain_48h": 3.3,
+   "risk_lead0": 0.001,
+   "spill_h_1d": 0.0,
+   "spill_h_3d": 0.0,
+   "spill_h_7d": 0.0,
+   "spill_h_30d": 0.75,
+   "spill_h_60d": 2.262,
+   "days_since_spill": 28.36
+  },
+  {
+   "t": "2024-06-16 09:25",
+   "ecoli": 82,
+   "rain_48h": 15.2,
+   "risk_lead0": 0.048,
+   "spill_h_1d": 0.0,
+   "spill_h_3d": 0.0,
+   "spill_h_7d": 0.0,
+   "spill_h_30d": 0.75,
+   "spill_h_60d": 2.262,
+   "days_since_spill": 24.32
+  },
+  {
+   "t": "2024-06-10 09:30",
+   "ecoli": 110,
+   "rain_48h": 10.1,
+   "risk_lead0": 0.041,
+   "spill_h_1d": 0.0,
+   "spill_h_3d": 0.0,
+   "spill_h_7d": 0.0,
+   "spill_h_30d": 1.346,
+   "spill_h_60d": 16.266,
+   "days_since_spill": 18.32
+  },
+  {
+   "t": "2024-06-03 11:45",
+   "ecoli": 64,
+   "rain_48h": 1.2,
+   "risk_lead0": 0.001,
+   "spill_h_1d": 0.0,
+   "spill_h_3d": 0.0,
+   "spill_h_7d": 0.0,
+   "spill_h_30d": 1.346,
+   "spill_h_60d": 23.647,
+   "days_since_spill": 11.42
+  },
+  {
+   "t": "2024-05-29 12:40",
+   "ecoli": 200,
+   "rain_48h": 9.5,
+   "risk_lead0": 0.024,
+   "spill_h_1d": 0.0,
+   "spill_h_3d": 0.0,
+   "spill_h_7d": 0.75,
+   "spill_h_30d": 1.846,
+   "spill_h_60d": 23.647,
+   "days_since_spill": 6.45
+  },
+  {
+   "t": "2024-05-21 10:50",
+   "ecoli": 18,
+   "rain_48h": 9.0,
+   "risk_lead0": 0.002,
+   "spill_h_1d": 0.0,
+   "spill_h_3d": 0.0,
+   "spill_h_7d": 0.0,
+   "spill_h_30d": 1.512,
+   "spill_h_60d": 22.897,
+   "days_since_spill": 8.71
+  },
+  {
+   "t": "2024-05-15 15:00",
+   "ecoli": 520,
+   "rain_48h": 15.8,
+   "risk_lead0": 0.055,
+   "spill_h_1d": 0.0,
+   "spill_h_3d": 0.596,
+   "spill_h_7d": 0.596,
+   "spill_h_30d": 1.512,
+   "spill_h_60d": 26.004,
+   "days_since_spill": 2.89
+  },
+  {
+   "t": "2024-05-02 10:01",
+   "ecoli": 10,
+   "rain_48h": 1.5,
+   "risk_lead0": 0.003,
+   "spill_h_1d": 0.0,
+   "spill_h_3d": 0.5,
+   "spill_h_7d": 0.916,
+   "spill_h_30d": 22.301,
+   "spill_h_60d": 98.814,
+   "days_since_spill": 2.57
+  }
+ ],
+ "season_spill_hours_may_sep": {
+  "Derwent Water": {
+   "2024": 220.3,
+   "2025": 171.7,
+   "overflows": [
+    "UUP00823",
+    "UUP01690",
+    "UUP01875"
+   ]
+  },
+  "Coniston Water": {
+   "2024": 605.7,
+   "2025": 604.8,
+   "overflows": [
+    "UUP00534",
+    "UUP01954"
+   ]
+  },
+  "Windermere": {
+   "2024": 1057.9,
+   "2025": 1260.8,
+   "overflows": [
+    "UUP00114",
+    "UUP00702",
+    "UUP00804",
+    "UUP00829",
+    "UUP00919",
+    "UUP01370"
+   ]
+  }
+ },
+ "derwent_overflows_may_sep": {
+  "UUP00823": {
+   "2024": 110.1,
+   "2025": 115.2,
+   "name": "GRANGE BRIDGE PS GNGBO ALL0062"
+  },
+  "UUP01690": {
+   "2024": 22.0,
+   "2025": 8.2,
+   "name": "ROSTHWAITE WWTW (ROSTH)"
+  },
+  "UUP01875": {
+   "2024": 88.2,
+   "2025": 48.3,
+   "name": "STONETHWAITE WWTW"
+  }
+ },
+ "temperature": {
+  "matched": 59,
+  "of": 59,
+  "rho_temp": {
+   "rho": 0.369,
+   "ci95": [
+    0.154,
+    0.558
+   ],
+   "n": 59,
+   "blocks": 15
+  },
+  "rho_day_of_season": {
+   "rho": 0.359,
+   "ci95": [
+    0.031,
+    0.593
+   ],
+   "n": 59,
+   "blocks": 15
+  },
+  "monthly_median_by_year": {
+   "2024": {
+    "5": 16.9,
+    "6": 17.1,
+    "7": 17.5,
+    "8": 16.9,
+    "9": 16.0
+   },
+   "2025": {
+    "5": 16.4,
+    "6": 16.4,
+    "7": 20.0,
+    "8": 18.5,
+    "9": 16.2
+   },
+   "2026": {
+    "5": 15.1,
+    "6": 17.5,
+    "7": 20.4,
+    "8": 17.8,
+    "9": 17.2
+   }
+  },
+  "median_temp_over_900_vs_rest": [
+   18.9,
+   17.3
+  ]
+ },
+ "enterococci_over_900": [
+  {
+   "t": "2026-07-23",
+   "ecoli": 1500,
+   "enterococci": 2100
+  },
+  {
+   "t": "2026-07-14",
+   "ecoli": 1300,
+   "enterococci": 380
+  },
+  {
+   "t": "2026-06-02",
+   "ecoli": 1100,
+   "enterococci": 2000
+  },
+  {
+   "t": "2025-09-03",
+   "ecoli": 7500,
+   "enterococci": 9500
+  },
+  {
+   "t": "2025-08-28",
+   "ecoli": 960,
+   "enterococci": 5600
+  },
+  {
+   "t": "2025-08-22",
+   "ecoli": 1300,
+   "enterococci": 2400
+  },
+  {
+   "t": "2025-08-14",
+   "ecoli": 1000,
+   "enterococci": 790
+  },
+  {
+   "t": "2025-07-30",
+   "ecoli": 1300,
+   "enterococci": 750
+  },
+  {
+   "t": "2025-07-09",
+   "ecoli": 1200,
+   "enterococci": 140
+  },
+  {
+   "t": "2025-06-30",
+   "ecoli": 1000,
+   "enterococci": 280
+  },
+  {
+   "t": "2025-06-03",
+   "ecoli": 4200,
+   "enterococci": 2800
+  },
+  {
+   "t": "2024-08-09",
+   "ecoli": 1400,
+   "enterococci": 1800
+  }
+ ],
+ "enterococci_rest_median": 91.0
+}
