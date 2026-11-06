@@ -1,0 +1,362 @@
+{
+ "schema": "swimsignal.lake-line-2012-22-check",
+ "version": "1.0.0",
+ "protocol": "docs/LAKE-LINE-2012-22-CHECK-2026-11.md",
+ "protocol_commit": "96392731",
+ "label": "out-of-time development comparison on previously examined outcomes",
+ "correction": "6 Nov 2026: rows rebuilt with #584's full data tree (calibrated exposure); the first run's rows lacked lead_calibration.json. Same protocol; both sets kept.",
+ "seed": 20261106,
+ "draws": 2000,
+ "inputs_sha256": {
+  "lake_line_frozen.v1.json": "83a3a8d0929afb1ff178cc064e4fb8b4ec0af64810b5a2a1435108e3594a1c23",
+  "lake_line_frozen.v2.json": "d0cb162044a05504524f24eb9b3bed6b8afb5bcdef7e42c5e1963c94f1ad8f93",
+  "ecoli_lake_range.json": "5566b12e5fc6acc1686f2aeb201ec2b9f8cd7e38a39f4352de314c5e32c3fcca",
+  "ecoli_model.json": "7daf7c8e407a82ba1344ab1b925092953791c138d690d5dc18093221d49ca09c",
+  "ecoli_evidence.v1.json": "4b706230bb532d61e60d791f8d08b6e4b4ecf0883ffa55026f49ca855b5e302f"
+ },
+ "rows_sha256": "153f8fe87139ed29937b407bf98ef3cb9574dfaab2017468b5d2a7a2ecaaa38f",
+ "rows": 962,
+ "sites": 5,
+ "clusters": 52,
+ "over_900": {
+  "results": 9,
+  "note": "too few to judge a line chance; counts only, no score"
+ },
+ "over_500": {
+  "brier": {
+   "plain": 0.02834,
+   "B": 0.02821,
+   "plain2": 0.0285,
+   "B2": 0.02842,
+   "range": 0.02823,
+   "usual": 0.02846,
+   "own": 0.0289
+  },
+  "skill_vs_usual": {
+   "plain": 0.0042,
+   "B": 0.0088,
+   "plain2": -0.0014,
+   "B2": 0.0014,
+   "range": 0.0081,
+   "usual": 0.0,
+   "own": -0.0155
+  },
+  "auc": {
+   "plain": 0.665,
+   "B": 0.68,
+   "plain2": 0.656,
+   "B2": 0.661,
+   "range": 0.685,
+   "usual": 0.5,
+   "own": 0.471
+  },
+  "note": "28 results over 500 at five sites on two water bodies: weak."
+ },
+ "below_limit": 477,
+ "mean_site_rho": {
+  "plain_med": 0.2789,
+  "B_med": 0.3077,
+  "plain2_med": 0.2812,
+  "B2_med": 0.3048,
+  "range_med": 0.2862,
+  "production": 0.1316,
+  "deployed": 0.102
+ },
+ "site_rho": {
+  "plain_med": {
+   "ukd1203-45625": 0.331,
+   "ukd1203-45650": 0.333,
+   "ukd1203-45675": 0.418,
+   "ukd1203-45700": 0.137,
+   "ukj2310-11945": 0.176
+  },
+  "B_med": {
+   "ukd1203-45625": 0.334,
+   "ukd1203-45650": 0.341,
+   "ukd1203-45675": 0.399,
+   "ukd1203-45700": 0.164,
+   "ukj2310-11945": 0.3
+  },
+  "plain2_med": {
+   "ukd1203-45625": 0.334,
+   "ukd1203-45650": 0.337,
+   "ukd1203-45675": 0.419,
+   "ukd1203-45700": 0.139,
+   "ukj2310-11945": 0.178
+  },
+  "B2_med": {
+   "ukd1203-45625": 0.339,
+   "ukd1203-45650": 0.344,
+   "ukd1203-45675": 0.401,
+   "ukd1203-45700": 0.137,
+   "ukj2310-11945": 0.303
+  },
+  "range_med": {
+   "ukd1203-45625": 0.342,
+   "ukd1203-45650": 0.35,
+   "ukd1203-45675": 0.435,
+   "ukd1203-45700": 0.136,
+   "ukj2310-11945": 0.168
+  },
+  "production": {
+   "ukd1203-45625": 0.179,
+   "ukd1203-45650": 0.233,
+   "ukd1203-45675": 0.271,
+   "ukd1203-45700": -0.02,
+   "ukj2310-11945": -0.005
+  },
+  "deployed": {
+   "ukd1203-45625": 0.087,
+   "ukd1203-45650": 0.184,
+   "ukd1203-45675": 0.18,
+   "ukd1203-45700": -0.021,
+   "ukj2310-11945": 0.08
+  }
+ },
+ "primary": {
+  "plain_med_minus_production": {
+   "mean": 0.1473,
+   "ci95": [
+    0.0817,
+    0.2103
+   ]
+  },
+  "plain_med_minus_deployed": {
+   "mean": 0.177,
+   "ci95": [
+    0.1042,
+    0.2525
+   ]
+  },
+  "B_med_minus_production": {
+   "mean": 0.176,
+   "ci95": [
+    0.116,
+    0.2372
+   ]
+  },
+  "B_med_minus_deployed": {
+   "mean": 0.2057,
+   "ci95": [
+    0.1446,
+    0.2721
+   ]
+  },
+  "plain2_med_minus_production": {
+   "mean": 0.1496,
+   "ci95": [
+    0.0846,
+    0.2126
+   ]
+  },
+  "plain2_med_minus_deployed": {
+   "mean": 0.1793,
+   "ci95": [
+    0.1077,
+    0.254
+   ]
+  },
+  "B2_med_minus_production": {
+   "mean": 0.1732,
+   "ci95": [
+    0.1183,
+    0.2271
+   ]
+  },
+  "B2_med_minus_deployed": {
+   "mean": 0.2028,
+   "ci95": [
+    0.1444,
+    0.2663
+   ]
+  },
+  "range_med_minus_production": {
+   "mean": 0.1546,
+   "ci95": [
+    0.094,
+    0.2161
+   ]
+  },
+  "range_med_minus_deployed": {
+   "mean": 0.1843,
+   "ci95": [
+    0.1131,
+    0.2608
+   ]
+  },
+  "B_med_minus_plain_med": {
+   "mean": 0.0287,
+   "ci95": [
+    -0.007,
+    0.0652
+   ]
+  }
+ },
+ "by_season": {
+  "2012": {
+   "rows": 84,
+   "over_500": 10,
+   "plain_med": 0.381,
+   "B_med": 0.414,
+   "plain2_med": 0.384,
+   "B2_med": 0.399,
+   "range_med": 0.395,
+   "production": 0.094,
+   "deployed": 0.011
+  },
+  "2013": {
+   "rows": 83,
+   "over_500": 7,
+   "plain_med": 0.06,
+   "B_med": 0.239,
+   "plain2_med": 0.062,
+   "B2_med": 0.223,
+   "range_med": 0.036,
+   "production": -0.037,
+   "deployed": 0.053
+  },
+  "2014": {
+   "rows": 80,
+   "over_500": 3,
+   "plain_med": 0.038,
+   "B_med": 0.119,
+   "plain2_med": 0.034,
+   "B2_med": 0.117,
+   "range_med": 0.032,
+   "production": 0.033,
+   "deployed": 0.09
+  },
+  "2015": {
+   "rows": 100,
+   "over_500": 0,
+   "plain_med": 0.115,
+   "B_med": 0.215,
+   "plain2_med": 0.122,
+   "B2_med": 0.214,
+   "range_med": 0.197,
+   "production": 0.205,
+   "deployed": 0.169
+  },
+  "2016": {
+   "rows": 100,
+   "over_500": 2,
+   "plain_med": 0.344,
+   "B_med": 0.329,
+   "plain2_med": 0.345,
+   "B2_med": 0.329,
+   "range_med": 0.36,
+   "production": 0.195,
+   "deployed": 0.081
+  },
+  "2017": {
+   "rows": 100,
+   "over_500": 1,
+   "plain_med": 0.261,
+   "B_med": 0.319,
+   "plain2_med": 0.263,
+   "B2_med": 0.313,
+   "range_med": 0.236,
+   "production": 0.314,
+   "deployed": 0.299
+  },
+  "2018": {
+   "rows": 100,
+   "over_500": 0,
+   "plain_med": 0.325,
+   "B_med": 0.406,
+   "plain2_med": 0.333,
+   "B2_med": 0.351,
+   "range_med": 0.344,
+   "production": 0.072,
+   "deployed": 0.029
+  },
+  "2019": {
+   "rows": 100,
+   "over_500": 0,
+   "plain_med": 0.48,
+   "B_med": 0.466,
+   "plain2_med": 0.483,
+   "B2_med": 0.485,
+   "range_med": 0.476,
+   "production": 0.118,
+   "deployed": 0.102
+  },
+  "2020": {
+   "rows": 15,
+   "over_500": 0,
+   "plain_med": NaN,
+   "B_med": NaN,
+   "plain2_med": NaN,
+   "B2_med": NaN,
+   "range_med": NaN,
+   "production": NaN,
+   "deployed": NaN
+  },
+  "2021": {
+   "rows": 100,
+   "over_500": 2,
+   "plain_med": 0.32,
+   "B_med": 0.29,
+   "plain2_med": 0.323,
+   "B2_med": 0.29,
+   "range_med": 0.326,
+   "production": 0.028,
+   "deployed": -0.015
+  },
+  "2022": {
+   "rows": 100,
+   "over_500": 3,
+   "plain_med": 0.28,
+   "B_med": 0.253,
+   "plain2_med": 0.294,
+   "B2_med": 0.307,
+   "range_med": 0.305,
+   "production": 0.295,
+   "deployed": 0.232
+  }
+ },
+ "logscore": {
+  "plain": -0.9328,
+  "B": -0.9354,
+  "plain2": -0.9404,
+  "B2": -0.9495,
+  "range": -0.9048
+ },
+ "logscore_diff": {
+  "plain_minus_range": {
+   "mean": -0.0281,
+   "ci95": [
+    -0.0461,
+    -0.0091
+   ]
+  },
+  "B_minus_range": {
+   "mean": -0.0306,
+   "ci95": [
+    -0.0527,
+    -0.0061
+   ]
+  },
+  "B_minus_plain": {
+   "mean": -0.0025,
+   "ci95": [
+    -0.0159,
+    0.0109
+   ]
+  }
+ },
+ "central80": {
+  "plain": 0.8015,
+  "B": 0.7952,
+  "plain2": 0.7807,
+  "B2": 0.7744,
+  "range": 0.79
+ },
+ "holds": {
+  "plain_med": true,
+  "B_med": true,
+  "plain2_med": true,
+  "B2_med": true,
+  "range_med": true
+ }
+}

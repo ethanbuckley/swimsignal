@@ -330,7 +330,9 @@ Run by `LAKE_LINE_OUT=<scratch> uv run python scripts/lake_line_candidates.py co
   slope spread by a quarter: B's lake-specific wet response is fragile**, consistent with its failure at unseen lakes.
 - Shared terms move little: the standardised exposure coefficient rises by 0.022 (a) and 0.028 (b) from 0.167; rain
   over 48 hours falls by 0.019 in both; the lake noise level moves from 0.713 to 0.696 and 0.703.
-- **Reported only, no new test:** v2 on the committed 2012-22 rows gives mean within-site rho 0.280 (plain) and 0.304 (B),
+- **Reported only, no new test** *(corrected 6 Nov: these figures used 2012-22 rows with uncalibrated exposure; on the
+  corrected rows v2 gives 0.281 and 0.305 against v1's 0.279 and 0.308, so the conclusion stands; see the correction in
+  `LAKE-LINE-2012-22-CHECK-2026-11.md`)*: v2 on the committed 2012-22 rows gives mean within-site rho 0.280 (plain) and 0.304 (B),
   against v1's 0.279 and 0.305, so the ordering result does not depend on Colwick's rows. v2's log scores there are
   slightly lower (−0.941 and −0.951 against −0.933 and −0.937).
 
