@@ -201,7 +201,9 @@ function spotAlert({ push = false, email = false, can = 'none', on = null, off =
   }
   if (down) return r('down', 'The alert service did not answer, so alerts could not be checked. Try again later.', { link: true });
   if (push && can === 'yes') return on === null ? r('checking', '') : r('off', 'Alerts are off.', { link: true });
-  if (push && can === 'blocked') return r('blocked', 'Notifications are blocked for this site in your browser settings.', { link: email });
+  // Blocked in the browser's settings: the Alerts tile says so, once (index.html, bindAlerts). Until 6 Nov 2026 every
+  // saved card said it too, the same sentence under each, and the Alerts tile below them a further time.
+  if (push && can === 'blocked') return r('blocked', '');
   if (push && !email) return r('unavailable', 'Notifications cannot be had in this browser.', { link: true });
   return r('email', 'Notifications cannot be had in this browser. Alerts by email cover the spots saved when you sign up.', { link: true });
 }

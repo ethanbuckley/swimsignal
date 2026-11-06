@@ -74,7 +74,7 @@ test('evidence distinguishes missing feeds, dated records, and out-of-season mod
 test('a spot without a forecast is described in the headline’s words', () => {
   const D = ['2026-09-30', '2026-10-01'];
   const lake = {days:[], error:'An isolated lake with no river connection', classification:{class:'excellent', year:2025}};
-  assert.equal(compareNow(lake), 'No monitored overflow found upstream.');
+  assert.equal(compareNow(lake), 'No monitored overflow found upstream, so no spills to report. Other pollution sources may still affect this water.');
   assert.deepEqual(compareDays(lake, D), {same: true, days: D.map(date => ({date, level: 'no river connection', words: 'No monitored overflow found upstream'}))});
   const away = {days:[], error:'No river or lake within 1.5 km of this point.'};
   assert.equal(compareNow(away), 'Not covered by the forecast.');
@@ -532,10 +532,10 @@ test('the comparison has a column a spot, the five days first with the day picke
   assert.match(html, /<span>Distance<span class="lab-note">In a straight line, not by road<\/span><\/span><\/th><\/tr><tr><td headers="cmp-dist cmp-s0">a<\/td>/);
   // The five days, each cell naming its day; the day picked (tomorrow here) shaded.
   assert.deepEqual([...html.matchAll(/<tr( class="on" aria-current="true")?><td class="d0" headers="cmp-days cmp-s0"><span class="day">([^<]+)<\/span>/g)].map(m => [m[2], !!m[1]]),
-    [['Today', false], ['Tomorrow', true], ['Fri 2 Oct', false], ['Sat 3 Oct', false], ['Sun 4 Oct', false]]);
-  assert.match(html, /<span class="day">Tomorrow<\/span><span class="hl high">High risk: sewage spills<\/span>/);
+    [['Today', false], ['Thu', true], ['Fri', false], ['Sat', false], ['Sun', false]]);   // as the day strip names them (6 Nov 2026)
+  assert.match(html, /<span class="day">Thu<\/span><span class="hl high">High risk: sewage spills<\/span>/);
   // B has no fifth day: it says so, in the muted grey, not "Low risk".
-  assert.match(html, /<td headers="cmp-days cmp-s1"><span class="day">Sun 4 Oct<\/span><span class="hl na">No forecast for this day<\/span><\/td><\/tr>/);
+  assert.match(html, /<td headers="cmp-days cmp-s1"><span class="day">Sun<\/span><span class="hl na">No forecast for this day<\/span><\/td><\/tr>/);
   // The river with nothing upstream: one cell for the five days, in the plain level's words, never "Low risk".
   assert.equal([...html.matchAll(/rowspan="5"/g)].length, 1);
   assert.match(html, /<td class="same" rowspan="5" headers="cmp-days cmp-s2"><span class="hl clear">No monitored overflow found upstream<\/span>\. The same on every day\.<\/td>/);
