@@ -809,6 +809,13 @@
    "branch": "claude/loving-chebyshev-9168ae",
    "branch_exists": true,
    "date": null
+  },
+  "626": {
+   "n": 626,
+   "state": "open",
+   "branch": "claude/priceless-sanderson-55f620",
+   "branch_exists": true,
+   "date": null
   }
  },
  "entries": [
@@ -2826,6 +2833,78 @@
    "prs": [
     623,
     624
+   ]
+  },
+  {
+   "id": "sat-low-signal-chlorophyll",
+   "title": "Satellite lake readings: the low-signal rule against lab chlorophyll",
+   "section": "satellite",
+   "topics": [
+    "lakes",
+    "satellite"
+   ],
+   "project": "SAT-OBS",
+   "verdict": "Exploratory, on the lab chlorophyll test's seen pairs; 206 of 207 scenes read (897 requests, 463.8 MiB, caches unchanged; the one run became two after a dropped connection, with the amendment recorded first). Contract 1.4's rule flags 43 of 206 pairs (21%; deeper lakes 28%, shallow 12%), the flagged readings low at low-chlorophyll lakes. Without them the pooled Spearman is 0.580 against 0.501 (paired difference +0.080, interval −0.023 to +0.176) and the within-lake Spearman 0.395 against 0.292 (+0.102, −0.037 to +0.255): under the pre-stated reading, mixed, not shown. The inner-core reading in place of the core reading changes the pooled Spearman by +0.004.",
+   "scope": "38 EA chlorophyll monitoring points, May to September 2021-2026 scenes within a day of a lab sample; thresholds fixed on bathing-lake scenes before any lab pair was seen with them, but the pairs and lab values were seen in #386. Not a pass of #386 (the four conditions recomputed on the unflagged subset hold as figures, which is description of a post-hoc subset), not an algae, toxin or safety finding. One pair of 207 unread.",
+   "stage": "reference",
+   "stage_note": "Nothing adopted; the display rule, readings and /lakes.html note stay as contract 1.4 wrote them. The 2027 shallow-lake protocol review gets the direction, size and flagged-share expectation to pre-state, and the exclusion as a candidate secondary analysis.",
+   "next": "2027 shallow-lake protocol review before 1 May 2027: pre-state the flag exclusion as a secondary analysis with a margin below +0.08; the inner-core variant need not be carried.",
+   "records": [
+    {
+     "doc": "docs/SATELLITE-LOW-SIGNAL-CHLOROPHYLL-2026-11.md",
+     "quote": "**43 of 206 pairs (20.9%)** would carry the low-signal mark: 19 dark and spread, 21 spread only, 3 dark only."
+    },
+    {
+     "doc": "docs/SATELLITE-LOW-SIGNAL-CHLOROPHYLL-2026-11.md",
+     "quote": "| B − A: the flag's effect, core reading | **+0.080** [−0.023, +0.176] | **+0.102** [−0.037, +0.255] |"
+    },
+    {
+     "doc": "docs/SATELLITE-LOW-SIGNAL-CHLOROPHYLL-2026-11.md",
+     "quote": "beforehand the result is **mixed, not shown**."
+    },
+    {
+     "doc": "docs/SATELLITE-LOW-SIGNAL-CHLOROPHYLL-2026-11.md",
+     "quote": "**This is not a pass.** B is a subset chosen by a rule applied to seen pairs,"
+    }
+   ],
+   "prs": [
+    626
+   ]
+  },
+  {
+   "id": "sat-chl-candidates",
+   "title": "Satellite lake readings: quality-aware chlorophyll candidates against the lab chlorophyll baseline",
+   "section": "satellite",
+   "topics": [
+    "lakes",
+    "satellite"
+   ],
+   "project": "SAT-OBS",
+   "verdict": "Development on seen 2021-2026 pairs, not fresh confirmation. 183 of 207 paired scenes read (803 requests, 418.4 MiB; the fetch ended on a second dropped connection, as pre-stated). Out-of-fold skill gain over #386's baseline on held-out lakes: A, low-signal readings excluded, +0.143 [+0.005, +0.306] at 81% coverage; C, brightness and pixel spread as covariates, +0.137 [+0.034, +0.233]; both keep the direction on held-out seasons and forward years, so both meet the pre-stated bar for a shadow log. B, weighting by a fitted noise model, +0.017 [−0.066, +0.139], is not supported; D, a per-pixel brightness floor, +0.034 [−0.122, +0.178], is inconclusive (its lower end is beyond the −0.05 harm margin). E, a three-day composite, was not tested. The lake's own training mean scores higher than every candidate on held-out seasons and years.",
+   "scope": "38 EA chlorophyll monitoring points, May to September 2021-2026, samples with a usable scene within a day. A was proposed after #626 showed the unflagged subset agreeing better on these same pairs, so its support is not independent of that; C uses brightness partly as a chlorophyll signal. No claim of a chlorophyll measurement, or about algae, toxins or safety; #386's verdict and #626's readout unchanged.",
+   "stage": "development",
+   "stage_note": "Frozen model (B0, A, C) and a versioned shadow log kept off the site built; the weekly pilot and the refresher write it from the first run after the PR merges. Weekly reads at the 38 points in 2027 need the runner the register lists as open.",
+   "next": "Shadow read on 2027 pairs on or after 1 Feb 2028 (not worse: gain lower end above −0.05; better: gain +0.03 with lower end above 0; at least 60 pairs at 10 lakes). Meanwhile a lake-history-plus-satellite candidate on the same holdouts, and a refetch with a pre-stated retry rule to test E.",
+   "records": [
+    {
+     "doc": "docs/SATELLITE-CHL-CANDIDATES-2026-11.md",
+     "quote": "| A | **+0.143 [+0.005, +0.306]** | +0.148 [−0.002, +0.326] | +0.127 [−0.031, +0.299] | yes |"
+    },
+    {
+     "doc": "docs/SATELLITE-CHL-CANDIDATES-2026-11.md",
+     "quote": "| C | **+0.137 [+0.034, +0.233]** | +0.133 [+0.029, +0.227] | +0.096 [−0.102, +0.230] | yes |"
+    },
+    {
+     "doc": "docs/SATELLITE-CHL-CANDIDATES-2026-11.md",
+     "quote": "**candidate E was not tested.**"
+    },
+    {
+     "doc": "docs/SATELLITE-CHL-CANDIDATES-2026-11.md",
+     "quote": "2. **A's support is not independent of #626.**"
+    }
+   ],
+   "prs": [
+    626
    ]
   }
  ]

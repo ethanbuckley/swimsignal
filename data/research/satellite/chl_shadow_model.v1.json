@@ -1,0 +1,45 @@
+{
+ "schema": "swimsignal.lake-chl-shadow-model",
+ "version": "1.0.0",
+ "description": "Frozen research shadow model: coefficients relating a reading to log10 of the EA's acetone-extract chlorophyll result (determinand 7887), fitted on seen 2021-2026 pairs, for prospective comparison only. Not a measurement, not shown on the site, not validated.",
+ "protocol": "docs/SATELLITE-CHL-CANDIDATES-2026-11.md",
+ "fitted_on": {
+  "paired_samples": 183
+ },
+ "values_unit": "log10 of the EA Water Quality Archive result for determinand 7887 (chlorophyll, acetone extract)",
+ "low_signal": {
+  "brightness_below": 0.015,
+  "iqr_at_least": 0.1
+ },
+ "bright_floor": 0.002,
+ "iqr_floor": 0.005,
+ "min_pixels": 9,
+ "reference": 1.017663786037458,
+ "reference_note": "the fallback: the value a sample gets when a model has no reading (the lake-mean reference over the paired rows)",
+ "models": {
+  "B0": {
+   "a": 1.031744175003659,
+   "b": 1.5891403327958997
+  },
+  "A": {
+   "a": 0.8782875433500636,
+   "b": 3.513650075513416
+  },
+  "C": {
+   "beta": [
+    1.0999283717697101,
+    5.796616309978687,
+    0.11228803407566446,
+    -0.7922794405132607,
+    2.5466404288339217
+   ],
+   "terms": [
+    "1",
+    "x",
+    "log10_brightness",
+    "iqr",
+    "x*log10_brightness"
+   ]
+  }
+ }
+}
