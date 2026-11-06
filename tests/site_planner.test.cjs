@@ -120,6 +120,20 @@ test('the comparison says a day, a live status, advice or access is not known, r
   assert.equal(compareAccess({access: {status: 'something new', checked_at: '2026-10-03', url: 'http://not-https.example'}}),
     'Not known whether swimming is allowed at this point. <span class="vt vt-measured">Checked 3 Oct 2026</span>');
   assert.equal(Object.fromEntries(compareRows({days: []}, '2026-09-30').map(r => [r[0], r[2]])).Access, 'A desk check of published sources; signs at the water not inspected');
+  // Then what the spot's guide covers, as the plan's row above the table says it (6 Nov 2026: Grasmere's guide covers
+  // parking, the path and getting in, and its column said "No access information").
+  const guide = {checked: '2026-10-03', facts: [{topic: 'parking'}, {topic: 'toilets'}, {topic: 'entry'}, {topic: 'path'}]};
+  assert.equal(compareAccess({detail_file: 'spot/grasmere.json', detail_loaded: true, guide}),
+    'Its guide covers parking, the path, getting in. <span class="vt vt-measured">Checked 3 Oct 2026</span>');
+  assert.equal(compareAccess({access: {status: 'unconfirmed', checked_at: '2026-10-03'}, guide: {facts: [{topic: 'parking'}]}}),
+    'Permission to swim at this point is not confirmed. <span class="vt vt-measured">Checked 3 Oct 2026</span> Its guide covers parking. <span class="vt vt-none">Not known when it was checked</span>');
+  // Not yet in, or not come: not known, never "No access information".
+  assert.equal(compareAccess({detail_file: 'spot/x.json'}), '<span class="vt vt-none">Loading its guide…</span>');
+  assert.equal(compareAccess({detail_file: 'spot/x.json', detail_missing: true}), '<span class="vt vt-none">Its guide could not be loaded</span>');
+  assert.match(compareAccess({access: {status: 'unconfirmed'}, detail_file: 'spot/x.json'}), /not confirmed\. .*<span class="vt vt-none">Loading its guide…<\/span>$/);
+  // A guide with nothing on getting to the water, or no guide, after the file came: none.
+  assert.equal(compareAccess({detail_file: 'spot/x.json', detail_loaded: true, guide: {facts: [{topic: 'toilets'}]}}), '<span class="vt vt-none">No access information</span>');
+  assert.equal(compareAccess({detail_file: 'spot/x.json', detail_loaded: true}), '<span class="vt vt-none">No access information</span>');
   // Every row of every column says something, and nothing calls a spot safe or the best.
   for (const s of [spot, {days: []}, {days: [], error: 'forecast failed: x'}, {...bw, ...spot, access: {status: 'unconfirmed'}}]) {
     const rows = compareRows(s, '2026-09-30');

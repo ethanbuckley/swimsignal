@@ -4079,6 +4079,17 @@ function drawComparison() {
   box.querySelectorAll('[data-compare-spot]').forEach(a => a.addEventListener('click', e => { if (!plainClick(e)) return; e.preventDefault(); select(a.dataset.compareSpot, true, true, c.day); }));
   box.querySelectorAll('[data-compare-plan]').forEach(b => b.addEventListener('click', () => compareToPlan(DATA.spots.find(s => s.id === b.dataset.comparePlan), c.day)));
   comparePin();
+  // Access names what each spot's guide covers, which is in the spot's own file (experience.js, compareGuide): asked
+  // for here as the plan's options ask (planOptions), then drawn again, where the table scrolled to, unless the
+  // comparison has changed meanwhile. A file that does not come is marked missing, so this asks once.
+  const want = spots.filter(s => typeof spotDetail === 'function' && s.detail_file && !s.detail_loaded && !s.detail_missing);
+  if (want.length) Promise.all(want.map(spotDetail)).then(() => {
+    const drawn = [...box.querySelectorAll('[data-compare-spot]')].map(a => a.dataset.compareSpot).join();
+    if (COMPARING !== c || !box.isConnected || drawn !== ids.join()) return;
+    const left = (box.querySelector('.compare-scroll') || {}).scrollLeft || 0;
+    drawComparison();
+    const sc2 = box.querySelector('.compare-scroll'); if (sc2) sc2.scrollLeft = left;
+  });
 }
 // The pinned names (.compare-pin): on a phone, shown while the table's own heads are above the header and the
 // table is still below it, and moved sideways with the table. One listener for the page's scrolling and the
