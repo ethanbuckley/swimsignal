@@ -227,6 +227,13 @@ def run(root: Path, start: str, end: str, only: list[str] | None, max_requests: 
         rows += [r for r in pmap(one, items) if r is not None]
     f = pd.DataFrame(rows)
     f.to_parquet(root / "features.parquet", index=False)
+    try:   # the research shadow log (docs/SATELLITE-CHL-CANDIDATES-2026-11.md): its own file in the research root
+        from datetime import UTC, datetime
+
+        from lake_chl_shadow import log_run
+        log_run(rows, which, "bw_id", datetime.now(UTC).isoformat(timespec="seconds"), root / "chl_shadow_log.v1.json")
+    except Exception as e:  # noqa: BLE001 - the shadow log never changes a reading
+        print(f"shadow log not written: {type(e).__name__}: {e}"[:300])
     (root / "run.json").write_text(json.dumps({"set": which, "from": start, "to": end, "only": only, "rows": len(f),
                                                "usable": int(f["usable"].sum()) if len(f) else 0,
                                                "requests": net.requests, "bytes": net.bytes}, indent=1))
