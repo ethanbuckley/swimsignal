@@ -98,6 +98,67 @@ abandoned idea.
 
 A result that exists only in a chat, a branch or a local cache is not recorded.
 
+## Develop promising work now (6 November 2026)
+
+Ethan, 6 November 2026, after three readouts (#625, #626, #627) each ended with "no step before the 2027 review" or
+"waits on a dependency": develop promising work into working, tested candidates now, from the data already available,
+instead of deferring by default. This changes what an agent does after a readout. It changes no historical verdict,
+threshold, active window or the 2027 primary evaluation, and it does not lower the evidence needed for public
+swimming guidance.
+
+**After a readout, choose the next deliverable that the evidence supports, and do it now.** For promising work the
+strong default is to keep developing it in the same PR or the next one. The right deliverable depends on what the
+readout found:
+
+- a new or revised candidate, built and tested on held-out data against the existing baseline and simple references,
+  when the readout points to a specific improvement;
+- continuing an existing candidate (more data, a fix, a stated next comparison) when it is still the best idea;
+- a concrete diagnosis, when the result is unexplained (which sites, seasons or inputs drive it, and why);
+- a data or coverage improvement, when the limit was too few events, gaps or a missing input;
+- a useful observation feature, when the data are worth showing but no forecast is supported;
+- an evidence-backed archive, when the measurements disproved the mechanism or several variants have failed, with
+  what would reopen it.
+
+A readout is not required to produce a new model, and none should be built only to have one. What is not acceptable
+is "nothing until 2027", "no step beyond the review" or "waits on a dependency" as the whole continuation. A wait
+needs a stated reason: the mechanism was disproved, the available data cannot answer any version of the question (say
+which data would), or the next step needs something only Ethan can provide (a credential, a purchase, an outside
+contact, a product decision). In the last case, build what can be built up to that step and name the step and who
+takes it.
+
+**What available data can establish, and what it cannot.** Grouped and time-embargoed held-out validation on data
+already seen (leave-one-lake-out, leave-one-season-out, forward splits, river-system clusters, nested fitting of every
+threshold and weight) is legitimate development evidence. It can rank candidates, size an effect with an interval and
+check calibration and coverage. It cannot be fresh confirmation, because the outcomes were seen. Say which figures are
+which in every record. Never relabel seen data as unseen, and never move an old threshold.
+
+**An interval that includes zero does not show non-inferiority.** "Not worse" needs a non-inferiority margin stated
+before the comparison and an interval that excludes harm beyond it. A point estimate near zero with a wide interval
+is not evidence of either gain or safety, and on its own is not a reason to start a shadow log.
+
+**Shadow logging, when it is justified.** A shadow is worth starting when the development evidence supports the
+candidate and fresh confirmation is the missing piece, because waiting a season loses the season of data the
+confirmation needs. Start one only when all of these hold:
+
+- every input exists at issue time, from a source that can actually be read then, and the log records the issue time
+  and each input's own time correctly (no input from after issue time);
+- the log is independent and versioned: its own table or file, never the issued forecast, never public text;
+- an explicit comparator (production or a named reference) is logged on the same issues, with a stated fallback when
+  an input is missing, so the later read is a fair comparison;
+- it fits within known resource, cost, quota and permission limits, with caps and a stop rule;
+- the read date, metric and margin are fixed before the window opens.
+
+Use the existing build or pilot schedule where it is adequate. Do not require a separate Worker, scheduler or new
+service while its availability, permissions or cost are unresolved; record that as the blocker, build and test the
+logger so it can run, and name the decision needed. A build cadence too slow for the target is a finding to report,
+not a reason to stop the development.
+
+**Pre-state what every outcome leads to.** A protocol's "what follows" section names the next deliverable for a fail
+and for an inconclusive result as well as for a pass, chosen from the list above.
+
+**Report what is running.** A readout or continuation says which code runs, where, since when, and what is live in
+public, in shadow, or only in a branch.
+
 ## Deliver visibly
 
 The product and research owners share one versioned data contract. A Research page should identify what is usable
