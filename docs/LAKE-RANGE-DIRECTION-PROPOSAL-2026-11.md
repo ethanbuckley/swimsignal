@@ -83,3 +83,57 @@ If either fails, the line is removed for 2028 and the record says why.
 2. If shown: the tile line only, or the day table as well.
 3. Any change to the words. The "twice" and "half" bands and the definition of usual are fixed here so that 2027 can
    judge them. Changing them after 2027 samples arrive would need a new proposal.
+
+---
+
+## Built (6 November 2026)
+
+Ethan asked on 6 November for research to go live on the site, and accepted a frozen-model backtest on years not
+used to choose the model as enough evidence. The line is built as proposed above, the tile line only (decision 1:
+shown; decision 2: tile only; decision 3: the words unchanged). Merging and deploying it are Ethan's.
+
+**What a swimmer sees.** On a lake bathing water's spot page, May to September, the E. coli estimate tile adds one
+sentence after the range: "That is higher than usual for this lake in early July (usually about 13).", "That is lower
+than usual ... (usually about 220)." or "That is about usual for this lake in early July." The period is early (1st to
+10th), mid (11th to 20th) or late (21st on) and the month. Same paragraph, type and colour as the range sentence; no
+new element, colour, level or alert. The methods text under "E. coli estimate" says what usual means, that it rests on
+past samples ordered right only about 58 to 60 times in 100, and Derwent Water's limitation.
+
+**Where.** The 11 lake bathing waters with their own samples in lake-range-v1: Windermere (Lakeside YMCA, Millerground
+Landing, Rayrigg Meadow, Fellfoot), Coniston Water (Brown Howe, Boating Centre, Monk Coniston), Rutland Water
+(Whitwell Creek, Sykes Lane), Derwent Water at Crow Park and Frensham Great Pond. Not at "average lake" spots, not
+October to April, not at Colwick Country Park (no lake range), and not on a day with a missing input or without the
+usual file.
+
+**How.**
+
+- `data/processed/lake_range_usual.v1.json` (SHA-256 `8be2d127…`, pinned in `src/dipcast/lake_range.py`, made by
+  `scripts/lake_range_usual.py`): each lake's median rain over 48 h and 24 h and median exposure on its own 2023-26
+  sample days, 732 rows. The rows are lake-range-v1's training rows, rebuilt offline by #584's own code (an archive of
+  0be59d2d) from the shared inputs and rain cache, with no request. **Reproduction:** every input column's mean and SD
+  equal the frozen file's to the last bit; refitting on them gives the frozen coefficients within 7×10⁻⁷; each lake's
+  intercept weights recomputed from its rows equal the frozen file's within 5×10⁻⁷ (its rounding). The rows' hash by
+  the export's recipe differs from the one the frozen file records; the cause is not known. The script refuses to
+  write unless the content checks pass. The training rows left in the 2012-22 check's scratch folder fail the same checks:
+  their exposure differs (mean logit −3.496 against −3.680), so that check's rebuilt training rows were not exactly
+  #584's (its record inferred they were). The frozen models it scored are unaffected; its refitted production-form
+  comparator was fitted on those rows. Not re-run here.
+- `lake_range.usual()`: lake-range-v1's median on the day's date with the lake's typical inputs in place of the day's.
+  `lake_range.compared()` adds `usual` and `direction` to an in-season day's `ecoli_range` at a "tested" or "own
+  samples" lake. Direction is taken on the figures as published (two significant figures). **One display rule beyond
+  the proposal:** when today's figure and usual are both under 10, which the page gives alike as "under 10", the line
+  says "about usual" (otherwise it could read "under 10 ... lower than usual (usually under 10)"). It matters only where
+  usual is under 10: Windermere Lakeside YMCA all season, Millerground Landing before mid-July. The 2027 direction check
+  should apply the same rule.
+- Nothing else changes: no level, risk, line chance or day-table text. `shadow_lake_range_v1` logs the same columns and
+  values (checked: a test, and an offline run of main's and this branch's code on the same inputs at all 11 lakes and an
+  average lake, 192 rows, identical). `usual` and `direction` are not logged; the 2027 read recomputes them from the
+  logged median and the usual file.
+
+**Evidence route.** A frozen-model backtest: lake-range-v1 was frozen on 2023-26 before #584 joined 2012-22, and on
+those 962 samples its median ordered each lake's own samples better than production's lake chance (within-site rho
+0.287 against 0.123, [LAKE-LINE-2012-22-CHECK-2026-11.md](LAKE-LINE-2012-22-CHECK-2026-11.md)), and again on 2024-26
+held out by lake and forward ([LAKE-LINE-CANDIDATES-2026-11.md](LAKE-LINE-CANDIDATES-2026-11.md)). That is ordering
+evidence for the estimate; the words themselves (higher / lower than usual) are not yet tested against samples. The
+2027 read above continues as monitoring: if either check fails on or after 15 October 2027, the line comes off for 2028
+and the record says why.
