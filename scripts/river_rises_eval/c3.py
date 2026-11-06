@@ -6,6 +6,8 @@
     uv run python scripts/river_rises_eval/c3.py freeze --data <fetch_c3 out> --out <run dir>
     # the fresh week, 25 to 31 October 2026: needs a statement naming the frozen file's SHA-256
     uv run python scripts/river_rises_eval/c3.py fresh --data <fetch_c3 out> --out <run dir> --frozen <file> --statement <file>
+    # the observation the outcome map names: how often each gauge rose, by calendar month, on seen data
+    uv run python scripts/river_rises_eval/c3.py observe --data <fetch_c3 out> --out <run dir>
 
 Offline: reads fetch_c3.py's tables and series and the saved radar months; makes no request. `develop` and `freeze`
 cut every series at DEV_END before anything is built, so no reading after 24 October 2026 can enter them. Research
@@ -524,6 +526,35 @@ def stage_fresh(args) -> dict:
     return out
 
 
+def stage_observe(args) -> pd.DataFrame:
+    """The outcome map's observation (protocol, amendment): for each spot gauge and calendar month, from the seen
+    period, the hours when the site showed no word, how many of them were followed within 3 hours by a rise of more
+    than 0.2 of the gauge's usual range, the episodes those hours form, and the share. History, not a forecast."""
+    gauges, own, folds, _ = load(args.data, args.radar, DEV_END)
+    rows = build(gauges, folds, pr.DELAY_H)
+    y = f"y{pr.PRIMARY_H}"
+    p = rows[rows["in_P"].to_numpy(dtype=bool) & rows[y].notna().to_numpy()]
+    ep = pr.episodes(p, y, "in_P")
+    ep["month"] = pd.DatetimeIndex(ep["start"]).month
+    g = pd.read_csv(args.data / "gauges.csv", dtype={"gauge": str}).set_index("gauge")
+    t = p.groupby(["gauge", "month"]).agg(hours=(y, "size"), rise_hours=(y, "sum")).reset_index()
+    t = t.merge(ep.groupby(["gauge", "month"]).size().rename("episodes").reset_index(), on=["gauge", "month"], how="left")
+    t["episodes"] = t["episodes"].fillna(0).astype(int)
+    t["rise_hours"] = t["rise_hours"].astype(int)
+    t["share"] = (t["rise_hours"] / t["hours"]).round(5)
+    first, last = pd.DatetimeIndex(p["issue"]).min(), pd.DatetimeIndex(p["issue"]).max()
+    t["years_in_month"] = [len({d.year for d in pd.DatetimeIndex(p.loc[(p["gauge"] == a) & (p["month"] == b), "issue"])})
+                           for a, b in zip(t["gauge"], t["month"], strict=True)]
+    for c in ("label", "river"):
+        t.insert(1 if c == "label" else 2, c, t["gauge"].map(g[c]))
+    t["has_upstream_gauge"] = t["gauge"].isin(own)
+    args.out.mkdir(parents=True, exist_ok=True)
+    path = args.out / "c3_base_rates.csv"
+    t.to_csv(path, index=False)
+    print(f"{len(t)} gauge-months at {t['gauge'].nunique()} gauges, {first:%d %b %Y} to {last:%d %b %Y}; {path}")
+    return t
+
+
 # ------------------------------------------------------------------ report
 def f(x, n=4) -> str:
     return "n/a" if x is None or (isinstance(x, float) and not np.isfinite(x)) else (f"{x:.{n}f}" if isinstance(x, float) else str(x))
@@ -571,7 +602,7 @@ def write_report(out: dict, path: Path, title: str) -> None:
 def main(argv: list[str] | None = None) -> None:
     from dipcast import config
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    ap.add_argument("stage", choices=("develop", "freeze", "fresh"))
+    ap.add_argument("stage", choices=("develop", "freeze", "fresh", "observe"))
     ap.add_argument("--data", type=Path, required=True, help="fetch_c3.py's --out directory")
     ap.add_argument("--out", type=Path, required=True, help="this run's directory (outside git)")
     ap.add_argument("--radar", type=Path, default=config.RAW / "met_office_radar", help="saved radar months, read only")
@@ -580,7 +611,7 @@ def main(argv: list[str] | None = None) -> None:
     args = ap.parse_args(argv)
     if args.radar and not args.radar.exists():
         args.radar = None
-    {"develop": stage_develop, "freeze": stage_freeze, "fresh": stage_fresh}[args.stage](args)
+    {"develop": stage_develop, "freeze": stage_freeze, "fresh": stage_fresh, "observe": stage_observe}[args.stage](args)
 
 
 if __name__ == "__main__":
