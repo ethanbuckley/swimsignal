@@ -19,11 +19,15 @@ The register distinguishes historical test verdicts from current development dec
 - Take already-authorized routine work through to a reviewable PR. Ask only for a real missing decision,
   external contact, purchase, new account/access, or change outside the authorized scope. Do not create
   another approval step merely because an earlier research gate failed.
-- After any readout (pass, fail, inconclusive), build and test the next sensible candidate now on the data
-  already available, with grouped or time-embargoed holdouts, and label it as development on seen data. A need for
-  fresh confirmation means start an independent shadow log now, not wait. "Nothing until 2027" needs a stated
-  reason: a disproved mechanism, data that cannot answer, or a step only Ethan can take (then build up to it and
-  name it). See "Build the next candidate now" in the workflow.
+- Develop promising work now. After a readout, do the next deliverable the evidence supports: a tested candidate,
+  continuing an existing one, a concrete diagnosis, a data or coverage improvement, an observation feature, or an
+  evidence-backed archive. "Nothing until 2027" alone is not a continuation: a wait needs a stated reason (a
+  disproved mechanism, data that cannot answer, or a step only Ethan can take; then build up to it and name it).
+  Label seen-data held-out results as development. See "Develop promising work now" in the workflow.
+- Start a shadow log only with issue-time inputs, correct timestamps, an independent versioned log, a logged
+  comparator and fallback, and known resource and permission limits. An interval including zero does not show
+  non-inferiority. Do not require a new Worker or scheduler while its availability, permissions or cost are
+  unresolved; record the blocker instead.
 - Public swimming guidance keeps its full evidence bar. Development and shadow logging never change issued
   predictions, frozen windows or what a swimmer is told.
 - A public research label does not justify misleading claims. Missing imagery is not a negative algae
