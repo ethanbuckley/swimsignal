@@ -3678,9 +3678,10 @@ const away = k => milesAway(k / MILE_KM);   // a distance to travel, in miles as
 // it, marked †, with its unit.
 // Under a row's headline, what it cannot count, short: the overflows in Wales (levels.js, walesWords).
 const headNote = s => [walesWords(s, true), trialWords(s, true)].filter(Boolean).map(w => `<span class="hl-note">${esc(w)}</span>`).join('');
-function spotItem(s) {
-  const d = dist(s);
-  const meta = [cap(s.kind), s.source === 'designated' ? 'bathing water' : null, d !== null ? away(d) : null, rainMeta(s)].filter(Boolean).join(' · ');
+function spotItem(s) { const d = dist(s); return spotRow(s, d !== null ? away(d) : null); }
+// A row of the list. far: how far it is, in words (markup, escaped by the caller), or null.
+function spotRow(s, far) {
+  const meta = [cap(s.kind), s.source === 'designated' ? 'bathing water' : null, far, rainMeta(s)].filter(Boolean).join(' · ');
   return `<li><a class="row" href="${esc(listPath(s))}" data-id="${esc(s.id)}"><span class="row-main"><span class="nm">${esc(s.name)}</span>`
     + `${typeof eaTodayTag === 'function' ? eaTodayTag(s) : ''}<span class="hl ${tone(mapLevel(s))}">${listHeadline(s)}</span>${headNote(s)}<span class="k">${meta}</span></span>${week(s)}</a></li>`;
 }
@@ -3901,17 +3902,22 @@ const CARDS_KM = 30 * MILE_KM;
 const nearCards = () => { const close = DATA.spots.filter(s => dist(s) <= CARDS_KM);
   return close.length ? { title: 'Lowest risk within 30 miles', spots: [...close].sort(lowOrder).slice(0, NEAR_N) }
     : { title: 'Near you', spots: [...DATA.spots].sort((a, b) => dist(a) - dist(b)).slice(0, NEAR_N) }; };
+// The filter sheet's kind and "Low risk only", whatever is typed. The spots near a town keep to them too (offerOnMap).
+const listKept = s => (VIEW.filter === 'all' || (VIEW.filter === 'designated' ? s.source === 'designated' : s.kind === VIEW.filter))
+  && (!VIEW.lowOnly || (mapLevel(s) === 'low' && lowEligible(s)));
+// The spots the list shows, as last drawn: the spots near a town leave them out, and are counted with them.
+let LISTED = [];
 function drawSpots() {
   // A location can arrive after a spot or the Saved page has replaced the list.
   const ul = document.getElementById('spots'); if (!ul) return;
   const words = fold(VIEW.q).split(' ').filter(Boolean);
   const found = s => { const t = searchText(s); return words.every(w => t.includes(w)); };
-  const keep = s => found(s) && (VIEW.filter === 'all'
-    || (VIEW.filter === 'designated' ? s.source === 'designated' : s.kind === VIEW.filter)) && (!VIEW.lowOnly || (mapLevel(s) === 'low' && lowEligible(s)));
+  const keep = s => found(s) && listKept(s);
   const byRisk = VIEW.sort !== 'name' && !(VIEW.sort === 'near' && VIEW.here);
   const items = DATA.spots.filter(keep).sort((a, b) => VIEW.sort === 'near' && VIEW.here ? dist(a) - dist(b)
     // Near me before a position has arrived keeps the lowest-risk order, which a failed location returns to.
     : VIEW.sort === 'low' || VIEW.sort === 'near' ? lowOrder(a, b) : byRisk ? riskOrder(a, b) : a.name.localeCompare(b.name));
+  LISTED = items;
   const outingGroup = document.getElementById('outing-group');
   if (outingGroup) outingGroup.hidden = Boolean(VIEW.q.trim() || VIEW.filter !== 'all' || VIEW.lowOnly);
   const savedGroup = document.getElementById('saved-group');
@@ -4457,12 +4463,21 @@ async function offerOnMap() {
   const t = VIEW.q.trim(), call = ++onMapTyped;
   const hide = () => { const box = document.getElementById('on-map'); if (box) { box.hidden = true; box.innerHTML = ''; } };
   if (placeKey(t).replace(/ /g, '').length < 3 || looksLikePostcode(t)) { hide(); return; }
-  let waters = [], places = [];
-  try { [waters, places] = await Promise.all([loadWaters().then(i => waterMatches(i, t)), loadPlaces().then(i => placeMatches(i, t, ON_MAP_PLACES))]); }
-  catch (e) { /* a file that did not come: the spots still answer, and the next letter asks again */ }
+  // Each file on its own: a file that did not come leaves the other's offers, the spots still answer, and the next letter asks again.
+  const [gotWaters, gotPlaces] = await Promise.allSettled([loadWaters().then(i => waterMatches(i, t)), loadPlaces().then(i => placeMatches(i, t, ON_MAP_PLACES))]);
+  const waters = gotWaters.status === 'fulfilled' ? gotWaters.value : [], places = gotPlaces.status === 'fulfilled' ? gotPlaces.value : [];
   const box = document.getElementById('on-map');
   if (call !== onMapTyped || !box) return;   // a later letter, or another page, has taken over
   if (!waters.length && !places.length) { hide(); return; }
+  // A town typed in full (plan.js, townsNamed): first, the spots near it that the list has not shown, in rows
+  // as the list's, each with its own level and words, under "Near Ambleside". A swimmer who types their town
+  // asks what is near it, and until 6 Nov 2026 only the spots named for it were listed. With the list's filters.
+  const listed = new Set(LISTED.map(s => s.id)), near = [];
+  for (const town of townsNamed(places, t)) {
+    const n = spotsNear(DATA.spots.filter(listKept), town, (a, b) => km(a, b) / MILE_KM, listed);
+    if (n.rows.length) { near.push({ town, ...n }); n.rows.forEach(x => listed.add(x.s.id)); } }
+  const nearRows = near.map(n => `<li class="area-head"><h3>Near ${esc(n.town.name)} <span>· ${nearSaid(n.rows.length, n.total)}</span></h3></li>`
+    + n.rows.map(x => spotRow(x.s, milesFrom(x.miles, esc(n.town.name)))).join('')).join('');
   const where = w => `${cap(w.kind)} near ${esc(w.near)}${w.alt ? ` · also called ${esc(w.alt)}` : ''}`;
   // A town is also where a plan can start: first, a plan from each place offered, with the
   // distance and day of the plan last shown, a day picked on the list first, and the list's chip as its kind
@@ -4471,7 +4486,7 @@ async function offerOnMap() {
   const reach = `The spots ${base.within ? `within ${base.within} miles` : 'at any distance'} ${base.day ? dayWord(base.day) : 'today'}, those at low risk first`;
   const plans = !places.length ? '' : `<li class="area-head"><h3>Plan a swim <span>· from a town</span></h3></li>`
     + places.map(p => `<li><a class="row" href="${esc(planPath() + planFromPlace(p, base, VIEW.filter))}" data-plan-place><span class="row-main"><span class="nm">From ${esc(p.name)}</span><span class="k">${reach}</span></span></a></li>`).join('');
-  box.innerHTML = plans + `<li class="area-head"><h3>On the map <span>· ${TAP().toLowerCase()} the water for its forecast</span></h3></li>`
+  box.innerHTML = nearRows + plans + `<li class="area-head"><h3>On the map <span>· ${TAP().toLowerCase()} the water for its forecast</span></h3></li>`
     + waters.map((w, i) => `<li><button type="button" class="row" data-water="${i}"><span class="row-main"><span class="nm">${esc(w.name)}</span><span class="k">${where(w)}</span></span>${GO}</button></li>`).join('')
     + places.map((p, i) => `<li><button type="button" class="row" data-place="${i}"><span class="row-main"><span class="nm">Rivers and lakes near ${esc(p.name)}</span><span class="k">Show on the map</span></span>${GO}</button></li>`).join('');
   box.hidden = false;
@@ -4483,6 +4498,14 @@ async function offerOnMap() {
     box.insertAdjacentHTML('beforeend', `<li class="empty"><p class="below">${regionalLink(t)} Missing a spot? <a href="feedback.html?type=spot">Request it</a>.</p><button type="button" class="btn" id="clear-filters">Clear search and filters</button></li>`);
     bindClear();
   }
+  // The count and the tally under the list take in the spots near the town, so "1 low" is not said under five rows.
+  if (near.length) {
+    const more = near.flatMap(n => n.rows.map(x => x.s)), all = LISTED.concat(more), count = document.getElementById('count');
+    document.getElementById('overview-foot').textContent = overview(all).replace(/^Updated [^·]*· /, '');
+    sayOnChange(count, `Showing ${all.length} of ${DATA.spots.length} spots: ${LISTED.length} matching the search, ${more.length} near ${near.map(n => n.town.name).join(' and ')}.`);
+    count.classList.remove('sr');
+  }
+  bindItems(box);
   box.querySelectorAll('[data-water]').forEach(b => b.addEventListener('click', () => { const w = waters[+b.dataset.water];
     showOnMap([w.lat, w.lon], WATER_ZOOM, `The ring is on ${w.kind === 'river' ? 'the ' : ''}${w.name}. ${TAP()} the ${w.kind} where you swim, for its forecast.`, w.name); }));
   box.querySelectorAll('[data-place]').forEach(b => b.addEventListener('click', () => { const p = places[+b.dataset.place];

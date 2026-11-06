@@ -32,6 +32,8 @@ const PAGES = [
   [`plan/#day=${DAY}&from=Reading&at=51.45%2C-0.97&within=50`, '#dp, #plan-sum b'],
   ['saved/', '.view-saved .empty-saved', 'empty'],
   ['saved/', '#scards .places li', 'saved'],
+  // A town typed in the search: the spots near it, under the spots named for it (fixture places.json; no rivers file).
+  ['index.html', '#q', 'search'],
 ];
 
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.json': 'application/json', '.css': 'text/css',
@@ -110,6 +112,15 @@ for (const [w, h, mobile] of [[375, 812, true], [1440, 900, false]]) {
     if (shown && saved === 'saved') {
       const r = await send('Runtime.evaluate', { expression: `(() => { const d = document.querySelector('#compare'); if (!d) return false; d.open = true; d.dispatchEvent(new Event('toggle')); return !!document.querySelector('#compare-result table'); })()`, returnByValue: true }, s);
       if (!r.result?.result?.value) errors.push('Saved comparison did not draw a table');
+    }
+    // "Marlow" names no spot; Henley-on-Thames is 5.6 miles away, so it is listed under "Near Marlow" with its own level.
+    if (shown && saved === 'search') {
+      const r = await send('Runtime.evaluate', { awaitPromise: true, returnByValue: true, expression: `(async () => {
+        const q = document.getElementById('q'); q.value = 'Marlow'; q.dispatchEvent(new Event('input', { bubbles: true }));
+        for (let t = 0; t < 20 && !document.querySelector('#on-map a[data-id]'); t++) await new Promise(r => setTimeout(r, 150));
+        const a = document.querySelector('#on-map a[data-id="thames-henley"]'), h = document.querySelector('#on-map .area-head h3');
+        return !!a && /5\\.6 miles from Marlow/.test(a.textContent) && !!a.querySelector('.hl') && !!h && /^Near Marlow/.test(h.textContent); })()` }, s);
+      if (!r.result?.result?.value) errors.push('Searching a town did not list the spot near it');
     }
     await sleep(400);
     handlers.delete(on);
