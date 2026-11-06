@@ -21,7 +21,7 @@ FM = "http://environment.data.gov.uk/flood-monitoring/id/measures/"
 def _record(issue, items, keys=(), status=200):
     return {"schema": "swimsignal.river-shadow.hour", "version": 1, "issue": issue,
             "ea": {"status": status, "error": None, "items": items},
-            "radar": {"status": 200, "error": None, "keys": [{"key": k, "etag": "e"} for k in keys]}}
+            "radar": {"status": 200, "error": None, "keys": [{"key": k, "etag": "e", "last_modified": issue} for k in keys]}}
 
 
 def _write(tmp_path, recs):
@@ -38,6 +38,17 @@ def test_records_load_and_other_files_are_skipped(tmp_path):
     _write(tmp_path, [_record("2026-12-01T10:00:00Z", [{"measure": FM + "A-m", "dateTime": "2026-12-01T09:45:00Z", "value": 1.0}])])
     rd, rk, hours = ss.load_records(tmp_path)
     assert len(rd) == 1 and len(hours) == 1 and rk.empty
+
+
+def test_a_late_run_keeps_nothing_timed_after_its_issue_hour(tmp_path):
+    r = _record("2026-12-01T12:00:00Z", [{"measure": FM + "A-m", "dateTime": "2026-12-01T11:45:00Z", "value": 1.0},
+                                         {"measure": FM + "B-m", "dateTime": "2026-12-01T12:15:00Z", "value": 2.0}])
+    r["fetched_at"] = "2026-12-01T12:20:00Z"
+    r["radar"]["keys"] = [{"key": _key(pd.Timestamp("2026-12-01 11:00", tz="UTC")), "etag": "e", "last_modified": "2026-12-01T11:05:30Z"},
+                          {"key": _key(pd.Timestamp("2026-12-01 12:00", tz="UTC")), "etag": "e", "last_modified": "2026-12-01T12:05:30Z"}]
+    _write(tmp_path, [r])
+    rd, rk, hours = ss.load_records(tmp_path)
+    assert rd["measure"].tolist() == [FM + "A-m"] and len(rk) == 1 and hours["late_min"].iloc[0] == 20
 
 
 def test_inputs_come_from_the_record_at_t_and_t_minus_k_only():

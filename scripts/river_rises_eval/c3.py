@@ -309,7 +309,7 @@ def alert_table(res: pd.DataFrame, y: str, m: str, q: float, scored: np.ndarray)
 
 def evaluate(res: pd.DataFrame, y: str, models: tuple[str, ...], pairs, with_alerts: bool = True,
              bootstrap: bool = True) -> dict:
-    scored = res["in_P"].to_numpy(dtype=bool)
+    scored = res["in_P"].to_numpy(dtype=bool).copy()
     for m in models:
         scored &= np.isfinite(res[m].to_numpy(dtype=float))
     sub = res[scored]

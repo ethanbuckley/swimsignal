@@ -167,3 +167,14 @@ def test_fresh_refuses_without_a_statement_naming_the_frozen_file(tmp_path):
     args = type("A", (), {"frozen": fz, "statement": st, "data": tmp_path, "out": tmp_path, "radar": None})()
     with pytest.raises(SystemExit, match="SHA-256"):
         c3.stage_fresh(args)
+
+
+def test_the_evaluation_runs_end_to_end_with_alerts_and_intervals():
+    rows = _rows(seed=4, gauges=6)
+    res = c3.cross_validate(rows, ("R1", "R1s", "R3", "C3"), 3)
+    ev = c3.evaluate(res, "y3", ("R1", "R1s", "R3", "C3"), (("C3", "R3"), ("C3", "R1")))
+    assert ev["events"] > 0 and set(ev["models"]) == {"R1", "R1s", "R3", "C3"}
+    a = ev["models"]["C3"]["alerts"][1]
+    assert a["alert_rate"] == 0.01 and 0 <= a["alert_share"] <= 0.2
+    b = ev["pairs"]["C3 vs R3"]["by_system"]
+    assert b["L"] <= b["d"] <= b["U"]

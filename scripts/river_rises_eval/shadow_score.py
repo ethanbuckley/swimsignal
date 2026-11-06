@@ -54,17 +54,27 @@ def load_records(records: Path) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFram
             continue   # the export's key listing and state files sit beside the records
         t = pd.Timestamp(r["issue"])
         ea, radar = r.get("ea") or {}, r.get("radar") or {}
+        fetched = pd.Timestamp(r["fetched_at"]) if r.get("fetched_at") else pd.NaT
         hrs.append({"issue": t, "ea_ok": ea.get("status") == 200 and not ea.get("error"),
-                    "radar_ok": radar.get("status") == 200 and not radar.get("error"), "items": len(ea.get("items") or [])})
+                    "radar_ok": radar.get("status") == 200 and not radar.get("error"), "items": len(ea.get("items") or []),
+                    "late_min": (fetched - t) / pd.Timedelta(minutes=1) if pd.notna(fetched) else np.nan})
+        # A run can fire after its hour: nothing timed after the issue time is kept (a reading by its own time, a
+        # composite by when it reached the bucket).
         for it in ea.get("items") or []:
-            rd.append({"issue": t, "measure": it["measure"], "time": pd.Timestamp(it["dateTime"]), "value": it.get("value")})
+            when = pd.Timestamp(it["dateTime"]) if it.get("dateTime") else pd.NaT
+            if pd.notna(when) and when <= t:
+                rd.append({"issue": t, "measure": it["measure"], "time": when, "value": it.get("value")})
         for k in radar.get("keys") or []:
+            lm = pd.Timestamp(k["last_modified"]) if k.get("last_modified") else pd.NaT
+            if pd.isna(lm) or lm > t:
+                continue
             stamp = k["key"].rsplit("/", 1)[-1][:12]
             rk.append({"issue": t, "valid": pd.Timestamp(datetime.strptime(stamp, "%Y%m%d%H%M"), tz="UTC"),
                        "key": k["key"], "etag": k.get("etag")})
     rd = pd.DataFrame(rd, columns=["issue", "measure", "time", "value"])
     rd["value"] = pd.to_numeric(rd["value"], errors="coerce")
-    return rd, pd.DataFrame(rk, columns=["issue", "valid", "key", "etag"]), pd.DataFrame(hrs, columns=["issue", "ea_ok", "radar_ok", "items"])
+    return (rd, pd.DataFrame(rk, columns=["issue", "valid", "key", "etag"]),
+            pd.DataFrame(hrs, columns=["issue", "ea_ok", "radar_ok", "items", "late_min"]))
 
 
 def uptime(hours: pd.DataFrame, start=WINDOW[0], end=WINDOW[1]) -> dict:
