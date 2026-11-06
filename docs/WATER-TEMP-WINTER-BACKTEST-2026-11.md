@@ -175,4 +175,52 @@ Fixed here, in the harness, before any request.
 
 ## Results
 
-Not yet run.
+### Run log
+
+- Protocol `52128118` pushed at 19:58 UTC, 6 November 2026, before any request.
+- **EA:** 19:59 UTC, 56 requests, all HTTP 200, 42.1 MB; 109,736 rows (cap 160 requests, 600 MB).
+- **Plan** (no result read): 268 lake cells and 1,469 river cells had a primary-winter row; the rule took 75 lake
+  and 74 river cells. 715 point-days were at points in neither point table and were left out.
+- **Open-Meteo:** 20:00 to 21:04 UTC, 18 requests, all HTTP 200, **703.5 weighted calls** (cap 1,000; the 500-an-hour
+  cap paused it once). Historical Forecast API only. The group's heavy-run lock was held from 19:58 to 21:04 UTC.
+- **Score:** one run at 21:04 UTC from `52128118`, frozen hashes checked by the harness. Full output:
+  `docs/WATER-TEMP-WINTER-BACKTEST-2026-11-primary.json` (SHA-256 `93da0667…`).
+- **Shared inputs unchanged:** the two point tables hash the same before and after (`d532f140…`, `1c0f8298…`).
+- Rows: 11,129 point-days in the planned cells, every one with `a7`; 9,990 river rows, 1,139 lake rows.
+
+### Primary result
+
+Shown estimate minus EA reading, October to April 2023–26. Intervals: two-way (water group and month).
+
+| | Rows | Water groups | RMSE | Bias (too warm +) | Within 2 °C | Verdict |
+|---|---|---|---|---|---|---|
+| Rivers | 9,990 | 494 | **2.27 °C** [2.05, 2.49] | **+1.54 °C** [+1.22, +1.87] | 60% | **inconclusive**, material bias |
+| Lakes | 1,139 | 137 | **3.64 °C** [3.17, 4.08] | **+3.08 °C** [+2.34, +3.71] | 23% | **fail**, material bias |
+
+Group-only intervals are narrower: rivers RMSE [2.19, 2.33], lakes [3.55, 3.74].
+
+**What this establishes.** In the last three winters the off-season estimate read too warm, at rivers by about
+1.5 °C and at lakes by about 3 °C on average. The river figure misses the pass by its upper end (2.49 against 2.5 is
+inside, but the point 2.27 is above 2.0). Lakes fail outright.
+
+**Reported, deciding nothing:**
+
+- **Worst in midwinter.** Rivers: January RMSE 3.0 °C, bias +2.5; October 1.6, +0.6; April 1.9, +0.6. Lakes: December
+  and January 4.7 °C, bias +4.5; April 1.8, +0.2.
+- **Worst in cold air.** Rivers with `a7` under 3 °C: 3.0 °C, bias +2.4 (749 rows). Lakes with `a7` 3 to 6 °C: 4.2 °C,
+  bias +3.9.
+- **The same each winter.** Rivers 2.24 / 2.39 / 2.15 °C; lakes 3.53 / 3.64 / 3.74 °C (winters 2023 / 2024 / 2025).
+- **Lake size makes no difference.** Lakes under 1 km² 3.70, 1 km² and over 3.61, unmatched 3.61 °C.
+- **Rounding makes no difference.** Unrounded curve: rivers 2.25, lakes 3.64 °C.
+- **The reference "water equals last week's air" did better** than the curve: rivers RMSE 1.94 °C, bias −0.88; lakes
+  1.98 °C, bias −0.71. The summer curves flatten towards about 7–8 °C as the air cools, while the water keeps falling.
+
+*Inferred, not tested:* the curves were fitted on May–September water, which never sees cold air, so their lower arm
+is set by the bounds of the fit, not by data. That matches the error growing with colder air.
+
+### What follows, as stated above
+
+- Both types: the page stops saying "not yet checked in these months" and gives the measured figures, with the
+  direction ("reads too warm"), and no "within".
+- Both types: **the candidate step runs.** W1 and W2 are developed on the primary winters (now seen), the chosen one
+  is frozen and committed, and only then is winter 2022 fetched and scored.
