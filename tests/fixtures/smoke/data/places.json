@@ -1,0 +1,2 @@
+{"source": "A few rows of data/places.json (OS Open Names), for tests/browser_smoke.mjs's town search", "fields": ["name", "lat", "lon"],
+ "places": [["Reading", 51.45, -0.97], ["Richmond", 54.4, -1.74], ["Marlow", 51.57, -0.78], ["Marlow Common", 51.57, -0.81], ["Marlow Bottom", 51.59, -0.78]]}

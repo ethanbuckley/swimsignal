@@ -331,7 +331,33 @@ const planFromArea = (a, p) => planHash({ day: p.day, kind: p.kind, within: a.wi
 const milesAway = m => { if (m < 1) return 'under a mile away'; const n = m < 10 ? Math.round(m * 10) / 10 : Math.round(m);
   return `${n} mile${n === 1 ? '' : 's'} away`; };
 
+// ------------------------------------------------------------------------------ spots near a town
+// A town typed in the list's search (index.html, offerOnMap): the spots near it, under the spots named for it.
+// Until 6 Nov 2026 "Ambleside" listed only "Windermere, Waterhead, Ambleside": Rydal Water, Loughrigg Tarn,
+// Grasmere and Elter Water, 1.7 to 2.9 miles away, came only after tapping "From Ambleside".
+const NEAR_MILES = 10, NEAR_MAX = 5;
+// The places offered (placeMatches's) that what is typed names in full: the whole name, the name before its
+// county ("Keswick" is also "Keswick, South Norfolk"), or its first word or words ("Henley" is "Henley-on-Thames").
+// Not part of a word: "Amble" on the way to "Ambleside" is Amble, but "Ambles" is no town.
+function townsNamed(offers, text) {
+  const k = placeKey(text); if (!k) return [];
+  return offers.filter(p => p.key === k || p.bare === k || p.key.startsWith(k + ' '));
+}
+// The spots within `within` miles of a place, nearest first, at most n, leaving out the ids in skip (those
+// already listed). total: how many are within reach, shown or not. milesBetween as planAreas's.
+function spotsNear(spots, place, milesBetween, skip = new Set(), within = NEAR_MILES, n = NEAR_MAX) {
+  const all = spots.filter(s => !skip.has(s.id)).map(s => ({ s, miles: milesBetween([place.lat, place.lon], [s.lat, s.lon]) }))
+    .filter(x => x.miles <= within).sort((a, b) => a.miles - b.miles || a.s.name.localeCompare(b.s.name));
+  return { rows: all.slice(0, n), total: all.length };
+}
+// The line beside "Near Ambleside": how many, and which, of the spots within reach.
+const nearSaid = (shown, total, within = NEAR_MILES) => shown < total ? `the ${shown} nearest of ${total} within ${within} miles`
+  : total === 1 ? `1 spot within ${within} miles` : `${total} spots within ${within} miles, nearest first`;
+// "1.7 miles from Ambleside", in milesAway's words: in that list a distance is from the town, not from you.
+const milesFrom = (m, name) => milesAway(m).replace(/ away$/, ` from ${name}`);
+
 if (typeof module === 'object' && module.exports) {
   module.exports = { MILE_KM, RADII, COMPARE_MAX, PLAN_WHEN, PLAN_DEFAULT, OUTING_ACTS, OUTING_MEETS, OUTING_FINISH_ACTS, PLAN_SENT, PLAN_LEVELS, readPlan, planDayOff, planHash, planKept, planOuting, planOutingKey, planInvited, planFromSpot, planHasOuting, ACTS_KEY, readActs, actDefault, planFromPlace, planCompareIds, planShared, planSharedWho, placeKey, placeIndex, placeMatches, placeNamed, placeOnly, looksLikePostcode, waterIndex, waterMatches,
-    planGroup, planAdvised, planSpots, betterDay, reachFor, milesAway, planStart, planAreas, planFromArea };
+    planGroup, planAdvised, planSpots, betterDay, reachFor, milesAway, planStart, planAreas, planFromArea,
+    NEAR_MILES, NEAR_MAX, townsNamed, spotsNear, nearSaid, milesFrom };
 }

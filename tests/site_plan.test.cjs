@@ -106,7 +106,7 @@ test('a town from the list\'s search opens a plan from it, with the reach and da
   assert.deepEqual(P.readPlan(P.planFromPlace(ilkley, P.PLAN_DEFAULT, 'sea'), DATES), {day: DATES[0], from: ilkley, within: 20, kind: 'all'});
   // The page: a plan from each place offered, before the map's offers, and a link that opens the plan it names.
   const app = require('node:fs').readFileSync(require('node:path').join(__dirname, '..', 'src', 'dipcast', 'site', 'index.html'), 'utf8');
-  assert.ok(app.includes('href="${esc(planPath() + planFromPlace(p, base, VIEW.filter))}" data-plan-place>') && app.includes('box.innerHTML = plans + `<li class="area-head"><h3>On the map'));
+  assert.ok(app.includes('href="${esc(planPath() + planFromPlace(p, base, VIEW.filter))}" data-plan-place>') && app.includes('box.innerHTML = nearRows + plans + `<li class="area-head"><h3>On the map'));
   assert.ok(app.includes('openPlan(new URL(a.href).hash)') && app.includes("history.pushState({ view: 'plan', from: shown }, '', planPath() + hash)"));
 });
 
