@@ -22,6 +22,12 @@ Document dates are names, not proof of when an analysis ran: several â€œ2026-11â
   candidates separately.
 - **Archive variants with substantial negative evidence, not entire scientific subjects.** Each has a concrete
   reopening condition below. Retain useful data/extraction and publish honest negative findings.
+- **Build the next candidate now (Ethan, 6 November 2026).** Every readout leads to a runnable, tested candidate
+  on the available data (held-out, labelled as seen-data development) and, where it is not worse than production,
+  an independent shadow log so confirmation starts accumulating. A "wait until 2027" line needs a stated reason
+  (workflow, "Build the next candidate now"). Verdicts, thresholds, active windows and the 2027 primary are
+  unchanged; the evidence bar for public guidance is unchanged. Applied first to #625 (lake E. coli), #626
+  (satellite quality signal) and #627 (radar river rises), whose continuation lines are superseded for development.
 - **Give useful work a public destination.** Research/Labs navigation and an actual satellite observation series
   are the first release. A merged methods document or permanently hidden query flag is not completion.
 

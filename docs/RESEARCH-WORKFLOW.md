@@ -98,6 +98,42 @@ abandoned idea.
 
 A result that exists only in a chat, a branch or a local cache is not recorded.
 
+## Build the next candidate now (6 November 2026)
+
+Ethan, 6 November 2026, after three readouts (#625, #626, #627) each ended with "no step before the 2027 review" or
+"wait on a dependency": develop the promising work into working, tested candidates now, from the data already
+available. This changes what an agent does after a readout. It changes no historical verdict, threshold, active
+window or the 2027 primary evaluation, and it does not lower the evidence needed for public swimming guidance.
+
+**The default after any readout is the next candidate, built and tested.** Pass, fail, inconclusive or underpowered,
+the same PR or the next one should carry a runnable candidate that addresses what the readout found, compared with
+the existing baseline and the simple references on held-out data. "Nothing until 2027", "no step beyond the review"
+or "waits on a dependency" is not a continuation decision on its own. It is acceptable only with one of:
+
+- the mechanism the candidate needs was disproved by the measurements, not merely not shown;
+- the available data cannot answer any version of the question (state which data would);
+- the next step needs something only Ethan can provide (a credential, a purchase, an outside contact, a product
+  decision). Then build everything up to that step, and name the exact step and who takes it.
+
+**What available data can establish, and what it cannot.** Grouped and time-embargoed held-out validation on data
+already seen (leave-one-lake-out, leave-one-season-out, forward splits, river-system clusters, nested fitting of every
+threshold and weight) is legitimate development evidence. It can rank candidates, size an effect with an interval,
+check calibration and coverage, and justify a shadow. It cannot be fresh confirmation, because the outcomes were seen.
+Say which figures are which in every record. Never relabel seen data as unseen, and never move an old threshold.
+
+**A need for prospective confirmation is a reason to start logging now.** If a candidate is not worse than production
+on its stated guardrails, run it as an independent, versioned shadow from now on (its own table or log, never the
+issued forecast, never public text, with caps and a fallback) so the confirmation window starts accumulating. An
+inadequate build cadence or a missing live input is a design problem to solve (a separate scheduled logger, a
+Worker cron, a cheaper input), not a reason to stop. Changing what swimmers are told still needs the evidence in
+"Routes to use".
+
+**Pre-state what every outcome leads to.** A protocol's "what follows" section names a development step for a fail and
+for an inconclusive result as well as for a pass: the next candidate, the diagnosis to run, or the shadow to start.
+
+**Report what is running.** A readout or continuation says which code runs, where, since when, and what is live in
+public, in shadow, or only in a branch.
+
 ## Deliver visibly
 
 The product and research owners share one versioned data contract. A Research page should identify what is usable
