@@ -52,6 +52,10 @@ the level at 0.58 to 0.66.
 5. **Unchanged.** The shadow and Gate B are untouched: the shadow keeps England's calibration, so its arm does not change.
    Click-anywhere stays England only (`write_any_point` drops the Scottish rows).
 
+**Added 1 Nov 2026, evening:** nine more spots, on the Scottish Outdoor Access Code and a public body's or
+charity's page saying people swim there (`SPOT-ADDITIONS-2026-11.md`): six Loch Lomond bays, Tollie Bay (Loch
+Maree), Loch Lubnaig and the River Almond at Almondell. Twelve in all.
+
 ## 3. Limits, as known
 
 - **No loch outlines.** No loch outline is loaded for Scotland. Each loch is placed on OS Open Rivers' centre line,
