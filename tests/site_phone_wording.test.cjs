@@ -74,9 +74,10 @@ test('notifications blocked is said once, in the Alerts tile, not under every sa
     const st = Li.spotAlert({push: true, email, can: 'blocked'});
     assert.equal(st.text, ''); assert.equal(st.link, false); assert.equal(st.toggle, false);
   }
-  const said = 'Notifications are blocked for this site in your browser settings.';
+  // Since 7 Nov 2026 the tile draws it itself, with where to allow them (tests/site_alerts_blocked.test.cjs).
+  const said = 'Notifications are blocked for this site in your browser settings, so alerts cannot be turned on.';
   assert.equal(page.split(said).length - 1, 1, 'once in index.html: the Alerts tile');
-  assert.match(page, new RegExp(`if \\(Notification\\.permission === 'denied'\\) m\\.textContent = '${said.replace(/\./g, '\\.')}';`));
+  assert.match(page, /Notification\.permission === 'denied' \? `<p class="small tight" id="alerts-blocked"/);
   assert.ok(!fs.readFileSync(DIR + 'lists.js', 'utf8').includes(said));
   // A card with nothing to say is not drawn (index.html's CSS).
   assert.match(page, /\.place-alert:empty \{ display:none; \}/);

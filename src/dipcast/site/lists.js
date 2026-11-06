@@ -207,9 +207,23 @@ function spotAlert({ push = false, email = false, can = 'none', on = null, off =
   if (push && !email) return r('unavailable', 'Notifications cannot be had in this browser.', { link: true });
   return r('email', 'Notifications cannot be had in this browser. Alerts by email cover the spots saved when you sign up.', { link: true });
 }
+// Notifications blocked for the site (the Alerts tile, index.html alertsCard): where to allow them again, for the
+// device in hand. Until 7 Nov 2026 the tile said only that they were blocked, beside a "Turn on alerts" button that
+// could not work: the browser refuses without asking once a site is blocked.
+//   ios     an iPhone or iPad: web push there runs only in the Home Screen app, which has its own entry in Settings
+//   app     opened from the Home Screen or as an installed app elsewhere: no web address to tap
+//   safari  Safari on a Mac, which keeps a site's notifications in its own settings, not by the address
+//   touch   a phone or tablet: tap, not click
+function unblockHow({ ios = false, app = false, safari = false, touch = false } = {}) {
+  const back = ' Then come back to this page.';
+  if (ios) return 'To allow them, open Settings, then Notifications, then SwimSignal, and turn on Allow Notifications.' + back;
+  if (app) return 'To allow them, turn on notifications for SwimSignal in your device\'s settings for apps.' + back;
+  if (safari) return 'To allow them, open Safari\'s Settings, then Websites, then Notifications, and set this site to Allow.' + back;
+  return `To allow them, ${touch ? 'tap' : 'click'} the icon to the left of the web address, then turn on Notifications${touch ? ' (it may be under Permissions)' : ''}.` + back;
+}
 
 if (typeof module === 'object' && module.exports) {
   module.exports = { LISTS_KEY, FIRST_LIST, SHARED_LIST, LIST_NAME_MAX, LINK_SPOTS_MAX, listName, listIds, freeListName, readLists, listsReadable,
     listsText, allSaved, listById, shownList, addToList, removeFromList, moveToList, copyToList, makeList, renameList, deleteList, pickList,
-    keepSpots, sameList, shareHash, readShared, PASTE_MAX, pastedList, planListName, sitesHash, addSharedList, savedGroups, alertSpots, spotAlert };
+    keepSpots, sameList, shareHash, readShared, PASTE_MAX, pastedList, planListName, sitesHash, addSharedList, savedGroups, alertSpots, spotAlert, unblockHow };
 }
