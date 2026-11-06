@@ -106,15 +106,29 @@ function compareAdvice(s) {
 }
 // Access at the spot (access.py: a desk check of the authority's guidance, for the spots from OpenStreetMap
 // and the curated ones in the Peak District): what it found, in its own words, and when. A plan's row gives the status in a few words (ACCESS_WORDS,
-// index.html's planWhy). A spot without a check says so.
+// index.html's planWhy). Then what the spot's practical guide covers, in the planner's words (dayplan.js,
+// dpConditions): until 6 Nov 2026 the cell read only the permission check, so 52 of the 56 spots whose guide
+// covers parking, the path or getting in said "No access information" under a plan row saying "Its guide covers
+// parking, the path, getting in". The guide is in the spot's own file (index.html, spotDetail): until it comes the
+// cell says so, and a file that did not come is not known, not none. A spot with neither says so.
 const ACCESS_WORDS = { restricted_guidance: 'Park guidance restricts river swimming; not checked here.', unconfirmed: 'Permission to swim at this point is not confirmed.' };
+const GUIDE_ACCESS = [['parking', 'parking'], ['path', 'the path'], ['entry', 'getting in'], ['exit', 'getting out'], ['launch', 'launching']];
+function compareGuide(s) {
+  if (s.detail_file && !s.detail_loaded && !s.detail_missing) return vTag('none', 'Loading its guide…');
+  if (s.detail_missing) return vTag('none', 'Its guide could not be loaded');
+  const g = s.guide, facts = g && Array.isArray(g.facts) ? g.facts : [];
+  const has = GUIDE_ACCESS.filter(([k]) => facts.some(f => f && f.topic === k)).map(([, w]) => w);
+  if (!has.length) return '';
+  return `Its guide covers ${has.join(', ')}. ` + (g.checked ? vTag('measured', `Checked ${htmlText(experienceWhen(g.checked))}`) : vTag('none', 'Not known when it was checked'));
+}
 function compareAccess(s) {
-  const a = s.access;
-  if (!a) return vTag('none', 'No access information');
+  const a = s.access, guide = compareGuide(s);
+  if (!a) return guide || vTag('none', 'No access information');
   // When it was checked is its kind and time; "signs at the water not inspected" is the row's note (compareRows).
   return htmlText(a.text || ACCESS_WORDS[a.status] || 'Not known whether swimming is allowed at this point.') + ' '
     + (a.checked_at ? vTag('measured', `Checked ${htmlText(experienceWhen(a.checked_at))}`) : vTag('none', 'Not known when it was checked'))
-    + (/^https:\/\//.test(a.url || '') ? ` <a href="${htmlText(a.url)}">Authority guidance</a>` : '');
+    + (/^https:\/\//.test(a.url || '') ? ` <a href="${htmlText(a.url)}">Authority guidance</a>` : '')
+    + (guide ? ` ${guide}` : '');
 }
 // The rows under the five days, as [label, HTML, note], for one spot; iso is the day picked, whose E. coli
 // model limits the last row gives. Short cells (2 Nov 2026): the caveat every column shares is the note, which the
