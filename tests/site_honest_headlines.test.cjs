@@ -41,7 +41,7 @@ const text = h => h.replace(/<[^>]+>/g, ' ').replace(/&nbsp;| /g, ' ').replace(
 // The helpers nearby() calls for each row's reason and the other-water rule (site_nearby_reasons.test.cjs).
 const NEAR_REASONS = ['joined', 'otherWater', 'unread', 'fewerUnread', 'nearWhy', 'otherAsWell'];
 const ANSWER = ['esc', 'tone', 'headTone', 'rainSaid', 'answerParts', 'flowLine', 'ageMin', 'ago', 'agoSpan', 'issued', 'nextDay', 'yesterdayLine', 'answerWords',
-  'sinceTime', 'spillFor', 'overflowSaid', 'longSpillLine', 'eaSaid', 'coverWords', 'coverLine', 'answerAfter', 'liveRow'];
+  'sinceTime', 'spillFor', 'overflowSaid', 'longSpillLine', 'eaSaid', 'coverWords', 'coverLine', 'answerAfter', 'liveRow', 'polledMs', 'pollAt'];
 
 // ------------------------------------------------------------------------------ 1. the EA's advice for today
 // Frensham Great Pond: "Low risk for the next five days" and "Usual care", while the EA's own panel said
@@ -236,7 +236,7 @@ test('the answer names what its level covers where the spills set it, and every 
 const hereford = week(['low', 'low', 'moderate', 'low', 'low'], { id: 'wye-hereford', name: "River Wye, Bishop's Meadow, Hereford", upstream_summary: { overflows: 14, wales_share: 0.29 },
   now: { risk: 0, label: 'low', discharging_upstream: 0, recent_upstream: 0, monitored_upstream: 0, no_feed_upstream: 14 },
   contributors: [{ site_id: 'DCW1', company: 'Dwr Cymru Welsh Water', site_name: 'HAY ON WYE/STW', status: -2, data_state: 'no_feed', distance_km: 30, lake_distance_km: 0, travel_h: 16, weight: 0.3, p_spill_today: 0.02 }] });
-const TILES = ['esc', 'fmt', 'feedTime', 'runningAtLastAnswer', 'statusText', 'feedDown', 'feedStale', 'liveSay', 'recentSay', 'overflowDots', 'glyph', 'ICON', 'noFeedSaid', 'nowTile'];
+const TILES = ['esc', 'fmt', 'feedTime', 'runningAtLastAnswer', 'statusText', 'feedDown', 'feedStale', 'liveSay', 'recentSay', 'overflowDots', 'glyph', 'ICON', 'noFeedSaid', 'nowTile', 'polledMs', 'pollAt', 'pollSay'];
 test('where none of the overflows reports, Right now is unknown, never "0 of 14 discharging"', () => {
   const ctx = page(TILES);
   const t = vm.runInContext('nowTile', ctx)(hereford, 14);
@@ -477,7 +477,7 @@ test('the E. coli estimate is labelled with what is true today: its season, its 
 // decision record's rows. The folded day-by-day numbers keep them, marked †.
 const ECOLI_PAGE = ['esc', 'glyph', 'ICON', 'tone', 'scaleBar', 'untested', 'explain', 'factorRow', 'ecoliName', 'ecoliFold', 'ecoliCheck', 'ecoliSaid', 'ecoliMore', 'lakeRanged', 'rangeOf', 'ecoliReading', 'likely', 'rangeLine', 'RANGE_BASIS', 'rangeBasis', 'RANGE_MORE', 'RANGE_OFF_SAID', 'rangeFold', 'typicalLine', 'TYPICAL_SAID', 'TYPICAL_MORE',
   'noFeedSaid', 'nowTile', 'feedDown', 'feedStale', 'liveSay', 'recentSay', 'overflowDots', 'runningAtLastAnswer', 'statusText', 'feedTime', 'fmt', 'riverTile', 'rangeBar',
-  'WT_ROUTES', 'waterEstOk', 'waterEstHow', 'waterEstSay', 'WT_AIR', 'WT_TAIL', 'waterEstMore', 'waterTile', 'weatherOn', 'spilling', 'bandWords', 'initial', 'rainCols', 'sunPath', 'facts', 'UNLISTED_ECOLI', 'water'];
+  'WT_ROUTES', 'waterEstOk', 'waterEstHow', 'waterEstSay', 'WT_AIR', 'WT_TAIL', 'waterEstMore', 'waterTile', 'weatherOn', 'spilling', 'bandWords', 'initial', 'rainCols', 'sunPath', 'facts', 'UNLISTED_ECOLI', 'water', 'polledMs', 'pollAt', 'pollSay'];
 const longBridges = week(['low', 'moderate', 'moderate', 'moderate', 'high'], { id: 'osm-thames-long-bridges', name: 'River Thames, Long Bridges, Oxford',
   source: 'openstreetmap', upstream_summary: { overflows: 45 },
   now: { risk: 0.1, label: 'low', discharging_upstream: 2, recent_upstream: 0, monitored_upstream: 44 },
@@ -519,12 +519,13 @@ test('Not known here: a row for each gap, in the words it had, and no tile witho
   const ctx = page(UNKNOWN_PAGE, { DATA: { generated_at: GEN } }), rows = vm.runInContext('unknowns', ctx);
   const said = s => JSON.parse(JSON.stringify(rows(s).map(([l, v, w]) => [l, v, text(w)])));   // out of the page's realm
   assert.deepEqual(said(longBridges), [
-    ['Live readings', '1 of 45 not reporting', 'With no live reading, it could be spilling unseen. A monitor reports when it spills, not how much or what is in it.'],
+    ['Live readings', '1 of 45 not reporting', 'With no live reading, it could be spilling unseen.'],
     ['Access', 'Not confirmed', 'Oxford City Council lists Longbridges among places receiving water-safety signs and discourages wild swimming. Check the current signs; listing this place does not confirm permission or a maintained entry point. Authority guidance . Checked from published sources on 3 Oct 2026; signs at the water have not been inspected.']]);
   assert.deepEqual(said(hereford), [
-    ['Live readings', '14 of 14 not reporting', 'With no live reading, they could be spilling unseen. Dŵr Cymru Welsh Water has no live feed SwimSignal reads. A monitor reports when it spills, not how much or what is in it.'],
+    ['Live readings', '14 of 14 not reporting', 'With no live reading, they could be spilling unseen. Dŵr Cymru Welsh Water has no live feed SwimSignal reads.'],
     ['Overflows in Wales', 'Not counted', 'Overflows in Wales are not counted: about 29% of the river within 60 km above this spot is in Wales.']]);
-  assert.deepEqual(said(frensham), [["Today's EA advice", 'Not checked', "The Environment Agency's advice for today could not be checked. Open the EA's page before you swim: it says when bathing is not advised."]]);
+  // Today's EA advice not checked: said once, in the line beside the answer that links the advice (5 Nov 2026), not here too.
+  assert.deepEqual(said(frensham), []);
   // Every overflow reporting, no access note, not a bathing water: no gap, and no tile.
   const quiet = week(['low', 'low', 'low', 'low', 'low']);
   assert.equal(rows(quiet).length, 0);
@@ -561,7 +562,7 @@ test('after a spill, the time it should have cleared, in UK time, while right no
 
 test('the Right now tile and the alerts say it; the five days name the first day back at low', () => {
   const s = spilt({});
-  const ctx = page(['esc', 'glyph', 'ICON', 'nowTile', 'feedDown', 'feedStale', 'liveSay', 'recentSay', 'overflowDots', 'feedTime', 'fmt',
+  const ctx = page(['esc', 'glyph', 'ICON', 'nowTile', 'polledMs', 'pollAt', 'pollSay', 'feedDown', 'feedStale', 'liveSay', 'recentSay', 'overflowDots', 'feedTime', 'fmt',
     'tone', 'initial', 'week', 'spilling', 'summary', 'daysSentence'], { DATA: { generated_at: GEN } });
   assert.match(text(vm.runInContext('nowTile', ctx)(s, 3).say), /3 report live\. The spills upstream should have passed and died off by Tuesday 22:47\.$/);
   assert.doesNotMatch(text(vm.runInContext('nowTile', ctx)(spilt({ label: 'low', risk: 0.1 }), 3).say), /died off/);
@@ -571,8 +572,13 @@ test('the Right now tile and the alerts say it; the five days name the first day
   assert.equal(L.backToLow(week(['low', 'low', 'low', 'low', 'low'])), '');
   assert.equal(L.backToLow(week(['low', 'high', 'high', 'moderate', 'moderate'])), '');   // not back within the five days
   assert.equal(L.backToLow(week(['high', 'low', 'low', 'low', 'low'], { classification: { class: 'poor', year: 2025 } })), '');   // rated poor: never low
-  // Right now raises today: back at low the next day.
-  assert.equal(L.backToLow(spilt({}, ['low', 'low', 'low', 'low', 'low'])), 'Back to low risk tomorrow.');
+  // Right now raises today, and its spills' water passes after the clocks: not "back to low tomorrow" (Monday) beside
+  // "died off by Tuesday 22:47" (Swale above Richmond Falls, 5 Nov 2026), but the clearing time.
+  assert.equal(L.backToLow(spilt({}, ['low', 'low', 'low', 'low', 'low']), NOW), 'The spills upstream should have passed and died off by Tuesday 22:47.');
+  // Once that time has passed, the forecast's own first low day.
+  assert.equal(L.backToLow(spilt({}, ['low', 'low', 'low', 'low', 'low']), Date.parse('2026-10-14T09:00:00+01:00')), 'Back to low risk tomorrow.');
+  // Back on the day it clears: as before.
+  assert.equal(L.backToLow(s, NOW), 'Back to low risk on Tuesday.');
   // The alerts: scripts/alerts.js writes `clears` beside the headline and the action, at the build's time.
   const dir = fs.mkdtempSync(path.join(require('node:os').tmpdir(), 'alerts-'));
   const gen = new Date(Date.now() - 3600e3).toISOString(), later = new Date(Date.now() + 26 * 3600e3).toISOString();

@@ -32,10 +32,11 @@ function renderFront() {
   const r = EX.ecoli.river, l = EX.ecoli.lake, sp = EX.spill_2025.leads;
   const lead0 = sp.find(x => x.source === 'forecast lead 0'), lead4 = sp.find(x => x.source === 'forecast lead 4');
   const m = r.at_line.model;
-  $('#front-answer').innerHTML =
-    `At rivers, better than the simple alternatives, with real misses. <b>Rebuilt afterwards</b>, not issued at the time: of ${r.over_900} river samples over 900, the estimate would have flagged ${m.hits} and missed ${m.misses}, ` +
-    `with ${m.false_alarms} false alarms. At lakes it did no better than quoting the usual rate: it would have flagged none of ${l.over_900}. ` +
-    `Spill forecasts beat the usual rate by ${pct(lead0.brier_skill_vs_clim)} on the day, falling to ${pct(lead4.brier_skill_vs_clim)} four days ahead.`;
+  LAB.answer($('#front-answer'),
+    `At rivers, better than the simple alternatives, with real misses. At lakes, no better than quoting the usual rate.`,
+    `<b>Rebuilt afterwards</b>, not issued at the time: of ${r.over_900} river samples over 900, the estimate would have flagged ${m.hits} and missed ${m.misses}, ` +
+    `with ${m.false_alarms} false alarms. At lakes it would have flagged none of ${l.over_900}. ` +
+    `Spill forecasts beat the usual rate by ${pct(lead0.brier_skill_vs_clim)} on the day, falling to ${pct(lead4.brier_skill_vs_clim)} four days ahead.`);
   $('#front-status').innerHTML = `<b>Exploratory, on outcomes already read.</b> E. coli: ${plural(EX.ecoli.all.samples, 'sample')} at ${EX.ecoli.all.sites} bathing waters, 2024–2026, against estimates rebuilt in hindsight. Spills: one held-out year. Nothing after ${fmt(EX.cutoff)}.`;
   // One dot per sample, in date order within each block, so "play" can fill them as the summers went.
   const kindOf = r => SITES[r.bw_id].kind, warned = r => r.model >= WARN;
@@ -110,6 +111,7 @@ function siteBrier(id) {
 function renderSiteHead() {
   const s = SITES[S.bw], sm = samplesOf(S.bw), x = EX.ecoli.sites[S.bw], b = siteBrier(S.bw);
   $('#bw-name').textContent = s.name;
+  $('#bw-link').innerHTML = `<a href="${LAB.spotURL('bw-' + S.bw)}">Today's forecast for ${esc(s.name)}</a>`;   // back to the live forecast
   $('#bw-meta').innerHTML = `${s.kind === 'lake' ? 'Lake bathing water. The site gives no E. coli warning at lakes; the line is drawn for comparison only.' : 'River bathing water'} · ${plural(sm.length, 'EA sample')} ${fmt(sm[0].t)} to ${fmt(sm[sm.length - 1].t)}`;
   const refBest = b ? Math.min(b.usual, b.site_usual, b.last) : null;
   $('#bw-facts').innerHTML = [
@@ -277,7 +279,16 @@ Promise.all([DATA + 'ecoli_evidence.v1.json', 'exploration.json'].map(u => fetch
     renderFront(); renderPicker(); renderRefs(); renderSpill(); renderEA(); renderQuestions();
     const h = new URLSearchParams(location.hash.slice(1));
     const first = Object.keys(EX.ecoli.sites).sort((a, b) => EX.ecoli.sites[b].over_900 - EX.ecoli.sites[a].over_900)[0];
-    selectSite(SITES[h.get('bw')] ? h.get('bw') : first, h.get('t'));
+    // a bathing water this record lacks is said, not swapped for another quietly; a link opened in an open page does the same
+    const open = (bw, t, fallback) => {
+      $('#bw-note').textContent = bw && !SITES[bw] ? `That bathing water is not in this record, which holds the ${EV.sites.length} inland bathing waters the Environment Agency samples. Showing ${SITES[fallback].name} instead; choose another below.` : '';
+      selectSite(SITES[bw] ? bw : fallback, t);
+    };
+    open(h.get('bw'), h.get('t'), first);
+    window.addEventListener('hashchange', () => {
+      const k = new URLSearchParams(location.hash.slice(1));
+      if (k.get('bw') !== S.bw || (k.get('t') && k.get('t') !== S.t)) open(k.get('bw'), k.get('t'), S.bw);
+    });
     let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { renderChart(); renderRefs(); renderSpill(); }, 150); });
   })
-  .catch(err => { $('#front-answer').textContent = `Could not read the research files (${err.message}). Serve the repository root: see README.md in the Research Lab folder.`; });
+  .catch(err => { LAB.failed($('#front-answer'), err); });

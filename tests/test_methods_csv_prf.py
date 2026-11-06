@@ -77,6 +77,23 @@ def test_the_method_page_is_well_formed_with_one_title_and_working_anchors():
         assert f'<section id="{h}">' in page, h
 
 
+def test_the_method_page_keeps_every_correction_with_the_five_newest_open():
+    """Readability pass, 5 Nov 2026: the five newest corrections stay open and the rest sit in a fold that says
+    how many; the advice's sources are folded under it; a short list says where the data comes from."""
+    page = (STATIC / "methods.html").read_text()
+    sec = re.search(r'<section id="corrections">(.*?)</section>', page, re.DOTALL).group(1)
+    open_part, fold = sec.split('<details class="fold">')
+    folded = re.findall(r"<li>", fold)
+    assert len(re.findall(r"<li>", open_part)) == 5 and f"<summary>Earlier corrections ({len(folded)})</summary>" in fold
+    assert "<b>17 October 2026.</b>" in open_part and "<b>14 September 2026.</b>" in fold
+    level = re.search(r'<section id="level">(.*?)</section>', page, re.DOTALL).group(1)
+    assert '<details class="fold"><summary>The sources, read on 4 October 2026</summary>' in level
+    data = re.search(r'<section id="sources">(.*?)</section>', page, re.DOTALL).group(1)
+    for name in ("National Storm Overflow Hub", "annual returns", "Open-Meteo", "OS Open Rivers", "Water Quality Explorer"):
+        assert name in data, name
+    assert 'href="/terms#data"' in data and 'href="/data"' in data and '<li><a href="#sources">' in page
+
+
 def test_the_method_page_is_linked_from_accuracy_and_every_foot():
     assert 'href="/methods"' in (STATIC / "verification.html").read_text()
     for name in ("about.html", "feedback.html", "privacy.html", "terms.html", "testing.html", "verification.html", "methods.html"):
@@ -91,10 +108,20 @@ def test_the_method_page_tables_are_the_committed_test_results():
     hold = pd.read_csv(PROCESSED / "verification_2025.csv").set_index("model")
     want = [hold.loc[m] for m in ("dipcast (pooled + site offsets)", "pooled only", "climatology (site rate)", "rain rule (>10mm/48h)")]
     assert _rows(page, "holdout") == [[f"{r.brier:.4f}", f"{r.auc:.3f}", f"{r.brier_skill_vs_clim:.2f}"] for r in want]
-    assert f"{int(want[0].n):,} overflow-days, {100 * want[0].base_rate:.2f}% of them" in page
     leads = pd.read_csv(PROCESSED / "verification_leads_2025.csv").set_index("source")
     want = [leads.loc["reanalysis (the weather as it was)"]] + [leads.loc[f"forecast lead {k}, isotonic cross-fitted (odd/even months)"] for k in range(5)]
     assert _rows(page, "leads") == [[f"{r.brier:.4f}", f"{r.auc:.3f}", f"{r.brier_skill_vs_clim:.2f}"] for r in want]
+    # Tests 1 and 2 lead with their headline figures, the tables folded under them, and link the Accuracy page's
+    # (5 Nov 2026): each figure stated is the committed one.
+    ours, rule = hold.loc["dipcast (pooled + site offsets)"], hold.loc["rain rule (>10mm/48h)"]
+    test1 = re.search(r'<section id="holdout">(.*?)</section>', page, re.DOTALL).group(1)
+    assert f"{int(ours.n):,} overflow-days, {100 * ours.base_rate:.2f}% of them" in test1
+    assert f"Brier skill was {ours.brier_skill_vs_clim:.2f}" in test1 and f"{round(100 * ours.auc)} times in 100 (AUC {ours.auc:.3f})" in test1
+    assert f"48 hours scored {rule.brier_skill_vs_clim:.2f}" in test1 and 'href="/verification#holdout"' in test1
+    cross = lambda k: leads.loc[f"forecast lead {k}, isotonic cross-fitted (odd/even months)"]
+    test2 = re.search(r'<section id="leads">(.*?)</section>', page, re.DOTALL).group(1)
+    assert f"skill {cross(0).brier_skill_vs_clim:.2f} on the day and {cross(4).brier_skill_vs_clim:.2f} four days ahead" in test2
+    assert f"as it fell ({leads.loc['reanalysis (the weather as it was)'].brier_skill_vs_clim:.2f})" in test2 and 'href="/verification#leads"' in test2
     m = json.loads((PROCESSED / "ecoli_model_eval.json").read_text())
     by = lambda rows, name: next(r for r in rows if r["model"] == name)
     full = "rain + spill exposure + season (dipcast)"

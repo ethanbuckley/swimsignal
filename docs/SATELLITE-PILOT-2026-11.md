@@ -75,7 +75,10 @@ For each pilot site, beside the latest reading (`src/dipcast/site/lakes.js`, `la
 - after a failed or stopped check, the last check that finished;
 - "No check has run for N days" once the last check is more than 10 days old.
 
-The latest reading keeps its own date and age (recent, older or stale), counted on the day the page is read. Readings
+The latest reading keeps its own date and age (recent, older or stale), counted on the day the page is read.
+From contract 1.4 (5 November 2026) each new reading also measures its own signal (brightness, pixel spread, the
+inner-core reading), and one with low signal says so beside its value; readings from earlier runs carry no such
+fields and are not marked either way. Readings
 outside May-September are experimental indices with no chlorophyll or algae inference (amendment 1.1). Every other
 site stays the historical record, and the release label says so.
 

@@ -134,6 +134,10 @@ test('water still on its way: when it reaches here, counted when the page is rea
     + 'discharging now, 6.0 km upstream, about 5 hours away.Water from a spill 3.1 km upstream reaches here in about 20 minutes.'
     + 'If the overflow discharging upstream stops now, the model expects low risk from spills by about Monday morning.');
   assert.equal(tile(d, '2026-10-05'), '');
+  // The overflow the sentence before names: its latest spill, not a second distance and time for it (Swale, 5 Nov 2026).
+  const same = coming(10, {source: {...ILKLEY, site_id: 'YW2', status: 0, share: 1}});
+  assert.match(tile(same), /about 5 hours away\.Water from its latest spill, which started earlier, reaches here in about 10 minutes\./);
+  assert.equal(plain(run('arriveSentence', same)), 'Water from a spill 3.1 km upstream reaches here in about 10 minutes.');   // nothing named before it
   vm.runInContext('DAY = null', ctx);
 });
 
@@ -190,7 +194,10 @@ test('an overflow in the same lake is across it, a spill under way says since wh
 
 test('the page draws the tile before the overflows and fills it again for a picked day', () => {
   const at = s => { const i = html.indexOf(s); assert.ok(i >= 0, s); return i; };
-  assert.ok(at('h += `<div id="sources-host">${whereFrom(d)}</div>`;') < at('if (d.contributors.length) h += overflowTile(d, allUpstream(d));'));
+  // the phone's stack writes the host before the overflows; a desktop's forecast section holds it, the evidence the list
+  assert.ok(at('h += `<div id="sources-host">${whereFrom(d)}</div>`;') < at('h += ovs + replay + plume;'));
+  assert.ok(at("sources: `<div id=\"sources-host\">${whereFrom(d)}</div>`") > 0);
+  assert.ok(at("h += two('r-forecast', o.lead, (o.map || '') + (o.sources || ''));") < at("ev = (o.more || '') + (o.ovs || '')"));
   assert.ok(at("if (src) src.innerHTML = whereFrom(d);") > at('function showDay(d, iso) {'));
   assert.ok(at('#sources-host:empty { display:none; }') > 0);
   assert.ok(at('function whereFrom(d) {') < at('function overflowTile(d, total) {'));

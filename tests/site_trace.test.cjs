@@ -31,7 +31,7 @@ test('drawn from zoom 10 only, under the overflows, and its key shown only while
   const L = { polyline: (lines, o) => { const l = { lines, o, addTo: g => { added.push(l); return l; } }; return l; } };
   const handlers = {};
   const map = { getZoom: () => zoom, on: (e, f) => { handlers[e] = f; }, createPane: () => ({ style: {} }) };
-  const ctx = vm.createContext({ L, map, contribLayer, current: null, RING: () => '#0f5a61',
+  const ctx = vm.createContext({ L, map, contribLayer, current: null, RING: () => '#0f5a61', isolated: s => String(s.error || '').startsWith('An isolated lake'),
     document: { querySelectorAll: q => q === '.trkey' ? keys : [] },
     fetch: async u => { fetched.push(u); return { ok: true, json: async () => ({ id: 'w', lines: ['_p~iF~ps|U_ulLnnqC'] }) }; } });
   vm.runInContext('let current = null;' + pageSrc.slice(pageSrc.findIndex(l => l.startsWith("map.createPane('trace')")),
@@ -59,4 +59,10 @@ test('the pane sits under the overlay pane, where the overflows\' circles are dr
   assert.match(html, /<div class="trkey" hidden><span class="trline"><\/span>The water that reaches this spot<\/div>/);
   assert.match(html, /<p class="t-key trkey" hidden><span class="trline"><\/span>the water that reaches this spot<\/p>/);
   assert.match(html, /\.trline \{[^}]*border-top:2px solid var\(--brand\)/);
+});
+
+test('an isolated lake, which has no traced river and so no file, is not asked for one (5 Nov 2026: a 404 on each visit)', () => {
+  const page = require('node:fs').readFileSync(require('node:path').join(__dirname, '../src/dipcast/site/index.html'), 'utf8');
+  const fn = page.slice(page.indexOf('function drawTrace() {'), page.indexOf('map.on(\'zoomend\', drawTrace);'));
+  assert.match(fn, /if \(!s \|\| !s\.detail_file \|\| isolated\(s\) \|\| map\.getZoom\(\) < TRACE_ZOOM\) return;/);
 });

@@ -1,0 +1,56 @@
+gauge,label,river,lat,lon,low,high,measure,system,spots,paired,why
+F1902,Ilkley,River Wharfe,53.929346,-1.83091,0.09,1.8,57f6d273-427d-4f3b-8ce9-1bc17c8b11df-level-i-900-m-qualified,B10AF79E-61FE-4813-A569-154670779022,bw-uke4100-08901,True,
+L2105,Knaresborough,River Nidd,54.008443,-1.47066,0.42,1.2,2e294ffc-fcf4-4111-9487-19f10cf7b3f1-level-i-900-m-qualified,B10AF79E-61FE-4813-A569-154670779022,bw-uke2203-08903,True,
+F2004,Flint Mill,River Wharfe,53.920115,-1.358935,0.403,2.6,f85b0f2b-36a9-4e9e-bad2-ca889240b88c-level-i-900-m-qualified,B10AF79E-61FE-4813-A569-154670779022,bw-uke4200-08904,True,
+L2307,Richmond Lownthwaite Bridge,River Swale,54.401122,-1.776606,0.0,3.0,3e1bef32-b715-4899-b58a-78b6d13f3f30-level-i-900-m-qualified,B10AF79E-61FE-4813-A569-154670779022,bw-uke2204-08905,False,
+E60501,Cambridge Jesus Lock,River Cam,52.212835,0.120872,0.637,0.74,,5BE5DEE8-9E70-463C-B11E-EECD43A66DBB,bw-ukh1201-09801;cam-grantchester,False,no Hydrology series
+E27431,Beccles Quay,River Waveney,52.464571,1.564233,0.0,1.1,,41BC0929-F241-4765-BF52-F8AAA4CA3664,bw-ukh1406-10712;waveney-outney-common,False,no Hydrology series
+E21227,Lamarsh,River Stour,51.987468,0.752212,0.154,1.65,4e87c615-767d-4b34-94c1-ca47926f6a70-level-i-900-m-qualified,8F97CE5E-C0E5-4F4D-8BFD-8757022DB5AB,bw-ukh1401-11051,False,no upstream gauge
+2200TH,Reading,River Thames,51.461325,-0.967884,6.579,7.0,f44bf96d-3953-4fec-88bd-30ef4e12e523-level-i-900-m-qualified,9E11FE0F-87DF-49E0-9299-35C550FC412E,bw-ukj1102-11941,True,
+3404TH,Trowlock Island,River Thames,51.423993,-0.308538,4.42,5.0,defba4e0-fb05-42e7-aec6-f5088f98ae68-level-i-900-m-qualified,9E11FE0F-87DF-49E0-9299-35C550FC412E,bw-uki2203-11942,True,
+1100TH,Farmoor,River Thames,51.757544,-1.366384,0.5,1.3,6b80bd1c-6c19-4c26-875d-108bf8ef1a84-level-i-900-m-qualified,9E11FE0F-87DF-49E0-9299-35C550FC412E,bw-ukj1402-11946;thames-port-meadow,True,
+1800TH,Sutton Courtenay,River Thames,51.647821,-1.254167,1.911,3.51,b0713e87-cab3-46e4-bfb3-f0bbb91cedf6-level-i-900-m-qualified,9E11FE0F-87DF-49E0-9299-35C550FC412E,bw-ukj1403-11947;thames-clifton-hampden;osm-thames-long-bridges,True,
+43123,East Mills Flume,River Avon,50.928396,-1.777288,0.597,1.35,481f8042-997a-44cc-b425-51340d4cee9c-level-i-900-m-qualified,34AE1D9F-1653-412A-9ED8-F15FB9ECE857,bw-ukj3308-19001,True,
+43165,Salisbury Ashley Road,River Avon,51.076527,-1.803528,0.103,0.48,513e2d83-ef5b-473a-a8fd-e066545c4243-level-i-900-m-qualified,34AE1D9F-1653-412A-9ED8-F15FB9ECE857,bw-ukk1500-19002,False,no upstream gauge
+52111,Taunton Market,River Tone,51.020017,-3.100618,0.818,1.77,fad760ef-0c6e-48df-a1c5-01d3f471cbb0-level-i-900-m-qualified,9E2CAD7B-9E7C-44C0-9613-5D2D020FAE9F,bw-ukk2304-35201,True,
+53120,Tellisford,Somerset Frome,51.30679,-2.280873,0.542,3.2,29434d59-1597-4783-b0b6-9f9a821d30d8-level-i-900-m-qualified,F2B8C702-F41D-470E-B159-B19009B92F36,bw-ukk2301-36051;frome-tellisford-weir,True,
+2625,Ludlow Teme,River Teme,52.36409,-2.706474,0.856,3.0,80e4ce66-6404-4311-9ece-0eac64d73907-level-i-900-m-qualified,747449B0-9B3D-4152-A2A7-E5D550FEB336,bw-ukg2200-36060,True,
+2134,Buildwas,River Severn,52.636354,-2.524962,0.424,3.4,57e8d163-310e-4d4c-a0f2-86055cc91da0-level-i-900-m-qualified,747449B0-9B3D-4152-A2A7-E5D550FEB336,bw-ukg2100-36070,True,
+2077,Welsh Bridge,River Severn,52.709797,-2.75808,0.422,2.7,92bda817-ccf4-4847-a7c2-87160c7b1dff-level-i-900-m-qualified,747449B0-9B3D-4152-A2A7-E5D550FEB336,bw-ukg2200-36071,True,
+710301,Low Moor,River Ribble,53.872754,-2.414398,0.202,3.3,733a1439-f3a2-41e3-b053-8a11b21091f6-level-i-900-m-qualified,A0DD003D-380E-4287-91AE-3C4D2CFD9C5D,bw-ukd4308-46501,True,
+722421,Killington,River Lune,54.310113,-2.582471,0.17,2.3,2df2593d-17b3-4251-8145-5a7fb0fdf93c-level-i-900-m-qualified,A1F5D8D4-D2B8-4026-B995-4517070FEC8F,lune-devils-bridge,True,
+724629,Caton,River Lune,54.081344,-2.722026,0.28,3.6,9ad5d28c-7cfe-46db-b39d-58701689cd59-level-i-900-m-qualified,A1F5D8D4-D2B8-4026-B995-4517070FEC8F,lune-crook-o-lune,False,
+F1903,Addingham,River Wharfe,53.939721,-1.862096,0.189,1.87,f5b37267-c78d-4e3e-9fca-0a380d46ffc8-level-i-900-m-qualified,B10AF79E-61FE-4813-A569-154670779022,wharfe-bolton-abbey;wharfe-appletreewick,True,
+F1906,Netherside Hall,River Wharfe,54.080705,-2.024779,0.3,2.2,30863aae-d76a-4ee8-acd3-9231d38c752b-level-i-900-m-qualified,B10AF79E-61FE-4813-A569-154670779022,wharfe-burnsall;wharfe-linton-falls,True,
+L2208,Bainbridge,River Ure,54.311836,-2.102939,0.051,2.0,24a5617c-4044-4906-908c-1d877e36c983-level-i-900-m-qualified,B10AF79E-61FE-4813-A569-154670779022,ure-aysgarth,False,
+710151,Locks Weir,River Ribble,54.084353,-2.280457,0.105,1.4,6be714e0-5aa2-48d2-8523-fb48cb265c19-level-i-900-m-qualified,A0DD003D-380E-4287-91AE-3C4D2CFD9C5D,ribble-stainforth-force,False,no upstream gauge
+740101,Ulpha,River Duddon,54.341859,-3.218047,0.244,1.5,34f4e53b-4616-4aaa-b8ad-170c22c808c4-level-i-900-m-qualified,AFE0ADF2-FD22-45EE-9E81-E3103FF13FA9,duddon-birks-bridge,False,no upstream gauge
+762505,Great Corby,River Eden,54.890119,-2.830743,0.41,3.36,244c170e-922f-4e33-8b7d-d02dd50888d3-level-i-900-m-qualified,B537C607-0BD0-4B4C-996C-91F6A7D32A72,eden-armathwaite,True,
+760502,Temple Sowerby,River Eden,54.648336,-2.614388,0.2,3.0,4879595c-8a89-41e4-8b6a-00db4b4312ea-level-i-900-m-qualified,B537C607-0BD0-4B4C-996C-91F6A7D32A72,eden-lazonby,True,
+F3505,Middleton,River Tees,54.620104,-2.080488,0.368,1.8,74713051-677a-460e-9efe-0310287ff611-level-i-900-m-qualified,80052AE1-F57B-492F-BE5F-5BB9B52A282B,tees-low-force,False,
+022009,Rothbury,River Coquet,55.308429,-1.895992,0.261,1.8,13d2950b-9382-4c47-a378-875a2e2f10de-level-i-900-m-qualified,A22B601A-CC0A-426A-A065-54BFD52D6053,coquet-rothbury,True,
+023058,Hindley Wrae Ford,River West Allen,54.918811,-2.328264,0.087,0.533,8e3c11a1-d65c-4f88-9acb-1cd280e4c39c-level-i-900-m-qualified,72284317-C6FB-48A0-917F-A930652B35DF,allen-plankey-mill,False,no upstream gauge
+4001,Yorkshire Bridge,River Derwent,53.362304,-1.703631,0.302,0.5,cad502d9-12f9-4449-a1e5-568b9f7d32e6-level-i-900-m-qualified,B10AF79E-61FE-4813-A569-154670779022,derwent-slippery-stones,False,no upstream gauge
+4046,Izaak Walton,River Dove,53.055864,-1.782274,0.271,0.59,73ee60b4-ef40-4579-a060-db2312ea3ce1-level-i-900-m-qualified,B10AF79E-61FE-4813-A569-154670779022,dove-dovedale,False,no upstream gauge
+055807_TG 320,Old Wye Bridge,River Wye,52.051748,-2.720173,0.096,3.3,30b20164-0eb7-49cf-b8fc-5b8e7ef6caf9-level-i-900-m-qualified,747449B0-9B3D-4152-A2A7-E5D550FEB336,wye-hereford,True,
+2320,Lydbrook,River Wye,51.85366,-2.578653,0.42,4.0,7d218531-610d-479d-b8f7-6a69cb99e3c8-level-i-900-m-qualified,747449B0-9B3D-4152-A2A7-E5D550FEB336,wye-symonds-yat,True,
+53129,Bathford,River Avon,51.401613,-2.310449,0.699,2.5,e1167305-106b-4cd6-adbb-83d90590079e-level-i-900-m-qualified,F2B8C702-F41D-470E-B159-B19009B92F36,avon-warleigh-weir,True,
+46122,Austins Bridge,River Dart,50.479033,-3.761402,0.291,1.8,fd8ea26c-8052-48c5-a1bb-bbd5ebbbb3d3-level-i-900-m-qualified,423277E3-6D44-4F99-8D91-F29393DCE65E,dart-spitchwick;osm-dart-dartington,False,
+46123,Bellever,East Dart River,50.582293,-3.898034,0.451,1.5,723a8fc4-908b-4430-91c7-9990be86540a-level-i-900-m-qualified,423277E3-6D44-4F99-8D91-F29393DCE65E,dart-sharrah-pool,False,no upstream gauge
+47121,Carnwood,River Plym,50.431671,-4.083069,0.164,1.6,e268ebd4-97ae-4e44-857d-d01c4d838027-level-i-900-m-qualified,BB452563-B817-4307-B8B2-817FA1045CFF,plym-cadover-bridge,False,no upstream gauge
+E84409,Chagford Drogo Iron Bridge,River Teign,50.691685,-3.810926,1.279,2.1,,BF91EC9C-12C7-40F6-96F7-0AE36C0E7BCD,teign-fingle-bridge;osm-teign-drogo-weir,False,no Hydrology series
+45121,Brushford,River Barle,51.021855,-3.53136,0.179,1.5,4b146acd-5118-4e14-b23a-13405168a010-level-i-900-m-qualified,4515C31C-661C-43CA-BAE4-45D94337266B,barle-tarr-steps,False,no upstream gauge with a series and a range
+E21163,Houghton,River Great Ouse,52.330674,-0.120798,0.256,0.452,,5BE5DEE8-9E70-463C-B11E-EECD43A66DBB,great-ouse-houghton,False,no Hydrology series
+E22678,Langham,River Stour,51.971749,0.940326,0.205,1.3,1aa8057c-7be4-4c7c-8a7d-0616effaea2b-level-i-900-m-qualified,8F97CE5E-C0E5-4F4D-8BFD-8757022DB5AB,stour-dedham,True,
+0569TH,Hannington Bridge,River Thames,51.663588,-1.749677,2.07,3.81,62a5f097-03e7-4dca-91cc-cb3cf6f1c1c7-level-i-900-m-qualified,9E11FE0F-87DF-49E0-9299-35C550FC412E,thames-lechlade;thames-buscot-weir,True,
+2496TH,Hambleden Lock,River Thames,51.559931,-0.873315,0.063,0.363,,9E11FE0F-87DF-49E0-9299-35C550FC412E,thames-henley,False,no Hydrology series
+2498TH,Temple Lock,River Thames,51.552057,-0.793965,0.051,0.208,,9E11FE0F-87DF-49E0-9299-35C550FC412E,thames-hurley,False,no Hydrology series
+E8371,Barcombe,River Ouse,50.915549,0.037303,1.8,5.7,08337091-0182-4e54-9702-2f7bce8fe2d9-level-i-900-m-qualified,B1C01B21-FE73-402F-B61C-DF63096AAB35,ouse-barcombe-mills,False,no upstream gauge
+E1550,Town Lock,River Medway,51.194615,0.278452,0.882,1.66,,7A56FA94-B364-4A72-98E6-2D8F69C015DB,medway-tonbridge,False,no Hydrology series
+L2009,Otley,River Wharfe,53.907954,-1.694001,0.36,1.2,49076770-98e9-47b2-89b0-aa90d60ecdc1-level-i-900-m-qualified,B10AF79E-61FE-4813-A569-154670779022,osm-wharfe-greenholme,True,
+4197,Buxton,River Wye,53.2536,-1.904027,0.16,1.16,46f89365-2297-4dca-adc4-092ff08c53ce-level-i-900-m-qualified,B10AF79E-61FE-4813-A569-154670779022,osm-wye-chee-dale,False,
+681003,Hug Bridge,River Dane,53.169457,-2.104665,0.172,0.476,5b0b8aff-bc71-48c0-b290-0f9a244ddfa1-level-i-900-m-qualified,7581F182-70C3-41F7-AC45-70795ED745CC,osm-dane-three-shires-head,False,no upstream gauge
+E24255,Brownshill,River Great Ouse,52.335738,0.008586,0.298,0.918,,5BE5DEE8-9E70-463C-B11E-EECD43A66DBB,osm-great-ouse-overcote,False,no Hydrology series
+3040TH,Tilford,River Wey,51.181979,-0.750222,0.139,1.4,a99b0223-fd15-4a76-8c45-4958137fa2ed-level-i-900-m-qualified,9E11FE0F-87DF-49E0-9299-35C550FC412E,osm-wey-waverley,False,
+E13810,Wherwell,River Test,51.166603,-1.441818,0.3,0.5,,FB9FC122-A776-4AB3-AE2E-C61C712A7418,osm-test-chilbolton,False,no Hydrology series
+E12470,Wharf Mill,River Itchen,51.0582,-1.308338,0.319,0.81,,FB9FC122-A776-4AB3-AE2E-C61C712A7418,osm-itchen-compton-lock,False,no Hydrology series

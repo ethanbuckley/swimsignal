@@ -167,7 +167,10 @@ const OCT11 = {
 test('11 Oct 2026: forecasts are not overflow-days, and the days are counted, with the missing ones named', async () => {
   const els = await render({live: OCT11});
   const a = text(els.answer.innerHTML), l = text(els.live.innerHTML), s = text(els.short.innerHTML);
-  assert.match(a, /That is 10 days of scores between 29 Sept? 2026 and 10 Oct 2026, too few to judge across different weather\. 8 and 9 October are missing: too few runs to observe the overflows six times a day, as the scoring rule needs\./);
+  // The missing days are named once, under Live scoring; the warnings point there (5 Nov 2026).
+  assert.match(a, /That is 10 days of scores between 29 Sept? 2026 and 10 Oct 2026, too few to judge across different weather\. Some days could not be scored: see Live scoring \./);
+  assert.match(l, /on 10 days from 29 Sept? 2026; updated [^.]*\. 8 and 9 October are missing: too few runs to observe the overflows six times a day, as the scoring rule needs\./);
+  assert.equal((a + l + s).split('8 and 9 October are missing').length, 2, 'said once');
   assert.match(a, /The 48,090 forecasts are for 9,773 overflow-days\./);
   assert.match(l, /48,090 forecasts scored, for 9,773 overflow-days on 10 days from 29 Sept? 2026/);
   assert.match(s, /48,090 forecasts scored, for 9,773 overflow-days on 10 days from 29 Sept? 2026/);
@@ -177,6 +180,15 @@ test('11 Oct 2026: forecasts are not overflow-days, and the days are counted, wi
   assert.match(l, /19,457 candidate forecasts were not scored/);
 });
 
+test('5 Nov 2026: days not scored after the last scored day are said after the span, not inside it', async () => {
+  const sw = OCT11.scoring_window;
+  const late = {...OCT11, scoring_window: {...sw, days_not_scored: [...sw.days_not_scored,
+    {day: '2026-10-11', reason: 'max_gap', n_candidates: 5000}, {day: '2026-10-12', reason: 'min_known_polls', n_candidates: 5000},
+    {day: '2026-10-13', reason: 'min_known_polls', n_candidates: 5000}]}};
+  const l = text((await render({live: late})).live.innerHTML);
+  assert.match(l, /on 10 days from 29 Sept? 2026; updated [^.]*\. 8 and 9 October are missing: too few runs to observe the overflows six times a day, as the scoring rule needs\. After 10 Oct 2026, 11 October is missing: the gaps between runs were longer than the scoring rule allows\. 12 and 13 October are missing: too few runs/);
+});
+
 test('11 Oct 2026: the climatology row has its own AUC, and the error is said against both baselines', async () => {
   const els = await render({live: OCT11});
   const a = text(els.answer.innerHTML), l = text(els.live.innerHTML), s = text(els.short.innerHTML);
@@ -184,8 +196,15 @@ test('11 Oct 2026: the climatology row has its own AUC, and the error is said ag
   assert.ok(!/Climatology [^)]*\) 0\.0349 0\.500/.test(l));
   assert.match(a, /Read as a chance, its error is 29% lower than each overflow's long-run rate\. That rate is an easy test here: it averaged 9\.7% a day, against 2\.8% observed\. A flat forecast at the period's own rate, 2\.8% every day, is harder to beat\. Against it the error is 7\.6% lower\./);
   assert.match(a, /At 5 of the 9 companies, that flat forecast scored better than SwimSignal\./);
-  assert.match(text(els.top.innerHTML), /Lower error, live 29% Read as a chance, against each overflow's long-run rate, and 7\.6% lower against a flat forecast at this period's own rate\./);
+  // The tile's figure is against the harder baseline, the flat forecast; the long-run rate's second (5 Nov 2026).
+  assert.match(text(els.top.innerHTML), /Lower error, live 7\.6% Read as a chance, against a flat forecast at this period's own rate\. Against each overflow's long-run rate, an easier test, 29% lower\./);
   assert.match(s, /which ran high: 9\.7% a day against 2\.8% observed\. It is 7\.6% lower than a flat forecast at this period's own rate\./);
+});
+
+test('5 Nov 2026: overflows with no company are not counted as a company against the flat forecast', async () => {
+  const unk = {company: 'unknown', brier_cal: 0.78, flat_brier: 0.11, sites: 1, n: 7, base_rate: 0.03, mean_forecast: 0.03, skill: -1, auc: 0.5};
+  const a = text((await render({live: {...OCT11, by_company: [...OCT11.by_company, unk]}})).answer.innerHTML);
+  assert.match(a, /At 5 of the 9 companies, that flat forecast scored better than SwimSignal\./);
 });
 
 test('11 Oct 2026: the warnings by company, and plainly that outside United Utilities the High line has caught few spills', async () => {
@@ -299,12 +318,12 @@ test('24 Oct 2026: by company says what the data says, and the row with no compa
 
 test('a live error above the long-run rate is said as higher, never as a negative lower', async () => {
   const top = text((await render({live: {...OCT11, overall: {...OCT11.overall, calibrated: {...OCT11.overall.calibrated, brier: 0.05}}}})).top.innerHTML);
-  assert.match(top, /Higher error, live 43% Read as a chance/);
+  assert.match(top, /Higher error, live 85\.3% Read as a chance, against a flat forecast at this period.s own rate\. Against each overflow.s long-run rate, an easier test, 43% higher\./);
   assert.ok(!/-\d+%/.test(top), top);
 });
 
 // The page as the build writes it: the boxes filled in place, in the page's own order.
-test('live and historical headline results are grouped before the full report', async () => {
+test('live and historical headline results are grouped before the full report, In short straight after them', async () => {
   const prerender = require('../scripts/prerender_verification.js').prerender;
   const out = await prerender(html, {live: OCT24, holdout: [{model: 'dipcast', n: 826725, auc: 0.9296, brier_skill_vs_clim: 0.3347}]});
   let page = html;
@@ -313,21 +332,54 @@ test('live and historical headline results are grouped before the full report', 
   const tiles = [...body.matchAll(/<div class="stat">/g)].map(m => m.index);
   const liveHead = body.indexOf('id="live-summary-h"'), historicalHead = body.indexOf('id="history-summary-h"'), toc = body.indexOf('id="toc-h"');
   assert.equal(tiles.length, 4);
-  assert.ok(liveHead < tiles[0] && tiles[2] < historicalHead && historicalHead < tiles[3] && tiles[3] < toc);
+  assert.ok(liveHead < tiles[0] && tiles[2] < historicalHead && historicalHead < tiles[3] && tiles[3] < body.indexOf('id="short-h"') && body.indexOf('id="short-h"') < toc);
   assert.ok(body.indexOf('<p>By company,') > tiles[2] && body.indexOf('<p>By company,') < historicalHead);
   assert.match(body, /A warning can miss a spill/);
-  // Then everything else in the order it had: the warnings, In short, how to read the numbers, live, offline.
+  // Then In short, the contents list, the warnings, how to read the numbers, live, offline (5 Nov 2026).
   const at = s => body.indexOf(s);
-  assert.ok(at('id="warnings-h"') < at('id="short-h"') && at('id="short-h"') < at('id="reading"') && at('id="reading"') < at('id="live-scoring"')
-    && at('id="live-scoring"') < at('id="holdout"'), 'order');
-  assert.match(out.top, /<li><a href="#warnings">Warnings, misses and false alarms<\/a><\/li><li><a href="#in-short">In short<\/a><\/li>/);
+  assert.ok(at('id="short-h"') < at('id="toc-h"') && at('id="toc-h"') < at('id="warnings-h"') && at('id="warnings-h"') < at('id="reading"')
+    && at('id="reading"') < at('id="live-scoring"') && at('id="live-scoring"') < at('id="holdout"'), 'order');
+  // The contents list starts with the warnings; In short is above it, so it is not listed.
+  assert.match(out.short, /<ol><li><a href="#warnings">Warnings, misses and false alarms<\/a><\/li><li><a href="#live-scoring">/);
+  assert.ok(!out.short.includes('href="#in-short"'));
   assert.ok(out.short.includes('<section class="summary" id="in-short"'));
+  // Within In short, the live results come before the 2025 held-out test.
+  const sh = text(out.short);
+  assert.ok(sh.indexOf('Live, against what the overflows then did') < sh.indexOf('on a year the model never saw'), sh);
 });
 
 test('the build writes the level section into the page, and the contents list points at it', async () => {
   const prerender = require('../scripts/prerender_verification.js').prerender;
   const out = await prerender(html, {live: {...OCT24, spots_live: SPOTS}, credits: {}});
   assert.match(out.live, /<section id="spot-level"><h2>How the level itself has done<\/h2>/);
-  assert.match(out.top, /<li><a href="#spot-level">How the level itself has done<\/a><\/li>/);
+  assert.match(out.short, /<li><a href="#spot-level">How the level itself has done<\/a><\/li>/);
   assert.match(out.short, /href="#spot-level">Details<\/a>/);
+});
+
+// The readability pass of 5 Nov 2026: the checking tables are folded under a question, their headings outside the
+// fold so the contents list and links still land, and the Research Lab's exhibit sits with the live E. coli scores.
+test('the checking tables are folded under their questions, the headings left outside for the contents list', async () => {
+  const v = {version: 'code=1', first_day: '2026-10-01', last_day: '2026-10-01', n: 10, base_rate: 0.03, brier_cal: 0.02, climatology_brier: 0.03};
+  const liveData = {...OCT11, by_version: [v], by_week: [{week: '2026-09-28', n: 10, base_rate: 0.03, brier_cal: 0.02}],
+    by_rain: [{band: 'dry', n: 10, mean_forecast: 0.03, base_rate: 0.02, brier_cal: 0.02}],
+    ecoli_live: {n_scored: 3, n_samples: 3, n_sites: 1, overall: {base_rate: 0.3, brier: 0.2, climatology_brier: 0.25, auc: 0.6},
+      recent: [{site: 'A', day: '2026-10-01', forecast: 0.2, lead: 0, rain_48h: 3, ecoli: 950}]}};
+  const rel = [{lo: 0, hi: 0.1, n: 100, forecast: 0.05, observed: 0.04}];
+  const leads = [{source: 'forecast lead 0', n: 10, brier: 0.04, auc: 0.9, brier_skill_vs_clim: 0.3}];
+  const els = await render({live: liveData, reliability: rel, leads, holdout: [{model: 'dipcast', n: 10, base_rate: 0.07, brier: 0.04, log_loss: 0.1, auc: 0.93, brier_skill_vs_clim: 0.33}]});
+  const all = els.live.innerHTML + els.offline.innerHTML;
+  for (const id of ['by-version', 'by-week', 'by-rain', 'coverage', 'holdout-reliability', 'leads']) {
+    const sec = all.slice(all.indexOf(`<section id="${id}">`));
+    assert.match(sec, new RegExp(`^<section id="${id}"><h2>[^<]+</h2>(<p[^>]*>[\\s\\S]*?</p>)?<details class="fold"><summary>[^<]+\\?</summary>`), id);
+  }
+  assert.match(all, /<details class="fold"><summary>Most recent samples: [^<]+<\/summary>/);
+  // The coverage verdict stays open above its fold.
+  assert.match(text(els.live.innerHTML), /It does not: 2\.8% against 1\.6% under the stricter rule\..*How do the scores compare under each rule\?/);
+  // The exhibit: in the live E. coli section, not above the results.
+  const ecoli = els.live.innerHTML.slice(els.live.innerHTML.indexOf('<section id="ecoli-live">'));
+  assert.ok(ecoli.includes('href="/lab/forecasts/"') && !els.top.innerHTML.includes('lab/forecasts'));
+  assert.ok(!html.slice(0, html.indexOf('<script>')).includes('lab/forecasts'), 'not in the page above the results');
+  // With no live E. coli section, it still appears once, among the offline tests.
+  const bare = await render({...live()});
+  assert.equal((bare.live.innerHTML + bare.offline.innerHTML).split('href="/lab/forecasts/"').length, 2);
 });

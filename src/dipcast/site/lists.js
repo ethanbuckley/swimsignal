@@ -166,8 +166,48 @@ function sitesHash(name, spots) {
 // A plan, shared as a list, is named for its day: "Plan for Saturday 10 Oct".
 const planListName = iso => 'Plan for ' + new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short' });
 
+// ------------------------------------------------------------------------------ the Saved page as a starting page
+// The places on it, grouped (2 Nov 2026): with more than one list, the list shown is the group, under its
+// name, since its chips already choose it and Share, Compare and Save act on it; with one list, its spots by
+// area, in the order saved inside each area and the areas in the order their first spot was saved.
+// spots: [{id, area}], in the list's order. Returns [[heading, spots]]; a spot without an area goes under "Other".
+function savedGroups(spots, listNameShown = null) {
+  if (listNameShown) return spots.length ? [[listNameShown, spots]] : [];
+  const out = new Map();
+  for (const s of spots) { const a = s.area || 'Other'; if (!out.has(a)) out.set(a, []); out.get(a).push(s); }
+  return [...out];
+}
+// The spots alerts cover: every saved spot the forecast has, less those turned off one by one (off). The
+// browser's record of what it sent (index.html, PUSH_KEY) keeps `off`; the saved lists are untouched.
+const alertSpots = (saved, known, off = []) => [...saved].filter(id => known.has(id) && !off.includes(id));
+// What a saved spot's card says about alerts, from what the page knows:
+//   push, email   the build set up notifications (DATA.push) or email alerts (DATA.email)
+//   can           'yes', or why this browser cannot have notifications: 'blocked' (refused in its settings),
+//                 'ios' (iPhone or iPad outside the Home Screen app), 'inapp' (Facebook's or Instagram's browser),
+//                 'offline' (the offline copy is turned off) or 'none' (no web push)
+//   on            notifications on in this browser, off, or null while that is being checked
+//   off           this spot turned off on its own
+//   down          the alert service did not answer the last change asked of it
+// Returns { kind, text, toggle, checked, link }: toggle, a tick for this spot; link, "Set up alerts" to the
+// Alerts tile, which holds the consent wording, so nothing is turned on from a card.
+function spotAlert({ push = false, email = false, can = 'none', on = null, off = false, down = false } = {}) {
+  const r = (kind, text, extra = {}) => ({ kind, text, toggle: false, checked: false, link: false, ...extra });
+  if (!push && !email) return r('none', '');
+  if (push && can === 'yes' && on === true) {
+    const t = { toggle: true, checked: !off };
+    if (down) return r('down', 'The alert service did not answer, so alerts for this spot are as they were. Try again later.', t);
+    return off ? r('muted', 'No alerts for this spot. Your other saved spots still have them.', t)
+      : r('on', 'A notification if it reaches high or very high risk.', t);
+  }
+  if (down) return r('down', 'The alert service did not answer, so alerts could not be checked. Try again later.', { link: true });
+  if (push && can === 'yes') return on === null ? r('checking', '') : r('off', 'Alerts are off.', { link: true });
+  if (push && can === 'blocked') return r('blocked', 'Notifications are blocked for this site in your browser settings.', { link: email });
+  if (push && !email) return r('unavailable', 'Notifications cannot be had in this browser.', { link: true });
+  return r('email', 'Notifications cannot be had in this browser. Alerts by email cover the spots saved when you sign up.', { link: true });
+}
+
 if (typeof module === 'object' && module.exports) {
   module.exports = { LISTS_KEY, FIRST_LIST, SHARED_LIST, LIST_NAME_MAX, LINK_SPOTS_MAX, listName, listIds, freeListName, readLists, listsReadable,
     listsText, allSaved, listById, shownList, addToList, removeFromList, moveToList, copyToList, makeList, renameList, deleteList, pickList,
-    keepSpots, sameList, shareHash, readShared, PASTE_MAX, pastedList, planListName, sitesHash, addSharedList };
+    keepSpots, sameList, shareHash, readShared, PASTE_MAX, pastedList, planListName, sitesHash, addSharedList, savedGroups, alertSpots, spotAlert };
 }

@@ -28,8 +28,8 @@ becoming a forecast. A candidate can collect shadow predictions while its model 
 | Bounded exploration | Reproducible analysis, mechanism check, improved candidate | A plausible question; inspectable data; a stated time/data budget; an explicit exploratory label on reused data | Deliver a candidate, a data/coverage product, a collection plan, or an archive reason at the milestone |
 | Running comparison (shadow) | Predictions saved alongside the current model before outcomes arrive | Correct timestamps and features available at issue time, isolated versioned logs, missing-data fallback, manageable cost | Read at the agreed date against production **and** useful simple references |
 | Public research observations | Dated measurements, satellite indices, coverage and historical patterns | Correct extraction, identity/units/source/method, visible age and missingness, understandable limits; relevant source terms checked | Publish through a discoverable Research page; improve coverage and usability; forecast claims need their own evidence |
-| Limited forecast | A calibrated estimate for specified lakes/companies/seasons/horizons | Evidence for that population and claim, honest uncertainty and failure behaviour, prospective confirmation where selection used seen outcomes | Staged rollout with fallback and monitoring; unsupported groups keep their existing output |
-| Main forecast | A default used to guide the existing product | Pre-stated useful improvement or justified non-inferiority, appropriate calibration, subgroup guardrails, prospective operation and a reviewed rollout | Monitor drift, coverage and incidents; keep a reproducible rollback |
+| Limited forecast | A calibrated estimate for specified lakes/companies/seasons/horizons | Evidence for that population and claim, honest uncertainty and failure behaviour, and a confirmation the selection could not have seen: a **frozen-model backtest** on held-out years (below) or a prospective window | Staged rollout with fallback and monitoring; unsupported groups keep their existing output |
+| Main forecast | A default used to guide the existing product | Pre-stated useful improvement or justified non-inferiority, appropriate calibration, subgroup guardrails, a frozen-model backtest on held-out years or prospective operation, and a reviewed rollout | Monitor drift, coverage and incidents; keep a reproducible rollback |
 
 For satellite work, the first public output can be an **historical, dated NDCI observation series**, not an estimate
 of harmful algae. A historical release must say so prominently; becoming “latest observations” requires an actual
@@ -61,8 +61,8 @@ forecast claim merely because its underlying observations can be displayed.
   entire routing rule on new data, including its fallback and coverage, before claiming confirmed improvement.
 - Reused 2024–26 outcomes remain usable for development and diagnosis. They cannot become unseen confirmation by
   changing the model's name, reshuffling folds, changing the threshold, or publishing a new document. Use grouped
-  or time-embargoed development splits where shared events would leak; freeze the candidate before collecting a
-  fresh confirmation window.
+  or time-embargoed development splits where shared events would leak; freeze the candidate before scoring it on
+  held-out years (a frozen-model backtest, below) or collecting a fresh confirmation window.
 - Negative results get a precise scope. “This dynamic-flow variant did not help these sites” is useful;
   “hydrology cannot help” is unsupported. Keep the data and reusable extraction code discoverable.
 
@@ -97,6 +97,87 @@ abandoned idea.
    with its date or blocker. Close the issue only if no next step remains.
 
 A result that exists only in a chat, a branch or a local cache is not recorded.
+
+## Develop promising work now (6 November 2026)
+
+Ethan, 6 November 2026, after three readouts (#625, #626, #627) each ended with "no step before the 2027 review" or
+"waits on a dependency": develop promising work into working, tested candidates now, from the data already available,
+instead of deferring by default. This changes what an agent does after a readout. It changes no historical verdict,
+threshold, active window or the 2027 primary evaluation, and it does not lower the evidence needed for public
+swimming guidance.
+
+**After a readout, choose the next deliverable that the evidence supports, and do it now.** For promising work the
+strong default is to keep developing it in the same PR or the next one. The right deliverable depends on what the
+readout found:
+
+- a new or revised candidate, built and tested on held-out data against the existing baseline and simple references,
+  when the readout points to a specific improvement;
+- continuing an existing candidate (more data, a fix, a stated next comparison) when it is still the best idea;
+- a concrete diagnosis, when the result is unexplained (which sites, seasons or inputs drive it, and why);
+- a data or coverage improvement, when the limit was too few events, gaps or a missing input;
+- a useful observation feature, when the data are worth showing but no forecast is supported;
+- an evidence-backed archive, when the measurements disproved the mechanism or several variants have failed, with
+  what would reopen it.
+
+A readout is not required to produce a new model, and none should be built only to have one. What is not acceptable
+is "nothing until 2027", "no step beyond the review" or "waits on a dependency" as the whole continuation. A wait
+needs a stated reason: the mechanism was disproved, the available data cannot answer any version of the question (say
+which data would), or the next step needs something only Ethan can provide (a credential, a purchase, an outside
+contact, a product decision). In the last case, build what can be built up to that step and name the step and who
+takes it.
+
+**What available data can establish, and what it cannot.** Grouped and time-embargoed held-out validation on data
+already seen (leave-one-lake-out, leave-one-season-out, forward splits, river-system clusters, nested fitting of every
+threshold and weight) is legitimate development evidence. It can rank candidates, size an effect with an interval and
+check calibration and coverage. It cannot be fresh confirmation, because the outcomes were seen. Say which figures are
+which in every record. Never relabel seen data as unseen, and never move an old threshold.
+
+**Backtest instead of waiting (Ethan, 6 November 2026).** SwimSignal has years of history: EA samples from 2012,
+rain archives for decades, gauge series and spill files for several years. A release does not wait for a future
+season when a **frozen-model backtest** can answer the question now. It counts as the confirmation for the "Limited
+forecast" and "Main forecast" routes when all of these hold:
+
+- the model (code, parameters, thresholds) is frozen and its hash committed **before** the test years' outcomes are
+  joined;
+- the test years were not used to fit, select, tune or design it. Years already scored for a different model may be
+  reused for this one only if nothing about this model was chosen after seeing them; say so in the record;
+- the metric, the references, the margin and what each outcome leads to are committed before the run;
+- inputs are rebuilt as they would have been available at issue time (archive rain, not later corrections where the
+  live feed would differ), and any known difference from the live inputs is stated;
+- the result is reported with intervals clustered as the sampling demands (lake or river system, and season).
+
+When every available year was used to choose the model, either rebuild older years (often a few hundred free archive
+requests) or run a shadow. A prospective window still runs after release as **monitoring**, with a stated rollback
+rule. It is not a gate. The 2027 primary evaluation stays as scheduled and frozen; no release waits on it when a
+frozen-model backtest supports the claim. A backtest that supports a claim does not lower the bar for what a swimmer
+is told: the wording must say only what the backtest showed (for example "orders days" is not "predicts exceedance").
+
+**An interval that includes zero does not show non-inferiority.** "Not worse" needs a non-inferiority margin stated
+before the comparison and an interval that excludes harm beyond it. A point estimate near zero with a wide interval
+is not evidence of either gain or safety, and on its own is not a reason to start a shadow log.
+
+**Shadow logging, when it is justified.** A shadow is worth starting when the development evidence supports the
+candidate and fresh confirmation is the missing piece, because waiting a season loses the season of data the
+confirmation needs. Start one only when all of these hold:
+
+- every input exists at issue time, from a source that can actually be read then, and the log records the issue time
+  and each input's own time correctly (no input from after issue time);
+- the log is independent and versioned: its own table or file, never the issued forecast, never public text;
+- an explicit comparator (production or a named reference) is logged on the same issues, with a stated fallback when
+  an input is missing, so the later read is a fair comparison;
+- it fits within known resource, cost, quota and permission limits, with caps and a stop rule;
+- the read date, metric and margin are fixed before the window opens.
+
+Use the existing build or pilot schedule where it is adequate. Do not require a separate Worker, scheduler or new
+service while its availability, permissions or cost are unresolved; record that as the blocker, build and test the
+logger so it can run, and name the decision needed. A build cadence too slow for the target is a finding to report,
+not a reason to stop the development.
+
+**Pre-state what every outcome leads to.** A protocol's "what follows" section names the next deliverable for a fail
+and for an inconclusive result as well as for a pass, chosen from the list above.
+
+**Report what is running.** A readout or continuation says which code runs, where, since when, and what is live in
+public, in shadow, or only in a branch.
 
 ## Deliver visibly
 

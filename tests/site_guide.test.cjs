@@ -227,3 +227,20 @@ test('a historical photo is credited, licensed and limited to its day on the usu
   assert.doesNotMatch(html.slice(html.indexOf("<figure")), /Verified|seen on site/, "the photo is not called verified");
   assert.doesNotMatch(html, / Photo: Oliver Dixon/, 'the credit is said once, in the line');
 });
+
+test("a topic shows its first source's facts and folds the rest; who can swim shows two (5 Nov 2026)", () => {
+  const G = require('../src/dipcast/site/guide.js');
+  const f = (topic, text, n) => ({ topic, text, status: 'confirmed', source: `https://example.org/${n}`, source_name: `Source ${n}`, source_date: '2026-10' });
+  const row = (h, word) => h.split('<div class="g-row"').find(x => x.includes(word));
+  const g = { facts: [f('parking', 'Car park A.', 1), f('parking', 'Car park B.', 2), f('parking', 'Car park C.', 3),
+    f('toilets', 'Toilets A.', 4), f('toilets', 'Toilets B.', 5),
+    f('rules', 'Swimming allowed.', 6), f('rules', 'Byelaw on boats.', 7), f('rules', 'Event rules.', 8), f('rules', 'Busy lake.', 9)] };
+  const h = G.guideFacts(g);
+  const parking = row(h, 'Car park A.');
+  assert.match(parking, /Car park A\.<\/p><p class="g-src">.*?<\/dd><dd class="g-more"><details class="more"><summary>2 more from other sources<\/summary>/);
+  assert.ok(parking.indexOf('Car park B.') > parking.indexOf('<details class="more">'));
+  assert.ok(!row(h, 'Toilets A.').includes('<details'));   // one more is shown, not folded on its own
+  const rules = row(h, 'Swimming allowed.');
+  assert.ok(rules.indexOf('Byelaw on boats.') < rules.indexOf('<details'), 'two sources of who can swim in view');
+  assert.match(rules, /<summary>2 more from other sources<\/summary>/);
+});

@@ -295,3 +295,25 @@ def test_weather_is_not_asked_for_once_the_ration_is_spent(om, tmp_path, monkeyp
     spots = [{"id": "a", "name": "A", "lat": 54.0, "lon": -2.0}, {"id": "b", "name": "B", "lat": 54.1, "lon": -2.1}]
     assert bs.attach_weather(spots, request=_weather_request(seen), cache=tmp_path / "w.json") == 0
     assert seen == [] and rainfall.calls_today()["held"] == {"weather": 2}
+
+
+def test_the_wind_rides_on_the_weather_request_at_no_extra_weight(om, tmp_path):
+    # Five daily variables over five days weigh one call a location, as three did (call_weight); the day's strongest
+    # wind and gust come back as whole km/h. An answer cached earlier the same day, before the wind was asked for,
+    # still reads, with no wind.
+    bs = _build_site()
+    assert rainfall.call_weight(50, 5, len(bs.WEATHER_DAILY.split(","))) == rainfall.call_weight(50, 5, 3) == 50
+
+    def request(url, params, timeout=30):
+        assert params["daily"] == bs.WEATHER_DAILY
+        return [{"daily": {"time": ["2026-11-02", "2026-11-03"], "temperature_2m_max": [10.6, 10.2], "sunrise": ["2026-11-02T07:09", "2026-11-03T07:11"],
+                           "sunset": ["2026-11-02T16:31", "2026-11-03T16:29"], "wind_speed_10m_max": [16.6, None], "wind_gusts_10m_max": [34.6, None]}}
+                for _ in params["latitude"].split(",")]
+    spots = [{"id": "a", "name": "A", "lat": 54.0, "lon": -2.0}, {"id": "b", "name": "B", "lat": 54.1, "lon": -2.1}]
+    assert bs.attach_weather(spots, request=request, cache=tmp_path / "w.json") == 2
+    assert rainfall.calls_today()["by"] == {"weather": 2}
+    assert spots[0]["weather"]["days"] == [{"date": "2026-11-02", "tmax": 11, "sunrise": "07:09", "sunset": "16:31", "wind_kmh": 17, "gust_kmh": 35},
+                                           {"date": "2026-11-03", "tmax": 10, "sunrise": "07:11", "sunset": "16:29"}]
+    old = [{"id": "c", "name": "C", "lat": 54.2, "lon": -2.2}]
+    assert bs.attach_weather(old, request=_weather_request([]), cache=tmp_path / "old.json") == 1
+    assert "wind_kmh" not in old[0]["weather"]["days"][0]

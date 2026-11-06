@@ -1,45 +1,56 @@
-/* The Lake from Space, a Research Lab exhibit (prototype). The site's type pair and tokens (src/dipcast/pages/page.css),
-   set as a field journal: paper, hairlines, plates with captions, a monospaced log for anything measured. One radius,
-   no shadows, no gradients except the paper's own grain. */
-@font-face { font-family: "Source Sans 3"; font-style: normal; font-weight: 200 900; font-display: swap;
-  src: url("../../src/dipcast/pages/fonts/SourceSans3-latin.woff2") format("woff2"); }
-@font-face { font-family: "Source Sans 3"; font-style: italic; font-weight: 400 700; font-display: swap;
-  src: url("../../src/dipcast/pages/fonts/SourceSans3-italic-latin.woff2") format("woff2"); }
-@font-face { font-family: "Source Serif 4"; font-style: normal; font-weight: 600; font-display: swap;
-  src: url("../../src/dipcast/pages/fonts/SourceSerif4-latin.woff2") format("woff2"); }
+/* The Research Lab's stylesheet, loaded after the site's own (src/dipcast/pages/page.css), which gives every Lab page
+   the site's fonts, header, phone bar, controls, tables and type sizes. This adds the Lab's editorial variant
+   (docs/DESIGN.md, "The Research Lab"): a warmer paper with its grain, the deep frontispiece, plates with captions,
+   numbered sections and a monospaced log for anything measured. One radius, the site's; no shadows. */
 
 :root {
-  --font-text: "Source Sans 3", Georgia, serif;
-  --font-display: "Source Serif 4", Georgia, "Times New Roman", serif;
-  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  --paper: #f3efe4; --paper-2: #ebe5d6; --card: #fbf9f3; --ink: #1b2328; --muted: #555d62; --faint: #6c7174;
-  --line: #d8d0bd; --hair: rgba(27, 35, 40, .14); --rule: #b9ae95;
-  --deep: #12232a; --deep-2: #1b3138; --deep-ink: #e9e4d6; --deep-muted: #a8b3b0;
-  --brand: #0f5a61; --bar: #3d5b5d; --lab: #7a3b1d; --pick: #c2552a; --gap: #b8ad95;
-  --radius: 6px; --fs-meta: 13px; --fs-note: 15px; --fs-body: 17px; --fs-head: 21px; --fs-title: 44px;
+  /* The Lab's own surfaces: the site's ink, brand, bar, radius and type sizes come from page.css unchanged. */
+  --paper: #f3efe4; --paper-2: #ebe5d6; --card: #fbf9f3; --line: #d8d0bd; --hair: rgba(27, 35, 40, .14); --rule: #b9ae95;
+  --deep-2: #1b3138;   /* --deep, the frontispiece's ink, is page.css's */
+  --deep-ink: #e9e4d6; --deep-muted: #a8b3b0;
+  --lab: #7a3b1d; --pick: #c2552a; --gap: #b8ad95; --field: #fbf9f3; --hover: var(--paper-2);
+  --fs-title: 44px;   /* an exhibit's title: larger than a prose page's, the frontispiece's one big line */
   --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .3 0 0 0 0 .2 0 0 0 .06 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
 }
-@media (max-width: 760px) { :root { --fs-title: 34px; --fs-head: 19px; } }
+@media (max-width: 760px) { :root { --fs-title: 32px; } }
 
-* { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; }
-body { margin: 0; font: 400 var(--fs-body)/1.5 var(--font-text); color: var(--ink);
-  background: var(--paper) var(--grain); }
-a { color: var(--brand); text-decoration-thickness: 1px; text-underline-offset: 2px; }
-:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
-button { font: inherit; color: inherit; }
+body.lab { background: var(--paper) var(--grain); }
+/* page.css styles every label, field and note for its forms and prose; the Lab's controls set their own. */
+:where(.lab) label { display: inline; margin: 0; font-weight: inherit; }
+:where(.lab) input[type=checkbox], :where(.lab) input[type=radio], :where(.lab) input[type=range] { width: auto; padding: 0; border: 0; background: none; }
+:where(.lab) input[type=date] { width: auto; min-height: 40px; padding: 6px 8px; }
+:where(.lab) .note { border-top: 0; padding-top: 0; margin: 0 0 12px; }
+:where(.lab) table { margin: 0; }
+:where(.lab) button { font: inherit; color: inherit; }
 .mono { font-family: var(--font-mono); font-size: .86em; letter-spacing: 0; }
-.muted { color: var(--muted); }
+.num, .tab { font-variant-numeric: tabular-nums lining-nums; }
 .wrap { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
 @media (max-width: 760px) { .wrap { padding: 0 16px; } }
 
-/* ------------------------------------------------------------------ bar */
-.top { background: var(--bar); color: #fff; }
-.top .wrap { display: flex; align-items: center; gap: 16px; min-height: 52px; flex-wrap: wrap; }
-.top a { color: rgba(255, 255, 255, .88); text-decoration: none; font-size: var(--fs-note); font-weight: 600; }
-.top a:hover { color: #fff; }
-.top .brand { font: 600 19px/1 var(--font-display); color: #fff; margin-right: auto; }
-.top .crumb { color: rgba(255, 255, 255, .7); font-size: var(--fs-note); }
+/* ------------------------------------------------------------------ the Lab's own bar, under the site's header */
+/* Overview and the four exhibits, numbered; the page you are on in white with a rule under it, not by colour alone.
+   On a phone the row scrolls sideways and the current one is scrolled into view (lab.js). */
+.labnav { background: var(--deep-2); border-bottom: 1px solid rgba(0, 0, 0, .5); }
+.labnav .wrap { display: flex; align-items: stretch; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+.labnav .wrap::-webkit-scrollbar { display: none; }
+.labnav a { flex: none; display: inline-flex; align-items: center; gap: 7px; min-height: 44px; padding: 0 10px; color: var(--deep-muted); text-decoration: none; font-size: var(--fs-note); font-weight: 600; white-space: nowrap; }
+.labnav a:first-child { padding-left: 0; font: 600 var(--fs-body)/1 var(--font-display); color: var(--deep-ink); margin-right: 8px; }
+.labnav a .n { font: 600 12px/1 var(--font-mono); color: var(--deep-muted); }
+.labnav a:hover { color: #fbf7ec; }
+.labnav a[aria-current=page] { color: #fbf7ec; box-shadow: inset 0 -2px 0 #fbf7ec; }
+.labnav a[aria-current=page] .n { color: #fbf7ec; }
+.labnav :focus-visible { outline-color: #fbf7ec; outline-offset: -2px; }
+
+/* ------------------------------------------------------------------ an exhibit's foot: the next exhibit, and back */
+.pager { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 48px 0 0; border-top: 1px solid var(--ink); padding-top: 14px; }
+@media (max-width: 640px) { .pager { grid-template-columns: 1fr; } }
+.pager a { display: block; padding: 10px 0; color: var(--ink); text-decoration: none; min-height: 44px; }
+.pager a + a, .pager .next { text-align: right; }
+@media (max-width: 640px) { .pager a + a, .pager .next { text-align: left; border-top: 1px solid var(--hair); } }
+.pager small { display: block; font-size: var(--fs-meta); color: var(--muted); }
+.pager b { font: 600 var(--fs-head)/1.25 var(--font-display); }
+.pager a:hover b { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.back { margin: 18px 0 0; font-size: var(--fs-note); }
 
 /* ------------------------------------------------------------------ frontispiece */
 .front { background: var(--deep) var(--grain); color: var(--deep-ink); padding: 48px 0 40px; border-bottom: 1px solid #000; }
@@ -48,10 +59,28 @@ button { font: inherit; color: inherit; }
 .front .kicker { font-size: var(--fs-note); color: var(--deep-muted); margin: 0 0 14px; }
 .front h1 { font: 600 var(--fs-title)/1.05 var(--font-display); letter-spacing: -.015em; margin: 0 0 18px; color: #fbf7ec; }
 .front .q { font: 600 var(--fs-head)/1.35 var(--font-display); margin: 0 0 18px; color: #fbf7ec; max-width: 34ch; }
+@media (max-width: 760px) { .front { padding: 28px 0 24px; } .front .q { font-size: var(--fs-body); margin-bottom: 12px; } .front .say { font-size: var(--fs-body); } }
 .front p { margin: 0 0 12px; max-width: 58ch; }
 .front .answer { color: var(--deep-ink); }
 .front .status { margin-top: 18px; font-size: var(--fs-note); color: var(--deep-muted); }
 .front .status b { color: var(--deep-ink); font-weight: 600; }
+/* The answer in a sentence or two; the figures behind it one tap away. "Data as of" the same: the dates in its
+   summary, how each part is refreshed inside. A part past its refresh is said outside the fold. */
+.front .say { font-size: var(--fs-head); line-height: 1.4; color: #fbf7ec; margin: 0 0 10px; max-width: 46ch; }
+.front details { margin: 0 0 10px; max-width: 58ch; font-size: var(--fs-note); color: var(--deep-ink); }
+.front details > summary { cursor: pointer; list-style: none; display: block; padding: 9px 0; color: var(--deep-ink); font-weight: 600; }
+.front details > summary::-webkit-details-marker { display: none; }
+.front details > summary::after { content: ""; display: inline-block; width: 7px; height: 7px; margin: 0 0 3px 10px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(45deg); transition: transform .15s; }
+.front details[open] > summary::after { transform: rotate(-135deg); margin-bottom: -1px; }
+@media (prefers-reduced-motion: reduce) { .front details > summary::after { transition: none; } }
+.front details > :not(summary) { margin: 6px 0 4px; }
+.front details.asof > summary { font-weight: 400; color: var(--deep-muted); }
+.front details.asof > summary b { color: var(--deep-ink); font-weight: 600; }
+.front .asof dl { display: grid; grid-template-columns: minmax(0, max-content) minmax(0, 1fr); gap: 4px 14px; margin: 8px 0 4px; }
+.front .asof dt { color: var(--deep-ink); }
+.front .asof dd { margin: 0; color: var(--deep-muted); }
+.front .stale { color: #f3c27a; font-size: var(--fs-note); margin: 0 0 10px; }
+.front .stale b { color: #f3c27a; }
 .contact { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 16px; }
 @media (max-width: 900px) { .contact { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
 .contact button { display: block; padding: 0; border: 0; background: none; cursor: pointer; text-align: left; color: var(--deep-ink); min-height: 44px; }
@@ -91,7 +120,7 @@ p { margin: 0 0 12px; }
   .index { display: none; }
   .picker { display: block; }
   .picker label { display: block; font-size: var(--fs-note); font-weight: 600; margin-bottom: 6px; }
-  .picker select { width: 100%; min-height: 44px; font: inherit; padding: 8px 10px; border: 1px solid var(--rule); border-radius: var(--radius); background: var(--card); color: var(--ink); }
+  .picker select { min-height: 44px; border-color: var(--rule); }   /* page.css's field, with its arrow */
 }
 .map-key { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12px; color: var(--muted); margin-top: 8px; }
 .map-key i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; vertical-align: -1px; margin-right: 5px; border: 1.5px solid var(--ink); }

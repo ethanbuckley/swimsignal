@@ -29,13 +29,15 @@ const dayWord = iso => iso === today() ? 'today' : iso === addDays(today(), 1) ?
   : 'on ' + new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', {weekday:'long'});
 const dayName = iso => dayWord(iso).replace(/^on /, '');
 // The reader's day. Builds come up to 7.7 h apart, so with the build's date as "today" everywhere,
-// between midnight and the next build the page would call yesterday "Today". While the forecast is no
-// more than `freshMin` minutes old (the page's stale notice comes after that) the page's day is the
-// device's, if later; fromDay then moves the rows before it out of each spot's five days. The alerts,
-// the organisers' record and the other pages keep the build's day (setToday with the build's date).
-function readerDay(generatedAt, nowMs, freshMin) {
+// between midnight and the next build the page would call yesterday "Today". The page's day is the
+// device's, if later, however old the forecast is; fromDay then moves the rows before it out of each
+// spot's five days, each row keeping its own date. Until 2 Nov 2026 a forecast over eight hours old
+// (the page's stale notice) kept the build's day, so at 07:45 the morning after a build at 23:20 the page
+// called Sunday "Today" on Monday (docs/RELIABILITY-CHECKS-2026-11.md). The alerts, the organisers'
+// record and the other pages keep the build's day (setToday with the build's date).
+function readerDay(generatedAt, nowMs) {
   const built = String(generatedAt).slice(0, 10), mine = localISO(new Date(nowMs));
-  return mine > built && nowMs - Date.parse(generatedAt) <= freshMin * 6e4 ? mine : built;
+  return mine > built ? mine : built;
 }
 // A spot's forecast from the day `iso`, `built` being the build's date: the rows before it move to `past`
 // (a spot's page greys the last as "Yesterday"), and each overflow's chances of a spill, one a day from
@@ -212,11 +214,14 @@ const liveHead = s => { const c = liveCover(s); if (!c) return '';
   return c.kind === 'none' ? LIVE_NONE : c.kind === 'partial' ? `Live status from ${c.mon} of ${c.total} overflows upstream`
     : c.total === 1 ? 'Live status from the overflow upstream' : `Live status from all ${c.total} overflows upstream`; };
 // The same with what those statuses said, as at the last poll, and the ones with none said as unknown, never
-// as dry: the line at the top of a spot's answer, before the level, on today's view.
-const liveLine = s => { const c = liveCover(s); if (!c) return '';
+// as dry: the line at the top of a spot's answer, before the level, on today's view. at: the poll's clock time
+// ("Fri 15:34"), where the caller has it. A build can be 4 to 8 hours old when read (6 Nov 2026), and "none
+// spilling at the last poll" with no time read as current.
+const liveLine = (s, at = '') => { const c = liveCover(s); if (!c) return '';
   const k = Math.min(c.mon, (s.now || {}).discharging_upstream || 0), rest = c.total - c.mon;
   if (c.kind === 'none') return `${LIVE_NONE}: ${c.total === 1 ? 'the overflow upstream does not report live' : `none of the ${c.total} overflows upstream reports live`}`;
-  const said = c.total === 1 ? (k ? 'spilling at the last poll' : 'not spilling at the last poll') : `${k ? `${k} spilling` : 'none spilling'} at the last poll`;
+  const poll = `at the last poll${at ? ` (${at})` : ''}`;
+  const said = c.total === 1 ? `${k ? 'spilling' : 'not spilling'} ${poll}` : `${k ? `${k} spilling` : 'none spilling'} ${poll}`;
   return `${liveHead(s)}: ${said}${rest ? `; ${rest} ${rest === 1 ? 'does' : 'do'} not report, so could be spilling unseen` : ''}`; };
 // The live status over a level on today's view, for the spot's answer (index.html, answerParts): `live`, the line at the top
 // of the answer, in counts; `blind`, no overflow upstream gives a current status, when the answer leads with
@@ -524,12 +529,18 @@ function rainAgeLine(s) {
 // low risk on Saturday." Raised is the day's own level (risk: a day's spills, its E. coli, a rating,
 // algae, and today's right now). Empty where no day is raised, or none after the first raised day is low
 // (a water rated poor never is).
-function backToLow(s) {
+// Not a day before the water from right now's spills has passed (clears_at, in UK time): Swale above Richmond
+// Falls, 5 Nov 2026, said "Back to low risk tomorrow" beside "should have passed and died off by Saturday
+// 13:02", since only today carries right now's level (risk). Then the clearing time is said instead.
+function backToLow(s, nowMs = Date.now()) {
   if (!daily(s)) return '';
   const ls = s.days.slice(0, 5).map(x => ({ x, l: hasData(x) ? risk(s, x).level : null }));
   const up = ls.findIndex(o => rank(o.l) >= 1);
   const back = up < 0 ? null : ls.slice(up + 1).find(o => o.l === 'low');
-  return back ? `Back to low risk ${dayWord(back.x.date)}.` : '';
+  if (!back) return '';
+  const clears = clearWords(s, nowMs);
+  if (clears && back.x.date < UK_DATE.format(new Date(s.now.clears_at))) return clears;
+  return `Back to low risk ${dayWord(back.x.date)}.`;
 }
 // ------------------------------------------------------------------------------ what to do
 // One line under the level saying what to do, as NSW Beachwatch gives an action with each of its

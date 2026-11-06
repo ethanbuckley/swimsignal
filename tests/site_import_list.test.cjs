@@ -32,7 +32,7 @@ function savedPage({standalone = true} = {}) {
   vm.runInContext(`
     let shown = null, current = null, LISTS = readLists(null, null);
     const DATA = {spots: ${JSON.stringify(SPOTS)}, push: {url: 'https://push.invalid/'}}, BRAND = 'SwimSignal', ROOT = new URL('https://swimsignal.co.uk/');
-    const savedPath = () => ROOT.pathname + 'saved/', sitesURL = () => 'sites.html', IN_APP = '', IOS = true;
+    const savedPath = () => ROOT.pathname + 'saved/', planPath = () => ROOT.pathname + 'plan/', sitesURL = () => 'sites.html', IN_APP = '', IOS = true;
     const SAVED = {get size() { return allSaved(LISTS).length; }, has: id => allSaved(LISTS).includes(id)};
     const setLists = s => { LISTS = s; return true; }, listNow = () => shownList(LISTS), manyLists = () => LISTS.lists.length > 1;
     const listSpots = l => l.spots.map(id => DATA.spots.find(s => s.id === id)).filter(Boolean);
@@ -41,7 +41,7 @@ function savedPage({standalone = true} = {}) {
     const setView = nothing, planDates = () => [], notices = none, bestDayNote = none, savedGrid = none, issued = none, ago = none, agoSpan = none, ageMin = none;
     const swimsShown = () => false, compareSection = none, savedCompare = none, alertsCard = none, swimsCard = none, cols = h => h, solo = h => h;
     const bindBack = nothing, bindSavedPage = nothing, bindLists = nothing, bindAlerts = nothing, bindComparison = nothing, bindBestDay = nothing;
-    const bindSwims = nothing, bindToAlerts = nothing, bindFind = nothing, placeMap = nothing, plainClick = () => true, select = nothing;
+    const bindSwims = nothing, bindToAlerts = nothing, drawSpotAlerts = nothing, passportSection = undefined, bindFind = nothing, placeMap = nothing, plainClick = () => true, select = nothing;
     const RING = none, MOTION = () => ({}), dayName = d => d;
     const savedCard = s => '<li class="scard">' + esc(s.name) + '</li>';
     ${between('const esc =', '\nconst fmt')}

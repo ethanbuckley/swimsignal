@@ -63,7 +63,7 @@ def test_every_spot_gets_its_own_page_and_preview(tmp_path):
     assert 'href="https://example.org/swim/icons/apple-touch-icon.png"' in lost
     assert (tmp_path / "robots.txt").read_text() == "User-agent: *\nAllow: /\nSitemap: https://example.org/swim/sitemap.xml\n"
     sm = (tmp_path / "sitemap.xml").read_text()
-    assert sm.count("<url>") == 28 + len(_build_site().lab_pages()) and "<loc>https://example.org/swim/spot/tarn/</loc>" in sm   # the Research Lab's pages, and sites.html, record.html, clubs.html, quality.html, spots.html, research.html, lakes.html, lake-temperatures.html, durations.html (spill durations), samples.html, waterhead.html, research-catalogue.html, sampling-planner.html, partners.html, models.html and two profiles
+    assert sm.count("<url>") == 29 + len(_build_site().lab_pages()) and "<loc>https://example.org/swim/spot/tarn/</loc>" in sm   # the Research Lab's pages, and sites.html, record.html, demo.html, clubs.html, quality.html, spots.html, research.html, lakes.html, lake-temperatures.html, durations.html (spill durations), samples.html, waterhead.html, research-catalogue.html, sampling-planner.html, partners.html, models.html and two profiles
     assert (tmp_path / "quality.html").exists()   # without an overflow table its lists say so (tests/test_quality.py)
     assert "<loc>https://example.org/swim/methods.html</loc>" in sm
     assert "<loc>https://example.org/swim/coverage.html</loc>" in sm
@@ -235,7 +235,7 @@ def test_a_spot_with_a_share_card_previews_it_and_the_rest_keep_the_shared_pictu
 
 
 PROSE_PAGES = ["organisers.html", "verification.html", "spots.html", "about.html", "methods.html", "clubs.html", "coverage.html",
-               "privacy.html", "terms.html", "testing.html", "feedback.html", "data.html", "sites.html", "record.html",
+               "privacy.html", "terms.html", "testing.html", "feedback.html", "data.html", "sites.html", "record.html", "demo.html",
                "quality.html", "support.html", "durations.html", "samples.html", "sampling-planner.html"]
 
 
@@ -673,7 +673,7 @@ def test_weather_context_is_attached_per_spot_and_a_failed_call_leaves_none(tmp_
     spots = [{"id": "a", "name": "A", "lat": 54.0, "lon": -2.0}, {"id": "b", "name": "B", "lat": 54.1, "lon": -2.1},
              {"id": "d", "name": "Broken", "lat": 54.5, "lon": -3.1, "error": "forecast failed: boom"}]
     assert bs.attach_weather(spots, request=request, cache=tmp_path / "weather.json") == 2
-    assert seen[0]["daily"] == "temperature_2m_max,sunrise,sunset" and seen[0]["latitude"] == "54.000,54.100"
+    assert seen[0]["daily"] == "temperature_2m_max,sunrise,sunset,wind_speed_10m_max,wind_gusts_10m_max" and seen[0]["latitude"] == "54.000,54.100"
     assert spots[0]["weather"]["days"] == [{"date": "2026-10-01", "tmax": 11, "sunrise": "07:12", "sunset": "18:40"},
                                            {"date": "2026-10-02", "tmax": None, "sunrise": "07:14", "sunset": "18:38"}]
     assert spots[0]["weather"]["credit"] == "Weather data by Open-Meteo.com" and "weather" not in spots[2]
@@ -723,6 +723,21 @@ def test_the_data_page_lists_every_file_in_data_with_its_size(tmp_path):
     empty = tmp_path / "empty"
     empty.mkdir()
     assert bs.write_data_page(empty) == [] and (empty / "data.html").read_text().count("Not in this build") == 20   # spot_scores.json makes 16, overflows/ 17, waters.json 18, verification_spots_live.csv 19, research/ (satellite lakes, spill durations and E. coli samples) 20
+
+
+def test_the_data_pages_sections_follow_its_table_and_fold_their_fields():
+    """Readability pass, 5 Nov 2026: the sections come in the order the table lists the files (spot/ with
+    spots-lite.json, overflows/ with overflows.geojson, the feeds after alerts.json), and every field list is
+    in a fold named Fields, so a reader scanning for a file sees its paragraph and its licence."""
+    page = (_build_site().STATIC / "data.html").read_text()
+    files = re.findall(r'<tr data-file="([^"]+)">', page)
+    joined = {"spot/": "spots-lite.json", "overflows/": "overflows.geojson"}
+    anchor = lambda f: f.rstrip("/").replace(".", "-").replace("_", "-")
+    want = list(dict.fromkeys(anchor(joined.get(f, f)) for f in files))
+    got = [h for h in re.findall(r'<h2 id="([^"]+)">', page) if h not in ("feeds", "credits")]
+    assert got == want, got
+    assert page.index('<h2 id="alerts-json">') < page.index('<h2 id="feeds">') < page.index('<h2 id="overflows-geojson">')
+    assert page.count('<dl class="fields">') == page.count('<details class="fold"><summary>Fields</summary>\n<dl class="fields">') > 10
 
 
 def test_the_embed_is_written_beside_the_app_with_its_scripts_versioned(tmp_path):
@@ -798,6 +813,12 @@ def test_about_documents_the_data_page_and_the_embed_and_the_terms_allow_it(tmp_
     assert 'href="data.html"' in terms
     embed = about[about.index('<h2 id="embed">'):]
     assert "non-commercial website" in embed and "Ask first about any other use" in embed and 'href="mailto:hello@swimsignal.co.uk"' in embed
+    # Readability pass, 5 Nov 2026: the code, sizes and terms are in a fold under the heading the links land on, and
+    # the overflow-name glossary is folded too; every word of both is still on the page.
+    fold = embed.split('<details class="fold"><summary>The code to paste, and the terms</summary>')[1].split("</details>")[0]
+    assert "<pre><code>" in fold and "the tallest card was" in fold and "Ask first about any other use" in fold
+    glossary = about.split('<details class="fold"><summary>Overflow name abbreviations</summary>')[1].split("</details>")[0]
+    assert "WwTW and STW are a wastewater (sewage) treatment works" in glossary and "SPS a sewage pumping station" in glossary
 
 
 def _modules(d: str, size: int, border: int = 4) -> list[list[int]]:
@@ -841,7 +862,8 @@ def test_write_pages_writes_the_sites_view_and_the_decision_record(tmp_path):
     bs = _build_site()
     bs.write_pages(tmp_path, SPOTS, token="abcdefghij0123456789", root="https://example.org/swim/", day="2026-10-04")
     sitemap = (tmp_path / "sitemap.xml").read_text()
-    for name, scripts, title in [("sites.html", bs.SITES_SCRIPTS, "Sites view · SwimSignal"), ("record.html", bs.RECORD_SCRIPTS, "Decision record · SwimSignal")]:
+    for name, scripts, title in [("sites.html", bs.SITES_SCRIPTS, "Sites view · SwimSignal"), ("record.html", bs.RECORD_SCRIPTS, "Decision record · SwimSignal"),
+                                 ("demo.html", bs.DEMO_SCRIPTS, "A worked example for organisers · SwimSignal")]:
         page = (tmp_path / name).read_text()
         v = re.search(r'<script src="levels\.js\?v=([0-9a-f]{8})"></script>', page).group(1)
         for f in scripts:   # every script at one version, a hash of the scripts, and beside the page
@@ -861,7 +883,7 @@ def test_write_pages_writes_the_sites_view_and_the_decision_record(tmp_path):
 @pytest.mark.skipif(shutil.which("node") is None, reason="needs Node")
 def test_the_sites_view_and_decision_record_rules():
     # sites.js and record.js run in a browser, so their tests are JavaScript.
-    for f in ("site_sites.test.cjs", "site_record.test.cjs"):
+    for f in ("site_sites.test.cjs", "site_record.test.cjs", "site_demo.test.cjs"):
         r = subprocess.run(["node", "--test", str(ROOT / "tests" / f)], capture_output=True, text=True, timeout=60, check=False)
         assert r.returncode == 0, r.stdout + r.stderr
 
@@ -899,9 +921,9 @@ def test_the_organisers_page_and_the_signs_stay_out_of_the_offline_copy():
     # so the worker does not store them ahead (build_site.py says why); a visited page is kept as any is.
     bs = _build_site()
     shell = re.search(r"const SHELL = \[(.*?)\];", (bs.TEMPLATE.parent / "sw.js").read_text(), re.DOTALL).group(1)
-    assert not any(w in shell for w in ("organisers", "sign.html", "sign/", "embed", "qr.svg", "sites", "record"))
+    assert not any(w in shell for w in ("organisers", "sign.html", "sign/", "embed", "qr.svg", "sites", "record", "demo"))
     assert not {bs.ORGANISERS, bs.TEMPLATE.parent / "organisers.js", bs.TEMPLATE.parent / "sign.html"} & set(bs.SHELL_SOURCES)
-    assert not {bs.TEMPLATE.parent / f for f in ("sites.html", "sites.js", "record.html", "record.js")} & set(bs.SHELL_SOURCES)
+    assert not {bs.TEMPLATE.parent / f for f in ("sites.html", "sites.js", "record.html", "record.js", "demo.html", "demo.js")} & set(bs.SHELL_SOURCES)
 
 
 @pytest.mark.skipif(shutil.which("node") is None, reason="needs Node")
@@ -1179,7 +1201,7 @@ def test_information_pages_offer_mobile_navigation_and_map_handoff(tmp_path):
     # More holds the header's links a phone hides (Research was only in the foot, 31 Oct 2026), and the app's bar
     # lists the same ones as the prose pages'.
     more = "".join(f'<li><a href="{h}">{label}</a></li>' for h, label in bs.MORE_LINKS)
-    assert [h for h, _ in bs.MORE_LINKS] == ["verification.html", "about.html", "research.html", "feedback.html"]
+    assert [h for h, _ in bs.MORE_LINKS] == ["verification.html", "about.html", "lab/", "research.html", "feedback.html"]   # the Research Lab beside Research and data (1 Nov 2026)
     assert f'<ul class="more-menu" id="more-menu" popover>{more}</ul>' in app
     assert 'popovertarget="more-menu"' in app and 'popovertarget="more-menu"' in page
     # Without popovers (iOS before 17) the button toggles the list itself, the same way in both bars.
@@ -1192,6 +1214,6 @@ def test_information_pages_offer_mobile_navigation_and_map_handoff(tmp_path):
         page = (tmp_path / path).read_text()
         assert page.count('<nav class="phone-nav" aria-label="Main">') == 1, path
     lost = (tmp_path / "404.html").read_text()   # at any depth, so its bar's links are absolute
-    assert '<a href="https://example.org/swim/research.html">Research</a>' in lost and 'href="index.html"' not in lost
+    assert '<a href="https://example.org/swim/research.html">Research and data</a>' in lost and 'href="index.html"' not in lost
     assert "url.searchParams.get('map') === '1'" in app
     assert "url.searchParams.delete('map'); history.replaceState(history.state, '', url); setMapMode(true);" in app

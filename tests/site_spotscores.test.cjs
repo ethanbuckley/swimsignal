@@ -32,7 +32,7 @@ test('below ten spill days: the counts, no share, and the minimum said', () => {
 test('ten spill days or more: the share, as the Accuracy page words it, with its counts and the days', () => {
   const w = words(counts({ overflows: 65, scored_overflows: 65, overflow_days: 440, spill_days: 50, hits: 65, misses: 185, false_alarms: 69 }));
   assert.match(w, /all 65 overflows upstream: 440 overflow-days, 50 with a spill\./);
-  assert.match(w, /Of the 250 forecasts made for those spills, 65 \(26%\) reached the High risk line\. It gave 69 false alarms/);
+  assert.match(w, /Of the 250 forecasts made for those spills, 65 \(26%\) reached the High risk line\. Of its 134 forecasts at that line, 69 were false alarms, on days with no spill/);
   assert.match(w, /That is 7 days so far, too few to judge across different weather\.$/);
   assert.doesNotMatch(words(counts({ spill_days: 10, hits: 1, misses: 49, days: 14 })), /too few to judge/);
   assert.match(words(counts({ spill_days: 19, hits: 0, misses: 95 })), /Of the 95 forecasts made for those spills, none \(0%\) reached/);
@@ -87,4 +87,12 @@ test("no other script of the page defines one of spotscores.js's names, and the 
   assert.ok(at > html.indexOf('src="evidence.js"') && at < html.indexOf('<script>\n'));
   // Right after the evidence tile in render(), so the regroup can move the pair.
   assert.match(html, /evidenceTile\(d, Date\.now\(\), DATA\.generated_at\) : ''\)\n\s+\+ \(typeof scoresHost === 'function' \? scoresHost\(d\) : ''\)/);
+});
+
+test('scores over more overflows than the forecast counts say both (5 Nov 2026)', () => {
+  const T = require('../src/dipcast/site/spotscores.js');
+  const g = { min_spills: 10, first_day: '2026-09-29', warn_at: 0.4 };
+  const s = { overflows: 50, scored_overflows: 50, overflow_days: 1000, spill_days: 30, hits: 20, misses: 70, false_alarms: 100, days: 30, first_day: '2026-09-29' };
+  assert.match(T.scoresWords(s, g, 49).say[0], /checked at all 50 overflows upstream \(the forecast counts 49\):/);
+  assert.doesNotMatch(T.scoresWords(s, g).say[0], /forecast counts/);
 });

@@ -88,6 +88,11 @@ policy can be compared on them), or a high-risk list catching more exceedances.
 
 - **1.0.0 (31 Oct 2026):** first version.
 
+## Also read by
+
+The Research Lab's exhibit 5, sampling gaps (`docs/SAMPLING-GAPS-EXHIBIT-2026-11.md`), reads this file as it is from
+`lab/data/`, beside its own `gaps.json`. It shows the same verdict and limits.
+
 ## Use in tests
 
 `tests/test_sampling_planner_page.py` checks the committed file against `check`, the page's figures and its failed

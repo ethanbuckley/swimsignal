@@ -1,0 +1,13 @@
+{
+ "schema": "swimsignal.lake-chl-shadow-log",
+ "version": "1.0.0",
+ "description": "Research shadow log: frozen candidate values beside each new satellite reading, for a prospective comparison with lab chlorophyll. Not measurements; not shown on the site.",
+ "protocol": "docs/SATELLITE-CHL-CANDIDATES-2026-11.md",
+ "values_unit": "log10 of the EA Water Quality Archive result for determinand 7887 (chlorophyll, acetone extract)",
+ "model": {
+  "version": "1.0.0",
+  "sha256": "416c597bc24b87610631814f00325ad5f60a475b7f9d14fd4d10a22393ee10e1"
+ },
+ "rows": [],
+ "updated": "2026-11-06T12:32:53+00:00"
+}

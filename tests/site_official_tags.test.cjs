@@ -83,7 +83,7 @@ test('without eatoday.js the rows draw as before', () => {
 });
 
 // The spot page's "Not known here" tile says the same as the answer's line when a reviewed notice shows.
-test('the "Not known here" row follows the reviewed notice, and says "Not checked" only without one', () => {
+test('the "Not known here" row follows the reviewed notice; without one, the answer\'s line alone says it is not checked', () => {
   const names = ['esc', 'fmt', 'cls', 'dateLabel', 'glyph', 'ICON', 'overflows', 'liveSay', 'noFeedSaid', 'accessSaid', 'eaSaid', 'unknowns'];
   const have = names.filter(n => pageSrc.some(l => l.startsWith(`const ${n} =`) || l.startsWith(`function ${n}(`)));
   const ctx = pageContext(have, EXTRA), run = (f, ...a) => vm.runInContext(f, ctx)(...a);
@@ -91,6 +91,7 @@ test('the "Not known here" row follows the reviewed notice, and says "Not checke
   assert.deepEqual(row(frensham({ official: [item()] })), ["Today's EA advice", 'Notice shown above',
     'Open <a href="#ea-today">today\'s EA advice</a> for the latest.']);   // when it was checked is said once, in the answer (coverLine)
   assert.deepEqual(row(frensham({ official: [item({ state: 'unverified', checked: '2026-10-19' })] })).slice(0, 2), ["Today's EA advice", 'Notice shown above']);
-  assert.equal(row(frensham())[1], 'Not checked');
+  // Not checked: said once, in the line beside the answer (coverLine), which links the advice (5 Nov 2026).
+  assert.equal(run('unknowns', frensham()).find(r => r[0] === "Today's EA advice"), undefined);
 });
 

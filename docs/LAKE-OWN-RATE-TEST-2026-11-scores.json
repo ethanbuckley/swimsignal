@@ -1,0 +1,4706 @@
+{
+ "schema": "swimsignal.lake-own-rate-test",
+ "version": "1.0.0",
+ "protocol": "docs/LAKE-OWN-RATE-TEST-2026-11.md",
+ "protocol_commit": "95287b4c",
+ "seed": 20261105,
+ "draws": 2000,
+ "m": 10,
+ "m_sensitivity": [
+  5,
+  30
+ ],
+ "last_sample_days": 30,
+ "skill_margin": 0.1,
+ "min_events": 15,
+ "inputs_sha256": {
+  "docs/CONCENTRATION-STUDY-2026-11-atlas-rows.csv": "3dad94f4323f6c141872575eb75ec4274ed182291efee3046d51d0502c9fb0ae",
+  "docs/CONCENTRATION-STUDY-2026-11-predictions-loyo.csv": "5aed643274761f2eab75e9381a6b365cab269d3b49d99ad5a7214eb27e06df24",
+  "docs/CONCENTRATION-STUDY-2026-11-predictions-cxy.csv": "5f13ea4f4a43508d6b3254c1d3f59422f5ecd68c40d35321b4df13b1706b9ea5",
+  "docs/CONCENTRATION-STUDY-2026-11-predictions-fwd.csv": "dde37a824d43aef56c9902025d10377ef56a6ab37c3bd12e9f3add68fd201c73",
+  "data/research/ecoli_evidence.v1.json": "4b706230bb532d61e60d791f8d08b6e4b4ecf0883ffa55026f49ca855b5e302f"
+ },
+ "population": {
+  "rows": 637,
+  "sites": 12,
+  "water_bodies": 6,
+  "years": [
+   2024,
+   2025,
+   2026
+  ],
+  "history_samples": 832,
+  "history_by_site": {
+   "Colwick Country Park (West Lake)": 69,
+   "Coniston Water, Boating Centre": 60,
+   "Coniston Water, Brown Howe": 60,
+   "Coniston Water, Monk Coniston": 60,
+   "Derwent Water at Crow Park": 61,
+   "Frensham Great Pond": 55,
+   "Rutland Water Sykes Lane": 70,
+   "Rutland Water Whitwell Creek": 76,
+   "Windermere, Fellfoot": 81,
+   "Windermere, Lakeside YMCA": 80,
+   "Windermere, Millerground Landing": 80,
+   "Windermere, Rayrigg Meadow": 80
+  },
+  "history_archive_only_included": true
+ },
+ "schemes": {
+  "loyo": {
+   "line": {
+    "900": {
+     "n": 637,
+     "events": 16,
+     "sites": 12,
+     "clusters": 18,
+     "brier": {
+      "candidate": 0.02359,
+      "production": 0.02496,
+      "concentration": 0.02544,
+      "usual": 0.02463,
+      "own": 0.02404,
+      "last": 0.02374,
+      "candidate_m5": 0.02375,
+      "candidate_m30": 0.02343
+     },
+     "auc": {
+      "candidate": 0.808,
+      "production": 0.468,
+      "concentration": 0.885,
+      "usual": 0.374,
+      "own": 0.784,
+      "last": 0.61,
+      "candidate_m5": 0.809,
+      "candidate_m30": 0.818
+     },
+     "site_auc_mean": {
+      "candidate": 0.146,
+      "production": 0.398,
+      "concentration": 0.387,
+      "usual": 0.441,
+      "own": 0.184,
+      "last": 0.481,
+      "candidate_m5": 0.146,
+      "candidate_m30": 0.146
+     },
+     "logloss": {
+      "candidate": 0.0997,
+      "production": 0.1233,
+      "concentration": 0.1001,
+      "usual": 0.1212,
+      "own": 0.1222,
+      "last": 0.1075,
+      "candidate_m5": 0.1022,
+      "candidate_m30": 0.0992
+     },
+     "skill_vs_usual": {
+      "candidate": 0.0422,
+      "production": -0.0134,
+      "concentration": -0.0329,
+      "usual": 0.0,
+      "own": 0.024,
+      "last": 0.0361,
+      "candidate_m5": 0.0357,
+      "candidate_m30": 0.0487
+     },
+     "candidate_minus": {
+      "production": {
+       "mean": -0.00138,
+       "ci95": [
+        -0.0061,
+        0.00198
+       ],
+       "ci95_week": [
+        -0.00385,
+        0.00084
+       ]
+      },
+      "concentration": {
+       "mean": -0.00186,
+       "ci95": [
+        -0.00606,
+        0.00021
+       ],
+       "ci95_week": [
+        -0.00415,
+        0.0001
+       ]
+      },
+      "usual": {
+       "mean": -0.00104,
+       "ci95": [
+        -0.00574,
+        0.00235
+       ],
+       "ci95_week": [
+        -0.00363,
+        0.00116
+       ]
+      },
+      "own": {
+       "mean": -0.00045,
+       "ci95": [
+        -0.00205,
+        0.00073
+       ],
+       "ci95_week": [
+        -0.00105,
+        0.00021
+       ]
+      },
+      "last": {
+       "mean": -0.00016,
+       "ci95": [
+        -0.00162,
+        0.00185
+       ],
+       "ci95_week": [
+        -0.00264,
+        0.00203
+       ]
+      },
+      "candidate_m5": {
+       "mean": -0.00016,
+       "ci95": [
+        -0.00082,
+        0.00035
+       ],
+       "ci95_week": [
+        -0.00043,
+        0.00013
+       ]
+      },
+      "candidate_m30": {
+       "mean": 0.00015,
+       "ci95": [
+        -0.00113,
+        0.00155
+       ],
+       "ci95_week": [
+        -0.00058,
+        0.00082
+       ]
+      }
+     },
+     "usual_minus_candidate": {
+      "mean": 0.00104,
+      "ci95": [
+       -0.00235,
+       0.00574
+      ],
+      "ci95_week": [
+       -0.00116,
+       0.00363
+      ]
+     },
+     "by_water_body": {
+      "Colwick": {
+       "n": 45,
+       "events": 0,
+       "sites": 1,
+       "clusters": 3,
+       "brier": {
+        "candidate": 0.00017,
+        "production": 0.00685,
+        "concentration": 0.00031,
+        "usual": 0.00041,
+        "own": 0.0,
+        "last": 0.00025,
+        "candidate_m5": 5e-05,
+        "candidate_m30": 0.0009
+       },
+       "auc": {
+        "candidate": NaN,
+        "production": NaN,
+        "concentration": NaN,
+        "usual": NaN,
+        "own": NaN,
+        "last": NaN,
+        "candidate_m5": NaN,
+        "candidate_m30": NaN
+       },
+       "site_auc_mean": {
+        "candidate": null,
+        "production": null,
+        "concentration": null,
+        "usual": null,
+        "own": null,
+        "last": null,
+        "candidate_m5": null,
+        "candidate_m30": null
+       },
+       "logloss": {
+        "candidate": 0.0116,
+        "production": 0.0762,
+        "concentration": 0.0079,
+        "usual": 0.0199,
+        "own": 0.0001,
+        "last": 0.0158,
+        "candidate_m5": 0.0063,
+        "candidate_m30": 0.0267
+       },
+       "skill_vs_usual": {
+        "candidate": 0.5854,
+        "production": -15.7073,
+        "concentration": 0.2439,
+        "usual": 0.0,
+        "own": 1.0,
+        "last": 0.3902,
+        "candidate_m5": 0.878,
+        "candidate_m30": -1.1951
+       }
+      },
+      "Coniston Water": {
+       "n": 171,
+       "events": 4,
+       "sites": 3,
+       "clusters": 3,
+       "brier": {
+        "candidate": 0.02382,
+        "production": 0.02266,
+        "concentration": 0.0233,
+        "usual": 0.02282,
+        "own": 0.02421,
+        "last": 0.02512,
+        "candidate_m5": 0.02399,
+        "candidate_m30": 0.02342
+       },
+       "auc": {
+        "candidate": 0.172,
+        "production": 0.555,
+        "concentration": 0.51,
+        "usual": 0.583,
+        "own": 0.159,
+        "last": 0.535,
+        "candidate_m5": 0.172,
+        "candidate_m30": 0.256
+       },
+       "site_auc_mean": {
+        "candidate": 0.114,
+        "production": 0.427,
+        "concentration": 0.414,
+        "usual": 0.502,
+        "own": 0.159,
+        "last": 0.451,
+        "candidate_m5": 0.114,
+        "candidate_m30": 0.114
+       },
+       "logloss": {
+        "candidate": 0.146,
+        "production": 0.111,
+        "concentration": 0.1279,
+        "usual": 0.1103,
+        "own": 0.238,
+        "last": 0.1202,
+        "candidate_m5": 0.1595,
+        "candidate_m30": 0.1289
+       },
+       "skill_vs_usual": {
+        "candidate": -0.0438,
+        "production": 0.007,
+        "concentration": -0.021,
+        "usual": 0.0,
+        "own": -0.0609,
+        "last": -0.1008,
+        "candidate_m5": -0.0513,
+        "candidate_m30": -0.0263
+       }
+      },
+      "Derwent Water": {
+       "n": 59,
+       "events": 12,
+       "sites": 1,
+       "clusters": 3,
+       "brier": {
+        "candidate": 0.185,
+        "production": 0.19578,
+        "concentration": 0.20688,
+        "usual": 0.19695,
+        "own": 0.18889,
+        "last": 0.18181,
+        "candidate_m5": 0.18641,
+        "candidate_m30": 0.18373
+       },
+       "auc": {
+        "candidate": 0.241,
+        "production": 0.31,
+        "concentration": 0.305,
+        "usual": 0.258,
+        "own": 0.258,
+        "last": 0.57,
+        "candidate_m5": 0.241,
+        "candidate_m30": 0.241
+       },
+       "site_auc_mean": {
+        "candidate": 0.241,
+        "production": 0.31,
+        "concentration": 0.305,
+        "usual": 0.258,
+        "own": 0.258,
+        "last": 0.57,
+        "candidate_m5": 0.241,
+        "candidate_m30": 0.241
+       },
+       "logloss": {
+        "candidate": 0.6049,
+        "production": 0.8276,
+        "concentration": 0.6953,
+        "usual": 0.8504,
+        "own": 0.6043,
+        "last": 0.7026,
+        "candidate_m5": 0.6035,
+        "candidate_m30": 0.6184
+       },
+       "skill_vs_usual": {
+        "candidate": 0.0607,
+        "production": 0.0059,
+        "concentration": -0.0504,
+        "usual": 0.0,
+        "own": 0.0409,
+        "last": 0.0769,
+        "candidate_m5": 0.0535,
+        "candidate_m30": 0.0671
+       }
+      },
+      "Frensham": {
+       "n": 34,
+       "events": 0,
+       "sites": 1,
+       "clusters": 3,
+       "brier": {
+        "candidate": 2e-05,
+        "production": 0.00056,
+        "concentration": 3e-05,
+        "usual": 0.00044,
+        "own": 0.0,
+        "last": 0.00027,
+        "candidate_m5": 1e-05,
+        "candidate_m30": 0.0001
+       },
+       "auc": {
+        "candidate": NaN,
+        "production": NaN,
+        "concentration": NaN,
+        "usual": NaN,
+        "own": NaN,
+        "last": NaN,
+        "candidate_m5": NaN,
+        "candidate_m30": NaN
+       },
+       "site_auc_mean": {
+        "candidate": null,
+        "production": null,
+        "concentration": null,
+        "usual": null,
+        "own": null,
+        "last": null,
+        "candidate_m5": null,
+        "candidate_m30": null
+       },
+       "logloss": {
+        "candidate": 0.0043,
+        "production": 0.0228,
+        "concentration": 0.0028,
+        "usual": 0.0207,
+        "own": 0.0001,
+        "last": 0.0163,
+        "candidate_m5": 0.0024,
+        "candidate_m30": 0.0094
+       },
+       "skill_vs_usual": {
+        "candidate": 0.9545,
+        "production": -0.2727,
+        "concentration": 0.9318,
+        "usual": 0.0,
+        "own": 1.0,
+        "last": 0.3864,
+        "candidate_m5": 0.9773,
+        "candidate_m30": 0.7727
+       }
+      },
+      "Rutland Water": {
+       "n": 100,
+       "events": 0,
+       "sites": 2,
+       "clusters": 3,
+       "brier": {
+        "candidate": 0.00016,
+        "production": 0.00038,
+        "concentration": 1e-05,
+        "usual": 0.00041,
+        "own": 0.00016,
+        "last": 0.00026,
+        "candidate_m5": 0.00016,
+        "candidate_m30": 0.00018
+       },
+       "auc": {
+        "candidate": NaN,
+        "production": NaN,
+        "concentration": NaN,
+        "usual": NaN,
+        "own": NaN,
+        "last": NaN,
+        "candidate_m5": NaN,
+        "candidate_m30": NaN
+       },
+       "site_auc_mean": {
+        "candidate": null,
+        "production": null,
+        "concentration": null,
+        "usual": null,
+        "own": null,
+        "last": null,
+        "candidate_m5": null,
+        "candidate_m30": null
+       },
+       "logloss": {
+        "candidate": 0.0096,
+        "production": 0.0186,
+        "concentration": 0.001,
+        "usual": 0.02,
+        "own": 0.0081,
+        "last": 0.016,
+        "candidate_m5": 0.0089,
+        "candidate_m30": 0.0116
+       },
+       "skill_vs_usual": {
+        "candidate": 0.6098,
+        "production": 0.0732,
+        "concentration": 0.9756,
+        "usual": 0.0,
+        "own": 0.6098,
+        "last": 0.3659,
+        "candidate_m5": 0.6098,
+        "candidate_m30": 0.561
+       }
+      },
+      "Windermere": {
+       "n": 228,
+       "events": 0,
+       "sites": 4,
+       "clusters": 3,
+       "brier": {
+        "candidate": 6e-05,
+        "production": 0.00049,
+        "concentration": 1e-05,
+        "usual": 0.00041,
+        "own": 5e-05,
+        "last": 0.00025,
+        "candidate_m5": 5e-05,
+        "candidate_m30": 0.0001
+       },
+       "auc": {
+        "candidate": NaN,
+        "production": NaN,
+        "concentration": NaN,
+        "usual": NaN,
+        "own": NaN,
+        "last": NaN,
+        "candidate_m5": NaN,
+        "candidate_m30": NaN
+       },
+       "site_auc_mean": {
+        "candidate": null,
+        "production": null,
+        "concentration": null,
+        "usual": null,
+        "own": null,
+        "last": null,
+        "candidate_m5": null,
+        "candidate_m30": null
+       },
+       "logloss": {
+        "candidate": 0.0054,
+        "production": 0.0206,
+        "concentration": 0.0014,
+        "usual": 0.02,
+        "own": 0.003,
+        "last": 0.0158,
+        "candidate_m5": 0.0042,
+        "candidate_m30": 0.0088
+       },
+       "skill_vs_usual": {
+        "candidate": 0.8537,
+        "production": -0.1951,
+        "concentration": 0.9756,
+        "usual": 0.0,
+        "own": 0.878,
+        "last": 0.3902,
+        "candidate_m5": 0.878,
+        "candidate_m30": 0.7561
+       }
+      }
+     },
+     "by_year": {
+      "2024": {
+       "n": 230,
+       "events": 3,
+       "sites": 12,
+       "clusters": 6,
+       "brier": {
+        "candidate": 0.01545,
+        "production": 0.01347,
+        "concentration": 0.01902,
+        "usual": 0.01301,
+        "own": 0.01714,
+        "last": 0.01457,
+        "candidate_m5": 0.01615,
+        "candidate_m30": 0.01405
+       },
+       "auc": {
+        "candidate": 0.631,
+        "production": 0.778,
+        "concentration": 0.863,
+        "usual": 0.5,
+        "own": 0.507,
+        "last": 0.467,
+        "candidate_m5": 0.634,
+        "candidate_m30": 0.717
+       },
+       "site_auc_mean": {
+        "candidate": 0.646,
+        "production": 0.646,
+        "concentration": 0.594,
+        "usual": 0.5,
+        "own": 0.5,
+        "last": 0.432,
+        "candidate_m5": 0.646,
+        "candidate_m30": 0.646
+       },
+       "logloss": {
+        "candidate": 0.0795,
+        "production": 0.0747,
+        "concentration": 0.0759,
+        "usual": 0.0731,
+        "own": 0.1193,
+        "last": 0.0762,
+        "candidate_m5": 0.0847,
+        "candidate_m30": 0.0733
+       },
+       "skill_vs_usual": {
+        "candidate": -0.1875,
+        "production": -0.0354,
+        "concentration": -0.462,
+        "usual": 0.0,
+        "own": -0.3174,
+        "last": -0.1199,
+        "candidate_m5": -0.2414,
+        "candidate_m30": -0.0799
+       }
+      },
+      "2025": {
+       "n": 225,
+       "events": 9,
+       "sites": 12,
+       "clusters": 6,
+       "brier": {
+        "candidate": 0.03504,
+        "production": 0.03921,
+        "concentration": 0.03505,
+        "usual": 0.03903,
+        "own": 0.03425,
+        "last": 0.03575,
+        "candidate_m5": 0.03468,
+        "candidate_m30": 0.03606
+       },
+       "auc": {
+        "candidate": 0.879,
+        "production": 0.478,
+        "concentration": 0.939,
+        "usual": 0.5,
+        "own": 0.896,
+        "last": 0.695,
+        "candidate_m5": 0.879,
+        "candidate_m30": 0.867
+       },
+       "site_auc_mean": {
+        "candidate": 0.24,
+        "production": 0.24,
+        "concentration": 0.435,
+        "usual": 0.5,
+        "own": 0.5,
+        "last": 0.505,
+        "candidate_m5": 0.24,
+        "candidate_m30": 0.24
+       },
+       "logloss": {
+        "candidate": 0.1326,
+        "production": 0.1848,
+        "concentration": 0.1244,
+        "usual": 0.1828,
+        "own": 0.1393,
+        "last": 0.148,
+        "candidate_m5": 0.1323,
+        "candidate_m30": 0.1382
+       },
+       "skill_vs_usual": {
+        "candidate": 0.1022,
+        "production": -0.0046,
+        "concentration": 0.102,
+        "usual": 0.0,
+        "own": 0.1225,
+        "last": 0.084,
+        "candidate_m5": 0.1115,
+        "candidate_m30": 0.0761
+       }
+      },
+      "2026": {
+       "n": 182,
+       "events": 4,
+       "sites": 12,
+       "clusters": 6,
+       "brier": {
+        "candidate": 0.01971,
+        "production": 0.02187,
+        "concentration": 0.02169,
+        "usual": 0.0215,
+        "own": 0.02014,
+        "last": 0.0205,
+        "candidate_m5": 0.01985,
+        "candidate_m30": 0.01968
+       },
+       "auc": {
+        "candidate": 0.848,
+        "production": 0.588,
+        "concentration": 0.864,
+        "usual": 0.5,
+        "own": 0.806,
+        "last": 0.591,
+        "candidate_m5": 0.848,
+        "candidate_m30": 0.847
+       },
+       "site_auc_mean": {
+        "candidate": 0.427,
+        "production": 0.427,
+        "concentration": 0.479,
+        "usual": 0.5,
+        "own": 0.5,
+        "last": 0.51,
+        "candidate_m5": 0.427,
+        "candidate_m30": 0.427
+       },
+       "logloss": {
+        "candidate": 0.0847,
+        "production": 0.1088,
+        "concentration": 0.1007,
+        "usual": 0.1058,
+        "own": 0.1048,
+        "last": 0.097,
+        "candidate_m5": 0.0871,
+        "candidate_m30": 0.0838
+       },
+       "skill_vs_usual": {
+        "candidate": 0.0833,
+        "production": -0.0172,
+        "concentration": -0.0088,
+        "usual": 0.0,
+        "own": 0.0633,
+        "last": 0.0465,
+        "candidate_m5": 0.0767,
+        "candidate_m30": 0.0847
+       }
+      }
+     },
+     "without_derwent_water": {
+      "n": 578,
+      "events": 4,
+      "sites": 11,
+      "clusters": 15,
+      "brier": {
+       "candidate": 0.00711,
+       "production": 0.00753,
+       "concentration": 0.00692,
+       "usual": 0.00704,
+       "own": 0.00721,
+       "last": 0.00761,
+       "candidate_m5": 0.00715,
+       "candidate_m30": 0.00707
+      },
+      "auc": {
+       "candidate": 0.438,
+       "production": 0.607,
+       "concentration": 0.797,
+       "usual": 0.578,
+       "own": 0.331,
+       "last": 0.532,
+       "candidate_m5": 0.441,
+       "candidate_m30": 0.486
+      },
+      "site_auc_mean": {
+       "candidate": 0.114,
+       "production": 0.427,
+       "concentration": 0.414,
+       "usual": 0.502,
+       "own": 0.159,
+       "last": 0.451,
+       "candidate_m5": 0.114,
+       "candidate_m30": 0.114
+      },
+      "logloss": {
+       "candidate": 0.0481,
+       "production": 0.0515,
+       "concentration": 0.0394,
+       "usual": 0.0467,
+       "own": 0.073,
+       "last": 0.0468,
+       "candidate_m5": 0.051,
+       "candidate_m30": 0.0462
+      },
+      "skill_vs_usual": {
+       "candidate": -0.0099,
+       "production": -0.0696,
+       "concentration": 0.017,
+       "usual": 0.0,
+       "own": -0.0241,
+       "last": -0.081,
+       "candidate_m5": -0.0156,
+       "candidate_m30": -0.0043
+      },
+      "candidate_minus": {
+       "production": {
+        "mean": -0.00042,
+        "ci95": [
+         -0.0014,
+         0.00034
+        ],
+        "ci95_week": [
+         -0.00085,
+         0.00011
+        ]
+       },
+       "concentration": {
+        "mean": 0.00019,
+        "ci95": [
+         4e-05,
+         0.00038
+        ],
+        "ci95_week": [
+         7e-05,
+         0.00034
+        ]
+       },
+       "usual": {
+        "mean": 7e-05,
+        "ci95": [
+         -0.00029,
+         0.00047
+        ],
+        "ci95_week": [
+         -0.00011,
+         0.00029
+        ]
+       },
+       "own": {
+        "mean": -0.0001,
+        "ci95": [
+         -0.00024,
+         2e-05
+        ],
+        "ci95_week": [
+         -0.00022,
+         -1e-05
+        ]
+       },
+       "last": {
+        "mean": -0.0005,
+        "ci95": [
+         -0.00133,
+         6e-05
+        ],
+        "ci95_week": [
+         -0.00131,
+         0.00014
+        ]
+       },
+       "candidate_m5": {
+        "mean": -4e-05,
+        "ci95": [
+         -0.0001,
+         2e-05
+        ],
+        "ci95_week": [
+         -9e-05,
+         0.0
+        ]
+       },
+       "candidate_m30": {
+        "mean": 4e-05,
+        "ci95": [
+         -0.00012,
+         0.00021
+        ],
+        "ci95_week": [
+         -6e-05,
+         0.00018
+        ]
+       }
+      },
+      "usual_minus_candidate": {
+       "mean": -7e-05,
+       "ci95": [
+        -0.00047,
+        0.00029
+       ],
+       "ci95_week": [
+        -0.00029,
+        0.00011
+       ]
+      }
+     },
+     "own_history_n": {
+      "min": 40,
+      "median": 50.0,
+      "max": 61
+     }
+    },
+    "500": {
+     "n": 637,
+     "events": 30,
+     "sites": 12,
+     "clusters": 18,
+     "brier": {
+      "candidate": 0.04225,
+      "concentration": 0.04516,
+      "usual": 0.04495,
+      "own": 0.04211,
+      "last": 0.04376,
+      "candidate_m5": 0.04216,
+      "candidate_m30": 0.04269
+     },
+     "auc": {
+      "candidate": 0.791,
+      "concentration": 0.822,
+      "usual": 0.472,
+      "own": 0.755,
+      "last": 0.564,
+      "candidate_m5": 0.778,
+      "candidate_m30": 0.808
+     },
+     "site_auc_mean": {
+      "candidate": 0.328,
+      "concentration": 0.553,
+      "usual": 0.567,
+      "own": 0.292,
+      "last": 0.539,
+      "candidate_m5": 0.329,
+      "candidate_m30": 0.332
+     },
+     "logloss": {
+      "candidate": 0.1629,
+      "concentration": 0.1733,
+      "usual": 0.1908,
+      "own": 0.1975,
+      "last": 0.1815,
+      "candidate_m5": 0.1671,
+      "candidate_m30": 0.1589
+     },
+     "skill_vs_usual": {
+      "candidate": 0.0601,
+      "concentration": -0.0047,
+      "usual": 0.0,
+      "own": 0.0632,
+      "last": 0.0265,
+      "candidate_m5": 0.0621,
+      "candidate_m30": 0.0503
+     },
+     "candidate_minus": {
+      "concentration": {
+       "mean": -0.0029,
+       "ci95": [
+        -0.00866,
+        0.00049
+       ],
+       "ci95_week": [
+        -0.00581,
+        -0.00027
+       ]
+      },
+      "usual": {
+       "mean": -0.0027,
+       "ci95": [
+        -0.01532,
+        0.00694
+       ],
+       "ci95_week": [
+        -0.00824,
+        0.00254
+       ]
+      },
+      "own": {
+       "mean": 0.00014,
+       "ci95": [
+        -0.00047,
+        0.00095
+       ],
+       "ci95_week": [
+        -0.00045,
+        0.0008
+       ]
+      },
+      "last": {
+       "mean": -0.00151,
+       "ci95": [
+        -0.01083,
+        0.00682
+       ],
+       "ci95_week": [
+        -0.00662,
+        0.00358
+       ]
+      },
+      "candidate_m5": {
+       "mean": 9e-05,
+       "ci95": [
+        -0.00019,
+        0.00047
+       ],
+       "ci95_week": [
+        -0.00018,
+        0.00039
+       ]
+      },
+      "candidate_m30": {
+       "mean": -0.00043,
+       "ci95": [
+        -0.00162,
+        0.00037
+       ],
+       "ci95_week": [
+        -0.00121,
+        0.00028
+       ]
+      }
+     },
+     "usual_minus_candidate": {
+      "mean": 0.0027,
+      "ci95": [
+       -0.00694,
+       0.01532
+      ],
+      "ci95_week": [
+       -0.00254,
+       0.00824
+      ]
+     },
+     "by_water_body": {
+      "Colwick": {
+       "n": 45,
+       "events": 0,
+       "sites": 1,
+       "clusters": 3,
+       "brier": {
+        "candidate": 0.00041,
+        "concentration": 0.00201,
+        "usual": 0.0017,
+        "own": 0.00036,
+        "last": 0.00138,
+        "candidate_m5": 0.00038,
+        "candidate_m30": 0.00059
+       },
+       "auc": {
+        "candidate": NaN,
+        "concentration": NaN,
+        "usual": NaN,
+        "own": NaN,
+        "last": NaN,
+        "candidate_m5": NaN,
+        "candidate_m30": NaN
+       },
+       "site_auc_mean": {
+        "candidate": null,
+        "concentration": null,
+        "usual": null,
+        "own": null,
+        "last": null,
+        "candidate_m5": null,
+        "candidate_m30": null
+       },
+       "logloss": {
+        "candidate": 0.0196,
+        "concentration": 0.0226,
+        "usual": 0.042,
+        "own": 0.0192,
+        "last": 0.0378,
+        "candidate_m5": 0.0194,
+        "candidate_m30": 0.0201
+       },
+       "skill_vs_usual": {
+        "candidate": 0.7588,
+        "concentration": -0.1824,
+        "usual": 0.0,
+        "own": 0.7882,
+        "last": 0.1882,
+        "candidate_m5": 0.7765,
+        "candidate_m30": 0.6529
+       }
+      },
+      "Coniston Water": {
+       "n": 171,
+       "events": 10,
+       "sites": 3,
+       "clusters": 3,
+       "brier": {
+        "candidate": 0.05876,
+        "concentration": 0.05737,
+        "usual": 0.05527,
+        "own": 0.05957,
+        "last": 0.05576,
+        "candidate_m5": 0.05909,
+        "candidate_m30": 0.05806
+       },
+       "auc": {
+        "candidate": 0.224,
+        "concentration": 0.485,
+        "usual": 0.555,
+        "own": 0.217,
+        "last": 0.519,
+        "candidate_m5": 0.22,
+        "candidate_m30": 0.281
+       },
+       "site_auc_mean": {
+        "candidate": 0.3,
+        "concentration": 0.456,
+        "usual": 0.525,
+        "own": 0.298,
+        "last": 0.483,
+        "candidate_m5": 0.3,
+        "candidate_m30": 0.3
+       },
+       "logloss": {
+        "candidate": 0.275,
+        "concentration": 0.2631,
+        "usual": 0.2251,
+        "own": 0.3847,
+        "last": 0.2281,
+        "candidate_m5": 0.2881,
+        "candidate_m30": 0.2598
+       },
+       "skill_vs_usual": {
+        "candidate": -0.0631,
+        "concentration": -0.038,
+        "usual": 0.0,
+        "own": -0.0778,
+        "last": -0.0089,
+        "candidate_m5": -0.0691,
+        "candidate_m30": -0.0505
+       }
+      },
+      "Derwent Water": {
+       "n": 59,
+       "events": 17,
+       "sites": 1,
+       "clusters": 3,
+       "brier": {
+        "candidate": 0.23535,
+        "concentration": 0.26922,
+        "usual": 0.26681,
+        "own": 0.23109,
+        "last": 0.25207,
+        "candidate_m5": 0.23326,
+        "candidate_m30": 0.24225
+       },
+       "auc": {
+        "candidate": 0.301,
+        "concentration": 0.368,
+        "usual": 0.38,
+        "own": 0.309,
+        "last": 0.447,
+        "candidate_m5": 0.307,
+        "candidate_m30": 0.321
+       },
+       "site_auc_mean": {
+        "candidate": 0.301,
+        "concentration": 0.368,
+        "usual": 0.38,
+        "own": 0.309,
+        "last": 0.447,
+        "candidate_m5": 0.307,
+        "candidate_m30": 0.321
+       },
+       "logloss": {
+        "candidate": 0.6724,
+        "concentration": 0.7694,
+        "usual": 0.9583,
+        "own": 0.6625,
+        "last": 0.8629,
+        "candidate_m5": 0.6675,
+        "candidate_m30": 0.689
+       },
+       "skill_vs_usual": {
+        "candidate": 0.1179,
+        "concentration": -0.009,
+        "usual": 0.0,
+        "own": 0.1339,
+        "last": 0.0552,
+        "candidate_m5": 0.1257,
+        "candidate_m30": 0.0921
+       }
+      },
+      "Frensham": {
+       "n": 34,
+       "events": 0,
+       "sites": 1,
+       "clusters": 3,
+       "brier": {
+        "candidate": 1e-05,
+        "concentration": 0.00026,
+        "usual": 0.00175,
+        "own": 0.0,
+        "last": 0.00141,
+        "candidate_m5": 0.0,
+        "candidate_m30": 5e-05
+       },
+       "auc": {
+        "candidate": NaN,
+        "concentration": NaN,
+        "usual": NaN,
+        "own": NaN,
+        "last": NaN,
+        "candidate_m5": NaN,
+        "candidate_m30": NaN
+       },
+       "site_auc_mean": {
+        "candidate": null,
+        "concentration": null,
+        "usual": null,
+        "own": null,
+        "last": null,
+        "candidate_m5": null,
+        "candidate_m30": null
+       },
+       "logloss": {
+        "candidate": 0.0018,
+        "concentration": 0.0094,
+        "usual": 0.0426,
+        "own": 0.0001,
+        "last": 0.0383,
+        "candidate_m5": 0.001,
+        "candidate_m30": 0.0039
+       },
+       "skill_vs_usual": {
+        "candidate": 0.9943,
+        "concentration": 0.8514,
+        "usual": 0.0,
+        "own": 1.0,
+        "last": 0.1943,
+        "candidate_m5": 1.0,
+        "candidate_m30": 0.9714
+       }
+      },
+      "Rutland Water": {
+       "n": 100,
+       "events": 2,
+       "sites": 2,
+       "clusters": 3,
+       "brier": {
+        "candidate": 0.01953,
+        "concentration": 0.02003,
+        "usual": 0.02005,
+        "own": 0.01968,
+        "last": 0.02062,
+        "candidate_m5": 0.01959,
+        "candidate_m30": 0.01943
+       },
+       "auc": {
+        "candidate": 0.709,
+        "concentration": 0.566,
+        "usual": 0.602,
+        "own": 0.684,
+        "last": 0.551,
+        "candidate_m5": 0.709,
+        "candidate_m30": 0.709
+       },
+       "site_auc_mean": {
+        "candidate": 0.43,
+        "concentration": 0.58,
+        "usual": 0.62,
+        "own": 0.38,
+        "last": 0.56,
+        "candidate_m5": 0.43,
+        "candidate_m30": 0.43
+       },
+       "logloss": {
+        "candidate": 0.0937,
+        "concentration": 0.1394,
+        "usual": 0.1049,
+        "own": 0.0957,
+        "last": 0.1063,
+        "candidate_m5": 0.0945,
+        "candidate_m30": 0.0922
+       },
+       "skill_vs_usual": {
+        "candidate": 0.0259,
+        "concentration": 0.001,
+        "usual": 0.0,
+        "own": 0.0185,
+        "last": -0.0284,
+        "candidate_m5": 0.0229,
+        "candidate_m30": 0.0309
+       }
+      },
+      "Windermere": {
+       "n": 228,
+       "events": 1,
+       "sites": 4,
+       "clusters": 3,
+       "brier": {
+        "candidate": 0.00444,
+        "concentration": 0.00426,
+        "usual": 0.0057,
+        "own": 0.00448,
+        "last": 0.00568,
+        "candidate_m5": 0.00446,
+        "candidate_m30": 0.00439
+       },
+       "auc": {
+        "candidate": 0.661,
+        "concentration": 0.956,
+        "usual": 0.826,
+        "own": 0.33,
+        "last": 0.78,
+        "candidate_m5": 0.661,
+        "candidate_m30": 0.661
+       },
+       "site_auc_mean": {
+        "candidate": 0.339,
+        "concentration": 1.0,
+        "usual": 0.83,
+        "own": 0.17,
+        "last": 0.777,
+        "candidate_m5": 0.339,
+        "candidate_m30": 0.339
+       },
+       "logloss": {
+        "candidate": 0.0298,
+        "concentration": 0.0208,
+        "usual": 0.0555,
+        "own": 0.0461,
+        "last": 0.053,
+        "candidate_m5": 0.0325,
+        "candidate_m30": 0.0259
+       },
+       "skill_vs_usual": {
+        "candidate": 0.2211,
+        "concentration": 0.2526,
+        "usual": 0.0,
+        "own": 0.214,
+        "last": 0.0035,
+        "candidate_m5": 0.2175,
+        "candidate_m30": 0.2298
+       }
+      }
+     },
+     "by_year": {
+      "2024": {
+       "n": 230,
+       "events": 9,
+       "sites": 12,
+       "clusters": 6,
+       "brier": {
+        "candidate": 0.04581,
+        "concentration": 0.04965,
+        "usual": 0.03763,
+        "own": 0.04572,
+        "last": 0.03807,
+        "candidate_m5": 0.04573,
+        "candidate_m30": 0.04631
+       },
+       "auc": {
+        "candidate": 0.597,
+        "concentration": 0.735,
+        "usual": 0.5,
+        "own": 0.491,
+        "last": 0.513,
+        "candidate_m5": 0.574,
+        "candidate_m30": 0.652
+       },
+       "site_auc_mean": {
+        "candidate": 0.589,
+        "concentration": 0.589,
+        "usual": 0.5,
+        "own": 0.5,
+        "last": 0.453,
+        "candidate_m5": 0.589,
+        "candidate_m30": 0.589
+       },
+       "logloss": {
+        "candidate": 0.1968,
+        "concentration": 0.1883,
+        "usual": 0.1656,
+        "own": 0.2929,
+        "last": 0.1657,
+        "candidate_m5": 0.2085,
+        "candidate_m30": 0.1835
+       },
+       "skill_vs_usual": {
+        "candidate": -0.2174,
+        "concentration": -0.3194,
+        "usual": 0.0,
+        "own": -0.215,
+        "last": -0.0117,
+        "candidate_m5": -0.2153,
+        "candidate_m30": -0.2307
+       }
+      },
+      "2025": {
+       "n": 225,
+       "events": 12,
+       "sites": 12,
+       "clusters": 6,
+       "brier": {
+        "candidate": 0.04042,
+        "concentration": 0.04176,
+        "usual": 0.05068,
+        "own": 0.04039,
+        "last": 0.04815,
+        "candidate_m5": 0.04039,
+        "candidate_m30": 0.0406
+       },
+       "auc": {
+        "candidate": 0.919,
+        "concentration": 0.893,
+        "usual": 0.5,
+        "own": 0.911,
+        "last": 0.629,
+        "candidate_m5": 0.913,
+        "candidate_m30": 0.914
+       },
+       "site_auc_mean": {
+        "candidate": 0.632,
+        "concentration": 0.632,
+        "usual": 0.5,
+        "own": 0.5,
+        "last": 0.453,
+        "candidate_m5": 0.632,
+        "candidate_m30": 0.632
+       },
+       "logloss": {
+        "candidate": 0.1403,
+        "concentration": 0.1545,
+        "usual": 0.2105,
+        "own": 0.1411,
+        "last": 0.1923,
+        "candidate_m5": 0.1406,
+        "candidate_m30": 0.1399
+       },
+       "skill_vs_usual": {
+        "candidate": 0.2024,
+        "concentration": 0.176,
+        "usual": 0.0,
+        "own": 0.203,
+        "last": 0.0499,
+        "candidate_m5": 0.203,
+        "candidate_m30": 0.1989
+       }
+      },
+      "2026": {
+       "n": 182,
+       "events": 9,
+       "sites": 12,
+       "clusters": 6,
+       "brier": {
+        "candidate": 0.04003,
+        "concentration": 0.04369,
+        "usual": 0.04712,
+        "own": 0.03968,
+        "last": 0.04553,
+        "candidate_m5": 0.03985,
+        "candidate_m30": 0.0407
+       },
+       "auc": {
+        "candidate": 0.855,
+        "concentration": 0.844,
+        "usual": 0.5,
+        "own": 0.859,
+        "last": 0.564,
+        "candidate_m5": 0.855,
+        "candidate_m30": 0.852
+       },
+       "site_auc_mean": {
+        "candidate": 0.542,
+        "concentration": 0.542,
+        "usual": 0.5,
+        "own": 0.5,
+        "last": 0.442,
+        "candidate_m5": 0.542,
+        "candidate_m30": 0.542
+       },
+       "logloss": {
+        "candidate": 0.1482,
+        "concentration": 0.1776,
+        "usual": 0.1983,
+        "own": 0.1467,
+        "last": 0.1882,
+        "candidate_m5": 0.1474,
+        "candidate_m30": 0.1513
+       },
+       "skill_vs_usual": {
+        "candidate": 0.1505,
+        "concentration": 0.0728,
+        "usual": 0.0,
+        "own": 0.1579,
+        "last": 0.0337,
+        "candidate_m5": 0.1543,
+        "candidate_m30": 0.1362
+       }
+      }
+     },
+     "without_derwent_water": {
+      "n": 578,
+      "events": 13,
+      "sites": 11,
+      "clusters": 15,
+      "brier": {
+       "candidate": 0.02254,
+       "concentration": 0.02229,
+       "usual": 0.0223,
+       "own": 0.02282,
+       "last": 0.0225,
+       "candidate_m5": 0.02266,
+       "candidate_m30": 0.02232
+      },
+      "auc": {
+       "candidate": 0.624,
+       "concentration": 0.709,
+       "usual": 0.581,
+       "own": 0.533,
+       "last": 0.553,
+       "candidate_m5": 0.592,
+       "candidate_m30": 0.664
+      },
+      "site_auc_mean": {
+       "candidate": 0.334,
+       "concentration": 0.589,
+       "usual": 0.605,
+       "own": 0.289,
+       "last": 0.557,
+       "candidate_m5": 0.334,
+       "candidate_m30": 0.334
+      },
+      "logloss": {
+       "candidate": 0.1109,
+       "concentration": 0.1125,
+       "usual": 0.1124,
+       "own": 0.1501,
+       "last": 0.112,
+       "candidate_m5": 0.116,
+       "candidate_m30": 0.1048
+      },
+      "skill_vs_usual": {
+       "candidate": -0.0108,
+       "concentration": 0.0004,
+       "usual": 0.0,
+       "own": -0.0233,
+       "last": -0.009,
+       "candidate_m5": -0.0161,
+       "candidate_m30": -0.0009
+      },
+      "candidate_minus": {
+       "concentration": {
+        "mean": 0.00026,
+        "ci95": [
+         -0.00085,
+         0.00163
+        ],
+        "ci95_week": [
+         -0.00058,
+         0.00119
+        ]
+       },
+       "usual": {
+        "mean": 0.00024,
+        "ci95": [
+         -0.00103,
+         0.00173
+        ],
+        "ci95_week": [
+         -0.0002,
+         0.00076
+        ]
+       },
+       "own": {
+        "mean": -0.00028,
+        "ci95": [
+         -0.00073,
+         -2e-05
+        ],
+        "ci95_week": [
+         -0.00052,
+         -7e-05
+        ]
+       },
+       "last": {
+        "mean": 5e-05,
+        "ci95": [
+         -0.00115,
+         0.00172
+        ],
+        "ci95_week": [
+         -0.00102,
+         0.00172
+        ]
+       },
+       "candidate_m5": {
+        "mean": -0.00011,
+        "ci95": [
+         -0.00031,
+         -0.0
+        ],
+        "ci95_week": [
+         -0.00022,
+         -2e-05
+        ]
+       },
+       "candidate_m30": {
+        "mean": 0.00023,
+        "ci95": [
+         -6e-05,
+         0.00068
+        ],
+        "ci95_week": [
+         -1e-05,
+         0.00049
+        ]
+       }
+      },
+      "usual_minus_candidate": {
+       "mean": -0.00024,
+       "ci95": [
+        -0.00173,
+        0.00103
+       ],
+       "ci95_week": [
+        -0.00076,
+        0.0002
+       ]
+      }
+     },
+     "own_history_n": {
+      "min": 40,
+      "median": 50.0,
+      "max": 61
+     }
+    }
+   },
+   "log_concentration": {
+    "mean_logscore": {
+     "own_level": -1.1956,
+     "own_level_shrunk": -1.1565,
+     "concentration": -1.1325,
+     "background": -1.0908
+    },
+    "own_level_shrunk_minus_concentration": {
+     "mean": -0.024,
+     "ci95": [
+      -0.09984,
+      0.07508
+     ]
+    },
+    "own_level_minus_concentration": {
+     "mean": -0.0631,
+     "ci95": [
+      -0.15341,
+      0.06156
+     ]
+    },
+    "own_level_minus_background": {
+     "mean": -0.1048,
+     "ci95": [
+      -0.17368,
+      -0.02526
+     ]
+    }
+   }
+  },
+  "cxy": {
+   "line": {
+    "900": {
+     "n": 637,
+     "events": 16,
+     "sites": 12,
+     "clusters": 18,
+     "brier": {
+      "candidate": 0.02358,
+      "production": 0.02663,
+      "concentration": 0.02519,
+      "usual": 0.02463,
+      "own": 0.02404,
+      "last": 0.02374,
+      "candidate_m5": 0.02374,
+      "candidate_m30": 0.02359
+     },
+     "auc": {
+      "candidate": 0.797,
+      "production": 0.21,
+      "concentration": 0.431,
+      "usual": 0.374,
+      "own": 0.784,
+      "last": 0.61,
+      "candidate_m5": 0.797,
+      "candidate_m30": 0.802
+     },
+     "site_auc_mean": {
+      "candidate": 0.142,
+      "production": 0.456,
+      "concentration": 0.528,
+      "usual": 0.441,
+      "own": 0.184,
+      "last": 0.481,
+      "candidate_m5": 0.142,
+      "candidate_m30": 0.142
+     },
+     "logloss": {
+      "candidate": 0.1014,
+      "production": 0.1501,
+      "concentration": 0.1539,
+      "usual": 0.1212,
+      "own": 0.1222,
+      "last": 0.1075,
+      "candidate_m5": 0.1034,
+      "candidate_m30": 0.1029
+     },
+     "skill_vs_usual": {
+      "candidate": 0.0426,
+      "production": -0.0812,
+      "concentration": -0.0227,
+      "usual": 0.0,
+      "own": 0.024,
+      "last": 0.0361,
+      "candidate_m5": 0.0361,
+      "candidate_m30": 0.0422
+     },
+     "candidate_minus": {
+      "production": {
+       "mean": -0.00304,
+       "ci95": [
+        -0.00884,
+        0.00065
+       ],
+       "ci95_week": [
+        -0.00572,
+        -0.00063
+       ]
+      },
+      "concentration": {
+       "mean": -0.0016,
+       "ci95": [
+        -0.00702,
+        0.00198
+       ],
+       "ci95_week": [
+        -0.0044,
+        0.00078
+       ]
+      },
+      "usual": {
+       "mean": -0.00104,
+       "ci95": [
+        -0.00563,
+        0.00223
+       ],
+       "ci95_week": [
+        -0.00358,
+        0.00111
+       ]
+      },
+      "own": {
+       "mean": -0.00045,
+       "ci95": [
+        -0.0022,
+        0.00084
+       ],
+       "ci95_week": [
+        -0.00111,
+        0.00028
+       ]
+      },
+      "last": {
+       "mean": -0.00016,
+       "ci95": [
+        -0.00155,
+        0.00174
+       ],
+       "ci95_week": [
+        -0.0026,
+        0.00201
+       ]
+      },
+      "candidate_m5": {
+       "mean": -0.00015,
+       "ci95": [
+        -0.00086,
+        0.00041
+       ],
+       "ci95_week": [
+        -0.00044,
+        0.00017
+       ]
+      },
+      "candidate_m30": {
+       "mean": -1e-05,
+       "ci95": [
+        -0.00143,
+        0.00144
+       ],
+       "ci95_week": [
+        -0.0008,
+        0.00071
+       ]
+      }
+     },
+     "usual_minus_candidate": {
+      "mean": 0.00104,
+      "ci95": [
+       -0.00223,
+       0.00563
+      ],
+      "ci95_week": [
+       -0.00111,
+       0.00358
+      ]
+     },
+     "by_water_body": {
+      "Colwick": {
+       "n": 45,
+       "events": 0,
+       "sites": 1,
+       "clusters": 3,
+       "brier": {
+        "candidate": 0.00054,
+        "production": 0.02155,
+        "concentration": 0.00113,
+        "usual": 0.00041,
+        "own": 0.0,
+        "last": 0.00025,
+        "candidate_m5": 0.00016,
+        "candidate_m30": 0.0028
+       },
+       "auc": {
+        "candidate": NaN,
+        "production": NaN,
+        "concentration": NaN,
+        "usual": NaN,
+        "own": NaN,
+        "last": NaN,
+        "candidate_m5": NaN,
+        "candidate_m30": NaN
+       },
+       "site_auc_mean": {
+        "candidate": null,
+        "production": null,
+        "concentration": null,
+        "usual": null,
+        "own": null,
+        "last": null,
+        "candidate_m5": null,
+        "candidate_m30": null
+       },
+       "logloss": {
+        "candidate": 0.02,
+        "production": 0.137,
+        "concentration": 0.0167,
+        "usual": 0.0199,
+        "own": 0.0001,
+        "last": 0.0158,
+        "candidate_m5": 0.0108,
+        "candidate_m30": 0.0464
+       },
+       "skill_vs_usual": {
+        "candidate": -0.3171,
+        "production": -51.561,
+        "concentration": -1.7561,
+        "usual": 0.0,
+        "own": 1.0,
+        "last": 0.3902,
+        "candidate_m5": 0.6098,
+        "candidate_m30": -5.8293
+       }
+      },
+      "Coniston Water": {
+       "n": 171,
+       "events": 4,
+       "sites": 3,
+       "clusters": 3,
+       "brier": {
+        "candidate": 0.0238,
+        "production": 0.02265,
+        "concentration": 0.02288,
+        "usual": 0.02282,
+        "own": 0.02421,
+        "last": 0.02512,
+        "candidate_m5": 0.02398,
+        "candidate_m30": 0.02338
+       },
+       "auc": {
+        "candidate": 0.175,
+        "production": 0.584,
+        "concentration": 0.624,
+        "usual": 0.583,
+        "own": 0.159,
+        "last": 0.535,
+        "candidate_m5": 0.175,
+        "candidate_m30": 0.262
+       },
+       "site_auc_mean": {
+        "candidate": 0.117,
+        "production": 0.454,
+        "concentration": 0.573,
+        "usual": 0.502,
+        "own": 0.159,
+        "last": 0.451,
+        "candidate_m5": 0.117,
+        "candidate_m30": 0.117
+       },
+       "logloss": {
+        "candidate": 0.148,
+        "production": 0.113,
+        "concentration": 0.1169,
+        "usual": 0.1103,
+        "own": 0.238,
+        "last": 0.1202,
+        "candidate_m5": 0.1615,
+        "candidate_m30": 0.1309
+       },
+       "skill_vs_usual": {
+        "candidate": -0.0429,
+        "production": 0.0074,
+        "concentration": -0.0026,
+        "usual": 0.0,
+        "own": -0.0609,
+        "last": -0.1008,
+        "candidate_m5": -0.0508,
+        "candidate_m30": -0.0245
+       }
+      },
+      "Derwent Water": {
+       "n": 59,
+       "events": 12,
+       "sites": 1,
+       "clusters": 3,
+       "brier": {
+        "candidate": 0.18467,
+        "production": 0.20018,
+        "concentration": 0.20186,
+        "usual": 0.19695,
+        "own": 0.18889,
+        "last": 0.18181,
+        "candidate_m5": 0.18616,
+        "candidate_m30": 0.18375
+       },
+       "auc": {
+        "candidate": 0.216,
+        "production": 0.461,
+        "concentration": 0.39,
+        "usual": 0.258,
+        "own": 0.258,
+        "last": 0.57,
+        "candidate_m5": 0.216,
+        "candidate_m30": 0.216
+       },
+       "site_auc_mean": {
+        "candidate": 0.216,
+        "production": 0.461,
+        "concentration": 0.39,
+        "usual": 0.258,
+        "own": 0.258,
+        "last": 0.57,
+        "candidate_m5": 0.216,
+        "candidate_m30": 0.216
+       },
+       "logloss": {
+        "candidate": 0.6052,
+        "production": 1.021,
+        "concentration": 1.2306,
+        "usual": 0.8504,
+        "own": 0.6043,
+        "last": 0.7026,
+        "candidate_m5": 0.6035,
+        "candidate_m30": 0.6225
+       },
+       "skill_vs_usual": {
+        "candidate": 0.0624,
+        "production": -0.0164,
+        "concentration": -0.0249,
+        "usual": 0.0,
+        "own": 0.0409,
+        "last": 0.0769,
+        "candidate_m5": 0.0548,
+        "candidate_m30": 0.067
+       }
+      },
+      "Frensham": {
+       "n": 34,
+       "events": 0,
+       "sites": 1,
+       "clusters": 3,
+       "brier": {
+        "candidate": 2e-05,
+        "production": 0.00063,
+        "concentration": 0.0,
+        "usual": 0.00044,
+        "own": 0.0,
+        "last": 0.00027,
+        "candidate_m5": 1e-05,
+        "candidate_m30": 0.00011
+       },
+       "auc": {
+        "candidate": NaN,
+        "production": NaN,
+        "concentration": NaN,
+        "usual": NaN,
+        "own": NaN,
+        "last": NaN,
+        "candidate_m5": NaN,
+        "candidate_m30": NaN
+       },
+       "site_auc_mean": {
+        "candidate": null,
+        "production": null,
+        "concentration": null,
+        "usual": null,
+        "own": null,
+        "last": null,
+        "candidate_m5": null,
+        "candidate_m30": null
+       },
+       "logloss": {
+        "candidate": 0.0046,
+        "production": 0.0242,
+        "concentration": 0.0002,
+        "usual": 0.0207,
+        "own": 0.0001,
+        "last": 0.0163,
+        "candidate_m5": 0.0025,
+        "candidate_m30": 0.01
+       },
+       "skill_vs_usual": {
+        "candidate": 0.9545,
+        "production": -0.4318,
+        "concentration": 1.0,
+        "usual": 0.0,
+        "own": 1.0,
+        "last": 0.3864,
+        "candidate_m5": 0.9773,
+        "candidate_m30": 0.75
+       }
+      },
+      "Rutland Water": {
+       "n": 100,
+       "events": 0,
+       "sites": 2,
+       "clusters": 3,
+       "brier": {
+        "candidate": 0.00017,
+        "production": 0.00053,
+        "concentration": 2e-05,
+        "usual": 0.00041,
+        "own": 0.00016,
+        "last": 0.00026,
+        "candidate_m5": 0.00016,
+        "candidate_m30": 0.00021
+       },
+       "auc": {
+        "candidate": NaN,
+        "production": NaN,
+        "concentration": NaN,
+        "usual": NaN,
+        "own": NaN,
+        "last": NaN,
+        "candidate_m5": NaN,
+        "candidate_m30": NaN
+       },
+       "site_auc_mean": {
+        "candidate": null,
+        "production": null,
+        "concentration": null,
+        "usual": null,
+        "own": null,
+        "last": null,
+        "candidate_m5": null,
+        "candidate_m30": null
+       },
+       "logloss": {
+        "candidate": 0.0101,
+        "production": 0.022,
+        "concentration": 0.0025,
+        "usual": 0.02,
+        "own": 0.0081,
+        "last": 0.016,
+        "candidate_m5": 0.0092,
+        "candidate_m30": 0.0128
+       },
+       "skill_vs_usual": {
+        "candidate": 0.5854,
+        "production": -0.2927,
+        "concentration": 0.9512,
+        "usual": 0.0,
+        "own": 0.6098,
+        "last": 0.3659,
+        "candidate_m5": 0.6098,
+        "candidate_m30": 0.4878
+       }
+      },
+      "Windermere": {
+       "n": 228,
+       "events": 0,
+       "sites": 4,
+       "clusters": 3,
+       "brier": {
+        "candidate": 7e-05,
+        "production": 0.00103,
+        "concentration": 0.00074,
+        "usual": 0.00041,
+        "own": 5e-05,
+        "last": 0.00025,
+        "candidate_m5": 6e-05,
+        "candidate_m30": 0.00016
+       },
+       "auc": {
+        "candidate": NaN,
+        "production": NaN,
+        "concentration": NaN,
+        "usual": NaN,
+        "own": NaN,
+        "last": NaN,
+        "candidate_m5": NaN,
+        "candidate_m30": NaN
+       },
+       "site_auc_mean": {
+        "candidate": null,
+        "production": null,
+        "concentration": null,
+        "usual": null,
+        "own": null,
+        "last": null,
+        "candidate_m5": null,
+        "candidate_m30": null
+       },
+       "logloss": {
+        "candidate": 0.0067,
+        "production": 0.0301,
+        "concentration": 0.0194,
+        "usual": 0.02,
+        "own": 0.003,
+        "last": 0.0158,
+        "candidate_m5": 0.005,
+        "candidate_m30": 0.0118
+       },
+       "skill_vs_usual": {
+        "candidate": 0.8293,
+        "production": -1.5122,
+        "concentration": -0.8049,
+        "usual": 0.0,
+        "own": 0.878,
+        "last": 0.3902,
+        "candidate_m5": 0.8537,
+        "candidate_m30": 0.6098
+       }
+      }
+     },
+     "by_year": {
+      "2024": {
+       "n": 230,
+       "events": 3,
+       "sites": 12,
+       "clusters": 6,
+       "brier": {
+        "candidate": 0.01536,
+        "production": 0.01609,
+        "concentration": 0.01345,
+        "usual": 0.01301,
+        "own": 0.01714,
+        "last": 0.01457,
+        "candidate_m5": 0.01607,
+        "candidate_m30": 0.01416
+       },
+       "auc": {
+        "candidate": 0.605,
+        "production": 0.515,
+        "concentration": 0.592,
+        "usual": 0.5,
+        "own": 0.507,
+        "last": 0.467,
+        "candidate_m5": 0.608,
+        "candidate_m30": 0.687
+       },
+       "site_auc_mean": {
+        "candidate": 0.474,
+        "production": 0.474,
+        "concentration": 0.539,
+        "usual": 0.5,
+        "own": 0.5,
+        "last": 0.432,
+        "candidate_m5": 0.474,
+        "candidate_m30": 0.474
+       },
+       "logloss": {
+        "candidate": 0.0799,
+        "production": 0.0938,
+        "concentration": 0.0727,
+        "usual": 0.0731,
+        "own": 0.1193,
+        "last": 0.0762,
+        "candidate_m5": 0.0845,
+        "candidate_m30": 0.076
+       },
+       "skill_vs_usual": {
+        "candidate": -0.1806,
+        "production": -0.2367,
+        "concentration": -0.0338,
+        "usual": 0.0,
+        "own": -0.3174,
+        "last": -0.1199,
+        "candidate_m5": -0.2352,
+        "candidate_m30": -0.0884
+       }
+      },
+      "2025": {
+       "n": 225,
+       "events": 9,
+       "sites": 12,
+       "clusters": 6,
+       "brier": {
+        "candidate": 0.03514,
+        "production": 0.04021,
+        "concentration": 0.0398,
+        "usual": 0.03903,
+        "own": 0.03425,
+        "last": 0.03575,
+        "candidate_m5": 0.03473,
+        "candidate_m30": 0.03632
+       },
+       "auc": {
+        "candidate": 0.858,
+        "production": 0.186,
+        "concentration": 0.46,
+        "usual": 0.5,
+        "own": 0.896,
+        "last": 0.695,
+        "candidate_m5": 0.858,
+        "candidate_m30": 0.854
+       },
+       "site_auc_mean": {
+        "candidate": 0.209,
+        "production": 0.209,
+        "concentration": 0.461,
+        "usual": 0.5,
+        "own": 0.5,
+        "last": 0.505,
+        "candidate_m5": 0.209,
+        "candidate_m30": 0.209
+       },
+       "logloss": {
+        "candidate": 0.1364,
+        "production": 0.216,
+        "concentration": 0.235,
+        "usual": 0.1828,
+        "own": 0.1393,
+        "last": 0.148,
+        "candidate_m5": 0.1356,
+        "candidate_m30": 0.1438
+       },
+       "skill_vs_usual": {
+        "candidate": 0.0997,
+        "production": -0.0302,
+        "concentration": -0.0197,
+        "usual": 0.0,
+        "own": 0.1225,
+        "last": 0.084,
+        "candidate_m5": 0.1102,
+        "candidate_m30": 0.0694
+       }
+      },
+      "2026": {
+       "n": 182,
+       "events": 4,
+       "sites": 12,
+       "clusters": 6,
+       "brier": {
+        "candidate": 0.01969,
+        "production": 0.02316,
+        "concentration": 0.02196,
+        "usual": 0.0215,
+        "own": 0.02014,
+        "last": 0.0205,
+        "candidate_m5": 0.01983,
+        "candidate_m30": 0.01978
+       },
+       "auc": {
+        "candidate": 0.836,
+        "production": 0.147,
+        "concentration": 0.34,
+        "usual": 0.5,
+        "own": 0.806,
+        "last": 0.591,
+        "candidate_m5": 0.837,
+        "candidate_m30": 0.833
+       },
+       "site_auc_mean": {
+        "candidate": 0.438,
+        "production": 0.438,
+        "concentration": 0.49,
+        "usual": 0.5,
+        "own": 0.5,
+        "last": 0.51,
+        "candidate_m5": 0.438,
+        "candidate_m30": 0.438
+       },
+       "logloss": {
+        "candidate": 0.0854,
+        "production": 0.1398,
+        "concentration": 0.1561,
+        "usual": 0.1058,
+        "own": 0.1048,
+        "last": 0.097,
+        "candidate_m5": 0.0873,
+        "candidate_m30": 0.0861
+       },
+       "skill_vs_usual": {
+        "candidate": 0.0842,
+        "production": -0.0772,
+        "concentration": -0.0214,
+        "usual": 0.0,
+        "own": 0.0633,
+        "last": 0.0465,
+        "candidate_m5": 0.0777,
+        "candidate_m30": 0.08
+       }
+      }
+     },
+     "without_derwent_water": {
+      "n": 578,
+      "events": 4,
+      "sites": 11,
+      "clusters": 15,
+      "brier": {
+       "candidate": 0.00714,
+       "production": 0.00891,
+       "concentration": 0.00716,
+       "usual": 0.00704,
+       "own": 0.00721,
+       "last": 0.00761,
+       "candidate_m5": 0.00716,
+       "candidate_m30": 0.00724
+      },
+      "auc": {
+       "candidate": 0.394,
+       "production": 0.551,
+       "concentration": 0.639,
+       "usual": 0.578,
+       "own": 0.331,
+       "last": 0.532,
+       "candidate_m5": 0.397,
+       "candidate_m30": 0.452
+      },
+      "site_auc_mean": {
+       "candidate": 0.117,
+       "production": 0.454,
+       "concentration": 0.573,
+       "usual": 0.502,
+       "own": 0.159,
+       "last": 0.451,
+       "candidate_m5": 0.117,
+       "candidate_m30": 0.117
+      },
+      "logloss": {
+       "candidate": 0.05,
+       "production": 0.0612,
+       "concentration": 0.044,
+       "usual": 0.0467,
+       "own": 0.073,
+       "last": 0.0468,
+       "candidate_m5": 0.0523,
+       "candidate_m30": 0.0498
+      },
+      "skill_vs_usual": {
+       "candidate": -0.0142,
+       "production": -0.2656,
+       "concentration": -0.017,
+       "usual": 0.0,
+       "own": -0.0241,
+       "last": -0.081,
+       "candidate_m5": -0.017,
+       "candidate_m30": -0.0284
+      },
+      "candidate_minus": {
+       "production": {
+        "mean": -0.00177,
+        "ci95": [
+         -0.00509,
+         1e-05
+        ],
+        "ci95_week": [
+         -0.0027,
+         -0.00087
+        ]
+       },
+       "concentration": {
+        "mean": -1e-05,
+        "ci95": [
+         -0.00058,
+         0.00049
+        ],
+        "ci95_week": [
+         -0.00029,
+         0.00025
+        ]
+       },
+       "usual": {
+        "mean": 0.0001,
+        "ci95": [
+         -0.00024,
+         0.0005
+        ],
+        "ci95_week": [
+         -7e-05,
+         0.00032
+        ]
+       },
+       "own": {
+        "mean": -7e-05,
+        "ci95": [
+         -0.00023,
+         8e-05
+        ],
+        "ci95_week": [
+         -0.0002,
+         2e-05
+        ]
+       },
+       "last": {
+        "mean": -0.00047,
+        "ci95": [
+         -0.00131,
+         0.0001
+        ],
+        "ci95_week": [
+         -0.00128,
+         0.00018
+        ]
+       },
+       "candidate_m5": {
+        "mean": -1e-05,
+        "ci95": [
+         -9e-05,
+         6e-05
+        ],
+        "ci95_week": [
+         -7e-05,
+         3e-05
+        ]
+       },
+       "candidate_m30": {
+        "mean": -0.0001,
+        "ci95": [
+         -0.00048,
+         0.00015
+        ],
+        "ci95_week": [
+         -0.00024,
+         6e-05
+        ]
+       }
+      },
+      "usual_minus_candidate": {
+       "mean": -0.0001,
+       "ci95": [
+        -0.0005,
+        0.00024
+       ],
+       "ci95_week": [
+        -0.00032,
+        7e-05
+       ]
+      }
+     },
+     "own_history_n": {
+      "min": 40,
+      "median": 50.0,
+      "max": 61
+     }
+    },
+    "500": {
+     "n": 637,
+     "events": 30,
+     "sites": 12,
+     "clusters": 18,
+     "brier": {
+      "candidate": 0.04147,
+      "concentration": 0.04663,
+      "usual": 0.04495,
+      "own": 0.04211,
+      "last": 0.04376,
+      "candidate_m5": 0.04167,
+      "candidate_m30": 0.04162
+     },
+     "auc": {
+      "candidate": 0.776,
+      "concentration": 0.489,
+      "usual": 0.472,
+      "own": 0.755,
+      "last": 0.564,
+      "candidate_m5": 0.77,
+      "candidate_m30": 0.783
+     },
+     "site_auc_mean": {
+      "candidate": 0.435,
+      "concentration": 0.616,
+      "usual": 0.567,
+      "own": 0.292,
+      "last": 0.539,
+      "candidate_m5": 0.325,
+      "candidate_m30": 0.435
+     },
+     "logloss": {
+      "candidate": 0.1634,
+      "concentration": 0.2517,
+      "usual": 0.1908,
+      "own": 0.1975,
+      "last": 0.1815,
+      "candidate_m5": 0.1674,
+      "candidate_m30": 0.1617
+     },
+     "skill_vs_usual": {
+      "candidate": 0.0774,
+      "concentration": -0.0374,
+      "usual": 0.0,
+      "own": 0.0632,
+      "last": 0.0265,
+      "candidate_m5": 0.073,
+      "candidate_m30": 0.0741
+     },
+     "candidate_minus": {
+      "concentration": {
+       "mean": -0.00516,
+       "ci95": [
+        -0.01851,
+        0.00272
+       ],
+       "ci95_week": [
+        -0.01,
+        -0.00064
+       ]
+      },
+      "usual": {
+       "mean": -0.00348,
+       "ci95": [
+        -0.01402,
+        0.0033
+       ],
+       "ci95_week": [
+        -0.00786,
+        0.00066
+       ]
+      },
+      "own": {
+       "mean": -0.00064,
+       "ci95": [
+        -0.00388,
+        0.00192
+       ],
+       "ci95_week": [
+        -0.00188,
+        0.00059
+       ]
+      },
+      "last": {
+       "mean": -0.00229,
+       "ci95": [
+        -0.00957,
+        0.00292
+       ],
+       "ci95_week": [
+        -0.0063,
+        0.00172
+       ]
+      },
+      "candidate_m5": {
+       "mean": -0.0002,
+       "ci95": [
+        -0.00158,
+        0.00097
+       ],
+       "ci95_week": [
+        -0.00074,
+        0.00034
+       ]
+      },
+      "candidate_m30": {
+       "mean": -0.00015,
+       "ci95": [
+        -0.00326,
+        0.00278
+       ],
+       "ci95_week": [
+        -0.00153,
+        0.00119
+       ]
+      }
+     },
+     "usual_minus_candidate": {
+      "mean": 0.00348,
+      "ci95": [
+       -0.0033,
+       0.01402
+      ],
+      "ci95_week": [
+       -0.00066,
+       0.00786
+      ]
+     },
+     "by_water_body": {
+      "Colwick": {
+       "n": 45,
+       "events": 0,
+       "sites": 1,
+       "clusters": 3,
+       "brier": {
+        "candidate": 0.00045,
+        "concentration": 0.00293,
+        "usual": 0.0017,
+        "own": 0.00036,
+        "last": 0.00138,
+        "candidate_m5": 0.0004,
+        "candidate_m30": 0.00074
+       },
+       "auc": {
+        "candidate": NaN,
+        "concentration": NaN,
+        "usual": NaN,
+        "own": NaN,
+        "last": NaN,
+        "candidate_m5": NaN,
+        "candidate_m30": NaN
+       },
+       "site_auc_mean": {
+        "candidate": null,
+        "concentration": null,
+        "usual": null,
+        "own": null,
+        "last": null,
+        "candidate_m5": null,
+        "candidate_m30": null
+       },
+       "logloss": {
+        "candidate": 0.0202,
+        "concentration": 0.0271,
+        "usual": 0.042,
+        "own": 0.0192,
+        "last": 0.0378,
+        "candidate_m5": 0.0197,
+        "candidate_m30": 0.0216
+       },
+       "skill_vs_usual": {
+        "candidate": 0.7353,
+        "concentration": -0.7235,
+        "usual": 0.0,
+        "own": 0.7882,
+        "last": 0.1882,
+        "candidate_m5": 0.7647,
+        "candidate_m30": 0.5647
+       }
+      },
+      "Coniston Water": {
+       "n": 171,
+       "events": 10,
+       "sites": 3,
+       "clusters": 3,
+       "brier": {
+        "candidate": 0.05851,
+        "concentration": 0.05673,
+        "usual": 0.05527,
+        "own": 0.05957,
+        "last": 0.05576,
+        "candidate_m5": 0.05895,
+        "candidate_m30": 0.0576
+       },
+       "auc": {
+        "candidate": 0.219,
+        "concentration": 0.563,
+        "usual": 0.555,
+        "own": 0.217,
+        "last": 0.519,
+        "candidate_m5": 0.219,
+        "candidate_m30": 0.229
+       },
+       "site_auc_mean": {
+        "candidate": 0.295,
+        "concentration": 0.537,
+        "usual": 0.525,
+        "own": 0.298,
+        "last": 0.483,
+        "candidate_m5": 0.295,
+        "candidate_m30": 0.295
+       },
+       "logloss": {
+        "candidate": 0.2851,
+        "concentration": 0.2743,
+        "usual": 0.2251,
+        "own": 0.3847,
+        "last": 0.2281,
+        "candidate_m5": 0.2998,
+        "candidate_m30": 0.2666
+       },
+       "skill_vs_usual": {
+        "candidate": -0.0586,
+        "concentration": -0.0264,
+        "usual": 0.0,
+        "own": -0.0778,
+        "last": -0.0089,
+        "candidate_m5": -0.0666,
+        "candidate_m30": -0.0422
+       }
+      },
+      "Derwent Water": {
+       "n": 59,
+       "events": 17,
+       "sites": 1,
+       "clusters": 3,
+       "brier": {
+        "candidate": 0.22808,
+        "concentration": 0.28194,
+        "usual": 0.26681,
+        "own": 0.23109,
+        "last": 0.25207,
+        "candidate_m5": 0.22863,
+        "candidate_m30": 0.23254
+       },
+       "auc": {
+        "candidate": 0.305,
+        "concentration": 0.445,
+        "usual": 0.38,
+        "own": 0.309,
+        "last": 0.447,
+        "candidate_m5": 0.305,
+        "candidate_m30": 0.305
+       },
+       "site_auc_mean": {
+        "candidate": 0.305,
+        "concentration": 0.445,
+        "usual": 0.38,
+        "own": 0.309,
+        "last": 0.447,
+        "candidate_m5": 0.305,
+        "candidate_m30": 0.305
+       },
+       "logloss": {
+        "candidate": 0.6639,
+        "concentration": 1.4928,
+        "usual": 0.9583,
+        "own": 0.6625,
+        "last": 0.8629,
+        "candidate_m5": 0.6611,
+        "candidate_m30": 0.6922
+       },
+       "skill_vs_usual": {
+        "candidate": 0.1452,
+        "concentration": -0.0567,
+        "usual": 0.0,
+        "own": 0.1339,
+        "last": 0.0552,
+        "candidate_m5": 0.1431,
+        "candidate_m30": 0.1284
+       }
+      },
+      "Frensham": {
+       "n": 34,
+       "events": 0,
+       "sites": 1,
+       "clusters": 3,
+       "brier": {
+        "candidate": 0.0,
+        "concentration": 0.0,
+        "usual": 0.00175,
+        "own": 0.0,
+        "last": 0.00141,
+        "candidate_m5": 0.0,
+        "candidate_m30": 0.0
+       },
+       "auc": {
+        "candidate": NaN,
+        "concentration": NaN,
+        "usual": NaN,
+        "own": NaN,
+        "last": NaN,
+        "candidate_m5": NaN,
+        "candidate_m30": NaN
+       },
+       "site_auc_mean": {
+        "candidate": null,
+        "concentration": null,
+        "usual": null,
+        "own": null,
+        "last": null,
+        "candidate_m5": null,
+        "candidate_m30": null
+       },
+       "logloss": {
+        "candidate": 0.0001,
+        "concentration": 0.0002,
+        "usual": 0.0426,
+        "own": 0.0001,
+        "last": 0.0383,
+        "candidate_m5": 0.0001,
+        "candidate_m30": 0.0001
+       },
+       "skill_vs_usual": {
+        "candidate": 1.0,
+        "concentration": 1.0,
+        "usual": 0.0,
+        "own": 1.0,
+        "last": 0.1943,
+        "candidate_m5": 1.0,
+        "candidate_m30": 1.0
+       }
+      },
+      "Rutland Water": {
+       "n": 100,
+       "events": 2,
+       "sites": 2,
+       "clusters": 3,
+       "brier": {
+        "candidate": 0.01952,
+        "concentration": 0.01998,
+        "usual": 0.02005,
+        "own": 0.01968,
+        "last": 0.02062,
+        "candidate_m5": 0.01958,
+        "candidate_m30": 0.01942
+       },
+       "auc": {
+        "candidate": 0.704,
+        "concentration": 0.622,
+        "usual": 0.602,
+        "own": 0.684,
+        "last": 0.551,
+        "candidate_m5": 0.704,
+        "candidate_m30": 0.704
+       },
+       "site_auc_mean": {
+        "candidate": 0.42,
+        "concentration": 0.64,
+        "usual": 0.62,
+        "own": 0.38,
+        "last": 0.56,
+        "candidate_m5": 0.42,
+        "candidate_m30": 0.42
+       },
+       "logloss": {
+        "candidate": 0.0935,
+        "concentration": 0.1386,
+        "usual": 0.1049,
+        "own": 0.0957,
+        "last": 0.1063,
+        "candidate_m5": 0.0945,
+        "candidate_m30": 0.0918
+       },
+       "skill_vs_usual": {
+        "candidate": 0.0264,
+        "concentration": 0.0035,
+        "usual": 0.0,
+        "own": 0.0185,
+        "last": -0.0284,
+        "candidate_m5": 0.0234,
+        "candidate_m30": 0.0314
+       }
+      },
+      "Windermere": {
+       "n": 228,
+       "events": 1,
+       "sites": 4,
+       "clusters": 3,
+       "brier": {
+        "candidate": 0.00431,
+        "concentration": 0.00542,
+        "usual": 0.0057,
+        "own": 0.00448,
+        "last": 0.00568,
+        "candidate_m5": 0.00437,
+        "candidate_m30": 0.00424
+       },
+       "auc": {
+        "candidate": 0.996,
+        "concentration": 1.0,
+        "usual": 0.826,
+        "own": 0.33,
+        "last": 0.78,
+        "candidate_m5": 0.661,
+        "candidate_m30": 1.0
+       },
+       "site_auc_mean": {
+        "candidate": 1.0,
+        "concentration": 1.0,
+        "usual": 0.83,
+        "own": 0.17,
+        "last": 0.777,
+        "candidate_m5": 0.339,
+        "candidate_m30": 1.0
+       },
+       "logloss": {
+        "candidate": 0.0258,
+        "concentration": 0.0449,
+        "usual": 0.0555,
+        "own": 0.0461,
+        "last": 0.053,
+        "candidate_m5": 0.0265,
+        "candidate_m30": 0.0281
+       },
+       "skill_vs_usual": {
+        "candidate": 0.2439,
+        "concentration": 0.0491,
+        "usual": 0.0,
+        "own": 0.214,
+        "last": 0.0035,
+        "candidate_m5": 0.2333,
+        "candidate_m30": 0.2561
+       }
+      }
+     },
+     "by_year": {
+      "2024": {
+       "n": 230,
+       "events": 9,
+       "sites": 12,
+       "clusters": 6,
+       "brier": {
+        "candidate": 0.04205,
+        "concentration": 0.03847,
+        "usual": 0.03763,
+        "own": 0.04572,
+        "last": 0.03807,
+        "candidate_m5": 0.04356,
+        "candidate_m30": 0.03908
+       },
+       "auc": {
+        "candidate": 0.537,
+        "concentration": 0.562,
+        "usual": 0.5,
+        "own": 0.491,
+        "last": 0.513,
+        "candidate_m5": 0.518,
+        "candidate_m30": 0.577
+       },
+       "site_auc_mean": {
+        "candidate": 0.545,
+        "concentration": 0.545,
+        "usual": 0.5,
+        "own": 0.5,
+        "last": 0.453,
+        "candidate_m5": 0.545,
+        "candidate_m30": 0.545
+       },
+       "logloss": {
+        "candidate": 0.1924,
+        "concentration": 0.1785,
+        "usual": 0.1656,
+        "own": 0.2929,
+        "last": 0.1657,
+        "candidate_m5": 0.2067,
+        "candidate_m30": 0.1737
+       },
+       "skill_vs_usual": {
+        "candidate": -0.1175,
+        "concentration": -0.0223,
+        "usual": 0.0,
+        "own": -0.215,
+        "last": -0.0117,
+        "candidate_m5": -0.1576,
+        "candidate_m30": -0.0385
+       }
+      },
+      "2025": {
+       "n": 225,
+       "events": 12,
+       "sites": 12,
+       "clusters": 6,
+       "brier": {
+        "candidate": 0.04194,
+        "concentration": 0.05283,
+        "usual": 0.05068,
+        "own": 0.04039,
+        "last": 0.04815,
+        "candidate_m5": 0.0412,
+        "candidate_m30": 0.04425
+       },
+       "auc": {
+        "candidate": 0.918,
+        "concentration": 0.515,
+        "usual": 0.5,
+        "own": 0.911,
+        "last": 0.629,
+        "candidate_m5": 0.918,
+        "candidate_m30": 0.914
+       },
+       "site_auc_mean": {
+        "candidate": 0.698,
+        "concentration": 0.698,
+        "usual": 0.5,
+        "own": 0.5,
+        "last": 0.453,
+        "candidate_m5": 0.698,
+        "candidate_m30": 0.698
+       },
+       "logloss": {
+        "candidate": 0.1456,
+        "concentration": 0.284,
+        "usual": 0.2105,
+        "own": 0.1411,
+        "last": 0.1923,
+        "candidate_m5": 0.1433,
+        "candidate_m30": 0.1547
+       },
+       "skill_vs_usual": {
+        "candidate": 0.1725,
+        "concentration": -0.0424,
+        "usual": 0.0,
+        "own": 0.203,
+        "last": 0.0499,
+        "candidate_m5": 0.1871,
+        "candidate_m30": 0.1269
+       }
+      },
+      "2026": {
+       "n": 182,
+       "events": 9,
+       "sites": 12,
+       "clusters": 6,
+       "brier": {
+        "candidate": 0.04016,
+        "concentration": 0.04927,
+        "usual": 0.04712,
+        "own": 0.03968,
+        "last": 0.04553,
+        "candidate_m5": 0.03986,
+        "candidate_m30": 0.04157
+       },
+       "auc": {
+        "candidate": 0.85,
+        "concentration": 0.412,
+        "usual": 0.5,
+        "own": 0.859,
+        "last": 0.564,
+        "candidate_m5": 0.855,
+        "candidate_m30": 0.841
+       },
+       "site_auc_mean": {
+        "candidate": 0.501,
+        "concentration": 0.501,
+        "usual": 0.5,
+        "own": 0.5,
+        "last": 0.442,
+        "candidate_m5": 0.501,
+        "candidate_m30": 0.501
+       },
+       "logloss": {
+        "candidate": 0.1488,
+        "concentration": 0.3042,
+        "usual": 0.1983,
+        "own": 0.1467,
+        "last": 0.1882,
+        "candidate_m5": 0.1475,
+        "candidate_m30": 0.1552
+       },
+       "skill_vs_usual": {
+        "candidate": 0.1477,
+        "concentration": -0.0456,
+        "usual": 0.0,
+        "own": 0.1579,
+        "last": 0.0337,
+        "candidate_m5": 0.1541,
+        "candidate_m30": 0.1178
+       }
+      }
+     },
+     "without_derwent_water": {
+      "n": 578,
+      "events": 13,
+      "sites": 11,
+      "clusters": 15,
+      "brier": {
+       "candidate": 0.02242,
+       "concentration": 0.02261,
+       "usual": 0.0223,
+       "own": 0.02282,
+       "last": 0.0225,
+       "candidate_m5": 0.02258,
+       "candidate_m30": 0.02213
+      },
+      "auc": {
+       "candidate": 0.586,
+       "concentration": 0.539,
+       "usual": 0.581,
+       "own": 0.533,
+       "last": 0.553,
+       "candidate_m5": 0.572,
+       "candidate_m30": 0.603
+      },
+      "site_auc_mean": {
+       "candidate": 0.461,
+       "concentration": 0.65,
+       "usual": 0.605,
+       "own": 0.289,
+       "last": 0.557,
+       "candidate_m5": 0.329,
+       "candidate_m30": 0.461
+      },
+      "logloss": {
+       "candidate": 0.1123,
+       "concentration": 0.125,
+       "usual": 0.1124,
+       "own": 0.1501,
+       "last": 0.112,
+       "candidate_m5": 0.117,
+       "candidate_m30": 0.1075
+      },
+      "skill_vs_usual": {
+       "candidate": -0.0054,
+       "concentration": -0.0139,
+       "usual": 0.0,
+       "own": -0.0233,
+       "last": -0.009,
+       "candidate_m5": -0.0126,
+       "candidate_m30": 0.0076
+      },
+      "candidate_minus": {
+       "concentration": {
+        "mean": -0.00018,
+        "ci95": [
+         -0.00119,
+         0.00104
+        ],
+        "ci95_week": [
+         -0.00121,
+         0.00098
+        ]
+       },
+       "usual": {
+        "mean": 0.00012,
+        "ci95": [
+         -0.00112,
+         0.00168
+        ],
+        "ci95_week": [
+         -0.00033,
+         0.00064
+        ]
+       },
+       "own": {
+        "mean": -0.0004,
+        "ci95": [
+         -0.00071,
+         -0.00011
+        ],
+        "ci95_week": [
+         -0.00066,
+         -0.00018
+        ]
+       },
+       "last": {
+        "mean": -8e-05,
+        "ci95": [
+         -0.00126,
+         0.00177
+        ],
+        "ci95_week": [
+         -0.00123,
+         0.00168
+        ]
+       },
+       "candidate_m5": {
+        "mean": -0.00016,
+        "ci95": [
+         -0.00029,
+         -4e-05
+        ],
+        "ci95_week": [
+         -0.00028,
+         -6e-05
+        ]
+       },
+       "candidate_m30": {
+        "mean": 0.00029,
+        "ci95": [
+         1e-05,
+         0.0006
+        ],
+        "ci95_week": [
+         3e-05,
+         0.0006
+        ]
+       }
+      },
+      "usual_minus_candidate": {
+       "mean": -0.00012,
+       "ci95": [
+        -0.00168,
+        0.00112
+       ],
+       "ci95_week": [
+        -0.00064,
+        0.00033
+       ]
+      }
+     },
+     "own_history_n": {
+      "min": 40,
+      "median": 50.0,
+      "max": 61
+     }
+    }
+   },
+   "log_concentration": {
+    "mean_logscore": {
+     "own_level": -1.1956,
+     "own_level_shrunk": -1.1999,
+     "concentration": -1.4408,
+     "background": -1.3101
+    },
+    "own_level_shrunk_minus_concentration": {
+     "mean": 0.2409,
+     "ci95": [
+      -0.01661,
+      0.54011
+     ]
+    },
+    "own_level_minus_concentration": {
+     "mean": 0.2452,
+     "ci95": [
+      -0.00808,
+      0.56488
+     ]
+    },
+    "own_level_minus_background": {
+     "mean": 0.1145,
+     "ci95": [
+      -0.03014,
+      0.34058
+     ]
+    }
+   }
+  },
+  "fwd": {
+   "line": {
+    "900": {
+     "n": 407,
+     "events": 13,
+     "sites": 12,
+     "clusters": 12,
+     "brier": {
+      "candidate": 0.02973,
+      "production": 0.0314,
+      "concentration": 0.03123,
+      "usual": 0.03142,
+      "own": 0.02977,
+      "last": 0.03111,
+      "candidate_m5": 0.02972,
+      "candidate_m30": 0.02993
+     },
+     "auc": {
+      "candidate": 0.831,
+      "production": 0.471,
+      "concentration": 0.865,
+      "usual": 0.428,
+      "own": 0.824,
+      "last": 0.367,
+      "candidate_m5": 0.836,
+      "candidate_m30": 0.809
+     },
+     "site_auc_mean": {
+      "candidate": 0.321,
+      "production": 0.381,
+      "concentration": 0.471,
+      "usual": 0.464,
+      "own": 0.372,
+      "last": 0.462,
+      "candidate_m5": 0.284,
+      "candidate_m30": 0.358
+     },
+     "logloss": {
+      "candidate": 0.1224,
+      "production": 0.151,
+      "concentration": 0.1429,
+      "usual": 0.1591,
+      "own": 0.1351,
+      "last": 0.1972,
+      "candidate_m5": 0.1226,
+      "candidate_m30": 0.1262
+     },
+     "skill_vs_usual": {
+      "candidate": 0.0538,
+      "production": 0.0006,
+      "concentration": 0.006,
+      "usual": 0.0,
+      "own": 0.0525,
+      "last": 0.0099,
+      "candidate_m5": 0.0541,
+      "candidate_m30": 0.0474
+     },
+     "candidate_minus": {
+      "production": {
+       "mean": -0.00167,
+       "ci95": [
+        -0.00559,
+        0.00028
+       ],
+       "ci95_week": [
+        -0.00452,
+        0.00062
+       ]
+      },
+      "concentration": {
+       "mean": -0.0015,
+       "ci95": [
+        -0.00488,
+        7e-05
+       ],
+       "ci95_week": [
+        -0.00391,
+        0.0005
+       ]
+      },
+      "usual": {
+       "mean": -0.00169,
+       "ci95": [
+        -0.00618,
+        0.00057
+       ],
+       "ci95_week": [
+        -0.00463,
+        0.0007
+       ]
+      },
+      "own": {
+       "mean": -3e-05,
+       "ci95": [
+        -0.00091,
+        0.00129
+       ],
+       "ci95_week": [
+        -0.00069,
+        0.0007
+       ]
+      },
+      "last": {
+       "mean": -0.00138,
+       "ci95": [
+        -0.00534,
+        0.00041
+       ],
+       "ci95_week": [
+        -0.00421,
+        0.00114
+       ]
+      },
+      "candidate_m5": {
+       "mean": 1e-05,
+       "ci95": [
+        -0.00032,
+        0.00054
+       ],
+       "ci95_week": [
+        -0.00027,
+        0.00033
+       ]
+      },
+      "candidate_m30": {
+       "mean": -0.00019,
+       "ci95": [
+        -0.00126,
+        0.00036
+       ],
+       "ci95_week": [
+        -0.00099,
+        0.0005
+       ]
+      }
+     },
+     "usual_minus_candidate": {
+      "mean": 0.00169,
+      "ci95": [
+       -0.00057,
+       0.00618
+      ],
+      "ci95_week": [
+       -0.0007,
+       0.00463
+      ]
+     },
+     "by_water_body": {
+      "Colwick": {
+       "n": 30,
+       "events": 0,
+       "sites": 1,
+       "clusters": 2,
+       "brier": {
+        "candidate": 0.00011,
+        "production": 0.00324,
+        "concentration": 2e-05,
+        "usual": 0.00022,
+        "own": 0.0,
+        "last": 0.00014,
+        "candidate_m5": 3e-05,
+        "candidate_m30": 0.00051
+       },
+       "auc": {
+        "candidate": NaN,
+        "production": NaN,
+        "concentration": NaN,
+        "usual": NaN,
+        "own": NaN,
+        "last": NaN,
+        "candidate_m5": NaN,
+        "candidate_m30": NaN
+       },
+       "site_auc_mean": {
+        "candidate": null,
+        "production": null,
+        "concentration": null,
+        "usual": null,
+        "own": null,
+        "last": null,
+        "candidate_m5": null,
+        "candidate_m30": null
+       },
+       "logloss": {
+        "candidate": 0.0094,
+        "production": 0.0519,
+        "concentration": 0.0014,
+        "usual": 0.0137,
+        "own": 0.0001,
+        "last": 0.0113,
+        "candidate_m5": 0.0052,
+        "candidate_m30": 0.0206
+       },
+       "skill_vs_usual": {
+        "candidate": 0.5,
+        "production": -13.7273,
+        "concentration": 0.9091,
+        "usual": 0.0,
+        "own": 1.0,
+        "last": 0.3636,
+        "candidate_m5": 0.8636,
+        "candidate_m30": -1.3182
+       }
+      },
+      "Coniston Water": {
+       "n": 111,
+       "events": 2,
+       "sites": 3,
+       "clusters": 2,
+       "brier": {
+        "candidate": 0.01923,
+        "production": 0.01782,
+        "concentration": 0.01909,
+        "usual": 0.01773,
+        "own": 0.0203,
+        "last": 0.01875,
+        "candidate_m5": 0.01962,
+        "candidate_m30": 0.01855
+       },
+       "auc": {
+        "candidate": 0.17,
+        "production": 0.417,
+        "concentration": 0.417,
+        "usual": 0.521,
+        "own": 0.252,
+        "last": 0.521,
+        "candidate_m5": 0.147,
+        "candidate_m30": 0.206
+       },
+       "site_auc_mean": {
+        "candidate": 0.319,
+        "production": 0.403,
+        "concentration": 0.569,
+        "usual": 0.521,
+        "own": 0.382,
+        "last": 0.521,
+        "candidate_m5": 0.264,
+        "candidate_m30": 0.375
+       },
+       "logloss": {
+        "candidate": 0.1262,
+        "production": 0.0942,
+        "concentration": 0.1292,
+        "usual": 0.0923,
+        "own": 0.1967,
+        "last": 0.0961,
+        "candidate_m5": 0.1376,
+        "candidate_m30": 0.1109
+       },
+       "skill_vs_usual": {
+        "candidate": -0.0846,
+        "production": -0.0051,
+        "concentration": -0.0767,
+        "usual": 0.0,
+        "own": -0.145,
+        "last": -0.0575,
+        "candidate_m5": -0.1066,
+        "candidate_m30": -0.0462
+       }
+      },
+      "Derwent Water": {
+       "n": 39,
+       "events": 11,
+       "sites": 1,
+       "clusters": 2,
+       "brier": {
+        "candidate": 0.25544,
+        "production": 0.27269,
+        "concentration": 0.27156,
+        "usual": 0.27612,
+        "own": 0.25287,
+        "last": 0.2705,
+        "candidate_m5": 0.25428,
+        "candidate_m30": 0.25887
+       },
+       "auc": {
+        "candidate": 0.325,
+        "production": 0.338,
+        "concentration": 0.273,
+        "usual": 0.351,
+        "own": 0.351,
+        "last": 0.344,
+        "candidate_m5": 0.325,
+        "candidate_m30": 0.325
+       },
+       "site_auc_mean": {
+        "candidate": 0.325,
+        "production": 0.338,
+        "concentration": 0.273,
+        "usual": 0.351,
+        "own": 0.351,
+        "last": 0.344,
+        "candidate_m5": 0.325,
+        "candidate_m30": 0.325
+       },
+       "logloss": {
+        "candidate": 0.8948,
+        "production": 1.1707,
+        "concentration": 1.1209,
+        "usual": 1.3124,
+        "own": 0.8496,
+        "last": 1.7127,
+        "candidate_m5": 0.8747,
+        "candidate_m30": 0.9488
+       },
+       "skill_vs_usual": {
+        "candidate": 0.0749,
+        "production": 0.0124,
+        "concentration": 0.0165,
+        "usual": 0.0,
+        "own": 0.0842,
+        "last": 0.0204,
+        "candidate_m5": 0.0791,
+        "candidate_m30": 0.0625
+       }
+      },
+      "Frensham": {
+       "n": 19,
+       "events": 0,
+       "sites": 1,
+       "clusters": 2,
+       "brier": {
+        "candidate": 1e-05,
+        "production": 0.00036,
+        "concentration": 0.0,
+        "usual": 0.00021,
+        "own": 0.0,
+        "last": 0.00014,
+        "candidate_m5": 0.0,
+        "candidate_m30": 6e-05
+       },
+       "auc": {
+        "candidate": NaN,
+        "production": NaN,
+        "concentration": NaN,
+        "usual": NaN,
+        "own": NaN,
+        "last": NaN,
+        "candidate_m5": NaN,
+        "candidate_m30": NaN
+       },
+       "site_auc_mean": {
+        "candidate": null,
+        "production": null,
+        "concentration": null,
+        "usual": null,
+        "own": null,
+        "last": null,
+        "candidate_m5": null,
+        "candidate_m30": null
+       },
+       "logloss": {
+        "candidate": 0.0037,
+        "production": 0.0185,
+        "concentration": 0.0003,
+        "usual": 0.0134,
+        "own": 0.0001,
+        "last": 0.0112,
+        "candidate_m5": 0.002,
+        "candidate_m30": 0.0079
+       },
+       "skill_vs_usual": {
+        "candidate": 0.9524,
+        "production": -0.7143,
+        "concentration": 1.0,
+        "usual": 0.0,
+        "own": 1.0,
+        "last": 0.3333,
+        "candidate_m5": 1.0,
+        "candidate_m30": 0.7143
+       }
+      },
+      "Rutland Water": {
+       "n": 60,
+       "events": 0,
+       "sites": 2,
+       "clusters": 2,
+       "brier": {
+        "candidate": 1e-05,
+        "production": 0.00026,
+        "concentration": 0.0,
+        "usual": 0.00017,
+        "own": 0.0,
+        "last": 0.00012,
+        "candidate_m5": 0.0,
+        "candidate_m30": 4e-05
+       },
+       "auc": {
+        "candidate": NaN,
+        "production": NaN,
+        "concentration": NaN,
+        "usual": NaN,
+        "own": NaN,
+        "last": NaN,
+        "candidate_m5": NaN,
+        "candidate_m30": NaN
+       },
+       "site_auc_mean": {
+        "candidate": null,
+        "production": null,
+        "concentration": null,
+        "usual": null,
+        "own": null,
+        "last": null,
+        "candidate_m5": null,
+        "candidate_m30": null
+       },
+       "logloss": {
+        "candidate": 0.0027,
+        "production": 0.0157,
+        "concentration": 0.0002,
+        "usual": 0.0117,
+        "own": 0.0001,
+        "last": 0.0103,
+        "candidate_m5": 0.0015,
+        "candidate_m30": 0.006
+       },
+       "skill_vs_usual": {
+        "candidate": 0.9412,
+        "production": -0.5294,
+        "concentration": 1.0,
+        "usual": 0.0,
+        "own": 1.0,
+        "last": 0.2941,
+        "candidate_m5": 1.0,
+        "candidate_m30": 0.7647
+       }
+      },
+      "Windermere": {
+       "n": 148,
+       "events": 0,
+       "sites": 4,
+       "clusters": 2,
+       "brier": {
+        "candidate": 1e-05,
+        "production": 0.00032,
+        "concentration": 0.0,
+        "usual": 0.00021,
+        "own": 0.0,
+        "last": 0.00013,
+        "candidate_m5": 0.0,
+        "candidate_m30": 4e-05
+       },
+       "auc": {
+        "candidate": NaN,
+        "production": NaN,
+        "concentration": NaN,
+        "usual": NaN,
+        "own": NaN,
+        "last": NaN,
+        "candidate_m5": NaN,
+        "candidate_m30": NaN
+       },
+       "site_auc_mean": {
+        "candidate": null,
+        "production": null,
+        "concentration": null,
+        "usual": null,
+        "own": null,
+        "last": null,
+        "candidate_m5": null,
+        "candidate_m30": null
+       },
+       "logloss": {
+        "candidate": 0.0028,
+        "production": 0.0169,
+        "concentration": 0.0003,
+        "usual": 0.0132,
+        "own": 0.0001,
+        "last": 0.011,
+        "candidate_m5": 0.0015,
+        "candidate_m30": 0.0063
+       },
+       "skill_vs_usual": {
+        "candidate": 0.9524,
+        "production": -0.5238,
+        "concentration": 1.0,
+        "usual": 0.0,
+        "own": 1.0,
+        "last": 0.381,
+        "candidate_m5": 1.0,
+        "candidate_m30": 0.8095
+       }
+      }
+     },
+     "by_year": {
+      "2025": {
+       "n": 225,
+       "events": 9,
+       "sites": 12,
+       "clusters": 6,
+       "brier": {
+        "candidate": 0.03784,
+        "production": 0.03911,
+        "concentration": 0.03895,
+        "usual": 0.03945,
+        "own": 0.03756,
+        "last": 0.0397,
+        "candidate_m5": 0.0377,
+        "candidate_m30": 0.03822
+       },
+       "auc": {
+        "candidate": 0.838,
+        "production": 0.511,
+        "concentration": 0.874,
+        "usual": 0.5,
+        "own": 0.829,
+        "last": 0.305,
+        "candidate_m5": 0.843,
+        "candidate_m30": 0.815
+       },
+       "site_auc_mean": {
+        "candidate": 0.297,
+        "production": 0.297,
+        "concentration": 0.477,
+        "usual": 0.5,
+        "own": 0.5,
+        "last": 0.495,
+        "candidate_m5": 0.297,
+        "candidate_m30": 0.297
+       },
+       "logloss": {
+        "candidate": 0.153,
+        "production": 0.1852,
+        "concentration": 0.177,
+        "usual": 0.2022,
+        "own": 0.1596,
+        "last": 0.2783,
+        "candidate_m5": 0.1513,
+        "candidate_m30": 0.1606
+       },
+       "skill_vs_usual": {
+        "candidate": 0.0408,
+        "production": 0.0086,
+        "concentration": 0.0127,
+        "usual": 0.0,
+        "own": 0.0479,
+        "last": -0.0063,
+        "candidate_m5": 0.0444,
+        "candidate_m30": 0.0312
+       }
+      },
+      "2026": {
+       "n": 182,
+       "events": 4,
+       "sites": 12,
+       "clusters": 6,
+       "brier": {
+        "candidate": 0.01971,
+        "production": 0.02187,
+        "concentration": 0.02169,
+        "usual": 0.0215,
+        "own": 0.02014,
+        "last": 0.0205,
+        "candidate_m5": 0.01985,
+        "candidate_m30": 0.01968
+       },
+       "auc": {
+        "candidate": 0.848,
+        "production": 0.588,
+        "concentration": 0.864,
+        "usual": 0.5,
+        "own": 0.806,
+        "last": 0.591,
+        "candidate_m5": 0.848,
+        "candidate_m30": 0.847
+       },
+       "site_auc_mean": {
+        "candidate": 0.427,
+        "production": 0.427,
+        "concentration": 0.479,
+        "usual": 0.5,
+        "own": 0.5,
+        "last": 0.51,
+        "candidate_m5": 0.427,
+        "candidate_m30": 0.427
+       },
+       "logloss": {
+        "candidate": 0.0847,
+        "production": 0.1088,
+        "concentration": 0.1007,
+        "usual": 0.1058,
+        "own": 0.1048,
+        "last": 0.097,
+        "candidate_m5": 0.0871,
+        "candidate_m30": 0.0838
+       },
+       "skill_vs_usual": {
+        "candidate": 0.0833,
+        "production": -0.0172,
+        "concentration": -0.0088,
+        "usual": 0.0,
+        "own": 0.0633,
+        "last": 0.0465,
+        "candidate_m5": 0.0767,
+        "candidate_m30": 0.0847
+       }
+      }
+     },
+     "without_derwent_water": {
+      "n": 368,
+      "events": 2,
+      "sites": 11,
+      "clusters": 10,
+      "brier": {
+       "candidate": 0.00581,
+       "production": 0.00583,
+       "concentration": 0.00576,
+       "usual": 0.00549,
+       "own": 0.00612,
+       "last": 0.00574,
+       "candidate_m5": 0.00592,
+       "candidate_m30": 0.00566
+      },
+      "auc": {
+       "candidate": 0.582,
+       "production": 0.439,
+       "concentration": 0.81,
+       "usual": 0.529,
+       "own": 0.426,
+       "last": 0.529,
+       "candidate_m5": 0.615,
+       "candidate_m30": 0.482
+      },
+      "site_auc_mean": {
+       "candidate": 0.319,
+       "production": 0.403,
+       "concentration": 0.569,
+       "usual": 0.521,
+       "own": 0.382,
+       "last": 0.521,
+       "candidate_m5": 0.264,
+       "candidate_m30": 0.375
+      },
+      "logloss": {
+       "candidate": 0.0406,
+       "production": 0.043,
+       "concentration": 0.0392,
+       "usual": 0.0369,
+       "own": 0.0594,
+       "last": 0.0366,
+       "candidate_m5": 0.0429,
+       "candidate_m30": 0.0391
+      },
+      "skill_vs_usual": {
+       "candidate": -0.0583,
+       "production": -0.0619,
+       "concentration": -0.0492,
+       "usual": 0.0,
+       "own": -0.1148,
+       "last": -0.0455,
+       "candidate_m5": -0.0783,
+       "candidate_m30": -0.031
+      },
+      "candidate_minus": {
+       "production": {
+        "mean": -1e-05,
+        "ci95": [
+         -0.00091,
+         0.00074
+        ],
+        "ci95_week": [
+         -0.0003,
+         0.00029
+        ]
+       },
+       "concentration": {
+        "mean": 5e-05,
+        "ci95": [
+         1e-05,
+         0.0001
+        ],
+        "ci95_week": [
+         -0.00016,
+         0.00023
+        ]
+       },
+       "usual": {
+        "mean": 0.00033,
+        "ci95": [
+         -0.00022,
+         0.001
+        ],
+        "ci95_week": [
+         0.00017,
+         0.00052
+        ]
+       },
+       "own": {
+        "mean": -0.00031,
+        "ci95": [
+         -0.00085,
+         3e-05
+        ],
+        "ci95_week": [
+         -0.00042,
+         -0.00021
+        ]
+       },
+       "last": {
+        "mean": 7e-05,
+        "ci95": [
+         -0.00051,
+         0.0008
+        ],
+        "ci95_week": [
+         -0.00066,
+         0.00048
+        ]
+       },
+       "candidate_m5": {
+        "mean": -0.00011,
+        "ci95": [
+         -0.00031,
+         2e-05
+        ],
+        "ci95_week": [
+         -0.00015,
+         -7e-05
+        ]
+       },
+       "candidate_m30": {
+        "mean": 0.00015,
+        "ci95": [
+         -0.0001,
+         0.00047
+        ],
+        "ci95_week": [
+         7e-05,
+         0.00024
+        ]
+       }
+      },
+      "usual_minus_candidate": {
+       "mean": -0.00033,
+       "ci95": [
+        -0.001,
+        0.00022
+       ],
+       "ci95_week": [
+        -0.00052,
+        -0.00017
+       ]
+      }
+     },
+     "own_history_n": {
+      "min": 20,
+      "median": 40.0,
+      "max": 61
+     }
+    },
+    "500": {
+     "n": 407,
+     "events": 21,
+     "sites": 12,
+     "clusters": 12,
+     "brier": {
+      "candidate": 0.04512,
+      "concentration": 0.04729,
+      "usual": 0.04926,
+      "own": 0.04511,
+      "last": 0.0477,
+      "candidate_m5": 0.04507,
+      "candidate_m30": 0.04548
+     },
+     "auc": {
+      "candidate": 0.841,
+      "concentration": 0.846,
+      "usual": 0.49,
+      "own": 0.831,
+      "last": 0.618,
+      "candidate_m5": 0.842,
+      "candidate_m30": 0.845
+     },
+     "site_auc_mean": {
+      "candidate": 0.619,
+      "concentration": 0.523,
+      "usual": 0.467,
+      "own": 0.559,
+      "last": 0.442,
+      "candidate_m5": 0.619,
+      "candidate_m30": 0.514
+     },
+     "logloss": {
+      "candidate": 0.1653,
+      "concentration": 0.1919,
+      "usual": 0.2077,
+      "own": 0.175,
+      "last": 0.1945,
+      "candidate_m5": 0.1659,
+      "candidate_m30": 0.1666
+     },
+     "skill_vs_usual": {
+      "candidate": 0.084,
+      "concentration": 0.04,
+      "usual": 0.0,
+      "own": 0.0842,
+      "last": 0.0317,
+      "candidate_m5": 0.0851,
+      "candidate_m30": 0.0767
+     },
+     "candidate_minus": {
+      "concentration": {
+       "mean": -0.00216,
+       "ci95": [
+        -0.00739,
+        0.00059
+       ],
+       "ci95_week": [
+        -0.0048,
+        0.00012
+       ]
+      },
+      "usual": {
+       "mean": -0.00414,
+       "ci95": [
+        -0.01725,
+        0.00305
+       ],
+       "ci95_week": [
+        -0.00893,
+        -4e-05
+       ]
+      },
+      "own": {
+       "mean": 2e-05,
+       "ci95": [
+        -0.00104,
+        0.00147
+       ],
+       "ci95_week": [
+        -0.00065,
+        0.00071
+       ]
+      },
+      "last": {
+       "mean": -0.00257,
+       "ci95": [
+        -0.01148,
+        0.00288
+       ],
+       "ci95_week": [
+        -0.00677,
+        0.00087
+       ]
+      },
+      "candidate_m5": {
+       "mean": 5e-05,
+       "ci95": [
+        -0.00036,
+        0.00066
+       ],
+       "ci95_week": [
+        -0.00023,
+        0.00035
+       ]
+      },
+      "candidate_m30": {
+       "mean": -0.00036,
+       "ci95": [
+        -0.00177,
+        0.00048
+       ],
+       "ci95_week": [
+        -0.0011,
+        0.00033
+       ]
+      }
+     },
+     "usual_minus_candidate": {
+      "mean": 0.00414,
+      "ci95": [
+       -0.00305,
+       0.01725
+      ],
+      "ci95_week": [
+       4e-05,
+       0.00893
+      ]
+     },
+     "by_water_body": {
+      "Colwick": {
+       "n": 30,
+       "events": 0,
+       "sites": 1,
+       "clusters": 2,
+       "brier": {
+        "candidate": 0.00042,
+        "concentration": 0.00017,
+        "usual": 0.00123,
+        "own": 0.00061,
+        "last": 0.00106,
+        "candidate_m5": 0.0005,
+        "candidate_m30": 0.00026
+       },
+       "auc": {
+        "candidate": NaN,
+        "concentration": NaN,
+        "usual": NaN,
+        "own": NaN,
+        "last": NaN,
+        "candidate_m5": NaN,
+        "candidate_m30": NaN
+       },
+       "site_auc_mean": {
+        "candidate": null,
+        "concentration": null,
+        "usual": null,
+        "own": null,
+        "last": null,
+        "candidate_m5": null,
+        "candidate_m30": null
+       },
+       "logloss": {
+        "candidate": 0.0204,
+        "concentration": 0.0046,
+        "usual": 0.0355,
+        "own": 0.0246,
+        "last": 0.033,
+        "candidate_m5": 0.0223,
+        "candidate_m30": 0.0158
+       },
+       "skill_vs_usual": {
+        "candidate": 0.6585,
+        "concentration": 0.8618,
+        "usual": 0.0,
+        "own": 0.5041,
+        "last": 0.1382,
+        "candidate_m5": 0.5935,
+        "candidate_m30": 0.7886
+       }
+      },
+      "Coniston Water": {
+       "n": 111,
+       "events": 5,
+       "sites": 3,
+       "clusters": 2,
+       "brier": {
+        "candidate": 0.05043,
+        "concentration": 0.05001,
+        "usual": 0.04304,
+        "own": 0.05201,
+        "last": 0.0444,
+        "candidate_m5": 0.05097,
+        "candidate_m30": 0.04971
+       },
+       "auc": {
+        "candidate": 0.326,
+        "concentration": 0.402,
+        "usual": 0.574,
+        "own": 0.312,
+        "last": 0.536,
+        "candidate_m5": 0.326,
+        "candidate_m30": 0.309
+       },
+       "site_auc_mean": {
+        "candidate": 0.598,
+        "concentration": 0.57,
+        "usual": 0.567,
+        "own": 0.556,
+        "last": 0.516,
+        "candidate_m5": 0.598,
+        "candidate_m30": 0.583
+       },
+       "logloss": {
+        "candidate": 0.2382,
+        "concentration": 0.2639,
+        "usual": 0.184,
+        "own": 0.2794,
+        "last": 0.192,
+        "candidate_m5": 0.243,
+        "candidate_m30": 0.235
+       },
+       "skill_vs_usual": {
+        "candidate": -0.1717,
+        "concentration": -0.1619,
+        "usual": 0.0,
+        "own": -0.2084,
+        "last": -0.0316,
+        "candidate_m5": -0.1842,
+        "candidate_m30": -0.155
+       }
+      },
+      "Derwent Water": {
+       "n": 39,
+       "events": 15,
+       "sites": 1,
+       "clusters": 2,
+       "brier": {
+        "candidate": 0.30138,
+        "concentration": 0.32535,
+        "usual": 0.35969,
+        "own": 0.29582,
+        "last": 0.34028,
+        "candidate_m5": 0.29892,
+        "candidate_m30": 0.30775
+       },
+       "auc": {
+        "candidate": 0.408,
+        "concentration": 0.406,
+        "usual": 0.429,
+        "own": 0.429,
+        "last": 0.463,
+        "candidate_m5": 0.408,
+        "candidate_m30": 0.406
+       },
+       "site_auc_mean": {
+        "candidate": 0.408,
+        "concentration": 0.406,
+        "usual": 0.429,
+        "own": 0.429,
+        "last": 0.463,
+        "candidate_m5": 0.408,
+        "candidate_m30": 0.406
+       },
+       "logloss": {
+        "candidate": 0.8941,
+        "concentration": 1.0393,
+        "usual": 1.3253,
+        "own": 0.8669,
+        "last": 1.1772,
+        "candidate_m5": 0.8818,
+        "candidate_m30": 0.9276
+       },
+       "skill_vs_usual": {
+        "candidate": 0.1621,
+        "concentration": 0.0955,
+        "usual": 0.0,
+        "own": 0.1776,
+        "last": 0.054,
+        "candidate_m5": 0.169,
+        "candidate_m30": 0.1444
+       }
+      },
+      "Frensham": {
+       "n": 19,
+       "events": 0,
+       "sites": 1,
+       "clusters": 2,
+       "brier": {
+        "candidate": 0.0,
+        "concentration": 0.0,
+        "usual": 0.00121,
+        "own": 0.0,
+        "last": 0.00106,
+        "candidate_m5": 0.0,
+        "candidate_m30": 0.0
+       },
+       "auc": {
+        "candidate": NaN,
+        "concentration": NaN,
+        "usual": NaN,
+        "own": NaN,
+        "last": NaN,
+        "candidate_m5": NaN,
+        "candidate_m30": NaN
+       },
+       "site_auc_mean": {
+        "candidate": null,
+        "concentration": null,
+        "usual": null,
+        "own": null,
+        "last": null,
+        "candidate_m5": null,
+        "candidate_m30": null
+       },
+       "logloss": {
+        "candidate": 0.0002,
+        "concentration": 0.0011,
+        "usual": 0.0352,
+        "own": 0.0001,
+        "last": 0.033,
+        "candidate_m5": 0.0001,
+        "candidate_m30": 0.0005
+       },
+       "skill_vs_usual": {
+        "candidate": 1.0,
+        "concentration": 1.0,
+        "usual": 0.0,
+        "own": 1.0,
+        "last": 0.124,
+        "candidate_m5": 1.0,
+        "candidate_m30": 1.0
+       }
+      },
+      "Rutland Water": {
+       "n": 60,
+       "events": 1,
+       "sites": 2,
+       "clusters": 2,
+       "brier": {
+        "candidate": 0.0165,
+        "concentration": 0.01666,
+        "usual": 0.01678,
+        "own": 0.01687,
+        "last": 0.01677,
+        "candidate_m5": 0.01665,
+        "candidate_m30": 0.01625
+       },
+       "auc": {
+        "candidate": 0.932,
+        "concentration": 0.712,
+        "usual": 0.331,
+        "own": 0.839,
+        "last": 0.305,
+        "candidate_m5": 0.932,
+        "candidate_m30": 0.729
+       },
+       "site_auc_mean": {
+        "candidate": 0.871,
+        "concentration": 0.548,
+        "usual": 0.306,
+        "own": 0.694,
+        "last": 0.274,
+        "candidate_m5": 0.871,
+        "candidate_m30": 0.484
+       },
+       "logloss": {
+        "candidate": 0.0781,
+        "concentration": 0.1325,
+        "usual": 0.0916,
+        "own": 0.0813,
+        "last": 0.0909,
+        "candidate_m5": 0.0794,
+        "candidate_m30": 0.0755
+       },
+       "skill_vs_usual": {
+        "candidate": 0.0167,
+        "concentration": 0.0072,
+        "usual": 0.0,
+        "own": -0.0054,
+        "last": 0.0006,
+        "candidate_m5": 0.0077,
+        "candidate_m30": 0.0316
+       }
+      },
+      "Windermere": {
+       "n": 148,
+       "events": 0,
+       "sites": 4,
+       "clusters": 2,
+       "brier": {
+        "candidate": 8e-05,
+        "concentration": 1e-05,
+        "usual": 0.00121,
+        "own": 0.00012,
+        "last": 0.00105,
+        "candidate_m5": 0.0001,
+        "candidate_m30": 5e-05
+       },
+       "auc": {
+        "candidate": NaN,
+        "concentration": NaN,
+        "usual": NaN,
+        "own": NaN,
+        "last": NaN,
+        "candidate_m5": NaN,
+        "candidate_m30": NaN
+       },
+       "site_auc_mean": {
+        "candidate": null,
+        "concentration": null,
+        "usual": null,
+        "own": null,
+        "last": null,
+        "candidate_m5": null,
+        "candidate_m30": null
+       },
+       "logloss": {
+        "candidate": 0.0046,
+        "concentration": 0.0011,
+        "usual": 0.0351,
+        "own": 0.0054,
+        "last": 0.0328,
+        "candidate_m5": 0.005,
+        "candidate_m30": 0.0037
+       },
+       "skill_vs_usual": {
+        "candidate": 0.9339,
+        "concentration": 0.9917,
+        "usual": 0.0,
+        "own": 0.9008,
+        "last": 0.1322,
+        "candidate_m5": 0.9174,
+        "candidate_m30": 0.9587
+       }
+      }
+     },
+     "by_year": {
+      "2025": {
+       "n": 225,
+       "events": 12,
+       "sites": 12,
+       "clusters": 6,
+       "brier": {
+        "candidate": 0.04924,
+        "concentration": 0.05019,
+        "usual": 0.051,
+        "own": 0.04949,
+        "last": 0.04945,
+        "candidate_m5": 0.0493,
+        "candidate_m30": 0.04935
+       },
+       "auc": {
+        "candidate": 0.831,
+        "concentration": 0.847,
+        "usual": 0.5,
+        "own": 0.809,
+        "last": 0.629,
+        "candidate_m5": 0.831,
+        "candidate_m30": 0.842
+       },
+       "site_auc_mean": {
+        "candidate": 0.663,
+        "concentration": 0.663,
+        "usual": 0.5,
+        "own": 0.5,
+        "last": 0.453,
+        "candidate_m5": 0.663,
+        "candidate_m30": 0.663
+       },
+       "logloss": {
+        "candidate": 0.1792,
+        "concentration": 0.2034,
+        "usual": 0.2153,
+        "own": 0.1979,
+        "last": 0.1996,
+        "candidate_m5": 0.1809,
+        "candidate_m30": 0.179
+       },
+       "skill_vs_usual": {
+        "candidate": 0.0345,
+        "concentration": 0.0159,
+        "usual": 0.0,
+        "own": 0.0296,
+        "last": 0.0304,
+        "candidate_m5": 0.0333,
+        "candidate_m30": 0.0324
+       }
+      },
+      "2026": {
+       "n": 182,
+       "events": 9,
+       "sites": 12,
+       "clusters": 6,
+       "brier": {
+        "candidate": 0.04003,
+        "concentration": 0.04369,
+        "usual": 0.04712,
+        "own": 0.03968,
+        "last": 0.04553,
+        "candidate_m5": 0.03985,
+        "candidate_m30": 0.0407
+       },
+       "auc": {
+        "candidate": 0.855,
+        "concentration": 0.844,
+        "usual": 0.5,
+        "own": 0.859,
+        "last": 0.564,
+        "candidate_m5": 0.855,
+        "candidate_m30": 0.852
+       },
+       "site_auc_mean": {
+        "candidate": 0.542,
+        "concentration": 0.542,
+        "usual": 0.5,
+        "own": 0.5,
+        "last": 0.442,
+        "candidate_m5": 0.542,
+        "candidate_m30": 0.542
+       },
+       "logloss": {
+        "candidate": 0.1482,
+        "concentration": 0.1776,
+        "usual": 0.1983,
+        "own": 0.1467,
+        "last": 0.1882,
+        "candidate_m5": 0.1474,
+        "candidate_m30": 0.1513
+       },
+       "skill_vs_usual": {
+        "candidate": 0.1505,
+        "concentration": 0.0728,
+        "usual": 0.0,
+        "own": 0.1579,
+        "last": 0.0337,
+        "candidate_m5": 0.1543,
+        "candidate_m30": 0.1362
+       }
+      }
+     },
+     "without_derwent_water": {
+      "n": 368,
+      "events": 6,
+      "sites": 11,
+      "clusters": 10,
+      "brier": {
+       "candidate": 0.01797,
+       "concentration": 0.01782,
+       "usual": 0.01637,
+       "own": 0.01854,
+       "last": 0.01669,
+       "candidate_m5": 0.01817,
+       "candidate_m30": 0.01768
+      },
+      "auc": {
+       "candidate": 0.697,
+       "concentration": 0.721,
+       "usual": 0.529,
+       "own": 0.649,
+       "last": 0.506,
+       "candidate_m5": 0.698,
+       "candidate_m30": 0.708
+      },
+      "site_auc_mean": {
+       "candidate": 0.689,
+       "concentration": 0.563,
+       "usual": 0.48,
+       "own": 0.602,
+       "last": 0.436,
+       "candidate_m5": 0.689,
+       "candidate_m30": 0.55
+      },
+      "logloss": {
+       "candidate": 0.0881,
+       "concentration": 0.1021,
+       "usual": 0.0892,
+       "own": 0.1017,
+       "last": 0.0903,
+       "candidate_m5": 0.0901,
+       "candidate_m30": 0.086
+      },
+      "skill_vs_usual": {
+       "candidate": -0.0977,
+       "concentration": -0.0886,
+       "usual": 0.0,
+       "own": -0.1326,
+       "last": -0.0195,
+       "candidate_m5": -0.11,
+       "candidate_m30": -0.08
+      },
+      "candidate_minus": {
+       "concentration": {
+        "mean": 0.00015,
+        "ci95": [
+         -0.00088,
+         0.00126
+        ],
+        "ci95_week": [
+         -0.00107,
+         0.00116
+        ]
+       },
+       "usual": {
+        "mean": 0.0016,
+        "ci95": [
+         -0.00099,
+         0.0053
+        ],
+        "ci95_week": [
+         0.00099,
+         0.00225
+        ]
+       },
+       "own": {
+        "mean": -0.00057,
+        "ci95": [
+         -0.00152,
+         -4e-05
+        ],
+        "ci95_week": [
+         -0.001,
+         -0.00011
+        ]
+       },
+       "last": {
+        "mean": 0.00128,
+        "ci95": [
+         -0.00085,
+         0.00501
+        ],
+        "ci95_week": [
+         0.00042,
+         0.00207
+        ]
+       },
+       "candidate_m5": {
+        "mean": -0.0002,
+        "ci95": [
+         -0.00054,
+         -1e-05
+        ],
+        "ci95_week": [
+         -0.00037,
+         -1e-05
+        ]
+       },
+       "candidate_m30": {
+        "mean": 0.00028,
+        "ci95": [
+         -6e-05,
+         0.0008
+        ],
+        "ci95_week": [
+         -0.00012,
+         0.00063
+        ]
+       }
+      },
+      "usual_minus_candidate": {
+       "mean": -0.0016,
+       "ci95": [
+        -0.0053,
+        0.00099
+       ],
+       "ci95_week": [
+        -0.00225,
+        -0.00099
+       ]
+      }
+     },
+     "own_history_n": {
+      "min": 20,
+      "median": 40.0,
+      "max": 61
+     }
+    }
+   },
+   "log_concentration": {
+    "mean_logscore": {
+     "own_level": -1.273,
+     "own_level_shrunk": -1.1693,
+     "concentration": -1.1791,
+     "background": -1.1131
+    },
+    "own_level_shrunk_minus_concentration": {
+     "mean": 0.0098,
+     "ci95": [
+      -0.11084,
+      0.23059
+     ]
+    },
+    "own_level_minus_concentration": {
+     "mean": -0.0939,
+     "ci95": [
+      -0.26874,
+      0.23732
+     ]
+    },
+    "own_level_minus_background": {
+     "mean": -0.1599,
+     "ci95": [
+      -0.27088,
+      -0.01413
+     ]
+    }
+   }
+  }
+ },
+ "supplementary_no_overflow_lakes": {
+  "900": {
+   "n": 426,
+   "events": 4,
+   "sites": 6,
+   "brier": {
+    "candidate": 0.00943,
+    "usual": 0.0094,
+    "own": 0.00945
+   },
+   "auc": {
+    "candidate": 0.333,
+    "usual": 0.203,
+    "own": 0.437
+   },
+   "candidate_minus_usual": {
+    "mean": 3e-05,
+    "ci95": [
+     -0.00012,
+     0.00017
+    ],
+    "ci95_week": [
+     -0.00012,
+     0.00017
+    ]
+   }
+  },
+  "500": {
+   "n": 426,
+   "events": 16,
+   "sites": 6,
+   "brier": {
+    "candidate": 0.03598,
+    "usual": 0.03625,
+    "own": 0.03613
+   },
+   "auc": {
+    "candidate": 0.63,
+    "usual": 0.411,
+    "own": 0.638
+   },
+   "candidate_minus_usual": {
+    "mean": -0.00027,
+    "ci95": [
+     -0.00129,
+     0.00097
+    ],
+    "ci95_week": [
+     -0.00129,
+     0.00097
+    ]
+   }
+  }
+ },
+ "checks": {
+  "gate: at least 15 results over 900 in the main scheme": true,
+  "1 skill over the usual rate at least 0.10, usual-minus-candidate interval above zero": false,
+  "1a skill interval above zero (for 'gain under the margin')": false,
+  "2 beats production's form, interval wholly below zero": false,
+  "3 not worse than the plain own rate (point estimate)": true,
+  "G1 without Derwent Water: at or below production, skill above zero": false,
+  "G2 lake-out and forward: candidate-minus-production interval not wholly above zero": true
+ },
+ "verdict": "fail"
+}

@@ -46,7 +46,8 @@ test('with no day open, the forecast tiles give today, under a heading that says
   const ctx = page(), h = text(vm.runInContext('dayTiles(S)', ctx));
   assert.match(h, /^ Forecast for today /);
   assert.match(h, /Sewage spills 30 of 100/);
-  assert.match(h, /About 7 of the 45 overflows upstream are expected to spill today\./);
+  // Not repeated here: the five days' sentence above the tiles says it (5 Nov 2026).
+  assert.doesNotMatch(h, /About 7 of the 45 overflows upstream are expected to spill today\./);
   // The rain and the air are in each day's row and the conditions tiles since 31 Oct 2026 (dayWx, conditionsSummary).
   assert.doesNotMatch(h, /Rain here|Weather/);
 });
@@ -64,7 +65,7 @@ test('a picked day moves every forecast tile to that day, and names it', () => {
 
 test('the readings stay on now whichever day is open, under their own heading', () => {
   const ctx = page(), h = text(vm.runInContext('nowTiles(S)', ctx));
-  assert.match(h, /^ Latest readings Measured, not forecast: they stay the same whichever day you pick\. Right now 1 /);
+  assert.match(h, /^ Latest readings Measured, not forecast, so the same on every day\. Right now 1 /);
   assert.doesNotMatch(h, /River level/);   // in the conditions tiles since 31 Oct 2026
   for (const iso of DAYS) {
     const day = text(vm.runInContext(`dayTiles(S, "${iso}")`, ctx));

@@ -103,7 +103,7 @@
           --rain:#3d8bd4; --header-h:56px;
           /* The sky and the glass: the picture's own top colour, which runs up to the header; a tile,
              three-quarters white; the empty part of a bar; an overflow quiet, and not reporting. */
-          --sky:#dfe6e7; --glass:rgba(255,255,255,.76); --track:rgba(27,35,40,.13); --ov-quiet:#5b6470; --ov-off:#b3bac2;
+          --sky:#dfe6e7; --glass:rgba(255,255,255,.76); --track:rgba(27,35,40,.13); --ov-quiet:#5b6470; --ov-off:#b3bac2; --deep:#12232a;
           --arrow:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%235a6166' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
   * { box-sizing:border-box; }
   html { -webkit-text-size-adjust:100%; text-size-adjust:100%; font-optical-sizing:auto; }
@@ -143,6 +143,8 @@
   .top nav { margin-left:auto; display:flex; align-items:center; gap:4px; }
   .top nav a, .hbtn { color:var(--bar-ink); text-decoration:none; font-size:var(--fs-note); font-weight:600; line-height:1.2; min-height:44px; display:inline-flex; align-items:center; padding:8px 10px; border-radius:var(--radius); border:0; background:transparent; cursor:pointer; }
   @media (hover: hover) { .top nav a:hover, .hbtn:hover { color:var(--on-fill); background:var(--bar-hover); } }
+  /* Five links from 2 November 2026 (page.css says which and where the rest went). One line each. */
+  .top nav a { white-space:nowrap; }
   .top .hbtn[aria-pressed=true], .top .hbtn[aria-current=page] { color:var(--on-fill); box-shadow:inset 0 -2px 0 var(--on-fill); border-radius:0; background:transparent; }
   .top :focus-visible { outline-color:var(--on-fill); }
   .hbtn .n { display:inline-block; min-width:20px; margin-left:6px; padding:0 6px; border-radius:999px; background:var(--on-fill); color:var(--bar); font-size:var(--fs-meta); font-weight:600; line-height:20px; text-align:center; vertical-align:1px; }
@@ -425,6 +427,28 @@
      On a phone the band is 48 px, not 128: the first tile then starts on the fells, which show
      through its glass, and the first saved spot fits on a 375 x 812 screen. */
   #panel { isolation:isolate; }
+  /* The working screens (the list, Plan a swim, Saved; 2 Nov 2026): the picture quieter, and the groups on opaque
+     paper with a hairline, not frosted glass, so a row reads the same wherever it scrolls. A spot's page keeps both. */
+  body:is(.view-list, .view-plan, .view-saved) .lead::before { opacity:.45; }
+  body:is(.view-list, .view-plan, .view-saved) #result .tile { background:var(--card); -webkit-backdrop-filter:none; backdrop-filter:none; box-shadow:inset 0 0 0 1px var(--line); }
+  /* The comparison's tray, at the head of the plan's results: the spots ticked, each with a cross that takes it out,
+     the action that shows them side by side, and Clear (planTray). */
+  .cmp-tray { display:grid; grid-template-columns:minmax(0, 1fr) auto; gap:4px 16px; align-items:center; margin:0 0 8px; padding:12px 16px;
+    border-radius:var(--radius); background:var(--card); box-shadow:inset 0 0 0 1px var(--ink); }
+  .cmp-tray .cmp-h { grid-column:1 / -1; margin:0; font:600 var(--fs-head)/1.25 var(--font-display); }
+  .cmp-tray .cmp-chips { grid-column:1 / -1; display:flex; flex-wrap:wrap; gap:6px; margin:4px 0 0; padding:0; list-style:none; }
+  .cmp-tray .cmp-chips li { display:flex; align-items:center; gap:2px; min-height:36px; padding:0 2px 0 12px; border:1px solid var(--line); border-radius:var(--radius); font-weight:600; font-size:var(--fs-note); max-width:100%; }
+  .cmp-tray .cmp-chips li > span { min-width:0; overflow-wrap:anywhere; }
+  .cmp-tray .cmp-chips .k { font-weight:400; color:var(--muted); }
+  .cmp-tray .cmp-drop { display:grid; place-items:center; flex:none; width:36px; height:36px; border:0; background:none; color:var(--muted); cursor:pointer; border-radius:var(--radius); }
+  .cmp-tray .cmp-drop:hover { color:var(--ink); background:var(--hover); }
+  .cmp-tray .cmp-say { margin:0; font-size:var(--fs-note); color:var(--muted); }
+  .cmp-tray .cmp-say:empty { display:none; }
+  .cmp-tray .cmp-acts { display:flex; align-items:center; gap:12px; justify-self:end; grid-column:2; grid-row:auto; }
+  .cmp-tray .cmp-say:empty + .cmp-acts { grid-column:1 / -1; justify-self:start; }
+  .cmp-tray .btn[disabled] { opacity:.55; cursor:default; }
+  @media (max-width: 540px) { .cmp-tray { grid-template-columns:minmax(0, 1fr); } .cmp-tray .cmp-acts { grid-column:1; justify-self:start; } }
+  .plan-bar { display:contents; }   /* a phone and a narrow desktop: the controls one under another, as before */
   .answer, .lead { position:relative; margin-bottom:128px; }
   /* The list's band, 48 px on a wider screen too: at 128 the fells were an empty band
      between the opening and the list, and the first spot sat at the foot of a 1440 x 900 screen. The
@@ -446,18 +470,22 @@
   .tiles > :is(.grp-h, .wide) + .tile:not(.wide):is(:last-child, :has(+ :is(.grp-h, .wide))) { grid-column:1 / -1; }
   /* The two groups of tiles on a spot's page: the open day's forecast, then the latest readings. */
   .tiles > .grp-h { grid-column:1 / -1; margin:12px 2px 0; font:600 var(--fs-head)/1.25 var(--font-display); }
+  .ev-phone-h { margin:12px 2px 0; font:600 var(--fs-head)/1.25 var(--font-display); }   /* phoneFolds: the evidence's heading */
   .tiles > .grp-sub { grid-column:1 / -1; margin:-4px 2px 0; color:var(--muted); font-size:var(--fs-note); }
   /* A lake spot's one link to its lake's past measured temperatures (lakeTempLine), after the latest readings. */
   .lt-past { margin:8px 2px 0; color:var(--muted); font-size:var(--fs-note); }
   .lt-past[hidden] { display:none; }
   #nearby-host:empty { display:none; }
   #sources-host:empty { display:none; }
+  /* The spill map's host waits empty until it nears the screen (mountPlume). Alone in a desktop section's right half it
+     had no height, and Safari never reported a zero-area box as on screen, so the map never loaded (2 Nov 2026). */
+  #plume-host:empty { min-height:1px; }
   .stack .loc { margin:0; }
   .tile #spot-map { margin:10px 0 0; }
   /* A spot's Upstream map: no legend, and none of the list's controls (the day, low risk only),
      which covered the ringed spot at the top of so small a map; the tile has its own key. */
   #spot-map .map-legend, #spot-map .low-ctl { display:none; }
-  .col-go, .col-why, .col-more { display:contents; }   /* a desktop's two columns on a spot's page; on a phone, the one stack */
+  .col-go, .col-why, .col-more, #water-top { display:contents; }   /* a desktop's two columns on a spot's page; on a phone, the one stack */
   /* The same on the list, Saved and Plan a swim (cols): the view, then the full map's tile, which only a
      wide desktop shows (min-width: 1100px). Elsewhere the view is the one stack it was. */
   .cols, .col-list { display:contents; }
@@ -524,6 +552,27 @@
   .t-word.low { color:var(--k-low); } .t-word.moderate { color:var(--k-moderate); } .t-word.high { color:var(--k-high); } .t-word.veryhigh { color:var(--k-veryhigh); } .t-word.plain { color:var(--ink); }
   .t-say { margin:10px 0 0; font-size:var(--fs-note); line-height:1.4; }
   .t-key { margin:8px 0 0; font-size:var(--fs-meta); color:var(--muted); }
+  /* A figure in the Research Lab's manner (docs/DESIGN.md, "The Research Lab"): the map in a hairline ink frame with
+     the plate's corner ticks, square, and its caption led by its name in the display face. The Upstream map only. */
+  .plate { position:relative; margin:12px 7px 0; }
+  .plate::before, .plate::after { content:""; position:absolute; z-index:2; width:14px; height:14px; border:1px solid var(--ink); pointer-events:none; }
+  .plate::before { top:-7px; left:-7px; border-right:0; border-bottom:0; }
+  .plate::after { bottom:-7px; right:-7px; border-left:0; border-top:0; }
+  .tile .plate #spot-map { margin:0; border-radius:0; box-shadow:0 0 0 1px var(--ink); }
+  .fig-no { font:600 var(--fs-note)/1.3 var(--font-display); }
+  /* Routes into the Research Lab: page.css's .routes, repeated here as the app repeats the tokens. The spot page's
+     "Explore the evidence" and the home page's invitation. */
+  .routes { list-style:none; padding:0; margin:10px 0 0; display:grid; grid-template-columns:minmax(0, 1fr); }
+  .routes a { display:grid; grid-template-columns:56px minmax(0, 1fr); gap:12px; align-items:start; padding:10px 0; border-top:1px solid var(--line); color:var(--muted); text-decoration:none; font-size:var(--fs-note); line-height:1.4; }
+  .routes img { display:block; width:56px; height:56px; border:1px solid var(--ink); background:var(--deep); }
+  .routes small { display:block; font:600 var(--fs-meta)/1.3 var(--font-mono); color:var(--muted); }
+  .routes b { display:block; margin:1px 0 2px; font:600 var(--fs-body)/1.3 var(--font-display); color:var(--link); }
+  .routes a:hover b { text-decoration:underline; text-decoration-thickness:1px; text-underline-offset:2px; }
+  .lab-invite { margin-top:28px; padding-top:10px; border-top:1px solid var(--ink); }   /* a section in the Lab's manner: an ink rule over its name */
+  .lab-invite .routes { grid-template-columns:repeat(2, minmax(0, 1fr)); gap:0 20px; }
+  @media (max-width:540px) { .lab-invite .routes { grid-template-columns:minmax(0, 1fr); } }
+  .lab-invite h2 { margin:0; font:600 var(--fs-head)/1.25 var(--font-display); }
+  .lab-invite > p { margin:4px 0 0; font-size:var(--fs-note); color:var(--muted); }
   .t-credit { margin:6px 0 0; font-size:var(--fs-meta); } .t-credit a { color:var(--muted); }
   .t-note { margin:8px 0 0; font-size:var(--fs-meta); color:var(--muted); } .t-note a { color:inherit; }
   /* A fold at a tile's foot under a name of its own (explain): the E. coli estimate's "Experimental
@@ -595,6 +644,10 @@
           border:0; border-top:1px solid var(--hair); border-radius:0; background:transparent; font:inherit; color:var(--ink); text-align:left; -webkit-appearance:none; appearance:none; }
   .drow:first-child { border-top:0; }
   button.drow { cursor:pointer; -webkit-tap-highlight-color:transparent; }
+  /* A day opens its detail: the folds' chevron, pointing right, says so (5 Nov 2026: nothing said a row could be picked). */
+  button.drow { position:relative; padding-right:20px; }
+  button.drow::after { content:""; position:absolute; right:7px; top:50%; width:6px; height:6px; margin-top:-3px; border-right:1.75px solid var(--muted); border-bottom:1.75px solid var(--muted); transform:rotate(-45deg); }
+  button.drow[aria-pressed=true]::after { transform:rotate(45deg); margin-top:-5px; }
   @media (hover: hover) { button.drow:hover { background:var(--hover); } }
   button.drow:focus-visible { outline-offset:-2px; }
   button.drow[aria-pressed=true] { background:var(--active); box-shadow:inset 3px 0 0 currentColor; }
@@ -706,6 +759,9 @@
   details.fold > summary, details.more > summary, details.comparison > summary, details.outing > summary, details.lists > summary, details.sec.tile > summary { cursor:pointer; list-style:none; display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:44px; }
   details.fold > summary::-webkit-details-marker, details.more > summary::-webkit-details-marker, details.comparison > summary::-webkit-details-marker, details.outing > summary::-webkit-details-marker, details.lists > summary::-webkit-details-marker, details.sec.tile > summary::-webkit-details-marker { display:none; }
   details.fold > summary::after, details.more > summary::after, details.comparison > summary::after, details.outing > summary::after, details.lists > summary::after, details.sec.tile > summary::after { content:""; flex:none; width:8px; height:8px; margin-right:5px; border-right:1.75px solid var(--muted); border-bottom:1.75px solid var(--muted); transform:rotate(45deg); transition:transform .15s; }
+  /* The ring inside a summary, not 2 px outside it: "Compare these spots", focused when Compare opens it, put its ring
+     over the line under it (2 Nov 2026). */
+  :is(details.fold, details.more, details.comparison, details.outing, details.lists, details.sec.tile) > summary:focus-visible { outline-offset:-2px; }
   details[open].fold > summary::after, details[open].more > summary::after, details[open].comparison > summary::after, details[open].outing > summary::after, details[open].lists > summary::after, details[open].sec.tile > summary::after { transform:rotate(-135deg); }
   details.sec > summary { margin:-10px 0 0; }
   details.sec[open] > summary { margin-bottom:4px; }
@@ -776,6 +832,19 @@
   .place-sub:empty { display:none; }
   /* What changed since you last looked (since.js): history, so muted, and never a level's colour. */
   .place-since { margin:6px 0 0; font-size:var(--fs-note); line-height:1.35; color:var(--muted); }
+  /* The Saved page as a starting page (2 Nov 2026): the water now where known, in ink at the notes' size; the spot's
+     alerts, muted, above the card's link so the tick and "Set up alerts" take their own taps. */
+  .place-water { margin:6px 0 0; font-size:var(--fs-note); line-height:1.35; }
+  .place-alert { position:relative; z-index:1; display:flex; flex-wrap:wrap; align-items:center; gap:0 10px; margin:4px 0 0; font-size:var(--fs-note); line-height:1.35; color:var(--muted); }
+  .place-alert:empty { display:none; }
+  .alert-tick { display:inline-flex; align-items:center; gap:8px; min-height:44px; color:var(--ink); font-weight:600; cursor:pointer; }
+  .alert-tick input { width:20px; height:20px; margin:0; accent-color:var(--brand); }
+  .place-alert[data-kind=down] .alert-said { color:var(--ink); }
+  .places-group .sec-h { margin:0 0 2px; }
+  .since-sum .sub { margin:0; max-width:68ch; }
+  .since-sum.none .sub, .since-sum.same .sub { color:var(--muted); }
+  .saved-secs > .sec.tile, .saved-secs > div > .sec.tile, .saved-secs > .saved-pair > * { margin-top:8px; }
+  .saved-secs .sub { max-width:68ch; }
   .group.tile { margin-top:8px; padding:12px 16px 4px; }
   .col-list > .group.tile:first-child, .col-list > .save-hint.tile:first-child { margin-top:0; }   /* the first tile under the opening */
   .group.tile ul.places { gap:0; }
@@ -812,6 +881,8 @@
   .empty-saved { text-align:center; padding:32px 16px 24px; }
   .empty-saved.tile { padding:28px 16px 20px; }
   .empty-saved .empty-more { margin:8px 0 0; }
+  .empty-saved .empty-acts { display:flex; flex-wrap:wrap; justify-content:center; gap:8px; margin:12px 0 0; }
+  .empty-saved .sec-h { margin:0 0 6px; }
   /* Named lists (lists.js): the lists as chips under the Saved page's heading, the one shown filled, as
      a chosen filter is; "Your lists" folds under the cards, its forms between hairlines. A list someone
      shared opens as its own read-only page, its one action under the lede. */
@@ -901,7 +972,17 @@
   .dp-facts dt { color:var(--muted); }
   .dp-facts dd { margin:0; }
   .dp-gap { margin:0 0 8px; font-size:var(--fs-meta); color:var(--muted); }
-  .dp-unk { font-weight:600; color:var(--ink); }   /* "Not known" in a boat's row: a fact, as plain as the others */
+  /* What is the same at every option, once above them (dayplan.js, dpShared): the options' own facts, under a plain line. */
+  .dp-same { margin:4px 0 6px; padding-bottom:4px; }
+  .dp-same-h { margin:0; font-size:var(--fs-note); font-weight:600; }
+  .dp-same .dp-facts { margin-top:6px; }
+  .dp-same + .dp-list > .dp-opt:first-child { border-top:1px solid var(--hair); padding-top:14px; }
+  /* What kind of value it is (valueTag; docs/DESIGN.md, "What kind of value"): a word, never colour alone. Measured,
+     estimate and stale: a muted word after the value, at the meta size. None: the words are the value, in ink, as plain
+     as a fact, so a gap never reads as small print (31 Oct 2026). */
+  .vt { font-size:var(--fs-meta); color:var(--muted); font-weight:400; }
+  .vt.vt-none { font-size:inherit; color:var(--ink); font-weight:600; }
+  .vt-stale::before { content:"\2014\00a0"; }   /* a dash before an old reading's words: it is not the value */
   .dp-go { margin:10px 0 0; }
   .dp-pic { display:block; width:100%; max-width:432px; height:auto; margin:12px 0 4px; border:1px solid var(--line); border-radius:var(--radius); }
   /* Your outing (outing.js): the choices, then the spot and its backup in two equal columns, which on a
@@ -922,6 +1003,17 @@
   /* How the backup's water is joined to the spot's (outing.js, outingJoin): a plain line over both columns, empty until known. */
   .outing-join { margin:0 0 10px; font-size:var(--fs-note); line-height:1.4; }
   .outing-join:empty { display:none; }
+  /* Conditions for your outing (outing.js, outingConditions): the spot page's figure-and-caption cells (.cond), a group
+     of them a chosen spot, three to a line at every width (two lines of three), under a hairline. The figures are a
+     size down from the spot page's, since the outing shows two or three spots' worth. */
+  .outing-cond { margin:4px 0 12px; padding-top:10px; border-top:1px solid var(--hair); }
+  .outing-cond-spot { margin:0 0 10px; }
+  .outing-cond .outing-role { margin:0 0 6px; }
+  .outing-cond .cond { grid-template-columns:repeat(3, minmax(0, 1fr)); gap:6px; }
+  .outing-cond .cond .cell { padding:8px 10px 10px; }
+  .outing-cond .cfig { font-size:var(--fs-head); font-weight:400; }
+  .outing-cond .t-lab { padding-right:0; }
+  .outing-cond > p.small { margin:0 0 6px; }
   /* The swim passport (passport.js): a summary line, then the badges, earned or not yet, as a quiet list. */
   .pp-sum { margin:8px 0; }
   .pp-badges { list-style:none; margin:0 0 8px; padding:0; }
@@ -985,6 +1077,12 @@
   .compare-table tr.lab th { padding:6px 10px; border-bottom:0; }
   .compare-table tr.lab th > span { display:inline-block; position:sticky; left:10px; }
   .compare-table .day { display:block; font-size:var(--fs-meta); color:var(--muted); }
+  /* Scannable cells (2 Nov 2026): figures in tabular numerals, a value's kind on its own line under it, and what every
+     column shares said once, under the row's label. */
+  .compare-table td { font-variant-numeric:tabular-nums; }
+  .compare-table td .vt { display:block; }
+  .compare-table td .vt.vt-none { display:inline; }
+  .compare-table tr.lab .lab-note { display:block; max-width:calc(100vw - 80px); font-weight:400; color:var(--muted); font-size:var(--fs-meta); }
   .compare-table tr.on > td { background:var(--active); }
   .compare-table tr.on > td.d0 { box-shadow:inset 3px 0 0 var(--ink); }
   .compare-table tr.on > td.same { background:none; }
@@ -1056,17 +1154,30 @@
        With a scrollbar that takes room (Windows; a Mac set to show them) 100cqw still counts it, and
        the sky hangs 8 px past the edge at 1,440 px: clipped, so there is nothing to scroll to sideways. */
     body.view-spot #panel { border-left:0; padding:24px 32px 48px; container-type:inline-size; overflow-x:hidden; }
-    body.view-spot #result { max-width:1180px; margin:0 auto; }
-    body.view-spot .answer { margin-bottom:48px; }   /* the list's band: the first tiles start on the fells */
+    body.view-spot #result { max-width:1320px; margin:0 auto; }
+    body.view-spot #panel > :is(.about-line, .about, footer.fine) { max-width:1320px; }   /* the foot on the sections' edges */   /* 1,180 px until 1 Nov 2026: wider for the sections below, prose capped inside them */
+    body.view-spot .answer { margin-bottom:32px; }   /* the first tiles start on the fells; the picture no longer takes the first screen */
     body.view-spot .answer::before { left:calc((100% - 100cqw) / 2 - 32px); right:calc((100% - 100cqw) / 2 - 32px);
       background-image:url(icons/fells-wide.webp); background-size:max(100%, 1500px) 600px; }
-    /* The right column spans both rows; the second row is the flexible one, so a taller right column
-       leaves its space at the foot of the left one, not between the five days and the detail. */
-    body.view-spot .stack { display:grid; grid-template-columns:minmax(0, 5fr) minmax(0, 7fr); grid-template-rows:auto 1fr;
-      grid-template-areas:"go why" "more why"; gap:8px 24px; align-items:start; }
-    body.view-spot .col-go, body.view-spot .col-why, body.view-spot .col-more { display:flex; flex-direction:column; gap:8px; min-width:0; }
-    body.view-spot .col-go { grid-area:go; } body.view-spot .col-why { grid-area:why; } body.view-spot .col-more { grid-area:more; }
-    body.view-spot .col-why > .spot-map-tile { order:-1; }   /* the map first, beside the five days */
+    /* The spot page's sections (deskSections; docs/DESIGN.md, "The spot page on a desktop"): one after another down
+       the page, each across its width, so no column runs on alone. Here each is one column; from 1,000 px the
+       sections with two halves set them side by side (below). */
+    .stack.desk { display:flex; flex-direction:column; gap:28px; }
+    .stack.desk .row, .stack.desk .col-a, .stack.desk .col-b { display:flex; flex-direction:column; gap:8px; min-width:0; }
+    .stack.desk .row.r-forecast, .stack.desk .row.r-today { gap:8px; }
+    .stack.desk .sec-h { margin:0; font:600 var(--fs-head)/1.25 var(--font-display); }
+    .stack.desk .sec-sub { margin:2px 0 4px; color:var(--muted); font-size:var(--fs-note); max-width:68ch; }
+    .stack.desk .r-cond .cond { grid-template-columns:repeat(2, minmax(0, 1fr)); }
+    /* Evidence, and the water and nearby: one paper surface each, with its tiles as sections inside it between
+       hairlines, in place of a column of separate white boxes. Long paragraphs keep a readable measure. */
+    .stack.desk :is(.r-evidence, .r-visit) { padding:18px 24px 20px; border-radius:var(--radius); background:var(--card); }
+    .stack.desk :is(.r-evidence, .r-visit) .tile { padding:12px 0 14px; border-radius:0; background:none; border-top:1px solid var(--line);
+      -webkit-backdrop-filter:none; backdrop-filter:none; }
+    .stack.desk :is(.r-evidence, .r-visit) :is(.col-a, .col-b) { gap:0; }
+    .stack.desk :is(.r-evidence, .r-visit) :is(p, li, dd) { max-width:68ch; }
+    .stack.desk .r-visit > .wide { grid-column:1 / -1; display:flex; flex-direction:column; min-width:0; }
+    .stack.desk .r-visit .wide:empty { display:none; }
+    .stack.desk .r-lab .routes { grid-template-columns:repeat(auto-fit, minmax(230px, 1fr)); gap:0 24px; }
     body.view-spot #spot-map { height:400px; }
     body.view-spot #spot-map .map-say { display:none; }   /* "Click any river or lake" is the full map's line; here it covered the tile's corner */
   }
@@ -1089,7 +1200,7 @@
     #app { grid-template-columns:minmax(0, 1fr); }
     #app > #map-wrap { display:none; }   /* between views, and on a page with no map tile (a point loading) */
     #panel { border-left:0; padding:24px 32px 48px; container-type:inline-size; overflow-x:hidden; }
-    #result, #panel > .about-line, #panel > .about, #panel > footer.fine { max-width:1180px; margin-left:auto; margin-right:auto; }
+    #result, #panel > .about-line, #panel > .about, #panel > footer.fine { max-width:1320px; margin-left:auto; margin-right:auto; }   /* 1,180 px until 1 Nov 2026; the spot page's width */
     .about > * { max-width:720px; }   /* a prose column, as the prose pages' */
     /* The opening on the tiles' left edge, not centred over them (29 October 2026): a centred block over
        left-aligned columns gave a wide screen four left edges. Phones keep the centred answer. */
@@ -1104,6 +1215,34 @@
     .lead > .back { display:flex; width:max-content; max-width:none; }
     .lead::before { left:calc((100% - 100cqw) / 2 - 32px); right:calc((100% - 100cqw) / 2 - 32px);
       background-image:url(icons/fells-wide.webp); background-size:max(100%, 1500px) 600px; }
+    /* The home page's opening (2 Nov 2026): the title and one line, then the search and the five days on one row,
+       then the count's line and the freshness, so the list and the map start higher. */
+    body.view-list .lead { display:grid; grid-template-columns:minmax(0, 1fr) minmax(480px, 560px); column-gap:16px; align-items:center; }
+    body.view-list .lead > *, body.view-list .intro > * { grid-column:1 / -1; max-width:none; }
+    body.view-list .intro { display:contents; }
+    body.view-list .intro h1 { font-size:var(--fs-level); }
+    body.view-list .intro .lede { margin-top:4px; max-width:72ch; text-wrap:pretty; }
+    body.view-list .intro > .search { grid-column:1; margin-top:14px; }
+    body.view-list .lead > .toolbar { grid-column:2; margin-top:14px; }
+    body.view-list .lead > .strip-note { margin-top:8px; }
+    /* Plan a swim's controls in one bar on the paper (2 Nov 2026). On a phone they stay one under another. */
+    body.view-plan .lead > * { max-width:none; }
+    body.view-plan .lead > .back, body.view-plan .lead > h1 { max-width:760px; }
+    /* The bar reads as the Tab key moves, in the phone's order: the day, then what for (and what it changes), then
+       where from with its lines under it, the kinds of water beside them, and what the activity changes at the foot. */
+    body.view-plan .plan-bar { display:grid; grid-template-columns:minmax(0, 1fr) auto; grid-template-areas:"day act" "go kinds" "where kinds" "sum kinds" "note note";
+      gap:10px 20px; align-items:center; margin:14px 0 0; padding:14px 16px; border-radius:var(--radius); background:var(--card); box-shadow:inset 0 0 0 1px var(--line); }
+    body.view-plan .plan-bar > * { margin:0; min-width:0; }
+    body.view-plan .plan-bar > .plan-go { grid-area:go; }
+    body.view-plan .plan-bar > .plan-row { grid-area:day; }
+    body.view-plan .plan-bar > .act-row { grid-area:act; }
+    body.view-plan .plan-bar > .plan-kinds { grid-area:kinds; justify-self:end; align-self:start; }
+    body.view-plan .plan-bar > .act-row { justify-self:end; }
+    body.view-plan .plan-bar > #plan-act-note { padding-top:10px; border-top:1px solid var(--line); }   /* what the activity changes, under all of it: no control in it */
+    body.view-plan .plan-bar > #plan-act-note { grid-area:note; }
+    body.view-plan .plan-bar > #plan-where { grid-area:where; }
+    body.view-plan .plan-bar > #plan-sum { grid-area:sum; }
+    body.view-plan .plan-bar > .planner-note:empty { display:none; }
     .cols { display:grid; grid-template-columns:minmax(0, 5fr) minmax(0, 7fr); gap:24px; align-items:start; }
     .col-list { display:block; min-width:0; }
     .col-map { display:block; position:sticky; top:0; min-width:0; }   /* 0 is the panel's 24 px padding: a sticky box keeps inside it */
@@ -1116,16 +1255,37 @@
     .cols.wide-list { grid-template-columns:minmax(0, 7fr) minmax(0, 5fr); }
     .cols.wide-list .map-tile { height:480px; }
     .solo { max-width:720px; margin:0 auto; }
+    /* Saved's sections under the places and the map, each across the width; two tiles side by side from 1,000 px
+       (.saved-pair) only where both are drawn and of similar height: alerts and sharing, the journal and the passport. */
+    .saved-secs { margin-top:16px; }
+  }
+  @media (min-width: 1000px) {
+    .saved-pair { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); gap:0 24px; align-items:start; }
   }
   /* A desktop too narrow for two readable columns: the spot's page is one, 720 px wide. The list, Saved
      and Plan a swim keep the map column: as one 720 px column the map came between the opening and the
      first spot (docs/DESIGN.md). */
-  @media (min-width: 801px) and (max-width: 1099px) {
+  @media (min-width: 801px) and (max-width: 999px) {
     body.view-spot #result { max-width:720px; }
-    body.view-spot .stack { grid-template-columns:minmax(0, 1fr); grid-template-rows:none; grid-template-areas:none; }
-    body.view-spot .col-go, body.view-spot .col-why, body.view-spot .col-more { display:contents; }
-    body.view-spot .col-why > .spot-map-tile { order:0; }
     body.view-spot #spot-map { height:320px; }
+  }
+  /* From 1,000 px a section's two halves sit side by side: the five days beside the Upstream map (5 to 7), the open
+     day's forecast beside the readings, the evidence beside the spill map and the water beside the nearby spots
+     (7 to 5), and the four conditions in one row. A section with one half (.one) keeps the width. */
+  @media (min-width: 1000px) {
+    .stack.desk .row:not(.one) { display:grid; gap:8px 24px; align-items:start; }
+    .stack.desk .r-forecast:not(.one) { grid-template-columns:minmax(0, 5fr) minmax(0, 7fr); }
+    .stack.desk :is(.r-today, .r-evidence, .r-visit):not(.one) { grid-template-columns:minmax(0, 7fr) minmax(0, 5fr); column-gap:32px; }
+    .stack.desk .row > :is(.sec-h, .sec-sub) { grid-column:1 / -1; }
+    .stack.desk .row:has(> .col-b:empty) { grid-template-columns:minmax(0, 1fr); }   /* a spill map with no file removes its host: the evidence takes the width */
+    /* The practical guide across the section in two columns of its sections and pictures, each kept whole. */
+    .stack.desk .r-visit #guide.g-tile { column-count:2; column-gap:40px; }
+    .stack.desk .r-visit #guide.g-tile > :is(h2, .t-say:first-of-type) { column-span:all; }
+    .stack.desk .r-visit #guide.g-tile :is(.g-row, figure, .g-gap, p) { break-inside:avoid; }
+    .stack.desk .r-visit #guide.g-tile :is(h3, h4, dt) { break-after:avoid; }
+    .stack.desk .r-cond .cond { grid-template-columns:repeat(4, minmax(0, 1fr)); }
+    .stack.desk .r-cond .cond:has(> .cell:nth-child(4):last-child) { grid-template-columns:repeat(3, minmax(0, 1fr)); }   /* three readings: the h2 is the first child */
+    .stack.desk .r-cond .cond:has(> .cell:nth-child(3):last-child) { grid-template-columns:repeat(2, minmax(0, 1fr)); }
   }
   /* Phones: the list first, the map one tap away; a spot's page carries its own small map. */
   @media (max-width: 800px) {
@@ -1137,6 +1297,8 @@
     /* A section of one tile (the readings, now the river's level is with the conditions) gives it the full width. */
     .tiles > .tile:only-of-type { grid-column:1 / -1; }
     .limits #unknowns { margin:10px 0 0; padding:10px 0 0; border-radius:0; background:none; box-shadow:none; border-top:1px solid var(--hair); -webkit-backdrop-filter:none; backdrop-filter:none; }
+    /* Its own heading too, once inside: two headings with the same icon for one list (5 Nov 2026). Kept for its name. */
+    .limits #unknowns > .t-lab { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
     .fold-body > * + * { margin-top:12px; }
     .fold-body > .scope, .fold-body > .check { font-size:var(--fs-note); color:var(--ink); }
     dialog.sheet { margin:auto auto 0; border-radius:var(--radius) var(--radius) 0 0; padding-bottom:calc(20px + env(safe-area-inset-bottom)); }
@@ -1274,6 +1436,8 @@
   .g-row dt { font-size:var(--fs-note); font-weight:600; line-height:1.3; color:var(--muted); }
   .g-row dd { margin:4px 0 0; }
   .g-row dd + dd { margin-top:10px; }
+  .g-more > details > summary { font-size:var(--fs-note); font-weight:600; color:var(--muted); }
+  .g-run + .g-run { margin-top:10px; }
   .g-text { margin:0; font-size:var(--fs-note); line-height:1.45; overflow-wrap:anywhere; }
   .g-text + .g-text { margin-top:4px; }
   .g-src { margin:3px 0 0; font-size:var(--fs-meta); line-height:1.4; color:var(--muted); overflow-wrap:anywhere; }
@@ -1406,8 +1570,7 @@
     <button type="button" class="hbtn phone-only" id="mapbtn">Map</button>
     <a href="verification.html" class="desk-only">Accuracy</a>
     <a href="about.html" class="desk-only">About</a>
-    <a href="research.html" class="desk-only">Research</a>
-    <a href="feedback.html" class="desk-only">Feedback</a>
+    <a href="lab/" class="desk-only">Research Lab</a>
   </nav>
 </header>
 <div id="app">
@@ -1466,7 +1629,7 @@
       </details>
     </section>
     <footer class="fine">
-      <p><a href="about.html">About SwimSignal</a> · <a href="verification.html">How accurate is it?</a> · <a href="methods.html">Method</a> · <a href="spots.html">Every spot</a> · <a href="research.html">Research</a> · <a href="coverage.html">Coasts, Wales, Scotland, Ireland and algae</a> · <a href="organisers.html">For event organisers</a> · <a href="clubs.html">For clubs, centres and leaders</a> · <a href="feedback.html">Feedback</a> · <a href="feedback.html?type=spot">Request a spot</a> · <a href="terms.html">Terms of use</a> · <a href="privacy.html">Privacy</a> · <a href="https://github.com/ethanbuckley/swimsignal">Source code</a> (MIT)</p>
+      <p><a href="about.html">About SwimSignal</a> · <a href="verification.html">How accurate is it?</a> · <a href="methods.html">Method</a> · <a href="spots.html">Every spot</a> · <a href="research.html">Research and data</a> · <a href="coverage.html">Coasts, Wales, Scotland, Ireland and algae</a> · <a href="organisers.html">For event organisers</a> · <a href="clubs.html">For clubs, centres and leaders</a> · <a href="feedback.html">Feedback</a> · <a href="feedback.html?type=spot">Request a spot</a> · <a href="terms.html">Terms of use</a> · <a href="privacy.html">Privacy</a> · <a href="https://github.com/ethanbuckley/swimsignal">Source code</a> (MIT)</p>
       <p>Data: storm overflow status from Anglian, Northumbrian, Severn Trent, South West, Southern, Thames, United Utilities, Wessex and Yorkshire Water via the National Storm Overflow Hub (<a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>; combined and modelled by SwimSignal) · Environment Agency data © Environment Agency copyright and/or database right (<a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/">OGL v3.0</a>); river levels: this uses Environment Agency flood and river level data from the real-time data API (Beta) · Contains OS data © Crown copyright and database right 2026 · <a href="https://open-meteo.com/">Weather data by Open-Meteo.com</a> (CC BY 4.0), from Met Office forecasts © Crown copyright (<a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>) · Map © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors. None of these bodies endorses SwimSignal. <a href="terms.html#data">All credits and licences</a>.</p>
     </footer>
   </main>
@@ -1478,7 +1641,7 @@
   <a href="saved/" id="nav-saved" aria-label="Saved spots"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4Z"/></svg>Saved<span class="n" id="nav-saved-n" hidden></span></a>
   <!-- The same list and fallback as build_site.MORE_LINKS and MORE_FALLBACK, which the prose pages' bar draws. -->
   <button type="button" popovertarget="more-menu" aria-label="More pages" onclick="if(!('popover' in this)){this.setAttribute('aria-expanded',this.nextElementSibling.classList.toggle('open'))}"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>More</button>
-  <ul class="more-menu" id="more-menu" popover><li><a href="verification.html">Accuracy</a></li><li><a href="about.html">About</a></li><li><a href="research.html">Research</a></li><li><a href="feedback.html">Feedback</a></li></ul>
+  <ul class="more-menu" id="more-menu" popover><li><a href="verification.html">Accuracy</a></li><li><a href="about.html">About</a></li><li><a href="lab/">Research Lab</a></li><li><a href="research.html">Research &amp; data</a></li><li><a href="feedback.html">Feedback</a></li></ul>
 </nav>
 <!-- The built page defers every script here and serves the inline one as app.js (build_site.split_app_script),
      so none holds up the first paint. Deferred scripts run in the order of their tags: keep the order. -->
@@ -1764,19 +1927,33 @@ const dateLabel = iso => { const t = serverToday ?? localISO(new Date());
   if (iso === t) return 'Today'; if (iso === addDays(t, 1)) return 'Tomorrow';
   return new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', {weekday:'short', day:'numeric', month:'short'}); };
 // The page's day, and every spot's days from it (levels.js, readerDay and fromDay): the device's day
-// between midnight and the next build, while the forecast is fresh, and the build's otherwise. Set when
+// after midnight, however old the forecast (a stale one keeps its Stale notice), and the build's before. Set when
 // the forecast arrives and on each spot's page, with the point clicked on the map (anypoint.js) if that
 // is the one shown. Then the forecast's days are four, from today (fiveDays), and the build's time is
 // "yesterday at 23:24" (yesterdayLine).
-const setDays = (...more) => { serverToday = readerDay(DATA.generated_at, Date.now(), STALE_MIN);
+const setDays = (...more) => { serverToday = readerDay(DATA.generated_at, Date.now());
   for (const s of [...DATA.spots, ...more]) fromDay(s, serverToday, DATA.generated_at.slice(0, 10)); };
 const fiveDays = () => [0, 1, 2, 3, 4].map(k => addDays(today(), k)).filter(iso => !DATA || iso < addDays(DATA.generated_at.slice(0, 10), 5));
-const nextDay = () => !!DATA && today() > DATA.generated_at.slice(0, 10);
+// After midnight, before the next build, while the forecast is fresh: the build was yesterday's ("yesterday at 23:24").
+// A stale one says its age in the Stale notice and its issue time as a date instead.
+const nextDay = () => !!DATA && today() > DATA.generated_at.slice(0, 10) && ageMin() <= STALE_MIN;
 const yesterdayLine = () => `Issued yesterday at ${new Date(DATA.generated_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}; today's update is due.`;
 // An overflow's live status in words. With the build's data_state (ingest.live.data_states), a reading
 // from a feed that has not updated within six hours says when it last did, not "not discharging": a
 // frozen feed would go on saying that. One missing from its company's live feed says so.
 const feedTime = iso => new Date(iso).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+// When the build last read the companies' live feeds (build_site.live_feed_health), as ms; NaN without it. The
+// file writes "2026-11-06 15:34:35.903037+00:00", with a space where ISO has a T, which Safari's Date.parse refuses
+// (record.js reads it the same way). pollAt gives it as issued() gives the issue: "Fri 15:34".
+const polledMs = () => Date.parse(String((typeof DATA === 'object' && DATA && DATA.build && DATA.build.live_feeds || {}).polled_at || '').replace(' ', 'T'));
+const pollAt = () => { const t = polledMs();
+  return Number.isFinite(t) ? new Date(t).toLocaleString('en-GB', { weekday: 'short', hour: '2-digit', minute: '2-digit' }) : ''; };
+// The Right now tile's quiet line (tile's note): when its readings were polled, and how long ago. Scheduled builds
+// ran a median 4.6 h apart from 7 Oct to 6 Nov 2026 (95% within 7.7 h), so "0 of 6 discharging" was often hours
+// old with nothing on the tile to say so. Said at every age: a spill that starts after the poll is never in the
+// count, however recent the poll.
+const pollSay = () => { const t = polledMs();
+  return Number.isFinite(t) ? `Last poll ${pollAt()}, ${agoSpan(t)} ago: a spill that started after it is not shown.` : ''; };
 // When an overflow's last spill ended, in the page's own words for a date: "2 Oct", or "8 May 2025" from
 // another year; the map's pop-up adds the time. Written out, as every other date on the page is, not
 // as the locale's "02/10/2026, 14:33:00".
@@ -1790,6 +1967,7 @@ const statusText = (s, c = {}) => runningAtLastAnswer(s, c)
   ? `discharging when the feed last answered${c.feed_down_since ? `, ${feedTime(c.feed_down_since)}` : ''}`
   : c.data_state === 'stale'
   ? (s === 1 ? `discharging at its last update, ${c.feed_updated_at ? feedTime(c.feed_updated_at) : 'time not given'}`
+    : c.aged_here && c.feed_updated_at ? `not discharging at ${feedTime(c.feed_updated_at)}, over six hours ago, so not current`
     : c.feed_updated_at ? `no update since ${feedTime(c.feed_updated_at)}` : 'no update time from the company')
   : s === -2 && c.data_state === 'offline' ? 'not in the company’s live feed'
   : ({1:'discharging', 0:'not discharging', '-1':'monitor offline', '-2':'no live feed', '-3':'company feed down'})[s] ?? '?';
@@ -1878,20 +2056,26 @@ function pushDeadline(work, message, ms = 20000) {
 async function pushSub() { const reg = canPush() && await pushReg(); return reg ? pushDeadline(reg.pushManager.getSubscription(), 'the browser did not answer; try again', 8000) : null; }
 // The weekly note (push/src/weekly.js), as last sent: off unless ticked.
 const weeklyOn = () => { try { return (JSON.parse(localStorage.getItem(PUSH_KEY)) || {}).weekly === true; } catch (e) { return false; } };
-async function sendSub(sub, weekly = weeklyOn()) {
-  const spots = [...SAVED].filter(id => DATA.spots.some(s => s.id === id));
+// Spots whose alerts were turned off one by one on their cards (2 Nov 2026), kept in the same record, so turning
+// alerts off forgets them with the rest. The saved lists themselves are not touched.
+const alertOff = () => { try { const x = (JSON.parse(localStorage.getItem(PUSH_KEY)) || {}).off; return Array.isArray(x) ? x.filter(id => typeof id === 'string') : []; } catch (e) { return []; } };
+const alertedSpots = () => alertSpots(SAVED, new Set(DATA.spots.map(s => s.id)), alertOff());
+async function sendSub(sub, weekly = weeklyOn(), off = alertOff()) {
+  const spots = alertSpots(SAVED, new Set(DATA.spots.map(s => s.id)), off);
   const res = await fetch(DATA.push.url + 'subscribe', { method: 'POST', signal: AbortSignal.timeout(15000), headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ subscription: sub.toJSON(), spots, weekly }) });
   if (!res.ok) throw new Error(`the alert service answered ${res.status}`);
-  try { localStorage.setItem(PUSH_KEY, JSON.stringify({ endpoint: sub.endpoint, spots, weekly, at: Date.now() })); } catch (e) { /* only saves a re-send */ }
+  try { localStorage.setItem(PUSH_KEY, JSON.stringify({ endpoint: sub.endpoint, spots, weekly, at: Date.now(), ...(off.length ? { off } : {}) })); } catch (e) { /* only saves a re-send */ }
 }
 async function alertsOn() {
   if (await Notification.requestPermission() !== 'granted') throw new Error('notifications are not allowed for this site');
   const reg = await pushReg(); if (!reg) throw new Error('the offline copy is not running, so notifications cannot be set up');
-  const sub = await pushDeadline(reg.pushManager.getSubscription(), 'the browser did not answer; try again', 8000)
-    || await pushDeadline(reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64(DATA.push.key) }),
-      'the browser could not finish setting up notifications. Check your connection and try again. On iPhone, use the Home Screen app');
-  await sendSub(sub);
+  const had = await pushDeadline(reg.pushManager.getSubscription(), 'the browser did not answer; try again', 8000);
+  const sub = had || await pushDeadline(reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64(DATA.push.key) }),
+    'the browser could not finish setting up notifications. Check your connection and try again. On iPhone, use the Home Screen app');
+  // A push address made just now that the alert service did not take is dropped again: the page reads alerts as
+  // on from the browser's address (bindAlerts, outingPushState), so a reload would say "on" with nothing sent.
+  try { await sendSub(sub); } catch (e) { if (!had) await sub.unsubscribe().catch(() => {}); throw e; }
 }
 async function alertsOff() {   // true if alerts were on
   const sub = await pushSub(); if (!sub) return false;
@@ -1907,7 +2091,7 @@ async function syncAlerts() {
   if (!DATA || !DATA.push || !canPush() || Notification.permission !== 'granted') return;
   const sub = await pushSub(); if (!sub) return;
   let last = null; try { last = JSON.parse(localStorage.getItem(PUSH_KEY) || 'null'); } catch (e) { /* re-send */ }
-  const spots = [...SAVED].filter(id => DATA.spots.some(s => s.id === id));
+  const spots = alertedSpots();
   if (last && last.endpoint === sub.endpoint && Array.isArray(last.spots) && last.spots.join() === spots.join() && Date.now() - last.at < 7 * 864e5) return;
   await sendSub(sub);
 }
@@ -1957,14 +2141,49 @@ async function bindAlerts() {
     catch (e) { box.checked = !want; m.textContent = `Could not change the weekly note: ${e.message}.`; }
     box.disabled = false;
   });
-  show(!!(Notification.permission === 'granted' && await pushSub().catch(() => null)));
+  const was = !!(Notification.permission === 'granted' && await pushSub().catch(() => null));
+  show(was); ALERT_UI.on = was; drawSpotAlerts();
   if (Notification.permission === 'denied') m.textContent = 'Notifications are blocked for this site in your browser settings.';
   b.addEventListener('click', async () => {
     const on = !b.dataset.on; b.disabled = true; m.textContent = '';
-    try { await (on ? alertsOn() : alertsOff()); show(on); m.textContent = on ? 'Alerts are on for your saved spots.' : 'Alerts are off.'; }
-    catch (e) { show(!on); m.textContent = `Could not change alerts: ${e.message}.`; }
+    try { await (on ? alertsOn() : alertsOff()); show(on); ALERT_UI.on = on; ALERT_UI.down = false; m.textContent = on ? 'Alerts are on for your saved spots.' : 'Alerts are off.'; }
+    catch (e) { show(!on); ALERT_UI.down = serviceDown(e);
+      m.textContent = ALERT_UI.down ? 'Could not reach the alert service, so alerts are as they were. Try again later.' : `Could not change alerts: ${e.message}.`; }
+    drawSpotAlerts();
   });
 }
+// Each saved spot's alerts, on its card (2 Nov 2026; lists.js, spotAlert): on with a tick to turn this spot off
+// or on again, off with the way to the Alerts tile (which holds what turning them on sends), or why this browser
+// cannot have them. A tick sends the list again without that spot; nothing else is sent, and dates asked for on
+// the organisers' page or an outing (push.dates) are kept by the alert service, as the app never sends them.
+const ALERT_UI = { on: null, down: false };   // notifications on in this browser (null: not checked yet); the service not answering
+const alertCan = () => !canPush() ? (IN_APP ? 'inapp' : IOS && !navigator.standalone ? 'ios' : 'none')
+  : offlineOff() ? 'offline' : Notification.permission === 'denied' ? 'blocked' : 'yes';
+// The alert service not answering (a network error, a time-out, a 5xx), rather than the browser refusing.
+const serviceDown = e => !!e && (e.name === 'TypeError' || e.name === 'TimeoutError' || e.name === 'AbortError' || /alert service answered 5/.test(e.message || ''));
+function drawSpotAlerts() {
+  if (!DATA || typeof spotAlert !== 'function') return;
+  const can = alertCan(), off = alertOff();
+  document.querySelectorAll('[data-alert]').forEach(p => {
+    const id = p.dataset.alert, st = spotAlert({ push: !!DATA.push, email: !!DATA.email, can, on: ALERT_UI.on, off: off.includes(id), down: ALERT_UI.down });
+    p.dataset.kind = st.kind;
+    p.innerHTML = (st.toggle ? `<label class="alert-tick"><input type="checkbox" data-alert-spot="${esc(id)}"${st.checked ? ' checked' : ''}><span>Alerts for this spot</span></label>` : '')
+      + (st.text ? `<span class="alert-said">${esc(st.text)}</span>` : '')
+      + (st.link ? ` <button type="button" class="linkbtn small" data-to-alerts>${st.kind === 'off' || st.kind === 'email' ? 'Set up alerts' : 'See Alerts'}</button>` : '');
+  });
+}
+async function toggleSpotAlert(box) {
+  const id = box.dataset.alertSpot, was = alertOff(), off = box.checked ? was.filter(x => x !== id) : [...new Set([...was, id])];
+  box.disabled = true;
+  try { const sub = await pushSub(); if (!sub) { ALERT_UI.on = false; throw new Error('alerts are off in this browser'); }
+    await sendSub(sub, weeklyOn(), off); ALERT_UI.down = false; }
+  catch (e) { ALERT_UI.down = serviceDown(e); }
+  drawSpotAlerts();
+  // The tick again, or where it went (alerts found off), this card's way to the Alerts tile.
+  const again = document.querySelector(`[data-alert-spot="${CSS.escape(id)}"], [data-alert="${CSS.escape(id)}"] button`); if (again) again.focus();
+}
+const toAlerts = () => { const h = document.getElementById('alerts-h'); if (!h) return;
+  h.tabIndex = -1; h.scrollIntoView({ block: 'start', ...MOTION() }); h.focus({ preventScroll: true }); };
 // The sign-up sends the address and the saved spots' ids, and the page keeps nothing: the address is
 // not stored in this browser, and the alert service's answer is the same for an address it knows.
 function bindEmailAlerts() {
@@ -2083,7 +2302,7 @@ const RANGE_BASIS = {
 };
 const rangeBasis = d => RANGE_BASIS[(d.ecoli_range_scope || {}).basis] || RANGE_BASIS['average lake'];
 const RANGE_MORE = 'For comparison, England rates an inland bathing water Excellent when about 95 in 100 of its samples, over four seasons, are under 500 per 100&nbsp;ml. The range does not set the level. <a href="#about-ecoli">What this counts</a>';
-const RANGE_OFF_SAID = 'Out of season. The lake estimate is tested only for May to September, when the Environment Agency takes samples. From October to April it is experimental and does not set the level.';
+const RANGE_OFF_SAID = 'The lake estimate is tested only for May to September, when the Environment Agency takes samples. From October to April it is experimental and does not set the level.';
 const rangeFold = ds => explain(ECOLI_FOLD, ds.map(x => rangeLine(x, dayWord(x.date))).join(' '));
 // Where there is no daily figure (no monitored overflow upstream, or an isolated water), a bathing water's own past
 // samples (build_site.typical_readings): what they read, never a forecast.
@@ -2241,6 +2460,13 @@ function waterEstMore(x) {
     + ` A listed spot's estimate also uses the river's size or the lake's area.${WT_TAIL}`;
   return `A provisional estimate, not a measurement. ${WT_AIR}, through a relation between the air and the ${r === 'lake_off_season' ? 'lake' : 'river'} fitted on May to September samples. It has not been checked from October to April: no test so far had samples from those months, so how far out it is in winter is not known yet. Each estimate is saved and is being compared with the Environment Agency's water sensors as the winter goes on.${WT_TAIL}`;
 }
+// What kind of value it is (docs/DESIGN.md, "What kind of value", 2 Nov 2026): one treatment wherever the planner or
+// a comparison gives a reading. kind: 'measured' (words: its source and time, "Measured at Bowness, 2 h ago"),
+// 'estimate' ("Estimate", "Provisional estimate"), 'stale' (past its age rule: "Last reading 2 days ago: too old to
+// use") or 'none' (no value: "Not known", "No reading", "No gauge"). The words say the kind, so colour is never the
+// only cue; the risk colours are not used. words: HTML, escaped by the caller.
+const VALUE_KINDS = ['measured', 'estimate', 'stale', 'none'];
+const valueTag = (kind, words) => `<span class="vt vt-${VALUE_KINDS.includes(kind) ? kind : 'none'}">${words}</span>`;
 function waterTile(w, e = null, kind = null, miss = null) {
   const wtIcon = () => glyph('<path d="M10 14.6V5a2 2 0 0 1 4 0v9.6a3.6 3.6 0 1 1-4 0Z"/><path d="M12 9.5v8"/>');
   const t = w ? Date.parse(w.observed_at) : NaN;
@@ -2448,9 +2674,11 @@ const dayRows = d => { const on = daily(d), past = (d.past || []).slice(-1), sho
     const v = on ? levelPlace(d, x) : Math.min(1, (rain || 0) / 40), band = on && !gone ? bandPlace(d, x, d.days.indexOf(x)) : null;
     const attrs = tag === 'button' ? ` type="button" data-day="${x.date}" aria-pressed="false" aria-controls="day-view"` : '';
     const sub = on && !gone && advisedAgainst(d) && hasData(x) && x.label ? x.label : null;
-    const when = gone ? 'Yesterday' : (x.date === today() ? 'Today, ' : '') + new Date(x.date + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+    // The row before today is Yesterday only when it was: a forecast days old greys its last row under its own date.
+    const yday = gone && x.date === addDays(today(), -1);
+    const when = yday ? 'Yesterday' : (x.date === today() ? 'Today, ' : '') + new Date(x.date + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
     const said = `${when}: ${on ? (lv ? `${lv} risk.` : 'no forecast.') : rain === null ? 'no rain forecast.' : `${Math.round(rain)} mm of rain in the 48 hours to midday.`}${sub ? ` Sewage spills: ${esc(sub)}.` : ''}`;
-    return `<${tag} class="drow ${on ? (lv ? tone(lv) : 'na') : 'rain'}${gone ? ' past' : ''}"${attrs}><span class="sr">${said}</span><span class="d" aria-hidden="true">${gone ? 'Yesterday' : shortDay(x.date)}</span>`
+    return `<${tag} class="drow ${on ? (lv ? tone(lv) : 'na') : 'rain'}${gone ? ' past' : ''}"${attrs}><span class="sr">${said}</span><span class="d" aria-hidden="true">${yday ? 'Yesterday' : shortDay(x.date)}</span>`
       + `<span class="l" aria-hidden="true">${on ? (lv ? cap(lv) : 'No data') : rain === null ? '–' : Math.round(rain) + ' mm'}`
       // A poor rating keeps every day at high risk or more: the day's own sewage spill forecast under it, so it is seen apart.
       + `${sub ? `<span class="lsub">spills: ${esc(sub)}</span>` : ''}</span>`
@@ -2459,12 +2687,14 @@ const dayRows = d => { const on = daily(d), past = (d.past || []).slice(-1), sho
       + `</span>${band ? `<span class="sr">${bandSaid(x.band)}</span>` : ''}${gone ? '<span class="dx"></span>' : dayWx(d, x, on)}</${tag}>`; }).join('') + '</div>'; };
 // The drawings. A scale: its bands as steps, the value a dot in its level's colour (Apple's UV tile,
 // stepped, since the bands are). A range: the river's usual range, today's level a dot on it.
-const scaleBar = (v, cuts, lv, label) => { const e = [0, ...cuts, 1];
-  return `<div class="scale" role="img" aria-label="${esc(label)}"><span>${e.slice(1).map((c, i) => `<i style="flex:${(c - e[i]).toFixed(2)}"></i>`).join('')}</span>`
+// A screen reader skips the scale and hears only the range: the figure and the level word above each say
+// the rest, which the drawings' own labels said a second time (screen-reader pass, 5 Nov 2026).
+const scaleBar = (v, cuts, lv) => { const e = [0, ...cuts, 1];
+  return `<div class="scale" aria-hidden="true"><span>${e.slice(1).map((c, i) => `<i style="flex:${(c - e[i]).toFixed(2)}"></i>`).join('')}</span>`
     + `<b class="${lv ? tone(lv) : 'na'}" style="left:${(Math.max(0, Math.min(1, v)) * 100).toFixed(1)}%"></b></div>`; };
 const rangeBar = rs => { const lo = rs.typical_low_m, hi = rs.typical_high_m; if (!(hi > lo)) return '';
   const p = Math.max(0, Math.min(1, (rs.level_m - lo) / (hi - lo)));
-  return `<div class="range" role="img" aria-label="${fmt(rs.level_m, 2)} m, in a usual range of ${fmt(lo, 2)} to ${fmt(hi, 2)} m"><div><b style="left:${(p * 100).toFixed(1)}%"></b></div>`
+  return `<div class="range" role="img" aria-label="Usual range ${fmt(lo, 2)} to ${fmt(hi, 2)} m"><div><b style="left:${(p * 100).toFixed(1)}%"></b></div>`
     + `<p><span>${fmt(lo, 2)}</span><span>${fmt(hi, 2)} m</span></p></div>`; };
 // A company feed that did not answer the last poll: its overflows keep their last snapshot, marked down.
 const feedDown = now => (now.feed_down || []).map(f => ` ${esc(companyName(f.company))}'s live feed is down${f.since ? ` (last answered ${new Date(f.since).toLocaleString('en-GB', { weekday: 'short', hour: '2-digit', minute: '2-digit' })})` : ''}: its ${f.overflows} overflow${f.overflows === 1 ? '' : 's'} here could be spilling unseen.`).join('');
@@ -2475,11 +2705,16 @@ const feedDown = now => (now.feed_down || []).map(f => ` ${esc(companyName(f.com
 // time is its last change anywhere, which a quiet spell leaves old too, and nothing in the feed tells the
 // two apart, so the words say both. "Has not updated since 17:57" alone made Northumbrian Water's feed
 // read as stopped on a quiet night.
+// One with `aged_here` (ageReadings) was current when the build read it, and its time is over six hours old where
+// the page is read: the page's copy is old, not the company's feed, so the words say so (5 Nov 2026: "Thames Water's
+// live feed has not updated since 04:22" at 11:30 blamed a feed SwimSignal had simply not read again).
 const feedStale = now => (now.feed_stale || []).map(f => f.records
   ? ` ${esc(companyName(f.company))} ${f.since ? `has not updated ${f.overflows === 1 ? 'one' : f.overflows} of its overflows here since ${feedTime(f.since)}`
     : `gives no update time for ${f.overflows === 1 ? 'one' : f.overflows} of its overflows here`}: ${f.overflows === 1 ? 'it' : 'they'} could be spilling unseen.`
   : f.on_change && f.since ? ` ${esc(companyName(f.company))}'s feed changes only when an overflow starts or stops. Nothing has changed since ${feedTime(f.since)},`
     + ` so a quiet spell and a stopped feed look the same: its ${f.overflows} overflow${f.overflows === 1 ? '' : 's'} here could be spilling unseen.`
+  : f.aged_here && f.since ? ` This page's readings from ${esc(companyName(f.company))}'s live feed date from ${feedTime(f.since)}, over six hours ago:`
+    + ` its ${f.overflows} overflow${f.overflows === 1 ? '' : 's'} here could be spilling unseen.`
   : ` ${esc(companyName(f.company))}'s live feed has ${f.since ? `not updated since ${feedTime(f.since)}` : 'given no time for its last update'}: its ${f.overflows} overflow${f.overflows === 1 ? '' : 's'} here could be spilling unseen.`).join('');
 // Why the upstream overflows that do not report live do not, for the Not known here row, whose heading has the count
 // ("58 of 61 not reporting"), as the line under the five days does (liveRow): a feed that is down or stale first, named
@@ -2494,7 +2729,11 @@ const liveSay = (now, total, mon) => { const fd = now.feed_down_upstream || 0, s
 // reporting live and are named as a stale feed; its quiet overflows in the list then say "no update
 // since". Done once per spot and per list of overflows; a forecast from before quiet_by_feed is left as it is.
 const FEED_CURRENT_MS = 6 * 3600e3;
-const ageReadings = (s, nowMs) => { const n = s.now; if (!n || !Array.isArray(n.quiet_by_feed)) return s;
+const ageReadings = (s, nowMs) => {
+  // River levels age where read too: their build-time age once stayed "under an hour" all morning
+  // in Saved and the comparison. Do this even for a spot without overflow feed records.
+  if (typeof outingFresh === 'function') s.river_state = outingFresh(s.river_state, nowMs);
+  const n = s.now; if (!n || !Array.isArray(n.quiet_by_feed)) return s;
   n.aged = n.aged || [];
   for (const f of n.quiet_by_feed) { const t = Date.parse(f.updated_at);
     if (!f.updated_at || !(nowMs - t > FEED_CURRENT_MS) || n.aged.includes(f.company)) continue;
@@ -2502,13 +2741,14 @@ const ageReadings = (s, nowMs) => { const n = s.now; if (!n || !Array.isArray(n.
     n.monitored_upstream = Math.max(0, (n.monitored_upstream || 0) - f.overflows);
     if (Number.isFinite(n.monitored_weight) && Number.isFinite(f.weight)) n.monitored_weight = Math.max(0, n.monitored_weight - f.weight);   // levels.js, nowWatched
     n.stale_upstream = (n.stale_upstream || 0) + f.overflows;
-    n.feed_stale = [...(n.feed_stale || []), { company: f.company, overflows: f.overflows, since: f.updated_at,
+    n.feed_stale = [...(n.feed_stale || []), { company: f.company, overflows: f.overflows, since: f.updated_at, aged_here: true,
       ...((n.feeds_on_change || []).includes(f.company) ? { on_change: true } : {}) }]; }
-  for (const c of s.contributors || []) if (n.aged.includes(c.company) && c.status === 0 && c.data_state === 'live') c.data_state = 'stale';
+  for (const c of s.contributors || []) if (n.aged.includes(c.company) && c.status === 0 && c.data_state === 'live') { c.data_state = 'stale'; c.aged_here = true; }
   return s; };
 // The overflows that stopped lately and still count right now (transport.live_now_risk): a spill counts
 // until recent_spill_hours after its water has passed here, so one far upstream counts for longer after its end.
-const recentSay = (rec, dis, h) => `${rec ? rec + (dis ? ' more' : '') : 'None'} stopped lately: a spill counts until ${h}&nbsp;h after its water has passed here.`;
+// The rule only where a spill stopped lately; with none, the tile's fold says it (5 Nov 2026: it was said at every spot).
+const recentSay = (rec, dis, h) => rec ? `${rec}${dis ? ' more' : ''} stopped lately: a spill counts until ${h}&nbsp;h after its water has passed here.` : 'None stopped lately.';
 // The Right now tile: how many overflows upstream are discharging, out of those that report live. Never
 // "0 of 14 discharging" where none of the 14 reports (Hereford, Symonds Yat and Sandy Lane,
 // whose overflows are all Dŵr Cymru's, with no live feed SwimSignal reads): the figure is then "Unknown".
@@ -2525,11 +2765,14 @@ function nowTile(d, total) {
   // With none discharging, it is the spills that stopped lately that set the level: "0 discharging" over "This sets
   // the level above" read as though nothing did (Grantchester, 31 Oct 2026).
   const line = tileLine(d, 'now'), rel = line && !n && now.recent_upstream ? 'The spills that stopped lately set the level above.' : line;
-  const base = { live: true, icon: ICON.now, label: 'Right now', vis: overflowDots(d), rel };
+  const base = { live: true, icon: ICON.now, label: 'Right now', vis: overflowDots(d), rel,
+    // Its fold: how a reading counts, said once here rather than under every count (5 Nov 2026).
+    more: `A spill counts until ${d.assumptions.recent_spill_hours}&nbsp;h after its water has passed here. A monitor reports when it spills, not how much or what is in it.` };
   if (!mon && !n)
     return { ...base, fig: 'Unknown', say: `None of the ${total === 1 ? 'overflow' : `${total} overflows`} upstream ${total === 1 ? 'reports' : 'report'} live, so whether ${total === 1 ? 'it is' : 'any is'} discharging is not known.${noFeedSaid(d)}` };
   return { ...base, fig: n, unit: mon >= total ? `of ${total} discharging` : 'discharging', figTone: n ? 'hot' : '',
-    say: `${recentSay(now.recent_upstream, n, d.assumptions.recent_spill_hours)} ${mon} of ${total} report live.${clearWords(d) ? ' ' + clearWords(d) : ''}` };   // when it should clear (levels.js)
+    say: `${recentSay(now.recent_upstream, n, d.assumptions.recent_spill_hours)} ${mon} of ${total} report live.${clearWords(d) ? ' ' + clearWords(d) : ''}`,   // when it should clear (levels.js)
+    note: pollSay() };   // the tile's quiet line, under what it says
 }
 // Every overflow upstream as a dot: discharging, stopped lately (a ring), quiet, or not reporting.
 const overflowDots = d => { const n = d.now || {}, total = overflows(d), dis = Math.min(n.discharging_upstream || 0, total), rec = Math.min(n.recent_upstream || 0, total - dis);
@@ -2553,7 +2796,7 @@ const sunPath = (w, dot = true) => { const m = s => { const [h, mm] = String(s).
     + (dot ? `<circle${tn > rise && tn < set ? '' : ' class="down"'} cx="${x(tn)}" cy="${y(tn)}" r="4.5"/>` : '') + '</svg>'; };
 // A tile: the label with its icon, the figure (with its unit, and a level word under it), the drawing,
 // how the figure stands to the level above (rel: levels.js, tileLine), the sentence, the weather's credit where its figures are, and the rest folded in the corner.
-const tile = o => `<div class="tile${o.wide ? ' wide' : ''}"><h2 class="t-lab">${o.icon}<span>${o.label}</span></h2>`
+const tile = o => `<div class="tile${o.wide ? ' wide' : ''}"><h${o.sub ? 3 : 2} class="t-lab">${o.icon}<span>${o.label}</span></h${o.sub ? 3 : 2}>`
   // A figure in words of more than one ("Out of season", "None seen") at the heading's size, not the number's: in
   // the number's it was the largest text on the tile and said the least (31 Oct 2026).
   + (o.fig === undefined ? '' : `<p class="t-fig${o.figTone ? ' ' + o.figTone : ''}${typeof o.fig === 'string' && /^[A-Za-z]+ [A-Za-z ]+$/.test(o.fig) ? ' t-fig-words' : ''}">${o.fig}${o.unit ? `<small>${o.unit}</small>` : ''}${o.word ? `<span class="t-word ${o.wordTone || ''}">${o.word}</span>` : ''}</p>`)
@@ -2577,7 +2820,9 @@ function facts(d, iso = null) {
   const pct = p => Math.round(p * 100);
   // At its foot, "Today's EA advice" (eatoday.js): the EA's own panel of today's advice, loaded when opened.
   const fold = typeof eaTodayFold === 'function' ? eaTodayFold(d) : '';
-  const ea = cl.url ? ` <a href="${esc(cl.url)}">The EA's page</a> has its latest samples and any short-term advice against bathing, after pollution or algae${fold ? '' : ', which this page does not include'}.` : '';
+  // With the EA's panel at its foot (fold), the advice is that panel's to give: the link names the samples only (5 Nov 2026).
+  const ea = cl.url ? (fold ? ` <a href="${esc(cl.url)}">The EA's page</a> has its latest samples.`
+    : ` <a href="${esc(cl.url)}">The EA's page</a> has its latest samples and any short-term advice against bathing, after pollution or algae, which this page does not include.`) : '';
   if (c) out.push({ wide: true, icon: ICON.rating, label: `Environment Agency rating, ${cl.year}`, fig: cap(c), figTone: tone(CLASS_LEVEL[c]),
     vis: `<div class="seasons">${(cl.history && cl.history.length ? cl.history : [[cl.year, c]]).slice(0, 4).reverse()
       .map(([yr, k]) => `<span class="${tone(CLASS_LEVEL[k] || '')}"><i></i>${yr}<b>${cap(k)}</b></span>`).join('')}</div>`,
@@ -2592,13 +2837,14 @@ function facts(d, iso = null) {
     // "3 of 100, Low risk" under "High risk from sewage spills", a contradiction to read, though both were true).
     const i = now.risk * 100, r = Math.round(x0.risk * 100), h = d.assumptions.recent_spill_hours;
     out.push({ icon: ICON.spills, label: 'Sewage spills, right now', fig: Math.round(i), unit: 'of 100', word: `${cap(now.label)} risk`, wordTone: tone(now.label),
-      vis: scaleBar(shownRisk(now.risk), SPILL_CUTS, now.label, `Sewage spill risk right now ${Math.round(i)} of 100: ${now.label} risk`), rel: 'This sets the level above.',
+      vis: scaleBar(shownRisk(now.risk), SPILL_CUTS, now.label), rel: 'This sets the level above.',
       say: `${now.discharging_upstream ? 'Spills under way upstream' : `Spills upstream in the last ${h} hours`} set it. The rain forecast alone gives ${x0.risk > 0 && r < 1 ? 'under 1' : r} of 100 for today, ${x0.label} risk.`,
       more: `The sewage spill risk, a 0–100 score for sewage from upstream reaching the spot, after travel time, die-off and dilution. Right now's counts the spills the overflows' live feeds report, each until ${h} hours after its water has passed; a day's counts the spills the rain forecast makes likely. A score, not a probability. ${bandWords(SPILL_CUTS, c => Math.round(c * 100))}. <a href="#about-exposure">What this counts</a>` }); }
   else if (!d.error && x0 && hasData(x0)) { const i = x0.risk * 100;
     out.push({ icon: ICON.spills, label: 'Sewage spills', fig: i > 0 && i < .5 ? '&lt;1' : Math.round(i), unit: 'of 100', word: `${cap(x0.label)} risk`, wordTone: tone(x0.label),
-      vis: scaleBar(shownRisk(x0.risk), SPILL_CUTS, x0.label, `Sewage spill risk ${i > 0 && i < .5 ? 'under 1' : Math.round(i)} of 100: ${x0.label} risk`), rel: tileLine(d, 'spill', iso),
-      say: `${cap(spilling(x0, total))} ${when}.`,
+      vis: scaleBar(shownRisk(x0.risk), SPILL_CUTS, x0.label), rel: tileLine(d, 'spill', iso),
+      // Not on today: the five days' sentence above starts with the same words (5 Nov 2026, said twice on every spot).
+      say: first ? '' : `${cap(spilling(x0, total))} ${when}.`,
       more: `The sewage spill risk, a 0–100 score for sewage from upstream reaching the spot, after travel time, die-off and dilution. A score, not a probability. ${bandWords(SPILL_CUTS, c => Math.round(c * 100))}. <a href="#about-exposure">What this counts</a>` }); }
   // Its label says what it and the level each count, and how far it has been tested (ecoliSaid): the full
   // width, as the rating's tile, since that is four sentences. Out of season (water, levels.js ECOLI_OFF) no
@@ -2617,7 +2863,7 @@ function facts(d, iso = null) {
     if (off) out.push({ wide: true, late: true, icon: ICON.water, label: ecoliName(true), fig: ECOLI_OFF, say: ecoliNotes(d, ecoliCheck(), x0)[0],
       fold: ecoliFold(d, [x0, x1].filter(x => x && !nil(x.p_ecoli_gt900))), more: ecoliMore() });
     else out.push({ wide: true, icon: ICON.water, label: 'E.&nbsp;coli estimate', fig: pct(x0.p_ecoli_gt900) + '%', word: `${cap(b)} risk`, wordTone: tone(b),
-      vis: scaleBar(x0.p_ecoli_gt900, ECOLI_CUTS, b, `${pct(x0.p_ecoli_gt900)}% chance: ${b} risk`), rel: tileLine(d, 'water', iso),
+      vis: scaleBar(x0.p_ecoli_gt900, ECOLI_CUTS, b), rel: tileLine(d, 'water', iso),
       say: `Chance a water sample would show E.&nbsp;coli over 900 per 100&nbsp;ml ${when}${x1 && !nil(x1.p_ecoli_gt900) && !untested(x1) ? `; ${pct(x1.p_ecoli_gt900)}% tomorrow` : ''}. ${ecoliSaid(d, x0)}`,
       more: ecoliMore() }); }
   else if (d.ecoli_typical && !daily(d)) { const t = d.ecoli_typical;
@@ -2659,8 +2905,24 @@ function facts(d, iso = null) {
 // water) is a lake level: its words say where it sits against the EA's usual range, below, in or above,
 // as the EA's own pages do, and not a river's "High water" or that "a high river runs faster" (Windermere,
 // 0.73 m inside 0.23 to 1.00 m, 11 Oct 2026).
-function riverTile(rs) {
+// A river spot's history line (hist: build_site.attach_rise_history, docs/RIVER-RISE-HISTORY-CONTRACT-v1.md), the tile's
+// `past`, which the River level cell shows under its reading (conditionsSummary): in this calendar month of the two
+// years behind it, how often an hour at the gauge was followed by a quick rise (more than a fifth of its usual range
+// within 3 hours, said in the fold, RISE_MORE). History in words, never a forecast, a warning, a colour or a level; a
+// month the export leaves out (too few hours, or one year only) is null and says nothing.
+const RISE_MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const riseOneIn = n => n < 20 ? Math.round(n) : n < 1000 ? Math.round(n / 10) * 10 : Math.round(n / 100) * 100;
+function riseHistoryLine(hist, iso = today()) {
+  const k = +String(iso).slice(5, 7) - 1, m = hist && Array.isArray(hist.months) ? hist.months[k] : null;
+  if (!m || !(m.hours > 0) || !(m.rise_hours >= 0) || !Array.isArray(m.years) || m.years.length !== 2) return '';
+  const when = `In ${RISE_MONTHS[k]} ${m.years[0]} and ${m.years[1]}`;
+  return m.rise_hours ? `${when}, about 1 hour in ${riseOneIn(m.hours / m.rise_hours)} at this gauge was followed by a quick rise (${m.rises} in all).`
+    : `${when}, no hour at this gauge was followed by a quick rise.`;
+}
+const RISE_MORE = ' Past months: a quick rise is the river rising by more than a fifth of its usual range within 3 hours. Only hours when it was not already high or rising fast count, in the Environment Agency\'s checked readings from 21 November 2024 to 24 October 2026. History, not a forecast: <a href="research.html#river-rises">how it was counted</a>.';
+function riverTile(rs, hist = null) {
   if (!rs || (!rs.stale && nil(rs.level_m))) return null;
+  const past = hist && rs.water !== 'lake' ? riseHistoryLine(hist) : '', pastMore = past ? RISE_MORE : '';   // a lake: no river history
   const lake = rs.water === 'lake', label = lake ? 'Lake level' : 'River level';
   const at = rs.observed_at ? new Date(rs.observed_at).toLocaleString('en-GB', { weekday: 'short', hour: '2-digit', minute: '2-digit' }) : '';
   const gauge = `Gauge at ${esc(rs.station)}${rs.river ? ` on ${lake ? '' : 'the '}${esc(rs.river)}` : ''}, ${rs.distance_km}&nbsp;km away${rs.same_river === false ? ', on a different watercourse' : ''}`;
@@ -2668,14 +2930,14 @@ function riverTile(rs) {
   const more = (lake ? 'The level of the lake at the gauge. After heavy rain a lake rises slowly and falls slowly.' : 'A high river runs faster and colder, and after rain it can rise quickly.') + page;
   if (rs.stale) { const h = rs.age_hours, n = nil(h) ? null : h <= 24 ? Math.round(h) : Math.round(h / 24), unit = nil(h) ? '' : h <= 24 ? 'hour' : 'day';
     return { live: true, icon: ICON.level, label, fig: '–', unit: 'no current reading',
-      say: `${n === null ? 'The last reading is old' : `Last reading ${n} ${unit}${n === 1 ? '' : 's'} ago`}, not shown as current. Not part of the pollution level. ${gauge}.`, more }; }
+      say: `${n === null ? 'The last reading is old' : `Last reading ${n} ${unit}${n === 1 ? '' : 's'} ago`}, not shown as current. Not part of the pollution level. ${gauge}.`, more: more + pastMore, past }; }
   const lo = rs.typical_low_m, hi = rs.typical_high_m, ranged = !nil(lo) && !nil(hi) && hi > lo;
   // Words of its own, in ink: "High" in a level's colour, on a page of pollution levels, read as one.
   const word = lake ? (!ranged ? '' : rs.level_m < lo ? 'Below its usual range' : rs.level_m > hi ? 'Above its usual range' : 'In its usual range')
     : ({ low: 'Low water', normal: 'Usual level', high: 'High water', 'very high': 'Very high water' }[rs.label] || '') + (rs.label === 'very high' ? ', above its usual range' : '');
   return { live: true, icon: ICON.level, label, fig: fmt(rs.level_m, 2), unit: 'm', wordTone: 'plain', word,
     vis: ranged ? rangeBar(rs) : '',
-    say: `Not part of the pollution level. ${gauge}${at ? `, ${at}` : ''}.`, more };
+    say: `Not part of the pollution level. ${gauge}${at ? `, ${at}` : ''}.`, more: more + pastMore, past };
 }
 // The answer's words, which a picked day fills again (showDay): the level, why and when, where the week
 // goes, a long spill that may be a fault (it sets the level), the river's separate hazard, what the
@@ -2694,7 +2956,9 @@ const answerWords = (d, iso = null) => { const m = answerParts(d, iso), spill = 
 // The live status's counts (levels.js, liveLine) at the foot of the five days, where they say how much of the week the
 // feeds can see. Over the level they put a grey sentence before the answer (Medway at Tonbridge, 31 Oct 2026). "Live
 // sewage spill status unavailable" stays over the level (answerWords), since it makes the level the modelled forecast.
-const liveRow = d => { const m = liveParts(d, true); return m.live && !m.blind ? `<p class="live-row">${m.live}.</p>` : ''; };
+// With the poll's clock time, not its age: this line is in the built page (scripts/prerender_spots.js), where an age would
+// stay as it was when built.
+const liveRow = d => { const m = liveParts(d, true); return m.live && !m.blind ? `<p class="live-row">${liveLine(d, pollAt())}.</p>` : ''; };
 // Under the five days, in their tile: what to do at the level, that day, and what the level counts. In the
 // answer, between the level and the week, they put the five days 739 px down a 375 px phone at Long Bridges,
 // and below the screen at Ludlow. iso as answerWords; showDay fills it again.
@@ -2748,11 +3012,8 @@ const eaSaid = d => { const url = (d.classification || {}).url, fold = typeof ea
 // Not on a failed forecast's live readings (no forecast, nothing to read against). Empty with no gap.
 function unknowns(d) {
   const rows = [], total = overflows(d), now = d.now || {}, mon = Math.min(total, now.monitored_upstream ?? total);
-  if (daily(d) && total && mon < total) rows.push(['Live readings', `${total - mon} of ${total} not reporting`, liveSay(now, total, mon) + noFeedSaid(d)
-    // What a monitor tells its company's live feed, as the method page says it (methods.html: "The live feed shows any
-    // discharge its monitor records"); not how much, nor what is in it (30 Oct 2026). "Could be spilling unseen" says
-    // that no reading is not known to be dry.
-    + ' A monitor reports when it spills, not how much or what is in it.']);
+  // What a monitor tells its feed, not how much nor what is in it (30 Oct 2026), is in the Right now tile's fold (nowTile's more).
+  if (daily(d) && total && mon < total) rows.push(['Live readings', `${total - mon} of ${total} not reporting`, liveSay(now, total, mon) + noFeedSaid(d)]);
   if (walesWords(d)) rows.push(['Overflows in Wales', 'Not counted', esc(walesWords(d))]);
   if (trialWords(d)) rows.push(['Scotland', 'Trial', esc(trialWords(d))]);
   const reviewed = typeof eaTodayCover === 'function' ? eaTodayCover(d) : '';
@@ -2760,7 +3021,7 @@ function unknowns(d) {
   // Labelled as the EA's only where the spot has the EA's panel (a bathing water); another publisher's notice
   // elsewhere is an official notice, not the EA's advice.
   if (reviewed) rows.push([typeof eaTodayId === 'function' && eaTodayId(d) ? "Today's EA advice" : 'Official notice', 'Notice shown above', `${eaTodayLatest(d) || 'See the notice above'}.`]);
-  else if (eaUnchecked(d)) rows.push(["Today's EA advice", 'Not checked', eaSaid(d)]);
+  // Not checked: the line beside the answer says so and links the advice (coverLine); said once (Ethan, 5 Nov 2026).
   if (d.access) rows.push(['Access', 'Not confirmed', accessSaid(d.access)]);
   if (typeof floodUnchecked === 'function' && floodUnchecked(d, Date.now(), DATA.generated_at)) rows.push(['Flood warnings', 'Not checked', floodUncheckedLine(true)]);
   if (typeof floodUnmatched === 'function' && floodUnmatched(d, Date.now(), DATA.generated_at)) rows.push(['Flood warnings', 'Not matched', floodUnmatchedLine(true)]);
@@ -2973,7 +3234,7 @@ function dayDetail(d, x) {
   if (!nil(x.rain_48h_mm)) rows.push(factorRow('Rain here', null, `${Math.round(x.rain_48h_mm)} mm`, 'In the 48 hours to midday.'));
   rows.push(weatherRow(d, x.date));
   rows.push(howSure(d, j));
-  return `<div class="dd-head"><h2 class="dd-t">${when}</h2><button type="button" class="linkbtn" id="day-close">Close</button></div>`
+  return `<div class="dd-head"><h3 class="dd-t">${when}</h3><button type="button" class="linkbtn" id="day-close">Close<span class="sr"> ${when}</span></button></div>`
     + `<div class="factors">${rows.join('')}${standing(d, x.date)}</div>`
     + (d.unlisted ? '' : `<p class="sub dd-rec"><a href="${esc(ROOT.pathname)}record.html#spot=${esc(encodeURIComponent(d.id))}&amp;day=${x.date}">Print a decision record</a></p>`);   // record.js
 }
@@ -3138,7 +3399,8 @@ const traceKey = on => document.querySelectorAll('.trkey').forEach(k => { k.hidd
 function drawTrace() {
   const s = current;
   if (traceLine) contribLayer.removeLayer(traceLine);
-  if (!s || !s.detail_file || map.getZoom() < TRACE_ZOOM) return;
+  // An isolated lake has nothing traced, so no file (build_site.write_traces): asking logged a 404 on each visit (5 Nov 2026).
+  if (!s || !s.detail_file || isolated(s) || map.getZoom() < TRACE_ZOOM) return;
   if (!TRACES.has(s.id)) TRACES.set(s.id, fetch(`data/${s.detail_file.replace(/\.json$/, '-trace.json')}`)
     .then(r => r.ok ? r.json() : null).then(j => j && j.id === s.id && Array.isArray(j.lines) ? j.lines.map(decodeLine) : null).catch(() => null));
   TRACES.get(s.id).then(lines => { if (!lines || !lines.length || current !== s || map.getZoom() < TRACE_ZOOM || traceLine) return;
@@ -3254,6 +3516,10 @@ lowCtl.addTo(map);
 // The build is scheduled every 30 min but GitHub starts it when it can: over 113 builds on
 // 13-28 Sep 2026 they were a median 2.9 h apart, at most 8.1 h. At 120 min the banner
 // would have shown 48% of the time; at 6 h, 1%; at 8 h, never. So 8 h means a build has failed.
+// 7 Oct-6 Nov 2026 they were further apart: 156 scheduled runs a median 4.6 h apart, 95% within 7.7 h, at most
+// 10.1 h; with pushes to main counted, the published forecast was over 4 h old 20% of the time, over 6 h 6% and
+// over 8 h 2%. The banner stays at 8 h; under it, the issue time and its age are on every view, and a reading
+// says when it was polled (pollSay, liveRow), so an old "not discharging" never reads as current.
 const STALE_MIN = 8 * 60;
 const ageMin = () => (Date.now() - new Date(DATA.generated_at).getTime()) / 60000;
 const ago = m => { const t = Math.round(m); return t < 60 ? `${t} min` : t % 60 ? `${Math.floor(t / 60)} h ${t % 60} min` : `${t / 60} h`; };   // "6 h", not "6 h 0 min"
@@ -3283,6 +3549,10 @@ function gaps(d, list) {
   const n = list ? (DATA.build || {}).today_rain_unavailable : 0;
   return n ? note(`${n === 1 ? '1 spot has' : `${n} spots have`} no rainfall data for today in this update.`) : '';
 }
+// A live region (role=status, aria-live) written only when its words change: a screen reader reads a
+// region out again each time it is rewritten, and redraws (a day picked, an area opened) rewrote the
+// same "112 spots." and "Starting from Reading." (screen-reader pass, 5 Nov 2026). html: the words are markup.
+const sayOnChange = (el, said, html = false) => { if (!el || el.__said === said) return; el.__said = said; if (html) el.innerHTML = said; else el.textContent = said; };
 // The notices, in a box redrawn when the connection drops or returns, or the forecast turns stale,
 // while the page stays open. Only then: the stale notice is an alert, and a screen reader reads an
 // alert out again each time it is redrawn, so a redraw every minute would repeat it every minute.
@@ -3373,9 +3643,10 @@ function overview(spots) {
   // the counts are then named for what they are, the sewage forecast's.
   const advised = typeof eaTodayAdvice === 'function' ? spots.filter(s => eaTodayAdvice(s).length).length : 0;
   // The forecast's own tally, which counts a spot under advice restricting swimming by its sewage level; how many of its
-  // low spots that is, so it can be read beside the day strip's count, which leaves them out (lowToChoose).
+  // low spots that is, so it can be read beside the day strip's count, which leaves them out (lowToChoose). The first
+  // figure is the strip's (5 Nov 2026: "63 low risk" over "64 low (1 of them ...)" read as two counts of one thing).
   const lowBarred = rated.filter(s => mapLevel(s) === 'low' && typeof lowEligible === 'function' && !lowEligible(s)).length;
-  return `Updated ${issued()} · ${advised ? 'Sewage pollution risk' : 'Pollution risk'}: ${low} low${lowBarred ? ` (${lowBarred} of them under official advice restricting swimming)` : ''} · ${rated.length - low - high} moderate · ${high} high or very high`
+  return `Updated ${issued()} · ${advised ? 'Sewage pollution risk' : 'Pollution risk'}: ${low - lowBarred} low${lowBarred ? `, and ${lowBarred} more at low under official advice restricting swimming` : ''} · ${rated.length - low - high} moderate · ${high} high or very high`
     + `${clear ? ` · ${clear} with no monitored overflow found upstream` : ''}${none ? ` · ${none} without a level` : ''}`
     + `${none ? ': ' + Object.entries(why).sort((a, b) => b[1] - a[1]).map(([w, n]) => `${n} ${w}`).join(', ') : ''}. ${cap(mapWhen())}.`
     + (advised ? ` ${advised} with an official notice: ${noticeVerb(spots.filter(s => eaTodayAdvice(s).length))}.` : '');
@@ -3384,7 +3655,7 @@ function overview(spots) {
 // (overview, less its issue time) are at the list's foot, so a phone's first screen reaches the first spot.
 function overviewTop(spots) {
   const advised = typeof eaTodayAdvice === 'function' ? spots.filter(s => eaTodayAdvice(s).length) : [];
-  return `Updated ${issued()}.` + (advised.length ? ` ${advised.length === 1 ? '1 spot has' : `${advised.length} spots have`} an official notice: ${noticeVerb(advised)}.` : '');
+  return `Updated ${issued()} (${agoSpan()} ago).` + (advised.length ? ` ${advised.length === 1 ? '1 spot has' : `${advised.length} spots have`} an official notice: ${noticeVerb(advised)}.` : '');
 }
 // A chosen date must describe the same forecast in the list, on the map and in the detail link.
 const listHeadline = s => VIEW.day ? dayHeadline(s, VIEW.day) : headline(s);
@@ -3494,7 +3765,15 @@ function renderList() {
   v += `<p class="small muted after">Updated several times a day. <a href="#levels">What the levels mean</a>.</p>`
     // Who it is for, at the foot: the same forecast serves anyone who gets in the water
     // (clubs.html says how wet each activity gets), and groups and events have their own tools.
-    + `<p class="small muted after">For swimming and water sports. Forecasts, not water tests. <a href="clubs.html">Tools for clubs, centres and events</a>.</p>`;
+    + `<p class="small muted after">For swimming and water sports. Forecasts, not water tests. <a href="clubs.html">Tools for clubs, centres and events</a>.</p>`
+    // After the list, where finding a spot is done: the evidence behind the forecasts, for anyone who wants more.
+    + `<section class="lab-invite" aria-labelledby="lab-invite-h"><h2 id="lab-invite-h"><a href="lab/">Research Lab</a></h2>`
+    + `<p>The evidence behind the forecasts, in pictures. Exploratory: it changes no forecast.</p>`
+    + labRoutes([[1, 'lab/lake-from-space/', 'The lake from space', 'Satellite pictures of lakes, cloud included.'],
+      [2, 'lab/pollution/', 'Where does the pollution go?', 'The rivers joining overflows to spots.'],
+      [3, 'lab/forecasts/', 'How good are the forecasts?', 'Every past sample: catches and misses.'],
+      [4, 'lab/workspace/', 'Catchment workspace', 'Rain, spills and samples on one timeline.'],
+      [5, 'lab/sampling/', 'Sampling gaps', 'Where lab samples are thin, and what a season would fill.']]) + `</section>`;
   setPanel(h + cols(v));
   if (saved.length) bindItems(document.getElementById('saved-list'));
   document.getElementById('listday').addEventListener('change', e => setMapDay(e.target.value));
@@ -3648,11 +3927,12 @@ function drawSpots() {
     bindItems(nearList);
   }
   document.getElementById('all-h').textContent = VIEW.q.trim() || VIEW.filter !== 'all' || VIEW.lowOnly ? 'Matching spots' : byArea() ? 'Spots by area' : 'All spots';
-  document.getElementById('overview').textContent = overviewTop(items);
+  document.getElementById('overview').innerHTML = overviewTop(items);   // markup: the age moves on in place (stillCurrent)
   const changed = [VIEW.sort !== SORT0, VIEW.filter !== 'all', VIEW.lowOnly].filter(Boolean).length, fn = document.getElementById('filter-n');
   if (fn) { fn.textContent = changed; fn.hidden = !changed; document.getElementById('filter-btn').setAttribute('aria-label', changed ? `Filter, ${changed} on` : 'Filter'); }
   const done = document.getElementById('filter-done'); if (done) done.textContent = `Show ${items.length} spot${items.length === 1 ? '' : 's'}`;
-  document.getElementById('overview-foot').textContent = overview(items).replace(/^Updated [^·]*· /, '');
+  // With nothing matching, no tally of zeros (5 Nov 2026: "0 low · 0 moderate · 0 high" under "No listed spot matches").
+  document.getElementById('overview-foot').textContent = items.length ? overview(items).replace(/^Updated [^·]*· /, '') : '';
   const firstNote = VIEW.sort === 'low' || (VIEW.sort === 'near' && !VIEW.here) ? lowLastNote(items) : byRisk ? riskFirstNote(items) : '';
   // Where the notice's spots go in this order, in the line over the list that names them (29 October 2026: a
   // paragraph of its own under it, two lines about notices one after the other on a phone's first screen).
@@ -3662,7 +3942,8 @@ function drawSpots() {
     : items.length ? items.map(spotItem).join('')
     : `<li class="empty"><p class="below">No inland forecasts match. SwimSignal forecasts ${DATA.spots.length} river and lake spots ${spotsWhere()}. ${regionalLink(VIEW.q)} Missing yours? <a href="feedback.html?type=spot">Request it</a>.</p>`
       + `<button type="button" class="btn" id="clear-filters">Clear search and filters</button></li>`;
-  document.getElementById('count').textContent = items.length === DATA.spots.length ? `${items.length} spot${items.length === 1 ? '' : 's'}.` : `Showing ${items.length} of ${DATA.spots.length} spots.`;
+  sayOnChange(document.getElementById('count'), items.length === DATA.spots.length ? `${items.length} spot${items.length === 1 ? '' : 's'}.` : `Showing ${items.length} of ${DATA.spots.length} spots.`);
+  document.getElementById('count').classList.toggle('sr', !items.length);   // still read out as a status; the page says it already
   bindClear();
   bindItems(ul);
   offerOnMap();
@@ -3688,9 +3969,11 @@ function drawSpots() {
 // list shows the same cards, without the bookmark, on its day (iso), on one tile; a list someone shared
 // shows them without it, each a tile. With no day picked, what changed since you last looked (since.js).
 // withWeek: the five days on a card that has its unsave button, for a list of one (renderSaved), where there is no grid.
-function savedCard(s, unsave = true, iso = null, tile = unsave, from = 'saved spots', far = false, withWeek = false) {
+// place: the Saved page's own card (2 Nov 2026), which adds the water now where it is known (placeWater) and the
+// spot's alerts (drawSpotAlerts fills its line once the page knows whether alerts are on).
+function savedCard(s, unsave = true, iso = null, tile = unsave, from = 'saved spots', far = false, withWeek = false, place = false) {
   const m = answerParts(s, iso), meta = [cap(s.kind), s.source === 'designated' ? 'bathing water' : null, far && dist(s) !== null ? away(dist(s)) : null].filter(Boolean).join(' · ');
-  return `<li class="scard place${tile ? ' tile' : ''}"><div class="place-top"><a class="scard-link" href="${esc(iso && iso !== today() && daily(s) ? spotPath(s.id) + '#day=' + iso : spotPath(s.id))}" data-id="${esc(s.id)}">`
+  return `<li class="scard place${tile ? ' tile' : ''}"${place ? ` data-place="${esc(s.id)}"` : ''}><div class="place-top"><a class="scard-link" href="${esc(iso && iso !== today() && daily(s) ? spotPath(s.id) + '#day=' + iso : spotPath(s.id))}" data-id="${esc(s.id)}">`
     + `<span class="nm">${esc(s.name)}</span><span class="k">${meta}</span></a>`
     + (unsave ? `<button type="button" class="unsave" data-unsave="${esc(s.id)}" aria-label="Remove ${esc(s.name)} from ${esc(from)}">${BOOKMARK}</button>` : '') + '</div>'
     + (typeof eaTodayTag === 'function' ? eaTodayTag(s, 'p') : '')   // official advice first, above the level
@@ -3698,9 +3981,20 @@ function savedCard(s, unsave = true, iso = null, tile = unsave, from = 'saved sp
     + `<div class="place-mid">${m.word ? `<p class="big ${m.tone}">${m.word} risk</p>` : `<p class="big-head ${m.tone}">${m.head}</p>`}${unsave && !withWeek ? '' : week(s)}</div>`
     + `<p class="place-sub">${plainLevel(level(s)) && m.next ? `${m.sub} ${m.next}.` : [m.sub, m.next].filter(Boolean).join(' · ')}</p>`   // under a plain level, two sentences
     + [walesWords(s, true), trialWords(s, true)].filter(Boolean).map(w => `<p class="place-sub">${esc(w)}.</p>`).join('')
+    + (place ? placeWater(s) : '')
     // What has changed since you last looked, where the card gives the answer: no day picked, or today (Explore opens
     // on today, so until 29 Oct 2026 its saved cards never said it).
-    + `${(!iso || iso === today()) && typeof sinceSaid === 'function' ? sinceSaid(s, DATA.generated_at) : ''}</li>`;
+    + `${(!iso || iso === today()) && typeof sinceSaid === 'function' ? sinceSaid(s, DATA.generated_at) : ''}`
+    + (place ? `<p class="place-alert" data-alert="${esc(s.id)}"></p>` : '') + '</li>';
+}
+// The water at a saved spot now, only what is known: its temperature and its river or lake level, each with what
+// it is (valueTag: measured or an estimate). Nothing where neither is known: the spot's page says what is missing and why.
+function placeWater(s) {
+  const w = waterTile(s.water_temp, s.water_temp_est, s.kind), rs = s.river_state, lv = riverTile(rs);
+  const temp = w && w.fig !== '–' ? `Water ${w.fig}${w.fig.endsWith('°') ? 'C' : ''} ` + valueTag(w.live ? 'measured' : 'estimate', w.live ? 'Measured' : /provisional/.test(w.unit || '') ? 'Provisional estimate' : 'Estimate') : '';
+  const age = rs && Number.isFinite(rs.age_hours) ? (rs.age_hours < 1 ? 'Measured within the hour' : `Measured ${Math.round(rs.age_hours)} h ago`) : 'Measured';
+  const level = lv && lv.fig !== '–' ? `${lv.label} ${lv.fig}&nbsp;m${lv.word ? `, ${esc(lv.word.toLowerCase())}` : ''} ` + valueTag('measured', age) : '';
+  return temp || level ? `<p class="place-water">${[temp, level].filter(Boolean).join(' · ')}</p>` : '';
 }
 // A list's spots that the forecast has, in the list's order.
 const listSpots = (l = listNow()) => l.spots.map(id => DATA.spots.find(s => s.id === id)).filter(Boolean);
@@ -3751,9 +4045,14 @@ function compareSection(c) {
 // what a lower level is not, outside the box that scrolls, where a phone shows all of it. No column is called
 // the best: the question is which to look into further, and the reader decides.
 function compareTable(spots, day, meta = null) {
-  const dates = fiveDays(), n = spots.length, days = spots.map(s => compareDays(s, dates)), facts = spots.map(s => compareRows(s, day, DATA.generated_at));
+  const dates = fiveDays(), n = spots.length, days = spots.map(s => compareDays(s, dates)), facts = spots.map(s => compareRows(s, day, DATA.generated_at)), water = spots.map(compareWater);
   const cell = x => `<span class="hl ${tone(x.level)}">${esc(x.words)}</span>`, hd = (r, j) => ` headers="${r} cmp-s${j}"`;
-  const lab = (id, t) => `<tr class="lab"><th colspan="${n}" id="${id}"><span>${t}</span></th></tr>`;
+  // A row's label, and what every column shares, said once under it (compareRows' third field).
+  const lab = (id, t, note = '') => `<tr class="lab"><th colspan="${n}" id="${id}"><span>${t}${note ? `<span class="lab-note">${note}</span>` : ''}</span></th></tr>`;
+  // A row whose cells all say the same is one cell across the columns, as a level the same every day is one cell.
+  const across = (id, cells) => n > 1 && cells.every(c => c === cells[0])
+    ? `<tr><td colspan="${n}" headers="${id} ${spots.map((s, j) => `cmp-s${j}`).join(' ')}">${cells[0]}</td></tr>`
+    : `<tr>${cells.map((c, j) => `<td${hd(id, j)}>${c}</td>`).join('')}</tr>`;
   // The names again, for the pin (comparePin): hidden from screen readers, which have the table's own heads.
   const pin = `<div class="compare-pin" aria-hidden="true"><div><table class="compare-table" style="--cols:${n}"><thead><tr>`
     + spots.map(s => `<th>${esc(s.name)}${meta ? `<span class="k">${esc(meta(s))}</span>` : ''}</th>`).join('') + '</tr></thead></table></div></div>';
@@ -3767,8 +4066,27 @@ function compareTable(spots, day, meta = null) {
     + dates.map((iso, i) => `<tr${iso === day ? ' class="on" aria-current="true"' : ''}>` + days.map((d, j) => !d.same
         ? `<td${j ? '' : ' class="d0"'}${hd('cmp-days', j)}><span class="day">${dateLabel(iso)}</span>${cell(d.days[i])}</td>`
         : i ? '' : `<td class="same" rowspan="${dates.length}"${hd('cmp-days', j)}>${cell(d.days[0])}. The same on every day.</td>`).join('') + '</tr>').join('')
-    + facts[0].map(([label], k) => lab(`cmp-r${k}`, label) + `<tr>${facts.map((f, j) => `<td${hd(`cmp-r${k}`, j)}>${f[k][1]}</td>`).join('')}</tr>`).join('')
+    // Distance (the plan's) and the water now, as the spot's Conditions say them, aligned with the rest (2 Nov 2026).
+    // Distance in miles, short ("1.1 miles"); the label says what it is.
+    + (meta ? lab('cmp-dist', 'Distance', 'In a straight line, not by road') + `<tr>${spots.map((s, j) => `<td${hd('cmp-dist', j)}>${esc(meta(s).replace(/ away$/, ''))}</td>`).join('')}</tr>` : '')
+    + lab('cmp-temp', 'Water temperature') + across('cmp-temp', water.map(w => w[0]))
+    + lab('cmp-level', 'Water level') + across('cmp-level', water.map(w => w[1]))
+    + facts[0].map(([label, , note], k) => lab(`cmp-r${k}`, label, note) + across(`cmp-r${k}`, facts.map(f => f[k][1]))).join('')
     + '</tbody></table></div>';
+}
+// The water at a spot today, as two cells, [temperature, level]: each value with its kind (valueTag), measured with
+// where and when, an estimate as one, a reading past its age as too old, and none as none. The gauge is named: spots on
+// one river often share one, and two equal levels side by side otherwise look like a fault.
+function compareWater(s) {
+  const w = waterTile(s.water_temp, s.water_temp_est, s.kind), rs = s.river_state, lv = riverTile(rs), wt = s.water_temp || {};
+  const temp = !w || w.fig === '–' ? valueTag('none', 'No reading')
+    : `${w.fig.replace('°', '')}&nbsp;°C ` + (w.live ? valueTag('measured', `Measured ${esc(wt.where || 'nearby')}${Number.isFinite(Date.parse(wt.observed_at)) ? `, ${dpAgo((Date.now() - Date.parse(wt.observed_at)) / 3.6e6)}` : ''}`)
+      : valueTag('estimate', /provisional/.test(w.unit || '') ? 'Provisional estimate' : 'Estimate'));
+  const at = rs && rs.station ? ` at ${esc(rs.station)}` : '';
+  const level = !lv ? valueTag('none', 'No gauge')
+    : lv.fig === '–' ? valueTag('none', 'No current reading') + ' ' + valueTag('stale', `Last reading${at}${typeof rs.age_hours === 'number' ? ` ${dpAgo(rs.age_hours)}` : ''}: too old to use`)
+    : `${lv.fig}&nbsp;m${lv.word ? `, ${esc(lv.word.toLowerCase())}` : ''} ` + valueTag('measured', `Measured${at}${rs && typeof rs.age_hours === 'number' ? `, ${dpAgo(rs.age_hours)}` : ''}`);
+  return [temp, level];
 }
 // "Plan here" in a comparison's column: on Plan a swim, that spot becomes the outing's in the plan shown (its meeting
 // place, finish and a shared stamp go, as with any new spot: outing.js, outingChanged), and the outing opens; elsewhere
@@ -3798,6 +4116,17 @@ function drawComparison() {
   box.querySelectorAll('[data-compare-spot]').forEach(a => a.addEventListener('click', e => { if (!plainClick(e)) return; e.preventDefault(); select(a.dataset.compareSpot, true, true, c.day); }));
   box.querySelectorAll('[data-compare-plan]').forEach(b => b.addEventListener('click', () => compareToPlan(DATA.spots.find(s => s.id === b.dataset.comparePlan), c.day)));
   comparePin();
+  // Access names what each spot's guide covers, which is in the spot's own file (experience.js, compareGuide): asked
+  // for here as the plan's options ask (planOptions), then drawn again, where the table scrolled to, unless the
+  // comparison has changed meanwhile. A file that does not come is marked missing, so this asks once.
+  const want = spots.filter(s => typeof spotDetail === 'function' && s.detail_file && !s.detail_loaded && !s.detail_missing);
+  if (want.length) Promise.all(want.map(spotDetail)).then(() => {
+    const drawn = [...box.querySelectorAll('[data-compare-spot]')].map(a => a.dataset.compareSpot).join();
+    if (COMPARING !== c || !box.isConnected || drawn !== ids.join()) return;
+    const left = (box.querySelector('.compare-scroll') || {}).scrollLeft || 0;
+    drawComparison();
+    const sc2 = box.querySelector('.compare-scroll'); if (sc2) sc2.scrollLeft = left;
+  });
 }
 // The pinned names (.compare-pin): on a phone, shown while the table's own heads are above the header and the
 // table is still below it, and moved sideways with the table. One listener for the page's scrolling and the
@@ -3858,47 +4187,63 @@ function renderSaved() {
   const best = spots.length ? bestDayNote(spots, true) : '';
   if (best) h += `<p class="planner-note best-day">${best}</p>`;
   h += '</div>';
-  // One spot (30 Oct 2026): its five days once, on its card, with the ways on: its page, and planning an outing there.
-  // Before, the grid, the card and Find a window gave the same five days three times. Two or more keep the grid,
-  // the comparison and the windows, which are for choosing between them.
+  // A starting page (2 Nov 2026, docs/DESIGN.md "Saved as a starting page"). Beside the map: what changed since
+  // you last looked (since.js, sinceSummaryFor), then the places, grouped (lists.js, savedGroups), each card the
+  // level with its noun, official advice first, the water where known, its own change line and its alerts. Then,
+  // each across the width, the five days, alerts beside sharing, comparing and the lists, the windows, and the
+  // journal beside the passport, so no column runs on alone.
+  // One spot (30 Oct 2026): its five days once, on its card; two or more keep the grid, the comparison and the windows.
   const one = spots.length === 1;
-  let v = spots.length > 1 ? `<div id="grid-host">${savedGrid(spots)}</div>` : '<div id="grid-host"></div>';
-  if (spots.length) v += `<ul class="places" id="scards">${spots.map(s => savedCard(s, true, null, true, from, false, one)).join('')}</ul>`
-    + (one ? savedOneNext(spots[0]) : '')
-    + `<p class="small muted msg">Updated ${issued()} (${agoSpan()} ago). <a href="#levels">What the levels mean</a>. Forecasts, not water tests: check the signs at the water before you swim.</p>`;
+  let v = '', below = '';
+  if (spots.length) {
+    const sum = typeof sinceSummaryFor === 'function' ? sinceSummaryFor(spots, DATA.generated_at) : null;
+    if (sum) v += `<section class="sec tile since-sum ${sum.state}" aria-labelledby="since-h"><h2 class="sec-h" id="since-h">Since you last looked</h2><p class="sub">${esc(sum.text)}</p></section>`;
+    v += `<div id="scards">${savedGroups(spots, many ? l.name : null).map(([head, xs], i) => `<section class="group tile places-group" aria-labelledby="pg-${i}">`
+      + `<h2 class="sec-h" id="pg-${i}">${esc(head)}</h2><ul class="places">${xs.map(s => savedCard(s, true, null, false, from, false, one, true)).join('')}</ul></section>`).join('')}</div>`
+      + (one ? savedOneNext(spots[0]) : '')
+      + `<p class="small muted msg">Updated ${issued()} (${agoSpan()} ago). <a href="#levels">What the levels mean</a>. Forecasts, not water tests: check the signs at the water before you swim.</p>`;
+  }
   // Empty: one tile, one sentence and the way to a spot. The swim journal
   // waits behind a link until a swim is in it, or the address asks for it (saved/#journal).
-  else v += `<div class="empty-saved tile"><p class="sub">Save a spot${many ? ` to ${named}` : ''} from its page and it shows here with the days ahead.`
+  // A first visit (2 Nov 2026): what saving does and where it is kept, in the one sentence and a second, and two ways on.
+  else v += `<div class="empty-saved tile"><p class="sub">Save a spot${many ? ` to ${named}` : ''} from its page and it shows here with the days ahead${many ? '' : ', and at the top of the list'}.`
+    + `${many ? '' : ' Saved spots stay in this browser: nothing is sent to SwimSignal.'}`
     + `${many && SAVED.size ? ' Or copy one from another list under Your lists, below.' : ''}`
     + `${navigator.standalone ? ` Spots saved in Safari do not appear in the Home Screen app: iPhones keep the two apart, so save them again here, or paste a list's link ${listsShown ? 'under Your lists, ' : ''}below.` : ''}</p>`
-    + `<a class="btn primary" href="${esc(ROOT.pathname)}" id="find">Find a spot</a>`
+    + `<p class="empty-acts"><a class="btn primary" href="${esc(ROOT.pathname)}" id="find">Find a spot</a>${many ? '' : ` <a class="btn" href="${esc(planPath())}">Plan a swim</a>`}</p>`
     + `${many && !swimsShown(spots) ? '<p><button type="button" class="linkbtn" id="jn-show">Open swim journal</button></p>' : ''}</div>`;
   if (!spots.length && !many && !swimsShown(spots)) v += '<details class="sec tile"><summary>Swim journal</summary><p><button type="button" class="linkbtn" id="jn-show">Open swim journal</button></p></details>';
   // Opening a list from its link is in Your lists; with nothing saved, Your lists is not shown (a Home
   // Screen app just added, say), so it has a tile of its own.
   if (!listsShown) v += `<details class="sec tile lists"><summary>Open a shared list</summary>${importForm()}</details>`;
   if (gone) v += `<p class="small muted msg">${gone === 1 ? 'A spot you saved is' : `${gone} spots you saved are`} no longer in the forecast. <button type="button" class="linkbtn small" id="forget">Remove ${gone === 1 ? 'it' : 'them'}</button></p>`;
-  // The cards answer first; comparing them, day by day, is for planning, under them.
-  v += `<div id="compare-host">${compareSection(savedCompare(spots))}</div>`;
-  // Find a window (findwindow.js, a prototype): each spot's Low days in the next five, as ranges, in the list's order.
-  if (spots.length > 1 && typeof fwSection === 'function') v += fwSection(spots, fiveDays(), s => spotPath(s.id));
-  if (DATA.spots.some(s => SAVED.has(s.id))) v += alertsCard();   // alerts cover every list
-  if (spots.length) v += `<section class="sec tile" aria-labelledby="share-list-h"><h2 class="sec-h" id="share-list-h">Share this list</h2><p class="sub">A link that opens this list on another phone or browser, or for a friend, who can then add it to their own lists. `
+  // Two tiles side by side from 1,000 px (.saved-pair) only where both are drawn; one alone takes the width.
+  const pair = (a, b) => a && b ? `<div class="saved-pair">${a}${b}</div>` : a + b;
+  below += spots.length > 1 ? `<div id="grid-host">${savedGrid(spots)}</div>` : '<div id="grid-host"></div>';
+  const alerts = DATA.spots.some(s => SAVED.has(s.id)) ? alertsCard() : '';   // alerts cover every list
+  const share = !spots.length ? '' : `<section class="sec tile" aria-labelledby="share-list-h"><h2 class="sec-h" id="share-list-h">Share this list</h2><p class="sub">A link that opens this list on another phone or browser, or for a friend, who can then add it to their own lists. `
     + `It holds the list's name, ${named}, and which spots are in it, nothing else.</p>`
     + `<button type="button" class="btn" id="share-list">Share this list</button><p class="small muted msg" id="share-list-msg" aria-live="polite"></p>`
     + `<p class="sub sites-sub">For a club or a centre: these spots on one page to print, each with its five days. <a href="${esc(sitesURL(l, spots))}">Open the sites view</a>.</p>`
     + `<button type="button" class="btn" id="sites-link">Make a sites link</button><p class="small muted msg" id="sites-link-msg" aria-live="polite"></p></section>`;
-  v += (listsShown ? listsCard(l) : '') + (swimsShown(spots) ? swimsCard() : '');   // lists, once there is something to put in one
-  // The swim passport (passport.js), under the journal, once a swim is logged; before that, its Water-wise questions on
+  below += pair(alerts, share);
+  // Comparing them, day by day, is for planning, under them.
+  below += `<div id="compare-host">${compareSection(savedCompare(spots))}</div>`;
+  below += listsShown ? listsCard(l) : '';   // lists, once there is something to put in one
+  // Find a window (findwindow.js, a prototype): each spot's Low days in the next five, as ranges, in the list's order.
+  if (spots.length > 1 && typeof fwSection === 'function') below += fwSection(spots, fiveDays(), s => spotPath(s.id));
+  // The swim passport (passport.js), beside the journal, once a swim is logged; before that, its Water-wise questions on
   // their own, so a new visitor can learn to read the forecast first. Private, on this device.
+  let passport = '';
   if (typeof passportSection === 'function') {
-    const passport = passportSection(DATA.spots);
-    v += !spots.length && !many && !swimsShown(spots) ? `<details class="sec tile"><summary>Learn about water conditions</summary>${passport}</details>` : passport;
+    passport = passportSection(DATA.spots);
+    if (!spots.length && !many && !swimsShown(spots)) passport = `<details class="sec tile"><summary>Learn about water conditions</summary>${passport}</details>`;
   }
-  // The forecasts take the wide column and the map the narrow one; with nothing saved there is no map at
-  // all on a wide desktop, where England's every spot said nothing about an empty list.
-  setPanel(h + (spots.length ? cols(v, 'wide-list') : solo(v)));
-  bindBack(); bindSavedPage(l, spots); bindLists(l); bindImport(); bindAlerts(); bindComparison(); bindBestDay(); bindSwims(); bindToAlerts();
+  below += pair(swimsShown(spots) ? swimsCard() : '', passport);
+  // The forecasts take the wide column and the map the narrow one, which ends with the places; with nothing
+  // saved there is no map at all on a wide desktop, where England's every spot said nothing about an empty list.
+  setPanel(h + (spots.length ? cols(v, 'wide-list') + `<div class="saved-secs">${below}</div>` : solo(v + below)));
+  bindBack(); bindSavedPage(l, spots); bindLists(l); bindImport(); drawSpotAlerts(); bindAlerts(); bindComparison(); bindBestDay(); bindSwims(); bindToAlerts();
   if (typeof lookedAt === 'function') lookedAt(spots, DATA.generated_at, SAVED);   // since.js: their levels are on screen
   for (const s of spots) L.circleMarker([s.lat, s.lon], { radius: 14, color: RING(), weight: 2.5, fill: false, interactive: false }).addTo(selLayer);
   if (spots.length && !PHONE.matches) map.fitBounds(L.latLngBounds(spots.map(s => [s.lat, s.lon])), { padding: [60, 60], maxZoom: 11, ...MOTION() });
@@ -3913,9 +4258,11 @@ function bindToAlerts() {
 function bindSavedPage(l, spots) {
   if (spots.length === 1 && typeof planHere === 'function') planHere(spots[0]);   // savedOneNext's "Plan a swim here"
   const ul = document.getElementById('scards'), $ = id => document.getElementById(id), from = manyLists() ? l.name : 'saved spots';
+  if (ul) ul.addEventListener('change', e => { const box = e.target.closest('[data-alert-spot]'); if (box) toggleSpotAlert(box); });
   if (ul) ul.addEventListener('click', e => {
     const a = e.target.closest('a[data-id]'), un = e.target.closest('[data-unsave]'), undo = e.target.closest('[data-undo]'), day = e.target.closest('[data-day]');
-    if (day) select(day.dataset.spot, true, true, day.dataset.day);
+    if (e.target.closest('[data-to-alerts]')) toAlerts();
+    else if (day) select(day.dataset.spot, true, true, day.dataset.day);
     else if (a && plainClick(e)) { e.preventDefault(); select(a.dataset.id, true); }
     else if (un) {
       const id = un.dataset.unsave, li = un.closest('li'), at = listById(LISTS, l.id).spots.indexOf(id), s = DATA.spots.find(x => x.id === id);
@@ -3927,9 +4274,9 @@ function bindSavedPage(l, spots) {
     } else if (undo) {
       const id = undo.dataset.undo;
       setLists(addToList(LISTS, l.id, id, +undo.dataset.at));
-      const li = undo.closest('li'); li.outerHTML = savedCard(DATA.spots.find(x => x.id === id), true, null, true, from);
+      const li = undo.closest('li'); li.outerHTML = savedCard(DATA.spots.find(x => x.id === id), true, null, false, from, false, false, true);
       const back = ul.querySelector(`[data-unsave="${CSS.escape(id)}"]`); if (back) back.focus();
-      refreshComparison(); refreshGrid();
+      refreshComparison(); refreshGrid(); drawSpotAlerts();
     }
   });
   const grid = $('grid-host');
@@ -4194,7 +4541,12 @@ const planNoun = n => ({ all: ['spot', 'spots'], river: ['river spot', 'river sp
 // Why a spot is in the plan, after the distance and the kind on the line above it: what the day's level
 // rests on, the Environment Agency's rating, and what a planner needs that the level leaves out (access
 // not confirmed; on a plan for today, the river high or a flood alert). Sentences, escaped here.
-function planWhy(s, day) {
+// quiet: every row in the group has the same "possible, not expected" (planQuiet), which its heading's line says once,
+// so the row keeps only its own count (2 Nov 2026: eight Oxford rows said the same sentence).
+const PLAN_QUIET = 'possible, not expected';
+const planQuiet = (s, day) => { const x = (s.days || []).slice(0, 5).find(y => y.date === day);
+  return daily(s) && !!x && hasData(x) && spilling(x, overflows(s)).endsWith(PLAN_QUIET); };
+function planWhy(s, day, quiet = false) {
   const out = [], total = overflows(s), x = (s.days || []).slice(0, 5).find(y => y.date === day), head = dayHeadline(s, day), c = classOf(s);
   // The group's heading names the day. A spill expected on a low day reads as a contradiction unless the
   // row says why the level is low: what the exposure index measures is whether the sewage gets here.
@@ -4203,7 +4555,8 @@ function planWhy(s, day) {
   // What the level rests on, a forecast only today or a company the model did not learn from, is not here:
   // it is the row's own line under it (planEvidence), so the signals and the evidence are read apart.
   if (daily(s) && x && hasData(x)) { const t = spilling(x, total), lowSpill = x.label === 'low' && !risk(s, x).now && Math.round(x.expected_spilling_overflows || 0) >= 1;
-    if (t) out.push(`${cap(t)}${lowSpill ? `, but sewage from ${total === 1 ? 'it' : 'them'} is unlikely to reach here` : ''}.`);
+    if (t && quiet && t.endsWith(PLAN_QUIET)) out.push(`${total} overflow${total === 1 ? '' : 's'} upstream.`);
+    else if (t) out.push(`${cap(t)}${lowSpill ? `, but sewage from ${total === 1 ? 'it' : 'them'} is unlikely to reach here` : ''}.`);
     if (ecoliLevel(s, x)) out.push(`${Math.round(x.p_ecoli_gt900 * 100)}% chance a sample would show E.\u00a0coli over 900 per 100\u00a0ml.`); }
   else if (!s.error && !total) out.push(`No monitored storm overflow within ${(s.assumptions || {}).max_upstream_km ?? 60}\u00a0km upstream.`);
   if (c && !/\brated /i.test(head)) out.push(`Rated ${c} by the Environment Agency${(s.classification || {}).year ? ` for ${s.classification.year}` : ''}.`);
@@ -4237,8 +4590,8 @@ function planLoadWarnings() {
   if (PLAN_WARNINGS) return;
   evidenceWarnings().then(W => { if (!W || PLAN_WARNINGS) return; PLAN_WARNINGS = W; if (shown === 'plan') drawPlan(); });
 }
-function planItem(o) {
-  const s = o.s, why = planWhy(s, PLAN.day), ev = planEvidence(s);
+function planItem(o, quiet = false) {
+  const s = o.s, why = planWhy(s, PLAN.day, quiet === true), ev = planEvidence(s);
   const meta = [cap(milesAway(o.miles)), cap(s.kind), s.source === 'designated' ? 'bathing water' : null].filter(Boolean).join(' · ');
   return `<li><a class="row" href="${esc(spotPath(s.id) + (daily(s) ? '#day=' + PLAN.day : ''))}" data-id="${esc(s.id)}"><span class="row-main"><span class="nm">${esc(s.name)}</span>`
     + `${typeof eaTodayTag === 'function' ? eaTodayTag(s) : ''}<span class="hl ${tone(o.level)}">${dayHeadline(s, PLAN.day)}</span><span class="k">${meta}</span>${why ? `<span class="why">${why}</span>` : ''}</span></a>`
@@ -4267,13 +4620,18 @@ const planActLine = s => !OUTING_FINISH_ACTS.includes(PLAN.act) ? ''
 function planOptions(box, groups) {
   const old = document.getElementById('dp'); if (old) old.remove();
   const opts = dpOptions(groups, planAdvised, PLAN.act), byId = planById(), on = dayWord(PLAN.day);
+  // What is the same at every option is said once, above them (dayplan.js, dpShared).
+  const shared = dpShared(opts.map(o => dpConditions(o.s, PLAN.day, today(), PLAN.act, byId)));
   const items = opts.map((o, i) => { const s = o.s, other = opts.find(x => x !== o);
     return dpOption(o, { href: spotPath(s.id) + (daily(s) ? '#day=' + PLAN.day : ''), headline: dayHeadline(s, PLAN.day), tone: tone(o.level),
       official: outingOfficial(s), meta: [cap(milesAway(o.miles)), cap(s.kind)].join(' · '), chosen: PLAN.spot === s.id },
-    dpConditions(s, PLAN.day, today(), PLAN.act, byId), other && other.s.name, i); });
+    shared.cs[i], other && other.s.name, i); });
   box.insertAdjacentHTML('afterbegin', dpSection(on, items, PLAN.act && OUTING_ACT_WORDS[PLAN.act] ? OUTING_ACT_WORDS[PLAN.act][1] : 'swimming', OUTING_FINISH_ACTS.includes(PLAN.act),
-    opts.some(o => (groups[1] || []).includes(o))));
+    opts.some(o => (groups[1] || []).includes(o)), shared));
   const tile = document.getElementById('dp');
+  // The options are in the full list below as well: their rows there say so, rather than read as a second set (5 Nov 2026).
+  opts.forEach((o, i) => box.querySelectorAll(`li > a.row[data-id="${CSS.escape(o.s.id)}"] .k`).forEach(k => { if (!tile.contains(k) && !k.dataset.opt) {
+    k.dataset.opt = '1'; k.insertAdjacentText('beforeend', ` · Option ${i + 1} above`); } }));
   tile.querySelectorAll('a[data-id]').forEach(a => a.addEventListener('click', e => { if (!plainClick(e)) return; e.preventDefault(); select(a.dataset.id, true, true, PLAN.day); }));
   tile.querySelectorAll('[data-dp-go]').forEach(b => b.addEventListener('click', () => {
     const id = b.dataset.dpGo, other = opts.find(o => o.s.id !== id), next = outingChanged(PLAN, 'spot');
@@ -4298,7 +4656,7 @@ async function planPicture(pair, fin, link) {
   const title = dpTitle(outingWhen(PLAN.day, PLAN.when), pair.main.name, pair.backup && pair.backup.name, ing);
   const spot = (s, role) => { const c = dpConditions(s, PLAN.day, today(), PLAN.act, byId).rows.filter(([k]) => k === 'Daylight' || (k === 'Water' && PLAN.day === today()));
     return { role, name: s.name, lat: s.lat, lon: s.lon, level: strip(dayHeadline(s, PLAN.day)), colour: v(`--k-${tone(dayLevel(s, PLAN.day))}`) || v('--k-na'),
-      lines: [c.map(([, t]) => strip(t)).join('. ')].filter(Boolean) }; };
+      lines: [c.map(([, t]) => strip(t.replace(/ <span class="vt vt-\w+">(.)/g, (m, x) => ', ' + x.toLowerCase()))).join('. ')].filter(Boolean) }; };
   const layer = tiles();
   const p = { title, spots: [spot(pair.main, 'Your spot'), ...(fin ? [spot(fin, 'Finish')] : []), ...(pair.backup ? [spot(pair.backup, 'Backup')] : [])],
     from: null, issued: issued(), url: `${location.host}${planPath()}`,
@@ -4357,11 +4715,11 @@ function renderPlan() {
   // The day, then where from and how far on one row (on a 375 px phone the first result began at 707 px
   // under a lede and the distance on a row of its own; the headings say low risk comes first).
   const h = `<div class="lead"><a href="${esc(ROOT.pathname)}" class="back" id="back">All spots</a><h1 class="page-h" tabindex="-1">${planTitle(PLAN.act)}</h1>`
-    + `<div class="plan-row">${planStrip(planDates(), PLAN.day)}</div>${planActRow(PLAN.act)}<div class="plan-go">`
+    + `<div class="plan-bar"><div class="plan-row">${planStrip(planDates(), PLAN.day)}</div>${planActRow(PLAN.act)}<div class="plan-go">`
     + `<div class="search plan-from">${PIN}<label class="sr" for="plan-from">Starting from</label><input type="search" id="plan-from" list="plan-places" placeholder="Starting from" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="search" value="${esc(typed)}"><datalist id="plan-places"></datalist></div>`
     + `<label><span class="sr">How far you will go</span><select id="plan-within">${[...RADII, 0].map(r => `<option value="${r}"${r === PLAN.within ? ' selected' : ''}>${r ? `${r} miles` : 'Any distance'}</option>`).join('')}</select></label></div>`
     + `<p class="planner-note" id="plan-where" aria-live="polite"></p><p class="planner-note" id="plan-sum" role="status"></p>`   // the count, with Compare spots, before the kinds
-    + `<div class="chips-row" role="group" aria-label="Water">${Object.entries(FILTERS).map(([k, t]) => `<button type="button" class="chip-btn" data-plan-kind="${k}" aria-pressed="${PLAN.kind === k}">${t}</button>`).join('')}</div>`
+    + `<div class="chips-row plan-kinds" role="group" aria-label="Water">${Object.entries(FILTERS).map(([k, t]) => `<button type="button" class="chip-btn" data-plan-kind="${k}" aria-pressed="${PLAN.kind === k}">${t}</button>`).join('')}</div></div>`
     + notices() + '</div>'
     // How the spill warnings have done (planBasis) after the results: the evidence behind the levels, not a control, it
     // came between the controls and the first option (31 Oct 2026).
@@ -4393,18 +4751,18 @@ function drawPlan(fit = false) {
   // Without a place yet the tile below asks for one, so the line under the field stays empty.
   const say = planNote || (!PLAN.from ? '' : PLAN.from.here ? (VIEW.here ? 'Starting from your location.' : 'Starting from your location, once this device shares it.')
     : `Starting from ${planWhere()}.`);
-  document.getElementById('plan-where').innerHTML = say + (say && geo && !(PLAN.from && PLAN.from.here && VIEW.here) ? ' ' + here : '');
+  sayOnChange(document.getElementById('plan-where'), say + (say && geo && !(PLAN.from && PLAN.from.here && VIEW.here) ? ' ' + here : ''), true);
   selLayer.clearLayers(); PLAN_BOUNDS = null;
-  if (!from) { sum.textContent = '';
+  if (!from) { sayOnChange(sum, '');
     box.innerHTML = `<div class="empty-saved tile"><h2 class="sec-h">Where are you starting from?</h2><p class="sub">Type a town, a village or a district of a city in England or Wales${geo ? ', or use your location, which stays on this device' : ''}.</p>`
       + (geo ? `<button type="button" class="btn primary" data-plan-here>Use my location</button>` : '') + '</div>' + planSuggest();
     return; }
   const r = planSpots(DATA.spots, PLAN, s => km(from, [s.lat, s.lon]) / MILE_KM), on = dayWord(PLAN.day);
   const reach = PLAN.within ? `within ${PLAN.within} miles of ${planWhere()}` : `by distance from ${planWhere()}`;
   const better = r.count ? betterDay(r.groups.flat().map(o => o.s), PLAN.day, planDates()) : null;
-  sum.innerHTML = !r.count ? '' : `<b>${r.count} ${planNoun(r.count)}</b> ${reach}.`
+  sayOnChange(sum, (!r.count ? '' : `<b>${r.count} ${planNoun(r.count)}</b> ${reach}.`
     + (r.count >= 2 ? ` <button type="button" class="linkbtn small" data-plan-compare>${planCompareWord(!!PLAN.compare)}</button>` : '')
-    + (better ? ` More of them are at low risk ${dayWord(better.date)}: ${better.low}, against ${better.was} ${on}. <button type="button" class="linkbtn small" data-plan-day="${better.date}">Show ${dayName(better.date)}</button>` : '');
+    + (better ? ` More of them are at low risk ${dayWord(better.date)}: ${better.low}, against ${better.was} ${on}. <button type="button" class="linkbtn small" data-plan-day="${better.date}">Show ${dayName(better.date)}</button>` : '')), true);
   // A low risk and a plain level are told apart in the headings: one is a forecast that
   // looked and found the risk low, the other has nothing upstream to forecast from (levels.js, FOUND_NONE).
   // A spot with official advice (plan.js, planAdvised) keeps its level and its group, last in it, with the
@@ -4418,8 +4776,10 @@ function drawPlan(fit = false) {
   document.getElementById('plan-basis').innerHTML = r.count ? planBasis(r.groups.flat()) : '';
   const restrictedLow = r.groups[0].filter(o => planAdvised(o.s));
   const displayGroups = r.groups.map((g, i) => i === 0 ? g.filter(o => !planAdvised(o.s)) : g);
+  const quiet = displayGroups.map(g => g.length >= 2 && g.every(o => planQuiet(o.s, PLAN.day)));
   box.innerHTML = r.count ? displayGroups.map((g, i) => !g.length ? '' : `<section class="group tile" aria-labelledby="plan-h${i}"><h2 class="group-head" id="plan-h${i}">${head[i]}</h2>`
-      + `${sub[i] ? `<p class="sub">${sub[i]}</p>` : ''}<ul class="spots" id="plan-g${i}">${g.map(planItem).join('')}</ul></section>`).join('')
+      + ((t => t ? `<p class="sub">${t}</p>` : '')([sub[i], quiet[i] ? `At each spot here a spill from an overflow upstream is ${PLAN_QUIET}.` : ''].filter(Boolean).join(' ')))
+      + `<ul class="spots" id="plan-g${i}">${g.map(o => planItem(o, quiet[i])).join('')}</ul></section>`).join('')
     : `<div class="empty-saved tile"><h2 class="sec-h">No ${planNoun(2)} ${reach}</h2>`
       + (r.nearest ? `<p class="sub">The nearest is ${esc(r.nearest.s.name)}, ${milesAway(r.nearest.miles)}.</p><button type="button" class="btn primary" data-plan-within="${next}">${next ? `Look within ${next} miles` : 'Look at any distance'}</button>` : '') + '</div>';
   if (restrictedLow.length) box.insertAdjacentHTML('beforeend', `<section class="group tile" aria-labelledby="plan-restricted"><h2 class="group-head" id="plan-restricted">Official advice restricts swimming</h2><p class="sub">Follow the official advice. The sewage forecast is shown as separate information.</p><ul class="spots">${restrictedLow.map(planItem).join('')}</ul></section>`);
@@ -4454,21 +4814,24 @@ function drawPlan(fit = false) {
 // miss, so the count says "Compare spots", which opens it and goes to it ("Go to the comparison" while it is
 // open), and while it is open each row has a Compare tick (.cmp-pick) that adds or removes that spot, the
 // selects following. Three ticked, the others wait until one is unticked.
-let planCompareGo = false;
+let planCompareGo = false, PLAN_PICKS = [];
 const planCompareWord = open => open ? 'Go to the comparison' : 'Compare spots';
 const planPicks = ids => document.querySelectorAll('[data-compare-pick]').forEach(b => {
   b.checked = ids.includes(b.dataset.comparePick); b.disabled = !b.checked && ids.length >= COMPARE_MAX; });
 function planCompare(groups, heads) {
   const shown = groups.flat(), miles = new Map(shown.map(o => [o.s.id, o.miles])), box = document.getElementById('plan-results');
-  const c = { title: 'Compare these spots', ids: planCompareIds(PLAN.compare, shown.map(o => o.s)), day: PLAN.day, open: !!PLAN.compare,
+  // Nothing chosen until you tick (2 Nov 2026): the first three came pre-ticked, which read as a choice already made.
+  // The ticks are kept for this visit (PLAN_PICKS), so opening a spot and coming back keeps them; never stored.
+  const c = { title: 'Compare these spots', ids: PLAN.compare ? planCompareIds(PLAN.compare, shown.map(o => o.s)) : PLAN_PICKS.filter(id => miles.has(id)).slice(0, COMPARE_MAX), day: PLAN.day, open: !!PLAN.compare,
     sub: `Up to three of these spots side by side: the five days, ${dayName(PLAN.day)} shaded, and what each level rests on. Tick them in the list, or choose them here.`,
     groups: groups.map((g, i) => [heads[i], g.map(o => o.s)]).filter(([, g]) => g.length), meta: s => cap(milesAway(miles.get(s.id))),
-    chose: x => { c.ids = x; planPicks(x); if (PLAN.compare) { PLAN.compare = x; planAddress(); } },
+    chose: x => { c.ids = x; PLAN_PICKS = x; planPicks(x); planTray(x, miles); if (PLAN.compare) { PLAN.compare = x; planAddress(); } },
     toggled: o => { box.classList.toggle('comparing', o); if (o) PLAN.compare = c.ids; else delete PLAN.compare; planAddress();
       const b = document.querySelector('[data-plan-compare]'); if (b) b.textContent = planCompareWord(o); } };
   if (PLAN.compare) { PLAN.compare = c.ids; planAddress(); }
-  box.classList.toggle('comparing', !!PLAN.compare && shown.length >= 2);
+  box.classList.toggle('comparing', shown.length >= 2);   // every row's Compare tick, always: comparing is the planner's main action
   box.insertAdjacentHTML('beforeend', compareSection(c));
+  if (shown.length >= 2) { box.insertAdjacentHTML('afterbegin', '<div class="cmp-tray" id="cmp-tray" role="region" aria-label="Comparison"></div>'); planTray(c.ids, miles); }
   box.querySelectorAll('[data-compare-pick]').forEach(b => b.addEventListener('change', () => {
     const id = b.dataset.comparePick, ids = b.checked ? [...c.ids, id].slice(0, COMPARE_MAX) : c.ids.filter(x => x !== id);
     document.querySelectorAll('[data-compare]').forEach((el, i) => { el.value = ids[i] || ''; });
@@ -4476,6 +4839,30 @@ function planCompare(groups, heads) {
   }));
   bindComparison();
   if (planCompareGo) { planCompareGo = false; const d = document.getElementById('compare'); if (d && d.open) d.scrollIntoView({ block: 'start' }); }
+}
+// The comparison's tray, at the head of the results: the spots ticked, each with a button that takes it out, the
+// one action that shows them side by side, and Clear. With fewer than two, what to do. Its buttons act on the
+// comparison's own selects, so the table, the ticks and the address follow (drawComparison).
+function planTray(ids, miles) {
+  const t = document.getElementById('cmp-tray'); if (!t) return;
+  const byId = planById(), spots = ids.map(id => byId.get(id)).filter(Boolean);
+  t.innerHTML = `<h2 class="cmp-h">Compare</h2>`
+    + (spots.length ? `<ul class="cmp-chips">${spots.map(s => `<li><span>${esc(s.name)}${miles && miles.has(s.id) ? ` <span class="k">${esc(milesAway(miles.get(s.id)))}</span>` : ''}</span>`
+      + `<button type="button" class="cmp-drop" data-cmp-drop="${esc(s.id)}" aria-label="Take ${esc(s.name)} out of the comparison">${CROSS}</button></li>`).join('')}</ul>` : '')
+    + `<p class="cmp-say">${spots.length >= 2 ? '' : spots.length ? 'Tick one or two more spots below.' : 'Tick two or three spots below to see them side by side: the five days, official advice, water, access and what each level rests on.'}</p>`
+    + `<div class="cmp-acts"><button type="button" class="btn primary" data-cmp-open${spots.length < 2 ? ' disabled' : ''}>${spots.length >= 2 ? `Compare ${spots.length} spots` : 'Compare'}</button>`
+    + (spots.length ? '<button type="button" class="linkbtn" data-cmp-clear>Clear</button>' : '') + '</div>';
+}
+const CROSS = '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>';
+function planTrayClick(e) {
+  const drop = e.target.closest('[data-cmp-drop]'), clear = e.target.closest('[data-cmp-clear]'), open = e.target.closest('[data-cmp-open]');
+  if (!drop && !clear && !open) return false;
+  const sel = [...document.querySelectorAll('[data-compare]')];
+  if (drop || clear) { const keep = clear ? [] : sel.map(el => el.value).filter(v => v && v !== drop.dataset.cmpDrop);
+    sel.forEach((el, i) => { el.value = keep[i] || ''; }); drawComparison();
+    const t = document.querySelector('#cmp-tray .btn, #cmp-tray .cmp-drop'); if (t) t.focus(); }
+  if (open) { const c = document.getElementById('compare'); if (c) { c.open = true; c.scrollIntoView({ block: 'start' }); c.querySelector('summary').focus({ preventScroll: true }); } }
+  return true;
 }
 // The plan as a list someone else can open and add (lists.js): the spots at low risk on its day and
 // those with no monitored overflow found upstream, nearest first, named for the day. The words count
@@ -4526,6 +4913,7 @@ function bindPlan() {
   $('plan-results').addEventListener('click', planClick);
 }
 function planClick(e) {
+  if (planTrayClick(e)) return;
   const $ = id => document.getElementById(id), d = e.target.closest('[data-plan-day]'), w = e.target.closest('[data-plan-within]'), a = e.target.closest('[data-plan-area]');
   const f = e.target.closest('[data-plan-finish]');
   if (f) { if (!plainClick(e)) return; e.preventDefault();   // a row's finish (planActLine): that start and finish in the outing, opened
@@ -4786,7 +5174,7 @@ function tech(d) {
 // figures stay here, marked †, since this is the technical table a reader opens for the numbers; the main
 // view has none (levels.js, ECOLI_OFF), and the note says they are experimental.
 function dayTable(d, total, isLake, scope) {
-  let h = `<details class="tile fold"><summary><span class="t-lab">${ICON.table}<span>Day-by-day numbers</span></span></summary>`
+  let h = `<details class="tile fold" id="day-table"><summary><span class="t-lab">${ICON.table}<span>Day-by-day numbers</span></span></summary>`
     + `<table><tr><th>Day</th><th class="num">Sewage spill risk</th><th>Risk</th><th class="num">E.&nbsp;coli estimate</th><th class="num">Rain 48&nbsp;h</th></tr>`;
   let anyNoData = false, anyOffSeason = false;
   for (const day of d.days) {
@@ -4884,13 +5272,17 @@ function clearSentence(d) {
 // start (transport.live_now_risk), so it does not read low while sewage is coming; this says when it
 // arrives, counted when the page is read. Moderate or worse only, as the clearing time; a time already
 // past says nothing (an old page).
-function arriveSentence(d) {
+function arriveSentence(d, named = null) {
   const n = d.now || {}, a = n.arriving;
   if (!a || !a.arrives_at || rank(n.label) < 1) return '';
   const min = (Date.parse(a.arrives_at) - Date.now()) / 6e4;
   if (!(min > 0)) return '';
   const when = min < 10 ? 'in a few minutes' : min < 55 ? `in about ${Math.round(min / 10) * 10} minutes`
     : min < 90 ? 'in about an hour' : min < 12 * 60 ? `in about ${Math.round(min / 60)} hours` : partOfDay(a.arrives_at);
+  // The overflow the sentence before names with its travel time (sourceSentence): "its latest spill", not a second
+  // distance. Swale read "1.5 km upstream, about 2 hours away" then "a spill 1.5 km upstream reaches here in about
+  // 10 minutes", two times for one overflow (5 Nov 2026): the spill had left it earlier.
+  if (a.site_id && a.site_id === named) return `Water from its latest spill, which started earlier, reaches here ${when}.`;
   return `Water from a spill ${overflowWhere(a)} reaches here ${when}.`;
 }
 // The tile, for the day shown (DAY, or today). The day's sources when it is moderate or worse; on
@@ -4904,7 +5296,8 @@ function whereFrom(d) {
   const own = src => ({ ...((d.contributors || []).find(c => c.site_id === src.site_id) || {}), ...src });
   const day = x && hasData(x) && x.source && rank(x.label) >= 1 ? sourceSentence(own(x.source), iso) : '';
   const now = first && n.source ? sourceSentence(own(n.source), 'now') : '';
-  const said = [now && (!day || n.risk >= x.risk) ? now : day, first ? arriveSentence(d) : '', first ? clearSentence(d) : ''].filter(Boolean);
+  const lead = now && (!day || n.risk >= x.risk) ? now : day, named = lead ? (lead === now ? n.source : x.source).site_id : null;
+  const said = [lead, first ? arriveSentence(d, named) : '', first ? clearSentence(d) : ''].filter(Boolean);
   return said.length ? `<section class="tile" aria-labelledby="whence-h"><h2 class="t-lab" id="whence-h">${ICON.spills}<span>Where the risk comes from</span></h2>`
     + said.map(t => `<p class="t-say">${t}</p>`).join('') + '</section>' : '';
 }
@@ -5097,17 +5490,18 @@ function spotTop(d) {
 // The forecast's tiles for the open day (iso), or today, under a heading that names the day, so that
 // the page has one date; showDay draws them again. Then the readings, which no day changes, under a
 // heading of their own (nowTiles). The full-width tiles go after the half ones, which then pair up.
+// Their labels are h3 under the group's h2 (sub), so a screen reader's list of headings nests them.
 const dayTiles = (d, iso = null) => { const x = iso ? (d.days || []).slice(0, 5).find(y => y.date === iso) : null;
   const on = x && x.date !== today() ? new Date(x.date + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' }) : 'today';
   const fx = facts(d, x ? x.date : null).filter(o => o.icon !== ICON.rating && !o.live && !IN_CONDITIONS(o));
   return `<section class="tiles" id="day-tiles" aria-labelledby="day-tiles-h"><h2 class="grp-h" id="day-tiles-h">Forecast for ${on}</h2>`
-    + [...fx.filter(o => !o.wide), ...fx.filter(o => o.wide)].map(tile).join('') + '</section>'; };
+    + [...fx.filter(o => !o.wide), ...fx.filter(o => o.wide)].map(o => tile({...o, sub: true})).join('') + '</section>'; };
 // The rain, the air, the water's temperature and the river's level are in the conditions tiles and the day rows
 // (conditionsSummary, dayWx) since 31 Oct 2026; their tiles here said the same figures a second time.
 const IN_CONDITIONS = o => o.icon === ICON.rain || o.icon === ICON.sun || o.icon === ICON.level || o.label === 'Water temperature';
 const nowTiles = d => { const fx = facts(d).filter(o => o.live && !IN_CONDITIONS(o)); if (!fx.length) return '';
   return `<section class="tiles" id="now-tiles" aria-labelledby="now-tiles-h"><h2 class="grp-h" id="now-tiles-h">Latest readings</h2>`
-    + `<p class="grp-sub">Measured, not forecast: they stay the same whichever day you pick.</p>${fx.map(tile).join('')}</section>`; };
+    + `<p class="grp-sub">Measured, not forecast, so the same on every day.</p>${fx.map(o => tile({...o, sub: true})).join('')}</section>`; };
 // The spot's conditions as four small tiles, figures first: the water's temperature, the river's or lake's level on its
 // usual range, the rain here and the day's air (31 Oct 2026: as sentences under "Water conditions" they read as small
 // print, and the rain and the air were folded away). Each says at the figure what kind it is, measured or an estimate,
@@ -5116,21 +5510,84 @@ function conditionsSummary(d) {
   const rs = d.river_state, observed = rs && Date.parse(rs.observed_at);
   const age = Number.isFinite(observed) ? Math.max(0, (Date.now() - observed) / 3600000) : null;
   const w = waterTile(d.water_temp, d.water_temp_est, d.kind);
-  const lv = riverTile(rs && age !== null && age > 24 ? {...rs, stale: true, age_hours: age} : rs);
+  const lv = riverTile(rs && age !== null && age > 24 ? {...rs, stale: true, age_hours: age} : rs, d.rise_history);
   const x0 = (d.days || []).find(x => x.date === today()), wx = ((d.weather || {}).days || []).find(x => x.date === today());
   const lake = (rs && rs.water === 'lake') || d.kind === 'lake';
-  const cell = (label, fig, sub, vis = '', more = '') => `<div class="tile cell"><h3 class="t-lab">${label}</h3><p class="cfig">${fig}</p>${vis}<p class="csub">${sub}</p>`
+  const cell = (label, fig, sub, vis = '', more = '', after = '') => `<div class="tile cell"><h3 class="t-lab">${label}</h3><p class="cfig">${fig}</p>${vis}<p class="csub">${sub}</p>${after}`
     + (more ? `<details class="t-more"><summary><span class="sr">${label}: what this means</span></summary><p>${more}</p></details>` : '') + '</div>';
   const water = !w ? cell('Water temperature', '–', 'No reading or estimate here')
     : w.live ? cell('Water temperature', w.fig, (w.say || '').split(/(?<=\.) /)[0], '', w.more)   // its first sentence: where it was measured, how long ago
     : cell('Water temperature', w.fig, w.fig === '–' ? 'Not estimated today' : /provisional/.test(w.unit) ? 'Provisional estimate' : 'Estimate', '', w.more);
   const at = rs && rs.observed_at ? new Date(rs.observed_at).toLocaleString('en-GB', { weekday: 'short', hour: '2-digit', minute: '2-digit' }) : '';
+  // A river's past quick rises in this month, under its reading in the same small type (riverTile's past): history only.
+  const past = lv && lv.past ? `<p class="csub">${lv.past}</p>` : '';
   const level = !lv ? cell(lake ? 'Lake level' : 'River level', '–', 'No gauge here')
-    : lv.fig === '–' ? cell(lv.label || 'River level', '–', 'No current reading', '', [lv.say, lv.more].filter(Boolean).join(' '))
-    : cell(lv.label || 'River level', `${lv.fig}&nbsp;m`, [lv.word, rs && rs.station ? `${esc(rs.station)}, ${at}` : ''].filter(Boolean).join(' · '), lv.vis || '', [lv.say, lv.more].filter(Boolean).join(' '));
-  const rain = x0 && !nil(x0.rain_48h_mm) ? cell('Rain here', `${fmt(x0.rain_48h_mm, x0.rain_48h_mm < 1 && x0.rain_48h_mm > 0 ? 1 : 0)}&nbsp;mm`, 'In the 48 hours to midday') : '';
+    : lv.fig === '–' ? cell(lv.label || 'River level', '–', 'No current reading', '', [lv.say, lv.more].filter(Boolean).join(' '), past)
+    : cell(lv.label || 'River level', `${lv.fig}&nbsp;m`, [lv.word, rs && rs.station ? `${esc(rs.station)}, ${at}` : ''].filter(Boolean).join(' · '), lv.vis || '', [lv.say, lv.more].filter(Boolean).join(' '), past);
+  const rain = x0 && !nil(x0.rain_48h_mm) ? cell('Rain here', `${fmt(x0.rain_48h_mm, x0.rain_48h_mm < 1 && x0.rain_48h_mm > 0 ? 1 : 0)}&nbsp;mm`, 'In the 48 hours to midday today') : '';
   const air = wx && !nil(wx.tmax) ? cell('Air today', `${wx.tmax}°`, `High${wx.sunrise && wx.sunset ? ` · light ${esc(wx.sunrise)} to ${esc(wx.sunset)}` : ''}`) : '';
   return `<section class="cond" aria-labelledby="conditions-h"><h2 class="sr" id="conditions-h">Conditions at the spot</h2>${water}${level}${rain}${air}</section>`;
+}
+// The Upstream map, a figure in the Research Lab's manner. With no overflow upstream there is no Upstream map, and a
+// desktop's spot page has no map column: the map goes in a tile of its own, so the spot (or a clicked point) is still
+// shown on it. A phone has its small map of where it is (where, .loc) already.
+function upstreamTile(d, total) {
+  if (!total) return `<div class="tile spot-map-tile desk-only"><h2 class="t-lab">${ICON.map}<span>Where it is</span></h2><div id="spot-map"></div></div>`;
+  return `<div class="tile spot-map-tile"><h2 class="t-lab">${ICON.map}<span>Upstream</span></h2><div class="plate"><div id="spot-map"></div></div>`
+    + `<p class="t-say"><b class="fig-no">Upstream of ${esc(d.name)}.</b> The spot, ringed, and the overflows that matter most: a bigger circle means a larger model weight here.${PAGE_ID.test(d.id) ? ` <a href="lab/pollution/#spot=${encodeURIComponent(d.id)}">The rivers joining each one, in the Research Lab</a>.` : ''}</p>`
+    + `<p class="t-key"><span class="dot sm" style="background:${colourFor(1)}"></span>discharging<span class="dot sm" style="background:${colourFor(0)}"></span>not discharging<span class="dot sm" style="background:${colourFor(-1)}"></span>no current reading</p>`
+    + `<p class="t-key trkey" hidden><span class="trline"></span>the water that reaches this spot</p></div>`;   // drawTrace shows it
+}
+// A desktop's spot page (docs/DESIGN.md, "The spot page on a desktop", 1 November 2026): sections that each take the
+// page's width, in the order a swimmer reads them, so no column runs on alone below another. Until then the page was
+// two independent columns, and the left (the detail, the history, the spill map) ran 3,000 px past the right on a
+// 1,440 px screen. Each section's halves are about the same height or the shorter one is the section's own end.
+//   1. forecast: the five days | the Upstream map, where the risk comes from and what the level cannot see
+//   2. conditions: water, level, rain and air in one row of four
+//   3. the open day: its forecast | the latest readings, measured (one row when there are none)
+//   4. evidence and history: the folds, the overflows and the numbers | the spill map, a model estimate
+//   5. at the water and nearby: the rating, lab results, the guide, then the notes and reviews | nearby spots
+//   6. the Research Lab's exhibits on this spot
+// The mount points (#sources-host, #nearby-host, #plume-host, #replay-host, #since-last-host, #evmap-host, #scores-host)
+// and the tiles' ids are the phone's, so every later fill and showDay find them as before.
+function deskSections(d, o) {
+  const two = (cls, a, b, head = '') => b ? `<div class="row ${cls}">${head}<div class="col-a">${a}</div><div class="col-b">${b}</div></div>` : `<div class="row ${cls} one">${head}${a}</div>`;
+  const h2 = (id, t, sub = '') => `<h2 class="sec-h" id="${id}">${t}</h2>${sub ? `<p class="sec-sub">${sub}</p>` : ''}`;
+  let h = '<div class="stack desk">';
+  h += two('r-forecast', o.lead, (o.map || '') + (o.sources || ''));
+  h += `<div class="row r-cond">${o.cond}</div>`;
+  h += two('r-today', o.today, o.now || '');
+  // The spill map beside the evidence where overflows are upstream; with none, its tile is short of anything to draw
+  // and much shorter than its frame, so it follows the evidence across the width instead of standing beside it.
+  const side = o.plume && o.plumeBeside, ev = (o.more || '') + (o.ovs || '') + (o.replay || '') + (o.table || '') + (o.plume && !side ? o.plume : '');
+  if (ev || side) h += `<section class="row r-evidence${side ? '' : ' one'}" aria-labelledby="evidence-h">${h2('evidence-h', 'Evidence and history', 'Measurements, records and model estimates behind this forecast, each named as what it is.')}`
+    + `<div class="col-a">${ev}</div>${side ? `<div class="col-b">${o.plume}</div>` : ''}</section>`;
+  // The rating and any lab results beside the nearby spots, both short; then the practical guide across the width,
+  // its sections in two columns, and the notes and reviews that mount after it (reviews.js, visits.js).
+  // With no rating or lab results, the nearby spots pair with the guide when it is the short "Know this spot?" tile.
+  const near = o.nearby && !/<div id="nearby-host"><\/div>/.test(o.nearby), short = o.guide && !/class="tile g-tile"/.test(o.guide);
+  const top = o.waterTop || (near && short ? o.guide : ''), wide = top === o.guide ? '' : o.guide || '';
+  h += `<section class="row r-visit${top && near ? '' : ' one'}" aria-labelledby="visit-h">${h2('visit-h', 'At the water' + (near ? ' and nearby' : ''))}`
+    + (top && near ? `<div class="col-a">${top}</div><div class="col-b">${o.nearby}</div>` : top + (o.nearby || ''))
+    + `<div class="wide">${wide}</div></section>`;
+  if (o.lab) h += `<div class="row r-lab">${o.lab}</div>`;
+  return h + (o.where || '') + '</div>';
+}
+// "Explore the evidence": the Research Lab's exhibits that hold this spot's own record, each opened on it (build_site.
+// attach_lab_links gives the keys; exhibit 2 holds every spot with an overflow upstream). After the forecast and the
+// detail, never above them. A spot no exhibit holds is told so, with the way to the rest: nothing stands in for it.
+const LAB_COVER = n => `lab/assets/covers/${['', 'lake-from-space', 'pollution', 'forecasts', 'workspace', 'sampling'][n]}.jpg`;
+const labRoutes = items => `<ul class="routes">${items.map(([n, href, name, line]) => `<li><a href="${href}"><img src="${LAB_COVER(n)}" alt="" width="56" height="56" loading="lazy"><span><small>Exhibit ${n}</small><b>${name}</b>${line}</span></a></li>`).join('')}</ul>`;
+function labTile(d) {
+  if (!PAGE_ID.test(d.id)) return '';   // a clicked point: no record of its own in the Lab
+  const l = d.lab || {}, enc = encodeURIComponent, n = overflows(d), items = [];
+  if (l.lake) items.push([1, `lab/lake-from-space/#lake=${enc(l.lake)}`, 'The lake from space', 'Its satellite pictures and readings, cloudy days left blank. Not a toxin measurement.']);
+  if (n) items.push([2, `lab/pollution/#spot=${enc(d.id)}`, 'Where does the pollution go?', `The rivers joining its ${n} overflow${n === 1 ? '' : 's'} to it, and how strongly the model counts each.`]);
+  if (l.bw) items.push([3, `lab/forecasts/#bw=${enc(l.bw)}`, 'How good are the forecasts?', 'Its E. coli samples against what the estimate, rebuilt afterwards, would have said.']);
+  if (l.ws) items.push([4, `lab/workspace/#c=${enc(l.ws)}&spot=${enc(d.id)}`, 'Catchment workspace', 'Rain, spills and samples around it on one timeline, January 2024 to September 2026.']);
+  return `<section class="tile lab-tile" aria-labelledby="lab-h"><h2 class="t-lab" id="lab-h">${ICON.evidence}<span>Explore the evidence</span></h2>`
+    + (items.length ? labRoutes(items) : `<p class="t-say">No Research Lab exhibit holds a record for this spot yet.</p>`)
+    + `<p class="t-key">Research Lab: exploratory, on data already read. It changes nothing in this forecast. <a href="lab/">All five exhibits</a>.</p></section>`;
 }
 const daysTile = d => `<section class="tile" aria-labelledby="days-h"><h2 class="t-lab" id="days-h">${ICON.days}<span>Pollution risk, next five days</span></h2>`
   + `<p class="t-sent">${daysSentence(d)}</p>${dayRows(d)}${liveRow(d)}<div class="after" id="answer-after">${answerAfter(d)}</div><div id="day-view"></div>${check(d)}</section>`;
@@ -5149,9 +5606,9 @@ function render(d) {
   // like at the water, and why. At the water: the EA's rating with today's advice at its foot, since an
   // advice sentence stays in view, then the practical guide (guide.js), after which the notes on a visit
   // and the reviews mount. Why: the forecast's tiles, then what the level rests on (evidence.js).
-  const fx = facts(d), atWater = fx.filter(o => o.icon === ICON.rating).map(tile).join('')
-    + (typeof measuredTile === 'function' ? measuredTile(d, Date.now()) : '')   // lab results an organisation sent (measured.js): not part of the level
-    + (typeof guideTile === 'function' ? guideTile(d, serverToday) : '');
+  const fx = facts(d), waterTop = fx.filter(o => o.icon === ICON.rating).map(tile).join('')
+    + (typeof measuredTile === 'function' ? measuredTile(d, Date.now()) : '');   // lab results an organisation sent (measured.js): not part of the level
+  const guide = typeof guideTile === 'function' ? guideTile(d, serverToday) : '', atWater = waterTop + guide;
   const tiles = dayTiles(d, DAY) + nowTiles(d) + lakeTempHost(d) + localSamplesHost(d);   // the open day's forecast, then the readings, then a lake's past temperatures and local samples
   // The folded detail after the tiles. On a desktop it goes under the first column (col-more), which
   // is otherwise the shorter; on a phone it follows the tiles.
@@ -5162,8 +5619,13 @@ function render(d) {
   if (d.error) {
     DAY = null;   // no days here: a day link opens the spot, and the address loses the day
     if (dayFromURL()) history.replaceState(history.state, '', location.pathname + location.search);
-    h += `<div class="stack"><div class="col-go"><div class="tile">${factors(d)}${check(d)}</div>${unknownTile(d)}${conditionsSummary(d)}${where}${atWater}</div><div class="col-why">${tiles}</div><div class="col-more">${more}`
-      + `<div class="tile spot-map-tile"><h2 class="t-lab">${ICON.map}<span>Where it is</span></h2><div id="spot-map"></div></div></div></div>` + actions(d);
+    const here = `<div class="tile spot-map-tile"><h2 class="t-lab">${ICON.map}<span>Where it is</span></h2><div id="spot-map"></div></div>`;
+    h += PHONE.matches
+      ? `<div class="stack"><div class="col-go"><div class="tile">${factors(d)}${check(d)}</div>${unknownTile(d)}${conditionsSummary(d)}${where}${atWater}</div><div class="col-why">${tiles}</div><div class="col-more">${more}`
+        + `${here}</div></div>`
+      : deskSections(d, { lead: `<div class="tile">${factors(d)}${check(d)}</div>${unknownTile(d)}`, map: here, cond: conditionsSummary(d),
+          today: tiles, more, waterTop, guide, where });
+    h += actions(d);
     setPanel(h); bindBack(); bindSave(d); planHere(d); bindShare(d); bindShareImage(d); bindSwim(d); placeMap(); miniMap(d); reviewsFor(d);
     if (ARRIVE) mountArrival(d); return;
   }
@@ -5173,23 +5635,27 @@ function render(d) {
   // Since the last update (since.js, mountLast; ?why=1 only): under the five days it compares (and what is not known there),
   // once the previous issue's file is in.
   const lastOn = !DAY && typeof mountLast === 'function' && typeof sinceWhyOn === 'function' && sinceWhyOn();
+  const mapTile = upstreamTile(d, total), extras = (lastOn ? '<div id="since-last-host"></div>' : '') + (EV_MAP && d.detail_file ? '<div id="evmap-host"></div>' : '');
+  const ovs = d.contributors.length ? overflowTile(d, allUpstream(d)) : '', replay = REPLAY && d.detail_file ? '<div id="replay-host"></div>' : '',
+    plume = d.detail_file && loc.mode !== 'lake' ? '<div id="plume-host"></div>' : '', table = dayTable(d, total, loc.mode === 'lake', d.ecoli_scope || {});
+  // A desktop: sections across the page's width in place of two columns (deskSections). A phone: the one stack,
+  // in the order below, which phoneFolds then sets.
+  // What the level cannot see goes under the map, so the five days and the map end near each other; with no
+  // readings, the lake's and local samples' links follow the day's forecast rather than hold an empty half.
+  const nowT = nowTiles(d), hosts = lakeTempHost(d) + localSamplesHost(d);
+  if (!PHONE.matches) h += deskSections(d, { lead: daysTile(d) + extras, map: mapTile, sources: `<div id="sources-host">${whereFrom(d)}</div>` + unknownTile(d),
+    cond: conditionsSummary(d), today: dayTiles(d, DAY) + (nowT ? '' : hosts), now: nowT ? nowT + hosts : '', more, ovs, replay, plume, plumeBeside: total > 0, table,
+    waterTop, guide, nearby: `<div id="nearby-host">${nearby(d)}</div>`, lab: labTile(d), where });
+  else {
   h += `<div class="stack"><div class="col-go">${daysTile(d)}${conditionsSummary(d)}${unknownTile(d)}${lastOn ? '<div id="since-last-host"></div>' : ''}${EV_MAP && d.detail_file ? '<div id="evmap-host"></div>' : ''}${where}`   // ?evidence=1 only (mountEvMap)
-    + `<div id="nearby-host">${nearby(d)}</div>${atWater}</div><div class="col-why">`;   // Nearby after the answer, before the detail; showDay keeps it to the day
+    + `<div id="nearby-host">${nearby(d)}</div><div id="water-top">${waterTop}</div>${guide}</div><div class="col-why">`;   // Nearby after the answer, before the detail; showDay keeps it to the day
   // Why: where the risk comes from in words (showDay keeps it to the day), the map of it, then the tiles.
   h += `<div id="sources-host">${whereFrom(d)}</div>`;
-  if (total) h += `<div class="tile spot-map-tile"><h2 class="t-lab">${ICON.map}<span>Upstream</span></h2><div id="spot-map"></div>`
-    + `<p class="t-say">The spot, ringed, and the overflows that matter most: a bigger circle means a larger model weight here.${PAGE_ID.test(d.id) ? ` <a href="lab/pollution/#spot=${encodeURIComponent(d.id)}">The rivers joining each one, in the Research Lab</a>.` : ''}</p>`
-    + `<p class="t-key"><span class="dot sm" style="background:${colourFor(1)}"></span>discharging<span class="dot sm" style="background:${colourFor(0)}"></span>not discharging<span class="dot sm" style="background:${colourFor(-1)}"></span>no current reading</p>`
-    + `<p class="t-key trkey" hidden><span class="trline"></span>the water that reaches this spot</p></div>`;   // drawTrace shows it
-  // With no overflow upstream there is no Upstream map, and a desktop's spot page has no map column:
-  // the map goes in a tile of its own, so the spot (or a clicked point) is still shown on it. A phone has its
-  // small map of where it is (where, .loc) already.
-  else h += `<div class="tile spot-map-tile desk-only"><h2 class="t-lab">${ICON.map}<span>Where it is</span></h2><div id="spot-map"></div></div>`;
-  h += tiles + `</div><div class="col-more">${more}`;
-  if (d.contributors.length) h += overflowTile(d, allUpstream(d));   // the list has any too far away to count (levels.js)
-  if (REPLAY && d.detail_file) h += '<div id="replay-host"></div>';   // ?replay=1 only (mountReplay)
-  if (d.detail_file && loc.mode !== 'lake') h += '<div id="plume-host"></div>';   // the spill map, drawn when near the screen (mountPlume)
-  h += dayTable(d, total, loc.mode === 'lake', d.ecoli_scope || {}) + '</div></div>';
+  h += mapTile;
+  h += tiles + `</div><div class="col-more">${more}${labTile(d)}`;
+  h += ovs + replay + plume;   // the list has any too far away to count (levels.js); ?replay=1 only (mountReplay); the spill map, drawn when near the screen (mountPlume)
+  h += table + '</div></div>';
+  }
   h += actions(d) + tech(d);
   setPanel(h); bindBack(); bindSave(d); planHere(d); bindShare(d); bindShareImage(d); bindSwim(d); bindNearby(); bindDays(d); miniMap(d); reviewsFor(d); lakeTempFor(d); localSamplesFor(d);
   const moreBtn = document.getElementById('more-contrib');
@@ -5201,6 +5667,8 @@ function render(d) {
   if (lastOn) mountLast(d, DATA.generated_at, document.getElementById('since-last-host'));
   if (EV_MAP) mountEvMap(d);
   phoneFolds();
+  // A desktop: past spills by month, a chart, open beside the spill map, as on a phone (PHONE_OPEN).
+  if (!PHONE.matches) { const e = document.querySelector('.stack.desk #seasonal'); if (e && !e.dataset.deskOpened) { e.open = true; e.dataset.deskOpened = '1'; } }
   if (ARRIVE) mountArrival(d);   // ?arrive=1 only, after the folds, so its tile stays where the guide's was
 }
 // On a phone a spot's page is one column in the order of a swimmer's questions, every section open: the answer, the
@@ -5211,11 +5679,21 @@ function render(d) {
 // Long method text keeps its own named folds (What the level rests on, Day-by-day numbers) and each tile's corner button.
 // A desktop keeps its columns. What the level counts and the water-test line join the limits section from under the five
 // days, where showDay puts them back (phoneFolds moves them again).
-const PHONE_ORDER = ['.spot-map-tile', '#overflows', '#plume-host', '#now-tiles', '#lt-past', '#ls-past', '#day-tiles', '#seasonal', '#scores-host, #scores', '#limits'];
+// 5 Nov 2026: why the level is what it is (the day's forecast tiles), how the forecast has done here and what it cannot
+// see come straight after where the risk comes from, before the conditions: they sat about 3,000 px down a phone,
+// below two maps. PHONE_EARLY goes there; PHONE_ORDER after the nearby spots, as before.
+// The EA's rating with today's advice at its foot (#water-top) follows the day's forecast: the answer's link to the advice
+// jumped about 4,000 px (5 Nov 2026).
+const PHONE_EARLY = ['#day-tiles', '#water-top', '#scores-host, #scores', '#limits'];
+const PHONE_ORDER = ['.spot-map-tile', '#overflows', '#plume-host', '#now-tiles', '#lt-past', '#ls-past', '#seasonal'];
+const PHONE_EVIDENCE = ['#evidence', '#timeline', '#day-table', '.lab-tile'];   // under "Evidence and history" (phoneFolds)
 const PHONE_OPEN = ['#seasonal'];   // a chart: open on a phone. The overflows' rows run to 800 px, so they keep their fold
 function phoneFolds() {
-  const stack = document.querySelector('#result .stack'), at0 = stack && stack.querySelector('#nearby-host');
-  if (!PHONE.matches || !at0) return;
+  const stack = document.querySelector('#result .stack'), near = stack && stack.querySelector('#nearby-host');
+  if (!PHONE.matches || !near) return;
+  // A fixed place where the spots nearby first stand: the sections below follow it, wherever Nearby then goes (5 Nov 2026).
+  let at0 = stack.querySelector('#near-at');
+  if (!at0) { near.insertAdjacentHTML('beforebegin', '<div id="near-at" hidden></div>'); at0 = stack.querySelector('#near-at'); }
   // Where the risk comes from, in words, straight under the five days, before the conditions: it is the answer's reason.
   const src = stack.querySelector('#sources-host'), days = stack.querySelector('#days-h');
   if (src && days) days.closest('section').after(src);
@@ -5225,8 +5703,21 @@ function phoneFolds() {
   if (!lim && parts.length) { at0.insertAdjacentHTML('afterend', `<section class="tile limits" id="limits" aria-labelledby="limits-h"><h2 class="t-lab" id="limits-h">${ICON.unknown}<span>What this forecast cannot see</span></h2></section>`);
     lim = document.getElementById('limits'); }
   if (lim) lim.append(...parts);
+  let early = src && days ? src : days ? days.closest('section') : null;
+  if (early) for (const q of PHONE_EARLY) { const e = stack.querySelector(q); if (e) { early.after(e); early = e; } }
   let at = at0;
   for (const q of PHONE_ORDER) { const e = stack.querySelector(q); if (e) { at.after(e); at = e; } }
+  // The spots nearby stay high only where one is lower risk ("Lower risk nearby"); otherwise, the same level nearby,
+  // they follow the history (5 Nov 2026: three Low spots stood above Henley's map and said nothing new).
+  if (/Lower risk/.test((near.querySelector('#nearby-h') || {}).textContent || '')) at0.after(near); else at.after(near);
+  // The evidence under one heading, as a desktop has it; the call for a guide, where there is none yet, after it.
+  const evid = PHONE_EVIDENCE.map(q => stack.querySelector(q)).filter(Boolean);
+  if (evid.length) {
+    let h = stack.querySelector('#ev-phone-h');
+    if (!h) { evid[0].insertAdjacentHTML('beforebegin', '<h2 class="ev-phone-h" id="ev-phone-h">Evidence and history</h2>'); h = stack.querySelector('#ev-phone-h'); }
+    let e0 = h; for (const e of evid) { e0.after(e); e0 = e; }
+    const know = stack.querySelector('section.know'); if (know) e0.after(know);
+  }
   for (const q of PHONE_OPEN) { const e = stack.querySelector(q); if (e && !e.dataset.phoneOpened) { e.open = true; e.dataset.phoneOpened = '1'; } }
   // With the Upstream map shown, the small map of where the spot is says the same.
   const loc = stack.querySelector('.loc'); if (loc && stack.querySelector('.spot-map-tile:not(.desk-only)')) loc.hidden = true;
@@ -5404,7 +5895,12 @@ function keptView() {
   VIEW.day = fiveDays().includes(v.day) ? v.day : null;
   return { y: Number(v.y) || 0 };
 }
-main().catch(e => { document.getElementById('result').innerHTML = `<p class="notice">Could not load forecasts: ${esc(e.message)}${navigator.onLine ? '' : '. You are offline, and this device has no saved copy yet.'}</p>`; });
+// The forecast did not arrive (2 Nov 2026): what happened, one way to try again, and where official advice is, which
+// does not depend on SwimSignal. Nothing is shown from an older copy unless the offline copy has one (sw.js).
+main().catch(e => { document.getElementById('result').innerHTML = `<section class="tile empty-saved load-failed" role="alert" aria-labelledby="fail-h">`
+  + `<h2 class="sec-h" id="fail-h">The forecast did not load</h2><p class="sub">${navigator.onLine ? `${e instanceof TypeError ? 'The forecast could not be reached' : esc(String(e.message).replace(/^./, c => c.toUpperCase()))}. It is usually back within a few minutes.` : 'You are offline, and this device has no saved copy yet.'} `
+  + `No level is shown rather than an old one.</p><p><button type="button" class="btn primary" onclick="location.reload()">Try again</button></p>`
+  + `<p class="small muted">Official advice does not depend on SwimSignal: <a href="https://environment.data.gov.uk/bwq/profiles/">the Environment Agency's bathing water pages</a>, and the signs at the water.</p></section>`; });
 // Opened from the home screen there is no reload button, and a phone keeps the page for days:
 // coming back to it after half an hour fetches the latest forecast (the same spot stays open).
 // The list's search, kind, sort, day and Low risk survive the reload (keptView), and so does its
@@ -5421,7 +5917,7 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 // While the page stays open and in view. Each minute the notices are redrawn if their state has
 // changed (refreshNotices) and each "… ago" moves on in place: a change of text outside an alert,
 // so a screen reader does not read the Stale alert out again. Three things change what the rest of the
-// page says: a company's quiet feed passing six hours (ageReadings), midnight before the next build
+// page says: a company's quiet feed passing six hours or a river level a day (ageReadings), midnight before the next build
 // (setDays), and a newer forecast on the server, asked for with a HEAD request every 10 minutes (its
 // Last-Modified or ETag against the one the page loaded). The first two make the page wrong ("not
 // discharging", "Today"), so they reload it, which keeps the view (reload, keptView), unless something
@@ -5432,6 +5928,7 @@ let CHECKED = Date.now();
 const CHECK_MS = 10 * 60 * 1000;
 const UPDATE_SAY = { newer: 'A newer forecast is out.',
   aged: 'Some live overflow readings on this page are now over six hours old, and may no longer be current.',
+  level: 'A river or lake level on this page is now over a day old, and is no longer current.',
   day: 'It is past midnight: this page still counts its days from yesterday.' };
 const stamp = r => (r.headers && (r.headers.get('last-modified') || r.headers.get('etag'))) || '';
 const editing = () => { const a = document.activeElement; return !!a && a.matches('input:not([type=checkbox]):not([type=radio]), textarea, select, [contenteditable]'); };
@@ -5445,9 +5942,11 @@ async function stillCurrent(nowMs = Date.now()) {
   document.querySelectorAll('[data-ago]').forEach(el => { if (!el.closest('[role=alert]')) el.textContent = ago(Math.max(0, (nowMs - Number(el.dataset.ago)) / 60000)); });
   if (document.visibilityState !== 'visible') return;
   const aged = s => ((s.now && s.now.aged) || []).length, before = DATA.spots.reduce((n, s) => n + aged(s), 0);
+  const oldLevel = s => !!(s.river_state && s.river_state.stale), oldBefore = DATA.spots.filter(oldLevel).length;
   for (const s of DATA.spots) ageReadings(s, nowMs);
   let why = DATA.spots.reduce((n, s) => n + aged(s), 0) > before ? 'aged'
-    : readerDay(DATA.generated_at, nowMs, STALE_MIN) > today() ? 'day' : '';
+    : DATA.spots.filter(oldLevel).length > oldBefore ? 'level'
+    : readerDay(DATA.generated_at, nowMs) > today() ? 'day' : '';
   if (!why && !UPDATE && navigator.onLine && nowMs - CHECKED >= CHECK_MS) { CHECKED = nowMs; if (await newerOut()) why = 'newer'; }
   if (!why || UPDATE === why) return;
   if (why !== 'newer' && !held()) { reload(); return; }

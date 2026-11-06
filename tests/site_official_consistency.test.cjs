@@ -217,7 +217,7 @@ test('the comparison\'s EA row gives the reviewed notice, not "could not be chec
   assert.match(said, /<a href="https:\/\/environment\.data\.gov\.uk\/bwq\/profiles\/profile\.html\?site=ukj2310-11945">The Environment Agency's page<\/a> has the latest\./);
   assert.doesNotMatch(said, /could not be checked/);
   assert.match(X.compareAdvice(frensham({ official: [] })), /could not be checked/);
-  const row = X.compareRows(frensham(), DATES[0], DATA.generated_at).find(([l]) => l === "Today's EA advice");
+  const row = X.compareRows(frensham(), DATES[0], DATA.generated_at).find(([l]) => l === "Today's official advice");
   assert.equal(row[1], said);
 });
 

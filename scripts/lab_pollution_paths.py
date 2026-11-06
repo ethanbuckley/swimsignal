@@ -7,7 +7,9 @@ Distances are along the mapped network; travel times and weights are the model's
 
 Offline. It imports dipcast's network code, so it must run with scratch DIPCAST_ROOT and DIPCAST_STATE whose data
 folders hold links to the cached inputs (AGENTS.md); any file the loader writes then lands in scratch. Writes only to
-prototypes/research-lab/assets/paths/.
+prototypes/research-lab/assets/paths/. The site build runs export() itself at every build, with its own network
+and overflows, into the Lab's copy at lab/assets/paths/ (build_site.write_lab_paths): this run only refreshes the copy
+kept in the repository for running the Lab locally.
 
     DIPCAST_ROOT=<scratch> DIPCAST_STATE=<scratch>/state uv run python scripts/lab_pollution_paths.py
 """
@@ -28,12 +30,10 @@ OUT = REPO / "prototypes" / "research-lab" / "assets" / "paths"
 SIMPLIFY_M = 25          # line simplification, metres: drawing only
 ROUND = 5                # decimal places of lon/lat (about 1 m)
 
-assert os.environ.get("DIPCAST_ROOT") and os.environ.get("DIPCAST_STATE"), "set scratch DIPCAST_ROOT and DIPCAST_STATE"
 sys.path.insert(0, str(REPO / "src"))
 sys.path.insert(0, str(HERE))
 
 from dipcast import config  # noqa: E402
-from dipcast.model.forecast import _net, _overflows  # noqa: E402
 from dipcast.model.transport import locate_pin, river_velocity, spot_hints, upstream_overflows  # noqa: E402
 from dipcast.network.rivers import bng_to_lonlat  # noqa: E402
 
@@ -80,13 +80,17 @@ def line_lonlat(geom) -> list[list[float]]:
     return [[round(v, ROUND) for v in bng_to_lonlat(x, y)] for x, y in g.coords]
 
 
-def main() -> None:
+def spots_frame(repo: Path = REPO):
+    """Every listed spot, as the build lists them: spots.csv, then spots-osm.csv."""
     import pandas as pd
+    return pd.concat([pd.read_csv(repo / f) for f in ("spots.csv", "spots-osm.csv") if (repo / f).exists()], ignore_index=True)
+
+
+def export(folder: Path, spots, net, ov, inputs: dict[str, str], say=print) -> dict:
+    """One file a spot in `folder`, and index.json; returns the index. The site build calls this with its own network and
+    overflow table (build_site.write_lab_paths); run alone, main() calls it with the cached ones."""
     t0 = time.time()
-    spots = pd.concat([pd.read_csv(REPO / f) for f in ("spots.csv", "spots-osm.csv") if (REPO / f).exists()], ignore_index=True)
-    net, ov = _net(), _overflows()
-    print(f"loaded network and {len(ov)} overflows in {time.time() - t0:.0f}s", flush=True)
-    OUT.mkdir(parents=True, exist_ok=True)
+    folder.mkdir(parents=True, exist_ok=True)
     index = []
     for r in spots.itertuples(index=False):
         rec = {"id": r.id, "name": r.name, "lat": float(r.lat), "lon": float(r.lon), "kind": r.kind,
@@ -106,7 +110,7 @@ def main() -> None:
         allowed = set(net.upstream_edges(pin.trace_node, config.MAX_UPSTREAM_KM * 1000))
         allowed |= set(getattr(pin, "lake_links", None) or [])
         links = path_links(net, pin.trace_node, list(up["link_id"]) if "link_id" in up else [], allowed)
-        geo = net.links.loc[[x for x in links if x in net.links.index]]
+        geo = net.links.loc[sorted(x for x in links if x in net.links.index)]   # sorted: the same file every build
         lines = [{"form": f, "coords": line_lonlat(gm)} for f, gm in zip(geo["form"], geo.geometry, strict=True)]
         cols = {"site_id": "id", "site_name": "name", "company": "company", "receiving_watercourse": "water",
                 "lat": "lat", "lon": "lon", "lta_spills": "spills_a_year", "travel_h": "travel_h", "weight": "weight",
@@ -126,30 +130,30 @@ def main() -> None:
         px, py = bng_to_lonlat(pin.x, pin.y)
         out = {**rec, "pin": {"mode": pin.mode, "lon": round(px, ROUND), "lat": round(py, ROUND)},
                "overflows": ovs, "lines": lines}
-        (OUT / f"{r.id}.json").write_text(json.dumps(out, separators=(",", ":")) + "\n")
+        (folder / f"{r.id}.json").write_text(json.dumps(out, separators=(",", ":")) + "\n")
         rec.update({"mode": pin.mode, "overflows": len(ovs), "with_path": sum(1 for o in up.get("link_id", []) if o in links),
                     "nearest_h": min((o["travel_h"] for o in ovs if o["travel_h"] is not None), default=None),
                     "total_weight": round(sum(o["weight"] or 0 for o in ovs), 4)})
         index.append(rec)
-        print(f"{r.id}: {len(ovs)} overflows, {len(lines)} lines", flush=True)
+        say(f"{r.id}: {len(ovs)} overflows, {len(lines)} lines")
     meta = {"made": datetime.now(UTC).isoformat(timespec="seconds"),
             "settings": {"velocity_mode": config.VELOCITY_MODE, "dilution_mode": config.DILUTION_MODE,
                          "lake_path_mode": config.LAKE_PATH_MODE, "t90_h": config.T90_HOURS,
                          "river_velocity_ms": config.RIVER_VELOCITY_MS, "max_upstream_km": config.MAX_UPSTREAM_KM},
-            "inputs": {"overflows": "data/processed/overflows.parquet (main checkout cache, modified 2026-10-30)",
-                       "network": "OS Open Rivers via data/processed/river_network.pkl, mended as the build mends it"},
+            "inputs": inputs,
             "credit": ["Contains OS data © Crown copyright and database right 2026 (OS Open Rivers, OGL v3.0)",
                        "Overflow positions and annual spill counts: Environment Agency Event Duration Monitoring returns, OGL v3.0"],
             "simplify_m": SIMPLIFY_M, "seconds": round(time.time() - t0), "spots": index}
-    (OUT / "index.json").write_text(json.dumps(meta, indent=1) + "\n")
-    print(f"done: {len(index)} spots, {sum(1 for x in index if 'error' in x)} errors, {time.time() - t0:.0f}s")
+    (folder / "index.json").write_text(json.dumps(meta, indent=1) + "\n")
+    say(f"done: {len(index)} spots, {sum(1 for x in index if 'error' in x)} errors, {time.time() - t0:.0f}s")
+    return meta
 
 
-def overview() -> None:
+def overview(out: Path = OUT, say=print) -> None:
     """Every spot's lines merged into one small file for the title map: coordinates at 3 decimals (about 100 m),
     repeated points dropped, a reach shared by several spots kept once."""
     seen, lines = set(), []
-    for f in sorted(OUT.glob("*.json")):
+    for f in sorted(out.glob("*.json")):
         if f.name in ("index.json", "overview.json"):
             continue
         for ln in json.loads(f.read_text())["lines"]:
@@ -162,10 +166,22 @@ def overview() -> None:
             if len(pts) > 1 and key not in seen:
                 seen.add(key)
                 lines.append(pts)
-    (OUT / "overview.json").write_text(json.dumps({"lines": lines}, separators=(",", ":")) + "\n")
-    print(f"overview: {len(lines)} lines")
+    (out / "overview.json").write_text(json.dumps({"lines": lines}, separators=(",", ":")) + "\n")
+    say(f"overview: {len(lines)} lines")
+
+
+def main() -> None:
+    assert os.environ.get("DIPCAST_ROOT") and os.environ.get("DIPCAST_STATE"), "set scratch DIPCAST_ROOT and DIPCAST_STATE"
+    from dipcast.model.forecast import _net, _overflows
+    t0 = time.time()
+    net, ov = _net(), _overflows()
+    print(f"loaded network and {len(ov)} overflows in {time.time() - t0:.0f}s", flush=True)
+    export(OUT, spots_frame(), net, ov, {
+        "overflows": "data/processed/overflows.parquet (the cached overflow table)",
+        "network": "OS Open Rivers via data/processed/river_network.pkl, mended as the build mends it"},
+        say=lambda m: print(m, flush=True))
+    overview(OUT)
 
 
 if __name__ == "__main__":
     main()
-    overview()

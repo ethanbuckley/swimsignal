@@ -145,6 +145,7 @@ function pageWith(withScript) {
   vm.runInContext(pageDefs(['esc', 'glyph', 'ICON', 'tone', 'tile', 'factorRow', 'explain', 'poorLine', 'ratingHistory',
     'riverTile', 'WT_ROUTES', 'waterEstOk', 'waterEstHow', 'waterEstSay', 'WT_AIR', 'WT_TAIL', 'waterEstMore', 'waterTile', 'weatherOn', 'facts', 'standing', 'check', 'nowTile', 'noFeedSaid', 'ecoliName', 'ecoliFold', 'ecoliCheck', 'ecoliSaid', 'ecoliMore', 'lakeRanged', 'rangeOf', 'ecoliReading', 'likely', 'rangeLine', 'RANGE_BASIS', 'rangeBasis', 'RANGE_MORE', 'RANGE_OFF_SAID', 'rangeFold', 'typicalLine', 'TYPICAL_SAID', 'TYPICAL_MORE',
     'sinceTime', 'spillFor', 'overflowSaid', 'longSpillLine', 'eaSaid', 'coverWords', 'coverLine', 'answerAfter']), ctx);
+  vm.runInContext(pageDefs(['polledMs', 'pollAt', 'pollSay']), ctx);   // the Right now tile's poll line (nowTile)
   return ctx;
 }
 const text = h => h.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
@@ -184,8 +185,8 @@ test("one fold per page, at the foot of the rating tile, rated or not yet; a pic
     assert.equal(rating.fold, ea.eaTodayFold(s));
     assert.ok(rating.fold.includes(`data-site="${s.id.slice(3)}"`));
     assert.equal(tiles.filter(t => t.fold).length, 1);
-    // The tile's sentence no longer says the page lacks the advice; the fold follows it.
-    assert.match(text(rating.say), /The EA's page has its latest samples and any short-term advice against bathing, after pollution or algae\.$/);
+    // The tile's sentence names the samples; the advice is the fold's to give, which follows it (5 Nov 2026).
+    assert.match(text(rating.say), /The EA's page has its latest samples\.$/);
     const day = standing(s, '2026-10-06');
     assert.doesNotMatch(day, /ea-today|which this page does not include/);
     assert.match(text(day), /any short-term advice against bathing, after pollution or algae\./);

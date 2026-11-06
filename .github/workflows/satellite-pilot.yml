@@ -111,7 +111,8 @@ jobs:
         run: |
           git config user.name "dipcast-bot"; git config user.email "bot@dipcast.invalid"
           git add data/research/satellite/pilot_runs.json data/research/lake_observations.v1.json \
-            data/research/lake_imagery.v1.json data/research/lake-img
+            data/research/lake_imagery.v1.json data/research/lake-img \
+            data/research/satellite/chl_shadow_log.v1.json
           if git diff --cached --quiet; then echo "Nothing to commit."; exit 0; fi
           git commit -m "Satellite pilot run ${GITHUB_RUN_ID}"
           # site.yml's heartbeat can push in between; rebase onto it and try again, at most three times.

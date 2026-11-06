@@ -184,13 +184,15 @@ function plumeTile(d, doc, replay, gen, t) {
   const listed = rows.filter(r => (r.spills || []).length);
   return `<section class="tile pl" id="spill-map" aria-labelledby="pl-h"><h2 class="t-lab" id="pl-h">${plumeIcon()}<span>Where spill water may be</span></h2>`
     + official
-    + `<p class="t-say">${PLUME_ESTIMATE} Each reported spill's water moves down its river at the forecast's travel time${v}, and fades as its bacteria die off (90% in ${doc.t90_hours || 72}&nbsp;h). Spills that start after the update are not drawn.</p>`
+    + `<p class="t-say">${PLUME_ESTIMATE}</p>`
     + `<div class="pl-ctl"><button type="button" class="btn pl-play" aria-pressed="false">Play</button>`
     + `<label class="pl-range"><span class="pl-when" aria-hidden="true"></span><input type="range" min="0" max="${steps}" step="1" value="${pos}" aria-label="Time, from 48 hours before the update to 48 hours after"></label></div>`
     + `<div class="pl-map" role="img" aria-label="Map of the rivers upstream of the spot, with where water from reported spills may be at the chosen time. The words under the map say the same."></div>`
     + `<p class="pl-said" aria-live="polite"></p>`
     + `<p class="t-key pl-key"><span><i class="pl-sw"></i>water from a reported spill (model estimate)</span><span><i class="pl-sw pl-sw-unsure"></i>not confirmed by the feed</span>`
     + `<span><i class="pl-dot pl-dot-spill"></i>overflow that spilled</span><span><i class="pl-dot pl-dot-gap"></i>no current reading</span><span><i class="pl-dot pl-dot-spot"></i>the spot</span></p>`
+    // The model's settings, folded (5 Nov 2026: they led the tile, before the map they describe).
+    + `<details class="pl-more"><summary>How this map is made</summary><p>Each reported spill's water moves down its river at the forecast's travel time${v}, and fades as its bacteria die off (90% in ${doc.t90_hours || 72}&nbsp;h). Spills that start after the update are not drawn.</p></details>`
     + (listed.length ? `<details class="pl-more"><summary>Spills reported upstream in the last 48 hours (${listed.length})</summary><ul class="pl-list">${listed.map(r => plumeRowSaid(r)).join('')}</ul></details>` : '')
     + `<p class="t-say pl-gaps">${plumeGapsSaid(replay, doc) || 'Every counted overflow upstream had a current reading at the update.'} Spill status as of the update at ${plumeTime(gen, true)}.</p>`
     + '</section>';

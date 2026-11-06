@@ -85,6 +85,6 @@ test("the build's copy of the Accuracy page: its five boxes and when its scores 
   assert.equal(out.built, '2026-10-04T00:15:52+01:00');
   assert.ok(out.top.includes('<dd class="v">93 in 100</dd>') && out.short.includes('<h2 id="short-h">In short</h2>'));
   assert.ok(out.offline.includes('<section id="holdout"><h2>Offline test: held-out year</h2>'));
-  assert.ok(out.top.includes('<li><a href="#holdout">Offline test: held-out year</a></li>'), out.top);   // contents(), from the sections
+  assert.ok(out.short.includes('<li><a href="#holdout">Offline test: held-out year</a></li>'), out.short);   // contents(), from the sections, under In short
   await assert.rejects(accuracy.prerender(VER.replace(/main\(\)\.catch/, 'go().catch'), data), /no longer ends with main\(\)\.catch/);
 });

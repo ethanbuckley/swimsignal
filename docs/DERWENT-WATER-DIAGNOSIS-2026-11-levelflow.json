@@ -1,0 +1,133 @@
+{
+ "plan": "docs/DERWENT-WATER-DIAGNOSIS-2026-11.md (Lake level and outflow)",
+ "protocol_commit": "f1bcde59",
+ "samples": 59,
+ "missing_level": 13,
+ "missing_flow7": 40,
+ "days_in_file": 881,
+ "L1": {
+  "level": {
+   "rho": -0.12,
+   "ci95": [
+    -0.48,
+    0.362
+   ],
+   "n": 46,
+   "blocks": 15
+  },
+  "flow7": {
+   "rho": -0.5,
+   "ci95": [
+    -0.751,
+    0.095
+   ],
+   "n": 19,
+   "blocks": 5
+  }
+ },
+ "L2": {
+  "level": {
+   "rho": -0.05,
+   "ci95": [
+    -0.409,
+    0.334
+   ],
+   "n": 46,
+   "blocks": 15
+  },
+  "flow7": {
+   "rho": -0.345,
+   "ci95": [
+    -0.63,
+    0.042
+   ],
+   "n": 19,
+   "blocks": 5
+  }
+ },
+ "L3": {
+  "jul_aug_median_level": {
+   "2024": 0.911,
+   "2025": 0.782,
+   "2026": 0.712
+  },
+  "jul_aug_median_flow": {
+   "2024": NaN,
+   "2025": NaN,
+   "2026": 1.726
+  },
+  "flow_q25_may_sep": 1.733,
+  "dry_over_900": [
+   {
+    "day": "2026-07-23",
+    "ecoli": 1500,
+    "flow7": 1.481,
+    "level": 0.698
+   },
+   {
+    "day": "2026-07-14",
+    "ecoli": 1300,
+    "flow7": 3.252,
+    "level": 0.68
+   },
+   {
+    "day": "2025-08-22",
+    "ecoli": 1300,
+    "flow7": NaN,
+    "level": 0.583
+   },
+   {
+    "day": "2025-08-14",
+    "ecoli": 1000,
+    "flow7": NaN,
+    "level": 0.774
+   },
+   {
+    "day": "2025-07-09",
+    "ecoli": 1200,
+    "flow7": NaN,
+    "level": 1.049
+   },
+   {
+    "day": "2025-06-30",
+    "ecoli": 1000,
+    "flow7": NaN,
+    "level": 1.372
+   }
+  ],
+  "dry_over_900_below_q25": 1,
+  "computable": false
+ },
+ "checks": {
+  "L1": false,
+  "L2": false,
+  "L3": false
+ },
+ "answer": "does not track",
+ "by_year": {
+  "2024": {
+   "samples": 20,
+   "over_900": 1,
+   "with_level": 15,
+   "with_flow7": 0,
+   "median_level": 0.971,
+   "rho_level": 0.322
+  },
+  "2025": {
+   "samples": 20,
+   "over_900": 8,
+   "with_level": 16,
+   "with_flow7": 0,
+   "median_level": 0.974,
+   "rho_level": -0.081
+  },
+  "2026": {
+   "samples": 19,
+   "over_900": 3,
+   "with_level": 15,
+   "with_flow7": 19,
+   "median_level": 0.752,
+   "rho_level": -0.295
+  }
+ }
+}
