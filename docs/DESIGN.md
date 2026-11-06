@@ -1318,7 +1318,10 @@ gives all four navigation links a single full-width row.
   upstream are doing, how many report live and why the others do not, the words of "What the level rests
   on"), the Environment Agency rating, Today's EA advice (never read, so "could not be checked" with the
   EA's page linked, or "None: not a designated bathing water"), water samples, algae, access (the desk
-  check's words and date, or "No access information"), local warnings and model limits. Each cell says
+  check's words and date, then what the spot's guide covers in the planner's words, "Its guide covers parking,
+  the path, getting in", with its date; "Loading its guide…" until the spot's own file comes, "Its guide could
+  not be loaded" if it does not, and "No access information" only when there is neither; 6 Nov 2026: 52 of the 56
+  guided spots said "No access information" under a plan row naming their guide), local warnings and model limits. Each cell says
   what is not known rather than stay blank. The note above the table: "A lower forecast level does not
   mean safe water: check the signs at the water." No column is called the best.
 
