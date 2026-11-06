@@ -208,3 +208,41 @@ not retried.
 Derwent's samples: about 4 EA Hydrology requests, OGL, no quota. It would test whether the summer rise follows low,
 slow water, the one mechanism this inventory can check without an outside contact. It needs its own short plan before
 any join, as above.
+
+---
+
+## Lake level and outflow: protocol (committed and pushed before any level or flow value is fetched)
+
+Added 6 November 2026. **Question: do low lake level or low outflow on or before the sample day track Derwent's high
+dry-weather counts in 2024-26, and do they separate 2025 from 2024?**
+
+- **Data.** EA Hydrology API, OGL v3: Derwent Water at Lodore, daily minimum level (measure
+  `1d596dfe-…-level-min-86400-m-qualified`); River Derwent at Portinscale, the lake's outflow, daily mean flow
+  (`7663b8bf-…-flow-m-86400-m3s-qualified`); 1 January 2024 to 30 September 2026. **Cap: 10 requests**, ledger, scratch
+  only, heavy-run lock.
+- **Samples.** Derwent Water at Crow Park, 2024-26: 59 samples, 12 over 900, 6 of those on dry days (0.6 mm or less in
+  48 hours: 30 Jun, 9 Jul, 14 Aug, 22 Aug 2025; 14 Jul, 23 Jul 2026).
+- **Measures per sample.** Lodore's minimum level on the sample day; Portinscale's mean daily flow over the 7 days before
+  the sample day.
+
+**Rules, fixed now** (Spearman rho with log10 E. coli, 95% interval from 2,000 resamples of calendar-month blocks,
+seed 20261106):
+
+- **L1, tracks:** rho of level or of 7-day flow at most −0.3, interval wholly below zero.
+- **L2, beyond season:** the same rho after subtracting each calendar month's median from both variables at most −0.2,
+  interval wholly below zero. Level falls through the summer as counts rise, so L1 alone could be season again.
+- **L3, separates the seasons:** July-August median of Lodore's daily level **and** of Portinscale's daily flow lower in
+  2025 than in 2024, **and** at least 4 of the 6 dry-day results over 900 at a 7-day flow below the 25th percentile of
+  May-September 2024-26 daily flows.
+
+**What each answer leads to, fixed now:**
+
+- **L1, L2 and L3 hold:** the dated input the reopen condition asks for. It would feed **candidate E**: lake-range-v1's
+  form plus a partially pooled lake-specific term on outflow (or level) below its usual for the date, tested on every
+  lake with a level or flow gauge under its own protocol. Its issue-time source is the EA's real-time flood-monitoring
+  API, which carries both stations at 15 minutes, uses no Open-Meteo quota and needs no new service. The first step is
+  checking that feed's latency and gaps.
+- **L1 holds, L2 fails:** level and outflow move with the season and add nothing beyond it. Recorded; no candidate.
+- **L1 fails:** low water does not track Derwent's high results. Recorded; the remaining routes are the two that need
+  Ethan (the private-discharge register, the EA's investigation).
+- **Power:** 59 samples give a single rho a standard error of about 0.13; one lake, three seasons.
