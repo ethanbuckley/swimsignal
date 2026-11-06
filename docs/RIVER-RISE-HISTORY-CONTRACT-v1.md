@@ -50,13 +50,15 @@ looking at which spots or months it would drop. It leaves out 29 of the 525 gaug
 them are also under 480 hours. A gauge's missing calendar month (3 of 528: Low Moor's November and December, Salisbury's
 February) shows nothing either. In November and December the line can show at 42 gauges serving 50 spots.
 
-On the site (`build_site.attach_rise_history`, `index.html` `riseHistoryLine`): a river spot gets the line only where
-its tile's gauge (`river_state.measure`'s station) is the gauge the history is for; lakes never. The line, after the
-gauge's sentence, for the device's month: "In November 2024 and 2025, about 1 hour in 80 at this gauge was followed
-within 3 hours by a rise of more than a fifth of its usual range (4 rises in all)." The "1 in N" is rounded: whole
-numbers under 20, tens under 1,000, hundreds above. A month with none: "In April 2025 and 2026, no hour at this gauge
-was followed within 3 hours by a rise of more than a fifth of its usual range." The tile's fold adds which hours are
-counted, the period, that it is history and not a forecast, and links the Research page.
+On the site (`build_site.attach_rise_history`; `index.html` `riseHistoryLine`, `riverTile`, `conditionsSummary`): a
+river spot gets the line only where its River level gauge (`river_state.measure`'s station) is the gauge the history is
+for; lakes never. The line sits in the spot page's River level cell, under the reading's own line and in the same small
+type, for the device's month: "In November 2024 and 2025, about 1 hour in 80 at this gauge was followed by a quick rise
+(4 in all)." The "1 in N" is rounded: whole numbers under 20, tens under 1,000, hundreds above; "in all" counts
+`rises`. A month with none: "In April 2025 and 2026, no hour at this gauge was followed by a quick rise." The cell's
+fold says what a quick rise is (more than a fifth of the usual range within 3 hours), which hours count, the period,
+that it is history and not a forecast, and links the Research page. The line stays when the reading is over a day old:
+it does not depend on the level now.
 
 ## Fields
 

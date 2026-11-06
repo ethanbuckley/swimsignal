@@ -3770,8 +3770,8 @@ def write_lake_temperatures_page(site: Path, token: str | None = None, root: str
 # calendar month, 21 Nov 2024 to 24 Oct 2026, how many hours (when the site would have shown no word) were followed
 # within 3 hours by a rise of more than a fifth of the gauge's usual range. The research side exports one file,
 # data/research/river_rise_history.v1.json (scripts/export_river_rise_history.py, from the C3 record's committed table:
-# the build fetches nothing). It is history, not a forecast: the River level tile says one line of it for the month
-# (index.html, riseHistoryLine). A spot gets the line only where its tile's gauge is the gauge the history is for
+# the build fetches nothing). It is history, not a forecast: the spot page's River level cell says one line of it for
+# the month (index.html, riseHistoryLine, conditionsSummary). A spot gets the line only where its tile's gauge is the gauge the history is for
 # (river_state.measure's station), and only the months the export's display rule allows (enough hours counted, both
 # years): any other month is null, and the page says nothing for it. Per spot, in its own file (DETAIL_FIELDS), not in
 # the list's. The export is copied whole to data/research/river_rise_history.json for the data page and the Research

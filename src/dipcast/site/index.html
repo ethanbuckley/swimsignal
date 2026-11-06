@@ -2868,7 +2868,7 @@ function facts(d, iso = null) {
         // Beside an official notice about algae (eatoday.js), so "None seen" is not read against it.
         + (typeof eaTodayAdvice === 'function' && eaTodayAdvice(d).some(o => /algae|algal|cyanobacteria/i.test(o.line))
           ? ` The ${esc(eaTodayAdvice(d).find(o => /algae|algal|cyanobacteria/i.test(o.line)).publisher)}'s notice above is about harmful algae; this tile is the sampler's last visual check.` : '') }); }
-  const rt = riverTile(d.river_state, d.rise_history); if (rt) out.push(rt);
+  const rt = riverTile(d.river_state); if (rt) out.push(rt);
   if (!d.error && total && x0 && !nil(x0.rain_48h_mm)) { const wet = d.days.slice(0, 5).reduce((p, q) => (q.rain_48h_mm || 0) > (p.rain_48h_mm || 0) ? q : p);
     out.push({ icon: ICON.rain, label: 'Rain here', fig: Math.round(x0.rain_48h_mm), unit: 'mm', vis: rainCols(d, x0.date),
       say: `In the 48&nbsp;h to midday ${first ? 'today' : dayName(x0.date)}.${first && wet !== x0 && wet.rain_48h_mm >= 1 ? ` The most ahead: ${Math.round(wet.rain_48h_mm)}&nbsp;mm in the 48&nbsp;h to midday ${dayName(wet.date)}.` : ''}` }); }
@@ -2890,23 +2890,24 @@ function facts(d, iso = null) {
 // water) is a lake level: its words say where it sits against the EA's usual range, below, in or above,
 // as the EA's own pages do, and not a river's "High water" or that "a high river runs faster" (Windermere,
 // 0.73 m inside 0.23 to 1.00 m, 11 Oct 2026).
-// A river spot's history line (hist: build_site.attach_rise_history, docs/RIVER-RISE-HISTORY-CONTRACT-v1.md), after
-// the gauge's sentence: in this calendar month of the two years behind it, how often an hour at the gauge was followed
-// within 3 hours by a rise of more than a fifth of its usual range. History in words, never a forecast, a warning, a
-// colour or a level; a month the export leaves out (too few hours, or one year only) is null and says nothing.
+// A river spot's history line (hist: build_site.attach_rise_history, docs/RIVER-RISE-HISTORY-CONTRACT-v1.md), the tile's
+// `past`, which the River level cell shows under its reading (conditionsSummary): in this calendar month of the two
+// years behind it, how often an hour at the gauge was followed by a quick rise (more than a fifth of its usual range
+// within 3 hours, said in the fold, RISE_MORE). History in words, never a forecast, a warning, a colour or a level; a
+// month the export leaves out (too few hours, or one year only) is null and says nothing.
 const RISE_MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const riseOneIn = n => n < 20 ? Math.round(n) : n < 1000 ? Math.round(n / 10) * 10 : Math.round(n / 100) * 100;
 function riseHistoryLine(hist, iso = today()) {
   const k = +String(iso).slice(5, 7) - 1, m = hist && Array.isArray(hist.months) ? hist.months[k] : null;
   if (!m || !(m.hours > 0) || !(m.rise_hours >= 0) || !Array.isArray(m.years) || m.years.length !== 2) return '';
-  const when = `In ${RISE_MONTHS[k]} ${m.years[0]} and ${m.years[1]}`, rise = 'followed within 3&nbsp;hours by a rise of more than a fifth of its usual range';
-  return m.rise_hours ? `${when}, about 1 hour in ${riseOneIn(m.hours / m.rise_hours)} at this gauge was ${rise} (${m.rises} rise${m.rises === 1 ? '' : 's'} in all).`
-    : `${when}, no hour at this gauge was ${rise}.`;
+  const when = `In ${RISE_MONTHS[k]} ${m.years[0]} and ${m.years[1]}`;
+  return m.rise_hours ? `${when}, about 1 hour in ${riseOneIn(m.hours / m.rise_hours)} at this gauge was followed by a quick rise (${m.rises} in all).`
+    : `${when}, no hour at this gauge was followed by a quick rise.`;
 }
-const RISE_MORE = ' The line on past months counts only hours when the river was not already high or rising fast, in the Environment Agency\'s checked readings from 21 November 2024 to 24 October 2026. It is history, not a forecast: <a href="research.html#river-rises">how it was counted</a>.';
+const RISE_MORE = ' Past months: a quick rise is the river rising by more than a fifth of its usual range within 3 hours. Only hours when it was not already high or rising fast count, in the Environment Agency\'s checked readings from 21 November 2024 to 24 October 2026. History, not a forecast: <a href="research.html#river-rises">how it was counted</a>.';
 function riverTile(rs, hist = null) {
   if (!rs || (!rs.stale && nil(rs.level_m))) return null;
-  const past = rs.water === 'lake' ? '' : riseHistoryLine(hist), pastMore = past ? RISE_MORE : '';
+  const past = hist && rs.water !== 'lake' ? riseHistoryLine(hist) : '', pastMore = past ? RISE_MORE : '';   // a lake: no river history
   const lake = rs.water === 'lake', label = lake ? 'Lake level' : 'River level';
   const at = rs.observed_at ? new Date(rs.observed_at).toLocaleString('en-GB', { weekday: 'short', hour: '2-digit', minute: '2-digit' }) : '';
   const gauge = `Gauge at ${esc(rs.station)}${rs.river ? ` on ${lake ? '' : 'the '}${esc(rs.river)}` : ''}, ${rs.distance_km}&nbsp;km away${rs.same_river === false ? ', on a different watercourse' : ''}`;
@@ -2914,14 +2915,14 @@ function riverTile(rs, hist = null) {
   const more = (lake ? 'The level of the lake at the gauge. After heavy rain a lake rises slowly and falls slowly.' : 'A high river runs faster and colder, and after rain it can rise quickly.') + page;
   if (rs.stale) { const h = rs.age_hours, n = nil(h) ? null : h <= 24 ? Math.round(h) : Math.round(h / 24), unit = nil(h) ? '' : h <= 24 ? 'hour' : 'day';
     return { live: true, icon: ICON.level, label, fig: '–', unit: 'no current reading',
-      say: `${n === null ? 'The last reading is old' : `Last reading ${n} ${unit}${n === 1 ? '' : 's'} ago`}, not shown as current. Not part of the pollution level. ${gauge}.${past ? ' ' + past : ''}`, more: more + pastMore }; }
+      say: `${n === null ? 'The last reading is old' : `Last reading ${n} ${unit}${n === 1 ? '' : 's'} ago`}, not shown as current. Not part of the pollution level. ${gauge}.`, more: more + pastMore, past }; }
   const lo = rs.typical_low_m, hi = rs.typical_high_m, ranged = !nil(lo) && !nil(hi) && hi > lo;
   // Words of its own, in ink: "High" in a level's colour, on a page of pollution levels, read as one.
   const word = lake ? (!ranged ? '' : rs.level_m < lo ? 'Below its usual range' : rs.level_m > hi ? 'Above its usual range' : 'In its usual range')
     : ({ low: 'Low water', normal: 'Usual level', high: 'High water', 'very high': 'Very high water' }[rs.label] || '') + (rs.label === 'very high' ? ', above its usual range' : '');
   return { live: true, icon: ICON.level, label, fig: fmt(rs.level_m, 2), unit: 'm', wordTone: 'plain', word,
     vis: ranged ? rangeBar(rs) : '',
-    say: `Not part of the pollution level. ${gauge}${at ? `, ${at}` : ''}.${past ? ' ' + past : ''}`, more: more + pastMore };
+    say: `Not part of the pollution level. ${gauge}${at ? `, ${at}` : ''}.`, more: more + pastMore, past };
 }
 // The answer's words, which a picked day fills again (showDay): the level, why and when, where the week
 // goes, a long spill that may be a fault (it sets the level), the river's separate hazard, what the
@@ -5477,18 +5478,20 @@ function conditionsSummary(d) {
   const rs = d.river_state, observed = rs && Date.parse(rs.observed_at);
   const age = Number.isFinite(observed) ? Math.max(0, (Date.now() - observed) / 3600000) : null;
   const w = waterTile(d.water_temp, d.water_temp_est, d.kind);
-  const lv = riverTile(rs && age !== null && age > 24 ? {...rs, stale: true, age_hours: age} : rs);
+  const lv = riverTile(rs && age !== null && age > 24 ? {...rs, stale: true, age_hours: age} : rs, d.rise_history);
   const x0 = (d.days || []).find(x => x.date === today()), wx = ((d.weather || {}).days || []).find(x => x.date === today());
   const lake = (rs && rs.water === 'lake') || d.kind === 'lake';
-  const cell = (label, fig, sub, vis = '', more = '') => `<div class="tile cell"><h3 class="t-lab">${label}</h3><p class="cfig">${fig}</p>${vis}<p class="csub">${sub}</p>`
+  const cell = (label, fig, sub, vis = '', more = '', after = '') => `<div class="tile cell"><h3 class="t-lab">${label}</h3><p class="cfig">${fig}</p>${vis}<p class="csub">${sub}</p>${after}`
     + (more ? `<details class="t-more"><summary><span class="sr">${label}: what this means</span></summary><p>${more}</p></details>` : '') + '</div>';
   const water = !w ? cell('Water temperature', '–', 'No reading or estimate here')
     : w.live ? cell('Water temperature', w.fig, (w.say || '').split(/(?<=\.) /)[0], '', w.more)   // its first sentence: where it was measured, how long ago
     : cell('Water temperature', w.fig, w.fig === '–' ? 'Not estimated today' : /provisional/.test(w.unit) ? 'Provisional estimate' : 'Estimate', '', w.more);
   const at = rs && rs.observed_at ? new Date(rs.observed_at).toLocaleString('en-GB', { weekday: 'short', hour: '2-digit', minute: '2-digit' }) : '';
+  // A river's past quick rises in this month, under its reading in the same small type (riverTile's past): history only.
+  const past = lv && lv.past ? `<p class="csub">${lv.past}</p>` : '';
   const level = !lv ? cell(lake ? 'Lake level' : 'River level', '–', 'No gauge here')
-    : lv.fig === '–' ? cell(lv.label || 'River level', '–', 'No current reading', '', [lv.say, lv.more].filter(Boolean).join(' '))
-    : cell(lv.label || 'River level', `${lv.fig}&nbsp;m`, [lv.word, rs && rs.station ? `${esc(rs.station)}, ${at}` : ''].filter(Boolean).join(' · '), lv.vis || '', [lv.say, lv.more].filter(Boolean).join(' '));
+    : lv.fig === '–' ? cell(lv.label || 'River level', '–', 'No current reading', '', [lv.say, lv.more].filter(Boolean).join(' '), past)
+    : cell(lv.label || 'River level', `${lv.fig}&nbsp;m`, [lv.word, rs && rs.station ? `${esc(rs.station)}, ${at}` : ''].filter(Boolean).join(' · '), lv.vis || '', [lv.say, lv.more].filter(Boolean).join(' '), past);
   const rain = x0 && !nil(x0.rain_48h_mm) ? cell('Rain here', `${fmt(x0.rain_48h_mm, x0.rain_48h_mm < 1 && x0.rain_48h_mm > 0 ? 1 : 0)}&nbsp;mm`, 'In the 48 hours to midday today') : '';
   const air = wx && !nil(wx.tmax) ? cell('Air today', `${wx.tmax}°`, `High${wx.sunrise && wx.sunset ? ` · light ${esc(wx.sunrise)} to ${esc(wx.sunset)}` : ''}`) : '';
   return `<section class="cond" aria-labelledby="conditions-h"><h2 class="sr" id="conditions-h">Conditions at the spot</h2>${water}${level}${rain}${air}</section>`;
