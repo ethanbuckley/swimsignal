@@ -65,3 +65,27 @@ Samples: Derwent 2024-25 (40 samples, 9 over 900) for the spill questions, since
 
 **Power:** 40 samples with 9 over 900 give a single rho a standard error of about 0.16. One lake and two seasons: any
 answer is about these seasons at this site.
+
+---
+
+## Candidate D: a lake-specific seasonal response (protocol, committed before it is fitted or scored)
+
+Added 6 November 2026, after the diagnosis results below were computed and before any fit of D. The diagnosis
+found Derwent's counts rise through each summer (May to August medians: 109→260 in 2024, 59→980 in 2025, 63→570 in
+2026) and track neither rain, nor modelled exposure, nor recorded spills. The plain model's season terms are shared by
+every site, so a lake whose summer rise is steeper than average cannot be represented. **D is the fourth variant tried
+on these same seen rows (after A, B and C); any figure below is development, and a selection effect is possible.**
+
+- **D:** `scripts/lake_line_candidates.py`'s B with the slope variable changed: a random slope per bathing water on
+  `lake × season`, where `season` is the day of year (recovered from the model's day-of-year terms) standardised on the
+  fold's lake fitting rows, with a fixed all-lake mean slope, partially pooled exactly as B. Day of year is known at
+  issue time. No other change: same rows, folds, clusters, seed, bootstrap and references as the line candidates.
+- **Conditions, main scheme (leave one season out):** (D1) censored log score D − plain above zero, interval above zero;
+  (D2) mean within-site rho D − plain above zero, by-site interval above zero. **Guardrail (G):** at unseen lakes
+  (leave-one-lake-out), log score D − plain with its interval's lower end above −0.02. Line chance at 900 and 500:
+  Brier and skill reported against production, plain and the usual rate with #625's 0.10 margin; **non-inferiority is
+  claimed only if an interval excludes harm beyond +0.002 at 900, which 16 events will rarely allow.**
+- **Outcomes:** D1, D2 and G hold → D is a supported development candidate for within-lake order. Next: freeze it beside
+  plain and B for the 2027 read, computed from `shadow_lake_range_v1`'s logged inputs (it needs no new logger: its only
+  new input, the day, is logged). D1 or D2 fails → D is archived with its figures. The Derwent diagnosis stands either
+  way.
