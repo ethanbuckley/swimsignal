@@ -59,6 +59,8 @@ usual, never as a warning.
 - **Out of season** (October to April): no line. No samples are taken then to check it against.
 - **Model file missing or not the frozen one, or an input missing for the day:** no line. The tile says what it says
   today.
+- **Colwick Country Park:** no line. The site gives it no lake range, because its pin has no monitored overflow
+  upstream (#199).
 - **Derwent Water:** no special treatment. Its high results are a summer rise that rain, spills and lake level do not
   track (`docs/DERWENT-WATER-DIAGNOSIS-2026-11.md`), so its line would often read "about usual" on days with results
   over 900. That limitation should sit in the Methods page note if the line is shown.

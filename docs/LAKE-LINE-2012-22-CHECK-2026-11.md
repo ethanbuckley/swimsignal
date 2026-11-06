@@ -163,12 +163,38 @@ of `shadow_lake_range_v1`. Nothing is shown until Ethan decides the wording.
 
 | Read | Inputs it needs | Where they come from | Status |
 |---|---|---|---|
-| lake-range-v1 range and order (the existing 2027 read, `docs/LAKE-RANGE-WORDING-2026-11.md`) | its logged median and range | `shadow_lake_range_v1`, written by every build since #585 (merged 1 Nov 2026) | **Running, not verified by row count here:** the state database in the rolling `state` release was updated 6 Nov 01:17 UTC (239 MB); checking the table's rows needs that download |
+| lake-range-v1 range and order (the existing 2027 read, `docs/LAKE-RANGE-WORDING-2026-11.md`) | its logged median and range | `shadow_lake_range_v1`, written by every build since #585 (merged 1 Nov 2026) | **Logging, checked 6 Nov** (below) |
 | Frozen plain, B, A, C (`lake_line_frozen.v1.json`) | rain over 48 and 24 hours, exposure, day, bathing water | the same `shadow_lake_range_v1` rows, computed by `frozen_probs` at read time | Runnable: needs no logger |
 | Production's lake chance, the comparator | `p_ecoli` | `forecast_points` in the same state database, same issues | Logged since 15 Sep 2026 |
 | The usual and own rates | frozen 2023-26 rates | the frozen file and `ecoli_evidence.v1.json` | Frozen |
 | 2027 outcomes | EA samples, May-September 2027 | the EA's bathing-water service | From May 2027 |
 
-**Readiness step before the season (named, not done here):** in April 2027, read the state database once and check
-that `shadow_lake_range_v1` holds rows at all 11 lake bathing waters with non-null inputs. A gap found then can still
-be fixed before the first 2027 sample.
+**Readiness, checked 6 November 2026 by the research session.** It opened the state release's `dipcast.duckdb` (6 Nov
+01:17 UTC, 238,563,328 bytes) read-only in its own scratch; this session did not download it.
+
+- `shadow_lake_range_v1` holds **4,180 rows**, issued 1 Nov 19:25 UTC to 6 Nov 01:10 UTC: 836 issue times × 5 leads
+  (0-4), 22 lake spots per issue (basis "tested" 5, "own samples" 6, "average lake" 11).
+- **All 11 lake bathing waters in lake-range-v1 have rows** (190 each): the five tested sites (Windermere ×4, Frensham),
+  Coniston ×3, Rutland ×2 and Derwent Water.
+- `rain_48h`, `rain_24h`, `risk` and `median`: no nulls. Every row so far is out of season, as expected in November.
+  Rule `lake-range-v1`, model hash `5566b12e…`, and each build's code version are recorded.
+- `forecast_points.p_ecoli` exists, so production's lake chance is logged on the same issues.
+- Builds per day, 1-5 Nov: 7, 10, 4, 4, 12. The cadence is irregular, but every day has at least one issue, which is
+  enough for a read that pairs each sample with the last issue before it (lead 0).
+
+**Gap: Colwick Country Park (West Lake), `ukf1400-09750`, has no row,** not even as an "average lake" spot. That is
+correct, not a fault. The site's pin for Colwick has no monitored overflow upstream (#199, merged 12 Oct: the EA's
+profile says the lake is not directly connected to a river), so the forecast gives it no E. coli figure and no lake
+range. Consequences, stated now:
+
+- **The 2027 reads drop Colwick.** Its 2027 samples are counted as "no logged row", not filled, as each read already
+  says. This applies to the frozen-file read (`lake_line_frozen.v1.json` has 12 lake sites, Colwick among them), to
+  lake-range-v1's read (its water bodies are Windermere, Coniston, Derwent Water, Rutland and Frensham; Colwick is not
+  among them), and to the wording proposal (no lake range at Colwick, so no line).
+- **It is not a new question for Ethan:** the pin was his decision in #199. One inconsistency is recorded rather than
+  fixed: the 2024-26 study rows behind the frozen models (built 14 Sep, before #199) carry Colwick's 45 samples with
+  exposure from the superseded Trent pin. Colwick had no result over 900. Its effect on the shared exposure term was not
+  measured.
+
+**Short re-check at the season's start:** in the first week of May 2027, confirm that `shadow_lake_range_v1` rows are
+marked in season and still have no null inputs. A gap found then can be fixed before most of the season's samples.
