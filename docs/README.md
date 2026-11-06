@@ -11,6 +11,9 @@ shadow comparisons and forecasts. A fail in a historical record below is not, by
 
 ## Plans and reviews
 
+- [STRATEGY-REVIEW-2026-11.md](STRATEGY-REVIEW-2026-11.md): the review of 6 November 2026. Usage, what ships, accuracy,
+  competitors and constraints as found; the position to take, who to target, what to cut and fix, the money
+  sequence, the research to pursue and stop, and the next ninety days.
 - [ROADMAP-2026-10.md](ROADMAP-2026-10.md): the roadmap of 3 October 2026. More spots, what makes the app useful,
   and PR-sized tasks.
 - [REVIEW-2026-10-16.md](REVIEW-2026-10-16.md): a review of the live site, the pipeline, the model and open data
