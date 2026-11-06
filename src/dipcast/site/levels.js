@@ -333,7 +333,7 @@ const trialShare = s => (s || {}).trial === 'scotland';
 function trialWords(s, short = false) {
   if (!trialShare(s)) return '';
   if (short) return 'Scotland: trial forecast';
-  return "Scotland trial: Scottish Water's overflows, checked against their 2022 to 2025 records and calibrated for Scotland. Not yet confirmed on live data.";
+  return "Scotland trial: Scottish Water's overflows, checked against their 2022 to 2025 records and calibrated for Scotland. Emergency overflows are not counted, nor outfalls that are both storm and emergency overflows. Not yet confirmed on live data.";
 }
 // What the E. coli estimate is, said wherever it shows on a spot's page (all year, labelled with what
 // is true today). check is spots.json's ecoli_check (build_site.ecoli_check): its record on live
