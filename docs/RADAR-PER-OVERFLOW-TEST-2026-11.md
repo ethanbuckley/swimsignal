@@ -194,4 +194,183 @@ the 2027 forecast stamp (`docs/PREREGISTRATION-2027.md` §2) and need a dated am
 
 ## Results
 
-Not yet run.
+Added 6 November 2026, after the run. Everything above the line is as committed in 8680975 (6 November 2026, 22:49
+UTC) and pushed before the run. The harness came in 45d5152 (22:55 UTC). It changed nothing above the line.
+
+**Verdict N: rain at the overflow's own position is not shown to beat the cell's radar. The interval also rules out a
+gain of 1%.** Nothing is adopted. Nothing on the site or in production changes.
+
+### How it was run
+
+- **Plumbing check first.** Before the scored run, the harness ran on 300 overflows with random labels
+  (`RADAR_OVERFLOW_PLUMBING=1`). That checked the code from end to end without producing any real score. One fix
+  followed, before the harness commit: the fingerprint script now hashes the per-overflow files rather than the
+  folder.
+- **The scored run.** `run.sh` from a `git archive` of 45d5152, holding the group's heavy-run lock. It finished at
+  23:01 UTC.
+  - Run time 312 s. Peak memory 4.5 GB. Both are within the caps (2 h, 12 GB).
+  - 0 network attempts.
+  - The shared inputs' fingerprints before and after match. The per-overflow files hash to `a39ad909…`, the cell
+    radar folder to `2e0cfd6d…`, the 2024–2026 rain caches to `0e698be4…`, and the production `spill_model.pkl` to
+    `faa7917e…`.
+- **Rows.**
+  - 3,778 overflows in 381 cells. United Utilities 2,263, Severn Trent 699, Wessex 261, Yorkshire 223, Thames 204,
+    Anglian 104, Southern 16, South West 5, Northumbrian 3.
+  - 1,374,430 overflow-days in 2025, with 88,567 spill days.
+  - 4,540 rows were dropped because the lead-0 forecast had no total. No row was dropped for radar coverage.
+  - 41,633 of 56.2 million overflow-hours of local radar had coverage under 0.9. Those hours were treated as missing,
+    not as zero rain.
+- **Folds.** Fold A: 679,278 test rows and 562,922 training rows. Fold B: 695,152 test rows and 547,048 training rows.
+- **Frozen 2025 models.** SHA-256 for each arm is in `docs/RADAR-PER-OVERFLOW-TEST-2026-11-score.json`
+  (`frozen_model_sha256`). L3's is `d5043724…`.
+
+### How the rain sources differ
+
+- Day totals at the 3 × 3 block and at the cell are close. Their correlation is 0.967.
+- They differ by 5 mm or more on 1.6% of overflow-days. In June to August the share is 1.5%.
+- Over the year, the block reads 3.5% less rain than the cell.
+- The one pixel and the block correlate at 0.993.
+
+### The primary comparison: 2025, blocked cross-fit, out of fold
+
+| Arm | Brier | AUC | Spill days at 0.4 or more | Dry days at 0.4 or more |
+|---|---|---|---|---|
+| C cell radar | 0.0341 | 0.954 | 53.6% | 1.76% |
+| **L3 local block** | **0.0342** | **0.955** | **53.3%** | **1.76%** |
+| L1 local pixel | 0.0344 | 0.954 | 51.8% | 1.65% |
+| P production (lead 0) | 0.0369 | 0.943 | 46.4% | 1.56% |
+| E ERA5-Land | 0.0408 | 0.931 | 41.6% | 1.84% |
+| C-lag issue-time cell | 0.0366 | 0.944 | 46.1% | 1.44% |
+| L3-lag issue-time local | 0.0368 | 0.944 | 46.1% | 1.50% |
+
+Brier differences, with the 95% interval (overflow × week; overflow × day in brackets):
+
+| Comparison | Difference | Interval | Skill against the second |
+|---|---|---|---|
+| **L3 − C (decides)** | **+0.00012** | **−0.00020 to +0.00044** (−0.00015 to +0.00040) | **−0.4%** |
+| L1 − C | +0.00033 | −0.00000 to +0.00071 (+0.00002 to +0.00066) | −1.0% |
+| L3 − L1 | −0.00021 | −0.00047 to +0.00004 | +0.6% |
+| L3 − P | −0.00275 | −0.00387 to −0.00178 | +7.5% |
+| C − P | −0.00288 | −0.00397 to −0.00193 | +7.8% |
+| C − E | −0.00678 | −0.00961 to −0.00451 | +16.6% |
+| L3-lag − C-lag | +0.00017 | −0.00008 to +0.00044 | −0.5% |
+| C-lag − P | −0.00034 | −0.00085 to +0.00006 (−0.00066 to −0.00006) | +0.9% |
+| L3-lag − P | −0.00017 | −0.00078 to +0.00024 | +0.5% |
+
+- **H** needed L3 − C's interval wholly below zero. It is not: it runs from −0.00020 to +0.00044. So not H or S.
+- The interval is not wholly above zero, so not W. **The verdict is N.**
+- **A 1% gain is ruled out.** The interval's lower end, −0.00020, is above −1% of C's Brier (−0.00034).
+- The one pixel is, if anything, worse than the cell. With overflow × day clustering its interval sits just above
+  zero.
+- The issue-time arms show no gain from local rain either: L3-lag − C-lag is +0.00017.
+
+### Breakdowns (reported only, no decision)
+
+L3 − C by group (interval overflow × week):
+
+| Group | Spill days | L3 − C | Interval | Skill |
+|---|---|---|---|---|
+| United Utilities | 59,711 | +0.00034 | −0.00018 to +0.00085 | −0.9% |
+| Severn Trent | 11,501 | −0.00013 | −0.00063 to +0.00031 | +0.5% |
+| Yorkshire | 6,242 | +0.00062 | −0.00017 to +0.00145 | −1.7% |
+| Wessex | 5,054 | −0.00035 | −0.00124 to +0.00045 | +1.1% |
+| Thames | 4,040 | −0.00121 | −0.00238 to −0.00033 | +3.6% |
+| Anglian | 1,410 | −0.00026 | −0.00100 to +0.00037 | +0.9% |
+| Southern, South West, Northumbrian | 609 together | — | every interval includes zero | — |
+| Urban (within 100 m of a built-up area) | 50,770 | +0.00006 | −0.00025 to +0.00037 | −0.2% |
+| Rural | 37,797 | +0.00026 | −0.00025 to +0.00080 | −0.6% |
+| December–February | 32,435 | −0.00002 | −0.00051 to +0.00044 | 0.0% |
+| March–May | 5,342 | +0.00027 | −0.00025 to +0.00084 | −2.2% |
+| June–August | 13,669 | −0.00019 | −0.00084 to +0.00040 | +0.8% |
+| September–November | 37,121 | +0.00043 | −0.00035 to +0.00123 | −0.8% |
+
+Thames is the only group whose interval lies below zero. Yorkshire's week-only interval lies above zero (+0.00004 to
++0.00127). These are 2 of 15 groups chosen in advance for reporting, not for decision. With that many groups, one or
+two such intervals are expected by chance (inferred, not tested). The Thames figure is not evidence on its own.
+
+### The 2026 forward check (secondary)
+
+The models were fitted on all of 2025 and frozen, then scored on Thames Water, 1 January to 31 August 2026.
+- 188 overflows, 45,120 overflow-days, 4,228 spill days.
+- 16 of the 204 Thames overflows had no 2026 lead-0 forecast in their cell.
+
+| Comparison | Difference | Interval | Skill |
+|---|---|---|---|
+| L3 − C | −0.00056 | −0.00211 to +0.00056 | +1.3% |
+| L1 − C | −0.00025 | −0.00132 to +0.00059 | +0.6% |
+| C − P | −0.00072 | −0.00216 to +0.00057 | +1.6% |
+| L3-lag − C-lag | +0.00083 | +0.00018 to +0.00174 | −1.9% |
+
+- L3 leans the same way as Thames in 2025, but its interval includes zero.
+- The issue-time local arm is worse than the issue-time cell arm, with an interval above zero.
+- This is one company and eight months. It does not change the verdict.
+
+### The no-refit check (as #343)
+
+This is the production `spill_model.pkl` on 552,855 overflow-days in 2025, United Utilities left out. These are the
+same rows #343's Question 3 scored: 1,515 overflows and 28,856 spill days.
+- C 0.0339, L3 0.0338, L1 0.0340, P 0.0343, E 0.0356. #343's C, P and E figures are reproduced.
+- L3 − C is −0.00004, interval −0.00017 to +0.00010.
+
+### Exploratory: where cell rain should miss most (decides nothing)
+
+| Rows | Spill days | L3 − C | Interval | Skill |
+|---|---|---|---|---|
+| June–August | 13,669 | −0.00019 | −0.00084 to +0.00040 | +0.8% |
+| The tenth with the largest L3–C gap | 34,354 | −0.00064 | −0.00276 to +0.00149 | +0.6% |
+| That tenth, within June–August | 6,553 | −0.00265 | −0.00671 to +0.00256 | +2.6% |
+
+Local rain leans the right way on summer days where block and cell disagree most. The intervals are wide and include
+zero. A summer-storm-only test is not supported. It would use a subset chosen after seeing these figures, and in the
+whole year these rows are about 2.5% of overflow-days (a tenth of the summer's 347,576).
+
+### What this shows
+
+**Established, from this run:**
+- Within a 10 km cell, rain at the overflow's own 1 km block does not predict that overflow's spill days better than
+  the cell's mean. That holds when the model is refitted on each source. The interval excludes a gain of 1%. The
+  one pixel does slightly worse than the cell.
+- **Knowing the day's rain matters much more than where in the cell it fell.** Refitted on radar, the model beats the
+  same model refitted on the lead-0 forecast by 7.8% (C − P). It beats ERA5-Land by 16.6%. These are full-day
+  figures: they use the whole day's rain, as it fell.
+- With today's rain from the forecast and only the two days before from radar, the gain shrinks to 0.9% (C-lag − P).
+  Its interval includes zero with week clustering and lies below zero with day clustering.
+
+**Inferred, not tested:**
+- Why local rain does not help. Day totals at block and cell correlate at 0.967 and differ by 5 mm on 1.6% of days.
+  Overflows also respond to rain over their whole sewer catchment, which is often wider than 1 km. Neither was tested
+  here.
+- The large refit gain over the forecast differs from #343's no-refit gain of 1.3%. A model fitted on radar learns to
+  use it; the UU-trained model cannot. That gain sits mainly in the same day's rain, which a live build only has up
+  to issue time.
+
+**Development, not confirmation.** The 2025 labels had been scored before (#343, a different model). These figures
+rank the inputs. They are not fresh evidence for any forecast.
+
+### What follows
+
+As stated for N: **rain at each overflow's own position is archived as a spill-model input**, with this evidence.
+- The private per-overflow data stays in `swimsignal-private/radar-per-overflow/` for river-rise and event-timing
+  questions.
+- It reopens if a model that knows each company is adopted (A8, upgraded-overflow option B, a nine-company refit), or
+  when the EA 2026 start/stop files give a second labelled year with per-overflow radar.
+
+**The next deliverable this evidence points to is not local rain. It is radar for the day, at issue time.** The
+full-day cell radar arm beat the forecast by 7.8%. The issue-time arm, which uses only the days before, kept 0.9%.
+The gap between them is the part of today's rain that falls before issue time plus the part that has yet to fall. It
+can be split now from history with no new data:
+- the cell radar is cached hourly from November 2024;
+- a stated test can feed "radar up to the issue hour, lead-0 forecast for the hours after" at the build's issue
+  hours, against P and C-lag, with the same model form and folds.
+
+That test needs its own statement before any score. It is proposed as a separate task. Any live use would also need:
+- the fetcher to read the latest composites at build time (about 20 minutes behind real time, from
+  `docs/MET-OFFICE-DATA-2026-10.md`);
+- a dated amendment to the 2027 stamp before 1 May 2027.
+
+### Data credits
+
+Contains Met Office data © Crown copyright 2024–2026, licensed under CC BY-SA 4.0 (AWS Open Data: Met Office UK
+Radar Observations). This test publishes only summary figures from it. Environment Agency event duration monitoring
+data, Open Government Licence v3.0. Thames Water discharge alerts. Weather data by Open-Meteo.com (CC BY 4.0),
+including ERA5-Land (Copernicus Climate Change Service).
