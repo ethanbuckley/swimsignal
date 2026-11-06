@@ -1942,6 +1942,18 @@ const yesterdayLine = () => `Issued yesterday at ${new Date(DATA.generated_at).t
 // from a feed that has not updated within six hours says when it last did, not "not discharging": a
 // frozen feed would go on saying that. One missing from its company's live feed says so.
 const feedTime = iso => new Date(iso).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+// When the build last read the companies' live feeds (build_site.live_feed_health), as ms; NaN without it. The
+// file writes "2026-11-06 15:34:35.903037+00:00", with a space where ISO has a T, which Safari's Date.parse refuses
+// (record.js reads it the same way). pollAt gives it as issued() gives the issue: "Fri 15:34".
+const polledMs = () => Date.parse(String((typeof DATA === 'object' && DATA && DATA.build && DATA.build.live_feeds || {}).polled_at || '').replace(' ', 'T'));
+const pollAt = () => { const t = polledMs();
+  return Number.isFinite(t) ? new Date(t).toLocaleString('en-GB', { weekday: 'short', hour: '2-digit', minute: '2-digit' }) : ''; };
+// The Right now tile's quiet line (tile's note): when its readings were polled, and how long ago. Scheduled builds
+// ran a median 4.6 h apart from 7 Oct to 6 Nov 2026 (95% within 7.7 h), so "0 of 6 discharging" was often hours
+// old with nothing on the tile to say so. Said at every age: a spill that starts after the poll is never in the
+// count, however recent the poll.
+const pollSay = () => { const t = polledMs();
+  return Number.isFinite(t) ? `Last poll ${pollAt()}, ${agoSpan(t)} ago: a spill that started after it is not shown.` : ''; };
 // When an overflow's last spill ended, in the page's own words for a date: "2 Oct", or "8 May 2025" from
 // another year; the map's pop-up adds the time. Written out, as every other date on the page is, not
 // as the locale's "02/10/2026, 14:33:00".
@@ -2757,7 +2769,8 @@ function nowTile(d, total) {
   if (!mon && !n)
     return { ...base, fig: 'Unknown', say: `None of the ${total === 1 ? 'overflow' : `${total} overflows`} upstream ${total === 1 ? 'reports' : 'report'} live, so whether ${total === 1 ? 'it is' : 'any is'} discharging is not known.${noFeedSaid(d)}` };
   return { ...base, fig: n, unit: mon >= total ? `of ${total} discharging` : 'discharging', figTone: n ? 'hot' : '',
-    say: `${recentSay(now.recent_upstream, n, d.assumptions.recent_spill_hours)} ${mon} of ${total} report live.${clearWords(d) ? ' ' + clearWords(d) : ''}` };   // when it should clear (levels.js)
+    say: `${recentSay(now.recent_upstream, n, d.assumptions.recent_spill_hours)} ${mon} of ${total} report live.${clearWords(d) ? ' ' + clearWords(d) : ''}`,   // when it should clear (levels.js)
+    note: pollSay() };   // the tile's quiet line, under what it says
 }
 // Every overflow upstream as a dot: discharging, stopped lately (a ring), quiet, or not reporting.
 const overflowDots = d => { const n = d.now || {}, total = overflows(d), dis = Math.min(n.discharging_upstream || 0, total), rec = Math.min(n.recent_upstream || 0, total - dis);
@@ -2925,7 +2938,9 @@ const answerWords = (d, iso = null) => { const m = answerParts(d, iso), spill = 
 // The live status's counts (levels.js, liveLine) at the foot of the five days, where they say how much of the week the
 // feeds can see. Over the level they put a grey sentence before the answer (Medway at Tonbridge, 31 Oct 2026). "Live
 // sewage spill status unavailable" stays over the level (answerWords), since it makes the level the modelled forecast.
-const liveRow = d => { const m = liveParts(d, true); return m.live && !m.blind ? `<p class="live-row">${m.live}.</p>` : ''; };
+// With the poll's clock time, not its age: this line is in the built page (scripts/prerender_spots.js), where an age would
+// stay as it was when built.
+const liveRow = d => { const m = liveParts(d, true); return m.live && !m.blind ? `<p class="live-row">${liveLine(d, pollAt())}.</p>` : ''; };
 // Under the five days, in their tile: what to do at the level, that day, and what the level counts. In the
 // answer, between the level and the week, they put the five days 739 px down a 375 px phone at Long Bridges,
 // and below the screen at Ludlow. iso as answerWords; showDay fills it again.
@@ -3483,6 +3498,10 @@ lowCtl.addTo(map);
 // The build is scheduled every 30 min but GitHub starts it when it can: over 113 builds on
 // 13-28 Sep 2026 they were a median 2.9 h apart, at most 8.1 h. At 120 min the banner
 // would have shown 48% of the time; at 6 h, 1%; at 8 h, never. So 8 h means a build has failed.
+// 7 Oct-6 Nov 2026 they were further apart: 156 scheduled runs a median 4.6 h apart, 95% within 7.7 h, at most
+// 10.1 h; with pushes to main counted, the published forecast was over 4 h old 20% of the time, over 6 h 6% and
+// over 8 h 2%. The banner stays at 8 h; under it, the issue time and its age are on every view, and a reading
+// says when it was polled (pollSay, liveRow), so an old "not discharging" never reads as current.
 const STALE_MIN = 8 * 60;
 const ageMin = () => (Date.now() - new Date(DATA.generated_at).getTime()) / 60000;
 const ago = m => { const t = Math.round(m); return t < 60 ? `${t} min` : t % 60 ? `${Math.floor(t / 60)} h ${t % 60} min` : `${t / 60} h`; };   // "6 h", not "6 h 0 min"
@@ -3618,7 +3637,7 @@ function overview(spots) {
 // (overview, less its issue time) are at the list's foot, so a phone's first screen reaches the first spot.
 function overviewTop(spots) {
   const advised = typeof eaTodayAdvice === 'function' ? spots.filter(s => eaTodayAdvice(s).length) : [];
-  return `Updated ${issued()}.` + (advised.length ? ` ${advised.length === 1 ? '1 spot has' : `${advised.length} spots have`} an official notice: ${noticeVerb(advised)}.` : '');
+  return `Updated ${issued()} (${agoSpan()} ago).` + (advised.length ? ` ${advised.length === 1 ? '1 spot has' : `${advised.length} spots have`} an official notice: ${noticeVerb(advised)}.` : '');
 }
 // A chosen date must describe the same forecast in the list, on the map and in the detail link.
 const listHeadline = s => VIEW.day ? dayHeadline(s, VIEW.day) : headline(s);
@@ -3890,7 +3909,7 @@ function drawSpots() {
     bindItems(nearList);
   }
   document.getElementById('all-h').textContent = VIEW.q.trim() || VIEW.filter !== 'all' || VIEW.lowOnly ? 'Matching spots' : byArea() ? 'Spots by area' : 'All spots';
-  document.getElementById('overview').textContent = overviewTop(items);
+  document.getElementById('overview').innerHTML = overviewTop(items);   // markup: the age moves on in place (stillCurrent)
   const changed = [VIEW.sort !== SORT0, VIEW.filter !== 'all', VIEW.lowOnly].filter(Boolean).length, fn = document.getElementById('filter-n');
   if (fn) { fn.textContent = changed; fn.hidden = !changed; document.getElementById('filter-btn').setAttribute('aria-label', changed ? `Filter, ${changed} on` : 'Filter'); }
   const done = document.getElementById('filter-done'); if (done) done.textContent = `Show ${items.length} spot${items.length === 1 ? '' : 's'}`;

@@ -214,11 +214,14 @@ const liveHead = s => { const c = liveCover(s); if (!c) return '';
   return c.kind === 'none' ? LIVE_NONE : c.kind === 'partial' ? `Live status from ${c.mon} of ${c.total} overflows upstream`
     : c.total === 1 ? 'Live status from the overflow upstream' : `Live status from all ${c.total} overflows upstream`; };
 // The same with what those statuses said, as at the last poll, and the ones with none said as unknown, never
-// as dry: the line at the top of a spot's answer, before the level, on today's view.
-const liveLine = s => { const c = liveCover(s); if (!c) return '';
+// as dry: the line at the top of a spot's answer, before the level, on today's view. at: the poll's clock time
+// ("Fri 15:34"), where the caller has it. A build can be 4 to 8 hours old when read (6 Nov 2026), and "none
+// spilling at the last poll" with no time read as current.
+const liveLine = (s, at = '') => { const c = liveCover(s); if (!c) return '';
   const k = Math.min(c.mon, (s.now || {}).discharging_upstream || 0), rest = c.total - c.mon;
   if (c.kind === 'none') return `${LIVE_NONE}: ${c.total === 1 ? 'the overflow upstream does not report live' : `none of the ${c.total} overflows upstream reports live`}`;
-  const said = c.total === 1 ? (k ? 'spilling at the last poll' : 'not spilling at the last poll') : `${k ? `${k} spilling` : 'none spilling'} at the last poll`;
+  const poll = `at the last poll${at ? ` (${at})` : ''}`;
+  const said = c.total === 1 ? `${k ? 'spilling' : 'not spilling'} ${poll}` : `${k ? `${k} spilling` : 'none spilling'} ${poll}`;
   return `${liveHead(s)}: ${said}${rest ? `; ${rest} ${rest === 1 ? 'does' : 'do'} not report, so could be spilling unseen` : ''}`; };
 // The live status over a level on today's view, for the spot's answer (index.html, answerParts): `live`, the line at the top
 // of the answer, in counts; `blind`, no overflow upstream gives a current status, when the answer leads with
