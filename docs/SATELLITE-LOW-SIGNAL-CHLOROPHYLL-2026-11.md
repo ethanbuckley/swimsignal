@@ -113,7 +113,7 @@ samples' median shift was 0.004).
 lab chlorophyll test passes or fails under any variant, or that any threshold is right; the 2027 protocol review
 decides what to do with the flag, on 2027 pairs.
 
-### Amendment 1 (5 November 2026, 23:58 UTC, written before the resumed run)
+### Amendment 1 (5 November 2026, 23:56 UTC, written before the resumed run)
 
 The first run (protocol commit `02c386ff`, 23:47 UTC; fetch from 23:52:28 UTC) stopped after 51 scenes at the 52nd,
 the B05 read of `S2A_T30UXD_20260709T112128_L2A` at Swanholme Lakes (AN-SWANHWFD): the server dropped the connection
@@ -138,14 +138,117 @@ value). C − A: pooled −0.002 [−0.028, +0.022]. D − C: pooled +0.136, wit
 these: flagged share common; "removes pairs that carry information" (by the within-lake fall, on 10 pairs); margin
 makes no difference.
 
-## 4. Results
+## 4. Results (6 November 2026)
 
-To be written after the run.
+**Runs.** Two, under amendment 1: 51 scenes (23:52 to 23:53 UTC, 225 requests, 119.8 MiB, stopped by a dropped
+connection) and 155 scenes (23:57 to 00:01 UTC, 672 requests, 344.0 MiB). Together **897 requests and 486,293,124 bytes
+(463.8 MiB)**, every completed response 206, no retry, under the 1,000-request and 600 MiB caps; the estimate was
+905 and 460 MiB. One scene is unread (Swanholme Lakes, sample 10 July 2026), so **206 of the 207 pairs** are in the
+results. The SHA-256 over the 25,234 cached input files was `8e2f4b200b05f67fcafc0026ba5a663205fdcbaf9a4ece7797f41daf3675321c`
+before selection, before and after each run and at the report; the features and values files hash to the test's
+committed values. All 206 recomputed core readings equal the cached ones (largest difference 0). Every pair has an
+inner-core reading (the thinnest core has 9 inner pixels). The protocol commit (`02c386ff`, 23:47 UTC) precedes the
+first fetch and the amendment commit (`c86bd5d2`, 23:56 UTC) precedes the resumed one; neither is independently
+timestamped outside this work session. Per-pair values and every figure below:
+[`data/research/satellite_low_signal_chl_2026_11.json`](../data/research/satellite_low_signal_chl_2026_11.json)
+(the first run's own figures under `run1_partial`).
+
+### 4.1 The share flagged
+
+**43 of 206 pairs (20.9%)** would carry the low-signal mark: 19 dark and spread, 21 spread only, 3 dark only. By lake
+type: deeper 26 of 92 (28%), shallow 11 of 89 (12%), no depth 6 of 25. By season 4 of 19 (2021), 7 of 43, 10 of 41,
+9 of 38, 13 of 65 (2026). No lake loses every pair; 25 of 38 lakes keep at least 3 unflagged pairs. Most flagged
+pairs are at Windermere's south basin (4 of 9), Wast Water (4 of 5), Wroxham Broad (3 of 8) and Tunstall Reservoir
+(3 of 9); 27 lakes have at least one. The flagged readings are lower (median −0.049 against +0.067 unflagged) and
+their lab chlorophyll lower too (median log10 0.83 against 1.18, about 7 against 15 µg/l); every one of the 10
+readings below −0.2 is flagged. Core brightness over the 206 scenes: quartiles 0.032, 0.052, 0.081.
+
+### 4.2 The measures
+
+| Variant | Pairs (lakes) | Pooled Spearman [95%] | Within-lake Spearman [95%] (pairs) | Per-lake median ρ (lakes ≥ 3 pairs) |
+|---|---|---|---|---|
+| A: core reading, every pair | 206 (38) | 0.501 [0.298, 0.667] | 0.292 [0.144, 0.430] (203) | 0.43 (30; 24 positive) |
+| B: core reading, unflagged | 163 (38) | 0.580 [0.379, 0.729] | 0.395 [0.205, 0.568] (155) | 0.50 (25; 19 positive) |
+| C: inner-core reading, every pair | 206 (38) | 0.505 [0.302, 0.666] | 0.289 [0.141, 0.427] (203) | 0.45 (30; 24) |
+| D: inner-core reading, unflagged | 163 (38) | 0.581 [0.379, 0.727] | 0.396 [0.206, 0.572] (155) | 0.50 (25; 19) |
+
+A reproduces the test on 206 of its 207 pairs (0.501 against 0.502; the lower end 0.298 against 0.2997).
+
+**Paired differences** (cluster bootstrap of the difference itself):
+
+| Difference | Pooled Spearman | Within-lake Spearman |
+|---|---|---|
+| B − A: the flag's effect, core reading | **+0.080** [−0.023, +0.176] | **+0.102** [−0.037, +0.255] |
+| D − C: the flag's effect, inner-core reading | +0.076 [−0.027, +0.172] | +0.107 [−0.034, +0.262] |
+| C − A: inner-core in place of core, same 206 pairs | +0.004 [−0.005, +0.012] | −0.003 [−0.018, +0.012] |
+
+**The pre-stated reading, as the code produced it:**
+1. "Flagged share 21%: common, not frequent."
+2. "Mixed: pooled +0.080, within-lake +0.102 (a small change and a large change, with no paired interval excluding
+   zero): inconclusive on these pairs; no next step beyond the 2027 review."
+3. "Inner-core against core reading, same pairs: pooled Spearman differs by +0.004, under 0.03: the margin makes no
+   difference to the relationship on these pairs."
+4. "With the inner-core reading the flag's effect is pooled +0.076, within-lake +0.107 (a small change, a large change)."
+5. "Nothing here is a claim about algae, toxins or whether water is safe, and the lab chlorophyll test's verdict is
+   unchanged."
+
+Both measures rose by at least the pre-stated 0.03 when the flagged pairs were removed, in the direction the flag
+would predict if those readings are noise, but neither paired interval excludes zero, so under the rule written down
+beforehand the result is **mixed, not shown**. The expectation written beforehand (section 3) was wrong in one
+respect: removing flagged pairs raised the pooled Spearman rather than lowering it. The flagged readings are low at
+low-chlorophyll lakes, so taking them out did not break the between-lake ranking; it tightened it.
+
+**Description, decides nothing:** the test's four conditions recomputed on each variant's rows. On A they reproduce
+the test (condition 1 misses by 0.002 on 206 pairs; placebo beaten in all 200 shuffles; calibration skill 0.158
+[−0.060, 0.324], "Too uncertain"; shallow lakes "Better", deeper "Too uncertain"). On B, the unflagged pairs, all
+four hold as figures: pooled 0.580 with lower end 0.379; placebo 95th percentile 0.539, 0 of 200 at or above 0.580;
+leave-one-lake-out calibration skill 0.364 [0.150, 0.539], "Better"; shallow 0.575 [0.370, 0.728] "Better", deeper
+0.092 [−0.275, 0.362] "Too uncertain". **This is not a pass.** B is a subset chosen by a rule applied to seen pairs,
+after the test was scored; the test's rules say such a subset needs new data (as the shallow-lake subset did on 27
+October). It says what to expect on 2027 pairs, and what to pre-state.
+
+### 4.3 What this means for the reading
+
+1. The low-signal mark, fixed on bathing-lake scenes before any lab pair was seen with it, marks about a fifth of the
+   lab-paired readings, more at deeper lakes. It does not remove the signal: every measure of agreement with lab
+   chlorophyll is higher without the flagged pairs, by 0.08 to 0.10 in Spearman, with intervals that include zero.
+2. The flagged readings are not random noise around the right value: they sit low (median −0.05, all ten readings
+   below −0.2) at lakes with low chlorophyll. That is the dark-water mechanism of the outlier record, and it is why the
+   pooled rank agreement did not fall when they were removed. A low index in a dark scene is not evidence of low
+   chlorophyll and must not be read as such; the display note's wording holds.
+3. The inner-core reading changes nothing against lab chlorophyll on these pairs (+0.004). The one-pixel margin stays.
 
 ## 5. Limitations
 
-To be written after the run.
+- **Seen data.** The pairs, their lab values and the test's score were known before this check; the thresholds were
+  fixed on other scenes, but this is the first time they met lab data, and the variants were examined once. Nothing
+  here is confirmatory. The recomputed conditions on B are description.
+- **One run became two.** The first run stopped on a dropped connection at scene 52; amendment 1, recorded before the
+  resume, added a second run over the unattempted scenes and left the failed scene out. The resume was decided on
+  sample size (51 pairs at one or two per lake) with the partial figures already seen; they are kept in the record and
+  the file so a reader can judge that. One pair of 207 is missing.
+- **The paired intervals include zero.** With 43 flagged pairs the paired difference has a 95% interval about 0.2 wide
+  in the pooled and 0.3 in the within-lake Spearman. These pairs cannot show a change of 0.08 to 0.10; 2027 pairs at
+  the same rate would need to be several times as many to do so, if the effect is real.
+- **The within-lake measure** takes each lake's mean off, so it mixes seasons within a lake; the test's placebo keeps
+  lake and season. Both are reported.
+- **The flagged share** is for scenes within a day of a lab sample in May to September at 38 monitoring points; the
+  rate at the bathing-water lakes or out of season is not measured here.
+- No pixel of these scenes was inspected by eye; the mechanism statement rests on the outlier record's pictures of
+  other scenes and on the brightness figures here.
+- The lab outcome is EA acetone-extract chlorophyll (determinand 7887), spectrophotometric, phaeopigment correction
+  not stated; nothing here says anything about algae, toxins or whether water is safe.
 
 ## 6. Next step
 
-To be written after the run.
+Under the pre-stated reading, no step beyond the 2027 shallow-lake protocol review (before 1 May 2027), which already
+tests the flags against lab chlorophyll on readings made after contract 1.4. What this check adds to that review:
+- the direction and size to pre-state: removing flagged pairs raised the pooled Spearman by 0.08 and the within-lake
+  Spearman by 0.10 on seen 2021-2026 pairs; a 2027 margin of usefulness should be set below that, and the flagged
+  share expected is about a fifth (more at deeper lakes);
+- the exclusion is a candidate secondary analysis for the 2027 statement, pre-registered there, not a change to the
+  display rule or to any reading now;
+- the inner-core reading need not be carried as a variant in that review: it made no difference here.
+
+Nothing is adopted, no threshold changes, the note on `/lakes.html` stays as contract 1.4 wrote it, and the lab
+chlorophyll test's verdict ("fails as stated; promising, not validated") is unchanged.

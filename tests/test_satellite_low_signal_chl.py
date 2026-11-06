@@ -114,3 +114,28 @@ def test_thresholds_are_the_contracts_and_the_stated_ones():
     assert L.low_signal(None, None) is None
     assert (L.MAX_REQUESTS, L.MAX_BYTES) == (1000, 600 * 1024**2) and L.SEED == 20261105
     assert (L.SMALL, L.LARGE, L.RARE, L.FREQUENT) == (0.03, 0.10, 0.10, 0.30)
+
+
+def test_published_values_hold_the_protocol():
+    import json
+    d = json.loads((ROOT / "data/research/satellite_low_signal_chl_2026_11.json").read_text())
+    assert d["fingerprint_unchanged"] is True and d["thresholds"]["low_signal"] == L.LOW_SIGNAL
+    assert d["network"]["requests"] <= d["caps"]["requests"] and d["network"]["bytes"] <= d["caps"]["bytes"]
+    assert d["pairs"] == d["selected"] == 207 and d["completed"] == d["pairs_read"] == 206 and len(d["runs"]) == 2
+    rows = [r for r in d["rows"] if r["read"]]
+    assert len(rows) == 206 and len({(r["wqa_point"], r["item_id"]) for r in rows}) == 206
+    for r in rows:
+        assert abs(r["reading_recomputed"] - r["reading"]) <= 1e-6
+        assert r["low_signal"] == L.low_signal(r["core_brightness"], r["index_iqr"])
+        assert r["dark"] == (r["core_brightness"] < L.LOW_SIGNAL["brightness_below"])
+        assert r["spread"] == (r["index_iqr"] >= L.LOW_SIGNAL["iqr_at_least"])
+    assert d["flag_share"]["flagged"] == sum(r["low_signal"] for r in rows) == 43
+    a, b = d["variants"]["A"], d["variants"]["B"]
+    assert a["pairs"] == 206 and b["pairs"] == 163 and abs(a["pooled"]["rho"] - 0.501) < 0.001
+    assert "verdict" not in a["test_conditions"]
+    fc = d["differences"]["flag_core"]
+    assert abs(fc["pooled"]["d"] - (b["pooled"]["rho"] - a["pooled"]["rho"])) < 1e-9
+    assert fc["pooled"]["L"] < 0 < fc["pooled"]["U"] and fc["within_lake"]["L"] < 0 < fc["within_lake"]["U"]
+    words = L.reading_in_words(d["flag_share"]["share"], fc, d["differences"]["inner_vs_core"], d["differences"]["flag_inner"])
+    assert d["reading_in_words"] == words and words[1].startswith("Mixed")
+    assert d["run1_partial"]["completed"] == 51 and d["run1_partial"]["pairs_read"] == 51
