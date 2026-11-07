@@ -195,6 +195,18 @@ const nowUnknown = s => { if (!daily(s) || !s.now || rank(s.now.label) >= 1 || (
 // Why right now is not known, after "Low risk forecast": none reports, or the ones that do matter little here.
 const nowUnknownWhy = s => !Math.min(overflows(s), (s.now || {}).monitored_upstream ?? overflows(s))
   ? 'no overflow upstream reports live' : 'the overflows that matter most here do not report live';
+// Too few report for "0 discharging" to stand as a count: some overflows upstream report live, none of
+// them is discharging, and the ones that report are fewer than half by number or carry under half the
+// weight (NOW_WATCHED_SHARE, as nowUnknown). The Right now tile then gives no figure, and the evidence
+// row leads with how many report (index.html, nowTile; evidence.js). 'count' or 'weight' says which; ''
+// where the count stands. Sandy Lane, Chester (6 Nov 2026): a large "0 discharging" over "1 of 13 report
+// live". On that night's build two of the 91 spots with overflows upstream had 1 to 49% reporting: Sandy
+// Lane (1 of 13) and Barcombe Mills (1 of 46). The next lowest was over 75%, so any cut from 8% to 75%
+// picks the same two; half is "most do not report". A clicked point (anypoint.js) has no weights, so its
+// count decides: the Dee at Chester, 1 of 18. A discharge is a reading, and its count stays.
+const nowFew = s => { const n = s.now || {}, total = overflows(s), mon = Math.min(total, n.monitored_upstream ?? total);
+  if (!total || !mon || (n.discharging_upstream || 0) > 0) return '';
+  return mon < total * NOW_WATCHED_SHARE ? 'count' : nowWatched(s) < NOW_WATCHED_SHARE ? 'weight' : ''; };
 // The live status behind a spot, in counts, said wherever a level is shown (review of PR #463, 30 Oct 2026:
 // at the Wye at Symonds Yat, "Low risk from sewage spills" over five low days read as an observation, though
 // none of its 14 overflows reports live). The statuses are what the companies' feeds said at the last poll
@@ -848,7 +860,7 @@ const longSpill = (c, nowMs) => { const a = spillStart(c); return a !== null && 
 const LONG_SPILL = 'A spill this long is unusual and may be a monitor fault. It still counts in the risk.';
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { nameCase, plainName, overflowNames, ORDER, NOT_COVERED, NO_FORECAST, NO_OVERFLOWS, NO_RIVER, OTHER_RISKS, SPILL_CUTS, ECOLI_CUTS, spillLevel, shownRisk, tooFar, allUpstream, tooFarSaid, WEIGHT_SAID, setToday, today, dayWord, readerDay, fromDay, rank, risk, nowUnknown, nowUnknownWhy, nowWatched, NOW_WATCHED_SHARE, LIVE_NONE, liveCover, liveHead, liveLine, liveParts, MODELLED_FROM, level, dayLevel, headParts, headline, levelScope, nowBecause, dayBecause, dayHeadline, tileLine, weekNext, laterWords, coverage, COVER, FOUND_NONE, ISOLATED_WHY, plainLevel, inBathingSeason, poorReason, poorAdvice, daily, ecoliBand, ecoliLevel, ecoliUntested, bestDay, weekendWords, yoursLevelled, lowAnswerDay, lowAnswerWords, mostWords, clockWords, clearWords, RAIN_OLD_H, rainAgeLine, backToLow,
+  module.exports = { nameCase, plainName, overflowNames, ORDER, NOT_COVERED, NO_FORECAST, NO_OVERFLOWS, NO_RIVER, OTHER_RISKS, SPILL_CUTS, ECOLI_CUTS, spillLevel, shownRisk, tooFar, allUpstream, tooFarSaid, WEIGHT_SAID, setToday, today, dayWord, readerDay, fromDay, rank, risk, nowUnknown, nowUnknownWhy, nowFew, nowWatched, NOW_WATCHED_SHARE, LIVE_NONE, liveCover, liveHead, liveLine, liveParts, MODELLED_FROM, level, dayLevel, headParts, headline, levelScope, nowBecause, dayBecause, dayHeadline, tileLine, weekNext, laterWords, coverage, COVER, FOUND_NONE, ISOLATED_WHY, plainLevel, inBathingSeason, poorReason, poorAdvice, daily, ecoliBand, ecoliLevel, ecoliUntested, bestDay, weekendWords, yoursLevelled, lowAnswerDay, lowAnswerWords, mostWords, clockWords, clearWords, RAIN_OLD_H, rainAgeLine, backToLow,
     ACTION, POOR_ACTION, ALGAE_ACTION, PLAIN_ACTION, actionFor, levelAction, dayAction, HEAD_SCOPE, spillSet, worstNear,
     SAMPLE_LINE, SAMPLE_DAYS, sampleLevel, standingLevel, eaUnchecked, EA_UNCHECKED, walesShare, walesWords, trialWords, ecoliNotes,
     ECOLI_OFF, ECOLI_EXPERIMENTAL, ECOLI_FOLD, ECOLI_OFF_SAID,

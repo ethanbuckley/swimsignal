@@ -125,8 +125,13 @@ test('a swim keeps no overflow count where none reports, and no lake level as a 
   const s = j.journalSeen(wye, TODAY, TODAY, ISSUED, LATER);
   assert.equal(s.dis, null); assert.equal(s.of, null);
   assert.ok(!j.journalSeenWords(s).some(w => /overflow/.test(w)));
-  const some = j.journalSeen(spot({ upstream_summary: { overflows: 14 }, now: { label: 'low', discharging_upstream: 0, monitored_upstream: 3 } }), TODAY, TODAY, ISSUED, LATER);
+  const some = j.journalSeen(spot({ upstream_summary: { overflows: 14 }, now: { label: 'low', discharging_upstream: 0, monitored_upstream: 10 } }), TODAY, TODAY, ISSUED, LATER);
   assert.equal(some.of, 14);
+  // 6 Nov 2026: nor where too few report (levels.js, nowFew). Sandy Lane kept "none of the 13 overflows upstream
+  // discharging" with 1 of 13 reporting. A discharge is still kept.
+  const few = now => j.journalSeen(spot({ upstream_summary: { overflows: 13 }, now: { label: 'low', ...now } }), TODAY, TODAY, ISSUED, LATER);
+  assert.deepEqual([few({ discharging_upstream: 0, monitored_upstream: 1 }).of, few({ discharging_upstream: 0, monitored_upstream: 1 }).dis], [null, null]);
+  assert.deepEqual([few({ discharging_upstream: 1, monitored_upstream: 1 }).dis, few({ discharging_upstream: 1, monitored_upstream: 1 }).of], [1, 13]);
   const lake = spot({ river_state: { station: 'Far Sawrey', river: 'Windermere', level_m: 0.73, label: 'high', water: 'lake', stale: false } });
   assert.equal(j.journalSeen(lake, TODAY, TODAY, ISSUED, LATER).river, null);
 });

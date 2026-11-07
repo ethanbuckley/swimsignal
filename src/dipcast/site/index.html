@@ -2803,7 +2803,8 @@ const recentSay = (rec, dis, h) => rec ? `${rec}${dis ? ' more' : ''} stopped la
 // The Right now tile: how many overflows upstream are discharging, out of those that report live. Never
 // "0 of 14 discharging" where none of the 14 reports (Hereford, Symonds Yat and Sandy Lane,
 // whose overflows are all Dŵr Cymru's, with no live feed SwimSignal reads): the figure is then "Unknown".
-// Where some do not report, the count alone, and the line under it says how many report. Which do not, and
+// Where some do not report, the count alone, and the line under it says how many report; where too few report
+// for a 0 to stand (levels.js, nowFew), "Unknown" again, and the line says how many report and what they said. Which do not, and
 // that they could be spilling unseen, is said with the other gaps (unknowns, liveSay):
 // the tile says what is observed.
 // By its data state where it has one: status -2 is also an offline monitor on a feed that works (ingest.live.data_states),
@@ -2821,6 +2822,12 @@ function nowTile(d, total) {
     more: `A spill counts until ${d.assumptions.recent_spill_hours}&nbsp;h after its water has passed here. A monitor reports when it spills, not how much or what is in it.` };
   if (!mon && !n)
     return { ...base, fig: 'Unknown', say: `None of the ${total === 1 ? 'overflow' : `${total} overflows`} upstream ${total === 1 ? 'reports' : 'report'} live, so whether ${total === 1 ? 'it is' : 'any is'} discharging is not known.${noFeedSaid(d)}` };
+  // Too few report for a large 0 (levels.js, nowFew): no figure, and how many report, with what they said, in words.
+  const few = nowFew(d);
+  if (few) return { ...base, fig: 'Unknown',
+    say: `${now.recent_upstream ? recentSay(now.recent_upstream, 0, d.assumptions.recent_spill_hours) + ' ' : ''}${mon} of ${total} overflows upstream ${mon === 1 ? 'reports live, and it is not' : 'report live, and none of them is'} discharging.`
+      + ` ${few === 'count' ? 'Too few report to tell whether the rest are.' : 'The ones that matter most here do not report, so whether they are is not known.'}${clearWords(d) ? ' ' + clearWords(d) : ''}`,
+    note: pollSay() };
   return { ...base, fig: n, unit: mon >= total ? `of ${total} discharging` : 'discharging', figTone: n ? 'hot' : '',
     say: `${recentSay(now.recent_upstream, n, d.assumptions.recent_spill_hours)} ${mon} of ${total} report live.${clearWords(d) ? ' ' + clearWords(d) : ''}`,   // when it should clear (levels.js)
     note: pollSay() };   // the tile's quiet line, under what it says
