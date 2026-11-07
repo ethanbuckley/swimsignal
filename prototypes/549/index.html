@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>SwimSignal #549 review</title>
+<link rel="stylesheet" href="https://swimsignal.co.uk/page.css">
+<style>
+  body { background: var(--bg); }
+  .rv { max-width: 1100px; margin: 0 auto; padding: 16px; }
+  .rv h1 { font: 600 var(--fs-title)/1.15 var(--font-display); margin: 0 0 4px; }
+  .pick { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
+  .pick button { min-height: 44px; padding: 0 14px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--card); font: 600 var(--fs-note) var(--font-text); cursor: pointer; }
+  .pick button[aria-pressed=true] { background: var(--brand); color: var(--on-fill); border-color: var(--brand); }
+  .pair { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; }
+  figure { margin: 0; }
+  figcaption { font-weight: 600; margin: 0 0 6px; }
+  .phone { width: 375px; height: 812px; border: 1px solid var(--line); border-radius: 12px; overflow: auto; background: var(--card); }
+  .phone img { width: 375px; display: block; }
+  iframe.phone { overflow: hidden; }
+  .note { font-size: var(--fs-note); color: var(--muted); max-width: 70ch; }
+</style>
+</head>
+<body>
+<div class="rv">
+  <h1>Before and after (#549)</h1>
+  <p class="note">Left: the live site on 31 Oct 2026 at 12:47 UTC, full length (scroll inside it). Right: the working prototype at
+    the same width, reading today's live data, so its values move with the forecast. <a href="AUDIT.md">The screen audit</a> ·
+    <a href="app.html" target="_blank">Open the prototype on its own</a> (best on a phone).</p>
+  <div class="pick" id="pick" role="group" aria-label="Screen and state"></div>
+  <div class="pair">
+    <figure><figcaption>Before: live site</figcaption><div class="phone" id="before"></div></figure>
+    <figure><figcaption>After: prototype</figcaption><iframe class="phone" id="after" title="Prototype"></iframe></figure>
+  </div>
+  <p class="note" id="what"></p>
+</div>
+<script>
+  // Each view: the live screenshot it replaces (before/), the prototype's route, and what the state shows.
+  const VIEWS = [
+    ['Explore / My waters', 'explore-saved', '#/explore', 'Three saved waters: one with official advice, one with a stale river gauge.'],
+    ['Spot: normal', 'spot-normal', '#/spot/eden-lazonby', 'River Eden, Lazonby: a live gauge, an estimated water temperature, moderate risk today.'],
+    ['Spot: official advice', 'spot-warning', '#/spot/bw-ukj2310-11945', 'Frensham Great Pond: Environment Agency advice against bathing, and no live status from its one overflow.'],
+    ['Spot: stale gauge', null, '#/spot/dove-dovedale', 'River Dove, Dovedale: the river gauge has not reported since 15 Oct.'],
+    ['Spot: feed not updating', null, '#/spot/cam-grantchester', 'River Cam, Grantchester: one upstream overflow\'s live feed is stale.'],
+    ['Spot: missing data', 'spot-nooverflow', '#/spot/loughrigg-tarn', 'Loughrigg Tarn: no river drawn in and no gauge. (Before: Wastwater, the nearest captured case.)'],
+    ['Plan', 'plan', '#/plan?spot=grasmere&backup=rydal-water&when=morning', 'Grasmere with Rydal Water as backup, tomorrow morning.'],
+    ['Research', 'research', '#/research', 'Entry cards; the methods prose moves into named sections.'],
+    ['Satellite: cloudy, no new image', 'lakes', '#/lakes/bw-ukd1101-45800', 'Derwent Water: the last weekly check found no new clear image, so the latest usable observation is older.'],
+    ['Satellite: two dates', 'lakes', '#/lakes/bw-ukj2310-11945?date=2025-07-15', 'Frensham Great Pond: step between usable dates; the date picks the dot and the reading.'],
+  ];
+  const pick = document.getElementById('pick');
+  const show = i => {
+    const [, before, route, what] = VIEWS[i];
+    pick.querySelectorAll('button').forEach((b, k) => b.setAttribute('aria-pressed', String(k === i)));
+    document.getElementById('before').innerHTML = before ? `<img src="before/${before}.jpg" alt="The live site's ${VIEWS[i][0]} screen, full length">` : '<p class="note" style="padding:16px">Not captured: the same page as Spot: normal, with this state in a fold.</p>';
+    document.getElementById('after').src = 'app.html' + route;
+    document.getElementById('what').textContent = what;
+    history.replaceState(null, '', '#' + i);
+  };
+  VIEWS.forEach(([t], i) => { const b = document.createElement('button'); b.textContent = t; b.onclick = () => show(i); pick.append(b); });
+  show(Math.min(VIEWS.length - 1, +location.hash.slice(1) || 0));
+</script>
+</body>
+</html>
