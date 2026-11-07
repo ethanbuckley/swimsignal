@@ -3690,14 +3690,15 @@ function overview(spots) {
   spots.filter(s => ORDER[mapLevel(s)] === undefined && !plainLevel(mapLevel(s)))
     .forEach(s => { const w = listHeadline(s).split(':')[0].toLowerCase(); why[w] = (why[w] || 0) + 1; });
   const none = Object.values(why).reduce((a, b) => a + b, 0);
-  // Official advice (eatoday.js) never changes a count above; the spots with it are counted on their own, and
-  // the counts are then named for what they are, the sewage forecast's.
+  // Official advice (eatoday.js) never changes a count above; the spots with it are counted on their own. The
+  // line keeps its one name, "Pollution risk" (6 Nov 2026: it said "Sewage pollution risk" when a spot was under
+  // advice, a second name for the same count; the "under official advice" words carry the distinction).
   const advised = typeof eaTodayAdvice === 'function' ? spots.filter(s => eaTodayAdvice(s).length).length : 0;
   // The forecast's own tally, which counts a spot under advice restricting swimming by its sewage level; how many of its
   // low spots that is, so it can be read beside the day strip's count, which leaves them out (lowToChoose). The first
   // figure is the strip's (5 Nov 2026: "63 low risk" over "64 low (1 of them ...)" read as two counts of one thing).
   const lowBarred = rated.filter(s => mapLevel(s) === 'low' && typeof lowEligible === 'function' && !lowEligible(s)).length;
-  return `Updated ${issued()} · ${advised ? 'Sewage pollution risk' : 'Pollution risk'}: ${low - lowBarred} low${lowBarred ? `, and ${lowBarred} more at low under official advice restricting swimming` : ''} · ${rated.length - low - high} moderate · ${high} high or very high`
+  return `Updated ${issued()} · Pollution risk: ${low - lowBarred} low${lowBarred ? `, and ${lowBarred} more at low under official advice restricting swimming` : ''} · ${rated.length - low - high} moderate · ${high} high or very high`
     + `${clear ? ` · ${clear} with no monitored overflow found upstream` : ''}${none ? ` · ${none} without a level` : ''}`
     + `${none ? ': ' + Object.entries(why).sort((a, b) => b[1] - a[1]).map(([w, n]) => `${n} ${w}`).join(', ') : ''}. ${cap(mapWhen())}.`
     + (advised ? ` ${advised} with an official notice: ${noticeVerb(spots.filter(s => eaTodayAdvice(s).length))}.` : '');

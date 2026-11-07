@@ -21,8 +21,8 @@ export const MAX_DATES = 10;        // pairs a browser may ask about
 export const MAX_AHEAD_DAYS = 400;  // about a year ahead, and a season's bookings
 const SPOT_ID = /^[A-Za-z0-9_-]{1,80}$/;
 const ISO = /^\d{4}-\d{2}-\d{2}$/;
-// The levels a day can be told in: the four, and the two plain ones ("No sewage risk from monitored
-// overflows", "No river connection"), which do not change but do answer "what will it be".
+// The levels a day can be told in: the four, and the two plain ones ("No monitored overflow found
+// upstream", "No river connection"), which do not change but do answer "what will it be".
 const ORDER = { low: 0, moderate: 1, high: 2, 'very high': 3 };
 const KNOWN = new Set([...Object.keys(ORDER), 'no overflows', 'no river connection']);
 

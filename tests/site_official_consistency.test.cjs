@@ -84,10 +84,10 @@ test('the map tooltip: the advice first, then the level on a line of its own; no
   assert.doesNotMatch(vm.runInContext('markerTip', bare)(frensham()), /advice/);
 });
 
-test('the list\'s counts stay the sewage forecast\'s, are named so, and count the spots with advice', () => {
+test('the list\'s counts stay the sewage forecast\'s, keep their one name, and count the spots with advice', () => {
   const ctx = pageContext(BASE, EXTRA), run = (f, ...a) => vm.runInContext(f, ctx)(...a);
   const with_ = run('overview', [frensham(), other()]), without = run('overview', [other(), other({ id: 'x' })]);
-  assert.match(with_, /Sewage pollution risk: 2 low · 0 moderate · 0 high or very high/);
+  assert.match(with_, /· Pollution risk: 2 low · 0 moderate · 0 high or very high/);   // one name (6 Nov 2026)
   assert.match(with_, / 1 with an official notice: follow it first\.$/);
   assert.match(without, /· Pollution risk: 2 low/);
   assert.doesNotMatch(without, /advice/);
