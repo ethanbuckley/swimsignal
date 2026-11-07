@@ -21,7 +21,7 @@ const JOURNAL_KEY = 'dipcast.swims';
 const JOURNAL_LIMITS = { swims: 500, note: 280, minutes: 600, photos: 3, allPhotos: 200, full: 3 * 1024 * 1024, thumb: 512 * 1024, file: 150 * 1024 * 1024 };
 const JOURNAL_SHOW = 5;                  // swims listed before "Show all"
 const JOURNAL_FILE = 'swimsignal-journal';   // a copy's name, and its kind inside it
-const jnRules = () => typeof dayHeadline === 'function' ? { ORDER, rank, daily, dayLevel, dayHeadline, nowBecause } : require('./levels.js');
+const jnRules = () => typeof dayHeadline === 'function' ? { ORDER, rank, daily, dayLevel, dayHeadline, nowBecause, nowFew } : require('./levels.js');
 
 const jnEsc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const jnPad = n => String(n).padStart(2, '0');
@@ -113,7 +113,8 @@ function journalSeen(d, date, today, issued, time) {
   // The overflows only where some report live: "none of the 14 discharging" is not known at Hereford,
   // whose 14 have no live feed. A lake's own gauge (river_state.water "lake") is not a river
   // level, and its words are not these: kept out.
-  const known = !!total && ((now.monitored_upstream ?? total) > 0 || (now.discharging_upstream || 0) > 0);
+  // Nor where too few report (levels.js, nowFew): "none of the 13 discharging" at Sandy Lane, where 1 of 13 reports.
+  const known = !!total && ((now.monitored_upstream ?? total) > 0 || (now.discharging_upstream || 0) > 0) && !R.nowFew(d);
   return jnSeenOk({ head, level, issued, rain: x && typeof x.rain_48h_mm === 'number' ? Math.round(x.rain_48h_mm * 10) / 10 : null,
     dis: known ? now.discharging_upstream || 0 : null, of: known ? total : null,
     river: !rs.stale && rs.water !== 'lake' && typeof rs.level_m === 'number' ? { m: rs.level_m, word: JN_RIVER[rs.label] || '' } : null, temp });

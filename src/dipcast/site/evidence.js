@@ -14,7 +14,7 @@
 
 const EVIDENCE_TZ = 'Europe/London';
 // The level rules (levels.js): the page loads them before this file, Node requires them.
-const evidenceRules = () => typeof sampleLevel === 'function' ? { sampleLevel, daily, nowUnknown, nowUnknownWhy, companyName, liveHead } : require('./levels.js');
+const evidenceRules = () => typeof sampleLevel === 'function' ? { sampleLevel, daily, nowUnknown, nowUnknownWhy, nowFew, companyName, liveHead } : require('./levels.js');
 const evidenceEsc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const evidenceNil = v => v === null || v === undefined || (typeof v === 'number' && Number.isNaN(v));
 const evidenceCap = s => s ? s[0].toUpperCase() + s.slice(1) : '';
@@ -73,6 +73,11 @@ function evidenceOverflows(d, generatedAt) {
   // Never "0 of 14 discharging" where none of the 14 reports: out of all of them only where all report;
   // where some do not, the count alone, beside how many report; with none, not known.
   const count = !mon && !dis ? 'Whether any is discharging is not known' : mon >= total ? `${dis} of ${total} discharging` : `${dis} discharging`;
+  // Too few report for the count to lead (levels.js, nowFew): how many report first, then what they said.
+  const few = evidenceRules().nowFew(d);
+  if (few) return { what: 'Overflows upstream', at: generatedAt,
+    say: `${mon} of ${total} report live: none discharging${rec ? `, ${rec} stopped lately` : ''}. Whether the rest are is not known.${not.length ? ` Not reporting: ${not.join('; ')}.` : ''}`,
+    src: "The water companies' live feeds" };
   return { what: 'Overflows upstream', at: generatedAt,
     say: `${count}${rec ? `, ${rec} stopped lately` : ''}. ${live}`,
     src: "The water companies' live feeds" };

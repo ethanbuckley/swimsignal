@@ -4,7 +4,7 @@
 // A check's date as people write it, "3 Oct 2026", not "2026-10-03"; anything else as given.
 const experienceWhen = (d => /^\d{4}-\d{2}-\d{2}$/.test(String(d)) ? new Date(d + 'T12:00:00Z').toLocaleDateString('en-GB', { timeZone: 'UTC', day: 'numeric', month: 'short', year: 'numeric' }) : d);
 const rules = () => typeof headParts === 'function'
-  ? { coverage, FOUND_NONE, daily, dayLevel, dayHeadline, nowUnknown, nowUnknownWhy, eaUnchecked, EA_UNCHECKED, rank, liveHead } : require('./levels.js');
+  ? { coverage, FOUND_NONE, daily, dayLevel, dayHeadline, nowUnknown, nowUnknownWhy, nowFew, eaUnchecked, EA_UNCHECKED, rank, liveHead } : require('./levels.js');
 const dayMonthYear = iso => new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', {day: 'numeric', month: 'short', year: 'numeric'});
 // The latest lab sample in the words of a spot's "What the level rests on" (evidence.js, evidenceSample),
 // as plain text; the page loads that file before this one, and Node requires it. Where there is none, it
@@ -85,9 +85,10 @@ function compareNow(s, generatedAt = null) {
   if (s.error) return R.coverage(s) === R.FOUND_NONE ? none : htmlText(`${R.coverage(s)}.`);
   if (!total) return none;
   if (n.monitored_upstream == null) return `Not known: this update has no live status for the ${total} overflow${total === 1 ? '' : 's'} upstream.`;
-  const mon = Math.min(total, n.monitored_upstream);
-  return (R.nowUnknown(s) && mon ? `${R.liveHead(s)}: right now not known here. ` : '') + overflowWords()(s, generatedAt).say
-    + (mon < total ? ' Missing reports do not mean no spills.' : '');
+  // Where too few report (levels.js, nowFew), the row already leads with how many report and says the rest are not known.
+  const mon = Math.min(total, n.monitored_upstream), few = R.nowFew(s);
+  return (R.nowUnknown(s) && mon ? (few ? 'Right now not known here. ' : `${R.liveHead(s)}: right now not known here. `) : '') + overflowWords()(s, generatedAt).say
+    + (mon < total && !few ? ' Missing reports do not mean no spills.' : '');
 }
 // Today's advice from the Environment Agency, against bathing after pollution or algae: the build and the
 // page cannot read it (eatoday.js), so at a designated bathing water the cell says it was not checked and

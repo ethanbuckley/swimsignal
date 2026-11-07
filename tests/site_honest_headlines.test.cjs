@@ -621,3 +621,78 @@ test('the five days say when spills that stopped lately set today, and how long 
   s.now = { label: 'low', risk: 0, discharging_upstream: 0, recent_upstream: 1, monitored_upstream: 3 };
   assert.match(text(vm.runInContext('daysSentence', ctx)(s)), /^A spill from one of the 3 overflows upstream is possible, not expected today\./);
 });
+
+// ------------------------------------------------------------------------------ too few report for a 0
+// Phone audit of 6 Nov 2026 (PR #642, item 8): Sandy Lane, Chester, showed a large "0 discharging" where 1 of its
+// 13 overflows reports live, and a map tap on the Dee at Chester the same with 1 of 18. The fixtures copy the
+// 23:42 build of 6 Nov. The levels, counts and forecast are not changed; only how the count is shown.
+const sandyLane = week(['low', 'low', 'low', 'low', 'low'], { id: 'bw-ukd6300-40752', name: 'Sandy Lane, Chester',
+  upstream_summary: { overflows: 13, with_live_feed: 1, without_live_feed: 12, wales_share: 0.77, companies: ['Dwr Cymru Welsh Water', 'United Utilities'] },
+  now: { risk: 0, label: 'low', discharging_upstream: 0, recent_upstream: 0, monitored_upstream: 1, feed_down_upstream: 0, feed_down: [],
+    stale_upstream: 0, feed_stale: [], no_feed_upstream: 12, monitored_weight: 0.0935, upstream_weight: 3.5746 } });
+const barcombe = week(['low', 'low', 'low', 'low', 'low'], { id: 'ouse-barcombe-mills', name: 'River Ouse (Sussex), Barcombe Mills',
+  upstream_summary: { overflows: 46 },
+  now: { risk: 0.026, label: 'low', discharging_upstream: 0, recent_upstream: 1, monitored_upstream: 1, feed_down_upstream: 0, feed_down: [],
+    stale_upstream: 44, no_feed_upstream: 0, monitored_weight: 0.0575, upstream_weight: 4.4581, feeds_on_change: ['Southern Water'],
+    feed_stale: [{ company: 'Southern Water', overflows: 44, since: '2026-11-06T16:24:28+00:00', on_change: true }] } });
+// A clicked point (anypoint.js) has no weights: the count alone decides.
+const deeTap = week(['low', 'low', 'low', 'low', 'low'], { id: 'point', name: 'River Dee', source: 'unlisted', upstream_summary: { overflows: 18 },
+  now: { risk: 0, label: 'low', discharging_upstream: 0, recent_upstream: 0, monitored_upstream: 1, feed_down_upstream: 0, feed_down: [], stale_upstream: 0, feed_stale: [] } });
+const withNow = (s, now) => ({ ...s, now: { ...s.now, ...now } });
+
+test('where fewer than half report, or they carry under half the weight, a 0 is not a count', () => {
+  assert.equal(L.nowFew(sandyLane), 'count');
+  assert.equal(L.nowFew(barcombe), 'count');
+  assert.equal(L.nowFew(deeTap), 'count');
+  // Half or more by number but under half the weight: the overflows that matter most do not report.
+  assert.equal(L.nowFew(withNow(sandyLane, { monitored_upstream: 7 })), 'weight');
+  // Half or more by number and by weight: the count stands. At exactly half, still a count.
+  assert.equal(L.nowFew(withNow(sandyLane, { monitored_upstream: 12, monitored_weight: 3.5 })), '');
+  assert.equal(L.nowFew(withNow(deeTap, { monitored_upstream: 9 })), '');
+  // None reporting is Unknown already (nowTile); a discharge is a reading, and its count stays.
+  assert.equal(L.nowFew(withNow(sandyLane, { monitored_upstream: 0 })), '');
+  assert.equal(L.nowFew(withNow(sandyLane, { discharging_upstream: 1 })), '');
+  assert.equal(L.nowFew({ ...sandyLane, upstream_summary: { overflows: 0 } }), '');
+  // The rule only says how the count is shown: the levels, the headline and right now's level are as they were.
+  assert.equal(L.nowUnknown(sandyLane), true);
+  assert.equal(L.nowUnknown(deeTap), false);
+  assert.equal(L.level(deeTap), 'low');
+});
+
+test('the Right now tile gives no large 0 where too few report, and keeps the poll time', () => {
+  const ctx = page(TILES, { DATA: { generated_at: GEN } }), tile = (s, n) => vm.runInContext('nowTile', ctx)(s, n);
+  const t = tile(sandyLane, 13);
+  assert.equal(t.fig, 'Unknown');
+  assert.equal(t.unit, undefined);
+  assert.equal(t.figTone, undefined);
+  assert.equal(text(t.say), '1 of 13 overflows upstream reports live, and it is not discharging. Too few report to tell whether the rest are.');
+  assert.equal(t.note, vm.runInContext('pollSay', ctx)());   // PR #634's poll time, as on a counted tile
+  assert.equal(text(tile(deeTap, 18).say), '1 of 18 overflows upstream reports live, and it is not discharging. Too few report to tell whether the rest are.');
+  // A spill that stopped lately is said first, as on a counted tile.
+  assert.equal(text(tile(barcombe, 46).say), '1 stopped lately: a spill counts until 48 h after its water has passed here. '
+    + '1 of 46 overflows upstream reports live, and it is not discharging. Too few report to tell whether the rest are.');
+  assert.equal(text(tile(withNow(sandyLane, { monitored_upstream: 7 }), 13).say),
+    '7 of 13 overflows upstream report live, and none of them is discharging. The ones that matter most here do not report, so whether they are is not known.');
+  // Every figure the tile can show for these spots is a word, never a number 0.
+  for (const [s, n] of [[sandyLane, 13], [barcombe, 46], [deeTap, 18]]) assert.notEqual(tile(s, n).fig, 0);
+  // Unchanged: most report, so the count stands; one discharging, so the count stands.
+  assert.deepEqual([tile(withNow(deeTap, { monitored_upstream: 12 }), 18).fig, tile(withNow(deeTap, { monitored_upstream: 12 }), 18).unit], [0, 'discharging']);
+  assert.deepEqual([tile(withNow(deeTap, { discharging_upstream: 1 }), 18).fig, tile(withNow(deeTap, { discharging_upstream: 1 }), 18).figTone], [1, 'hot']);
+  assert.equal(tile(withNow(sandyLane, { monitored_upstream: 0 }), 13).fig, 'Unknown');
+});
+
+test('the evidence row, the comparison and a kept swim say the same where too few report', () => {
+  assert.equal(ev.evidenceOverflows(sandyLane, GEN).say, '1 of 13 report live: none discharging. Whether the rest are is not known. Not reporting: 12 with no live feed.');
+  assert.match(ev.evidenceOverflows(barcombe, GEN).say, /^1 of 46 report live: none discharging, 1 stopped lately\. Whether the rest are is not known\. Not reporting: 1 offline; 44 on Southern Water's feed/);
+  assert.doesNotMatch(ev.evidenceOverflows(deeTap, GEN).say, /^0 /);
+  // The comparison (experience.js, compareNow) leads with right now not known where the headline does.
+  const { compareNow } = require('../src/dipcast/site/experience.js');
+  assert.equal(compareNow(sandyLane), 'Right now not known here. 1 of 13 report live: none discharging. Whether the rest are is not known. Not reporting: 12 with no live feed.');
+  assert.equal(compareNow(deeTap), '1 of 18 report live: none discharging. Whether the rest are is not known. Not reporting: 17 offline or with no live feed.');
+  // Most report: the count leads, as before.
+  assert.match(compareNow(withNow(deeTap, { monitored_upstream: 12 })), /^0 discharging\. 12 of 18 report live\./);
+  // A kept swim (journal.js) keeps no "none of the 13 discharging".
+  const J = require('../src/dipcast/site/journal.js');
+  const kept = J.journalSeen(sandyLane, DATES[0], DATES[0], GEN, '21:30');
+  assert.deepEqual([kept.dis, kept.of], [null, null]);
+});
