@@ -51,6 +51,10 @@ the level at 0.58 to 0.66.
    spots says it is not validated in Scotland. The credits and the footer name Scottish Water.
 5. **Unchanged.** The shadow and Gate B are untouched: the shadow keeps England's calibration, so its arm does not change.
    Click-anywhere stays England only (`write_any_point` drops the Scottish rows).
+   A map tap in Scotland says so: the trial forecasts only its listed spots, so the point has no forecast, and the
+   page lists the listed spots nearest it with how far each is (`anypoint.js`, `scotland_trial`; added 6 Nov 2026).
+   Wales keeps "England only". The tapped water is not named: OS Open Rivers names the lines through lochs after
+   burns, and naming rivers would need about 3 MB of new click-anywhere files for Scotland and a fetch per tap.
 
 **Added 1 Nov 2026, evening:** nine more spots, on the Scottish Outdoor Access Code and a public body's or
 charity's page saying people swim there (`SPOT-ADDITIONS-2026-11.md`): six Loch Lomond bays, Tollie Bay (Loch
