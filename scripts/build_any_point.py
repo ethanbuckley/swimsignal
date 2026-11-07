@@ -62,6 +62,13 @@ network's load mended (RiverNetwork.topology_key), the lake path mode and CACHE_
 overflows are added, removed or moved, only the links downstream of them (within
 config.MAX_UPSTREAM_KM) are traced again. A new key traces everything again.
 
+Where a click on a side arm goes (arm_heads) depends only on the network and the code, but took 100-220 s
+of every build in Nov 2026 (34,000 calls to transport.head_of_arm). Its result is cached in the state
+directory too (cached_arm_heads), keyed by a hash of everything it reads: the network's links, graph and
+upstream lengths as loaded, the links asked about, the source of every module under src/dipcast and of this
+script, the installed packages and Python, and the DIPCAST_ settings. Any change to any of them works it
+out again, so a cached answer is always the one arm_heads would give.
+
 Rain: every overflow's cell (about 1,590) against the spots' 330. Open-Meteo stopped answering
 this build after 600 locations in a minute (3 Oct 2026), so each build fetches at most
 RAIN_CELLS_PER_BUILD of the oldest cells and uses cached ones up to RAIN_MAX_AGE_H old; an
@@ -82,6 +89,7 @@ import math
 import os
 import pickle
 import shutil
+import sys
 import time
 from pathlib import Path
 
@@ -132,6 +140,7 @@ FORMS = ["inlandRiver", "tidalRiver", "lake", "canal"]
 INDEX_MAGIC = 0x494C5353  # "SSLI" read as a little-endian Int32
 INDEX_VERSION = 1
 CACHE_NAME = "anypoint_links.pkl"
+ARMS_CACHE_NAME = "anypoint_arms.pkl"   # cached_arm_heads
 CACHE_VERSION = 8         # bump when the table's rules change (6: lakes crossed on the way; 7: the network
                           # mended at load, dipcast.network.fixes, and keyed by RiverNetwork.topology_key;
                           # 8: no centreline for a WFD lake with none inside)
@@ -302,6 +311,68 @@ def arm_heads(net: RiverNetwork, lids) -> dict[str, dict[str, Snap | None]]:
         if any(h is not None for h in moves.values()):
             out[arm] = moves
     return out
+
+
+def arms_key(net: RiverNetwork, lids) -> str:
+    """A hash of everything arm_heads reads or runs: the network's links (every column and line), graph
+    edges and upstream lengths, as loaded (repairs and fixes included); the links asked about, in order; the
+    source of every module under src/dipcast and of this script; the installed packages and Python; and the
+    DIPCAST_ settings, any of which config may read. Over-wide on purpose: a change to anything here works the
+    arms out again."""
+    import importlib.metadata
+
+    import dipcast
+    h = hashlib.sha256()
+
+    def add(b: bytes) -> None:
+        h.update(len(b).to_bytes(8, "little"))
+        h.update(b)
+
+    links = net.links
+    geom = links.geometry.name
+    add(repr(list(zip(links.columns, map(str, links.dtypes), strict=True))).encode())
+    add(pd.util.hash_pandas_object(links.drop(columns=geom), index=True).to_numpy().tobytes())
+    add(b"".join(shapely.to_wkb(links[geom].values)))
+    add(repr(sorted(net.upstream_m.items())).encode())
+    add(repr(sorted((str(u), str(v), repr(sorted(d.items()))) for u, v, d in net.graph.edges(data=True))).encode())
+    add("\n".join(map(str, lids)).encode())
+    src = Path(dipcast.__file__).resolve().parent
+    for f in [*sorted(src.rglob("*.py")), Path(__file__).resolve()]:
+        add(str(f.relative_to(src.parent) if f.is_relative_to(src.parent) else f.name).encode())
+        add(f.read_bytes())
+    add(repr(sorted((d.metadata["Name"] or "", d.version) for d in importlib.metadata.distributions())).encode())
+    add(sys.version.encode())
+    add(repr(sorted((k, v) for k, v in os.environ.items() if k.startswith("DIPCAST_"))).encode())
+    return h.hexdigest()
+
+
+def cached_arm_heads(net: RiverNetwork, lids, cache_path: Path | None) -> tuple[dict[str, dict[str, Snap | None]], str]:
+    """arm_heads, from cache_path where its key (arms_key) is this build's, else worked out and saved there.
+    Returns (arms, how): how is "warm", "cold" (no file), "stale" (another key), "unreadable" or "off" (no
+    path). A cache that cannot be read or written is never fatal: the arms are worked out."""
+    lids = list(lids)
+    if cache_path is None:
+        return arm_heads(net, lids), "off"
+    key = arms_key(net, lids)
+    how = "cold"
+    if cache_path.exists():
+        try:
+            cached = pickle.loads(cache_path.read_bytes())
+            if cached.get("key") == key:
+                return cached["arms"], "warm"
+            how = "stale"
+        except Exception as e:  # noqa: BLE001 - a broken cache is rebuilt, never fatal
+            log.warning("any-point arms cache unreadable, working them out: %s", e)
+            how = "unreadable"
+    arms = arm_heads(net, lids)
+    try:
+        cache_path.parent.mkdir(parents=True, exist_ok=True)
+        tmp = cache_path.with_suffix(".tmp")
+        tmp.write_bytes(pickle.dumps({"key": key, "arms": arms}, protocol=5))
+        tmp.replace(cache_path)
+    except OSError as e:
+        log.warning("any-point arms cache not saved: %s", e)
+    return arms, how
 
 
 ARM_FRAC_SCALE = 10_000   # an arm's head along its main channel, in ten-thousandths (under a metre on a 10 km link)
@@ -824,9 +895,9 @@ def _water_json(w) -> dict:
 
 
 def write_files(out: Path, net: RiverNetwork, ov: pd.DataFrame, table: dict, net_hash: str,
-                credits: dict | None = None) -> dict:
+                credits: dict | None = None, arms_cache: Path | None = None) -> dict:
     """Every file except overflow_days.json and tiles.json. Returns {ids, ids_version, tiles,
-    past_days, counts}."""
+    past_days, counts}. arms_cache: where cached_arm_heads keeps the side arms; None works them out."""
     links = net.links
     place = table["placements"]
     ids = list(place.index)
@@ -890,7 +961,9 @@ def write_files(out: Path, net: RiverNetwork, ov: pd.DataFrame, table: dict, net
             n = river_names[lids[i]]
             name_of[i] = english.get(n, n)
     # Side arms: where a click on one goes (arm_heads, encode_arm), in each square the arm is in.
-    arms = arm_heads(net, [lids[i] for i in in_tiles])
+    t_arms = time.time()
+    arms, arms_how = cached_arm_heads(net, [lids[i] for i in in_tiles], arms_cache)
+    arms_s = round(time.time() - t_arms, 1)
     tiles_of: dict[str, list[str]] = {}
     for t, ix in sorted(by_tile.items()):
         for i in ix:
@@ -1087,6 +1160,7 @@ def write_files(out: Path, net: RiverNetwork, ov: pd.DataFrame, table: dict, net
         **({"credits": credits} if credits else {})}, separators=(",", ":")))
     return {"ids": ids, "ids_version": idv, "tiles": sorted(by_tile), "past_days": int(past),
             "counts": {"links_indexed": len(in_tiles), "links_traced": len(records), "entries": n_entries, "arms": len(arms),
+                       "arms_cache": arms_how, "arms_s": arms_s,
                        "rows": n_rows, "lakes_reached": len(lake_ids), "wfd_lakes": len(polys),
                        "wfd_no_centreline": sum(p["lake"] == -1 for p in polys)}}
 
@@ -1304,7 +1378,7 @@ def build(site: Path, net: RiverNetwork, ov: pd.DataFrame, probabilities, credit
     cache = (state_dir or config.STATE) / CACHE_NAME
     table, stats = upstream_table(net, ov, lakes, net_hash, lakes_hash, cache)
     t1 = time.time()
-    meta = write_files(out, net, ov, table, net_hash, credits)
+    meta = write_files(out, net, ov, table, net_hash, credits, arms_cache=(state_dir or config.STATE) / ARMS_CACHE_NAME)
     t2 = time.time()
     days = write_overflow_days(out, ov, meta["ids"], meta["ids_version"], meta["past_days"], now, probabilities, credits)
     t3 = time.time()
