@@ -60,9 +60,9 @@ test('a spot with advice against swimming comes first, its level unchanged, and 
   const bare = [...others(), frensham({ official: [] })];
   assert.deepEqual(levels(xs), levels(bare));
   assert.equal(run('mapLevel', frensham()), 'low');
-  assert.equal(run('overview', xs).replace('Sewage pollution risk', 'Pollution risk').replace(/ 1 with an official notice: follow it first\.$/, ''),
+  assert.equal(run('overview', xs).replace(/ 1 with an official notice: follow it first\.$/, ''),
     run('overview', bare));
-  assert.match(run('overview', xs), /Sewage pollution risk: 2 low · 1 moderate · 2 high or very high/);
+  assert.match(run('overview', xs), /· Pollution risk: 2 low · 1 moderate · 2 high or very high/);
 });
 
 test('advised spots among themselves: by sewage level, then name', () => {
