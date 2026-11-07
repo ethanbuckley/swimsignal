@@ -45,6 +45,7 @@ jobs:
     timeout-minutes: 25
     permissions:
       contents: write     # release assets for state, heartbeat commit
+      actions: read       # whether Test Python passed this commit (step tested)
     outputs:
       host: ${{ steps.host.outputs.host }}
       started: ${{ steps.host.outputs.started }}
@@ -71,8 +72,29 @@ jobs:
       - name: Install
         run: uv sync --frozen
 
+      # The same tests on the same commit need not run twice. A scheduled or chained build mostly builds a commit
+      # that Test Python (python-tests.yml: lint, then this same pytest) already passed when it was pushed to main,
+      # hours before. Only that exact commit, pushed to main, with a successful run counts; anything else, a failed
+      # lookup included, runs the tests here. A push build usually starts with Test Python, so it runs them here.
+      - name: Did Test Python already pass this commit on main?
+        id: tested
+        if: github.event_name != 'push' && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          n=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/python-tests.yml/runs?head_sha=$GITHUB_SHA&branch=main&event=push&status=success" \
+                --jq "[.workflow_runs[] | select(.head_sha == \"$GITHUB_SHA\" and .conclusion == \"success\" and .event == \"push\" and .head_branch == \"main\")] | length" 2>&1) || n=0
+          if [[ $n =~ ^[1-9][0-9]*$ ]]; then
+            echo "Test Python passed $GITHUB_SHA on main ($n run(s)): not running the same tests again."
+            echo "passed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "No successful Test Python run of $GITHUB_SHA on main found (${n:-none}): the tests run here."
+          fi
+
       - name: Tests (the build does not run if these fail)
-        run: uv run pytest -q
+        if: steps.tested.outputs.passed != 'true'
+        # On the runner's four cores (pytest-xdist): 6 Nov 2026, 2,189 tests in 193 s against 381 s one at a time.
+        run: uv run pytest -q -n auto
 
       - name: Restore mutable state (live history, forecast log)
         id: state-cache
