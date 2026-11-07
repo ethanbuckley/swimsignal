@@ -32,6 +32,9 @@ const PAGES = [
   [`plan/#day=${DAY}&from=Reading&at=51.45%2C-0.97&within=50`, '#dp, #plan-sum b'],
   ['saved/', '.view-saved .empty-saved', 'empty'],
   ['saved/', '#scards .places li', 'saved'],
+  // Notifications blocked for the site: the Alerts tile says where to allow them, with no button that cannot work,
+  // and gives the button back once they are allowed and the page is in view again.
+  ['saved/', '#scards .places li', 'blocked'],
   // A town typed in the search: the spots near it, under the spots named for it (fixture places.json; no rivers file).
   ['index.html', '#q', 'search'],
 ];
@@ -95,7 +98,9 @@ for (const [w, h, mobile] of [[375, 812, true], [1440, 900, false]]) {
       class F extends D { constructor(...a) { super(...(a.length ? a : [T + (performance.now() | 0)])); } static now() { return T + (performance.now() | 0); } }
       globalThis.Date = F; })();` }, s);
     // The Saved route needs a fresh browser state, then two saved spots for the comparison to exist.
-    if (saved) await send('Page.addScriptToEvaluateOnNewDocument', { source: `localStorage.clear(); ${saved === 'saved' ? `localStorage.setItem('dipcast.saved', ${JSON.stringify(JSON.stringify(IDS.slice(0, 2)))});` : ''}` }, s);
+    if (saved) await send('Page.addScriptToEvaluateOnNewDocument', { source: `localStorage.clear(); ${saved === 'saved' || saved === 'blocked' ? `localStorage.setItem('dipcast.saved', ${JSON.stringify(JSON.stringify(IDS.slice(0, 2)))});` : ''}` }, s);
+    const notify = setting => send('Browser.setPermission', { permission: { name: 'notifications' }, setting, origin: BASE.slice(0, -1) });
+    if (saved === 'blocked') await notify('denied');
     await send('Page.navigate', { url: BASE + page }, s);
     let shown = false;
     for (let t = 0; t < 40 && !shown; t++) { await sleep(250);
@@ -128,6 +133,19 @@ for (const [w, h, mobile] of [[375, 812, true], [1440, 900, false]]) {
         if (pick && (!pick.open || getComputedStyle(pick.querySelector('summary')).display !== 'none')) return 'the selects are folded on a desktop';
         return sc.scrollWidth <= sc.clientWidth || 'two spots scroll sideways on a desktop'; })()` }, s);
       const v = r.result?.result?.value; if (v !== true) errors.push(typeof v === 'string' ? v : 'Saved comparison did not draw a table');
+    }
+    if (shown && saved === 'blocked') {
+      const tile = async () => (await send('Runtime.evaluate', { returnByValue: true, expression: `(() => { const h = document.getElementById('alerts-h'), t = h && h.closest('section');
+        return t ? { blocked: (document.getElementById('alerts-blocked') || {}).textContent || '', button: !!document.getElementById('alerts-btn') } : null; })()` }, s)).result?.result?.value;
+      const before = await tile();
+      if (!before || before.button || !/so alerts cannot be turned on\. To allow them, (tap|click) the icon to the left of the web address/.test(before.blocked))
+        errors.push(`Alerts tile with notifications blocked: ${JSON.stringify(before)}`);
+      await notify('prompt');
+      await send('Runtime.evaluate', { expression: `document.dispatchEvent(new Event('visibilitychange'))` }, s);
+      let after = null;
+      for (let t = 0; t < 20 && !(after && after.button); t++) { await sleep(100); after = await tile(); }
+      if (!after || !after.button || after.blocked) errors.push(`Alerts tile once allowed again: ${JSON.stringify(after)}`);
+      await send('Browser.resetPermissions', {});
     }
     // "Marlow" names no spot; Henley-on-Thames is 5.6 miles away, so it is listed under "Near Marlow" with its own level.
     if (shown && saved === 'search') {

@@ -1600,7 +1600,7 @@
           <dt><span class="badge b-moderate">Moderate</span></dt><dd>Some chance that sewage reaches the spot, or that a water sample would be over 900 E. coli per 100 ml.</dd>
           <dt><span class="badge b-high">High</span></dt><dd>Sewage reaching the spot, or a sample over 900, is a real prospect; or the EA rates the water poor.</dd>
           <dt><span class="badge b-veryhigh">Very high</span></dt><dd>Sewage reaching the spot, or a sample over 900, is likely.</dd>
-          <dt><span class="badge b-clear">No monitored overflow found upstream</span></dt><dd>The trace found no monitored storm overflow within 60 km upstream, or the river network draws no river into the lake, so there is no sewage spill risk and no E. coli estimate. That is not the same as no risk. Other risks apply: algae, wildlife, runoff and bathers. Check the signs at the water. Where a rating of sufficient or poor, algae at the last check or a recent sample raises the level, that sets it instead.</dd>
+          <dt><span class="badge b-clear">No monitored overflow found upstream</span></dt><dd>The trace found no monitored storm overflow within 60 km upstream, or the river network draws no river into the lake, so there is no sewage spill score and no E. coli estimate. That is not the same as no risk. Other risks apply: algae, wildlife, runoff and bathers. Check the signs at the water. Where a rating of sufficient or poor, algae at the last check or a recent sample raises the level, that sets it instead.</dd>
           <dt><span class="badge b-na">No level</span></dt><dd>No forecast in this update, or no river or lake on the network near the spot. There is nothing to go by, which is not the same as clean water.</dd>
         </dl>
         <p class="small muted">Under its level, a spot's page says in one line what to do, from published health advice for swimmers. <a href="methods.html#actions">Each line and its sources</a>.</p>
@@ -2046,6 +2046,8 @@ const STANDALONE = navigator.standalone || matchMedia('(display-mode: standalone
 // Chrome, and has no Add to Home Screen; the shared list and the alerts tile say so.
 const IN_APP = /FBAN|FBAV|FB_IAB|FBIOS/.test(navigator.userAgent) ? 'Facebook' : /Instagram/.test(navigator.userAgent) ? 'Instagram' : '';
 const OWN_BROWSER = IOS ? 'Safari' : 'your own browser, such as Chrome';
+// Safari on a Mac, which keeps a site's notifications in its own settings (lists.js, unblockHow). An iPad says it is a Mac too: IOS.
+const SAFARI_MAC = !IOS && /Safari\//.test(navigator.userAgent) && !/Chrome|Chromium|CriOS|Edg|Firefox|FxiOS|OPR/.test(navigator.userAgent);
 const canPush = () => 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
 const b64 = s => Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
 async function pushReg() {   // the service worker, or null if it is not running within 5 s
@@ -2107,11 +2109,15 @@ function alertsCard() {
   // Email (DATA.email) is offered beside push, for browsers that cannot take push: on an iPhone,
   // push needs the Home Screen app, so most visitors there could not have alerts at all.
   const what = `${DATA.push && DATA.email ? 'A notification or an email' : DATA.push ? 'A notification' : 'An email'} when one of your saved spots reaches high or very high risk, at most once a day for each.`;
-  let h = `<section class="sec tile" aria-labelledby="alerts-h"><h2 class="sec-h" id="alerts-h">Alerts</h2><p class="sub">${what}</p>`;
+  let h = `<section class="sec tile" aria-labelledby="alerts-h" id="alerts" data-perm="${alertPerm()}"><h2 class="sec-h" id="alerts-h">Alerts</h2><p class="sub">${what}</p>`;
   if (DATA.push) {
     const sends = 'Turning alerts on sends your browser\'s push address and the list of your saved spots, and nothing else about you, to SwimSignal\'s alert service. Ticking the weekly note adds only that you want it. Alerts reach you through your browser maker\'s push service (Google, Apple, Mozilla or Microsoft), encrypted so it cannot read them. '
       + 'You can turn them off here at any time, which deletes what the alert service holds. An alert can be late or not come at all, so no alert does not mean the water is clean. <a href="privacy.html">Privacy notice</a>.';
     const body = canPush() && offlineOff() ? `<p class="small tight">Alerts need the offline copy, which is turned off in this browser. <a href="#your-data">Turn it back on</a> to use them.</p>`
+      // Blocked: no button, since the browser refuses without asking; where to allow them instead. The tile is
+      // drawn again when that changes (alertsPermChanged).
+      : canPush() && Notification.permission === 'denied' ? `<p class="small tight" id="alerts-blocked" tabindex="-1">Notifications are blocked for this site in your browser settings, so alerts cannot be turned on. `
+        + `${unblockHow({ ios: IOS, app: STANDALONE, safari: SAFARI_MAC, touch: TOUCH })}${DATA.email ? ' Or have them by email.' : ''}</p>`
       : canPush() ? `<button type="button" class="btn" id="alerts-btn" disabled>Turn on alerts</button>`
         // Shown once alerts are on, since it needs them.
         + '<label class="rv-consent" id="alerts-week" hidden><input type="checkbox"><span>Also a weekly note on Thursday evenings: the days with the lowest pollution risk, Friday to Monday, at each saved spot.</span></label>'
@@ -2132,8 +2138,11 @@ function alertsCard() {
   }
   return h + '</section>';
 }
+// The browser's answer for notifications as the tile was drawn for it (data-perm): 'denied' gives the blocked tile,
+// anything else the button.
+const alertPerm = () => canPush() ? (Notification.permission === 'denied' ? 'denied' : 'asks') : '';
 async function bindAlerts() {
-  bindEmailAlerts();
+  bindEmailAlerts(); watchAlertPerm();
   const b = document.getElementById('alerts-btn'), m = document.getElementById('alerts-msg'); if (!b) return;
   const w = document.getElementById('alerts-week'), box = w.querySelector('input');
   const show = on => { b.disabled = false; b.textContent = on ? 'Turn off alerts' : 'Turn on alerts'; b.dataset.on = on ? '1' : ''; w.hidden = !on; box.checked = on && weeklyOn(); };
@@ -2146,14 +2155,33 @@ async function bindAlerts() {
   });
   const was = !!(Notification.permission === 'granted' && await pushSub().catch(() => null));
   show(was); ALERT_UI.on = was; drawSpotAlerts();
-  if (Notification.permission === 'denied') m.textContent = 'Notifications are blocked for this site in your browser settings.';
   b.addEventListener('click', async () => {
     const on = !b.dataset.on; b.disabled = true; m.textContent = '';
     try { await (on ? alertsOn() : alertsOff()); show(on); ALERT_UI.on = on; ALERT_UI.down = false; m.textContent = on ? 'Alerts are on for your saved spots.' : 'Alerts are off.'; }
-    catch (e) { show(!on); ALERT_UI.down = serviceDown(e);
+    catch (e) {
+      // Refused at the browser's question just now: the tile as blocked, with where to allow them, read out from there.
+      if (on && Notification.permission === 'denied' && alertsPermChanged()) { const p = document.getElementById('alerts-blocked'); if (p) p.focus(); return; }
+      show(!on); ALERT_UI.down = serviceDown(e);
       m.textContent = ALERT_UI.down ? 'Could not reach the alert service, so alerts are as they were. Try again later.' : `Could not change alerts: ${e.message}.`; }
     drawSpotAlerts();
   });
+}
+// Allowed again in the browser's settings (or blocked there), the tile is drawn again when the page is back in view,
+// or at once where the browser says (Permissions API). True if it was drawn again.
+function alertsPermChanged() {
+  const sec = document.getElementById('alerts');
+  if (!sec || !DATA || !DATA.push || sec.dataset.perm === alertPerm()) return false;
+  const open = [...sec.querySelectorAll('details')].map(d => d.open);
+  sec.outerHTML = alertsCard();
+  document.getElementById('alerts').querySelectorAll('details').forEach((d, i) => { d.open = !!open[i]; });
+  bindAlerts();
+  return true;
+}
+let PERM_WATCHED = false;
+function watchAlertPerm() {
+  if (PERM_WATCHED || !canPush()) return; PERM_WATCHED = true;
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') alertsPermChanged(); });
+  if (navigator.permissions) navigator.permissions.query({ name: 'notifications' }).then(st => { st.onchange = alertsPermChanged; }).catch(() => {});
 }
 // Each saved spot's alerts, on its card (2 Nov 2026; lists.js, spotAlert): on with a tick to turn this spot off
 // or on again, off with the way to the Alerts tile (which holds what turning them on sends), or why this browser
@@ -5499,16 +5527,17 @@ const otherAsWell = (d, near) => { const three = near.slice(0, 3);
   const o = near.find(([s]) => otherWater(d, s));
   return o ? [...three.slice(0, 2), o] : three; };
 // A spot with official advice (eatoday.js) is never offered as lower risk; in a plain "Nearby" it carries its tag.
-function nearby(d) {
+// reach: how far to look, in km. Further than NEAR_KM (a Scottish map tap, anypoint.js) the heading says "Nearest listed spots".
+function nearby(d, reach = NEAR_KM) {
   const lv = s => DAY ? dayLevel(s, DAY) : level(s), mine = rank(lv(d)), lower = mine >= 1 || advisedAgainst(d), poor = advisedAgainst(d);
   const officialShown = s => typeof eaTodayRestricts === 'function' && eaTodayRestricts(s);   // a notice that restricts swimming
   const alts = otherAsWell(d, DATA.spots.filter(s => s.id !== d.id && (!lower || (!advisedAgainst(s) && !officialShown(s) && ORDER[lv(s)] !== undefined && rank(lv(s)) < mine
       && (DAY || (notHigherAnyDay(s, d) && !nowUnknown(s))) && (!poor || ratedBetter(s)))))
-    .map(s => [s, km([d.lat, d.lon], [s.lat, s.lon])]).filter(([, k]) => k <= NEAR_KM).sort((a, b) => a[1] - b[1]));
+    .map(s => [s, km([d.lat, d.lon], [s.lat, s.lon])]).filter(([, k]) => k <= reach).sort((a, b) => a[1] - b[1]));
   if (!alts.length) return '';
   const claim = `${poor ? 'Rated better than poor by the Environment Agency, and lower' : 'Lower'} ${DAY ? 'that day'
     : `now, and no higher on ${allFiveDays(d) ? 'any of the five days' : 'any day with a forecast here'}`}.`;
-  return `<section class="tile" id="nearby" aria-labelledby="nearby-h"><h2 class="t-lab" id="nearby-h">${ICON.pin}<span>${lower ? 'Lower risk nearby' : 'Nearby'}</span></h2><ul class="near">`
+  return `<section class="tile" id="nearby" aria-labelledby="nearby-h"><h2 class="t-lab" id="nearby-h">${ICON.pin}<span>${lower ? 'Lower risk nearby' : reach > NEAR_KM ? 'Nearest listed spots' : 'Nearby'}</span></h2><ul class="near">`
     + alts.map(([s, k]) => { const why = nearWhy(d, s);
       return `<li><a class="row" href="${esc(spotPath(s.id) + (DAY && daily(s) ? '#day=' + DAY : ''))}" data-id="${esc(s.id)}"><span class="row-main">`
         + `<span class="nm">${esc(s.name)}</span>${typeof eaTodayTag === 'function' ? eaTodayTag(s) : ''}<span class="hl ${tone(lv(s))}">${DAY ? dayHeadline(s, DAY) : headline(s)}</span>${headNote(s)}`

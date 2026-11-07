@@ -50,6 +50,7 @@ Positions came from:
 **Weaker evidence, said plainly.**
 - **Four Loch Lomond bays** (Duck Bay, Balloch, Balmaha, Rowardennan): the byelaws page names them as zones, then says to expect swimmers. It does not call each one a swim spot.
 - **Loch Lubnaig:** no source names an entry point. The pin is the shore nearest the Forestry and Land Scotland car park at Strathyre Cabins.
+  *Corrected 6 Nov 2026 (`NEW-SPOTS-AUDIT-2026-11.md`):* the site by the pin is Forest Holidays Strathyre, a commercial cabin site, at the loch's south end, about 6.5 km from Strathyre. The spot is renamed "Loch Lubnaig, south end".
 - **Almondell:** the source is a charity, not a public body. The pin is in the river by Nasmyth Bridge, at the downstream end of the stretch the Trust describes.
 
 **Left out.**

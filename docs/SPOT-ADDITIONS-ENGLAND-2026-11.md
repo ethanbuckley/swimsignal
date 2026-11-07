@@ -17,6 +17,9 @@ not been confirmed" (`access.py`, status `unconfirmed`, checked 1 Nov 2026).
 | River Tame, Dosthill, Tamworth (`node/6646996432`) | 148, Severn Trent | 161 | Unconfirmed. Police and Staffordshire Fire have warned teenagers against swimming in the Tame at Tamworth; these are safety warnings, not a ban, and none names Dosthill |
 | Blackaton Brook, Shilley Pool, Dartmoor (`node/12305131265`) | 0 | 11 | Dartmoor National Park Authority: "You can swim in Dartmoor’s rivers as long as you access from points" not on private land ([FAQ](https://www.dartmoor.gov.uk/enjoy-dartmoor/planning-your-visit/visiting-faqs), read 1 Nov). Natural England's layer puts the point on Dartmoor commons |
 
+*Corrected 6 Nov 2026 (`NEW-SPOTS-AUDIT-2026-11.md`):* the Tame node is in a field 133 m from the river. The pin
+is now the river point the build snapped it to (52.59095, -1.69768); the river and the 148 overflows are unchanged.
+
 Shilley Pool is 1,082 m from the nearest mapped link, on its own brook. Nothing is upstream on moorland, so its
 page says no monitored overflow was found upstream.
 
