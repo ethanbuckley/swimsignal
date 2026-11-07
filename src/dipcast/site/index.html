@@ -5527,16 +5527,17 @@ const otherAsWell = (d, near) => { const three = near.slice(0, 3);
   const o = near.find(([s]) => otherWater(d, s));
   return o ? [...three.slice(0, 2), o] : three; };
 // A spot with official advice (eatoday.js) is never offered as lower risk; in a plain "Nearby" it carries its tag.
-function nearby(d) {
+// reach: how far to look, in km. Further than NEAR_KM (a Scottish map tap, anypoint.js) the heading says "Nearest listed spots".
+function nearby(d, reach = NEAR_KM) {
   const lv = s => DAY ? dayLevel(s, DAY) : level(s), mine = rank(lv(d)), lower = mine >= 1 || advisedAgainst(d), poor = advisedAgainst(d);
   const officialShown = s => typeof eaTodayRestricts === 'function' && eaTodayRestricts(s);   // a notice that restricts swimming
   const alts = otherAsWell(d, DATA.spots.filter(s => s.id !== d.id && (!lower || (!advisedAgainst(s) && !officialShown(s) && ORDER[lv(s)] !== undefined && rank(lv(s)) < mine
       && (DAY || (notHigherAnyDay(s, d) && !nowUnknown(s))) && (!poor || ratedBetter(s)))))
-    .map(s => [s, km([d.lat, d.lon], [s.lat, s.lon])]).filter(([, k]) => k <= NEAR_KM).sort((a, b) => a[1] - b[1]));
+    .map(s => [s, km([d.lat, d.lon], [s.lat, s.lon])]).filter(([, k]) => k <= reach).sort((a, b) => a[1] - b[1]));
   if (!alts.length) return '';
   const claim = `${poor ? 'Rated better than poor by the Environment Agency, and lower' : 'Lower'} ${DAY ? 'that day'
     : `now, and no higher on ${allFiveDays(d) ? 'any of the five days' : 'any day with a forecast here'}`}.`;
-  return `<section class="tile" id="nearby" aria-labelledby="nearby-h"><h2 class="t-lab" id="nearby-h">${ICON.pin}<span>${lower ? 'Lower risk nearby' : 'Nearby'}</span></h2><ul class="near">`
+  return `<section class="tile" id="nearby" aria-labelledby="nearby-h"><h2 class="t-lab" id="nearby-h">${ICON.pin}<span>${lower ? 'Lower risk nearby' : reach > NEAR_KM ? 'Nearest listed spots' : 'Nearby'}</span></h2><ul class="near">`
     + alts.map(([s, k]) => { const why = nearWhy(d, s);
       return `<li><a class="row" href="${esc(spotPath(s.id) + (DAY && daily(s) ? '#day=' + DAY : ''))}" data-id="${esc(s.id)}"><span class="row-main">`
         + `<span class="nm">${esc(s.name)}</span>${typeof eaTodayTag === 'function' ? eaTodayTag(s) : ''}<span class="hl ${tone(lv(s))}">${DAY ? dayHeadline(s, DAY) : headline(s)}</span>${headNote(s)}`
