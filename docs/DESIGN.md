@@ -2128,8 +2128,9 @@ thing, the forecast, and everything else is reached from About, the foot or the 
   organisers, which links the organisers' page, the signs, the sites view, the decision record, the overflow history
   and the sampling partners. The foot's two links (For event organisers, For clubs, centres and leaders) became one.
 - **The home page's opening is one sentence:** "Pollution risk for the next five days at N river and lake swim
-  spots in England [and Scotland], and anywhere you tap/click on the map. How it works". "As a trial" left the
-  sentence; the coverage page says what the Scotland trial is. The line under the day strip no longer explains the
+  spots in England [, and in Scotland as a trial], and anywhere you tap/click on the map. How it works". "As a
+  trial" stays (8 Nov 2026): a tap in Scotland is not forecast (#647), so "England and Scotland … anywhere you tap"
+  would claim more than the site does; the coverage page says what the trial is. The line under the day strip no longer explains the
   strip ("70 low risk" says it); it keeps the first visit's hint and is hidden afterwards.
 - **The Research Lab block after the list went.** Its five exhibits stay on Research & data and on each spot.
 - **The foot's data credit is one line:** the providers named (the Hub, the Environment Agency with the flood API's

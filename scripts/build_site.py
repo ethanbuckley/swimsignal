@@ -2544,7 +2544,7 @@ SKELETON_TILE = '<div class="skel tile" aria-hidden="true">' + '<span class="ske
 
 # Where the listed spots are, as the list's opening says it (index.html, spotsWhere): England, and Scotland while
 # the Scotland trial lists its spots.
-ENGLAND_ONLY_WHERE, WITH_SCOTLAND_WHERE = "in England", "in England and Scotland"
+ENGLAND_ONLY_WHERE, WITH_SCOTLAND_WHERE = "in England", "in England, and in Scotland as a trial"
 
 
 def spots_where(results: list[dict]) -> str:

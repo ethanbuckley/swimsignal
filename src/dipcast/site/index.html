@@ -3769,7 +3769,7 @@ function outingResume() {
 const regionalLink = q => `<a href="coverage.html${String(q || '').trim() ? `?q=${encodeURIComponent(String(q).trim())}` : ''}#regional-results">Search official coastal and regional bathing-water information</a>, which is not a SwimSignal forecast.`;
 // Where the listed spots are (build_site.spots_where says the same in the page's first paint): England, and
 // Scotland while the Scotland trial lists its spots (scotland_trial.py).
-const spotsWhere = () => (DATA.spots || []).some(s => s.trial === 'scotland') ? 'in England and Scotland' : 'in England';
+const spotsWhere = () => (DATA.spots || []).some(s => s.trial === 'scotland') ? 'in England, and in Scotland as a trial' : 'in England';
 function renderList() {
   contribLayer.clearLayers(); selLayer.clearLayers(); current = null; shown = 'list';
   setView('list');
