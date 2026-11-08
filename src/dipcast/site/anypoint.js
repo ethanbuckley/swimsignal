@@ -535,10 +535,10 @@ const AnyPoint = (() => {
     wales_scotland: { error: ENGLAND_ONLY,
       see: 'In Wales and Scotland, Natural Resources Wales and the Scottish Environment Protection Agency publish bathing water results: '
         + 'links to both are on <a href="coverage.html">Coasts, Wales, Scotland, Ireland and algae</a>.' },
-    northern_ireland: { error: 'SwimSignal has overflow data for England only, so it has no forecast in Northern Ireland.',
+    northern_ireland: { error: 'SwimSignal does not have overflow data for Northern Ireland, so it has no forecast here.',
       see: 'The Department of Agriculture, Environment and Rural Affairs (DAERA) publishes results for Northern Ireland\'s bathing waters on its '
         + '<a href="https://www.daera-ni.gov.uk/articles/bathing-water-quality-dashboard" rel="noopener">Bathing Water Quality Dashboard</a>.' },
-    republic_of_ireland: { error: 'SwimSignal has overflow data for England only, so it has no forecast in the Republic of Ireland.',
+    republic_of_ireland: { error: 'SwimSignal does not have overflow data for the Republic of Ireland, so it has no forecast here.',
       see: 'The Environmental Protection Agency publishes bathing water results and any swimming restrictions in the Republic at '
         + '<a href="https://www.beaches.ie/" rel="noopener">beaches.ie</a>.' },
   };
