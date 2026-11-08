@@ -2032,11 +2032,15 @@
    "scope": "Three SEPA inland bathing waters (Dores, Loch Morlich, Luss Bay), 1,485 Scottish Water overflows, the production spill model (808da63d) only.",
    "stage": "development",
    "stage_note": "Built behind DIPCAST_SCOTLAND_TRIAL, off until the owner switches it on; labelled a trial on every page it reaches.",
-   "next": "A shadow arm with Scotland's map, Gate B after November to January, Scottish river spots, click-anywhere in Scotland, outside review.",
+   "next": "A frozen-model backtest of the trial's model and map on 2021, from archived Scottish Water editions, on Ethan's yes to the download; a 2026 backtest protocol before Scottish Water's 2026 file (March 2027); a shadow arm with Scotland's map, Gate B after November to January, Scottish river spots, click-anywhere in Scotland, outside review.",
    "records": [
     {
      "doc": "docs/SCOTLAND-TRIAL-2026-11.md",
      "quote": "Built behind `DIPCAST_SCOTLAND_TRIAL`, off by default."
+    },
+    {
+     "doc": "docs/SCOTLAND-2026-BACKTEST-INVENTORY-2026-11.md",
+     "quote": "No complete record of Scottish Water's 2026 overflow events is published or held anywhere this"
     }
    ],
    "prs": [
