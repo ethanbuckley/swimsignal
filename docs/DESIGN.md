@@ -2035,8 +2035,9 @@ and it never says why something changed.
 - **Blocked in the browser's settings:** nothing on the card. The Alerts tile says it once (6 November 2026: every
   card said it, and the tile again).
 - **No notifications in this browser** (an iPhone outside the Home Screen app, Facebook's or Instagram's browser, the
-  offline copy turned off, no web push): says so, with "See Alerts", where the tile gives the steps. Where email
-  alerts exist, it says they cover the spots saved when you sign up. Email is not per spot.
+  offline copy turned off, no web push): nothing on the card. The Alerts tile says why and what to do, once, and holds
+  the email form where email alerts exist (8 November 2026: every card said "Notifications cannot be had in this
+  browser." with "See Alerts").
 - **The alert service did not answer** (a network error, a time-out or a 5xx): "The alert service did not answer,
   so alerts for this spot are as they were. Try again later." The Alerts tile says the same in its own message.
   Before, it said "Could not change alerts: Failed to fetch."
@@ -2113,6 +2114,26 @@ has one wording:
   "No monitored storm overflow within 60 km upstream."
 - **"Notifications are blocked for this site in your browser settings." is said once,** in the Alerts tile. Each
   saved card said it too.
+
+## Alert wording after the phone audit (8 November 2026)
+
+Three smaller alert lines left by the 6 November audit (#642):
+
+- **iPhone outside the Home Screen app:** each saved card said "Notifications cannot be had in this browser." with
+  "See Alerts". The cards now say nothing, for this and every other browser without notifications. The Alerts tile
+  says it once: "On iPhone and iPad, alerts work only in the Home Screen app: tap Share, then Add to Home Screen, open
+  SwimSignal from there and save your spots in it." That is the line under Save on a spot's page (#653), for a list.
+- **An outing with notifications blocked** said so and offered the calendar. It now gives the same steps to allow them
+  as the Saved page's tile (`lists.js`, `unblockHow`), then "Or add it to your calendar." The outing's alerts are drawn
+  again when the page is back in view or the browser reports the change.
+- **The browser's question closed without a choice** read "Could not change alerts: notifications are not allowed for
+  this site." It now reads "You did not allow notifications, so alerts are still off. Tap Turn on alerts to be asked
+  again." ("Click" on a desktop). Closed a second time on the same visit, or refused without the site being blocked,
+  it adds "Your browser may not ask again for a while." and the steps to allow them (`lists.js`, `notAllowedSaid`).
+  Why: Chrome and Firefox both answer a closed question with `default`, so asking again is allowed. Chrome stops asking
+  a site for 7 days after the third close. Whether it then reports the site as blocked is not documented; if it does,
+  the tile is drawn as blocked, as before. Firefox can refuse for a while after "Block" without "Remember". Safari and
+  the iPhone Home Screen app offer only Allow or Don't Allow, so they do not reach this line.
 
 ## The level's names, checked (6 November 2026)
 
