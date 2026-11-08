@@ -207,6 +207,20 @@ function spotAlert({ push = false, email = false, can = 'none', on = null, off =
   if (push && !email) return r('unavailable', 'Notifications cannot be had in this browser.', { link: true });
   return r('email', 'Notifications cannot be had in this browser. Alerts by email cover the spots saved when you sign up.', { link: true });
 }
+// The line under Save on a spot's page (index.html, bindSave): where alerts for this spot are set up. The Alerts
+// tile on the Saved page holds what they cover and what turning them on sends, and says what to do when this
+// browser has notifications blocked or the offline copy off; it is drawn only once a spot is saved, so an
+// unsaved spot is told to save first. push, email and can as for spotAlert; saved, the spot is in the shown list.
+// Returns { text, go }: go, "Go to alerts", which opens the Saved page at the tile.
+//   iPhone or iPad outside the Home Screen app, no email: saving here gives no alerts, so what to do instead.
+//   No web push at all (or Facebook's or Instagram's browser), no email: nothing, rather than a way that ends nowhere.
+function saveAlertHint({ push = false, email = false, can = 'none', saved = false } = {}) {
+  const r = (text, go = false) => ({ text, go });
+  if (!push && !email) return r('');
+  if (!email && can === 'ios') return r('Alerts on iPhone and iPad need the Home Screen app: tap Share, then Add to Home Screen, open SwimSignal from there and save this spot in it.');
+  if (!email && (can === 'none' || can === 'inapp')) return r('');
+  return saved ? r('Alerts for this spot are set up on the Saved page.', true) : r('Save this spot to have alerts for it.');
+}
 // Notifications blocked for the site (the Alerts tile, index.html alertsCard): where to allow them again, for the
 // device in hand. Until 7 Nov 2026 the tile said only that they were blocked, beside a "Turn on alerts" button that
 // could not work: the browser refuses without asking once a site is blocked.
@@ -225,5 +239,5 @@ function unblockHow({ ios = false, app = false, safari = false, touch = false } 
 if (typeof module === 'object' && module.exports) {
   module.exports = { LISTS_KEY, FIRST_LIST, SHARED_LIST, LIST_NAME_MAX, LINK_SPOTS_MAX, listName, listIds, freeListName, readLists, listsReadable,
     listsText, allSaved, listById, shownList, addToList, removeFromList, moveToList, copyToList, makeList, renameList, deleteList, pickList,
-    keepSpots, sameList, shareHash, readShared, PASTE_MAX, pastedList, planListName, sitesHash, addSharedList, savedGroups, alertSpots, spotAlert, unblockHow };
+    keepSpots, sameList, shareHash, readShared, PASTE_MAX, pastedList, planListName, sitesHash, addSharedList, savedGroups, alertSpots, spotAlert, saveAlertHint, unblockHow };
 }
