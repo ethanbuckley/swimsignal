@@ -1,22 +1,25 @@
 // SwimSignal push alerts. The site's pages subscribe here; every 2 minutes the cron
 // compares the site's alerts.json with the last run and pushes to people whose saved
-// spots have just become high. On Thursday evenings, runs with no alert to send also send the
-// weekly note to those who asked for it (weekly.js).
+// spots have just become high, or where official advice has just appeared (newAdvice, once the build
+// turns it on). On Thursday evenings, runs with no alert to send also send the weekly note to those who
+// asked for it (weekly.js).
 
 import { importEcdhPublic, sendPush, unb64url, vapidSigner } from './webpush.js';
 import {
-  HIGH, Invalid, MAX_ATTEMPTS, MAX_RETRY_WAIT, check, cleanSpots, forecastExpiry, isObject, listKeys, nextAttempt, officialMark, readJson, reply,
-  retryAfter,
+  HIGH, Invalid, MAX_ATTEMPTS, MAX_RETRY_WAIT, check, cleanSpots, forecastExpiry, isObject, listKeys, nextAttempt, noticeKey, officialMark, readJson,
+  reply, retryAfter,
 } from './shared.js';
 import { drainEmails, emailOn, handleEmail, queueEmails } from './email.js';
 import { runWeekly } from './weekly.js';
-import { cleanDates, dateFor, dateNews, datesOf, dayLevels, londonToday, noticesOf, pairKey } from './dates.js';
+import { cleanDates, dateFor, dateNews, datesOf, dayLevels, londonToday, noticeTag, noticesOf, pairKey } from './dates.js';
 import { DISPATCH_CRON, runDispatch } from './dispatch.js';
 
 export { forecastExpiry };
 
 // At most one alert a spot in 20 hours: the site is rebuilt several times a day, and a spot near
-// the line can cross it, drop back and cross again, which would alert people each time.
+// the line can cross it, drop back and cross again, which would alert people each time. Official
+// advice appearing has its own 20 hours (state `advised`), so a rise this morning cannot hide a notice
+// this afternoon, and a notice that comes, goes and comes back alerts once.
 const QUIET_MS = 20 * 3600 * 1000;
 const CONCURRENCY = 6; // Workers allow six open connections per invocation.
 // The browsers' push services. Accepting any https URL would let anyone make the Worker
@@ -240,39 +243,60 @@ async function runPush(env, { fetch, log, now }, seen) {
   for (const [id, spot] of Object.entries(alerts.spots)) ranks[id] = Number.isInteger(spot?.rank) ? spot.rank : -1;
 
   const alerted = Object.fromEntries(Object.entries(prev?.alerted ?? {}).filter(([, at]) => t - Date.parse(at) < QUIET_MS));
+  const adviceAt = Object.fromEntries(Object.entries(prev?.advised ?? {}).filter(([, at]) => t - Date.parse(at) < QUIET_MS));
   // Each spot's level on each day, and its official notice (dates.js): what the next build's are compared with.
   const days = dayLevels(alerts, prev?.days), notices = noticesOf(alerts);
-  let risen = [], items = [], tidy = [];
+  let risen = [], advised = [], items = [], tidy = [];
   if (!prev) {
     // A first run has nothing to compare with; alerting now would alert everyone.
     log(`cron: first run, saved ranks for ${Object.keys(ranks).length} spots, sent nothing`);
   } else {
     risen = Object.keys(ranks).filter((id) => ranks[id] >= HIGH && (prev.ranks?.[id] ?? -1) < HIGH && !alerted[id]);
     for (const id of risen) alerted[id] = new Date(t).toISOString();
+    // Official advice that has just appeared at a spot that did not rise: its own alert. A spot that rose
+    // with it has one alert already, which leads with the notice's marker and gives the notice as what to do.
+    const fresh = alerts.advice_alerts === true ? newAdvice(alerts, prev.notices) : [];
+    advised = fresh.filter((id) => !risen.includes(id) && !adviceAt[id]);
+    for (const id of fresh) if (risen.includes(id) || advised.includes(id)) adviceAt[id] = new Date(t).toISOString();
+    const advice = Object.fromEntries(advised.map((id) => [id, noticeKey(alerts.spots[id])]));
     const news = dateNews(alerts, prev.days, prev.notices);
-    if (risen.length || news.size) ({ items, tidy } = await queueFor(env, alerts, new Set(risen), news, londonToday(t), tally, log));
+    if (risen.length || advised.length || news.size) ({ items, tidy } = await queueFor(env, alerts, new Set(risen), news, londonToday(t), tally, log, advice));
     // Before the state below, like the push queue: if the state is not written, the rise is found
     // again next run, and queueEmails merges it with what is already queued for each address.
     if (risen.length && emailOn(env)) seen.emailsQueued = await queueEmails(env, alerts, new Set(risen));
     const dated = items.filter((x) => x.dates).length;
-    log(`cron: ${alerts.generated_at}: ${risen.length} spots rose to high, ${items.length - dated} alerts to send${dated ? `, ${dated} date notices` : ''}${seen.emailsQueued ? `, ${seen.emailsQueued} emails queued` : ''}`);
+    log(`cron: ${alerts.generated_at}: ${risen.length} spots rose to high${advised.length ? `, ${advised.length} with new official advice` : ''}, ${items.length - dated} alerts to send${dated ? `, ${dated} date notices` : ''}${seen.emailsQueued ? `, ${seen.emailsQueued} emails queued` : ''}`);
   }
-  const state = { generated_at: alerts.generated_at, ranks, ...(Object.keys(alerted).length ? { alerted } : {}), ...(Object.keys(days).length ? { days } : {}), ...(notices ? { notices } : {}) };
+  const state = { generated_at: alerts.generated_at, ranks, ...(Object.keys(alerted).length ? { alerted } : {}), ...(Object.keys(adviceAt).length ? { advised: adviceAt } : {}),
+    ...(Object.keys(days).length ? { days } : {}), ...(notices ? { notices } : {}) };
   // Persist the complete queue BEFORE advancing the comparison state. If this write fails,
   // the previous ranks remain and the next run can discover the rise again. Sending begins
   // next run: putting and then checkpointing the same KV key within a second is rate-limited.
   if (items.length) await env.PUSH.put('queue', JSON.stringify({ items, state }));
   await env.PUSH.put('state', JSON.stringify(state));
   if (tidy.length) await forgetPast(env, tidy, t, log);
-  if (!items.length) return quiet({ risen, ...tally, queued: 0 });
-  return { risen, ...tally, queued: items.length };
+  const found = { risen, ...(advised.length ? { advised } : {}) };
+  if (!items.length) return quiet({ ...found, ...tally, queued: 0 });
+  return { ...found, ...tally, queued: items.length };
 }
 
-// One alert per subscriber of a risen spot, [{key, spots}], and one notice per subscriber with a
+// The spots whose official notice (alerts.json `official`, compared as shared.js noticeKey, as alerts for a
+// date compare it) is new since the last build, or has changed to another: appeared, not lifted. A notice
+// lifting sends no saved-spot alert: these alerts are warnings (a spot falling back from high sends none
+// either), and "no longer shown" would read as an all-clear, which neither SwimSignal's level nor a
+// lifted notice is. The page shows the change. notices: the last build's noticesOf; none in a state
+// from before notices, which compares nothing, so the first build after deploying records only.
+export function newAdvice(alerts, notices) {
+  if (!isObject(notices)) return [];
+  return Object.keys(alerts.spots).filter((id) => { const k = noticeKey(alerts.spots[id]); return k !== '' && k !== (notices[id] ?? ''); });
+}
+
+// One alert per subscriber of a risen or newly advised spot, [{key, spots, advice?}] (advice: the newly
+// advised spots' noticeKey, which must still show when it is sent), and one notice per subscriber with a
 // date that is news (dates.js), [{key, dates: [{spot, date, from, notice?}]}]. The spots and dates come
 // from each key's metadata; a record without them (too many to fit) is read. Also the records that
 // still hold a date before today, to forget it (tidy), at most TIDY_PER_RUN a run.
-async function queueFor(env, alerts, risen, news, today, tally, log) {
+async function queueFor(env, alerts, risen, news, today, tally, log, advice = {}) {
   const items = [], tidy = [];
   for (const { name: key, metadata } of await listKeys(env.PUSH, 'sub:')) {
     let spots = metadata?.s, dates = (Array.isArray(metadata?.d) ? metadata.d : []).map((p) => { const [spot, date] = String(p).split(' '); return { spot, date }; });
@@ -287,8 +311,9 @@ async function queueFor(env, alerts, risen, news, today, tally, log) {
       spots = record?.spots ?? [];
       dates = datesOf(record);
     }
-    const hits = spots.filter((id) => risen.has(id));
-    if (hits.length) items.push({ key, spots: Object.fromEntries(hits.map(id => [id, alerts.spots[id]])) });
+    const hits = spots.filter((id) => risen.has(id) || id in advice), adv = hits.filter((id) => id in advice);
+    if (hits.length) items.push({ key, spots: Object.fromEntries(hits.map(id => [id, alerts.spots[id]])),
+      ...(adv.length ? { advice: Object.fromEntries(adv.map((id) => [id, advice[id]])) } : {}) });
     const told = dates.filter((d) => news.has(pairKey(d.spot, d.date))).map((d) => ({ ...d, ...news.get(pairKey(d.spot, d.date)) }));
     if (told.length) items.push({ key, dates: told });
     if (tidy.length < TIDY_PER_RUN && dates.some((d) => d.date < today)) tidy.push(key);
@@ -329,10 +354,12 @@ async function drain(env, queued, perRun, authorize, tally, { fetch, log, now, a
   return { risen: [], ...tally, queued: rest.length };
 }
 
-// An alert for a queued item, from this run's forecast: only the spots still saved and still high.
-const alertFor = (alerts, siteUrl) => (record, { spots }) => {
-  const ids = Object.keys(spots ?? {}).filter(id => record.spots?.includes(id) && alerts.spots[id]?.rank >= HIGH);
-  return ids.length ? alertPayload(ids, alerts.spots, siteUrl) : null;
+// An alert for a queued item, from this run's forecast: only the spots still saved and still high, or
+// still showing the notice that was new when it was queued (a notice lifted before sending says nothing).
+const alertFor = (alerts, siteUrl) => (record, { spots, advice = {} }) => {
+  const still = (id) => alerts.spots[id]?.rank >= HIGH || (typeof advice[id] === 'string' && noticeKey(alerts.spots[id]) === advice[id]);
+  const ids = Object.keys(spots ?? {}).filter(id => record.spots?.includes(id) && still(id));
+  return ids.length ? alertPayload(ids, alerts.spots, siteUrl, new Set(ids.filter((id) => typeof advice[id] === 'string'))) : null;
 };
 
 // Returns the alerts to keep in the queue: retries, and any the forecast expired under. messageFor
@@ -404,24 +431,32 @@ async function eachLimit(items, limit, fn) {
 // alerts.json from before 4 Oct 2026 has no action. Then, after a spill, when it should have cleared
 // (levels.js clearWords, `clears`, only while right now is raised). Several spots: their names, since
 // each has its own line.
-export function alertPayload(ids, spots, siteUrl) {
+// fresh: the spots alerted for official advice that has just appeared (alertFor). Their marker says the
+// notice is new, and their tag carries a mark of it (dates.js noticeTag): the device replaces a
+// notification with the same tag silently (sw.js sets no renotify), so a notice must not reuse the tag
+// of an earlier high-risk alert, which would replace it without a sound.
+export function alertPayload(ids, spots, siteUrl, fresh = new Set()) {
+  const mark = (id) => { const m = officialMark(spots[id]); return fresh.has(id) && m === 'Official notice shown' ? 'New official notice' : m; };
   if (ids.length === 1) {
     const [id] = ids;
     const spot = spots[id];
     // While official advice shows, `action` is that advice (scripts/alerts.js), so it is not added again here.
     // The marker goes first, so a body cut short on a lock screen still says there is a notice.
     const said = (spot.headline && spot.action ? `${spot.headline}. ${spot.action}` : spot.headline ?? '') + (spot.clears ? ` ${spot.clears}` : '');
-    const mark = officialMark(spot);
-    return { title: spot.name ?? id, body: mark ? `${mark} · ${said}` : said, url: spot.url ?? `${siteUrl}spot/${id}/`, tag: `dipspot-${id}` };
+    return { title: spot.name ?? id, body: mark(id) ? `${mark(id)} · ${said}` : said, url: spot.url ?? `${siteUrl}spot/${id}/`,
+      tag: `dipspot-${id}${fresh.has(id) ? `-n${noticeTag(spot)}` : ''}` };
   }
   // Advised spots first, each with its marker in front, so the 200-character cut never drops a marker.
-  const advised = ids.filter((id) => officialMark(spots[id]));
+  const advised = ids.filter((id) => mark(id));
   const names = [...advised, ...ids.filter((id) => !advised.includes(id))]
-    .map((id) => (officialMark(spots[id]) ? `${officialMark(spots[id])} · ` : '') + (spots[id].name ?? id)).join(', ');
+    .map((id) => (mark(id) ? `${mark(id)} · ` : '') + (spots[id].name ?? id)).join(', ');
+  const high = ids.filter((id) => spots[id]?.rank >= HIGH).length;
   return {
-    title: `${ids.length} of your saved spots are at high or very high risk`,
+    title: high === ids.length ? `${ids.length} of your saved spots are at high or very high risk`
+      : high === 0 ? `New official advice at ${ids.length} of your saved spots`
+      : `${ids.length} of your saved spots: high risk or new official advice`,
     body: names.length > 200 ? names.slice(0, 199) + '…' : names,
     url: `${siteUrl}saved/`,
-    tag: 'dipspot-saved',
+    tag: fresh.size ? `dipspot-saved-n${noticeTag({ official: [...fresh].sort().map((id) => noticeKey(spots[id])).join('|') })}` : 'dipspot-saved',
   };
 }

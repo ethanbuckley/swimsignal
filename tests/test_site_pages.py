@@ -458,6 +458,7 @@ def test_alerts_are_off_unless_both_settings_are_sound(monkeypatch):
     monkeypatch.delenv(bs.PUSH_URL_ENV, raising=False)
     monkeypatch.delenv(bs.PUSH_KEY_ENV, raising=False)
     monkeypatch.delenv(bs.PUSH_DATES_ENV, raising=False)
+    monkeypatch.delenv(bs.PUSH_ADVICE_ENV, raising=False)
     assert bs.push_config() is None
     key = "B" + "A" * 86
     monkeypatch.setenv(bs.PUSH_URL_ENV, "https://dipspot-push.example.workers.dev/")
@@ -469,6 +470,12 @@ def test_alerts_are_off_unless_both_settings_are_sound(monkeypatch):
     monkeypatch.setenv(bs.PUSH_DATES_ENV, "yes please")
     assert "dates" not in bs.push_config()
     monkeypatch.delenv(bs.PUSH_DATES_ENV)
+    # Alerts for official advice at a saved spot: likewise, once the Worker that sends them is deployed.
+    monkeypatch.setenv(bs.PUSH_ADVICE_ENV, "1")
+    assert bs.push_config() == {"url": "https://dipspot-push.example.workers.dev/", "key": key, "advice": True}
+    monkeypatch.setenv(bs.PUSH_ADVICE_ENV, "soon")
+    assert "advice" not in bs.push_config()
+    monkeypatch.delenv(bs.PUSH_ADVICE_ENV)
     monkeypatch.setenv(bs.PUSH_URL_ENV, "http://dipspot-push.example.workers.dev/")   # not https
     assert bs.push_config() is None
     monkeypatch.setenv(bs.PUSH_URL_ENV, "https://dipspot-push.example.workers.dev/")
@@ -520,6 +527,28 @@ def test_the_privacy_notice_describes_alerts_only_when_they_are_on(tmp_path):
         assert before in off and before in on and after not in on, before
         assert after in dated and before not in dated, after
     assert (tmp_path / "levels.js").exists()
+    # Alerts for official advice at a saved spot: said only once DIPCAST_PUSH_ADVICE turns them on, beside dates or not.
+    for before, after in bs.PUSH_ADVICE_SWAPS:
+        assert before in bs.PUSH_PRIVACY and before in on and after not in on, before
+        assert not any(before in a for a, _ in bs.PUSH_DATES_SWAPS), before   # each swap finds its words
+    for dates in (False, True):
+        bs.write_pages(tmp_path, SPOTS[:1], root="https://example.org/", push=True, push_dates=dates, push_advice=True)
+        advised = (tmp_path / "privacy.html").read_text()
+        for before, after in bs.PUSH_ADVICE_SWAPS:
+            assert after in advised, after
+        assert ("up to 10 pairs of a spot and a date" in advised) is dates
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="needs Node")
+def test_the_alerts_file_lets_the_worker_send_advice_alerts_only_when_the_build_says(tmp_path):
+    # scripts/alerts.js copies spots.json push.advice into alerts.json advice_alerts, which push/src/index.js reads:
+    # the Worker's advice alerts and the page's words about them switch on in the same build.
+    doc = {"generated_at": "2026-11-08T06:00:00+00:00", "spots": []}
+    for push, flag in ((None, None), ({"url": "https://p.example/", "key": "k"}, None), ({"url": "https://p.example/", "key": "k", "advice": True}, True)):
+        src = tmp_path / "spots.json"
+        src.write_text(json.dumps({**doc, **({"push": push} if push else {})}))
+        subprocess.run(["node", str(ROOT / "scripts" / "alerts.js"), str(src), str(tmp_path / "alerts.json"), "https://example.org/"], check=True, timeout=60)
+        assert json.loads((tmp_path / "alerts.json").read_text()).get("advice_alerts") is flag, push
 
 
 @pytest.mark.skipif(shutil.which("node") is None, reason="needs Node")

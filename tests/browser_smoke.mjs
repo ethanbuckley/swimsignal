@@ -35,6 +35,8 @@ const PAGES = [
   // Notifications blocked for the site: the Alerts tile says where to allow them, with no button that cannot work,
   // and gives the button back once they are allowed and the page is in view again.
   ['saved/', '#scards .places li', 'blocked'],
+  // A saved spot's page says where its alerts are, and "Go to alerts" opens the Saved page at the Alerts tile.
+  [`index.html?spot=${IDS[0]}`, '#save-hint', 'spot-alerts'],
   // A town typed in the search: the spots near it, under the spots named for it (fixture places.json; no rivers file).
   ['index.html', '#q', 'search'],
 ];
@@ -98,7 +100,8 @@ for (const [w, h, mobile] of [[375, 812, true], [1440, 900, false]]) {
       class F extends D { constructor(...a) { super(...(a.length ? a : [T + (performance.now() | 0)])); } static now() { return T + (performance.now() | 0); } }
       globalThis.Date = F; })();` }, s);
     // The Saved route needs a fresh browser state, then two saved spots for the comparison to exist.
-    if (saved) await send('Page.addScriptToEvaluateOnNewDocument', { source: `localStorage.clear(); ${saved === 'saved' || saved === 'blocked' ? `localStorage.setItem('dipcast.saved', ${JSON.stringify(JSON.stringify(IDS.slice(0, 2)))});` : ''}` }, s);
+    // In a try: it runs in every frame, and a spot page's sandboxed frames may not read storage.
+    if (saved) await send('Page.addScriptToEvaluateOnNewDocument', { source: `try { localStorage.clear(); ${saved === 'saved' || saved === 'blocked' ? `localStorage.setItem('dipcast.saved', ${JSON.stringify(JSON.stringify(IDS.slice(0, 2)))});` : ''}${saved === 'spot-alerts' ? `localStorage.setItem('dipcast.saved', ${JSON.stringify(JSON.stringify(IDS.slice(0, 1)))});` : ''} } catch (e) { /* a frame without storage */ }` }, s);
     const notify = setting => send('Browser.setPermission', { permission: { name: 'notifications' }, setting, origin: BASE.slice(0, -1) });
     if (saved === 'blocked') await notify('denied');
     await send('Page.navigate', { url: BASE + page }, s);
@@ -146,6 +149,19 @@ for (const [w, h, mobile] of [[375, 812, true], [1440, 900, false]]) {
       for (let t = 0; t < 20 && !(after && after.button); t++) { await sleep(100); after = await tile(); }
       if (!after || !after.button || after.blocked) errors.push(`Alerts tile once allowed again: ${JSON.stringify(after)}`);
       await send('Browser.resetPermissions', {});
+    }
+    if (shown && saved === 'spot-alerts') {
+      const r = await send('Runtime.evaluate', { awaitPromise: true, returnByValue: true, expression: `(async () => {
+        const hint = document.getElementById('save-hint');
+        if (!/^Alerts for this spot are set up on the Saved page\. Go to alerts$/.test(hint.textContent)) return 'spot page line: ' + hint.textContent;
+        document.getElementById('save-alerts').click();
+        for (let t = 0; t < 20 && !document.getElementById('alerts-h'); t++) await new Promise(r => setTimeout(r, 100));
+        await new Promise(r => setTimeout(r, 400));
+        const h = document.getElementById('alerts-h'); if (!h) return 'Go to alerts: no Alerts tile';
+        const top = h.getBoundingClientRect().top;
+        if (document.activeElement !== h) return 'Go to alerts: the Alerts heading is not focused';
+        return (top >= 0 && top < innerHeight) || 'Go to alerts: the Alerts heading is out of view (' + Math.round(top) + ' px)'; })()` }, s);
+      const v = r.result?.result?.value; if (v !== true) errors.push(String(v));
     }
     // "Marlow" names no spot; Henley-on-Thames is 5.6 miles away, so it is listed under "Near Marlow" with its own level.
     if (shown && saved === 'search') {

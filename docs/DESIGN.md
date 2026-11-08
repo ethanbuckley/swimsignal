@@ -2137,3 +2137,21 @@ thing, the forecast, and everything else is reached from About, the foot or the 
   terms page's full list with every licence. `embed.js` keeps its full credit, since it sits on another site.
 - **Counts.** The README's spot counts are checked against the spot files by `tests/test_readme_counts.py`; the
   site's own counts were already the build's.
+
+## The level's names, checked (6 November 2026)
+
+Build step 2 of the strategy review asked for one name for the level. The survey found the rule of 2 October
+("One name for each thing", above) in force: the product and the day's level are the **pollution risk** (95 uses),
+the spill score is the **sewage spill risk** (63), and a headline whose level the spills set says so, "Low risk
+from sewage spills" (`levels.js`, `HEAD_SCOPE`). The review overstated the drift. Three strays were swept:
+
+- The list's counts line said "Sewage pollution risk:" whenever a spot was under official advice and "Pollution
+  risk:" otherwise. It says "Pollution risk:" always; its "under official advice restricting swimming" words
+  carry the distinction.
+- The method page's "No level" row named the no-level case by its 2026 wording, "no sewage risk from monitored
+  overflows", which left the site on 3 October. It names the cases as the pages do: no monitored overflow found
+  upstream, no river or beck draining into the lake, or no forecast.
+- A comment in the push Worker's date alerts quoted the same old wording.
+
+Left for after PR #645 lands, since it edits the same line: the organisations page's opening says "forecasts the
+risk of sewage pollution at a spot"; it should say the spot's pollution risk forecast.

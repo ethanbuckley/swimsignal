@@ -82,6 +82,8 @@ test('alerts: each state a card can be in says what it is, plainly', () => {
   assert.deepEqual(Li.spotAlert({push: false, email: false}).text, '');
   assert.deepEqual(st({on: null}), {kind: 'checking', text: '', toggle: false, checked: false, link: false});
   assert.deepEqual(st({on: true}), {kind: 'on', text: 'A notification if it reaches high or very high risk.', toggle: true, checked: true, link: false});
+  // Once the build turns on alerts for official advice (DATA.push.advice), and only then, the card says so.
+  assert.equal(st({on: true, advice: true}).text, 'A notification if it reaches high or very high risk, or if official advice is newly shown there.');
   assert.deepEqual(st({on: true, off: true}), {kind: 'muted', text: 'No alerts for this spot. Your other saved spots still have them.', toggle: true, checked: false, link: false});
   assert.deepEqual(st({on: false}), {kind: 'off', text: 'Alerts are off.', toggle: false, checked: false, link: true});
   // The alert service not answering is said, with the tick kept where alerts are on.

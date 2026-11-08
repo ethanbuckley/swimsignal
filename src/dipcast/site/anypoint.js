@@ -250,7 +250,13 @@ const AnyPoint = (() => {
     const recent = contrib.map((c, k) => c > 0 && !run[k] && status[k] !== -3);
     const quiet = state.map((st, k) => st === 'live' && status[k] === 0 && !recent[k]);
     const stale = state.map((st, k) => st === 'stale' && !run[k] && !recent[k]);
-    const monitored = counted(run.map((x, k) => x || recent[k] || quiet[k])), fd = {}, fs = {}, fr = {}, frSince = {};
+    const reporting = run.map((x, k) => x || recent[k] || quiet[k]);
+    const monitored = counted(reporting), fd = {}, fs = {}, fr = {}, frSince = {};
+    // The weight of the overflows counted here, and of those reporting live (forecast.live_counts), so the page
+    // can tell how much of what matters here is watched (levels.js, nowWatched), as on a listed spot's page. Without
+    // them a tap on the Dee at Chester, 1 of 18 reporting and the Dŵr Cymru overflows with the weight unwatched,
+    // read as fully watched and said plain "Low risk" (8 Nov 2026). Worked out here: no data file grows.
+    const weightOf = keep => Math.round(w.reduce((s, x, k) => s + (here[k] && keep(k) ? x : 0), 0) * 1e4) / 1e4;
     rows.forEach((r, k) => {
       if (!here[k]) return;
       if (down[k]) fd[company[k]] = (fd[company[k]] || 0) + 1;
@@ -259,6 +265,7 @@ const AnyPoint = (() => {
         fr[c] = (fr[c] || 0) + 1; if (t && (!frSince[c] || Date.parse(t) > Date.parse(frSince[c]))) frSince[c] = t; } });
     const now = { risk: r3(nowRisk), label: riskLabel(nowRisk), discharging_upstream: counted(run),
       recent_upstream: counted(recent), monitored_upstream: monitored,
+      monitored_weight: weightOf(k => reporting[k]), upstream_weight: weightOf(() => true),
       feed_down_upstream: counted(down),
       feed_down: Object.keys(fd).sort().map(c => ({ company: c, overflows: fd[c], since: (od.feed_down_since || {})[c] ?? null })),
       stale_upstream: counted(stale),
@@ -517,27 +524,39 @@ const AnyPoint = (() => {
     return ni && ni.coordinates.some(poly => inRing(lon, lat, poly[0])) ? 'northern_ireland' : 'republic_of_ireland';
   }
   const outsideEngland = (lat, lon, shape) => !!outsideWhere(lat, lon, shape);
+  // Wales and Scotland share the "wales_scotland" polygons. A point in them north of this is in Scotland
+  // (network/nations.py, WALES_NORTH_LAT: Wales reaches 53.43 N, Scotland's southernmost point is 54.63 N).
+  const WALES_NORTH_LAT = 54.0;
   const ENGLAND_ONLY = 'SwimSignal has overflow data for England only, so it has no forecast here.';
   // What a click outside England says, and the official source for bathing waters there, in place of
   // the card's sentence about the Environment Agency, which tests England's (render's check). Nothing
   // about the water itself: SwimSignal knows nothing about it.
+  // scotland_trial: a click in Scotland while the Scotland trial lists its spots (scotland_trial.py). Scottish
+  // Water's overflows are then in the data, so "England only" is false there; but the trial forecasts its listed
+  // spots only, and click-anywhere carries no Scottish overflow (build_site.write_any_point, england_only). So
+  // no forecast here, and the page lists the listed spots nearest the click (show).
   const OUTSIDE = {
+    scotland_trial: { error: 'In Scotland, SwimSignal forecasts only its listed trial spots. This point is not one of them, so it has no forecast here.',
+      see: 'In Scotland, the Scottish Environment Protection Agency publishes bathing water results: '
+        + 'a link is on <a href="coverage.html">Coasts, Wales, Scotland, Ireland and algae</a>.' },
     wales_scotland: { error: ENGLAND_ONLY,
       see: 'In Wales and Scotland, Natural Resources Wales and the Scottish Environment Protection Agency publish bathing water results: '
         + 'links to both are on <a href="coverage.html">Coasts, Wales, Scotland, Ireland and algae</a>.' },
-    northern_ireland: { error: 'SwimSignal has overflow data for England only, so it has no forecast in Northern Ireland.',
+    northern_ireland: { error: 'SwimSignal does not have overflow data for Northern Ireland, so it has no forecast here.',
       see: 'The Department of Agriculture, Environment and Rural Affairs (DAERA) publishes results for Northern Ireland\'s bathing waters on its '
         + '<a href="https://www.daera-ni.gov.uk/articles/bathing-water-quality-dashboard" rel="noopener">Bathing Water Quality Dashboard</a>.' },
-    republic_of_ireland: { error: 'SwimSignal has overflow data for England only, so it has no forecast in the Republic of Ireland.',
+    republic_of_ireland: { error: 'SwimSignal does not have overflow data for the Republic of Ireland, so it has no forecast here.',
       see: 'The Environmental Protection Agency publishes bathing water results and any swimming restrictions in the Republic at '
         + '<a href="https://www.beaches.ie/" rel="noopener">beaches.ie</a>.' },
   };
   const CHECK_SIGNS = 'A forecast, not a water test: check the signs at the water before you swim.';
+  const NOT_HERE = 'Each level is that spot\'s own forecast, not this point\'s.';
 
   // Where a click goes and the overflows upstream of it, from the files: {mode, kind, name,
   // location, rows} or, where there is no forecast, {error}. files: {cfg: tiles.json, lakes:
   // lakes.json, od: overflow_days.json, tiles: {square: {index, links}}} for the squares near it,
-  // and outside: outside_england.json, or null from a build without it.
+  // and outside: outside_england.json, or null from a build without it; scotland: true while the
+  // Scotland trial lists its spots.
   // A reservoir can be filled by pumping from a river, which the network does not show.
   const ISOLATED = 'An isolated lake: the river network links no monitored storm overflow to it, '
     + 'so the forecast has nothing to say about it. A reservoir filled by pumping from a river can still take in river water. '
@@ -546,8 +565,9 @@ const AnyPoint = (() => {
   // (build_any_point.outline_names), or null.
   const lakeName = (lakes, id) => ((lakes.lakes || [])[id] || {}).name || null;
   function place(lat, lon, files) {
-    const { cfg, lakes, od, tiles, outside = null, outlines = {}, waters = {} } = files, a = od.assumptions;
-    const where = outsideWhere(lat, lon, outside);
+    const { cfg, lakes, od, tiles, outside = null, outlines = {}, waters = {}, scotland = false } = files, a = od.assumptions;
+    const at0 = outsideWhere(lat, lon, outside);
+    const where = at0 === 'wales_scotland' && scotland && lat >= WALES_NORTH_LAT ? 'scotland_trial' : at0;
     if (where) return { mode: 'none', kind: '', name: 'This point', error: OUTSIDE[where].error, outside: where };
     const poly = lakePolygon(lat, lon, lakes, cfg.lake_shore_m, outlines);
     // A WFD lake with no lake centreline inside takes the one nearest the click within 1.5 km
@@ -598,18 +618,19 @@ const AnyPoint = (() => {
   async function point(lat, lon, again = true) {
     const [cfg, lakes, od, outside] = await Promise.all([json('tiles.json'), json('lakes.json'), json('overflow_days.json'),
       json('outside_england.json').catch(() => null)]);
+    const scotland = typeof DATA !== 'undefined' && !!DATA && (DATA.spots || []).some(s => s.trial === 'scotland');   // index.html, spotsWhere
     const outlines = Object.fromEntries(await Promise.all(outlinesNeeded(lat, lon, lakes, cfg.lake_shore_m)
       .map(async i => [i, await json(`lake_outlines/${i}.json`).catch(() => null)])));
     const keys = needsSquares(lat, lon, lakes, cfg, outside, outlines) ? squares(lat, lon, cfg) : [];
     const tiles = Object.fromEntries(await Promise.all(keys.map(async k => [k, await tile(k, cfg)])));
-    let at = place(lat, lon, { cfg, lakes, od, tiles, outside, outlines });
+    let at = place(lat, lon, { cfg, lakes, od, tiles, outside, outlines, scotland });
     if (at.need) {
       for (const k of at.need) tiles[k] = await tile(k, cfg);
-      at = place(lat, lon, { cfg, lakes, od, tiles, outside, outlines });
+      at = place(lat, lon, { cfg, lakes, od, tiles, outside, outlines, scotland });
     }
     // Lake distance "water": the lake's water, only for a click placed on a lake that has one; then place again.
     const water = at.lake !== undefined && (lakes.lakes[at.lake] || {}).water ? await json(`lake_water/${at.lake}.json`).catch(() => null) : null;
-    if (water) at = place(lat, lon, { cfg, lakes, od, tiles, outside, outlines, waters: { [at.lake]: water } });
+    if (water) at = place(lat, lon, { cfg, lakes, od, tiles, outside, outlines, scotland, waters: { [at.lake]: water } });
     const rows = at.rows || [];
     const ids = rows.length ? await json('overflow_ids.json') : null;
     const versions = new Set([cfg.ids, od.ids, lakes.ids, ...(water ? [water.ids] : []), ...Object.values(tiles).map(t => t.ids), ...(ids ? [ids.ids_version] : [])]);
@@ -662,6 +683,15 @@ const AnyPoint = (() => {
     // Outside England, the official source there in place of the sentence about the Environment Agency.
     const chk = d.outside && (OUTSIDE[d.outside] || {}).see && box.querySelector('.check');
     if (chk) chk.innerHTML = `${CHECK_SIGNS} ${OUTSIDE[d.outside].see}`;
+    // In Scotland during the trial: the listed spots near the point, nearest first, with how far (index.html,
+    // nearby), under the answer. Within its 40 km first, else the nearest anywhere: from the Tay at Perth
+    // the nearest trial spot is about 50 km away.
+    const lead = d.outside === 'scotland_trial' && typeof nearby === 'function' && box.querySelector('.factors');
+    if (lead) {
+      // Each row's level is its own spot's: said under them, so none reads as this point's.
+      const list = (nearby(d) || nearby(d, Infinity)).replace(/<\/section>$/, `<p class="sub">${NOT_HERE}</p></section>`);
+      if (list) { lead.closest('.tile').insertAdjacentHTML('afterend', `<div id="nearby-host">${list}</div>`); bindNearby(); }
+    }
     const acts = box.querySelector('.actions');
     if (acts) {   // the spot's share, picture and swim-log buttons, and their notes
       let el = acts.nextElementSibling;
@@ -726,7 +756,7 @@ const AnyPoint = (() => {
   }
 
   return { historyDays, interp, calibrate, shiftByTravel, combineDaily, missingShare, riskLabel, rowsAt, lakeRows, transportOf, forecast, rainAt, waterAt,
-    frame, nearestOnLine, waterWay, decodeIndex, lakeName, candidates, inRing, polygonDistance, outlineDistance, nearLakes, lakePolygon, outlinesNeeded, needsSquares, outsideEngland, outsideWhere, OUTSIDE, locate, place, tileKey, squares, point, open, onMapClick, POINT_ZOOM };
+    frame, nearestOnLine, waterWay, decodeIndex, lakeName, candidates, inRing, polygonDistance, outlineDistance, nearLakes, lakePolygon, outlinesNeeded, needsSquares, outsideEngland, outsideWhere, OUTSIDE, WALES_NORTH_LAT, locate, place, tileKey, squares, point, open, onMapClick, POINT_ZOOM };
 })();
 
 if (typeof window !== 'undefined' && typeof map !== 'undefined') {

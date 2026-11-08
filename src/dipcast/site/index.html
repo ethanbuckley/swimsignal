@@ -2103,7 +2103,10 @@ function alertsCard() {
   // it stays, word for word, one tap away and before the button; the first sentence is in view.
   // Email (DATA.email) is offered beside push, for browsers that cannot take push: on an iPhone,
   // push needs the Home Screen app, so most visitors there could not have alerts at all.
-  const what = `${DATA.push && DATA.email ? 'A notification or an email' : DATA.push ? 'A notification' : 'An email'} when one of your saved spots reaches high or very high risk, at most once a day for each.`;
+  // Official advice newly shown at a saved spot sends a notification too, once the build turns it on (DATA.push.advice,
+  // DIPCAST_PUSH_ADVICE), in the same build that lets the Worker send them (push/README.md). Email sends no such alert.
+  const what = `${DATA.push && DATA.email ? 'A notification or an email' : DATA.push ? 'A notification' : 'An email'} when one of your saved spots reaches high or very high risk, at most once a day for each.`
+    + (DATA.push && DATA.push.advice ? ` ${DATA.email ? 'A notification also' : 'Another'} when official advice is newly shown at one of them, also at most once a day for each.` : '');
   let h = `<section class="sec tile" aria-labelledby="alerts-h" id="alerts" data-perm="${alertPerm()}"><h2 class="sec-h" id="alerts-h">Alerts</h2><p class="sub">${what}</p>`;
   if (DATA.push) {
     const sends = 'Turning alerts on sends your browser\'s push address and the list of your saved spots, and nothing else about you, to SwimSignal\'s alert service. Ticking the weekly note adds only that you want it. Alerts reach you through your browser maker\'s push service (Google, Apple, Mozilla or Microsoft), encrypted so it cannot read them. '
@@ -2191,7 +2194,8 @@ function drawSpotAlerts() {
   if (!DATA || typeof spotAlert !== 'function') return;
   const can = alertCan(), off = alertOff();
   document.querySelectorAll('[data-alert]').forEach(p => {
-    const id = p.dataset.alert, st = spotAlert({ push: !!DATA.push, email: !!DATA.email, can, on: ALERT_UI.on, off: off.includes(id), down: ALERT_UI.down });
+    const id = p.dataset.alert, st = spotAlert({ push: !!DATA.push, email: !!DATA.email, can, on: ALERT_UI.on, off: off.includes(id), down: ALERT_UI.down,
+      advice: !!(DATA.push && DATA.push.advice) });
     p.dataset.kind = st.kind;
     p.innerHTML = (st.toggle ? `<label class="alert-tick"><input type="checkbox" data-alert-spot="${esc(id)}"${st.checked ? ' checked' : ''}><span>Alerts for this spot</span></label>` : '')
       + (st.text ? `<span class="alert-said">${esc(st.text)}</span>` : '')
@@ -2798,7 +2802,8 @@ const recentSay = (rec, dis, h) => rec ? `${rec}${dis ? ' more' : ''} stopped la
 // The Right now tile: how many overflows upstream are discharging, out of those that report live. Never
 // "0 of 14 discharging" where none of the 14 reports (Hereford, Symonds Yat and Sandy Lane,
 // whose overflows are all Dŵr Cymru's, with no live feed SwimSignal reads): the figure is then "Unknown".
-// Where some do not report, the count alone, and the line under it says how many report. Which do not, and
+// Where some do not report, the count alone, and the line under it says how many report; where too few report
+// for a 0 to stand (levels.js, nowFew), "Unknown" again, and the line says how many report and what they said. Which do not, and
 // that they could be spilling unseen, is said with the other gaps (unknowns, liveSay):
 // the tile says what is observed.
 // By its data state where it has one: status -2 is also an offline monitor on a feed that works (ingest.live.data_states),
@@ -2816,6 +2821,12 @@ function nowTile(d, total) {
     more: `A spill counts until ${d.assumptions.recent_spill_hours}&nbsp;h after its water has passed here. A monitor reports when it spills, not how much or what is in it.` };
   if (!mon && !n)
     return { ...base, fig: 'Unknown', say: `None of the ${total === 1 ? 'overflow' : `${total} overflows`} upstream ${total === 1 ? 'reports' : 'report'} live, so whether ${total === 1 ? 'it is' : 'any is'} discharging is not known.${noFeedSaid(d)}` };
+  // Too few report for a large 0 (levels.js, nowFew): no figure, and how many report, with what they said, in words.
+  const few = nowFew(d);
+  if (few) return { ...base, fig: 'Unknown',
+    say: `${now.recent_upstream ? recentSay(now.recent_upstream, 0, d.assumptions.recent_spill_hours) + ' ' : ''}${mon} of ${total} overflows upstream ${mon === 1 ? 'reports live, and it is not' : 'report live, and none of them is'} discharging.`
+      + ` ${few === 'count' ? 'Too few report to tell whether the rest are.' : 'The ones that matter most here do not report, so whether they are is not known.'}${clearWords(d) ? ' ' + clearWords(d) : ''}`,
+    note: pollSay() };
   return { ...base, fig: n, unit: mon >= total ? `of ${total} discharging` : 'discharging', figTone: n ? 'hot' : '',
     say: `${recentSay(now.recent_upstream, n, d.assumptions.recent_spill_hours)} ${mon} of ${total} report live.${clearWords(d) ? ' ' + clearWords(d) : ''}`,   // when it should clear (levels.js)
     note: pollSay() };   // the tile's quiet line, under what it says
@@ -3685,14 +3696,15 @@ function overview(spots) {
   spots.filter(s => ORDER[mapLevel(s)] === undefined && !plainLevel(mapLevel(s)))
     .forEach(s => { const w = listHeadline(s).split(':')[0].toLowerCase(); why[w] = (why[w] || 0) + 1; });
   const none = Object.values(why).reduce((a, b) => a + b, 0);
-  // Official advice (eatoday.js) never changes a count above; the spots with it are counted on their own, and
-  // the counts are then named for what they are, the sewage forecast's.
+  // Official advice (eatoday.js) never changes a count above; the spots with it are counted on their own. The
+  // line keeps its one name, "Pollution risk" (6 Nov 2026: it said "Sewage pollution risk" when a spot was under
+  // advice, a second name for the same count; the "under official advice" words carry the distinction).
   const advised = typeof eaTodayAdvice === 'function' ? spots.filter(s => eaTodayAdvice(s).length).length : 0;
   // The forecast's own tally, which counts a spot under advice restricting swimming by its sewage level; how many of its
   // low spots that is, so it can be read beside the day strip's count, which leaves them out (lowToChoose). The first
   // figure is the strip's (5 Nov 2026: "63 low risk" over "64 low (1 of them ...)" read as two counts of one thing).
   const lowBarred = rated.filter(s => mapLevel(s) === 'low' && typeof lowEligible === 'function' && !lowEligible(s)).length;
-  return `Updated ${issued()} · ${advised ? 'Sewage pollution risk' : 'Pollution risk'}: ${low - lowBarred} low${lowBarred ? `, and ${lowBarred} more at low under official advice restricting swimming` : ''} · ${rated.length - low - high} moderate · ${high} high or very high`
+  return `Updated ${issued()} · Pollution risk: ${low - lowBarred} low${lowBarred ? `, and ${lowBarred} more at low under official advice restricting swimming` : ''} · ${rated.length - low - high} moderate · ${high} high or very high`
     + `${clear ? ` · ${clear} with no monitored overflow found upstream` : ''}${none ? ` · ${none} without a level` : ''}`
     + `${none ? ': ' + Object.entries(why).sort((a, b) => b[1] - a[1]).map(([w, n]) => `${n} ${w}`).join(', ') : ''}. ${cap(mapWhen())}.`
     + (advised ? ` ${advised} with an official notice: ${noticeVerb(spots.filter(s => eaTodayAdvice(s).length))}.` : '');
@@ -5160,22 +5172,39 @@ function saveButton(d) {
   const on = listNow().spots.includes(d.id);
   return `<button type="button" class="save" id="save" aria-pressed="${on}">${saveLabel(on)}</button>`;
 }
+// Under Save, before it is pressed: where this spot's alerts are set up (lists.js, saveAlertHint), with "Go to alerts"
+// for a saved spot, which opens the Saved page at its Alerts tile. Until 8 Nov 2026 the spot page never said alerts
+// existed: the way was Save, then a sentence, then the Saved page, where the tile is some two screens down on a phone.
+// Drawn here, not in spotTop, which the build's prerender copies without knowing this browser.
 function bindSave(d) {
   const b = document.getElementById('save'); if (!b) return;
+  const hint = on => (typeof saveAlertHint === 'function' && DATA ? saveAlertHint({ push: !!DATA.push, email: !!DATA.email, can: alertCan(), saved: on }) : { text: '', go: false });
+  const goAlerts = '<button type="button" class="linkbtn small" id="save-alerts">Go to alerts</button>';
+  const bindGo = () => { const g = document.getElementById('save-alerts'); if (g) g.addEventListener('click', () => { openSaved(); toAlerts(); }); };
+  // Its own line before the live one (save-msg), so it is not read out each time a spot page opens; pressing Save
+  // replaces it with what Save did there.
+  const first = document.getElementById('save-msg'), h0 = hint(listNow().spots.includes(d.id));
+  if (first && h0.text && !document.getElementById('save-hint')) {
+    first.insertAdjacentHTML('beforebegin', `<p class="small muted save-msg" id="save-hint">${esc(h0.text)}${h0.go ? ` ${goAlerts}` : ''}</p>`); bindGo(); }
   b.addEventListener('click', () => {
+    const was = document.getElementById('save-hint'); if (was) was.remove();
     const l = listNow(), on = !l.spots.includes(d.id), kept = setLists(on ? addToList(LISTS, l.id, d.id) : removeFromList(LISTS, l.id, d.id));
     b.setAttribute('aria-pressed', String(on)); b.innerHTML = saveLabel(on);
     // Said under the button, where the eye is: at the foot of the page (share-msg) it was some
     // 6,700 px below a phone's first screen, so a first save said nothing of where the spot went.
     const m = document.getElementById('save-msg') || document.getElementById('share-msg'), where = PHONE.matches ? 'in the bar at the bottom' : 'at the top of the page';
     const also = LISTS.lists.filter(x => x.id !== l.id && x.spots.includes(d.id)).map(x => x.name);
-    const go = `<a href="${esc(savedPath())}" id="save-go">Saved</a>`, alerts = DATA && (DATA.push || DATA.email) ? ' There you can also set up alerts for them.' : '';
+    // Saved: the way to the Alerts tile, or, where this browser cannot have alerts from here (an iPhone outside the
+    // Home Screen app), what it needs instead; nothing where it cannot have them at all.
+    const h = hint(true), go = `<a href="${esc(savedPath())}" id="save-go">Saved</a>`,
+      alerts = h.go ? ` There you can also set up alerts for them: ${goAlerts}` : h.text ? ` ${esc(h.text)}` : '';
     if (m) m.innerHTML = !kept ? 'This browser is not keeping site data, so this spot stays saved only for this visit.'
       : !manyLists() ? (on ? `Saved on this device. Your saved spots are under ${go}, ${where}.${alerts}` : 'Removed from your saved spots.')
       : on ? `Saved to ${esc(l.name)} on this device. Your lists are under ${go}, ${where}.${alerts}`
       : `Removed from ${esc(l.name)}.${also.length ? ` Still in ${esc(also.join(' and '))}.` : ''}`;
     const a = document.getElementById('save-go');
     if (a) a.addEventListener('click', e => { if (!plainClick(e)) return; e.preventDefault(); openSaved(); });
+    bindGo();
   });
 }
 // "Plan a swim here": Plan a swim on this spot as the outing's, for the day shown (plan.js, planFromSpot). A spot
@@ -5515,16 +5544,17 @@ const otherAsWell = (d, near) => { const three = near.slice(0, 3);
   const o = near.find(([s]) => otherWater(d, s));
   return o ? [...three.slice(0, 2), o] : three; };
 // A spot with official advice (eatoday.js) is never offered as lower risk; in a plain "Nearby" it carries its tag.
-function nearby(d) {
+// reach: how far to look, in km. Further than NEAR_KM (a Scottish map tap, anypoint.js) the heading says "Nearest listed spots".
+function nearby(d, reach = NEAR_KM) {
   const lv = s => DAY ? dayLevel(s, DAY) : level(s), mine = rank(lv(d)), lower = mine >= 1 || advisedAgainst(d), poor = advisedAgainst(d);
   const officialShown = s => typeof eaTodayRestricts === 'function' && eaTodayRestricts(s);   // a notice that restricts swimming
   const alts = otherAsWell(d, DATA.spots.filter(s => s.id !== d.id && (!lower || (!advisedAgainst(s) && !officialShown(s) && ORDER[lv(s)] !== undefined && rank(lv(s)) < mine
       && (DAY || (notHigherAnyDay(s, d) && !nowUnknown(s))) && (!poor || ratedBetter(s)))))
-    .map(s => [s, km([d.lat, d.lon], [s.lat, s.lon])]).filter(([, k]) => k <= NEAR_KM).sort((a, b) => a[1] - b[1]));
+    .map(s => [s, km([d.lat, d.lon], [s.lat, s.lon])]).filter(([, k]) => k <= reach).sort((a, b) => a[1] - b[1]));
   if (!alts.length) return '';
   const claim = `${poor ? 'Rated better than poor by the Environment Agency, and lower' : 'Lower'} ${DAY ? 'that day'
     : `now, and no higher on ${allFiveDays(d) ? 'any of the five days' : 'any day with a forecast here'}`}.`;
-  return `<section class="tile" id="nearby" aria-labelledby="nearby-h"><h2 class="t-lab" id="nearby-h">${ICON.pin}<span>${lower ? 'Lower risk nearby' : 'Nearby'}</span></h2><ul class="near">`
+  return `<section class="tile" id="nearby" aria-labelledby="nearby-h"><h2 class="t-lab" id="nearby-h">${ICON.pin}<span>${lower ? 'Lower risk nearby' : reach > NEAR_KM ? 'Nearest listed spots' : 'Nearby'}</span></h2><ul class="near">`
     + alts.map(([s, k]) => { const why = nearWhy(d, s);
       return `<li><a class="row" href="${esc(spotPath(s.id) + (DAY && daily(s) ? '#day=' + DAY : ''))}" data-id="${esc(s.id)}"><span class="row-main">`
         + `<span class="nm">${esc(s.name)}</span>${typeof eaTodayTag === 'function' ? eaTodayTag(s) : ''}<span class="hl ${tone(lv(s))}">${DAY ? dayHeadline(s, DAY) : headline(s)}</span>${headNote(s)}`

@@ -17,20 +17,28 @@ function el(id) {
     focus() { this.focused = true; }, scrollIntoView(o) { this.scrolled = o; }, remove() { this.removed = true; }};
 }
 
-function saveSetup({push = true, many = false, kept = true, phone = true, withSaveMsg = true} = {}) {
-  const els = {save: el('save'), 'share-msg': el('share-msg'), 'save-go': el('save-go')};
-  if (withSaveMsg) els['save-msg'] = el('save-msg');
-  let opened = 0;
-  const lists = {lists: many ? [{id: 'l1', name: 'My spots', spots: []}, {id: 'l2', name: 'Weekend & <Club>', spots: []}] : [{id: 'l1', name: 'Saved spots', spots: []}]};
+const {saveAlertHint} = require('../src/dipcast/site/lists.js');
+const GO = '<button type="button" class="linkbtn small" id="save-alerts">Go to alerts</button>';
+function saveSetup({push = true, email = false, many = false, kept = true, phone = true, withSaveMsg = true, can = 'yes', saved = false} = {}) {
+  const els = {save: el('save'), 'share-msg': el('share-msg'), 'save-go': el('save-go'), 'save-alerts': el('save-alerts')};
+  if (withSaveMsg) {
+    els['save-msg'] = el('save-msg');
+    // The hint's own line, put before the live one.
+    els['save-msg'].insertAdjacentHTML = (where, html) => { assert.equal(where, 'beforebegin'); const h = el('save-hint'); assert.match(html, /^<p class="small muted save-msg" id="save-hint">.*<\/p>$/); h.innerHTML = html.replace(/^<p[^>]*>|<\/p>$/g, ''); h.remove = () => { delete els['save-hint']; }; els['save-hint'] = h; };
+  }
+  let opened = 0, toAlerts = 0;
+  const ids = saved ? ['spot'] : [];
+  const lists = {lists: many ? [{id: 'l1', name: 'My spots', spots: []}, {id: 'l2', name: 'Weekend & <Club>', spots: ids}] : [{id: 'l1', name: 'Saved spots', spots: ids}]};
   const ctx = vm.createContext({
-    document: {getElementById: id => els[id] || null}, DATA: push ? {push: {url: 'https://push.invalid/'}} : {},
+    document: {getElementById: id => els[id] || null}, DATA: {...(push ? {push: {url: 'https://push.invalid/'}} : {}), ...(email ? {email: {url: 'https://push.invalid/'}} : {})},
+    saveAlertHint, alertCan: () => can, toAlerts: () => { toAlerts++; },
     LISTS: lists, listNow: () => lists.lists[many ? 1 : 0], manyLists: () => many, setLists: () => kept,
     addToList: x => x, removeFromList: x => x, saveLabel: on => (on ? 'Saved' : 'Save'), PHONE: {matches: phone},
     esc: s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'), savedPath: () => '/saved/',
     plainClick: () => true, openSaved: () => { opened++; }});
   vm.runInContext(between('function bindSave(', 'function actions(') + ';this.bindSave = bindSave;', ctx);
   ctx.bindSave({id: 'spot'});
-  return {els, click: () => els.save.on.click(), opened: () => opened};
+  return {els, click: () => els.save.on.click(), opened: () => opened, toAlerts: () => toAlerts};
 }
 
 test("Save says what it did under the button, not at the foot of the page", () => {
@@ -41,7 +49,7 @@ test("Save says what it did under the button, not at the foot of the page", () =
   s.click();
   assert.equal(s.els['share-msg'].innerHTML, '');
   assert.equal(s.els['save-msg'].innerHTML,
-    'Saved on this device. Your saved spots are under <a href="/saved/" id="save-go">Saved</a>, in the bar at the bottom. There you can also set up alerts for them.');
+    `Saved on this device. Your saved spots are under <a href="/saved/" id="save-go">Saved</a>, in the bar at the bottom. There you can also set up alerts for them: ${GO}`);
   s.els['save-go'].on.click({preventDefault() {}});
   assert.equal(s.opened(), 1);   // the link opens the Saved view in place
 });
@@ -52,13 +60,46 @@ test('the alerts sentence is there only where the site has alerts, and list name
   assert.equal(none.els['save-msg'].innerHTML, 'Saved on this device. Your saved spots are under <a href="/saved/" id="save-go">Saved</a>, at the top of the page.');
   const many = saveSetup({many: true});
   many.click();
-  assert.match(many.els['save-msg'].innerHTML, /^Saved to Weekend &amp; &lt;Club&gt; on this device\. Your lists are under <a [^>]+>Saved<\/a>, in the bar at the bottom\. There you can also set up alerts for them\.$/);
+  assert.match(many.els['save-msg'].innerHTML, /^Saved to Weekend &amp; &lt;Club&gt; on this device\. Your lists are under <a [^>]+>Saved<\/a>, in the bar at the bottom\. There you can also set up alerts for them: <button [^>]+>Go to alerts<\/button>$/);
   const lost = saveSetup({kept: false});
   lost.click();
   assert.equal(lost.els['save-msg'].innerHTML, 'This browser is not keeping site data, so this spot stays saved only for this visit.');
   const old = saveSetup({withSaveMsg: false});   // a page without the line falls back to the one at the foot
   old.click();
   assert.match(old.els['share-msg'].innerHTML, /^Saved on this device\./);
+});
+
+test('a spot page says where its alerts are, before Save is pressed: save first, or go to the tile; the line goes on Save', () => {
+  // Not saved: save first, in its own line before the live one (not read out on every page open).
+  const fresh = saveSetup();
+  assert.equal(fresh.els['save-hint'].innerHTML, 'Save this spot to have alerts for it.');
+  assert.equal(fresh.els['save-msg'].innerHTML, '');
+  fresh.click();
+  assert.equal(fresh.els['save-hint'], undefined);   // Save's own words replace it
+  fresh.els['save-alerts'].on.click();   // "Go to alerts" in what Save said: the Saved page, at the tile
+  assert.deepEqual([fresh.opened(), fresh.toAlerts()], [1, 1]);
+  // Saved already: the way to the tile, which says what to do if notifications are blocked or the offline copy is off.
+  for (const can of ['yes', 'blocked', 'offline']) {
+    const s = saveSetup({saved: true, can});
+    assert.equal(s.els['save-hint'].innerHTML, `Alerts for this spot are set up on the Saved page. ${GO}`, can);
+  }
+  // iPhone Safari outside the Home Screen app: saving here gives no alerts, so it says what does, before and after Save.
+  const ios = saveSetup({can: 'ios'});
+  assert.match(ios.els['save-hint'].innerHTML, /^Alerts on iPhone and iPad need the Home Screen app: tap Share, then Add to Home Screen/);
+  ios.click();
+  assert.match(ios.els['save-msg'].innerHTML, /in the bar at the bottom\. Alerts on iPhone and iPad need the Home Screen app: .* save this spot in it\.$/);
+  assert.doesNotMatch(ios.els['save-msg'].innerHTML, /Go to alerts/);
+  // No web push here and no email: nothing promised, before or after.
+  for (const can of ['none', 'inapp']) {
+    const s = saveSetup({can});
+    assert.equal(s.els['save-hint'], undefined, can);
+    s.click();
+    assert.equal(s.els['save-msg'].innerHTML, 'Saved on this device. Your saved spots are under <a href="/saved/" id="save-go">Saved</a>, in the bar at the bottom.', can);
+  }
+  // With email alerts on, a browser without push can still have them: the way to the tile.
+  assert.equal(saveSetup({email: true, can: 'ios', saved: true}).els['save-hint'].innerHTML, `Alerts for this spot are set up on the Saved page. ${GO}`);
+  // No alerts on this site at all: no line.
+  assert.equal(saveSetup({push: false}).els['save-hint'], undefined);
 });
 
 test("Facebook's and Instagram's own browsers are told apart from the rest by their user agents", () => {
