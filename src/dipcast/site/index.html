@@ -5180,22 +5180,39 @@ function saveButton(d) {
   const on = listNow().spots.includes(d.id);
   return `<button type="button" class="save" id="save" aria-pressed="${on}">${saveLabel(on)}</button>`;
 }
+// Under Save, before it is pressed: where this spot's alerts are set up (lists.js, saveAlertHint), with "Go to alerts"
+// for a saved spot, which opens the Saved page at its Alerts tile. Until 8 Nov 2026 the spot page never said alerts
+// existed: the way was Save, then a sentence, then the Saved page, where the tile is some two screens down on a phone.
+// Drawn here, not in spotTop, which the build's prerender copies without knowing this browser.
 function bindSave(d) {
   const b = document.getElementById('save'); if (!b) return;
+  const hint = on => (typeof saveAlertHint === 'function' && DATA ? saveAlertHint({ push: !!DATA.push, email: !!DATA.email, can: alertCan(), saved: on }) : { text: '', go: false });
+  const goAlerts = '<button type="button" class="linkbtn small" id="save-alerts">Go to alerts</button>';
+  const bindGo = () => { const g = document.getElementById('save-alerts'); if (g) g.addEventListener('click', () => { openSaved(); toAlerts(); }); };
+  // Its own line before the live one (save-msg), so it is not read out each time a spot page opens; pressing Save
+  // replaces it with what Save did there.
+  const first = document.getElementById('save-msg'), h0 = hint(listNow().spots.includes(d.id));
+  if (first && h0.text && !document.getElementById('save-hint')) {
+    first.insertAdjacentHTML('beforebegin', `<p class="small muted save-msg" id="save-hint">${esc(h0.text)}${h0.go ? ` ${goAlerts}` : ''}</p>`); bindGo(); }
   b.addEventListener('click', () => {
+    const was = document.getElementById('save-hint'); if (was) was.remove();
     const l = listNow(), on = !l.spots.includes(d.id), kept = setLists(on ? addToList(LISTS, l.id, d.id) : removeFromList(LISTS, l.id, d.id));
     b.setAttribute('aria-pressed', String(on)); b.innerHTML = saveLabel(on);
     // Said under the button, where the eye is: at the foot of the page (share-msg) it was some
     // 6,700 px below a phone's first screen, so a first save said nothing of where the spot went.
     const m = document.getElementById('save-msg') || document.getElementById('share-msg'), where = PHONE.matches ? 'in the bar at the bottom' : 'at the top of the page';
     const also = LISTS.lists.filter(x => x.id !== l.id && x.spots.includes(d.id)).map(x => x.name);
-    const go = `<a href="${esc(savedPath())}" id="save-go">Saved</a>`, alerts = DATA && (DATA.push || DATA.email) ? ' There you can also set up alerts for them.' : '';
+    // Saved: the way to the Alerts tile, or, where this browser cannot have alerts from here (an iPhone outside the
+    // Home Screen app), what it needs instead; nothing where it cannot have them at all.
+    const h = hint(true), go = `<a href="${esc(savedPath())}" id="save-go">Saved</a>`,
+      alerts = h.go ? ` There you can also set up alerts for them: ${goAlerts}` : h.text ? ` ${esc(h.text)}` : '';
     if (m) m.innerHTML = !kept ? 'This browser is not keeping site data, so this spot stays saved only for this visit.'
       : !manyLists() ? (on ? `Saved on this device. Your saved spots are under ${go}, ${where}.${alerts}` : 'Removed from your saved spots.')
       : on ? `Saved to ${esc(l.name)} on this device. Your lists are under ${go}, ${where}.${alerts}`
       : `Removed from ${esc(l.name)}.${also.length ? ` Still in ${esc(also.join(' and '))}.` : ''}`;
     const a = document.getElementById('save-go');
     if (a) a.addEventListener('click', e => { if (!plainClick(e)) return; e.preventDefault(); openSaved(); });
+    bindGo();
   });
 }
 // "Plan a swim here": Plan a swim on this spot as the outing's, for the day shown (plan.js, planFromSpot). A spot
