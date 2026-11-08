@@ -97,7 +97,7 @@ calls a year (*inferred*, if the same cells).
 
 | Field | Content |
 |---|---|
-| Identity | SCOT-TRIAL. This record; no code changed |
+| Identity | SCOT-TRIAL. This record, PR #654; no code changed |
 | Evidence | No 2026 outcome record exists. Nothing scored |
 | Stage | Unchanged: limited forecast, labelled trial. Gate B window runs to January 2027 |
 | Next deliverable | A frozen-model backtest of the trial's model and map on 2021, protocol pushed before the download. Done when it is scored and recorded |

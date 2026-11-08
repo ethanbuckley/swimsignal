@@ -858,6 +858,13 @@
    "branch": "claude/live-status-2026-backtest-6e8c93",
    "branch_exists": true,
    "date": "2026-11-06"
+  },
+  "654": {
+   "n": 654,
+   "state": "open",
+   "branch": "claude/scotland-2026-backtest-inventory",
+   "branch_exists": true,
+   "date": "2026-11-08"
   }
  },
  "entries": [
@@ -2045,7 +2052,8 @@
    ],
    "prs": [
     587,
-    591
+    591,
+    654
    ]
   },
   {
