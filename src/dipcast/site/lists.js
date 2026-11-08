@@ -188,16 +188,18 @@ const alertSpots = (saved, known, off = []) => [...saved].filter(id => known.has
 //   on            notifications on in this browser, off, or null while that is being checked
 //   off           this spot turned off on its own
 //   down          the alert service did not answer the last change asked of it
+//   advice        the build turned on alerts for official advice newly shown at a saved spot (DATA.push.advice)
 // Returns { kind, text, toggle, checked, link }: toggle, a tick for this spot; link, "Set up alerts" to the
 // Alerts tile, which holds the consent wording, so nothing is turned on from a card.
-function spotAlert({ push = false, email = false, can = 'none', on = null, off = false, down = false } = {}) {
+function spotAlert({ push = false, email = false, can = 'none', on = null, off = false, down = false, advice = false } = {}) {
   const r = (kind, text, extra = {}) => ({ kind, text, toggle: false, checked: false, link: false, ...extra });
   if (!push && !email) return r('none', '');
   if (push && can === 'yes' && on === true) {
     const t = { toggle: true, checked: !off };
     if (down) return r('down', 'The alert service did not answer, so alerts for this spot are as they were. Try again later.', t);
     return off ? r('muted', 'No alerts for this spot. Your other saved spots still have them.', t)
-      : r('on', 'A notification if it reaches high or very high risk.', t);
+      : r('on', advice ? 'A notification if it reaches high or very high risk, or if official advice is newly shown there.'
+        : 'A notification if it reaches high or very high risk.', t);
   }
   if (down) return r('down', 'The alert service did not answer, so alerts could not be checked. Try again later.', { link: true });
   if (push && can === 'yes') return on === null ? r('checking', '') : r('off', 'Alerts are off.', { link: true });
