@@ -7,6 +7,7 @@ forecasts, so one scheduled run of this script is the whole back end.
 
 from __future__ import annotations
 
+import base64
 import hashlib
 import json
 import logging
@@ -108,11 +109,24 @@ PLAN_DESCRIPTION = ("Pick a day, where you are starting from and how far you wil
 SPOT_ID = re.compile(r"[A-Za-z0-9_-]+")
 PAGE_META = re.compile(r"<!-- page-meta.*?<!-- /page-meta -->", re.DOTALL)
 LOADING = '<div id="result"><p class="muted">Loading forecasts…</p></div>'
-# index.html's, word for word: the sky for each screen (the wide one from 1,100 px, where the list,
-# Saved and Plan a swim span the page), and the same pair for a spot's page, which spans it from 801 px.
-SKY_PRELOAD = ('<link rel="preload" href="icons/fells.webp" as="image" fetchpriority="high" media="(max-width: 1099px)">\n'
-               '<link rel="preload" href="icons/fells-wide.webp" as="image" fetchpriority="high" media="(min-width: 1100px)">')
-SPOT_SKY_PRELOAD = SKY_PRELOAD.replace('1099px', '800px').replace('1100px', '801px')
+# index.html's, word for word: the wide sky, from 1,100 px, where the list, Saved and Plan a swim span
+# the page; a spot's page spans it from 801 px. The narrower screens' sky is in the page (with_inline_sky).
+SKY_PRELOAD = '<link rel="preload" href="icons/fells-wide.webp" as="image" fetchpriority="high" media="(min-width: 1100px)">'
+SPOT_SKY_PRELOAD = SKY_PRELOAD.replace('1100px', '801px')
+# The picture behind the opening of each view on a phone (index.html, .lead::before and .answer::before),
+# written into the app page's style as a data address. It is that screen's largest paint (LCP). Fetched,
+# it arrived 0.7 s after the page on a slow phone connection, sharing it with the fonts and the forecast;
+# in the page it paints with the first paint: 1.46 s became 0.91 s with the stylesheet change in index.html
+# (5 Nov 2026, a probe on slow-4G throttling; 8 Nov, 20 of 20 Lighthouse devtools-throttled runs on a GitHub runner at 0.93-0.96 s). It adds 10.7 kB to each app page compressed and saves the picture's 9.0 kB request: 1.7 kB more
+# on a first visit, 10.7 kB more on a later page that would have had the picture cached.
+SKY_URL = "url(icons/fells.webp)"
+
+
+def with_inline_sky(html: str) -> str:
+    if html.count(SKY_URL) != 1:
+        raise ValueError(f"index.html should name {SKY_URL} once, in .answer::before and .lead::before")
+    data = base64.b64encode((TEMPLATE.parent / "icons" / "fells.webp").read_bytes()).decode()
+    return html.replace(SKY_URL, f"url(data:image/webp;base64,{data})", 1)
 # The brand mark, inline in every page's header (the static pages carry the same markup), so it needs no path.
 MARK = ('<svg viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" fill="#0f5a61"/>'
         '<path d="M430-20C330 110 470 230 300 290S110 380 190 540" fill="none" stroke="#5CC2B5" stroke-width="70" stroke-linecap="round"/>'
@@ -3069,6 +3083,7 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     if not (PAGE_META.search(template) and LOADING in template):
         raise ValueError("index.html has lost its page-meta block or its loading placeholder")
     template = lean_page(template)   # its CSS comments and comment-only script lines: the source keeps them
+    template = with_inline_sky(template)   # the phone's sky, in the page: no request before the largest paint
     template, app_js = split_app_script(template, stamp)   # the page's own script, deferred, as app.js
     for name in ["about.html", "verification.html", "terms.html", "privacy.html", "feedback.html", "testing.html", "methods.html", "coverage.html", "clubs.html",
                  "research.html", "partners.html"]:

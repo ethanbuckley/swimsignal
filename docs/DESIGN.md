@@ -382,9 +382,16 @@ The pages were written for an API server (removed 20 Oct 2026), so these links s
 site's own, `src/dipcast/site/icons/`. The 404 page, which the build writes, has the same head with
 absolute links, `noindex` and no description. The app page's head is its own, in `index.html`: it
 adds the manifest and the Home Screen tags, and asks for `data/spots-lite.json` (`FORECAST`, which
-`main()` awaits) and preloads the picture, `icons/fells.webp`. Every view's largest paint is the
-picture behind its opening words, and those wait for the forecast: asked for later, the forecast
-waited for the scripts at the foot of the page and the picture for the forecast (5 October 2026). A spot's page asks for the spot's own file there too, `data/spot/<id>.json` (`DETAIL`): its overflows and guide, which `spots-lite.json` leaves out (6 October 2026). The Home Screen app's status bar is
+`main()` awaits). Every view's largest paint is the picture behind its opening words. Asked for
+later, the forecast waited for the scripts at the foot of the page and the picture for the
+forecast (5 October 2026). Since then the build writes each view's opening into the page, and since
+5 November 2026 the phone's picture too: `build_site.with_inline_sky` puts `icons/fells.webp` into
+the page's style as a data address, so nothing is fetched before a phone's first paint. On a slow
+phone connection that paint, and the largest, came at 0.91 s rather than 1.46 s in 18 of 18 runs
+of a probe, and at 0.93-0.96 s rather than 1.49-1.73 s in 20 of 20 of Lighthouse's own throttled runs
+on a GitHub runner (8 November; on a loaded Mac about half had painted at 2.7 s, PR #617). The page is 10.7 kB larger compressed, and the 9.0 kB
+request is gone. A wide screen still preloads the wide
+sky, `icons/fells-wide.webp`. A spot's page asks for the spot's own file there too, `data/spot/<id>.json` (`DETAIL`): its overflows and guide, which `spots-lite.json` leaves out (6 October 2026). The Home Screen app's status bar is
 `black-translucent`: the page draws under it, its white text sits on the slate, and the header's
 top padding takes in the safe area. (From the fifth round to the seventh it was `default`, dark
 text, over the paper header.) Nothing in any head is fetched from another site: the app's map
@@ -399,7 +406,9 @@ which the build copies), with its BSD 2-Clause licence and a `VERSION.txt` besid
 reason as the fonts: no third party receives a request when a page opens. Until 2 October it came
 from unpkg.com, which the privacy notice then had to list. The page still pins both files by hash
 (`integrity`), and a test checks the hashes against the files; an upgrade replaces the files and
-the two hashes together.
+the two hashes together. Its stylesheet is preloaded and becomes a stylesheet when it arrives
+(`onload`), so it does not hold back the first paint; only the map uses it, and the map is drawn
+after every script has arrived.
 
 The offline copy (`sw.js`) stores only this site's files. Its cache is named `dipcast-<stamp>`,
 where the stamp is a hash of the files it stores or that decide what it stores (`SHELL_SOURCES` in
