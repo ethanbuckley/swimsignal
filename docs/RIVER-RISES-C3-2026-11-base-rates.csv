@@ -1,0 +1,526 @@
+gauge,label,river,month,hours,rise_hours,episodes,share,years_in_month,has_upstream_gauge
+022009,Rothbury,River Coquet,1,1430,8,3,0.00559,2,True
+022009,Rothbury,River Coquet,2,1342,0,0,0.0,2,True
+022009,Rothbury,River Coquet,3,1481,4,1,0.0027,2,True
+022009,Rothbury,River Coquet,4,1440,0,0,0.0,2,True
+022009,Rothbury,River Coquet,5,1488,0,0,0.0,2,True
+022009,Rothbury,River Coquet,6,1440,0,0,0.0,2,True
+022009,Rothbury,River Coquet,7,1488,0,0,0.0,2,True
+022009,Rothbury,River Coquet,8,1488,0,0,0.0,2,True
+022009,Rothbury,River Coquet,9,1436,0,0,0.0,2,True
+022009,Rothbury,River Coquet,10,1303,7,3,0.00537,2,True
+022009,Rothbury,River Coquet,11,936,11,4,0.01175,2,True
+022009,Rothbury,River Coquet,12,1448,11,3,0.0076,2,True
+023058,Hindley Wrae Ford,River West Allen,1,1360,31,11,0.02279,2,False
+023058,Hindley Wrae Ford,River West Allen,2,1197,25,8,0.02089,2,False
+023058,Hindley Wrae Ford,River West Allen,3,1456,12,3,0.00824,2,False
+023058,Hindley Wrae Ford,River West Allen,4,1426,7,2,0.00491,2,False
+023058,Hindley Wrae Ford,River West Allen,5,1488,0,0,0.0,2,False
+023058,Hindley Wrae Ford,River West Allen,6,1430,6,2,0.0042,2,False
+023058,Hindley Wrae Ford,River West Allen,7,1462,15,5,0.01026,2,False
+023058,Hindley Wrae Ford,River West Allen,8,1488,0,0,0.0,2,False
+023058,Hindley Wrae Ford,River West Allen,9,1388,15,5,0.01081,2,False
+023058,Hindley Wrae Ford,River West Allen,10,1047,10,3,0.00955,2,False
+023058,Hindley Wrae Ford,River West Allen,11,843,40,12,0.04745,2,False
+023058,Hindley Wrae Ford,River West Allen,12,1404,45,14,0.03205,2,False
+055807_TG 320,Old Wye Bridge,River Wye,1,1319,11,4,0.00834,2,True
+055807_TG 320,Old Wye Bridge,River Wye,2,1299,4,1,0.00308,2,True
+055807_TG 320,Old Wye Bridge,River Wye,3,1478,4,1,0.00271,2,True
+055807_TG 320,Old Wye Bridge,River Wye,4,1361,0,0,0.0,2,True
+055807_TG 320,Old Wye Bridge,River Wye,5,1432,0,0,0.0,2,True
+055807_TG 320,Old Wye Bridge,River Wye,6,1251,3,1,0.0024,2,True
+055807_TG 320,Old Wye Bridge,River Wye,7,712,0,0,0.0,1,True
+055807_TG 320,Old Wye Bridge,River Wye,8,744,0,0,0.0,1,True
+055807_TG 320,Old Wye Bridge,River Wye,9,1004,2,1,0.00199,2,True
+055807_TG 320,Old Wye Bridge,River Wye,10,1309,3,1,0.00229,2,True
+055807_TG 320,Old Wye Bridge,River Wye,11,821,10,3,0.01218,2,True
+055807_TG 320,Old Wye Bridge,River Wye,12,1293,12,4,0.00928,2,True
+0569TH,Hannington Bridge,River Thames,1,1046,0,0,0.0,2,True
+0569TH,Hannington Bridge,River Thames,2,703,0,0,0.0,2,True
+0569TH,Hannington Bridge,River Thames,3,1453,0,0,0.0,2,True
+0569TH,Hannington Bridge,River Thames,4,1440,0,0,0.0,2,True
+0569TH,Hannington Bridge,River Thames,5,1488,0,0,0.0,2,True
+0569TH,Hannington Bridge,River Thames,6,1440,0,0,0.0,2,True
+0569TH,Hannington Bridge,River Thames,7,1488,0,0,0.0,2,True
+0569TH,Hannington Bridge,River Thames,8,1488,0,0,0.0,2,True
+0569TH,Hannington Bridge,River Thames,9,1440,0,0,0.0,2,True
+0569TH,Hannington Bridge,River Thames,10,1320,0,0,0.0,2,True
+0569TH,Hannington Bridge,River Thames,11,796,0,0,0.0,2,True
+0569TH,Hannington Bridge,River Thames,12,835,0,0,0.0,2,True
+1100TH,Farmoor,River Thames,1,1403,0,0,0.0,2,True
+1100TH,Farmoor,River Thames,2,792,0,0,0.0,2,True
+1100TH,Farmoor,River Thames,3,1487,0,0,0.0,2,True
+1100TH,Farmoor,River Thames,4,1440,0,0,0.0,2,True
+1100TH,Farmoor,River Thames,5,1488,0,0,0.0,2,True
+1100TH,Farmoor,River Thames,6,1440,0,0,0.0,2,True
+1100TH,Farmoor,River Thames,7,1488,0,0,0.0,2,True
+1100TH,Farmoor,River Thames,8,1488,0,0,0.0,2,True
+1100TH,Farmoor,River Thames,9,1440,0,0,0.0,2,True
+1100TH,Farmoor,River Thames,10,1320,0,0,0.0,2,True
+1100TH,Farmoor,River Thames,11,846,0,0,0.0,2,True
+1100TH,Farmoor,River Thames,12,1294,1,1,0.00077,2,True
+1800TH,Sutton Courtenay,River Thames,1,1294,0,0,0.0,2,True
+1800TH,Sutton Courtenay,River Thames,2,833,0,0,0.0,2,True
+1800TH,Sutton Courtenay,River Thames,3,1488,0,0,0.0,2,True
+1800TH,Sutton Courtenay,River Thames,4,1440,0,0,0.0,2,True
+1800TH,Sutton Courtenay,River Thames,5,1485,0,0,0.0,2,True
+1800TH,Sutton Courtenay,River Thames,6,1440,0,0,0.0,2,True
+1800TH,Sutton Courtenay,River Thames,7,1488,0,0,0.0,2,True
+1800TH,Sutton Courtenay,River Thames,8,1488,0,0,0.0,2,True
+1800TH,Sutton Courtenay,River Thames,9,1440,0,0,0.0,2,True
+1800TH,Sutton Courtenay,River Thames,10,1320,0,0,0.0,2,True
+1800TH,Sutton Courtenay,River Thames,11,828,2,1,0.00242,2,True
+1800TH,Sutton Courtenay,River Thames,12,1254,0,0,0.0,2,True
+2077,Welsh Bridge,River Severn,1,1414,0,0,0.0,2,True
+2077,Welsh Bridge,River Severn,2,1344,0,0,0.0,2,True
+2077,Welsh Bridge,River Severn,3,1488,0,0,0.0,2,True
+2077,Welsh Bridge,River Severn,4,1440,0,0,0.0,2,True
+2077,Welsh Bridge,River Severn,5,1488,0,0,0.0,2,True
+2077,Welsh Bridge,River Severn,6,1440,0,0,0.0,2,True
+2077,Welsh Bridge,River Severn,7,1488,0,0,0.0,2,True
+2077,Welsh Bridge,River Severn,8,1488,0,0,0.0,2,True
+2077,Welsh Bridge,River Severn,9,1440,0,0,0.0,2,True
+2077,Welsh Bridge,River Severn,10,1320,0,0,0.0,2,True
+2077,Welsh Bridge,River Severn,11,824,0,0,0.0,2,True
+2077,Welsh Bridge,River Severn,12,1350,0,0,0.0,2,True
+2134,Buildwas,River Severn,1,1243,0,0,0.0,2,True
+2134,Buildwas,River Severn,2,1032,0,0,0.0,2,True
+2134,Buildwas,River Severn,3,1488,0,0,0.0,2,True
+2134,Buildwas,River Severn,4,1440,0,0,0.0,2,True
+2134,Buildwas,River Severn,5,1488,0,0,0.0,2,True
+2134,Buildwas,River Severn,6,1439,0,0,0.0,2,True
+2134,Buildwas,River Severn,7,1488,0,0,0.0,2,True
+2134,Buildwas,River Severn,8,1488,0,0,0.0,2,True
+2134,Buildwas,River Severn,9,1440,0,0,0.0,2,True
+2134,Buildwas,River Severn,10,1320,0,0,0.0,2,True
+2134,Buildwas,River Severn,11,712,0,0,0.0,2,True
+2134,Buildwas,River Severn,12,1063,0,0,0.0,2,True
+2200TH,Reading,River Thames,1,1469,12,7,0.00817,2,True
+2200TH,Reading,River Thames,2,1321,12,6,0.00908,2,True
+2200TH,Reading,River Thames,3,1476,8,3,0.00542,2,True
+2200TH,Reading,River Thames,4,1431,0,0,0.0,2,True
+2200TH,Reading,River Thames,5,1487,3,1,0.00202,2,True
+2200TH,Reading,River Thames,6,1440,0,0,0.0,2,True
+2200TH,Reading,River Thames,7,1488,0,0,0.0,2,True
+2200TH,Reading,River Thames,8,1488,0,0,0.0,2,True
+2200TH,Reading,River Thames,9,1440,0,0,0.0,2,True
+2200TH,Reading,River Thames,10,1320,0,0,0.0,2,True
+2200TH,Reading,River Thames,11,899,9,5,0.01001,2,True
+2200TH,Reading,River Thames,12,1472,12,7,0.00815,2,True
+2320,Lydbrook,River Wye,1,1220,4,1,0.00328,2,True
+2320,Lydbrook,River Wye,2,1188,2,1,0.00168,2,True
+2320,Lydbrook,River Wye,3,1481,0,0,0.0,2,True
+2320,Lydbrook,River Wye,4,1143,0,0,0.0,2,True
+2320,Lydbrook,River Wye,5,1488,0,0,0.0,2,True
+2320,Lydbrook,River Wye,6,1436,1,1,0.0007,2,True
+2320,Lydbrook,River Wye,7,1488,0,0,0.0,2,True
+2320,Lydbrook,River Wye,8,1488,0,0,0.0,2,True
+2320,Lydbrook,River Wye,9,1435,0,0,0.0,2,True
+2320,Lydbrook,River Wye,10,1316,1,1,0.00076,2,True
+2320,Lydbrook,River Wye,11,659,4,1,0.00607,2,True
+2320,Lydbrook,River Wye,12,1280,0,0,0.0,2,True
+2625,Ludlow Teme,River Teme,1,1459,1,1,0.00069,2,True
+2625,Ludlow Teme,River Teme,2,1318,7,3,0.00531,2,True
+2625,Ludlow Teme,River Teme,3,1488,0,0,0.0,2,True
+2625,Ludlow Teme,River Teme,4,1440,0,0,0.0,2,True
+2625,Ludlow Teme,River Teme,5,1488,0,0,0.0,2,True
+2625,Ludlow Teme,River Teme,6,1440,0,0,0.0,2,True
+2625,Ludlow Teme,River Teme,7,1462,12,4,0.00821,2,True
+2625,Ludlow Teme,River Teme,8,1397,9,4,0.00644,2,True
+2625,Ludlow Teme,River Teme,9,1440,0,0,0.0,2,True
+2625,Ludlow Teme,River Teme,10,1320,0,0,0.0,2,True
+2625,Ludlow Teme,River Teme,11,899,0,0,0.0,2,True
+2625,Ludlow Teme,River Teme,12,1488,0,0,0.0,2,True
+3040TH,Tilford,River Wey,1,1216,19,6,0.01562,2,True
+3040TH,Tilford,River Wey,2,1263,4,1,0.00317,2,True
+3040TH,Tilford,River Wey,3,1488,0,0,0.0,2,True
+3040TH,Tilford,River Wey,4,1429,0,0,0.0,2,True
+3040TH,Tilford,River Wey,5,1483,0,0,0.0,2,True
+3040TH,Tilford,River Wey,6,1440,0,0,0.0,2,True
+3040TH,Tilford,River Wey,7,1488,0,0,0.0,2,True
+3040TH,Tilford,River Wey,8,1488,0,0,0.0,2,True
+3040TH,Tilford,River Wey,9,1440,0,0,0.0,2,True
+3040TH,Tilford,River Wey,10,1320,0,0,0.0,2,True
+3040TH,Tilford,River Wey,11,884,7,2,0.00792,2,True
+3040TH,Tilford,River Wey,12,1438,4,1,0.00278,2,True
+3404TH,Trowlock Island,River Thames,1,1339,191,63,0.14264,2,True
+3404TH,Trowlock Island,River Thames,2,1147,218,67,0.19006,2,True
+3404TH,Trowlock Island,River Thames,3,1426,113,39,0.07924,2,True
+3404TH,Trowlock Island,River Thames,4,1429,35,14,0.02449,2,True
+3404TH,Trowlock Island,River Thames,5,1482,18,8,0.01215,2,True
+3404TH,Trowlock Island,River Thames,6,1433,6,3,0.00419,2,True
+3404TH,Trowlock Island,River Thames,7,1477,25,9,0.01693,2,True
+3404TH,Trowlock Island,River Thames,8,1463,23,8,0.01572,2,True
+3404TH,Trowlock Island,River Thames,9,1423,30,10,0.02108,2,True
+3404TH,Trowlock Island,River Thames,10,1080,21,8,0.01944,2,True
+3404TH,Trowlock Island,River Thames,11,921,46,16,0.04995,2,True
+3404TH,Trowlock Island,River Thames,12,1401,137,48,0.09779,2,True
+4001,Yorkshire Bridge,River Derwent,1,765,32,10,0.04183,2,False
+4001,Yorkshire Bridge,River Derwent,2,659,0,0,0.0,1,False
+4001,Yorkshire Bridge,River Derwent,3,1098,8,2,0.00729,2,False
+4001,Yorkshire Bridge,River Derwent,4,1440,0,0,0.0,2,False
+4001,Yorkshire Bridge,River Derwent,5,1483,5,2,0.00337,2,False
+4001,Yorkshire Bridge,River Derwent,6,1427,10,4,0.00701,2,False
+4001,Yorkshire Bridge,River Derwent,7,1478,9,3,0.00609,2,False
+4001,Yorkshire Bridge,River Derwent,8,1488,0,0,0.0,2,False
+4001,Yorkshire Bridge,River Derwent,9,1438,9,3,0.00626,2,False
+4001,Yorkshire Bridge,River Derwent,10,1320,3,1,0.00227,2,False
+4001,Yorkshire Bridge,River Derwent,11,932,6,2,0.00644,2,False
+4001,Yorkshire Bridge,River Derwent,12,1008,21,6,0.02083,2,False
+4046,Izaak Walton,River Dove,1,1022,16,5,0.01566,2,False
+4046,Izaak Walton,River Dove,2,758,0,0,0.0,2,False
+4046,Izaak Walton,River Dove,3,1436,3,1,0.00209,2,False
+4046,Izaak Walton,River Dove,4,1440,0,0,0.0,2,False
+4046,Izaak Walton,River Dove,5,1488,0,0,0.0,2,False
+4046,Izaak Walton,River Dove,6,1435,3,1,0.00209,2,False
+4046,Izaak Walton,River Dove,7,1488,0,0,0.0,2,False
+4046,Izaak Walton,River Dove,8,1488,0,0,0.0,2,False
+4046,Izaak Walton,River Dove,9,1410,7,2,0.00496,2,False
+4046,Izaak Walton,River Dove,10,785,19,7,0.0242,2,False
+4046,Izaak Walton,River Dove,11,797,11,5,0.0138,2,False
+4046,Izaak Walton,River Dove,12,909,12,4,0.0132,2,False
+4197,Buxton,River Wye,1,1457,15,6,0.0103,2,True
+4197,Buxton,River Wye,2,1334,5,2,0.00375,2,True
+4197,Buxton,River Wye,3,1481,4,1,0.0027,2,True
+4197,Buxton,River Wye,4,1073,0,0,0.0,2,True
+4197,Buxton,River Wye,5,742,5,2,0.00674,1,True
+4197,Buxton,River Wye,6,715,9,4,0.01259,1,True
+4197,Buxton,River Wye,7,744,0,0,0.0,1,True
+4197,Buxton,River Wye,8,739,8,3,0.01083,1,True
+4197,Buxton,River Wye,9,716,1,1,0.0014,1,True
+4197,Buxton,River Wye,10,563,7,2,0.01243,1,True
+4197,Buxton,River Wye,11,676,14,5,0.02071,2,True
+4197,Buxton,River Wye,12,1451,33,11,0.02274,2,True
+43123,East Mills Flume,River Avon,1,967,0,0,0.0,2,True
+43123,East Mills Flume,River Avon,2,127,0,0,0.0,1,True
+43123,East Mills Flume,River Avon,3,868,0,0,0.0,2,True
+43123,East Mills Flume,River Avon,4,1440,0,0,0.0,2,True
+43123,East Mills Flume,River Avon,5,1488,0,0,0.0,2,True
+43123,East Mills Flume,River Avon,6,1440,0,0,0.0,2,True
+43123,East Mills Flume,River Avon,7,1488,0,0,0.0,2,True
+43123,East Mills Flume,River Avon,8,1488,0,0,0.0,2,True
+43123,East Mills Flume,River Avon,9,1440,0,0,0.0,2,True
+43123,East Mills Flume,River Avon,10,1320,0,0,0.0,2,True
+43123,East Mills Flume,River Avon,11,819,0,0,0.0,2,True
+43123,East Mills Flume,River Avon,12,1179,0,0,0.0,2,True
+43165,Salisbury Ashley Road,River Avon,1,548,0,0,0.0,2,False
+43165,Salisbury Ashley Road,River Avon,3,626,0,0,0.0,2,False
+43165,Salisbury Ashley Road,River Avon,4,1440,0,0,0.0,2,False
+43165,Salisbury Ashley Road,River Avon,5,1483,3,1,0.00202,2,False
+43165,Salisbury Ashley Road,River Avon,6,1440,0,0,0.0,2,False
+43165,Salisbury Ashley Road,River Avon,7,1488,0,0,0.0,2,False
+43165,Salisbury Ashley Road,River Avon,8,941,0,0,0.0,2,False
+43165,Salisbury Ashley Road,River Avon,9,1379,0,0,0.0,2,False
+43165,Salisbury Ashley Road,River Avon,10,1319,4,2,0.00303,2,False
+43165,Salisbury Ashley Road,River Avon,11,792,0,0,0.0,2,False
+43165,Salisbury Ashley Road,River Avon,12,859,0,0,0.0,2,False
+45121,Brushford,River Barle,1,1467,6,3,0.00409,2,False
+45121,Brushford,River Barle,2,1329,4,1,0.00301,2,False
+45121,Brushford,River Barle,3,1483,3,1,0.00202,2,False
+45121,Brushford,River Barle,4,1437,3,1,0.00209,2,False
+45121,Brushford,River Barle,5,1488,0,0,0.0,2,False
+45121,Brushford,River Barle,6,1428,7,3,0.0049,2,False
+45121,Brushford,River Barle,7,1488,0,0,0.0,2,False
+45121,Brushford,River Barle,8,1488,0,0,0.0,2,False
+45121,Brushford,River Barle,9,1430,6,2,0.0042,2,False
+45121,Brushford,River Barle,10,1306,9,3,0.00689,2,False
+45121,Brushford,River Barle,11,935,13,7,0.0139,2,False
+45121,Brushford,River Barle,12,1455,20,8,0.01375,2,False
+46122,Austins Bridge,River Dart,1,1384,34,12,0.02457,2,True
+46122,Austins Bridge,River Dart,2,1300,16,7,0.01231,2,True
+46122,Austins Bridge,River Dart,3,1481,4,1,0.0027,2,True
+46122,Austins Bridge,River Dart,4,1426,6,3,0.00421,2,True
+46122,Austins Bridge,River Dart,5,1480,4,2,0.0027,2,True
+46122,Austins Bridge,River Dart,6,1414,10,4,0.00707,2,True
+46122,Austins Bridge,River Dart,7,1488,0,0,0.0,2,True
+46122,Austins Bridge,River Dart,8,1488,0,0,0.0,2,True
+46122,Austins Bridge,River Dart,9,1440,0,0,0.0,2,True
+46122,Austins Bridge,River Dart,10,1297,8,3,0.00617,2,True
+46122,Austins Bridge,River Dart,11,893,23,7,0.02576,2,True
+46122,Austins Bridge,River Dart,12,1407,33,11,0.02345,2,True
+46123,Bellever,East Dart River,1,1398,42,15,0.03004,2,False
+46123,Bellever,East Dart River,2,1297,22,8,0.01696,2,False
+46123,Bellever,East Dart River,3,1480,4,1,0.0027,2,False
+46123,Bellever,East Dart River,4,1421,5,2,0.00352,2,False
+46123,Bellever,East Dart River,5,1479,5,2,0.00338,2,False
+46123,Bellever,East Dart River,6,1412,12,3,0.0085,2,False
+46123,Bellever,East Dart River,7,1488,0,0,0.0,2,False
+46123,Bellever,East Dart River,8,1485,0,0,0.0,2,False
+46123,Bellever,East Dart River,9,1435,0,0,0.0,2,False
+46123,Bellever,East Dart River,10,1100,5,3,0.00455,2,False
+46123,Bellever,East Dart River,11,905,25,7,0.02762,2,False
+46123,Bellever,East Dart River,12,1419,33,12,0.02326,2,False
+47121,Carnwood,River Plym,1,1421,29,9,0.02041,2,False
+47121,Carnwood,River Plym,2,1314,12,4,0.00913,2,False
+47121,Carnwood,River Plym,3,1483,3,1,0.00202,2,False
+47121,Carnwood,River Plym,4,1425,6,3,0.00421,2,False
+47121,Carnwood,River Plym,5,1485,2,1,0.00135,2,False
+47121,Carnwood,River Plym,6,1424,10,3,0.00702,2,False
+47121,Carnwood,River Plym,7,1488,0,0,0.0,2,False
+47121,Carnwood,River Plym,8,1488,0,0,0.0,2,False
+47121,Carnwood,River Plym,9,1440,0,0,0.0,2,False
+47121,Carnwood,River Plym,10,1306,3,1,0.0023,2,False
+47121,Carnwood,River Plym,11,932,17,6,0.01824,2,False
+47121,Carnwood,River Plym,12,1427,29,9,0.02032,2,False
+52111,Taunton Market,River Tone,1,1464,4,2,0.00273,2,True
+52111,Taunton Market,River Tone,2,1338,0,0,0.0,2,True
+52111,Taunton Market,River Tone,3,1488,0,0,0.0,2,True
+52111,Taunton Market,River Tone,4,1440,0,0,0.0,2,True
+52111,Taunton Market,River Tone,5,1488,0,0,0.0,2,True
+52111,Taunton Market,River Tone,6,1440,0,0,0.0,2,True
+52111,Taunton Market,River Tone,7,1488,0,0,0.0,2,True
+52111,Taunton Market,River Tone,8,1488,0,0,0.0,2,True
+52111,Taunton Market,River Tone,9,1440,0,0,0.0,2,True
+52111,Taunton Market,River Tone,10,1320,0,0,0.0,2,True
+52111,Taunton Market,River Tone,11,960,0,0,0.0,2,True
+52111,Taunton Market,River Tone,12,1488,0,0,0.0,2,True
+53120,Tellisford,Somerset Frome,1,1447,8,3,0.00553,2,True
+53120,Tellisford,Somerset Frome,2,1324,7,2,0.00529,2,True
+53120,Tellisford,Somerset Frome,3,1487,0,0,0.0,2,True
+53120,Tellisford,Somerset Frome,4,1440,0,0,0.0,2,True
+53120,Tellisford,Somerset Frome,5,1488,0,0,0.0,2,True
+53120,Tellisford,Somerset Frome,6,1440,0,0,0.0,2,True
+53120,Tellisford,Somerset Frome,7,1488,0,0,0.0,2,True
+53120,Tellisford,Somerset Frome,8,1488,0,0,0.0,2,True
+53120,Tellisford,Somerset Frome,9,1440,0,0,0.0,2,True
+53120,Tellisford,Somerset Frome,10,1320,0,0,0.0,2,True
+53120,Tellisford,Somerset Frome,11,936,0,0,0.0,2,True
+53120,Tellisford,Somerset Frome,12,1469,3,1,0.00204,2,True
+53129,Bathford,River Avon,1,1390,3,1,0.00216,2,True
+53129,Bathford,River Avon,2,1329,4,2,0.00301,2,True
+53129,Bathford,River Avon,3,1488,0,0,0.0,2,True
+53129,Bathford,River Avon,4,1440,0,0,0.0,2,True
+53129,Bathford,River Avon,5,1488,0,0,0.0,2,True
+53129,Bathford,River Avon,6,1440,0,0,0.0,2,True
+53129,Bathford,River Avon,7,1488,0,0,0.0,2,True
+53129,Bathford,River Avon,8,1486,0,0,0.0,2,True
+53129,Bathford,River Avon,9,1440,0,0,0.0,2,True
+53129,Bathford,River Avon,10,1320,0,0,0.0,2,True
+53129,Bathford,River Avon,11,886,0,0,0.0,2,True
+53129,Bathford,River Avon,12,1469,0,0,0.0,2,True
+681003,Hug Bridge,River Dane,1,1284,38,13,0.0296,2,False
+681003,Hug Bridge,River Dane,2,1219,16,7,0.01313,2,False
+681003,Hug Bridge,River Dane,3,1458,10,4,0.00686,2,False
+681003,Hug Bridge,River Dane,4,1440,0,0,0.0,2,False
+681003,Hug Bridge,River Dane,5,1485,0,0,0.0,2,False
+681003,Hug Bridge,River Dane,6,1410,13,5,0.00922,2,False
+681003,Hug Bridge,River Dane,7,1480,2,1,0.00135,2,False
+681003,Hug Bridge,River Dane,8,1485,3,1,0.00202,2,False
+681003,Hug Bridge,River Dane,9,1386,22,7,0.01587,2,False
+681003,Hug Bridge,River Dane,10,1218,48,15,0.03941,2,False
+681003,Hug Bridge,River Dane,11,817,27,7,0.03305,2,False
+681003,Hug Bridge,River Dane,12,1235,49,17,0.03968,2,False
+710151,Locks Weir,River Ribble,1,1459,11,4,0.00754,2,False
+710151,Locks Weir,River Ribble,2,1314,18,7,0.0137,2,False
+710151,Locks Weir,River Ribble,3,1458,14,5,0.0096,2,False
+710151,Locks Weir,River Ribble,4,1438,2,1,0.00139,2,False
+710151,Locks Weir,River Ribble,5,1476,7,3,0.00474,2,False
+710151,Locks Weir,River Ribble,6,1402,22,9,0.01569,2,False
+710151,Locks Weir,River Ribble,7,1469,11,4,0.00749,2,False
+710151,Locks Weir,River Ribble,8,1479,5,2,0.00338,2,False
+710151,Locks Weir,River Ribble,9,1402,21,8,0.01498,2,False
+710151,Locks Weir,River Ribble,10,1292,16,5,0.01238,2,False
+710151,Locks Weir,River Ribble,11,930,17,6,0.01828,2,False
+710151,Locks Weir,River Ribble,12,1421,37,13,0.02604,2,False
+710301,Low Moor,River Ribble,1,533,1,1,0.00188,1,True
+710301,Low Moor,River Ribble,2,1269,5,2,0.00394,2,True
+710301,Low Moor,River Ribble,3,1471,9,3,0.00612,2,True
+710301,Low Moor,River Ribble,4,1440,0,0,0.0,2,True
+710301,Low Moor,River Ribble,5,1479,6,2,0.00406,2,True
+710301,Low Moor,River Ribble,6,747,6,2,0.00803,2,True
+710301,Low Moor,River Ribble,7,744,0,0,0.0,1,True
+710301,Low Moor,River Ribble,8,742,3,1,0.00404,1,True
+710301,Low Moor,River Ribble,9,708,4,2,0.00565,1,True
+710301,Low Moor,River Ribble,10,566,6,2,0.0106,1,True
+722421,Killington,River Lune,1,1475,8,3,0.00542,2,True
+722421,Killington,River Lune,2,1326,9,3,0.00679,2,True
+722421,Killington,River Lune,3,1461,19,7,0.013,2,True
+722421,Killington,River Lune,4,1440,0,0,0.0,2,True
+722421,Killington,River Lune,5,1483,3,1,0.00202,2,True
+722421,Killington,River Lune,6,1413,13,6,0.0092,2,True
+722421,Killington,River Lune,7,1480,4,2,0.0027,2,True
+722421,Killington,River Lune,8,1482,5,2,0.00337,2,True
+722421,Killington,River Lune,9,1425,7,5,0.00491,2,True
+722421,Killington,River Lune,10,1302,11,4,0.00845,2,True
+722421,Killington,River Lune,11,926,25,9,0.027,2,True
+722421,Killington,River Lune,12,1432,31,12,0.02165,2,True
+724629,Caton,River Lune,1,1449,4,1,0.00276,2,True
+724629,Caton,River Lune,2,1322,13,4,0.00983,2,True
+724629,Caton,River Lune,3,1466,12,4,0.00819,2,True
+724629,Caton,River Lune,4,1436,0,0,0.0,2,True
+724629,Caton,River Lune,5,1482,4,1,0.0027,2,True
+724629,Caton,River Lune,6,1405,20,6,0.01423,2,True
+724629,Caton,River Lune,7,1467,7,2,0.00477,2,True
+724629,Caton,River Lune,8,1487,0,0,0.0,2,True
+724629,Caton,River Lune,9,1408,4,2,0.00284,2,True
+724629,Caton,River Lune,10,1297,13,4,0.01002,2,True
+724629,Caton,River Lune,11,907,14,4,0.01544,2,True
+724629,Caton,River Lune,12,1420,33,11,0.02324,2,True
+740101,Ulpha,River Duddon,1,1457,16,6,0.01098,2,False
+740101,Ulpha,River Duddon,2,1316,8,2,0.00608,2,False
+740101,Ulpha,River Duddon,3,1468,10,4,0.00681,2,False
+740101,Ulpha,River Duddon,4,1437,0,0,0.0,2,False
+740101,Ulpha,River Duddon,5,1478,7,2,0.00474,2,False
+740101,Ulpha,River Duddon,6,1399,21,8,0.01501,2,False
+740101,Ulpha,River Duddon,7,1473,11,3,0.00747,2,False
+740101,Ulpha,River Duddon,8,1479,7,3,0.00473,2,False
+740101,Ulpha,River Duddon,9,1410,17,8,0.01206,2,False
+740101,Ulpha,River Duddon,10,1271,28,9,0.02203,2,False
+740101,Ulpha,River Duddon,11,919,23,9,0.02503,2,False
+740101,Ulpha,River Duddon,12,1424,37,11,0.02598,2,False
+760502,Temple Sowerby,River Eden,1,1451,4,1,0.00276,2,True
+760502,Temple Sowerby,River Eden,2,1334,4,1,0.003,2,True
+760502,Temple Sowerby,River Eden,3,1460,10,3,0.00685,2,True
+760502,Temple Sowerby,River Eden,4,1436,2,1,0.00139,2,True
+760502,Temple Sowerby,River Eden,5,1488,0,0,0.0,2,True
+760502,Temple Sowerby,River Eden,6,1434,5,2,0.00349,2,True
+760502,Temple Sowerby,River Eden,7,1488,0,0,0.0,2,True
+760502,Temple Sowerby,River Eden,8,1488,0,0,0.0,2,True
+760502,Temple Sowerby,River Eden,9,1387,0,0,0.0,2,True
+760502,Temple Sowerby,River Eden,10,1254,6,2,0.00478,2,True
+760502,Temple Sowerby,River Eden,11,889,13,4,0.01462,2,True
+760502,Temple Sowerby,River Eden,12,1444,16,5,0.01108,2,True
+762505,Great Corby,River Eden,1,1475,2,1,0.00136,2,True
+762505,Great Corby,River Eden,2,1338,4,1,0.00299,2,True
+762505,Great Corby,River Eden,3,1476,7,2,0.00474,2,True
+762505,Great Corby,River Eden,4,1440,0,0,0.0,2,True
+762505,Great Corby,River Eden,5,1488,0,0,0.0,2,True
+762505,Great Corby,River Eden,6,1438,0,0,0.0,2,True
+762505,Great Corby,River Eden,7,1488,0,0,0.0,2,True
+762505,Great Corby,River Eden,8,1488,0,0,0.0,2,True
+762505,Great Corby,River Eden,9,1440,0,0,0.0,2,True
+762505,Great Corby,River Eden,10,1313,3,1,0.00228,2,True
+762505,Great Corby,River Eden,11,925,7,2,0.00757,2,True
+762505,Great Corby,River Eden,12,1460,11,4,0.00753,2,True
+E21227,Lamarsh,River Stour,1,932,0,0,0.0,2,False
+E21227,Lamarsh,River Stour,2,795,0,0,0.0,2,False
+E21227,Lamarsh,River Stour,3,1488,0,0,0.0,2,False
+E21227,Lamarsh,River Stour,4,1440,0,0,0.0,2,False
+E21227,Lamarsh,River Stour,5,1488,0,0,0.0,2,False
+E21227,Lamarsh,River Stour,6,1440,0,0,0.0,2,False
+E21227,Lamarsh,River Stour,7,1488,0,0,0.0,2,False
+E21227,Lamarsh,River Stour,8,1488,0,0,0.0,2,False
+E21227,Lamarsh,River Stour,9,1440,0,0,0.0,2,False
+E21227,Lamarsh,River Stour,10,1208,0,0,0.0,2,False
+E21227,Lamarsh,River Stour,11,868,0,0,0.0,2,False
+E21227,Lamarsh,River Stour,12,1345,0,0,0.0,2,False
+E22678,Langham,River Stour,1,1389,0,0,0.0,2,True
+E22678,Langham,River Stour,2,1263,0,0,0.0,2,True
+E22678,Langham,River Stour,3,753,0,0,0.0,2,True
+E22678,Langham,River Stour,4,718,0,0,0.0,1,True
+E22678,Langham,River Stour,5,744,0,0,0.0,1,True
+E22678,Langham,River Stour,6,1400,0,0,0.0,2,True
+E22678,Langham,River Stour,7,1488,0,0,0.0,2,True
+E22678,Langham,River Stour,8,1488,0,0,0.0,2,True
+E22678,Langham,River Stour,9,1440,0,0,0.0,2,True
+E22678,Langham,River Stour,10,1320,0,0,0.0,2,True
+E22678,Langham,River Stour,11,960,0,0,0.0,2,True
+E22678,Langham,River Stour,12,1465,0,0,0.0,2,True
+F1902,Ilkley,River Wharfe,1,1442,13,6,0.00902,2,True
+F1902,Ilkley,River Wharfe,2,1320,15,6,0.01136,2,True
+F1902,Ilkley,River Wharfe,3,1470,10,3,0.0068,2,True
+F1902,Ilkley,River Wharfe,4,1438,0,0,0.0,2,True
+F1902,Ilkley,River Wharfe,5,1478,6,2,0.00406,2,True
+F1902,Ilkley,River Wharfe,6,1409,22,8,0.01561,2,True
+F1902,Ilkley,River Wharfe,7,1481,5,2,0.00338,2,True
+F1902,Ilkley,River Wharfe,8,1486,2,1,0.00135,2,True
+F1902,Ilkley,River Wharfe,9,1389,21,8,0.01512,2,True
+F1902,Ilkley,River Wharfe,10,1295,19,6,0.01467,2,True
+F1902,Ilkley,River Wharfe,11,929,12,4,0.01292,2,True
+F1902,Ilkley,River Wharfe,12,1429,37,13,0.02589,2,True
+F1903,Addingham,River Wharfe,1,1447,10,4,0.00691,2,True
+F1903,Addingham,River Wharfe,2,1328,10,4,0.00753,2,True
+F1903,Addingham,River Wharfe,3,1472,11,4,0.00747,2,True
+F1903,Addingham,River Wharfe,4,1435,3,2,0.00209,2,True
+F1903,Addingham,River Wharfe,5,1478,6,2,0.00406,2,True
+F1903,Addingham,River Wharfe,6,1405,20,8,0.01423,2,True
+F1903,Addingham,River Wharfe,7,1474,9,4,0.00611,2,True
+F1903,Addingham,River Wharfe,8,1480,6,2,0.00405,2,True
+F1903,Addingham,River Wharfe,9,1393,24,9,0.01723,2,True
+F1903,Addingham,River Wharfe,10,1293,18,6,0.01392,2,True
+F1903,Addingham,River Wharfe,11,939,9,3,0.00958,2,True
+F1903,Addingham,River Wharfe,12,1441,30,11,0.02082,2,True
+F1906,Netherside Hall,River Wharfe,1,1433,20,6,0.01396,2,True
+F1906,Netherside Hall,River Wharfe,2,1306,23,8,0.01761,2,True
+F1906,Netherside Hall,River Wharfe,3,1456,16,5,0.01099,2,True
+F1906,Netherside Hall,River Wharfe,4,1433,2,1,0.0014,2,True
+F1906,Netherside Hall,River Wharfe,5,1472,8,3,0.00543,2,True
+F1906,Netherside Hall,River Wharfe,6,1395,27,10,0.01935,2,True
+F1906,Netherside Hall,River Wharfe,7,1466,12,4,0.00819,2,True
+F1906,Netherside Hall,River Wharfe,8,1478,6,2,0.00406,2,True
+F1906,Netherside Hall,River Wharfe,9,1370,25,9,0.01825,2,True
+F1906,Netherside Hall,River Wharfe,10,1282,23,7,0.01794,2,True
+F1906,Netherside Hall,River Wharfe,11,914,22,8,0.02407,2,True
+F1906,Netherside Hall,River Wharfe,12,1405,54,16,0.03843,2,True
+F2004,Flint Mill,River Wharfe,1,1456,9,2,0.00618,2,True
+F2004,Flint Mill,River Wharfe,2,1337,3,2,0.00224,2,True
+F2004,Flint Mill,River Wharfe,3,1477,8,2,0.00542,2,True
+F2004,Flint Mill,River Wharfe,4,1440,0,0,0.0,2,True
+F2004,Flint Mill,River Wharfe,5,1484,3,1,0.00202,2,True
+F2004,Flint Mill,River Wharfe,6,1435,4,2,0.00279,2,True
+F2004,Flint Mill,River Wharfe,7,1484,2,1,0.00135,2,True
+F2004,Flint Mill,River Wharfe,8,1488,0,0,0.0,2,True
+F2004,Flint Mill,River Wharfe,9,1425,7,3,0.00491,2,True
+F2004,Flint Mill,River Wharfe,10,1303,7,3,0.00537,2,True
+F2004,Flint Mill,River Wharfe,11,947,5,2,0.00528,2,True
+F2004,Flint Mill,River Wharfe,12,1466,7,4,0.00477,2,True
+F3505,Middleton,River Tees,1,1455,9,4,0.00619,2,True
+F3505,Middleton,River Tees,2,1317,15,4,0.01139,2,True
+F3505,Middleton,River Tees,3,1474,8,2,0.00543,2,True
+F3505,Middleton,River Tees,4,1434,2,2,0.00139,2,True
+F3505,Middleton,River Tees,5,1484,3,1,0.00202,2,True
+F3505,Middleton,River Tees,6,1424,9,4,0.00632,2,True
+F3505,Middleton,River Tees,7,1482,6,2,0.00405,2,True
+F3505,Middleton,River Tees,8,1488,0,0,0.0,2,True
+F3505,Middleton,River Tees,9,1415,15,6,0.0106,2,True
+F3505,Middleton,River Tees,10,1050,19,6,0.0181,2,True
+F3505,Middleton,River Tees,11,902,30,11,0.03326,2,True
+F3505,Middleton,River Tees,12,1421,40,14,0.02815,2,True
+L2009,Otley,River Wharfe,1,1448,8,4,0.00552,2,True
+L2009,Otley,River Wharfe,2,1329,9,4,0.00677,2,True
+L2009,Otley,River Wharfe,3,1476,9,3,0.0061,2,True
+L2009,Otley,River Wharfe,4,1440,0,0,0.0,2,True
+L2009,Otley,River Wharfe,5,1478,6,2,0.00406,2,True
+L2009,Otley,River Wharfe,6,1421,11,5,0.00774,2,True
+L2009,Otley,River Wharfe,7,1483,3,1,0.00202,2,True
+L2009,Otley,River Wharfe,8,1488,0,0,0.0,2,True
+L2009,Otley,River Wharfe,9,1402,14,7,0.00999,2,True
+L2009,Otley,River Wharfe,10,1300,15,5,0.01154,2,True
+L2009,Otley,River Wharfe,11,938,9,3,0.00959,2,True
+L2009,Otley,River Wharfe,12,1442,30,11,0.0208,2,True
+L2105,Knaresborough,River Nidd,1,1428,8,3,0.0056,2,True
+L2105,Knaresborough,River Nidd,2,851,0,0,0.0,2,True
+L2105,Knaresborough,River Nidd,3,744,0,0,0.0,1,True
+L2105,Knaresborough,River Nidd,4,720,0,0,0.0,1,True
+L2105,Knaresborough,River Nidd,5,744,0,0,0.0,1,True
+L2105,Knaresborough,River Nidd,6,719,1,1,0.00139,1,True
+L2105,Knaresborough,River Nidd,7,744,0,0,0.0,1,True
+L2105,Knaresborough,River Nidd,8,744,0,0,0.0,1,True
+L2105,Knaresborough,River Nidd,9,705,0,0,0.0,1,True
+L2105,Knaresborough,River Nidd,10,736,2,1,0.00272,1,True
+L2105,Knaresborough,River Nidd,11,932,6,3,0.00644,2,True
+L2105,Knaresborough,River Nidd,12,1469,14,4,0.00953,2,True
+L2208,Bainbridge,River Ure,1,1446,17,6,0.01176,2,True
+L2208,Bainbridge,River Ure,2,1299,26,10,0.02002,2,True
+L2208,Bainbridge,River Ure,3,1446,16,5,0.01107,2,True
+L2208,Bainbridge,River Ure,4,1426,4,2,0.00281,2,True
+L2208,Bainbridge,River Ure,5,1478,6,2,0.00406,2,True
+L2208,Bainbridge,River Ure,6,1397,23,8,0.01646,2,True
+L2208,Bainbridge,River Ure,7,1472,9,3,0.00611,2,True
+L2208,Bainbridge,River Ure,8,1483,3,1,0.00202,2,True
+L2208,Bainbridge,River Ure,9,1382,27,9,0.01954,2,True
+L2208,Bainbridge,River Ure,10,1289,17,6,0.01319,2,True
+L2208,Bainbridge,River Ure,11,881,42,15,0.04767,2,True
+L2208,Bainbridge,River Ure,12,1402,45,15,0.0321,2,True
+L2307,Richmond Lownthwaite Bridge,River Swale,1,730,6,2,0.00822,1,True
+L2307,Richmond Lownthwaite Bridge,River Swale,2,668,3,1,0.00449,1,True
+L2307,Richmond Lownthwaite Bridge,River Swale,3,1408,8,3,0.00568,2,True
+L2307,Richmond Lownthwaite Bridge,River Swale,4,1440,0,0,0.0,2,True
+L2307,Richmond Lownthwaite Bridge,River Swale,5,1488,0,0,0.0,2,True
+L2307,Richmond Lownthwaite Bridge,River Swale,6,1435,3,1,0.00209,2,True
+L2307,Richmond Lownthwaite Bridge,River Swale,7,1487,0,0,0.0,2,True
+L2307,Richmond Lownthwaite Bridge,River Swale,8,1488,0,0,0.0,2,True
+L2307,Richmond Lownthwaite Bridge,River Swale,9,1435,2,1,0.00139,2,True
+L2307,Richmond Lownthwaite Bridge,River Swale,10,872,6,2,0.00688,2,True
+L2307,Richmond Lownthwaite Bridge,River Swale,11,233,3,1,0.01288,1,True
+L2307,Richmond Lownthwaite Bridge,River Swale,12,734,7,2,0.00954,1,True

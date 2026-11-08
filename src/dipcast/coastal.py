@@ -316,7 +316,9 @@ def water_line(site):
         where = ("this beach's square" if water in ("sea", "estuary") else "this water's square") if not e.get("air_km") \
             else f'a point {e["air_km"]} km away'
         points = {"sea": "sea points", "lake": "lakes", "river": "rivers"}.get(water)
-        how = (f'typical error {e["typical_c"]:.1f} °C at {points} in a summer test' if e.get("typical_c") is not None
+        how = (f'typical error {e["typical_c"]:.1f} °C at {points} in a test on past winters'
+               if e.get("typical_c") is not None and e.get("test") == "winter"
+               else f'typical error {e["typical_c"]:.1f} °C at {points} in a summer test' if e.get("typical_c") is not None
                else "estuaries were not in the test" if water == "estuary"
                else "not yet checked in these months")
         return (f'Water about {e["temp_c"]} °C on {day.day} {day:%b}: estimated from the last 7 days\' air temperature '

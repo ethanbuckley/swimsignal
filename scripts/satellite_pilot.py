@@ -66,23 +66,24 @@ def read_scene(net, it: dict, site: dict, core: dict[str, np.ndarray]) -> dict:
     """One scene at one site, exactly as refresh_lake_observations.run reads it, with its quality diagnostics."""
     import protocol as pr
     import stac
-    from refresh_lake_observations import scene_quality, sun_elevation
+    from refresh_lake_observations import scene_quality, signal_quality, sun_elevation
     t = it["properties"]["grid:code"]
     w, _ = stac.site_scl(net, it, site["lon"], site["lat"])
     clear, usable = pr.scene_clear(w, core[t])
-    value, index = float("nan"), None
+    value, index, signal = float("nan"), None, {}
     if usable:
         b4_dn, b5_dn = stac.site_bands(net, it, site["lon"], site["lat"])
         b4 = pr.b4_to_20m(pr.reflectance(b4_dn, it["assets"]["red"]["raster:bands"][0]))
         b5 = pr.reflectance(b5_dn, it["assets"]["rededge1"]["raster:bands"][0])
         index = pr.ndci(b4, b5)
         _, _, value = pr.scene_reading(w, core[t], index)
+        signal = signal_quality(w, core[t], b4, b5)   # contract 1.4: brightness, pixel spread, inner-core reading
     p = it["properties"]
     return {"lake_id": site["lake_id"], "tile": t, "item_id": it["id"], "scene_date": p["datetime"][:10],
             "datetime": p["datetime"], "processing_baseline": p.get("s2:processing_baseline"),
             "sun_elevation_deg": round(sun_elevation(p["datetime"], site["lat"], site["lon"]), 1),
             "clear_core": int(clear), "n_core": int(core[t].sum()), "usable": bool(usable),
-            "reading": None if np.isnan(value) else float(value), **scene_quality(w, core[t], index)}
+            "reading": None if np.isnan(value) else float(value), **scene_quality(w, core[t], index), **signal}
 
 
 def run(root: Path, days: int, max_requests: int, max_mb: int, max_minutes: float, today: date | None = None) -> dict:
@@ -152,6 +153,13 @@ def run(root: Path, days: int, max_requests: int, max_mb: int, max_minutes: floa
     (root / "run.json").write_text(json.dumps({k: v for k, v in rec.items() if k != "rows"}, indent=1))
     runs.append(rec)
     RUNS.write_text(json.dumps(runs, separators=(",", ":")) + "\n")
+    try:   # the research shadow log (docs/SATELLITE-CHL-CANDIDATES-2026-11.md): its own file, never the run record
+        from lake_chl_shadow import log_run
+        n = log_run(rows, "pilot", "lake_id", rec["finished"], RUNS.parent / "chl_shadow_log.v1.json")
+        if n is not None:
+            print(f"shadow log: {n} new rows")
+    except Exception as e:  # noqa: BLE001 - the shadow log never changes a reading or the run's own record
+        print(f"shadow log not written: {type(e).__name__}: {e}"[:300])
     return rec
 
 
@@ -233,6 +241,7 @@ def publish(as_of: date | None = None) -> dict:
     doc["as_of"] = as_of.isoformat()
     doc["generated_at"] = datetime.now(UTC).isoformat(timespec="seconds")
     doc["version"] = ex.VERSION
+    doc["processing"].setdefault("display_rules", {})["low_signal"] = ex.LOW_SIGNAL   # 1.4
     doc["pilot"] = {"sites": ids, "schedule": SCHEDULE,
                     "note": "Five monitored sites refreshed weekly as a pilot. Only these show current operation; every "
                             "other site is the historical record.",

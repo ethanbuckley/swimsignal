@@ -176,3 +176,26 @@ test('every earlier rule still holds: the other water is chosen only from the sp
   assert.deepEqual(rows(n), ['a', 'higher', 'plain']);
   assert.doesNotMatch(n, /class="sub"/);
 });
+
+// A map tap in Scotland during the trial (anypoint.js, show): no forecast there, so the page lists the listed spots
+// nearest it. Within NEAR_KM it is the plain "Nearby"; further (the Tay at Perth is about 54 km from the nearest
+// trial spot) nearby(d, Infinity) gives the nearest anyway, headed "Nearest listed spots", with how far each is.
+test('an unlisted point with no forecast gets the nearest listed spots, and further than 40 km only when asked', () => {
+  const tap = (lat, lon) => ({ id: `point-${lat},${lon}`, unlisted: true, source: 'unlisted', lat, lon, kind: '', name: 'This point',
+    error: 'In Scotland, SwimSignal forecasts only its listed trial spots. This point is not one of them, so it has no forecast here.',
+    outside: 'scotland_trial', location: { mode: 'none' }, days: [], contributors: [], now: { risk: 0, label: 'unknown' } });
+  const luss = spot('sepa-125079', ['low', 'low', 'low', 'low', 'low'], { kind: 'lake', lat: 56.10341, lon: -4.63805, trial: 'scotland' });
+  const milarrochy = spot('scot-lomond-milarrochy', ['moderate', 'low', 'low', 'low', 'low'], { kind: 'lake', lat: 56.09586, lon: -4.55753, trial: 'scotland' });
+  const almondell = spot('scot-almond-almondell', ['low', 'low', 'low', 'low', 'low'], { lat: 55.90383, lon: -3.45994, trial: 'scotland' });
+  const ctx = page([luss, milarrochy, almondell]);
+  const lomond = run(ctx, 'nearby', tap(56.085, -4.60));
+  assert.deepEqual(rows(lomond), ['scot-lomond-milarrochy', 'sepa-125079']);   // Almondell is over 70 km away
+  assert.match(text(lomond), /^Nearby /);
+  assert.doesNotMatch(text(lomond), /Lower risk/);   // a point with no level offers nothing as lower than it
+  assert.match(text(lomond), /scot-lomond-milarrochy .* 1\.8 miles away · Lake sepa-125079 .* 1\.9 miles away/);
+  const perth = [56.396, -3.4265];
+  assert.equal(run(ctx, 'nearby', tap(...perth)), '');
+  const far = run(ctx, 'nearby', tap(...perth), Infinity);
+  assert.deepEqual(rows(far), ['scot-almond-almondell', 'scot-lomond-milarrochy', 'sepa-125079']);
+  assert.match(text(far), /^Nearest listed spots /);
+});

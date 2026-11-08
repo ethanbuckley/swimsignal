@@ -1,0 +1,122 @@
+{
+ "version": "lake-range-usual-v1",
+ "rule": "lake-range-v1",
+ "definition": "Usual: lake-range-v1's likely reading for the same lake on the same date with that lake's typical inputs, the median rain over 48 h and 24 h and the median exposure (risk) on its own 2023-26 Environment Agency sample days. Higher than usual: today's likely reading at least twice usual; lower: at most half; otherwise about usual. Compared on the figures as published (two significant figures); both under 10, which the page gives alike as 'under 10', is about usual.",
+ "record": "docs/LAKE-RANGE-DIRECTION-PROPOSAL-2026-11.md",
+ "model_sha256": "5566b12e5fc6acc1686f2aeb201ec2b9f8cd7e38a39f4352de314c5e32c3fcca",
+ "source": {
+  "built_from": "lake-range-v1's 2023-26 training rows, rebuilt by scripts/lake_range_hindcast.py `rows` at 0be59d2d, offline, from the shared inputs and rain cache",
+  "rows_code_commit": "0be59d2d",
+  "rows": 1672,
+  "lake_rows": 732,
+  "rows_sha256": "f72927750e42aa308b951141a08728022eb0fb06a8058a93d48e47f40e92199e",
+  "rows_parquet_sha256": "d62d80ff1cd31b51cd03644f97395f847b6b1ede4c3d477a217728e929059fcb",
+  "frozen_rows_sha256": "a352c7f4ae50d6927462bb258c7483f267d469681bfbda03404ff23eb1651b08",
+  "note": "The rebuilt rows' hash (export's recipe) differs from the one the frozen file records; their content matches it by every check below. The cause of the hash difference is not known.",
+  "content_checks": {
+   "column_means_and_sds_equal": true,
+   "intercept_weights_max_abs_difference": 4.982442014522803e-07
+  }
+ },
+ "sites": {
+  "ukd1101-45800": {
+   "name": "Derwent Water at Crow Park",
+   "samples": 58,
+   "first": "2024-05-02",
+   "last": "2026-09-06",
+   "rain_48h": 6.95,
+   "rain_24h": 1.7999999999999998,
+   "risk": 0.017441274918286898
+  },
+  "ukd1203-45625": {
+   "name": "Windermere, Lakeside YMCA",
+   "samples": 77,
+   "first": "2023-05-05",
+   "last": "2026-09-01",
+   "rain_48h": 4.199999999999999,
+   "rain_24h": 1.3,
+   "risk": 0.005719832608206188
+  },
+  "ukd1203-45650": {
+   "name": "Windermere, Millerground Landing",
+   "samples": 77,
+   "first": "2023-05-05",
+   "last": "2026-09-01",
+   "rain_48h": 4.300000000000001,
+   "rain_24h": 1.7000000000000002,
+   "risk": 0.009507849871733365
+  },
+  "ukd1203-45675": {
+   "name": "Windermere, Rayrigg Meadow",
+   "samples": 77,
+   "first": "2023-05-05",
+   "last": "2026-09-01",
+   "rain_48h": 4.199999999999999,
+   "rain_24h": 1.7000000000000002,
+   "risk": 0.010573261554196356
+  },
+  "ukd1203-45700": {
+   "name": "Windermere, Fellfoot",
+   "samples": 77,
+   "first": "2023-05-05",
+   "last": "2026-09-01",
+   "rain_48h": 4.2,
+   "rain_24h": 1.2000000000000002,
+   "risk": 0.0034600862602347515
+  },
+  "ukd1230-45725": {
+   "name": "Coniston Water, Brown Howe",
+   "samples": 57,
+   "first": "2024-05-01",
+   "last": "2026-09-04",
+   "rain_48h": 9.0,
+   "rain_24h": 3.0,
+   "risk": 0.03777615981560101
+  },
+  "ukd1230-45750": {
+   "name": "Coniston Water, Boating Centre",
+   "samples": 57,
+   "first": "2024-05-01",
+   "last": "2026-09-04",
+   "rain_48h": 10.899999999999999,
+   "rain_24h": 4.0,
+   "risk": 0.06943368219606172
+  },
+  "ukd1230-45775": {
+   "name": "Coniston Water, Monk Coniston",
+   "samples": 57,
+   "first": "2024-05-01",
+   "last": "2026-09-04",
+   "rain_48h": 10.9,
+   "rain_24h": 3.9000000000000004,
+   "risk": 0.05136465354938757
+  },
+  "ukf2208-09701": {
+   "name": "Rutland Water Whitwell Creek",
+   "samples": 73,
+   "first": "2023-05-11",
+   "last": "2026-09-03",
+   "rain_48h": 1.5000000000000002,
+   "rain_24h": 0.30000000000000004,
+   "risk": 0.0022534849047702865
+  },
+  "ukf2208-09702": {
+   "name": "Rutland Water Sykes Lane",
+   "samples": 68,
+   "first": "2023-05-11",
+   "last": "2026-09-03",
+   "rain_48h": 1.4000000000000001,
+   "rain_24h": 0.25,
+   "risk": 0.001781010121888582
+  },
+  "ukj2310-11945": {
+   "name": "Frensham Great Pond",
+   "samples": 54,
+   "first": "2023-05-04",
+   "last": "2026-08-28",
+   "rain_48h": 1.4,
+   "rain_24h": 0.4,
+   "risk": 0.0014709672508632643
+  }
+ }
+}

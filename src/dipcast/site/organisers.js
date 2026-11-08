@@ -81,6 +81,7 @@ const Organisers = (() => {
   function rating(s, iso) {
     const sr = (s.sepa || {}).rating;
     if (s.source === 'sepa') return row('SEPA rating', sr?.value ? `${esc(sr.value)}, for ${esc(sr.year)}. SEPA's page has its samples and any advice against bathing, which SwimSignal does not include.` : 'A SEPA designated bathing water; no rating in this update.');
+    if (s.trial === 'scotland') return row('Bathing water', 'Not a designated bathing water, so SEPA does not test it for bathing.');
     const cl = s.classification; if (!cl) return s.source === 'designated' ? '' : row('Bathing water', 'Not a designated bathing water, so the Environment Agency does not test it for bathing.');
     const page = cl.url ? ` <a href="${esc(cl.url)}">The Environment Agency's page</a> has its samples and any advice against bathing after pollution or algae, which SwimSignal does not include.` : '';
     if (!cl.class) return row('Environment Agency rating', `A designated bathing water too new to have a rating.${page}`);
@@ -203,9 +204,9 @@ const Organisers = (() => {
     const total = (s.upstream_summary || {}).overflows || 0, km = (s.assumptions || {}).max_upstream_km || 60;
     let h = `<p>The forecast for ${dateWords(iso)} first appears on <b>${dateWords(from)}</b>, as the last of its five days, and is updated several times a day after that.</p>`;
     const rows = [];
-    if (isolated(s)) rows.push(row('Storm overflows', `The river network links no monitored storm overflow to this lake, so there will be no sewage spill risk here. ${esc(R.OTHER_RISKS)}`));
+    if (isolated(s)) rows.push(row('Storm overflows', `The river network links no monitored storm overflow to this lake, so there is no sewage spill score here. ${esc(R.OTHER_RISKS)}`));
     else if (s.error) rows.push(row('Forecast', esc(R.COVER[R.level(s)] || 'No forecast in this update')));
-    else if (!total) rows.push(row('Storm overflows', `None monitored within ${km} km upstream, so there will be no sewage spill risk here. ${esc(R.OTHER_RISKS)}`));
+    else if (!total) rows.push(row('Storm overflows', `None monitored within ${km} km upstream, so there is no sewage spill score here. ${esc(R.OTHER_RISKS)}`));
     else rows.push(row('Storm overflows', `${total} monitored upstream, listed below with how often each spills in a year.${R.tooFarSaid(s) ? ' ' + esc(R.tooFarSaid(s)) : ''}`));
     rows.push(rating(s, iso));
     return h + `<p class="ev-say">What is known now:</p><dl class="fields">${rows.join('')}</dl>`;

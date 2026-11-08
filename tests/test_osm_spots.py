@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import importlib.util
 import logging
+import math
 import re
 from pathlib import Path
 
@@ -38,13 +39,24 @@ def test_spots_osm_csv_is_a_separate_file_with_no_key_into_spots_csv():
     assert (osm.loc[osm["kind"] == "lake", "river"] == "").all() and set(osm["kind"]) <= {"river", "lake"}
 
 
+# A pin moved off its candidate's position onto the water the build snapped it to, after a review, and the
+# candidate's snap distance (metres) it may move by at most. Nothing else may move.
+MOVED_ONTO_WATER = {
+    "osm-tame-dosthill": 133,   # node in a field east of the Tame (docs/NEW-SPOTS-AUDIT-2026-11.md, 3.4)
+}
+
+
 def test_every_osm_spot_comes_from_a_reviewed_candidate_at_its_position():
     osm = pd.read_csv(ROOT / "spots-osm.csv").fillna("")
     cand = pd.read_csv(ROOT / "data" / "raw" / "osm_swim_candidates.csv").fillna("").set_index("osm_id")
     for r in osm.itertuples():
         c = cand.loc[r.osm_id]
-        assert (round(c["lat"], 5), round(c["lon"], 5)) == (round(r.lat, 5), round(r.lon, 5)), r.id
         assert c["listed_as"] == r.id and c["inland"]
+        if r.id in MOVED_ONTO_WATER:
+            moved = math.hypot((c["lat"] - r.lat) * 111_000, (c["lon"] - r.lon) * 111_320 * math.cos(math.radians(r.lat)))
+            assert c["snap_distance_m"] == MOVED_ONTO_WATER[r.id] and moved <= c["snap_distance_m"] + 5, r.id
+            continue
+        assert (round(c["lat"], 5), round(c["lon"], 5)) == (round(r.lat, 5), round(r.lon, 5)), r.id
 
 
 def test_the_build_reads_both_files_and_never_lets_two_spots_share_an_id(tmp_path, caplog):

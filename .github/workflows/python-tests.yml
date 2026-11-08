@@ -2,7 +2,8 @@ name: Test Python
 
 # No path filter. The tests read src/, scripts/, data/, docs/, guides/, push/, reviews/, .github/
 # and the spot lists, so a filter would be long and would miss things. The repository is public,
-# so runs cost no minutes, and the suite takes about a minute. The site build's heartbeat commit
+# so runs cost no minutes. One test at a time the suite took 3.7-7.0 min on main in early Nov 2026; on four
+# workers about half that (pytest-xdist, PR description). The site build's heartbeat commit
 # pushes with GITHUB_TOKEN, and GitHub does not start workflows from those pushes.
 # The tests make no network calls (checked with sockets blocked, 7 Oct 2026) and need no
 # git-ignored data: they use files in the repository and tests/fixtures.
@@ -34,4 +35,4 @@ jobs:
       - name: Lint
         run: uv run ruff check .
       - name: Tests
-        run: uv run pytest -q
+        run: uv run pytest -q -n auto   # on the runner's cores (pytest-xdist), as site.yml runs them

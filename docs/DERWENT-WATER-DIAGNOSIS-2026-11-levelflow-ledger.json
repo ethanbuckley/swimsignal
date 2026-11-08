@@ -1,0 +1,21 @@
+[
+ {
+  "t": "2026-11-06T12:54:37Z",
+  "measure": "1d596dfe-0499-4063-bbab-8d7f97ee04c4-level-min-86400-m-qualified",
+  "offset": 0,
+  "status": 200
+ },
+ {
+  "t": "2026-11-06T12:54:39Z",
+  "measure": "7663b8bf-5756-4c71-a6a2-727e4c7448a3-flow-m-86400-m3s-qualified",
+  "offset": 0,
+  "status": 200
+ },
+ {
+  "t": "2026-11-06T12:55:28Z",
+  "measure": "7663b8bf-5756-4c71-a6a2-727e4c7448a3-flow-min-86400-m3s-qualified",
+  "offset": 0,
+  "status": 200,
+  "note": "availability check after the stated daily-mean flow returned 2026 only: 0 readings for 2024-26; not used"
+ }
+]

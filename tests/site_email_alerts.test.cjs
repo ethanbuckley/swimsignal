@@ -9,7 +9,7 @@ const source = page.slice(page.indexOf('function alertsCard() {'), page.indexOf(
 
 const PUSH = {url: 'https://push.example/', key: 'k'}, EMAIL = {url: 'https://push.example/'};
 function card(data, {ios = false, standalone = false, push = true} = {}) {
-  const ctx = vm.createContext({DATA: {spots: [{id: 'a'}], ...data}, canPush: () => push, offlineOff: () => false, IOS: ios, IN_APP: '', OWN_BROWSER: 'Safari', navigator: {standalone}});
+  const ctx = vm.createContext({DATA: {spots: [{id: 'a'}], ...data}, canPush: () => push, Notification: {permission: 'default'}, offlineOff: () => false, IOS: ios, IN_APP: '', OWN_BROWSER: 'Safari', navigator: {standalone}});
   vm.runInContext(source + ';this.card = alertsCard;', ctx);
   return ctx.card();
 }
@@ -24,6 +24,16 @@ test('push alone keeps its words', () => {
   assert.match(h, /id="alerts-btn"/);
   assert.doesNotMatch(h, /alert-mail|email/i);
   assert.match(card({push: PUSH}, {ios: true, push: false}), /On iPhone and iPad, alerts work only in the Home Screen app: .*save your spots in it\.<\/p>/);
+});
+
+test('alerts for official advice are said only once the build turns them on, and never as an email', () => {
+  const advice = {...PUSH, advice: true};
+  assert.match(card({push: advice}), /<p class="sub">A notification when one of your saved spots reaches high or very high risk, at most once a day for each\. Another when official advice is newly shown at one of them, also at most once a day for each\.<\/p>/);
+  assert.match(card({push: advice, email: EMAIL}), /<p class="sub">A notification or an email when one of your saved spots reaches high or very high risk, at most once a day for each\. A notification also when official advice is newly shown at one of them, also at most once a day for each\.<\/p>/);
+  for (const data of [{push: PUSH}, {push: PUSH, email: EMAIL}, {email: EMAIL}]) assert.doesNotMatch(card(data), /official advice/);
+  // What turning them on sends is unchanged: nothing more is sent or kept for them.
+  const sends = h => h.slice(h.indexOf('What turning alerts on sends'), h.indexOf('</details>'));
+  assert.equal(sends(card({push: advice})), sends(card({push: PUSH})));
 });
 
 test('email alone: a labelled field, the consent fold, then the button', () => {

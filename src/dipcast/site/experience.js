@@ -4,7 +4,7 @@
 // A check's date as people write it, "3 Oct 2026", not "2026-10-03"; anything else as given.
 const experienceWhen = (d => /^\d{4}-\d{2}-\d{2}$/.test(String(d)) ? new Date(d + 'T12:00:00Z').toLocaleDateString('en-GB', { timeZone: 'UTC', day: 'numeric', month: 'short', year: 'numeric' }) : d);
 const rules = () => typeof headParts === 'function'
-  ? { coverage, FOUND_NONE, daily, dayLevel, dayHeadline, nowUnknown, nowUnknownWhy, eaUnchecked, EA_UNCHECKED, rank, liveHead } : require('./levels.js');
+  ? { coverage, FOUND_NONE, daily, dayLevel, dayHeadline, nowUnknown, nowUnknownWhy, nowFew, eaUnchecked, EA_UNCHECKED, rank, liveHead } : require('./levels.js');
 const dayMonthYear = iso => new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', {day: 'numeric', month: 'short', year: 'numeric'});
 // The latest lab sample in the words of a spot's "What the level rests on" (evidence.js, evidenceSample),
 // as plain text; the page loads that file before this one, and Node requires it. Where there is none, it
@@ -29,6 +29,7 @@ function evidenceRows(s, iso, generatedAt = null, now = Date.now()) {
     : ![5, 6, 7, 8, 9].includes(Number(iso.slice(5, 7)));
   const sr = (s.sepa || {}).rating;
   return [
+    s.trial === 'scotland' && s.source !== 'sepa' ? ['SEPA rating', 'Not a SEPA designated bathing water. No bathing-water rating shown.'] :
     s.source === 'sepa' ? ['SEPA rating', sr?.value ? `${sr.value}${sr.year ? ' · ' + sr.year : ''}. SEPA's rating from its samples over up to four seasons; not today’s water quality.` : 'SEPA designated bathing water; no rating available in this update.'] :
     ['Environment Agency rating', cl?.class ? `${cl.class.charAt(0).toUpperCase() + cl.class.slice(1)}${cl.year ? ' · ' + cl.year : ''}. Based on up to four seasons of samples; not today’s water quality.`
       : s.source === 'designated' ? 'Designated bathing water; no rating available in this update.' : 'Not an Environment Agency designated bathing water. No bathing-water rating shown.'],
@@ -77,12 +78,17 @@ function weekCells(s, dates) {
 const overflowWords = () => typeof evidenceOverflows === 'function' ? evidenceOverflows : require('./evidence.js').evidenceOverflows;
 function compareNow(s, generatedAt = null) {
   const R = rules(), total = s.upstream_summary?.overflows || 0, n = s.now || {};
-  if (s.error) return htmlText(`${R.coverage(s)}.`);
-  if (!total) return `${R.FOUND_NONE}, so no spills to report. Other pollution sources may still affect this water.`;
+  // No monitored overflow found upstream, whether the trace found none or the lake is isolated (the river network
+  // draws nothing into it, so its forecast is an error with the same words, levels.js, coverage): one sentence, with
+  // its caveat. Until 6 Nov 2026 Loughrigg Tarn's cell dropped "Other pollution sources" that Brothers Water's had.
+  const none = `${R.FOUND_NONE}, so no spills to report. Other pollution sources may still affect this water.`;
+  if (s.error) return R.coverage(s) === R.FOUND_NONE ? none : htmlText(`${R.coverage(s)}.`);
+  if (!total) return none;
   if (n.monitored_upstream == null) return `Not known: this update has no live status for the ${total} overflow${total === 1 ? '' : 's'} upstream.`;
-  const mon = Math.min(total, n.monitored_upstream);
-  return (R.nowUnknown(s) && mon ? `${R.liveHead(s)}: right now not known here. ` : '') + overflowWords()(s, generatedAt).say
-    + (mon < total ? ' Missing reports do not mean no spills.' : '');
+  // Where too few report (levels.js, nowFew), the row already leads with how many report and says the rest are not known.
+  const mon = Math.min(total, n.monitored_upstream), few = R.nowFew(s);
+  return (R.nowUnknown(s) && mon ? (few ? 'Right now not known here. ' : `${R.liveHead(s)}: right now not known here. `) : '') + overflowWords()(s, generatedAt).say
+    + (mon < total && !few ? ' Missing reports do not mean no spills.' : '');
 }
 // Today's advice from the Environment Agency, against bathing after pollution or algae: the build and the
 // page cannot read it (eatoday.js), so at a designated bathing water the cell says it was not checked and
@@ -102,19 +108,34 @@ function compareAdvice(s) {
   }
   if (s.source === 'designated') return 'Not known: this update has no Environment Agency page for this bathing water.';
   if (s.source === 'sepa') return 'Not checked: SEPA’s page and the sign at the water give any advice for today.';
+  if (s.trial === 'scotland') return 'None: not a designated bathing water, so SEPA gives no bathing advice for it.';
   return 'None: not a designated bathing water, so the Environment Agency gives no bathing advice for it.';
 }
 // Access at the spot (access.py: a desk check of the authority's guidance, for the spots from OpenStreetMap
 // and the curated ones in the Peak District): what it found, in its own words, and when. A plan's row gives the status in a few words (ACCESS_WORDS,
-// index.html's planWhy). A spot without a check says so.
+// index.html's planWhy). Then what the spot's practical guide covers, in the planner's words (dayplan.js,
+// dpConditions): until 6 Nov 2026 the cell read only the permission check, so 52 of the 56 spots whose guide
+// covers parking, the path or getting in said "No access information" under a plan row saying "Its guide covers
+// parking, the path, getting in". The guide is in the spot's own file (index.html, spotDetail): until it comes the
+// cell says so, and a file that did not come is not known, not none. A spot with neither says so.
 const ACCESS_WORDS = { restricted_guidance: 'Park guidance restricts river swimming; not checked here.', unconfirmed: 'Permission to swim at this point is not confirmed.' };
+const GUIDE_ACCESS = [['parking', 'parking'], ['path', 'the path'], ['entry', 'getting in'], ['exit', 'getting out'], ['launch', 'launching']];
+function compareGuide(s) {
+  if (s.detail_file && !s.detail_loaded && !s.detail_missing) return vTag('none', 'Loading its guide…');
+  if (s.detail_missing) return vTag('none', 'Its guide could not be loaded');
+  const g = s.guide, facts = g && Array.isArray(g.facts) ? g.facts : [];
+  const has = GUIDE_ACCESS.filter(([k]) => facts.some(f => f && f.topic === k)).map(([, w]) => w);
+  if (!has.length) return '';
+  return `Its guide covers ${has.join(', ')}. ` + (g.checked ? vTag('measured', `Checked ${htmlText(experienceWhen(g.checked))}`) : vTag('none', 'Not known when it was checked'));
+}
 function compareAccess(s) {
-  const a = s.access;
-  if (!a) return vTag('none', 'No access information');
+  const a = s.access, guide = compareGuide(s);
+  if (!a) return guide || vTag('none', 'No access information');
   // When it was checked is its kind and time; "signs at the water not inspected" is the row's note (compareRows).
   return htmlText(a.text || ACCESS_WORDS[a.status] || 'Not known whether swimming is allowed at this point.') + ' '
     + (a.checked_at ? vTag('measured', `Checked ${htmlText(experienceWhen(a.checked_at))}`) : vTag('none', 'Not known when it was checked'))
-    + (/^https:\/\//.test(a.url || '') ? ` <a href="${htmlText(a.url)}">Authority guidance</a>` : '');
+    + (/^https:\/\//.test(a.url || '') ? ` <a href="${htmlText(a.url)}">Authority guidance</a>` : '')
+    + (guide ? ` ${guide}` : '');
 }
 // The rows under the five days, as [label, HTML, note], for one spot; iso is the day picked, whose E. coli
 // model limits the last row gives. Short cells (2 Nov 2026): the caveat every column shares is the note, which the

@@ -1,0 +1,1160 @@
+{
+ "written": "2026-11-01",
+ "what": "Scotland hindcast, Stage A (docs/SCOTLAND-PLAN-2026-10.md, section 6; scripts/hindcast_scotland.py). Summary scores only; no Scottish Water rows.",
+ "model": "United Utilities 2023-2024; verified on 2025",
+ "model_file": "spill_model_holdout_2025.pkl",
+ "production_model": "United Utilities 2023-2025 (refit on all years; verified on 2025 before refit)",
+ "bootstrap": {
+  "draws": 2000,
+  "seed": 0,
+  "clusters": "overflows x ISO weeks"
+ },
+ "sources": {
+  "events": "Contains Scottish Water data licensed under the Open Government Licence v3.0.",
+  "rain": "ERA5-Land via Open-Meteo (cached); archived forecasts via Open-Meteo previous-runs API"
+ },
+ "coverage": {
+  "overflows_in_s2": 1666,
+  "overflows_with_a_count": 1332,
+  "overflows_emergency": 107,
+  "overflows_no_position": 179,
+  "overflow_years_by_year": {
+   "2021": {
+    "overflows": 133,
+    "counted": 126,
+    "counted_emergency_left_out": 18,
+    "eligible": 95,
+    "G": 0,
+    "N": 0
+   },
+   "2022": {
+    "overflows": 674,
+    "counted": 237,
+    "counted_emergency_left_out": 26,
+    "eligible": 186,
+    "G": 92,
+    "N": 94
+   },
+   "2023": {
+    "overflows": 676,
+    "counted": 267,
+    "counted_emergency_left_out": 29,
+    "eligible": 206,
+    "G": 173,
+    "N": 33
+   },
+   "2024": {
+    "overflows": 659,
+    "counted": 273,
+    "counted_emergency_left_out": 27,
+    "eligible": 233,
+    "G": 195,
+    "N": 38
+   },
+   "2025": {
+    "overflows": 1551,
+    "counted": 1287,
+    "counted_emergency_left_out": 100,
+    "eligible": 1138,
+    "G": 233,
+    "N": 905
+   }
+  },
+  "G": {
+   "overflows": 254,
+   "overflow_years": 693,
+   "spill_days": 52891,
+   "spill_days_by_year": {
+    "2022": 7971,
+    "2023": 14086,
+    "2024": 15230,
+    "2025": 15604
+   }
+  },
+  "N": {
+   "overflows": 1066,
+   "overflow_years": 1070
+  },
+  "rain_archive": {
+   "G (required)": {
+    "tier 1": {
+     "needed": 408,
+     "cached": 408,
+     "missing": 0,
+     "calls_left": 0
+    },
+    "tier 2": {
+     "needed": 139,
+     "cached": 139,
+     "missing": 0,
+     "calls_left": 0
+    }
+   },
+   "calibration arm, extra": {
+    "tier 1": {
+     "needed": 1,
+     "cached": 1,
+     "missing": 0,
+     "calls_left": 0
+    },
+    "tier 2": {
+     "needed": 1,
+     "cached": 0,
+     "missing": 1,
+     "calls_left": 26
+    },
+    "tier 3": {
+     "needed": 91,
+     "cached": 0,
+     "missing": 91,
+     "calls_left": 2372
+    }
+   },
+   "N, extra": {
+    "tier 2": {
+     "needed": 176,
+     "cached": 31,
+     "missing": 145,
+     "calls_left": 3780
+    },
+    "tier 3": {
+     "needed": 173,
+     "cached": 1,
+     "missing": 172,
+     "calls_left": 4497
+    }
+   }
+  },
+  "rain_leads_2025": {
+   "cells": 134,
+   "cached": 134,
+   "missing": 0,
+   "calls_left": 0,
+   "requests_left": 0
+  }
+ },
+ "G": {
+  "info": {
+   "rain_cell_years": 547,
+   "calibration": "not run: 92 of 497 cell-years not cached",
+   "overflows": 254,
+   "rows": 253140,
+   "spill_days": 52891
+  },
+  "scores": {
+   "overflows": 254,
+   "weeks": 210,
+   "rows": 253140,
+   "spill_days": 52891,
+   "base_rate": 0.20894,
+   "forecasts": {
+    "Scottish covariates": {
+     "brier": 0.11436,
+     "log_loss": 0.3729,
+     "auc": 0.86918,
+     "brier_ci": [
+      0.10169,
+      0.12665
+     ],
+     "log_loss_ci": [
+      0.33554,
+      0.40931
+     ],
+     "bss_vs_earlier_years": 0.18252,
+     "bss_vs_earlier_years_ci": [
+      0.13123,
+      0.22584
+     ],
+     "bss_vs_flat": 0.30809,
+     "bss_vs_flat_ci": [
+      0.27573,
+      0.3395
+     ],
+     "auc_ci": [
+      0.85553,
+      0.88193
+     ],
+     "level": 0.71746
+    },
+    "default covariates": {
+     "brier": 0.17927,
+     "log_loss": 0.7062,
+     "auc": 0.75502,
+     "brier_ci": [
+      0.15434,
+      0.20474
+     ],
+     "log_loss_ci": [
+      0.61,
+      0.80406
+     ],
+     "bss_vs_earlier_years": -0.28145,
+     "bss_vs_earlier_years_ci": [
+      -0.37561,
+      -0.19561
+     ],
+     "bss_vs_flat": -0.084621,
+     "bss_vs_flat_ci": [
+      -0.12426,
+      -0.040562
+     ],
+     "auc_ci": [
+      0.73347,
+      0.77599
+     ],
+     "level": 0.19733
+    },
+    "production model, Scottish covariates": {
+     "brier": 0.11659,
+     "log_loss": 0.39312,
+     "auc": 0.86133,
+     "brier_ci": [
+      0.10272,
+      0.13007
+     ],
+     "log_loss_ci": [
+      0.34716,
+      0.43833
+     ],
+     "bss_vs_earlier_years": 0.1666,
+     "bss_vs_earlier_years_ci": [
+      0.10087,
+      0.22322
+     ],
+     "bss_vs_flat": 0.29461,
+     "bss_vs_flat_ci": [
+      0.2572,
+      0.33163
+     ],
+     "level": 0.68548
+    },
+    "earlier years": {
+     "brier": 0.1399,
+     "log_loss": 0.43203,
+     "auc": 0.77649,
+     "brier_ci": [
+      0.12559,
+      0.15448
+     ],
+     "log_loss_ci": [
+      0.39464,
+      0.47026
+     ],
+     "bss_vs_earlier_years": 0.0,
+     "bss_vs_earlier_years_ci": [
+      0.0,
+      0.0
+     ],
+     "bss_vs_flat": 0.1536,
+     "bss_vs_flat_ci": [
+      0.11542,
+      0.19364
+     ],
+     "level": 1.0143
+    },
+    "flat": {
+     "brier": 0.16528,
+     "log_loss": 0.51255,
+     "auc": 0.5,
+     "brier_ci": [
+      0.14812,
+      0.18348
+     ],
+     "log_loss_ci": [
+      0.4733,
+      0.55417
+     ],
+     "bss_vs_earlier_years": -0.18147,
+     "bss_vs_earlier_years_ci": [
+      -0.24014,
+      -0.13048
+     ],
+     "bss_vs_flat": 0.0,
+     "bss_vs_flat_ci": [
+      0.0,
+      0.0
+     ],
+     "level": 1.0
+    }
+   },
+   "reliability": [
+    {
+     "band": "0.0-0.1",
+     "n": 168254,
+     "forecast": 0.0271,
+     "observed": 0.0651
+    },
+    {
+     "band": "0.1-0.2",
+     "n": 27166,
+     "forecast": 0.1432,
+     "observed": 0.2694
+    },
+    {
+     "band": "0.2-0.3",
+     "n": 14257,
+     "forecast": 0.2456,
+     "observed": 0.3972
+    },
+    {
+     "band": "0.3-0.4",
+     "n": 9495,
+     "forecast": 0.3467,
+     "observed": 0.4982
+    },
+    {
+     "band": "0.4-0.5",
+     "n": 7302,
+     "forecast": 0.4478,
+     "observed": 0.5804
+    },
+    {
+     "band": "0.5-0.6",
+     "n": 6193,
+     "forecast": 0.5493,
+     "observed": 0.6341
+    },
+    {
+     "band": "0.6-0.7",
+     "n": 5649,
+     "forecast": 0.6498,
+     "observed": 0.7015
+    },
+    {
+     "band": "0.7-0.8",
+     "n": 5563,
+     "forecast": 0.7497,
+     "observed": 0.7562
+    },
+    {
+     "band": "0.8-0.9",
+     "n": 5650,
+     "forecast": 0.8492,
+     "observed": 0.8317
+    },
+    {
+     "band": "0.9-1.0",
+     "n": 3611,
+     "forecast": 0.9409,
+     "observed": 0.8862
+    }
+   ],
+   "wet_dry": {
+    "wet": {
+     "rows": 67020,
+     "spill_days": 28707,
+     "base_rate": 0.42833,
+     "Scottish covariates": {
+      "brier": 0.17431,
+      "log_loss": 0.52627,
+      "auc": 0.82965,
+      "brier_ci": [
+       0.16209,
+       0.18626
+      ],
+      "log_loss_ci": [
+       0.49352,
+       0.55862
+      ],
+      "bss_vs_earlier_years": 0.25046,
+      "bss_vs_earlier_years_ci": [
+       0.20188,
+       0.29658
+      ],
+      "bss_vs_flat": 0.28814,
+      "bss_vs_flat_ci": [
+       0.24664,
+       0.32993
+      ]
+     }
+    },
+    "dry": {
+     "rows": 186120,
+     "spill_days": 24184,
+     "base_rate": 0.12994,
+     "Scottish covariates": {
+      "brier": 0.092777,
+      "log_loss": 0.31768,
+      "auc": 0.8393,
+      "brier_ci": [
+       0.079202,
+       0.10671
+      ],
+      "log_loss_ci": [
+       0.27631,
+       0.36016
+      ],
+      "bss_vs_earlier_years": 0.12912,
+      "bss_vs_earlier_years_ci": [
+       0.061392,
+       0.19335
+      ],
+      "bss_vs_flat": 0.17936,
+      "bss_vs_flat_ci": [
+       0.14973,
+       0.20874
+      ]
+     }
+    }
+   }
+  },
+  "by_year": {
+   "2022": {
+    "overflows": 92,
+    "spill_days": 7971,
+    "rows": 33580,
+    "brier": 0.1186,
+    "log_loss": 0.37996,
+    "auc": 0.88951,
+    "brier_ci": [
+     0.096539,
+     0.14016
+    ],
+    "log_loss_ci": [
+     0.31726,
+     0.44298
+    ],
+    "bss_vs_earlier_years": 0.22792,
+    "bss_vs_earlier_years_ci": [
+     0.14532,
+     0.30847
+    ],
+    "small": false
+   },
+   "2023": {
+    "overflows": 173,
+    "spill_days": 14086,
+    "rows": 63145,
+    "brier": 0.12254,
+    "log_loss": 0.39827,
+    "auc": 0.86655,
+    "brier_ci": [
+     0.10493,
+     0.14107
+    ],
+    "log_loss_ci": [
+     0.34537,
+     0.45365
+    ],
+    "bss_vs_earlier_years": 0.14004,
+    "bss_vs_earlier_years_ci": [
+     0.054096,
+     0.21421
+    ],
+    "small": false
+   },
+   "2024": {
+    "overflows": 195,
+    "spill_days": 15230,
+    "rows": 71370,
+    "brier": 0.11754,
+    "log_loss": 0.38354,
+    "auc": 0.86276,
+    "brier_ci": [
+     0.10093,
+     0.13487
+    ],
+    "log_loss_ci": [
+     0.33408,
+     0.43631
+    ],
+    "bss_vs_earlier_years": 0.17435,
+    "bss_vs_earlier_years_ci": [
+     0.098887,
+     0.24627
+    ],
+    "small": false
+   },
+   "2025": {
+    "overflows": 233,
+    "spill_days": 15604,
+    "rows": 85045,
+    "brier": 0.10395,
+    "log_loss": 0.34235,
+    "auc": 0.86797,
+    "brier_ci": [
+     0.088469,
+     0.11952
+    ],
+    "log_loss_ci": [
+     0.29643,
+     0.38886
+    ],
+    "bss_vs_earlier_years": 0.20335,
+    "bss_vs_earlier_years_ci": [
+     0.13832,
+     0.26799
+    ],
+    "small": false
+   }
+  },
+  "by_type": {
+   "CSO": {
+    "overflows": 160,
+    "spill_days": 24656,
+    "rows": 164383,
+    "brier": 0.086737,
+    "log_loss": 0.2921,
+    "auc": 0.87623,
+    "brier_ci": [
+     0.074119,
+     0.098992
+    ],
+    "log_loss_ci": [
+     0.25254,
+     0.33073
+    ],
+    "bss_vs_earlier_years": 0.226,
+    "bss_vs_earlier_years_ci": [
+     0.18505,
+     0.26764
+    ],
+    "small": false
+   },
+   "SSSO": {
+    "overflows": 80,
+    "spill_days": 25810,
+    "rows": 79992,
+    "brier": 0.16596,
+    "log_loss": 0.52265,
+    "auc": 0.84402,
+    "brier_ci": [
+     0.14605,
+     0.18634
+    ],
+    "log_loss_ci": [
+     0.46287,
+     0.58193
+    ],
+    "bss_vs_earlier_years": 0.13748,
+    "bss_vs_earlier_years_ci": [
+     0.054494,
+     0.21771
+    ],
+    "small": false
+   },
+   "not in the API": {
+    "overflows": 14,
+    "spill_days": 2425,
+    "rows": 8765,
+    "brier": 0.16159,
+    "log_loss": 0.52163,
+    "auc": 0.81415,
+    "brier_ci": [
+     0.10463,
+     0.21976
+    ],
+    "log_loss_ci": [
+     0.34165,
+     0.70325
+    ],
+    "bss_vs_earlier_years": 0.11534,
+    "bss_vs_earlier_years_ci": [
+     -0.10175,
+     0.34314
+    ],
+    "small": false
+   }
+  },
+  "by_authority": {
+   "Aberdeen City": {
+    "overflows": 3,
+    "spill_days": 491,
+    "rows": 2557
+   },
+   "Aberdeenshire": {
+    "overflows": 17,
+    "spill_days": 1349,
+    "rows": 14613,
+    "brier": 0.060686,
+    "log_loss": 0.21924,
+    "auc": 0.86392,
+    "brier_ci": [
+     0.038644,
+     0.084068
+    ],
+    "log_loss_ci": [
+     0.146,
+     0.29551
+    ],
+    "bss_vs_earlier_years": 0.22509,
+    "bss_vs_earlier_years_ci": [
+     0.13946,
+     0.30887
+    ],
+    "small": false
+   },
+   "Angus": {
+    "overflows": 1,
+    "spill_days": 252,
+    "rows": 1096
+   },
+   "Argyll and Bute": {
+    "overflows": 23,
+    "spill_days": 6373,
+    "rows": 24838,
+    "brier": 0.11976,
+    "log_loss": 0.37848,
+    "auc": 0.88521,
+    "brier_ci": [
+     0.074394,
+     0.17109
+    ],
+    "log_loss_ci": [
+     0.24694,
+     0.52723
+    ],
+    "bss_vs_earlier_years": 0.079295,
+    "bss_vs_earlier_years_ci": [
+     -0.23063,
+     0.26205
+    ],
+    "small": false
+   },
+   "Clackmannanshire": {
+    "overflows": 2,
+    "spill_days": 111,
+    "rows": 1462
+   },
+   "Comhairle nan Eilean Siar": {
+    "overflows": 6,
+    "spill_days": 1314,
+    "rows": 5478,
+    "brier": 0.098619,
+    "log_loss": 0.31349,
+    "auc": 0.92733,
+    "brier_ci": [
+     0.022586,
+     0.15448
+    ],
+    "log_loss_ci": [
+     0.09825,
+     0.46334
+    ],
+    "bss_vs_earlier_years": 0.26839,
+    "bss_vs_earlier_years_ci": [
+     0.075155,
+     0.3472
+    ],
+    "small": true
+   },
+   "Dumfries and Galloway": {
+    "overflows": 14,
+    "spill_days": 4280,
+    "rows": 15343,
+    "brier": 0.16336,
+    "log_loss": 0.51566,
+    "auc": 0.80365,
+    "brier_ci": [
+     0.11654,
+     0.2219
+    ],
+    "log_loss_ci": [
+     0.36662,
+     0.70325
+    ],
+    "bss_vs_earlier_years": 0.17152,
+    "bss_vs_earlier_years_ci": [
+     -0.039319,
+     0.34104
+    ],
+    "small": false
+   },
+   "East Ayrshire": {
+    "overflows": 6,
+    "spill_days": 2020,
+    "rows": 5844,
+    "brier": 0.12565,
+    "log_loss": 0.38873,
+    "auc": 0.9008,
+    "brier_ci": [
+     0.077311,
+     0.17773
+    ],
+    "log_loss_ci": [
+     0.25151,
+     0.53241
+    ],
+    "bss_vs_earlier_years": 0.26155,
+    "bss_vs_earlier_years_ci": [
+     0.028033,
+     0.45237
+    ],
+    "small": true
+   },
+   "East Lothian": {
+    "overflows": 5,
+    "spill_days": 844,
+    "rows": 3653,
+    "brier": 0.17473,
+    "log_loss": 0.62774,
+    "auc": 0.6939,
+    "brier_ci": [
+     0.12309,
+     0.22033
+    ],
+    "log_loss_ci": [
+     0.4273,
+     0.7999
+    ],
+    "bss_vs_earlier_years": 0.15486,
+    "bss_vs_earlier_years_ci": [
+     -0.022457,
+     0.3398
+    ],
+    "small": true
+   },
+   "East Renfrewshire": {
+    "overflows": 4,
+    "spill_days": 1292,
+    "rows": 4383
+   },
+   "Falkirk": {
+    "overflows": 7,
+    "spill_days": 1623,
+    "rows": 7304,
+    "brier": 0.12805,
+    "log_loss": 0.413,
+    "auc": 0.8613,
+    "brier_ci": [
+     0.094959,
+     0.16244
+    ],
+    "log_loss_ci": [
+     0.3061,
+     0.52436
+    ],
+    "bss_vs_earlier_years": 0.2191,
+    "bss_vs_earlier_years_ci": [
+     0.070179,
+     0.34212
+    ],
+    "small": true
+   },
+   "Fife": {
+    "overflows": 10,
+    "spill_days": 2111,
+    "rows": 11689,
+    "brier": 0.11521,
+    "log_loss": 0.39225,
+    "auc": 0.85146,
+    "brier_ci": [
+     0.067305,
+     0.1662
+    ],
+    "log_loss_ci": [
+     0.24579,
+     0.54011
+    ],
+    "bss_vs_earlier_years": 0.11155,
+    "bss_vs_earlier_years_ci": [
+     0.009117,
+     0.1994
+    ],
+    "small": false
+   },
+   "Glasgow City": {
+    "overflows": 1,
+    "spill_days": 152,
+    "rows": 365
+   },
+   "Highland": {
+    "overflows": 21,
+    "spill_days": 2694,
+    "rows": 23014,
+    "brier": 0.07423,
+    "log_loss": 0.25706,
+    "auc": 0.86832,
+    "brier_ci": [
+     0.049465,
+     0.099008
+    ],
+    "log_loss_ci": [
+     0.17711,
+     0.3363
+    ],
+    "bss_vs_earlier_years": 0.24409,
+    "bss_vs_earlier_years_ci": [
+     0.051541,
+     0.39216
+    ],
+    "small": false
+   },
+   "Inverclyde": {
+    "overflows": 9,
+    "spill_days": 1332,
+    "rows": 6943,
+    "brier": 0.11077,
+    "log_loss": 0.35526,
+    "auc": 0.85697,
+    "brier_ci": [
+     0.079082,
+     0.1459
+    ],
+    "log_loss_ci": [
+     0.25989,
+     0.47253
+    ],
+    "bss_vs_earlier_years": 0.27313,
+    "bss_vs_earlier_years_ci": [
+     0.18521,
+     0.36075
+    ],
+    "small": true
+   },
+   "Midlothian": {
+    "overflows": 2,
+    "spill_days": 420,
+    "rows": 2192
+   },
+   "Moray": {
+    "overflows": 2,
+    "spill_days": 195,
+    "rows": 1827
+   },
+   "North Ayrshire": {
+    "overflows": 4,
+    "spill_days": 1179,
+    "rows": 4018
+   },
+   "North Lanarkshire": {
+    "overflows": 18,
+    "spill_days": 3097,
+    "rows": 16804,
+    "brier": 0.09686,
+    "log_loss": 0.31884,
+    "auc": 0.8914,
+    "brier_ci": [
+     0.061837,
+     0.13219
+    ],
+    "log_loss_ci": [
+     0.21205,
+     0.4294
+    ],
+    "bss_vs_earlier_years": 0.23996,
+    "bss_vs_earlier_years_ci": [
+     0.13924,
+     0.30862
+    ],
+    "small": false
+   },
+   "Orkney Islands": {
+    "overflows": 4,
+    "spill_days": 1461,
+    "rows": 4384
+   },
+   "Perth and Kinross": {
+    "overflows": 7,
+    "spill_days": 1446,
+    "rows": 5114,
+    "brier": 0.18544,
+    "log_loss": 0.60103,
+    "auc": 0.82163,
+    "brier_ci": [
+     0.079603,
+     0.29971
+    ],
+    "log_loss_ci": [
+     0.26162,
+     0.96748
+    ],
+    "bss_vs_earlier_years": -0.067392,
+    "bss_vs_earlier_years_ci": [
+     -0.38556,
+     0.19923
+    ],
+    "small": true
+   },
+   "Renfrewshire": {
+    "overflows": 8,
+    "spill_days": 1003,
+    "rows": 9863,
+    "brier": 0.078667,
+    "log_loss": 0.27361,
+    "auc": 0.82067,
+    "brier_ci": [
+     0.042723,
+     0.12065
+    ],
+    "log_loss_ci": [
+     0.1546,
+     0.41968
+    ],
+    "bss_vs_earlier_years": 0.12835,
+    "bss_vs_earlier_years_ci": [
+     -0.1117,
+     0.26967
+    ],
+    "small": true
+   },
+   "Scottish Borders": {
+    "overflows": 14,
+    "spill_days": 3275,
+    "rows": 16439,
+    "brier": 0.12876,
+    "log_loss": 0.42884,
+    "auc": 0.84715,
+    "brier_ci": [
+     0.082021,
+     0.18278
+    ],
+    "log_loss_ci": [
+     0.28589,
+     0.58436
+    ],
+    "bss_vs_earlier_years": 0.042925,
+    "bss_vs_earlier_years_ci": [
+     -0.15734,
+     0.18415
+    ],
+    "small": false
+   },
+   "Shetland Islands": {
+    "overflows": 1,
+    "spill_days": 44,
+    "rows": 365
+   },
+   "South Ayrshire": {
+    "overflows": 2,
+    "spill_days": 30,
+    "rows": 730
+   },
+   "South Lanarkshire": {
+    "overflows": 33,
+    "spill_days": 8055,
+    "rows": 36525,
+    "brier": 0.11299,
+    "log_loss": 0.35996,
+    "auc": 0.89187,
+    "brier_ci": [
+     0.088168,
+     0.1392
+    ],
+    "log_loss_ci": [
+     0.28572,
+     0.43795
+    ],
+    "bss_vs_earlier_years": 0.25635,
+    "bss_vs_earlier_years_ci": [
+     0.18234,
+     0.32224
+    ],
+    "small": false
+   },
+   "Stirling": {
+    "overflows": 6,
+    "spill_days": 1333,
+    "rows": 6210,
+    "brier": 0.10101,
+    "log_loss": 0.32303,
+    "auc": 0.89723,
+    "brier_ci": [
+     0.057203,
+     0.15235
+    ],
+    "log_loss_ci": [
+     0.1983,
+     0.46692
+    ],
+    "bss_vs_earlier_years": 0.23572,
+    "bss_vs_earlier_years_ci": [
+     -0.0099759,
+     0.37143
+    ],
+    "small": true
+   },
+   "West Dunbartonshire": {
+    "overflows": 3,
+    "spill_days": 1605,
+    "rows": 4383
+   },
+   "West Lothian": {
+    "overflows": 7,
+    "spill_days": 1085,
+    "rows": 6939,
+    "brier": 0.086669,
+    "log_loss": 0.28205,
+    "auc": 0.90557,
+    "brier_ci": [
+     0.025567,
+     0.14321
+    ],
+    "log_loss_ci": [
+     0.10135,
+     0.44876
+    ],
+    "bss_vs_earlier_years": 0.23491,
+    "bss_vs_earlier_years_ci": [
+     0.060574,
+     0.33445
+    ],
+    "small": true
+   },
+   "not in the API": {
+    "overflows": 14,
+    "spill_days": 2425,
+    "rows": 8765,
+    "brier": 0.16159,
+    "log_loss": 0.52163,
+    "auc": 0.81415,
+    "brier_ci": [
+     0.10463,
+     0.21976
+    ],
+    "log_loss_ci": [
+     0.34165,
+     0.70325
+    ],
+    "bss_vs_earlier_years": 0.11534,
+    "bss_vs_earlier_years_ci": [
+     -0.10175,
+     0.34314
+    ],
+    "small": false
+   }
+  },
+  "leads": {
+   "0": {
+    "overflows": 233,
+    "rows": 85045,
+    "spill_days": 15604,
+    "tested": true,
+    "brier": 0.10262,
+    "log_loss": 0.33968,
+    "auc": 0.87354,
+    "brier_ci": [
+     0.087232,
+     0.11831
+    ],
+    "log_loss_ci": [
+     0.29292,
+     0.38668
+    ],
+    "bss_vs_earlier_years": 0.21357,
+    "bss_vs_earlier_years_ci": [
+     0.147,
+     0.2761
+    ],
+    "level": 0.72851,
+    "passes": true
+   },
+   "1": {
+    "overflows": 233,
+    "rows": 85045,
+    "spill_days": 15604,
+    "tested": true,
+    "brier": 0.10705,
+    "log_loss": 0.35561,
+    "auc": 0.86239,
+    "brier_ci": [
+     0.091127,
+     0.12307
+    ],
+    "log_loss_ci": [
+     0.30619,
+     0.40441
+    ],
+    "bss_vs_earlier_years": 0.17959,
+    "bss_vs_earlier_years_ci": [
+     0.11437,
+     0.24314
+    ],
+    "level": 0.70174,
+    "passes": true
+   },
+   "2": {
+    "overflows": 233,
+    "rows": 85045,
+    "spill_days": 15604,
+    "tested": true,
+    "brier": 0.1111,
+    "log_loss": 0.36973,
+    "auc": 0.85465,
+    "brier_ci": [
+     0.093882,
+     0.12816
+    ],
+    "log_loss_ci": [
+     0.31722,
+     0.42261
+    ],
+    "bss_vs_earlier_years": 0.14859,
+    "bss_vs_earlier_years_ci": [
+     0.083724,
+     0.21244
+    ],
+    "level": 0.67169,
+    "passes": true
+   },
+   "3": {
+    "overflows": 233,
+    "rows": 85045,
+    "spill_days": 15604,
+    "tested": true,
+    "brier": 0.11335,
+    "log_loss": 0.378,
+    "auc": 0.84575,
+    "brier_ci": [
+     0.095942,
+     0.13103
+    ],
+    "log_loss_ci": [
+     0.32365,
+     0.43188
+    ],
+    "bss_vs_earlier_years": 0.13134,
+    "bss_vs_earlier_years_ci": [
+     0.063714,
+     0.19685
+    ],
+    "level": 0.6961,
+    "passes": true
+   }
+  }
+ },
+ "N": {
+  "not_run": "409 of 725 cell-years not cached"
+ },
+ "gate": {
+  "verdict": "PASS",
+  "parts": {
+   "G1 lead 0": {
+    "tested": true,
+    "bss": 0.18252,
+    "ci": [
+     0.13123,
+     0.22584
+    ],
+    "passes": true
+   },
+   "G2 lead 1": {
+    "tested": true,
+    "bss": 0.17959,
+    "ci": [
+     0.11437,
+     0.24314
+    ],
+    "passes": true
+   },
+   "G3 lead 2": {
+    "tested": true,
+    "bss": 0.14859,
+    "ci": [
+     0.083724,
+     0.21244
+    ],
+    "passes": true
+   },
+   "G4 lead 3": {
+    "tested": true,
+    "bss": 0.13134,
+    "ci": [
+     0.063714,
+     0.19685
+    ],
+    "passes": true
+   }
+  }
+ }
+}

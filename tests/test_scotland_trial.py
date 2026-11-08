@@ -86,16 +86,20 @@ def test_the_trial_spots_are_listed_only_while_it_is_on(monkeypatch, trial_on):
     bs = _script("build_site")
     monkeypatch.setattr(bs, "ROOT", ROOT)
     on = bs.load_spots()
-    assert set(on.loc[on["trial"] == "scotland", "id"]) == {"sepa-200305", "sepa-366986", "sepa-125079"}
+    assert {"sepa-200305", "sepa-366986", "sepa-125079", "scot-almond-almondell"} <= set(on.loc[on["trial"] == "scotland", "id"])
     monkeypatch.setattr(config, "SCOTLAND_TRIAL", False)
     off = bs.load_spots()
     assert "trial" not in off or not (off["trial"] == "scotland").any()
 
 
-def test_the_trial_spots_are_sepa_lochs_with_their_directory_ids():
+def test_the_trial_spots_are_sepa_waters_or_cite_who_says_people_swim_there():
     s = pd.read_csv(ROOT / scotland_trial.SPOTS_FILE)
-    assert (s["source"] == "sepa").all() and (s["trial"] == "scotland").all() and (s["kind"] == "lake").all()
-    assert s["id"].str.fullmatch(r"sepa-\d+").all() and s["lat"].between(55, 61).all()
+    assert (s["trial"] == "scotland").all() and s["lat"].between(54.6, 61).all() and s["id"].is_unique
+    sepa, code = s[s["source"] == "sepa"], s[s["source"] == "scotland"]
+    assert len(sepa) + len(code) == len(s)
+    assert sepa["id"].str.fullmatch(r"sepa-\d+").all() and (sepa["kind"] == "lake").all()
+    assert code["id"].str.startswith("scot-").all() and code["notes"].str.match(r'^Swimming: .+, ".+"$').all()
+    assert s["river"].fillna("").str.len().gt(0).all()   # each lake's own water, named on its page
 
 
 def test_sepa_rating_and_page_attach_by_id():
@@ -143,3 +147,11 @@ def test_the_dores_outfall_is_settled_as_discharging_into_loch_ness():
     df = apply_joins(pd.DataFrame({"site_id": ["CSO005667", "CSO003129"], "lat": [57.0, 57.3], "lon": [-4.0, -4.4]}))
     assert df.loc[0, "position_source"] == "join" and (df.loc[0, "lat"], df.loc[0, "lon"]) == (57.379215, -4.336843)
     assert pd.isna(df.loc[1].get("position_source"))
+
+
+def test_a_scottish_spot_cites_the_access_codes_swimming_page():
+    from dipcast.access import SCOTLAND_CODE, access_note
+    n = access_note({"id": "sepa-125079", "source": "sepa", "trial": "scotland"})
+    assert n["status"] == "statutory_access" and n["url"] == SCOTLAND_CODE and SCOTLAND_CODE.endswith("/swimming")
+    assert "subject to any local byelaws" in n["text"] and "not a check of this entry point" in n["text"]
+    assert access_note({"id": "x", "source": "curated"}) is None   # England's spots unchanged

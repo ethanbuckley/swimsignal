@@ -36,7 +36,10 @@
 </ul>
 
 <h2>How good it is</h2>
-<p>Forecasts are scored afterwards against what the overflows actually did and against the Environment Agency's water samples. The results are published on the <a href="/verification">accuracy page</a>, including where the forecast was wrong. The E. coli estimate is tested on rivers in the May to September sampling season only. Please take any figures from the accuracy page: they change as new results come in.</p>
+<!-- The figures in #warn-figures are filled at build time from data/verification.json's live warning_table, as on the
+     clubs page (build_site.with_warning_words); the words here are the fallback, from 29 Sep to 4 Oct 2026. Until
+     5 Nov 2026 this section gave no figure, which read as vaguer than the evidence. -->
+<p>Forecasts are scored afterwards against what the overflows actually did and against the Environment Agency's water samples. <span id="warn-figures">It misses most spills. Its first live scores ran from 29 September to 4 October 2026. At the high risk line, it warned of about one in five spills. About two in five of its warnings were followed by a spill.</span> The <a href="/verification">accuracy page</a> has every measure, including where the forecast was wrong, and changes as new results come in. The E. coli estimate is tested on rivers in the May to September sampling season only.</p>
 
 <h2>Who runs it</h2>
 <p>SwimSignal is a free, non-commercial project run by one person, Ethan Buckley, not a company. It is not run by, connected with or endorsed by the Environment Agency, any water company, Water UK or the Met Office. The <a href="https://github.com/ethanbuckley/swimsignal">code</a> is open source under the MIT licence. See the <a href="/terms">terms of use</a>.</p>
@@ -64,5 +67,5 @@
 <p>Taking a group into the water? <a href="/clubs">For clubs, centres and leaders</a> says what the levels mean for swimming, paddling, sailing, rowing and ghyll scrambling, and which tools help.</p>
 </main>
 <footer class="site-foot"><div class="rule"><p>SwimSignal is a free, non-commercial pollution risk forecast for river and lake swim spots in England, run by Ethan Buckley. A forecast, not a water test: check the signs at the water before you swim.</p>
-<p><a href="/terms">Terms of use</a> · <a href="/privacy">Privacy</a> · <a href="/feedback">Feedback</a> · <a href="/methods">Method</a> · <a href="/research">Research</a> · <a href="/terms#data">Data credits</a> · <a href="https://github.com/ethanbuckley/swimsignal">Source code</a> (MIT)</p></div></footer>
+<p><a href="/terms">Terms of use</a> · <a href="/privacy">Privacy</a> · <a href="/feedback">Feedback</a> · <a href="/methods">Method</a> · <a href="/research">Research and data</a> · <a href="/terms#data">Data credits</a> · <a href="https://github.com/ethanbuckley/swimsignal">Source code</a> (MIT)</p></div></footer>
 </body></html>

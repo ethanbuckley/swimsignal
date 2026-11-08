@@ -188,26 +188,58 @@ const alertSpots = (saved, known, off = []) => [...saved].filter(id => known.has
 //   on            notifications on in this browser, off, or null while that is being checked
 //   off           this spot turned off on its own
 //   down          the alert service did not answer the last change asked of it
+//   advice        the build turned on alerts for official advice newly shown at a saved spot (DATA.push.advice)
 // Returns { kind, text, toggle, checked, link }: toggle, a tick for this spot; link, "Set up alerts" to the
 // Alerts tile, which holds the consent wording, so nothing is turned on from a card.
-function spotAlert({ push = false, email = false, can = 'none', on = null, off = false, down = false } = {}) {
+function spotAlert({ push = false, email = false, can = 'none', on = null, off = false, down = false, advice = false } = {}) {
   const r = (kind, text, extra = {}) => ({ kind, text, toggle: false, checked: false, link: false, ...extra });
   if (!push && !email) return r('none', '');
   if (push && can === 'yes' && on === true) {
     const t = { toggle: true, checked: !off };
     if (down) return r('down', 'The alert service did not answer, so alerts for this spot are as they were. Try again later.', t);
     return off ? r('muted', 'No alerts for this spot. Your other saved spots still have them.', t)
-      : r('on', 'A notification if it reaches high or very high risk.', t);
+      : r('on', advice ? 'A notification if it reaches high or very high risk, or if official advice is newly shown there.'
+        : 'A notification if it reaches high or very high risk.', t);
   }
   if (down) return r('down', 'The alert service did not answer, so alerts could not be checked. Try again later.', { link: true });
   if (push && can === 'yes') return on === null ? r('checking', '') : r('off', 'Alerts are off.', { link: true });
-  if (push && can === 'blocked') return r('blocked', 'Notifications are blocked for this site in your browser settings.', { link: email });
+  // Blocked in the browser's settings: the Alerts tile says so, once (index.html, bindAlerts). Until 6 Nov 2026 every
+  // saved card said it too, the same sentence under each, and the Alerts tile below them a further time.
+  if (push && can === 'blocked') return r('blocked', '');
   if (push && !email) return r('unavailable', 'Notifications cannot be had in this browser.', { link: true });
   return r('email', 'Notifications cannot be had in this browser. Alerts by email cover the spots saved when you sign up.', { link: true });
+}
+// The line under Save on a spot's page (index.html, bindSave): where alerts for this spot are set up. The Alerts
+// tile on the Saved page holds what they cover and what turning them on sends, and says what to do when this
+// browser has notifications blocked or the offline copy off; it is drawn only once a spot is saved, so an
+// unsaved spot is told to save first. push, email and can as for spotAlert; saved, the spot is in the shown list.
+// Returns { text, go }: go, "Go to alerts", which opens the Saved page at the tile.
+//   iPhone or iPad outside the Home Screen app, no email: saving here gives no alerts, so what to do instead.
+//   No web push at all (or Facebook's or Instagram's browser), no email: nothing, rather than a way that ends nowhere.
+function saveAlertHint({ push = false, email = false, can = 'none', saved = false } = {}) {
+  const r = (text, go = false) => ({ text, go });
+  if (!push && !email) return r('');
+  if (!email && can === 'ios') return r('Alerts on iPhone and iPad need the Home Screen app: tap Share, then Add to Home Screen, open SwimSignal from there and save this spot in it.');
+  if (!email && (can === 'none' || can === 'inapp')) return r('');
+  return saved ? r('Alerts for this spot are set up on the Saved page.', true) : r('Save this spot to have alerts for it.');
+}
+// Notifications blocked for the site (the Alerts tile, index.html alertsCard): where to allow them again, for the
+// device in hand. Until 7 Nov 2026 the tile said only that they were blocked, beside a "Turn on alerts" button that
+// could not work: the browser refuses without asking once a site is blocked.
+//   ios     an iPhone or iPad: web push there runs only in the Home Screen app, which has its own entry in Settings
+//   app     opened from the Home Screen or as an installed app elsewhere: no web address to tap
+//   safari  Safari on a Mac, which keeps a site's notifications in its own settings, not by the address
+//   touch   a phone or tablet: tap, not click
+function unblockHow({ ios = false, app = false, safari = false, touch = false } = {}) {
+  const back = ' Then come back to this page.';
+  if (ios) return 'To allow them, open Settings, then Notifications, then SwimSignal, and turn on Allow Notifications.' + back;
+  if (app) return 'To allow them, turn on notifications for SwimSignal in your device\'s settings for apps.' + back;
+  if (safari) return 'To allow them, open Safari\'s Settings, then Websites, then Notifications, and set this site to Allow.' + back;
+  return `To allow them, ${touch ? 'tap' : 'click'} the icon to the left of the web address, then turn on Notifications${touch ? ' (it may be under Permissions)' : ''}.` + back;
 }
 
 if (typeof module === 'object' && module.exports) {
   module.exports = { LISTS_KEY, FIRST_LIST, SHARED_LIST, LIST_NAME_MAX, LINK_SPOTS_MAX, listName, listIds, freeListName, readLists, listsReadable,
     listsText, allSaved, listById, shownList, addToList, removeFromList, moveToList, copyToList, makeList, renameList, deleteList, pickList,
-    keepSpots, sameList, shareHash, readShared, PASTE_MAX, pastedList, planListName, sitesHash, addSharedList, savedGroups, alertSpots, spotAlert };
+    keepSpots, sameList, shareHash, readShared, PASTE_MAX, pastedList, planListName, sitesHash, addSharedList, savedGroups, alertSpots, spotAlert, saveAlertHint, unblockHow };
 }

@@ -1,0 +1,6 @@
+{
+ "written": "2026-11-05T23:58:00Z",
+ "predictions_sha256": "a1f304431d49a6a7c398665de446bb31f769bfaace6c93546c0853a187b4f8e3",
+ "margins": {"C1": {"B": 0.02, "H": 0.01}, "C2": {"B": 0.02, "H": 0.01}},
+ "working": "B and H are Ethan's fixed values of 26 October 2026 (docs/RIVER-RISES-SCOPE-2026-10.md, answer 3; protocol.MARGINS), in Brier skill against the comparison's reference: R3 for C1, C1 for C2. Written after stage 1 (predict) and before any test outcome was read. Stage 1 ran from commit 1beaedc0 at 2026-11-05 23:52:55 to 23:53:11 UTC; gate met; the datum rule dropped one upstream gauge (1090TH, the tributary slot of 1100TH, median index 1.536). The group's heavy-run lock was held by another session's network-bound satellite fetch during stage 1 (the plan asked for the machine alone); the stages are seeded and offline, so this cannot change a figure."
+}

@@ -2,12 +2,18 @@ name: Build and publish site
 
 on:
   schedule:
-    # Asks for every 30 minutes. GitHub treats schedules as best effort: 13-28 Sep 2026 the
-    # builds were a median 2.9 h apart, at most 8.1 h. No step may depend on the clock time.
+    # Asks for every 30 minutes. GitHub treats schedules as best effort: 7 Oct-6 Nov 2026 the scheduled
+    # builds were a median 4.6 h apart, p95 7.7 h, at most 10.1 h (PR #634). No step may depend on the clock time.
     - cron: "*/30 * * * *"
-  # The push Worker also asks for a run every 30 minutes, once its token is set (push/README.md,
-  # "Starting the site's build"); this schedule stays as the fallback.
-  workflow_dispatch: {}
+  # Two ways to a build every 30 minutes, both off until switched on; this schedule stays as the restart:
+  #  - the job next-build below, with the repository variable SELF_PACE set to 1 (needs no token);
+  #  - the push Worker, once its token is set (push/README.md, "Starting the site's build").
+  workflow_dispatch:
+    inputs:
+      chain:
+        description: "Leave unticked. Ticked only by next-build, the build's own request for the next build."
+        type: boolean
+        default: false
   push:
     branches: [main]
     # The two hand-checked data files change what is counted where, so a push of either builds too
@@ -39,8 +45,10 @@ jobs:
     timeout-minutes: 25
     permissions:
       contents: write     # release assets for state, heartbeat commit
+      actions: read       # whether Test Python passed this commit (step tested)
     outputs:
       host: ${{ steps.host.outputs.host }}
+      started: ${{ steps.host.outputs.started }}
     steps:
       - name: Choose the host (Cloudflare Pages once its token is set, else GitHub Pages)
         id: host
@@ -51,6 +59,7 @@ jobs:
           if [ "$HAS_CLOUDFLARE" = true ]; then host=cloudflare; else host=github; fi
           echo "Publishing to: $host"
           echo "host=$host" >> "$GITHUB_OUTPUT"
+          echo "started=$(date -u +%s)" >> "$GITHUB_OUTPUT"   # next-build paces the next run from this
 
       - uses: actions/checkout@v7
         with:
@@ -63,8 +72,29 @@ jobs:
       - name: Install
         run: uv sync --frozen
 
+      # The same tests on the same commit need not run twice. A scheduled or chained build mostly builds a commit
+      # that Test Python (python-tests.yml: lint, then this same pytest) already passed when it was pushed to main,
+      # hours before. Only that exact commit, pushed to main, with a successful run counts; anything else, a failed
+      # lookup included, runs the tests here. A push build usually starts with Test Python, so it runs them here.
+      - name: Did Test Python already pass this commit on main?
+        id: tested
+        if: github.event_name != 'push' && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          n=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/python-tests.yml/runs?head_sha=$GITHUB_SHA&branch=main&event=push&status=success" \
+                --jq "[.workflow_runs[] | select(.head_sha == \"$GITHUB_SHA\" and .conclusion == \"success\" and .event == \"push\" and .head_branch == \"main\")] | length" 2>&1) || n=0
+          if [[ $n =~ ^[1-9][0-9]*$ ]]; then
+            echo "Test Python passed $GITHUB_SHA on main ($n run(s)): not running the same tests again."
+            echo "passed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "No successful Test Python run of $GITHUB_SHA on main found (${n:-none}): the tests run here."
+          fi
+
       - name: Tests (the build does not run if these fail)
-        run: uv run pytest -q
+        if: steps.tested.outputs.passed != 'true'
+        # On the runner's four cores (pytest-xdist): 6 Nov 2026, 2,189 tests in 193 s against 381 s one at a time.
+        run: uv run pytest -q -n auto
 
       - name: Restore mutable state (live history, forecast log)
         id: state-cache
@@ -107,6 +137,8 @@ jobs:
           DIPCAST_VAPID_PUBLIC_KEY: ${{ vars.DIPCAST_VAPID_PUBLIC_KEY }}
           # Alerts for a date (push/README.md): 1 once the Worker that takes dates is deployed; unset = no date alerts.
           DIPCAST_PUSH_DATES: ${{ vars.DIPCAST_PUSH_DATES }}
+          # Alerts for official advice at a saved spot (push/README.md): 1 once the Worker that sends them is deployed.
+          DIPCAST_PUSH_ADVICE: ${{ vars.DIPCAST_PUSH_ADVICE }}
           # Email alerts (push/README.md, "Email alerts"): the Worker's address; unset = no email sign-up.
           DIPCAST_EMAIL_URL: ${{ vars.DIPCAST_EMAIL_URL }}
           # Reviews (reviews/README.md): the review Worker's address; unset = no reviews on the site.
@@ -139,11 +171,13 @@ jobs:
         continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
+          CHAIN: ${{ inputs.chain }}   # true only in a run next-build asked for: not a manual run
         run: |
           # GitHub runs the schedule a few times a day at irregular times, so a fixed clock window
           # was missed for a week at a time. Publish when the release copy of any of these files is
           # over max_h hours old or missing (a failed --clobber upload deletes it), and on every
-          # manual run. All files go up together, so the copy is one run's snapshot.
+          # manual run. A run next-build asked for is not manual: with SELF_PACE on, 48 a day.
+          # All files go up together, so the copy is one run's snapshot.
           max_h=12
           files=(state/live_history.parquet state/live_latest.parquet state/dipcast.duckdb state/verification_live.json)
           for f in state/live_coverage.parquet state/poll_log.parquet state/ecoli_samples.parquet state/ecoli_samples_status.json state/water_temp_estimates.parquet; do
@@ -165,7 +199,9 @@ jobs:
               (now - $h*3600 | todate) as $cutoff | (.assets | map({(.name): .updatedAt}) | add // {}) as $up
               | [$ARGS.positional[] | select(($up[.] // "") < $cutoff)] | join(" ")
             ' "${files[@]#state/}" <<<"$assets") || stale="(could not read the release's assets)"
-          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ] || [ -n "$stale" ]; then
+          manual=false
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ] && [ "$CHAIN" != true ]; then manual=true; fi
+          if [ "$manual" = true ] || [ -n "$stale" ]; then
             echo "Publishing ${#files[@]} files. Over $max_h h old or missing in the release: ${stale:-none (manual run)}"
             # The forecast log only grows. A copy with fewer logged forecasts than the release's
             # means this run started from a lost or partial state: refuse rather than replace it.
@@ -187,7 +223,9 @@ jobs:
           fi
 
       - name: Heartbeat commit once the last is 25 days old (GitHub disables schedules after 60 idle days)
-        if: github.event_name == 'schedule'
+        # Also in next-build's runs: with SELF_PACE on, the group is always busy, so a scheduled run waits and
+        # the next request replaces it, and a schedule-only heartbeat would never run.
+        if: github.event_name == 'schedule' || inputs.chain
         continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
@@ -288,3 +326,47 @@ jobs:
           # --branch=main is the project's production branch, so this replaces what swimsignal.co.uk serves.
           npx --yes wrangler@4.146.0 pages deploy site --project-name="$PROJECT" --branch=main \
             --commit-hash="$GITHUB_SHA" --commit-message="site.yml run $GITHUB_RUN_ID" --commit-dirty=true
+
+  # A build about every 30 minutes without a token: off unless the repository variable SELF_PACE is 1.
+  # Each run on main asks GitHub for the next run, GAP_MIN minutes after its own build started, with the
+  # workflow's own token. GitHub starts a run from a workflow_dispatch sent with GITHUB_TOKEN: tested 6 Nov 2026
+  # on a throwaway branch (the run showed github-actions[bot] as its triggering actor).
+  # It cannot pile up. The group "site" holds one running run and one waiting; a newer run replaces the waiting
+  # one (cancel-in-progress: false never cancels a running one). Each run asks for one, so one chain at most;
+  # a scheduled or push run that waits is replaced by the request, which builds main as it then is.
+  # It runs after a failed build too, so one failure does not wait hours for the schedule; not after a cancel,
+  # so cancelling a run stops the chain until the schedule's next run starts it again. It never fails the run.
+  # Cost: the wait is GAP_MIN less the build job (about 14 min), so about 16 runner minutes a run, about 13 h a
+  # day at 48 runs; free, as the repository is public. Open-Meteo: the refresh floors keep the day's calls under
+  # rainfall.DAILY_CALLS however many builds run, but at 48 a day the D4 ensemble gets no spare calls
+  # (rainfall.PLANNED_DAY_CALLS), so it stays off until D4 is read (21 Nov 2026).
+  next-build:
+    needs: build
+    if: ${{ !cancelled() && vars.SELF_PACE == '1' && github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    continue-on-error: true
+    permissions:
+      actions: write      # to ask for the next run; nothing else, and no checkout: it runs no code from the repository
+    steps:
+      - name: Wait until GAP_MIN minutes after this build started, then ask for the next run
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          STARTED: ${{ needs.build.outputs.started }}
+          GAP_MIN: "30"
+        run: |
+          now=$(date -u +%s)
+          # No start time (the build job stopped before writing it): wait the whole gap, so a build that
+          # fails at once cannot ask again within the minute.
+          if [[ $STARTED =~ ^[0-9]+$ ]]; then start=$STARTED; else start=$now; fi
+          wait_s=$(( start + GAP_MIN * 60 - now ))
+          if [ "$wait_s" -gt 0 ]; then
+            echo "Waiting $wait_s s, until $GAP_MIN min after this build started."
+            sleep "$wait_s"
+          fi
+          if gh workflow run site.yml -R "$GITHUB_REPOSITORY" --ref main -f chain=true; then
+            echo "Asked for the next build."
+          else
+            echo "::warning title=next-build::could not ask for the next build; the schedule starts the chain again"
+          fi

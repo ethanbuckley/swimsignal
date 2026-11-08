@@ -192,6 +192,7 @@ const Record = (() => {
     const cl = s.classification, ea = cl && /^https:\/\//.test(cl.url || '') ? `the <a href="${esc(cl.url)}">Environment Agency</a>` : 'the Environment Agency';
     const sr = (s.sepa || {}).rating, sepaSrc = /^https:\/\//.test((s.sepa || {}).page || '') ? `<a href="${esc(s.sepa.page)}">SEPA</a>` : 'SEPA';
     if (s.source === 'sepa') add('SEPA rating', sr?.value ? `${esc(sr.value)}, for ${esc(sr.year)}. From its lab samples over up to four seasons.` : 'None in this update.', '', sepaSrc);
+    else if (s.trial === 'scotland') add('SEPA rating', 'Not a designated bathing water, so SEPA does not test it for bathing.', '', 'SEPA\'s list of bathing waters');
     else if (cl && cl.class) add('Environment Agency rating', `${cap(String(cl.class).toLowerCase())}, for ${esc(cl.year)}. ${String(cl.class).toLowerCase() === 'poor' ? R.poorAdvice(iso) : 'From its lab samples over up to four seasons.'}`, '', ea);
     else if (cl) add('Environment Agency rating', 'None yet: this bathing water is too new to have one.', '', ea);
     else add('Environment Agency rating', 'Not a designated bathing water, so the Environment Agency does not test it for bathing.', '', 'the Environment Agency\'s list of bathing waters');

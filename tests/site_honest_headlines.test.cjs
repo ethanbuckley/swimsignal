@@ -41,7 +41,7 @@ const text = h => h.replace(/<[^>]+>/g, ' ').replace(/&nbsp;| /g, ' ').replace(
 // The helpers nearby() calls for each row's reason and the other-water rule (site_nearby_reasons.test.cjs).
 const NEAR_REASONS = ['joined', 'otherWater', 'unread', 'fewerUnread', 'nearWhy', 'otherAsWell'];
 const ANSWER = ['esc', 'tone', 'headTone', 'rainSaid', 'answerParts', 'flowLine', 'ageMin', 'ago', 'agoSpan', 'issued', 'nextDay', 'yesterdayLine', 'answerWords',
-  'sinceTime', 'spillFor', 'overflowSaid', 'longSpillLine', 'eaSaid', 'coverWords', 'coverLine', 'answerAfter', 'liveRow'];
+  'sinceTime', 'spillFor', 'overflowSaid', 'longSpillLine', 'eaSaid', 'coverWords', 'coverLine', 'answerAfter', 'liveRow', 'polledMs', 'pollAt'];
 
 // ------------------------------------------------------------------------------ 1. the EA's advice for today
 // Frensham Great Pond: "Low risk for the next five days" and "Usual care", while the EA's own panel said
@@ -236,7 +236,7 @@ test('the answer names what its level covers where the spills set it, and every 
 const hereford = week(['low', 'low', 'moderate', 'low', 'low'], { id: 'wye-hereford', name: "River Wye, Bishop's Meadow, Hereford", upstream_summary: { overflows: 14, wales_share: 0.29 },
   now: { risk: 0, label: 'low', discharging_upstream: 0, recent_upstream: 0, monitored_upstream: 0, no_feed_upstream: 14 },
   contributors: [{ site_id: 'DCW1', company: 'Dwr Cymru Welsh Water', site_name: 'HAY ON WYE/STW', status: -2, data_state: 'no_feed', distance_km: 30, lake_distance_km: 0, travel_h: 16, weight: 0.3, p_spill_today: 0.02 }] });
-const TILES = ['esc', 'fmt', 'feedTime', 'runningAtLastAnswer', 'statusText', 'feedDown', 'feedStale', 'liveSay', 'recentSay', 'overflowDots', 'glyph', 'ICON', 'noFeedSaid', 'nowTile'];
+const TILES = ['esc', 'fmt', 'feedTime', 'runningAtLastAnswer', 'statusText', 'feedDown', 'feedStale', 'liveSay', 'recentSay', 'overflowDots', 'glyph', 'ICON', 'noFeedSaid', 'nowTile', 'polledMs', 'pollAt', 'pollSay'];
 test('where none of the overflows reports, Right now is unknown, never "0 of 14 discharging"', () => {
   const ctx = page(TILES);
   const t = vm.runInContext('nowTile', ctx)(hereford, 14);
@@ -431,7 +431,7 @@ test('overflows in Wales are said not to be counted, with how much of the river 
   assert.equal(L.walesWords({ ...hereford, upstream_summary: { overflows: 14, wales_share: 0.004 } }, true), 'Overflows in Wales not counted (1% of the river above)');
   const ctx = page(ANSWER, { DATA: { generated_at: GEN } });
   assert.match(text(vm.runInContext('answerWords', ctx)(hereford)), /^Live sewage spill status unavailable: .* Modelled forecast .* Overflows in Wales not counted \(29% of the river above\)\. Issued/);
-  const row = page(['esc', 'fmt', 'tone', 'initial', 'VIEW', 'km', 'dist', 'away', 'PAGE_ID', 'spotPath', 'week', 'rainMeta', 'mapLevel', 'listHeadline', 'openDay', 'listPath', 'headNote', 'spotItem']);
+  const row = page(['esc', 'fmt', 'tone', 'initial', 'VIEW', 'km', 'dist', 'away', 'PAGE_ID', 'spotPath', 'week', 'rainMeta', 'mapLevel', 'listHeadline', 'openDay', 'listPath', 'headNote', 'spotItem', 'spotRow']);
   assert.match(vm.runInContext('spotItem', row)(hereford), /<span class="hl-note">Overflows in Wales not counted \(29% of the river above\)<\/span>/);
   assert.match(text(Embed.card(hereford, { generated_at: GEN }, NOW)), /Overflows in Wales are not counted: about 29%/);
   L.setToday(DATES[0]);
@@ -475,9 +475,9 @@ test('the E. coli estimate is labelled with what is true today: its season, its 
 // labelled "Untested in October", read as two answers. From October to April no percentage is in a tile's
 // figure or sentence, a picked day's row or its value, the shared picture, or the organisers' and the
 // decision record's rows. The folded day-by-day numbers keep them, marked †.
-const ECOLI_PAGE = ['esc', 'glyph', 'ICON', 'tone', 'scaleBar', 'untested', 'explain', 'factorRow', 'ecoliName', 'ecoliFold', 'ecoliCheck', 'ecoliSaid', 'ecoliMore', 'lakeRanged', 'rangeOf', 'ecoliReading', 'likely', 'rangeLine', 'RANGE_BASIS', 'rangeBasis', 'RANGE_MORE', 'RANGE_OFF_SAID', 'rangeFold', 'typicalLine', 'TYPICAL_SAID', 'TYPICAL_MORE',
+const ECOLI_PAGE = ['esc', 'glyph', 'ICON', 'tone', 'scaleBar', 'untested', 'explain', 'factorRow', 'ecoliName', 'ecoliFold', 'ecoliCheck', 'ecoliSaid', 'ecoliMore', 'lakeRanged', 'rangeOf', 'ecoliReading', 'likely', 'rangeLine', 'monthPart', 'usualLine', 'RANGE_BASIS', 'rangeBasis', 'RANGE_MORE', 'RANGE_OFF_SAID', 'rangeFold', 'typicalLine', 'TYPICAL_SAID', 'TYPICAL_MORE',
   'noFeedSaid', 'nowTile', 'feedDown', 'feedStale', 'liveSay', 'recentSay', 'overflowDots', 'runningAtLastAnswer', 'statusText', 'feedTime', 'fmt', 'riverTile', 'rangeBar',
-  'WT_ROUTES', 'waterEstOk', 'waterEstHow', 'waterEstSay', 'WT_AIR', 'WT_TAIL', 'waterEstMore', 'waterTile', 'weatherOn', 'spilling', 'bandWords', 'initial', 'rainCols', 'sunPath', 'facts', 'UNLISTED_ECOLI', 'water'];
+  'WT_ROUTES', 'waterEstOk', 'waterEstHow', 'waterEstSay', 'WT_AIR', 'WT_TAIL', 'waterEstMore', 'waterTile', 'weatherOn', 'spilling', 'bandWords', 'initial', 'rainCols', 'sunPath', 'facts', 'UNLISTED_ECOLI', 'water', 'polledMs', 'pollAt', 'pollSay'];
 const longBridges = week(['low', 'moderate', 'moderate', 'moderate', 'high'], { id: 'osm-thames-long-bridges', name: 'River Thames, Long Bridges, Oxford',
   source: 'openstreetmap', upstream_summary: { overflows: 45 },
   now: { risk: 0.1, label: 'low', discharging_upstream: 2, recent_upstream: 0, monitored_upstream: 44 },
@@ -562,7 +562,7 @@ test('after a spill, the time it should have cleared, in UK time, while right no
 
 test('the Right now tile and the alerts say it; the five days name the first day back at low', () => {
   const s = spilt({});
-  const ctx = page(['esc', 'glyph', 'ICON', 'nowTile', 'feedDown', 'feedStale', 'liveSay', 'recentSay', 'overflowDots', 'feedTime', 'fmt',
+  const ctx = page(['esc', 'glyph', 'ICON', 'nowTile', 'polledMs', 'pollAt', 'pollSay', 'feedDown', 'feedStale', 'liveSay', 'recentSay', 'overflowDots', 'feedTime', 'fmt',
     'tone', 'initial', 'week', 'spilling', 'summary', 'daysSentence'], { DATA: { generated_at: GEN } });
   assert.match(text(vm.runInContext('nowTile', ctx)(s, 3).say), /3 report live\. The spills upstream should have passed and died off by Tuesday 22:47\.$/);
   assert.doesNotMatch(text(vm.runInContext('nowTile', ctx)(spilt({ label: 'low', risk: 0.1 }), 3).say), /died off/);
@@ -620,4 +620,87 @@ test('the five days say when spills that stopped lately set today, and how long 
   // With the rain forecast setting today, nothing is said of spills that stopped.
   s.now = { label: 'low', risk: 0, discharging_upstream: 0, recent_upstream: 1, monitored_upstream: 3 };
   assert.match(text(vm.runInContext('daysSentence', ctx)(s)), /^A spill from one of the 3 overflows upstream is possible, not expected today\./);
+});
+
+// ------------------------------------------------------------------------------ too few report for a 0
+// Phone audit of 6 Nov 2026 (PR #642, item 8): Sandy Lane, Chester, showed a large "0 discharging" where 1 of its
+// 13 overflows reports live, and a map tap on the Dee at Chester the same with 1 of 18. The fixtures copy the
+// 23:42 build of 6 Nov. The levels, counts and forecast are not changed; only how the count is shown.
+const sandyLane = week(['low', 'low', 'low', 'low', 'low'], { id: 'bw-ukd6300-40752', name: 'Sandy Lane, Chester',
+  upstream_summary: { overflows: 13, with_live_feed: 1, without_live_feed: 12, wales_share: 0.77, companies: ['Dwr Cymru Welsh Water', 'United Utilities'] },
+  now: { risk: 0, label: 'low', discharging_upstream: 0, recent_upstream: 0, monitored_upstream: 1, feed_down_upstream: 0, feed_down: [],
+    stale_upstream: 0, feed_stale: [], no_feed_upstream: 12, monitored_weight: 0.0935, upstream_weight: 3.5746 } });
+const barcombe = week(['low', 'low', 'low', 'low', 'low'], { id: 'ouse-barcombe-mills', name: 'River Ouse (Sussex), Barcombe Mills',
+  upstream_summary: { overflows: 46 },
+  now: { risk: 0.026, label: 'low', discharging_upstream: 0, recent_upstream: 1, monitored_upstream: 1, feed_down_upstream: 0, feed_down: [],
+    stale_upstream: 44, no_feed_upstream: 0, monitored_weight: 0.0575, upstream_weight: 4.4581, feeds_on_change: ['Southern Water'],
+    feed_stale: [{ company: 'Southern Water', overflows: 44, since: '2026-11-06T16:24:28+00:00', on_change: true }] } });
+// A clicked point (anypoint.js) gives the weights too from 8 Nov 2026; these are the Dee at Chester's on the 08:23 build
+// of that day (1.1% of the weight reports). An object with no weights is judged by the count alone (deeCount).
+const deeTap = week(['low', 'low', 'low', 'low', 'low'], { id: 'point', name: 'River Dee', source: 'unlisted', upstream_summary: { overflows: 18 },
+  now: { risk: 0, label: 'low', discharging_upstream: 0, recent_upstream: 0, monitored_upstream: 1, feed_down_upstream: 0, feed_down: [], stale_upstream: 0, feed_stale: [],
+    monitored_weight: 0.0871, upstream_weight: 8.2365 } });
+const withNow = (s, now) => ({ ...s, now: { ...s.now, ...now } });
+const deeCount = withNow(deeTap, { monitored_weight: undefined, upstream_weight: undefined });
+
+test('where fewer than half report, or they carry under half the weight, a 0 is not a count', () => {
+  assert.equal(L.nowFew(sandyLane), 'count');
+  assert.equal(L.nowFew(barcombe), 'count');
+  assert.equal(L.nowFew(deeTap), 'count');
+  assert.equal(L.nowFew(deeCount), 'count');
+  // Half or more by number but under half the weight: the overflows that matter most do not report.
+  assert.equal(L.nowFew(withNow(sandyLane, { monitored_upstream: 7 })), 'weight');
+  // Half or more by number and by weight: the count stands. At exactly half, still a count.
+  assert.equal(L.nowFew(withNow(sandyLane, { monitored_upstream: 12, monitored_weight: 3.5 })), '');
+  assert.equal(L.nowFew(withNow(deeCount, { monitored_upstream: 9 })), '');
+  assert.equal(L.nowFew(withNow(deeTap, { monitored_upstream: 9 })), 'weight');   // the Dŵr Cymru overflows carry the weight
+  assert.equal(L.nowFew(withNow(deeTap, { monitored_upstream: 9, monitored_weight: 4.2 })), '');
+  // None reporting is Unknown already (nowTile); a discharge is a reading, and its count stays.
+  assert.equal(L.nowFew(withNow(sandyLane, { monitored_upstream: 0 })), '');
+  assert.equal(L.nowFew(withNow(sandyLane, { discharging_upstream: 1 })), '');
+  assert.equal(L.nowFew({ ...sandyLane, upstream_summary: { overflows: 0 } }), '');
+  // The rule only says how the count is shown: the levels, the headline and right now's level are as they were.
+  assert.equal(L.nowUnknown(sandyLane), true);
+  assert.equal(L.nowUnknown(deeTap), true);   // as Sandy Lane on the same water (anypoint.js gives the weights)
+  assert.equal(L.nowUnknown(deeCount), false);
+  assert.equal(L.level(deeTap), 'low');
+});
+
+test('the Right now tile gives no large 0 where too few report, and keeps the poll time', () => {
+  const ctx = page(TILES, { DATA: { generated_at: GEN } }), tile = (s, n) => vm.runInContext('nowTile', ctx)(s, n);
+  const t = tile(sandyLane, 13);
+  assert.equal(t.fig, 'Unknown');
+  assert.equal(t.unit, undefined);
+  assert.equal(t.figTone, undefined);
+  assert.equal(text(t.say), '1 of 13 overflows upstream reports live, and it is not discharging. Too few report to tell whether the rest are.');
+  assert.equal(t.note, vm.runInContext('pollSay', ctx)());   // PR #634's poll time, as on a counted tile
+  assert.equal(text(tile(deeTap, 18).say), '1 of 18 overflows upstream reports live, and it is not discharging. Too few report to tell whether the rest are.');
+  // A spill that stopped lately is said first, as on a counted tile.
+  assert.equal(text(tile(barcombe, 46).say), '1 stopped lately: a spill counts until 48 h after its water has passed here. '
+    + '1 of 46 overflows upstream reports live, and it is not discharging. Too few report to tell whether the rest are.');
+  assert.equal(text(tile(withNow(sandyLane, { monitored_upstream: 7 }), 13).say),
+    '7 of 13 overflows upstream report live, and none of them is discharging. The ones that matter most here do not report, so whether they are is not known.');
+  // Every figure the tile can show for these spots is a word, never a number 0.
+  for (const [s, n] of [[sandyLane, 13], [barcombe, 46], [deeTap, 18]]) assert.notEqual(tile(s, n).fig, 0);
+  // Unchanged: most report, so the count stands; one discharging, so the count stands.
+  const most = withNow(deeTap, { monitored_upstream: 12, monitored_weight: 6 });
+  assert.deepEqual([tile(most, 18).fig, tile(most, 18).unit], [0, 'discharging']);
+  assert.deepEqual([tile(withNow(deeTap, { discharging_upstream: 1 }), 18).fig, tile(withNow(deeTap, { discharging_upstream: 1 }), 18).figTone], [1, 'hot']);
+  assert.equal(tile(withNow(sandyLane, { monitored_upstream: 0 }), 13).fig, 'Unknown');
+});
+
+test('the evidence row, the comparison and a kept swim say the same where too few report', () => {
+  assert.equal(ev.evidenceOverflows(sandyLane, GEN).say, '1 of 13 report live: none discharging. Whether the rest are is not known. Not reporting: 12 with no live feed.');
+  assert.match(ev.evidenceOverflows(barcombe, GEN).say, /^1 of 46 report live: none discharging, 1 stopped lately\. Whether the rest are is not known\. Not reporting: 1 offline; 44 on Southern Water's feed/);
+  assert.doesNotMatch(ev.evidenceOverflows(deeTap, GEN).say, /^0 /);
+  // The comparison (experience.js, compareNow) leads with right now not known where the headline does.
+  const { compareNow } = require('../src/dipcast/site/experience.js');
+  assert.equal(compareNow(sandyLane), 'Right now not known here. 1 of 13 report live: none discharging. Whether the rest are is not known. Not reporting: 12 with no live feed.');
+  assert.equal(compareNow(deeTap), 'Right now not known here. 1 of 18 report live: none discharging. Whether the rest are is not known. Not reporting: 17 offline or with no live feed.');
+  // Most report: the count leads, as before.
+  assert.match(compareNow(withNow(deeTap, { monitored_upstream: 12, monitored_weight: 6 })), /^0 discharging\. 12 of 18 report live\./);
+  // A kept swim (journal.js) keeps no "none of the 13 discharging".
+  const J = require('../src/dipcast/site/journal.js');
+  const kept = J.journalSeen(sandyLane, DATES[0], DATES[0], GEN, '21:30');
+  assert.deepEqual([kept.dis, kept.of], [null, null]);
 });

@@ -19,7 +19,7 @@ function pageDefs(names) {
 }
 const ctx = vm.createContext({});
 vm.runInContext(fs.readFileSync(join(__dirname, '../src/dipcast/site/levels.js'), 'utf8'), ctx);
-vm.runInContext(pageDefs(['esc', 'fmt', 'glyph', 'ago', 'agoSpan', 'WT_ROUTES', 'waterEstOk', 'waterEstHow', 'waterEstSay', 'WT_AIR', 'WT_TAIL', 'waterEstMore', 'waterTile']), ctx);
+vm.runInContext(pageDefs(['esc', 'fmt', 'glyph', 'ago', 'agoSpan', 'WT_ROUTES', 'waterEstOk', 'waterEstHow', 'waterEstSay', 'WT_AIR', 'WT_TAIL', 'waterEstMore', 'WT_WINTER_TEST', 'waterTile']), ctx);
 const waterTile = vm.runInContext('waterTile', ctx);
 
 const hoursAgo = h => new Date(Date.now() - h * 3600e3).toISOString();
@@ -218,4 +218,40 @@ test('an estimate in the conditions summary is said once, in its own words', () 
   const h = vm.runInContext('conditionsSummary', c)({kind: 'river'});
   assert.match(h, /<p class="cfig">12°<\/p><p class="csub">Provisional estimate<\/p>/);
   assert.equal((h.match(/estimate/gi) || []).length, 1);   // the figure and its kind; the sentence is in the tile under Why this level
+});
+
+
+// October to April since the winter backtest (docs/WATER-TEMP-WINTER-BACKTEST-2026-11.md): the winter curve, tested on
+// past winters it had never seen; the summer curve, unchecked, only from a file without it.
+const WINTER = { months: [10, 11, 12, 1, 2, 3, 4], typical_c: { river: 1.63, lake: 1.76 }, within_c: 2,
+  curves: { river: [0.5430378011587952, 20.658083686365085, 10.25747839101004, 0.16624538331499503],
+    lake: [2.4891750947069116, 16.16853478737081, 8.665315496039446, 0.35722429726119065] } };
+
+test('October to April with the winter curves: within 2 degrees in a test on past winters, and which test', () => {
+  setToday('2026-12-10');
+  const river = waterTile(null, { temp_c: 6, date: '2026-12-10', route: 'river_off_season', tested: false, typical_c: 1.63, within_c: 2, test: 'winter' }, 'river');
+  assert.equal(river.say, 'About 6&nbsp;°C (provisional estimate; typically within 2&nbsp;°C in a test on past winters).');
+  assert.match(river.more, /October to April samples from 2023 to 2026/);
+  assert.match(river.more, /2,468 samples at 325 rivers in the winter of 2022 to 2023, which played no part in fitting it, it was typically 1\.6&nbsp;°C out/);
+  assert.match(river.more, /read about 1\.5&nbsp;°C too warm/);
+  assert.doesNotMatch(river.more, /not been checked|April, as lakes warm/);
+  const lake = waterTile(null, { temp_c: 7, date: '2026-12-10', route: 'lake_off_season', tested: false, typical_c: 1.76, within_c: 2, test: 'winter' }, 'lake');
+  assert.match(lake.more, /634 samples at 94 lakes .* typically 1\.8&nbsp;°C out, with no lean warm or cold overall, but about 2&nbsp;°C too cold in April/);
+  assert.match(lake.more, /read about 3&nbsp;°C too warm/);
+  setToday(null);
+});
+
+test('a clicked point in winter takes the winter curve and its tested error; without the winter curves, as before', () => {
+  const WW = { ...WA, date: '2026-12-10', winter: WINTER };
+  const est = A.waterAt({ water_air: WW }, 54.38, -2.92, 'lake').est;
+  const [mu, al, be, ga] = WINTER.curves.lake, t = mu + (al - mu) / (1 + Math.exp(ga * (be - 9.31)));
+  assert.deepEqual(est, { temp_c: Math.round(t), date: '2026-12-10', route: 'lake_air_curve', tested: false, typical_c: 1.76,
+    within_c: 2, test: 'winter', air_7d_c: 9.3, air_km: 0 });
+  assert.equal(A.waterAt({ water_air: { ...WA, date: '2026-12-10' } }, 54.38, -2.92, 'lake').est.typical_c, null);   // no winter in the file
+  assert.equal(A.waterAt({ water_air: { ...WW, date: '2026-07-14' } }, 54.4, -2.9, 'river').est.typical_c, 1.85);   // summer unchanged
+  setToday('2026-12-10');
+  const t2 = waterTile(null, est, 'lake');
+  assert.equal(t2.say, `About ${Math.round(t)}&nbsp;°C (provisional estimate; typically within 2&nbsp;°C in a test on past winters).`);
+  assert.match(t2.more, /fitted on the Environment Agency's October to April samples\. Tested on 634 samples at 94 lakes/);
+  setToday(null);
 });

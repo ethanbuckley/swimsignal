@@ -34,6 +34,25 @@ test('the page\'s transport arithmetic gives a listed spot\'s forecast to three 
   near(got.upstream_summary.sum_weight, fx.expect.upstream_summary.sum_weight, 0.0005 + 1e-9, 'sum of weights');
 });
 
+// Right now's weights, as forecast.live_counts gives a spot's (8 Nov 2026): the weight of the overflows counted
+// here, and of those among them reporting live, so levels.js (nowWatched) can tell how much of what matters here
+// is watched. In the fixture all 15 report.
+test('a tapped point gives the weight upstream and the weight reporting live, as a listed spot does', () => {
+  const fx = fixture('anypoint_spot.json');
+  const got = A.forecast(fx.rows, fx.od, fx.cal);
+  near(got.now.upstream_weight, fx.expect.upstream_summary.sum_weight, 0.0005 + 1e-9, 'weight upstream');
+  assert.equal(got.now.monitored_weight, got.now.upstream_weight);
+  // One reporting: its own weight. A monitor offline (-1) or with no feed (-2) is not reporting; a discharge is.
+  const w = got.contributors.map(c => c.weight), k = w.indexOf(Math.min(...w)), one = Number(got.contributors[k].site_id);
+  const only = (s, rest = -2) => A.forecast(fx.rows, { ...fx.od, ended_h: fx.od.ended_h.map(() => null),   // no spill lately
+    status: fx.od.status.map((_, i) => i === one ? s : rest) }, fx.cal).now;
+  near(only(0).monitored_weight, w[k], 0.0005 + 1e-9, 'one quiet');
+  near(only(1).monitored_weight, w[k], 0.0005 + 1e-9, 'one discharging');
+  assert.equal(only(-1).monitored_weight, 0);
+  near(only(-1, 0).monitored_weight, got.now.upstream_weight - w[k], 0.001, 'all but one');
+  assert.deepEqual([A.forecast([], fx.od, fx.cal).now.monitored_weight, A.forecast([], fx.od, fx.cal).now.upstream_weight], [0, 0]);
+});
+
 test('the calibration follows numpy.interp, flat beyond the knots, and keeps an unknown unknown', () => {
   const c = { iso_x: [0, 0.1, 1], iso_y: [0.01, 0.2, 0.9] };
   near(A.calibrate(0.05, c), 0.105, 1e-12, 'between knots');
@@ -249,15 +268,15 @@ const NI = { 'Lagan in Belfast': [54.5866, -5.9295], 'Erne at Enniskillen': [54.
 const ROI = { 'Liffey in Dublin': [53.3461, -6.2733], 'Shannon at Athlone': [53.4239, -7.9407], 'Lough Derg at Mountshannon': [52.9293, -8.42816],
   'Lifford, west of the Foyle (450 m from the border)': [54.8340, -7.4870], 'Ballyshannon, on the Erne': [54.5025, -8.1880],
   'Galway': [53.274, -9.049], 'Dingle': [52.1408, -10.2686], 'Dublin Bay': [53.33, -6.13] };
-test('a click in Northern Ireland or the Republic says England only and names the official source there', () => {
+test('a click in Northern Ireland or the Republic says there is no overflow data there and names the official source there', () => {
   for (const [what, [lat, lon]] of Object.entries(NI)) assert.equal(A.outsideWhere(lat, lon, outside), 'northern_ireland', what);
   for (const [what, [lat, lon]] of Object.entries(ROI)) assert.equal(A.outsideWhere(lat, lon, outside), 'republic_of_ireland', what);
   const ni = A.place(54.5866, -5.9295, { ...files, tiles: {}, outside });
   assert.equal(ni.mode, 'none');
   assert.equal(ni.outside, 'northern_ireland');
-  assert.equal(ni.error, 'SwimSignal has overflow data for England only, so it has no forecast in Northern Ireland.');
+  assert.equal(ni.error, 'SwimSignal does not have overflow data for Northern Ireland, so it has no forecast here.');
   const roi = A.place(53.3461, -6.2733, { ...files, tiles: {}, outside });
-  assert.equal(roi.error, 'SwimSignal has overflow data for England only, so it has no forecast in the Republic of Ireland.');
+  assert.equal(roi.error, 'SwimSignal does not have overflow data for the Republic of Ireland, so it has no forecast here.');
   assert.match(A.OUTSIDE.northern_ireland.see, /href="https:\/\/www\.daera-ni\.gov\.uk\/articles\/bathing-water-quality-dashboard"/);
   assert.match(A.OUTSIDE.republic_of_ireland.see, /href="https:\/\/www\.beaches\.ie\/"/);
   // Nothing about the water itself: no level, no "no overflow", no "clean".
@@ -277,6 +296,40 @@ test('Wales, Scotland and England keep their answers beside the Irish part', () 
   assert.equal(A.outsideWhere(52.5, -3.5, old), 'wales_scotland');
   assert.equal(A.outsideWhere(52.5, -2.5, old), '');
   assert.equal(A.outsideWhere(52.5, -3.5, null), '');
+});
+
+// The Scotland trial (from 1 Nov 2026) lists spots in Scotland with forecasts, so "England only" was false there: a tap
+// on Loch Lomond between Luss Bay and Milarrochy said it, beside both (PR #642's audit, 6 Nov 2026). While the trial
+// lists its spots (scotland: true), a Scottish click says the trial forecasts only its listed spots; Wales, and
+// Scotland with the trial off, keep the old words. The page adds the listed spots nearest the click (show).
+test('a click in Scotland during the trial says the trial forecasts only its listed spots; Wales keeps England only', () => {
+  const SCOT = { 'Loch Lomond between Luss and Milarrochy': [56.085, -4.60], 'Tay at Perth': [56.396, -3.4265], 'Tweed at Kelso': [55.60, -2.43],
+    'Esk at Langholm': [55.15, -2.99], 'Loch Ness': [57.30, -4.45] };
+  const WALES = { 'Taff in Cardiff': [51.48, -3.18], 'Dee at Llangollen': [52.97, -3.17], 'Menai Strait': [53.22, -4.16] };
+  for (const [what, [lat, lon]] of Object.entries(SCOT)) {
+    const on = A.place(lat, lon, { ...files, tiles: {}, outside, scotland: true });
+    assert.equal(on.mode, 'none', what);
+    assert.equal(on.outside, 'scotland_trial', what);
+    assert.equal(on.error, 'In Scotland, SwimSignal forecasts only its listed trial spots. This point is not one of them, so it has no forecast here.', what);
+    assert.equal(on.rows, undefined, what);   // no forecast, so no level
+    const off = A.place(lat, lon, { ...files, tiles: {}, outside });
+    assert.equal(off.outside, 'wales_scotland', what);
+    assert.equal(off.error, 'SwimSignal has overflow data for England only, so it has no forecast here.', what);
+  }
+  for (const [what, [lat, lon]] of Object.entries(WALES)) {
+    const got = A.place(lat, lon, { ...files, tiles: {}, outside, scotland: true });
+    assert.equal(got.outside, 'wales_scotland', what);
+    assert.equal(got.error, 'SwimSignal has overflow data for England only, so it has no forecast here.', what);
+  }
+  // Ireland and England are untouched by the trial.
+  assert.equal(A.place(54.5866, -5.9295, { ...files, tiles: {}, outside, scotland: true }).outside, 'northern_ireland');
+  assert.equal(A.place(54.0, -2.0, { ...files, tiles: {}, outside, scotland: true }).outside, undefined);
+  const c = syn.clicks.find(x => x.mode === 'river');
+  assert.equal(A.place(c.lat, c.lon, { ...files, outside, scotland: true }).mode, 'river');
+  // The Scottish words name SEPA alone, and never say England only.
+  assert.doesNotMatch(A.OUTSIDE.scotland_trial.error + A.OUTSIDE.scotland_trial.see, /England only|Natural Resources Wales/);
+  assert.match(A.OUTSIDE.scotland_trial.see, /Scottish Environment Protection Agency .*href="coverage\.html"/);
+  assert.equal(A.WALES_NORTH_LAT, 54.0);   // network/nations.py
 });
 
 test('a click in England with no square near says no overflow is upstream, not England only', () => {

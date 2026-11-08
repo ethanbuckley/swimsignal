@@ -163,6 +163,9 @@ checked; the three also merge cleanly with each other, and their tests pass toge
   9,000 a day), and at that ceiling the ensemble rain test (D4, window 23 Oct to 19 Nov, read 21 Nov) makes no
   ensemble requests (`docs/ENSEMBLE-RAIN-TEST-2026-11.md`). So turning dispatch on now would change a running study
   window. Recommendation: leave it off until D4 is read (21 Nov), then decide.
+- **6 Nov 2026: a second route, no token.** `site.yml`'s job `next-build` asks for the next run 30 minutes after
+  each build starts, with the workflow's own token, only when the repository variable `SELF_PACE` is `1`. It is
+  off. A throwaway test on 6 Nov showed a dispatch sent with `GITHUB_TOKEN` starts a run. The same D4 timing applies.
 - **Wording.** User-facing text already describes the schedule as best effort ("at most every 30 minutes" on
   `data.html`; "asks GitHub for a run every 30 minutes … when it has capacity" on `verification.html`). The one
   promise of polls "every 30 minutes" was #390's replay footer, now "when the feeds were polled; events between polls

@@ -1,0 +1,1416 @@
+{
+ "schema": "swimsignal.river-shadow.measures",
+ "version": 1,
+ "written": "2026-11-06",
+ "source": {
+  "gauges": "docs/RIVER-RISES-SCOPE-2026-10-gauges.csv",
+  "slots": "docs/RIVER-RISES-SCOPE-2026-10-slots.csv",
+  "stations": {
+   "url": "https://environment.data.gov.uk/flood-monitoring/id/stations",
+   "params": {
+    "parameter": "level",
+    "type": "SingleLevel",
+    "_limit": 10000
+   },
+   "at": "2026-10-26T18:58:14+00:00",
+   "n": 2311
+  },
+  "latest": {
+   "url": "https://environment.data.gov.uk/flood-monitoring/data/readings",
+   "params": {
+    "latest": "",
+    "parameter": "level"
+   },
+   "at": "2026-10-26T18:59:43+00:00",
+   "n": 4111
+  },
+  "rule": "flows._level_measures order, first with a reading in `latest` (flows.river_state); else the first in that order"
+ },
+ "stations": [
+  {
+   "station": "F1902",
+   "role": "spot",
+   "spot_gauge": "F1902",
+   "low": 0.09,
+   "high": 1.8,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/F1902-level-stage-i-15_min-m",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/F1902-level-stage-i-15_min-m",
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/F1902-level-stage-i-15_min----"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "L2105",
+   "role": "spot",
+   "spot_gauge": "L2105",
+   "low": 0.42,
+   "high": 1.2,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/L2105-level-stage-i-15_min-m",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/L2105-level-stage-i-15_min-m"
+   ],
+   "reading_in_source": false
+  },
+  {
+   "station": "F2004",
+   "role": "spot",
+   "spot_gauge": "F2004",
+   "low": 0.403,
+   "high": 2.6,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/F2004-level-stage-i-15_min-m",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/F2004-level-stage-i-15_min-m",
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/F2004-level-stage-i-15_min----"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "L2307",
+   "role": "spot",
+   "spot_gauge": "L2307",
+   "low": 0.0,
+   "high": 3.0,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/L2307-level-stage-i-15_min-m",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/L2307-level-stage-i-15_min-m"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "E21227",
+   "role": "spot",
+   "spot_gauge": "E21227",
+   "low": 0.154,
+   "high": 1.65,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/E21227-level-stage-i-15_min-mASD",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/E21227-level-stage-i-15_min-m",
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/E21227-level-stage-i-15_min-mASD"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "2200TH",
+   "role": "spot",
+   "spot_gauge": "2200TH",
+   "low": 6.579,
+   "high": 7.0,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/2200TH-level-stage-i-15_min-mASD",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/2200TH-level-stage-i-15_min-mASD",
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/2200TH-level-stage-i-15_min----",
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/2200TH-level-stage-i-15_min-m_s"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "3404TH",
+   "role": "spot",
+   "spot_gauge": "3404TH",
+   "low": 4.42,
+   "high": 5.0,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/3404TH-level-stage-i-15_min-mAOD",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/3404TH-level-stage-i-15_min-mAOD",
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/3404TH-level-stage-i-15_min----"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "1100TH",
+   "role": "spot",
+   "spot_gauge": "1100TH",
+   "low": 0.5,
+   "high": 1.3,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/1100TH-level-stage-i-15_min-mASD",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/1100TH-level-stage-i-15_min-mASD"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "1800TH",
+   "role": "spot",
+   "spot_gauge": "1800TH",
+   "low": 1.911,
+   "high": 3.51,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/1800TH-level-stage-i-15_min-mASD",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/1800TH-level-stage-i-15_min-mASD"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "43123",
+   "role": "spot",
+   "spot_gauge": "43123",
+   "low": 0.597,
+   "high": 1.35,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/43123-level-stage-i-15_min-m",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/43123-level-stage-i-15_min-m"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "43165",
+   "role": "spot",
+   "spot_gauge": "43165",
+   "low": 0.103,
+   "high": 0.48,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/43165-level-stage-i-15_min-mASD",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/43165-level-stage-i-15_min-m",
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/43165-level-stage-i-15_min-mASD"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "52111",
+   "role": "spot",
+   "spot_gauge": "52111",
+   "low": 0.818,
+   "high": 1.77,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/52111-level-stage-i-15_min-mASD",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/52111-level-stage-i-15_min-m",
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/52111-level-stage-i-15_min-mASD"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "53120",
+   "role": "spot",
+   "spot_gauge": "53120",
+   "low": 0.542,
+   "high": 3.2,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/53120-level-stage-i-15_min-mASD",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/53120-level-stage-i-15_min-m",
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/53120-level-stage-i-15_min-mASD",
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/53120-level-2-i-15_min-m",
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/53120-level-2-i-15_min-mASD"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "2625",
+   "role": "spot",
+   "spot_gauge": "2625",
+   "low": 0.856,
+   "high": 3.0,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/2625-level-stage-i-15_min-mASD",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/2625-level-stage-i-15_min-mASD"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "2134",
+   "role": "spot",
+   "spot_gauge": "2134",
+   "low": 0.424,
+   "high": 3.4,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/2134-level-stage-i-15_min-mASD",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/2134-level-stage-i-15_min-mASD"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "2077",
+   "role": "spot",
+   "spot_gauge": "2077",
+   "low": 0.422,
+   "high": 2.7,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/2077-level-stage-i-15_min-mASD",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/2077-level-stage-i-15_min-mASD"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "710301",
+   "role": "spot",
+   "spot_gauge": "710301",
+   "low": 0.202,
+   "high": 3.3,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/710301-level-stage-i-15_min-m",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/710301-level-stage-i-15_min-m"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "722421",
+   "role": "spot",
+   "spot_gauge": "722421",
+   "low": 0.17,
+   "high": 2.3,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/722421-level-stage-i-15_min-m",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/722421-level-stage-i-15_min-m"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "724629",
+   "role": "spot",
+   "spot_gauge": "724629",
+   "low": 0.28,
+   "high": 3.6,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/724629-level-stage-i-15_min-m",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/724629-level-stage-i-15_min-m"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "F1903",
+   "role": "spot",
+   "spot_gauge": "F1903",
+   "low": 0.189,
+   "high": 1.87,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/F1903-level-stage-i-15_min-m",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/F1903-level-stage-i-15_min-m"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "F1906",
+   "role": "spot",
+   "spot_gauge": "F1906",
+   "low": 0.3,
+   "high": 2.2,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/F1906-level-stage-i-15_min-m",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/F1906-level-stage-i-15_min-m"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "L2208",
+   "role": "spot",
+   "spot_gauge": "L2208",
+   "low": 0.051,
+   "high": 2.0,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/L2208-level-stage-i-15_min-m",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/L2208-level-stage-i-15_min-m"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "710151",
+   "role": "spot",
+   "spot_gauge": "710151",
+   "low": 0.105,
+   "high": 1.4,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/710151-level-stage-i-15_min-m",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/710151-level-stage-i-15_min-m"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "740101",
+   "role": "spot",
+   "spot_gauge": "740101",
+   "low": 0.244,
+   "high": 1.5,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/740101-level-stage-i-15_min-m",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/740101-level-stage-i-15_min-m"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "762505",
+   "role": "spot",
+   "spot_gauge": "762505",
+   "low": 0.41,
+   "high": 3.36,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/762505-level-stage-i-15_min-m",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/762505-level-stage-i-15_min-m"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "760502",
+   "role": "spot",
+   "spot_gauge": "760502",
+   "low": 0.2,
+   "high": 3.0,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/760502-level-stage-i-15_min-m",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/760502-level-stage-i-15_min-m"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "F3505",
+   "role": "spot",
+   "spot_gauge": "F3505",
+   "low": 0.368,
+   "high": 1.8,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/F3505-level-stage-i-15_min-m",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/F3505-level-stage-i-15_min-m",
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/F3505-level-stage-i-15_min----"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "022009",
+   "role": "spot",
+   "spot_gauge": "022009",
+   "low": 0.261,
+   "high": 1.8,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/022009-level-stage-i-15_min-m",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/022009-level-stage-i-15_min-m",
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/022009-level-stage-i-15_min----"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "023058",
+   "role": "spot",
+   "spot_gauge": "023058",
+   "low": 0.087,
+   "high": 0.533,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/023058-level-reservoir_level-i-15_min-m",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/023058-level-reservoir_level-i-15_min-m"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "4001",
+   "role": "spot",
+   "spot_gauge": "4001",
+   "low": 0.302,
+   "high": 0.5,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/4001-level-stage-i-15_min-mASD",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/4001-level-stage-i-15_min-mASD",
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/4001-level-logged-i-15_min-mASD"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "4046",
+   "role": "spot",
+   "spot_gauge": "4046",
+   "low": 0.271,
+   "high": 0.59,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/4046-level-stage-i-15_min-mASD",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/4046-level-stage-i-15_min-mASD",
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/4046-level-logged-i-15_min-mASD"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "055807_TG 320",
+   "role": "spot",
+   "spot_gauge": "055807_TG 320",
+   "low": 0.096,
+   "high": 3.3,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/055807_TG_320-level-stage-i-15_min-mASD",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/055807_TG_320-level-stage-i-15_min-mASD",
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/055807_TG_320-level-logged-i-15_min-mASD"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "2320",
+   "role": "spot",
+   "spot_gauge": "2320",
+   "low": 0.42,
+   "high": 4.0,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/2320-level-stage-i-15_min-mASD",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/2320-level-stage-i-15_min-mASD"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "53129",
+   "role": "spot",
+   "spot_gauge": "53129",
+   "low": 0.699,
+   "high": 2.5,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/53129-level-stage-i-15_min-m",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/53129-level-stage-i-15_min-m",
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/53129-level-stage-i-15_min-mAOD"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "46122",
+   "role": "spot",
+   "spot_gauge": "46122",
+   "low": 0.291,
+   "high": 1.8,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/46122-level-stage-i-15_min-m",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/46122-level-stage-i-15_min-m"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "46123",
+   "role": "spot",
+   "spot_gauge": "46123",
+   "low": 0.451,
+   "high": 1.5,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/46123-level-2-i-15_min-m",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/46123-level-2-i-15_min-m"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "47121",
+   "role": "spot",
+   "spot_gauge": "47121",
+   "low": 0.164,
+   "high": 1.6,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/47121-level-stage-i-15_min-m",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/47121-level-stage-i-15_min-m"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "45121",
+   "role": "spot",
+   "spot_gauge": "45121",
+   "low": 0.179,
+   "high": 1.5,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/45121-level-stage-i-15_min-mASD",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/45121-level-stage-i-15_min-m",
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/45121-level-stage-i-15_min-mASD"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "E22678",
+   "role": "spot",
+   "spot_gauge": "E22678",
+   "low": 0.205,
+   "high": 1.3,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/E22678-level-stage-i-15_min-mASD",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/E22678-level-stage-i-15_min-m",
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/E22678-level-stage-i-15_min-mASD"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "0569TH",
+   "role": "spot",
+   "spot_gauge": "0569TH",
+   "low": 2.07,
+   "high": 3.81,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/0569TH-level-stage-i-15_min-mASD",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/0569TH-level-stage-i-15_min-mASD"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "E8371",
+   "role": "spot",
+   "spot_gauge": "E8371",
+   "low": 1.8,
+   "high": 5.7,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/E8371-level-stage-i-15_min-mAOD",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/E8371-level-stage-i-15_min-mAOD",
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/E8371-level-downstage-i-15_min-mAOD"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "L2009",
+   "role": "spot",
+   "spot_gauge": "L2009",
+   "low": 0.36,
+   "high": 1.2,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/L2009-level-stage-i-15_min-m",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/L2009-level-stage-i-15_min-m"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "4197",
+   "role": "spot",
+   "spot_gauge": "4197",
+   "low": 0.16,
+   "high": 1.16,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/4197-level-stage-i-15_min-mASD",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/4197-level-stage-i-15_min-mASD"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "681003",
+   "role": "spot",
+   "spot_gauge": "681003",
+   "low": 0.172,
+   "high": 0.476,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/681003-level-stage-i-15_min-m",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/681003-level-stage-i-15_min-m"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "3040TH",
+   "role": "spot",
+   "spot_gauge": "3040TH",
+   "low": 0.139,
+   "high": 1.4,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/3040TH-level-stage-i-15_min-mASD",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/3040TH-level-stage-i-15_min-mASD",
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/3040TH-level-stage-i-15_min-V",
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/3040TH-level-crest_tapping-i-15_min-mASD"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "F1903",
+   "role": "same",
+   "spot_gauge": "F1902",
+   "low": 0.189,
+   "high": 1.87,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/F1903-level-stage-i-15_min-m",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/F1903-level-stage-i-15_min-m"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "L1970",
+   "role": "trib",
+   "spot_gauge": "F1902",
+   "low": 0.057,
+   "high": 0.582,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/L1970-level-stage-i-15_min-m",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/L1970-level-stage-i-15_min-m"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "F2106",
+   "role": "same",
+   "spot_gauge": "L2105",
+   "low": 0.105,
+   "high": 2.1,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/F2106-level-stage-i-15_min-m",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/F2106-level-stage-i-15_min-m"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "L2005",
+   "role": "same",
+   "spot_gauge": "F2004",
+   "low": 0.345,
+   "high": 3.0,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/L2005-level-stage-i-15_min-m",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/L2005-level-stage-i-15_min-m"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "L2043",
+   "role": "trib",
+   "spot_gauge": "F2004",
+   "low": 0.121,
+   "high": 1.8,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/L2043-level-stage-i-15_min-m",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/L2043-level-stage-i-15_min-m"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "L2351",
+   "role": "trib",
+   "spot_gauge": "L2307",
+   "low": 0.0,
+   "high": 0.9,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/L2351-level-stage-i-15_min-m",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/L2351-level-stage-i-15_min-m",
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/L2351-level-stage-i-15_min----"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "1800TH",
+   "role": "same",
+   "spot_gauge": "2200TH",
+   "low": 1.911,
+   "high": 3.51,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/1800TH-level-stage-i-15_min-mASD",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/1800TH-level-stage-i-15_min-mASD"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "1993TH",
+   "role": "trib",
+   "spot_gauge": "2200TH",
+   "low": 0.223,
+   "high": 1.376,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/1993TH-level-stage-i-15_min-mASD",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/1993TH-level-stage-i-15_min-mASD"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "3104TH",
+   "role": "same",
+   "spot_gauge": "3404TH",
+   "low": 4.46,
+   "high": 5.7,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/3104TH-level-stage-i-15_min-mAOD",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/3104TH-level-stage-i-15_min-mAOD"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "3090TH",
+   "role": "trib",
+   "spot_gauge": "3404TH",
+   "low": 0.96,
+   "high": 1.4,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/3090TH-level-stage-i-15_min-mASD",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/3090TH-level-stage-i-15_min-mASD"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "0569TH",
+   "role": "same",
+   "spot_gauge": "1100TH",
+   "low": 2.07,
+   "high": 3.81,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/0569TH-level-stage-i-15_min-mASD",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/0569TH-level-stage-i-15_min-mASD"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "1090TH",
+   "role": "trib",
+   "spot_gauge": "1100TH",
+   "low": 3.495,
+   "high": 3.771,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/1090TH-level-stage-i-15_min-mASD",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/1090TH-level-stage-i-15_min-mASD",
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/1090TH-level-stage-i-15_min-V"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "1100TH",
+   "role": "same",
+   "spot_gauge": "1800TH",
+   "low": 0.5,
+   "high": 1.3,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/1100TH-level-stage-i-15_min-mASD",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/1100TH-level-stage-i-15_min-mASD"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "1465TH",
+   "role": "trib",
+   "spot_gauge": "1800TH",
+   "low": 0.654,
+   "high": 2.12,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/1465TH-level-stage-i-15_min-mASD",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/1465TH-level-stage-i-15_min-mASD"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "43160",
+   "role": "same",
+   "spot_gauge": "43123",
+   "low": 0.286,
+   "high": 0.94,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/43160-level-stage-i-15_min-m",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/43160-level-stage-i-15_min-m"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "43111",
+   "role": "trib",
+   "spot_gauge": "43123",
+   "low": 0.135,
+   "high": 0.65,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/43111-level-stage-i-15_min-m",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/43111-level-stage-i-15_min-m",
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/43111-level-1-i-15_min-m"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "52109",
+   "role": "same",
+   "spot_gauge": "52111",
+   "low": 0.088,
+   "high": 0.9,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/52109-level-stage-i-15_min-mASD",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/52109-level-stage-i-15_min-m",
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/52109-level-stage-i-15_min-mASD"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "52110",
+   "role": "trib",
+   "spot_gauge": "52111",
+   "low": 0.197,
+   "high": 1.4,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/52110-level-stage-i-15_min-mASD",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/52110-level-stage-i-15_min-m",
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/52110-level-stage-i-15_min-mASD"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "531116",
+   "role": "same",
+   "spot_gauge": "53120",
+   "low": 0.364,
+   "high": 2.55,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/531116-level-stage-i-15_min-mASD",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/531116-level-stage-i-15_min-m",
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/531116-level-stage-i-15_min-mASD"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "53119",
+   "role": "trib",
+   "spot_gauge": "53120",
+   "low": 0.084,
+   "high": 1.5,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/53119-level-stage-i-15_min-m",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/53119-level-stage-i-15_min-m"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "2537",
+   "role": "same",
+   "spot_gauge": "2625",
+   "low": 0.826,
+   "high": 2.25,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/2537-level-stage-i-15_min-mASD",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/2537-level-stage-i-15_min-mASD"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "2054",
+   "role": "trib",
+   "spot_gauge": "2625",
+   "low": 0.7,
+   "high": 1.7,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/2054-level-stage-i-15_min-mASD",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/2054-level-stage-i-15_min-mASD"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "2077",
+   "role": "same",
+   "spot_gauge": "2134",
+   "low": 0.422,
+   "high": 2.7,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/2077-level-stage-i-15_min-mASD",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/2077-level-stage-i-15_min-mASD"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "2012",
+   "role": "trib",
+   "spot_gauge": "2134",
+   "low": 0.386,
+   "high": 1.3,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/2012-level-stage-i-15_min-mASD",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/2012-level-stage-i-15_min-mASD"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "2005",
+   "role": "same",
+   "spot_gauge": "2077",
+   "low": 0.287,
+   "high": 4.8,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/2005-level-stage-i-15_min-mASD",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/2005-level-stage-i-15_min-mASD"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "2020",
+   "role": "trib",
+   "spot_gauge": "2077",
+   "low": 0.106,
+   "high": 0.7,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/2020-level-stage-i-15_min-mASD",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/2020-level-stage-i-15_min-mASD"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "710102",
+   "role": "same",
+   "spot_gauge": "710301",
+   "low": 0.086,
+   "high": 2.484,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/710102-level-stage-i-15_min-m",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/710102-level-stage-i-15_min-m"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "710401",
+   "role": "trib",
+   "spot_gauge": "710301",
+   "low": 0.02,
+   "high": 0.9,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/710401-level-stage-i-15_min-m",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/710401-level-stage-i-15_min-m"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "722242",
+   "role": "same",
+   "spot_gauge": "722421",
+   "low": 0.215,
+   "high": 2.7,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/722242-level-stage-i-15_min-m",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/722242-level-stage-i-15_min-m"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "724528",
+   "role": "trib",
+   "spot_gauge": "724629",
+   "low": 0.2,
+   "high": 1.8,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/724528-level-stage-i-15_min-m",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/724528-level-stage-i-15_min-m"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "F1906",
+   "role": "same",
+   "spot_gauge": "F1903",
+   "low": 0.3,
+   "high": 2.2,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/F1906-level-stage-i-15_min-m",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/F1906-level-stage-i-15_min-m"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "L1970",
+   "role": "trib",
+   "spot_gauge": "F1903",
+   "low": 0.057,
+   "high": 0.582,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/L1970-level-stage-i-15_min-m",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/L1970-level-stage-i-15_min-m"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "L1907",
+   "role": "same",
+   "spot_gauge": "F1906",
+   "low": 0.172,
+   "high": 1.8,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/L1907-level-stage-i-15_min-m",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/L1907-level-stage-i-15_min-m",
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/L1907-level-stage-i-15_min----"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "L1970",
+   "role": "trib",
+   "spot_gauge": "F1906",
+   "low": 0.057,
+   "high": 0.582,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/L1970-level-stage-i-15_min-m",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/L1970-level-stage-i-15_min-m"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "F2290",
+   "role": "trib",
+   "spot_gauge": "L2208",
+   "low": 0.068,
+   "high": 0.6,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/F2290-level-stage-i-15_min-m",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/F2290-level-stage-i-15_min-m"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "760502",
+   "role": "same",
+   "spot_gauge": "762505",
+   "low": 0.2,
+   "high": 3.0,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/760502-level-stage-i-15_min-m",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/760502-level-stage-i-15_min-m"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "761659",
+   "role": "trib",
+   "spot_gauge": "762505",
+   "low": 0.35,
+   "high": 1.7,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/761659-level-stage-i-15_min-m",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/761659-level-stage-i-15_min-m"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "760115",
+   "role": "same",
+   "spot_gauge": "760502",
+   "low": 0.251,
+   "high": 1.8,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/760115-level-stage-i-15_min-m",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/760115-level-stage-i-15_min-m"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "F3581",
+   "role": "trib",
+   "spot_gauge": "F3505",
+   "low": 0.13,
+   "high": 0.578,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/F3581-level-stage-i-15_min-m",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/F3581-level-stage-i-15_min-m"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "022014",
+   "role": "same",
+   "spot_gauge": "022009",
+   "low": 0.223,
+   "high": 1.6,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/022014-level-stage-i-15_min-m",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/022014-level-stage-i-15_min-m"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "022003",
+   "role": "trib",
+   "spot_gauge": "022009",
+   "low": 0.039,
+   "high": 1.0,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/022003-level-stage-i-15_min-m",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/022003-level-stage-i-15_min-m"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "055811_TG 9303",
+   "role": "same",
+   "spot_gauge": "055807_TG 320",
+   "low": 0.27,
+   "high": 3.8,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/055811_TG_9303-level-stage-i-15_min-mASD",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/055811_TG_9303-level-stage-i-15_min-mASD"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "055817_TG 323",
+   "role": "same",
+   "spot_gauge": "2320",
+   "low": 0.254,
+   "high": 3.2,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/055817_TG_323-level-stage-i-15_min-mASD",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/055817_TG_323-level-stage-i-15_min-mASD",
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/055817_TG_323-level-downstage-i-15_min-mASD"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "055027_TG 328",
+   "role": "trib",
+   "spot_gauge": "2320",
+   "low": 0.075,
+   "high": 0.313,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/055027_TG_328-level-stage-i-15_min-mASD",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/055027_TG_328-level-stage-i-15_min-mASD"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "53155",
+   "role": "same",
+   "spot_gauge": "53129",
+   "low": 1.007,
+   "high": 1.578,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/53155-level-stage-i-15_min-mASD",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/53155-level-stage-i-15_min-m",
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/53155-level-stage-i-15_min-mASD"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "53120",
+   "role": "trib",
+   "spot_gauge": "53129",
+   "low": 0.542,
+   "high": 3.2,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/53120-level-stage-i-15_min-mASD",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/53120-level-stage-i-15_min-m",
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/53120-level-stage-i-15_min-mASD",
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/53120-level-2-i-15_min-m",
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/53120-level-2-i-15_min-mASD"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "E71283",
+   "role": "trib",
+   "spot_gauge": "46122",
+   "low": 0.562,
+   "high": 1.0,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/E71283-level-stage-i-15_min-mASD",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/E71283-level-stage-i-15_min-m",
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/E71283-level-stage-i-15_min-mASD"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "E22539",
+   "role": "same",
+   "spot_gauge": "E22678",
+   "low": 0.104,
+   "high": 1.6,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/E22539-level-stage-i-15_min-mASD",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/E22539-level-stage-i-15_min-m",
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/E22539-level-stage-i-15_min-mASD"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "E22548",
+   "role": "trib",
+   "spot_gauge": "E22678",
+   "low": 0.063,
+   "high": 1.04,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/E22548-level-stage-i-15_min-mASD",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/E22548-level-stage-i-15_min-m",
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/E22548-level-stage-i-15_min-mASD"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "0190TH",
+   "role": "same",
+   "spot_gauge": "0569TH",
+   "low": 0.058,
+   "high": 1.083,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/0190TH-level-stage-i-15_min-mASD",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/0190TH-level-stage-i-15_min-mASD",
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/0190TH-level-downstage-i-15_min-mASD"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "0290TH",
+   "role": "trib",
+   "spot_gauge": "0569TH",
+   "low": 0.015,
+   "high": 0.6,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/0290TH-level-stage-i-15_min-mASD",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/0290TH-level-stage-i-15_min-mASD",
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/0290TH-level-stage-i-15_min----",
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/0290TH-level-downstage-i-15_min-mASD",
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/0290TH-level-downstage-i-15_min----"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "F1902",
+   "role": "same",
+   "spot_gauge": "L2009",
+   "low": 0.09,
+   "high": 1.8,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/F1902-level-stage-i-15_min-m",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/F1902-level-stage-i-15_min-m",
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/F1902-level-stage-i-15_min----"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "L1970",
+   "role": "trib",
+   "spot_gauge": "L2009",
+   "low": 0.057,
+   "high": 0.582,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/L1970-level-stage-i-15_min-m",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/L1970-level-stage-i-15_min-m"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "4682",
+   "role": "trib",
+   "spot_gauge": "4197",
+   "low": 0.008,
+   "high": 0.5,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/4682-level-stage-i-15_min-mASD",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/4682-level-stage-i-15_min-mASD"
+   ],
+   "reading_in_source": true
+  },
+  {
+   "station": "3015TH",
+   "role": "trib",
+   "spot_gauge": "3040TH",
+   "low": 0.0,
+   "high": 0.52,
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/3015TH-level-stage-i-15_min-mASD",
+   "site_order": [
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/3015TH-level-stage-i-15_min-mASD",
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/3015TH-level-stage-i-15_min----",
+    "http://environment.data.gov.uk/flood-monitoring/id/measures/3015TH-level-downstage-i-15_min-mASD"
+   ],
+   "reading_in_source": true
+  }
+ ],
+ "missing": [],
+ "no_reading_in_source": [
+  {
+   "station": "L2105",
+   "role": "spot",
+   "spot_gauge": "L2105",
+   "measure": "http://environment.data.gov.uk/flood-monitoring/id/measures/L2105-level-stage-i-15_min-m",
+   "station_status": "statusSuspended",
+   "reason": "no level reading of this station in the latest-readings source; first measure in the site's order kept"
+  }
+ ],
+ "filter": [
+  "0190TH-level-downstage-i-15_min-mASD",
+  "0190TH-level-stage-i-15_min-mASD",
+  "022003-level-stage-i-15_min-m",
+  "022009-level-stage-i-15_min----",
+  "022009-level-stage-i-15_min-m",
+  "022014-level-stage-i-15_min-m",
+  "023058-level-reservoir_level-i-15_min-m",
+  "0290TH-level-downstage-i-15_min----",
+  "0290TH-level-downstage-i-15_min-mASD",
+  "0290TH-level-stage-i-15_min----",
+  "0290TH-level-stage-i-15_min-mASD",
+  "055027_TG_328-level-stage-i-15_min-mASD",
+  "055807_TG_320-level-logged-i-15_min-mASD",
+  "055807_TG_320-level-stage-i-15_min-mASD",
+  "055811_TG_9303-level-stage-i-15_min-mASD",
+  "055817_TG_323-level-downstage-i-15_min-mASD",
+  "055817_TG_323-level-stage-i-15_min-mASD",
+  "0569TH-level-stage-i-15_min-mASD",
+  "1090TH-level-stage-i-15_min-V",
+  "1090TH-level-stage-i-15_min-mASD",
+  "1100TH-level-stage-i-15_min-mASD",
+  "1465TH-level-stage-i-15_min-mASD",
+  "1800TH-level-stage-i-15_min-mASD",
+  "1993TH-level-stage-i-15_min-mASD",
+  "2005-level-stage-i-15_min-mASD",
+  "2012-level-stage-i-15_min-mASD",
+  "2020-level-stage-i-15_min-mASD",
+  "2054-level-stage-i-15_min-mASD",
+  "2077-level-stage-i-15_min-mASD",
+  "2134-level-stage-i-15_min-mASD",
+  "2200TH-level-stage-i-15_min----",
+  "2200TH-level-stage-i-15_min-mASD",
+  "2200TH-level-stage-i-15_min-m_s",
+  "2320-level-stage-i-15_min-mASD",
+  "2537-level-stage-i-15_min-mASD",
+  "2625-level-stage-i-15_min-mASD",
+  "3015TH-level-downstage-i-15_min-mASD",
+  "3015TH-level-stage-i-15_min----",
+  "3015TH-level-stage-i-15_min-mASD",
+  "3040TH-level-crest_tapping-i-15_min-mASD",
+  "3040TH-level-stage-i-15_min-V",
+  "3040TH-level-stage-i-15_min-mASD",
+  "3090TH-level-stage-i-15_min-mASD",
+  "3104TH-level-stage-i-15_min-mAOD",
+  "3404TH-level-stage-i-15_min----",
+  "3404TH-level-stage-i-15_min-mAOD",
+  "4001-level-logged-i-15_min-mASD",
+  "4001-level-stage-i-15_min-mASD",
+  "4046-level-logged-i-15_min-mASD",
+  "4046-level-stage-i-15_min-mASD",
+  "4197-level-stage-i-15_min-mASD",
+  "43111-level-1-i-15_min-m",
+  "43111-level-stage-i-15_min-m",
+  "43123-level-stage-i-15_min-m",
+  "43160-level-stage-i-15_min-m",
+  "43165-level-stage-i-15_min-m",
+  "43165-level-stage-i-15_min-mASD",
+  "45121-level-stage-i-15_min-m",
+  "45121-level-stage-i-15_min-mASD",
+  "46122-level-stage-i-15_min-m",
+  "46123-level-2-i-15_min-m",
+  "4682-level-stage-i-15_min-mASD",
+  "47121-level-stage-i-15_min-m",
+  "52109-level-stage-i-15_min-m",
+  "52109-level-stage-i-15_min-mASD",
+  "52110-level-stage-i-15_min-m",
+  "52110-level-stage-i-15_min-mASD",
+  "52111-level-stage-i-15_min-m",
+  "52111-level-stage-i-15_min-mASD",
+  "531116-level-stage-i-15_min-m",
+  "531116-level-stage-i-15_min-mASD",
+  "53119-level-stage-i-15_min-m",
+  "53120-level-2-i-15_min-m",
+  "53120-level-2-i-15_min-mASD",
+  "53120-level-stage-i-15_min-m",
+  "53120-level-stage-i-15_min-mASD",
+  "53129-level-stage-i-15_min-m",
+  "53129-level-stage-i-15_min-mAOD",
+  "53155-level-stage-i-15_min-m",
+  "53155-level-stage-i-15_min-mASD",
+  "681003-level-stage-i-15_min-m",
+  "710102-level-stage-i-15_min-m",
+  "710151-level-stage-i-15_min-m",
+  "710301-level-stage-i-15_min-m",
+  "710401-level-stage-i-15_min-m",
+  "722242-level-stage-i-15_min-m",
+  "722421-level-stage-i-15_min-m",
+  "724528-level-stage-i-15_min-m",
+  "724629-level-stage-i-15_min-m",
+  "740101-level-stage-i-15_min-m",
+  "760115-level-stage-i-15_min-m",
+  "760502-level-stage-i-15_min-m",
+  "761659-level-stage-i-15_min-m",
+  "762505-level-stage-i-15_min-m",
+  "E21227-level-stage-i-15_min-m",
+  "E21227-level-stage-i-15_min-mASD",
+  "E22539-level-stage-i-15_min-m",
+  "E22539-level-stage-i-15_min-mASD",
+  "E22548-level-stage-i-15_min-m",
+  "E22548-level-stage-i-15_min-mASD",
+  "E22678-level-stage-i-15_min-m",
+  "E22678-level-stage-i-15_min-mASD",
+  "E71283-level-stage-i-15_min-m",
+  "E71283-level-stage-i-15_min-mASD",
+  "E8371-level-downstage-i-15_min-mAOD",
+  "E8371-level-stage-i-15_min-mAOD",
+  "F1902-level-stage-i-15_min----",
+  "F1902-level-stage-i-15_min-m",
+  "F1903-level-stage-i-15_min-m",
+  "F1906-level-stage-i-15_min-m",
+  "F2004-level-stage-i-15_min----",
+  "F2004-level-stage-i-15_min-m",
+  "F2106-level-stage-i-15_min-m",
+  "F2290-level-stage-i-15_min-m",
+  "F3505-level-stage-i-15_min----",
+  "F3505-level-stage-i-15_min-m",
+  "F3581-level-stage-i-15_min-m",
+  "L1907-level-stage-i-15_min----",
+  "L1907-level-stage-i-15_min-m",
+  "L1970-level-stage-i-15_min-m",
+  "L2005-level-stage-i-15_min-m",
+  "L2009-level-stage-i-15_min-m",
+  "L2043-level-stage-i-15_min-m",
+  "L2105-level-stage-i-15_min-m",
+  "L2208-level-stage-i-15_min-m",
+  "L2307-level-stage-i-15_min-m",
+  "L2351-level-stage-i-15_min----",
+  "L2351-level-stage-i-15_min-m"
+ ]
+}

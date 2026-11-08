@@ -1327,7 +1327,10 @@ gives all four navigation links a single full-width row.
   upstream are doing, how many report live and why the others do not, the words of "What the level rests
   on"), the Environment Agency rating, Today's EA advice (never read, so "could not be checked" with the
   EA's page linked, or "None: not a designated bathing water"), water samples, algae, access (the desk
-  check's words and date, or "No access information"), local warnings and model limits. Each cell says
+  check's words and date, then what the spot's guide covers in the planner's words, "Its guide covers parking,
+  the path, getting in", with its date; "Loading its guide…" until the spot's own file comes, "Its guide could
+  not be loaded" if it does not, and "No access information" only when there is neither; 6 Nov 2026: 52 of the 56
+  guided spots said "No access information" under a plan row naming their guide), local warnings and model limits. Each cell says
   what is not known rather than stay blank. The note above the table: "A lower forecast level does not
   mean safe water: check the signs at the water." No column is called the best.
 
@@ -1946,6 +1949,12 @@ A line stays with an option only where it differs for that spot.
   inspected". It is the third field of `compareRows`.
 - A row whose cells all say the same is one cell across the columns.
 - Distance reads "1.1 miles".
+- On a phone it opens on the answer (6 November 2026). The three spot selects fold under "Choose the spots" (a
+  `details.more`, `compare-pick`) once two spots are chosen; the table's heads already name them. At 375 x 812 the
+  first day's row moved from 660-721 px to 470-532 px, clear of the tab bar at 748 px. The fold opens by itself while
+  fewer than two are chosen and closes again when two are, unless the change came from its own selects or it was
+  opened by hand (`comparePick`). Wider than 800 px it is drawn open with no line, so a desktop is unchanged. The
+  status line and the note ("Issued …. A lower forecast level does not mean safe water …") stay above the table.
 - Water today is two rows, Water temperature and Water level.
 - Figures use tabular numerals.
 
@@ -2032,7 +2041,8 @@ and it never says why something changed.
   - The saved lists and `dipcast.saved` are untouched.
 - **Off:** "Alerts are off." and a "Set up alerts" button. It brings the Alerts tile into view and focuses its
   heading. The tile holds what turning alerts on sends, so nothing is turned on from a card.
-- **Blocked in the browser's settings:** says so.
+- **Blocked in the browser's settings:** nothing on the card. The Alerts tile says it once (6 November 2026: every
+  card said it, and the tile again).
 - **No notifications in this browser** (an iPhone outside the Home Screen app, Facebook's or Instagram's browser, the
   offline copy turned off, no web push): says so, with "See Alerts", where the tile gives the steps. Where email
   alerts exist, it says they cover the spots saved when you sign up. Email is not per spot.
@@ -2093,3 +2103,40 @@ open ground: at the water it can be calmer, or gustier near hills and buildings.
 **What it is not.** No score and no overall verdict. None of it is part of the pollution level, and the panel says so.
 
 **Checked:** headless Chrome at 390 and 1,440 px; real Safari 26.6.2 at 1,440 px, for today and for tomorrow.
+
+## The phone journey's wording (6 November 2026)
+
+An audit of the phone journey (find a spot, save it, compare) found the same thing said four different ways. Each now
+has one wording:
+
+- **Compare names the days as the rest of the site does:** "Today", then the weekday ("Sat"), from `shortDay` in
+  `levels.js`. The home day strip, Saved's day by day and the plan's day chips already did. Compare said "Tomorrow"
+  and "Sun 8 Nov" for the same days.
+- **Compare's Right now row says "no monitored overflow" one way:** "No monitored overflow found upstream, so no
+  spills to report. Other pollution sources may still affect this water." This applies whether the trace found
+  nothing within 60 km (Brothers Water) or the lake is isolated (Loughrigg Tarn). The isolated lake's cell had
+  dropped the second sentence. Neither reads as a low risk.
+- **A plan row for an isolated lake gives its reason**, `ISOLATED_WHY`: the river network draws no river or beck
+  into the lake, so no monitored overflow can be traced to it, and small becks it does not draw are not checked. In
+  the plan's "No monitored overflow found upstream" group, Loughrigg Tarn had no reason line. The other rows gave
+  "No monitored storm overflow within 60 km upstream."
+- **"Notifications are blocked for this site in your browser settings." is said once,** in the Alerts tile. Each
+  saved card said it too.
+
+## The level's names, checked (6 November 2026)
+
+Build step 2 of the strategy review asked for one name for the level. The survey found the rule of 2 October
+("One name for each thing", above) in force: the product and the day's level are the **pollution risk** (95 uses),
+the spill score is the **sewage spill risk** (63), and a headline whose level the spills set says so, "Low risk
+from sewage spills" (`levels.js`, `HEAD_SCOPE`). The review overstated the drift. Three strays were swept:
+
+- The list's counts line said "Sewage pollution risk:" whenever a spot was under official advice and "Pollution
+  risk:" otherwise. It says "Pollution risk:" always; its "under official advice restricting swimming" words
+  carry the distinction.
+- The method page's "No level" row named the no-level case by its 2026 wording, "no sewage risk from monitored
+  overflows", which left the site on 3 October. It names the cases as the pages do: no monitored overflow found
+  upstream, no river or beck draining into the lake, or no forecast.
+- A comment in the push Worker's date alerts quoted the same old wording.
+
+Left for after PR #645 lands, since it edits the same line: the organisations page's opening says "forecasts the
+risk of sewage pollution at a spot"; it should say the spot's pollution risk forecast.

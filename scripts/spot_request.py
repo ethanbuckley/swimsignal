@@ -384,6 +384,13 @@ def outside_england(lat: float, lon: float) -> bool | None:
     return None if where is None else bool(where)
 
 
+def in_scotland(lat: float, lon: float) -> bool:
+    """Whether the point is in Scotland: in the outline's "wales_scotland" part and north of WALES_NORTH_LAT, the
+    rule network/nations.py and the page's anypoint.js use (Wales reaches 53.43 N, Scotland starts at 54.63 N)."""
+    from dipcast.network.nations import WALES_NORTH_LAT
+    return outside_where(lat, lon) == "wales_scotland" and lat >= WALES_NORTH_LAT
+
+
 def nearest_listed(lat: float, lon: float, spots: list[dict], within_m: float = NEARBY_M) -> dict | None:
     """The spots.csv row nearest the point, if one is within `within_m`."""
     best = None
@@ -440,7 +447,8 @@ def place(point: Point, req: Request, net, overflows, spots: list[dict], check=N
     out = {"location": loc, "kind": kind, "hint": hint, "max_km": config.MAX_UPSTREAM_KM,
            "nearest": None if nearest is None or nearest.snap is None else
            {"watercourse": nearest.watercourse, "metres": round(nearest.snap.dist_m)},
-           "nearby": nearest_listed(point.lat, point.lon, spots), "outside_england": outside_england(point.lat, point.lon)}
+           "nearby": nearest_listed(point.lat, point.lon, spots), "outside_england": outside_england(point.lat, point.lon),
+           "scotland": in_scotland(point.lat, point.lon)}
     if pin.mode == "none":
         return out
     up = upstream_overflows(net, pin, overflows, velocity_ms=river_velocity(None))
@@ -528,6 +536,13 @@ def _check_line(res: dict) -> str:
 THANKS = "Thanks for the request."
 OUTSIDE = ("not known. The point is outside England, and SwimSignal's overflow data covers England only, so a "
            "forecast here would show no spills whatever happens upstream.")
+# Scotland since the trial (1 Nov 2026, docs/SCOTLAND-TRIAL-2026-11.md): SwimSignal forecasts its listed trial spots
+# from Scottish Water's feed, so "England only" is no longer true there, but this check counts England's table only.
+OUTSIDE_SCOTLAND = ("not counted by this check. The point is in Scotland, where SwimSignal forecasts only its listed "
+                    "trial spots, from Scottish Water's live feed. This automatic check counts England's overflows "
+                    "only, so it cannot say what is upstream here.")
+SCOTLAND_RULE = ("A maintainer decides on spots in Scotland under the trial's rule: the Scottish Outdoor Access Code, "
+                 "and a public body's or a charity's page saying people swim there.")
 FAILED = ("The automatic check could not run this time, so a maintainer will place the spot by hand. Nothing more "
           "is needed from you for now.")
 INTRO = ("This is an automatic check of where the spot sits on SwimSignal's river map. A maintainer reads every "
@@ -563,7 +578,7 @@ def compose_ireland(point: Point, where: str) -> str:
     """The comment for a point in Northern Ireland or the Republic: not covered, and where to look."""
     name, see = IRELAND[where]
     where_it_is = f"{THANKS} The point {point.lat:.5f}, {point.lon:.5f} (read from {_read(point)}) is in {name}."
-    none = f"SwimSignal has overflow data for England only, so it has no forecast in {name} and cannot add a spot there."
+    none = f"SwimSignal does not have overflow data for {name}, so it has no forecast there and cannot add a spot there."
     first = " ".join(filter(None, [where_it_is, point.note, none]))
     again = f"If the point is not where you swim, edit the issue with its latitude and longitude, for example {EXAMPLE}."
     return "\n".join([MARKER, "", first, "", see, "", again, "", IRELAND_FOOT.format(year=datetime.now(UTC).year)]) + "\n"
@@ -592,7 +607,9 @@ def compose(req: Request, point: Point | None, problem: str | None, res: dict | 
         nr = res["nearest"]
         lines.append(f"- **Nearest water:** {_cap(_the(nr['watercourse']))}, {_km_or_m(nr['metres'])} away. "
                      f"The spot's name says {_the(res['hint'])}, so it goes there instead.")
-    if res.get("outside_england"):
+    if res.get("scotland"):
+        lines.append(f"- **Storm overflows upstream:** {OUTSIDE_SCOTLAND}")
+    elif res.get("outside_england"):
         lines.append(f"- **Storm overflows upstream:** {OUTSIDE}")
     elif loc.get("mode") != "isolated":
         lines.append(f"- **Storm overflows upstream:** {_overflow_line(res['overflows'], res['max_km'])}")
@@ -600,6 +617,8 @@ def compose(req: Request, point: Point | None, problem: str | None, res: dict | 
     if res.get("nearby"):
         nb = res["nearby"]
         lines.append(f"- **Already listed:** `{_clean(nb['name'])}` is {_km_or_m(nb['metres'])} away.")
+    if res.get("scotland"):
+        lines += ["", SCOTLAND_RULE]
     if point.approximate:
         lines += ["", ("The point comes from a place name, so there is no `spots.csv` row yet. If you can, edit the "
                        f"issue with the spot's own latitude and longitude, for example {EXAMPLE}.")]

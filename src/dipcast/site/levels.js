@@ -195,6 +195,18 @@ const nowUnknown = s => { if (!daily(s) || !s.now || rank(s.now.label) >= 1 || (
 // Why right now is not known, after "Low risk forecast": none reports, or the ones that do matter little here.
 const nowUnknownWhy = s => !Math.min(overflows(s), (s.now || {}).monitored_upstream ?? overflows(s))
   ? 'no overflow upstream reports live' : 'the overflows that matter most here do not report live';
+// Too few report for "0 discharging" to stand as a count: some overflows upstream report live, none of
+// them is discharging, and the ones that report are fewer than half by number or carry under half the
+// weight (NOW_WATCHED_SHARE, as nowUnknown). The Right now tile then gives no figure, and the evidence
+// row leads with how many report (index.html, nowTile; evidence.js). 'count' or 'weight' says which; ''
+// where the count stands. Sandy Lane, Chester (6 Nov 2026): a large "0 discharging" over "1 of 13 report
+// live". On that night's build two of the 91 spots with overflows upstream had 1 to 49% reporting: Sandy
+// Lane (1 of 13) and Barcombe Mills (1 of 46). The next lowest was over 75%, so any cut from 8% to 75%
+// picks the same two; half is "most do not report". A clicked point (anypoint.js) gives the weights too
+// (8 Nov 2026): the Dee at Chester, 1 of 18 with 1.1% of the weight. A discharge is a reading, and its count stays.
+const nowFew = s => { const n = s.now || {}, total = overflows(s), mon = Math.min(total, n.monitored_upstream ?? total);
+  if (!total || !mon || (n.discharging_upstream || 0) > 0) return '';
+  return mon < total * NOW_WATCHED_SHARE ? 'count' : nowWatched(s) < NOW_WATCHED_SHARE ? 'weight' : ''; };
 // The live status behind a spot, in counts, said wherever a level is shown (review of PR #463, 30 Oct 2026:
 // at the Wye at Symonds Yat, "Low risk from sewage spills" over five low days read as an observation, though
 // none of its 14 overflows reports live). The statuses are what the companies' feeds said at the last poll
@@ -214,11 +226,14 @@ const liveHead = s => { const c = liveCover(s); if (!c) return '';
   return c.kind === 'none' ? LIVE_NONE : c.kind === 'partial' ? `Live status from ${c.mon} of ${c.total} overflows upstream`
     : c.total === 1 ? 'Live status from the overflow upstream' : `Live status from all ${c.total} overflows upstream`; };
 // The same with what those statuses said, as at the last poll, and the ones with none said as unknown, never
-// as dry: the line at the top of a spot's answer, before the level, on today's view.
-const liveLine = s => { const c = liveCover(s); if (!c) return '';
+// as dry: the line at the top of a spot's answer, before the level, on today's view. at: the poll's clock time
+// ("Fri 15:34"), where the caller has it. A build can be 4 to 8 hours old when read (6 Nov 2026), and "none
+// spilling at the last poll" with no time read as current.
+const liveLine = (s, at = '') => { const c = liveCover(s); if (!c) return '';
   const k = Math.min(c.mon, (s.now || {}).discharging_upstream || 0), rest = c.total - c.mon;
   if (c.kind === 'none') return `${LIVE_NONE}: ${c.total === 1 ? 'the overflow upstream does not report live' : `none of the ${c.total} overflows upstream reports live`}`;
-  const said = c.total === 1 ? (k ? 'spilling at the last poll' : 'not spilling at the last poll') : `${k ? `${k} spilling` : 'none spilling'} at the last poll`;
+  const poll = `at the last poll${at ? ` (${at})` : ''}`;
+  const said = c.total === 1 ? `${k ? 'spilling' : 'not spilling'} ${poll}` : `${k ? `${k} spilling` : 'none spilling'} ${poll}`;
   return `${liveHead(s)}: ${said}${rest ? `; ${rest} ${rest === 1 ? 'does' : 'do'} not report, so could be spilling unseen` : ''}`; };
 // The live status over a level on today's view, for the spot's answer (index.html, answerParts): `live`, the line at the top
 // of the answer, in counts; `blind`, no overflow upstream gives a current status, when the answer leads with
@@ -330,7 +345,7 @@ const trialShare = s => (s || {}).trial === 'scotland';
 function trialWords(s, short = false) {
   if (!trialShare(s)) return '';
   if (short) return 'Scotland: trial forecast';
-  return "Scotland trial: Scottish Water's overflows, checked against their 2022 to 2025 records and calibrated for Scotland. Not yet confirmed on live data.";
+  return "Scotland trial: Scottish Water's overflows, checked against their 2022 to 2025 records and calibrated for Scotland. Emergency overflows are not counted, nor outfalls that are both storm and emergency overflows. Not yet confirmed on live data.";
 }
 // What the E. coli estimate is, said wherever it shows on a spot's page (all year, labelled with what
 // is true today). check is spots.json's ecoli_check (build_site.ecoli_check): its record on live
@@ -845,7 +860,7 @@ const longSpill = (c, nowMs) => { const a = spillStart(c); return a !== null && 
 const LONG_SPILL = 'A spill this long is unusual and may be a monitor fault. It still counts in the risk.';
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { nameCase, plainName, overflowNames, ORDER, NOT_COVERED, NO_FORECAST, NO_OVERFLOWS, NO_RIVER, OTHER_RISKS, SPILL_CUTS, ECOLI_CUTS, spillLevel, shownRisk, tooFar, allUpstream, tooFarSaid, WEIGHT_SAID, setToday, today, dayWord, readerDay, fromDay, rank, risk, nowUnknown, nowUnknownWhy, nowWatched, NOW_WATCHED_SHARE, LIVE_NONE, liveCover, liveHead, liveLine, liveParts, MODELLED_FROM, level, dayLevel, headParts, headline, levelScope, nowBecause, dayBecause, dayHeadline, tileLine, weekNext, laterWords, coverage, COVER, FOUND_NONE, ISOLATED_WHY, plainLevel, inBathingSeason, poorReason, poorAdvice, daily, ecoliBand, ecoliLevel, ecoliUntested, bestDay, weekendWords, yoursLevelled, lowAnswerDay, lowAnswerWords, mostWords, clockWords, clearWords, RAIN_OLD_H, rainAgeLine, backToLow,
+  module.exports = { nameCase, plainName, overflowNames, ORDER, NOT_COVERED, NO_FORECAST, NO_OVERFLOWS, NO_RIVER, OTHER_RISKS, SPILL_CUTS, ECOLI_CUTS, spillLevel, shownRisk, tooFar, allUpstream, tooFarSaid, WEIGHT_SAID, setToday, today, dayWord, readerDay, fromDay, rank, risk, nowUnknown, nowUnknownWhy, nowFew, nowWatched, NOW_WATCHED_SHARE, LIVE_NONE, liveCover, liveHead, liveLine, liveParts, MODELLED_FROM, level, dayLevel, headParts, headline, levelScope, nowBecause, dayBecause, dayHeadline, tileLine, weekNext, laterWords, coverage, COVER, FOUND_NONE, ISOLATED_WHY, plainLevel, inBathingSeason, poorReason, poorAdvice, daily, ecoliBand, ecoliLevel, ecoliUntested, bestDay, weekendWords, yoursLevelled, lowAnswerDay, lowAnswerWords, mostWords, clockWords, clearWords, RAIN_OLD_H, rainAgeLine, backToLow,
     ACTION, POOR_ACTION, ALGAE_ACTION, PLAIN_ACTION, actionFor, levelAction, dayAction, HEAD_SCOPE, spillSet, worstNear,
     SAMPLE_LINE, SAMPLE_DAYS, sampleLevel, standingLevel, eaUnchecked, EA_UNCHECKED, walesShare, walesWords, trialWords, ecoliNotes,
     ECOLI_OFF, ECOLI_EXPERIMENTAL, ECOLI_FOLD, ECOLI_OFF_SAID,

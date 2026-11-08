@@ -388,11 +388,11 @@ def test_where_outside_england_from_the_published_shape(lat, lon, where):
 
 
 @pytest.mark.parametrize("location, says, source", [
-    ("54.58660, -5.92950", ("is in Northern Ireland. SwimSignal has overflow data for England only, so it has no forecast "
-                            "in Northern Ireland and cannot add a spot there."),
+    ("54.58660, -5.92950", ("is in Northern Ireland. SwimSignal does not have overflow data for Northern Ireland, so it "
+                            "has no forecast there and cannot add a spot there."),
      "https://www.daera-ni.gov.uk/articles/bathing-water-quality-dashboard"),
-    ("53.34610, -6.27330", ("is in the Republic of Ireland. SwimSignal has overflow data for England only, so it has no "
-                            "forecast in the Republic of Ireland and cannot add a spot there."), "https://www.beaches.ie/"),
+    ("53.34610, -6.27330", ("is in the Republic of Ireland. SwimSignal does not have overflow data for the Republic of "
+                            "Ireland, so it has no forecast there and cannot add a spot there."), "https://www.beaches.ie/"),
     # West of the old box (longitude -8.7), which called it "outside Great Britain" and asked for coordinates.
     ("53.27400, -9.04900", "is in the Republic of Ireland.", "https://www.beaches.ie/"),
     # The other way round, as the box turns any pair.
@@ -417,6 +417,37 @@ def test_a_spot_outside_england_says_its_overflows_are_not_known(net, check, mon
     text, ok = ask(net, check, "River Lune, Crook o' Lune", 351100, 460600)
     assert ok and f"- **Storm overflows upstream:** {sr.OUTSIDE}" in text
     assert "monitored within" not in text
+
+
+@pytest.mark.parametrize("lat, lon, scotland", [
+    (55.60, -2.43, True),     # the Tweed at Kelso
+    (56.085, -4.600, True),   # Loch Lomond
+    (51.48, -3.18, False),    # the Taff in Cardiff
+    (53.40, -3.05, False),    # the Dee estuary, Wales's north coast side
+    (54.047, -1.953, False),  # the Wharfe at Burnsall
+    (55.77, -2.005, False),   # the Tweed at Berwick, which is in England
+    (54.5866, -5.9295, False),  # the Lagan in Belfast
+])
+def test_scotland_from_the_published_shape_and_the_nations_rule(lat, lon, scotland):
+    assert sr.in_scotland(lat, lon) is scotland
+
+
+def test_a_spot_in_scotland_does_not_say_england_only(net, check, monkeypatch):
+    """Since the Scotland trial (1 Nov 2026) a Scottish request read "SwimSignal's overflow data covers England
+    only", which the trial's listed spots contradict (#647 fixed the same words on map taps, 7 Nov 2026)."""
+    monkeypatch.setattr(sr, "outside_england", lambda lat, lon: True)
+    monkeypatch.setattr(sr, "in_scotland", lambda lat, lon: True)
+    text, ok = ask(net, check, "River Lune, Crook o' Lune", 351100, 460600)
+    assert ok and f"- **Storm overflows upstream:** {sr.OUTSIDE_SCOTLAND}" in text
+    assert sr.SCOTLAND_RULE in text
+    assert "England only" not in text and sr.OUTSIDE not in text and "monitored within" not in text
+
+
+def test_a_spot_in_wales_keeps_its_words(net, check, monkeypatch):
+    monkeypatch.setattr(sr, "outside_england", lambda lat, lon: True)
+    monkeypatch.setattr(sr, "in_scotland", lambda lat, lon: False)
+    text, ok = ask(net, check, "River Lune, Crook o' Lune", 351100, 460600)
+    assert ok and f"- **Storm overflows upstream:** {sr.OUTSIDE}" in text and sr.SCOTLAND_RULE not in text
 
 
 def test_no_water_within_reach_asks_for_coordinates(net, check):

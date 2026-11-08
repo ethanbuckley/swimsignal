@@ -1,0 +1,16 @@
+# The river-rises shadow logger (README). Nothing here is secret: this file is committed, so anything in it
+# is public. The Worker needs no secret and no var.
+name = "swimsignal-river-shadow"
+main = "src/index.js"
+compatibility_date = "2026-11-01"
+
+# Its own namespace, not the push Worker's. Create it once with
+#   npx wrangler kv namespace create SHADOW
+# and paste the id it prints in place of the placeholder below (README, "Deploying").
+[[kv_namespaces]]
+binding = "SHADOW"
+id = "REPLACE_WITH_THE_SHADOW_NAMESPACE_ID"
+
+[triggers]
+# Once an hour, on the hour (UTC). Each run makes at most 3 requests (src/index.js, MAX_REQUESTS).
+crons = ["0 * * * *"]

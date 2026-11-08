@@ -74,7 +74,7 @@ test('evidence distinguishes missing feeds, dated records, and out-of-season mod
 test('a spot without a forecast is described in the headline’s words', () => {
   const D = ['2026-09-30', '2026-10-01'];
   const lake = {days:[], error:'An isolated lake with no river connection', classification:{class:'excellent', year:2025}};
-  assert.equal(compareNow(lake), 'No monitored overflow found upstream.');
+  assert.equal(compareNow(lake), 'No monitored overflow found upstream, so no spills to report. Other pollution sources may still affect this water.');
   assert.deepEqual(compareDays(lake, D), {same: true, days: D.map(date => ({date, level: 'no river connection', words: 'No monitored overflow found upstream'}))});
   const away = {days:[], error:'No river or lake within 1.5 km of this point.'};
   assert.equal(compareNow(away), 'Not covered by the forecast.');
@@ -102,7 +102,8 @@ test('the comparison says a day, a live status, advice or access is not known, r
     'Whether any is discharging is not known. None of 2 report live. Not reporting: 2 offline or with no live feed. Missing reports do not mean no spills.');
   const thin = {...spot, upstream_summary: {overflows: 13}, now: {label: 'low', discharging_upstream: 0, monitored_upstream: 1, monitored_weight: 0.01, upstream_weight: 3,
     no_feed_upstream: 0, stale_upstream: 12, feed_stale: [{company: 'United Utilities', overflows: 12, records: true}]}};
-  assert.match(compareNow(thin), /^Live status from 1 of 13 overflows upstream: right now not known here\. 0 discharging\. 1 of 13 report live\. Not reporting: 12 whose records on United Utilities's feed give no update time\. Missing reports do not mean no spills\.$/);
+  // Too few report for a 0 to lead (levels.js, nowFew, 6 Nov 2026): how many report, then what they said.
+  assert.equal(compareNow(thin), "Right now not known here. 1 of 13 report live: none discharging. Whether the rest are is not known. Not reporting: 12 whose records on United Utilities's feed give no update time.");
   assert.equal(compareNow({...spot, now: {label: 'low', monitored_upstream: 2, discharging_upstream: 1}}), '1 of 2 discharging. All 2 report live.');
   // Today's EA advice: never read, so never said to be clear.
   const bw = {source: 'designated', classification: {class: 'good', year: 2025, url: 'https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukj1403-11947'}};
@@ -120,6 +121,20 @@ test('the comparison says a day, a live status, advice or access is not known, r
   assert.equal(compareAccess({access: {status: 'something new', checked_at: '2026-10-03', url: 'http://not-https.example'}}),
     'Not known whether swimming is allowed at this point. <span class="vt vt-measured">Checked 3 Oct 2026</span>');
   assert.equal(Object.fromEntries(compareRows({days: []}, '2026-09-30').map(r => [r[0], r[2]])).Access, 'A desk check of published sources; signs at the water not inspected');
+  // Then what the spot's guide covers, as the plan's row above the table says it (6 Nov 2026: Grasmere's guide covers
+  // parking, the path and getting in, and its column said "No access information").
+  const guide = {checked: '2026-10-03', facts: [{topic: 'parking'}, {topic: 'toilets'}, {topic: 'entry'}, {topic: 'path'}]};
+  assert.equal(compareAccess({detail_file: 'spot/grasmere.json', detail_loaded: true, guide}),
+    'Its guide covers parking, the path, getting in. <span class="vt vt-measured">Checked 3 Oct 2026</span>');
+  assert.equal(compareAccess({access: {status: 'unconfirmed', checked_at: '2026-10-03'}, guide: {facts: [{topic: 'parking'}]}}),
+    'Permission to swim at this point is not confirmed. <span class="vt vt-measured">Checked 3 Oct 2026</span> Its guide covers parking. <span class="vt vt-none">Not known when it was checked</span>');
+  // Not yet in, or not come: not known, never "No access information".
+  assert.equal(compareAccess({detail_file: 'spot/x.json'}), '<span class="vt vt-none">Loading its guide…</span>');
+  assert.equal(compareAccess({detail_file: 'spot/x.json', detail_missing: true}), '<span class="vt vt-none">Its guide could not be loaded</span>');
+  assert.match(compareAccess({access: {status: 'unconfirmed'}, detail_file: 'spot/x.json'}), /not confirmed\. .*<span class="vt vt-none">Loading its guide…<\/span>$/);
+  // A guide with nothing on getting to the water, or no guide, after the file came: none.
+  assert.equal(compareAccess({detail_file: 'spot/x.json', detail_loaded: true, guide: {facts: [{topic: 'toilets'}]}}), '<span class="vt vt-none">No access information</span>');
+  assert.equal(compareAccess({detail_file: 'spot/x.json', detail_loaded: true}), '<span class="vt vt-none">No access information</span>');
   // Every row of every column says something, and nothing calls a spot safe or the best.
   for (const s of [spot, {days: []}, {days: [], error: 'forecast failed: x'}, {...bw, ...spot, access: {status: 'unconfirmed'}}]) {
     const rows = compareRows(s, '2026-09-30');
@@ -322,7 +337,7 @@ test('a lake with overflows upstream gives the likely reading and its 8-in-10 ra
 // river flows into. The level says so in words of its own, with one line under it and the rain.
 const PAGE = ['esc', 'fmt', 'cls', 'dateLabel', 'glyph', 'ICON', 'tone', 'colour', 'headTone', 'initial', 'VIEW', 'km', 'dist', 'away',
   'PAGE_ID', 'spotPath', 'BOOKMARK', 'untested', 'week', 'rainMeta', 'rainSaid', 'answerParts', 'savedCard', 'mapLevel',
-  'listHeadline', 'openDay', 'listPath', 'headNote', 'spotItem', 'markerTip', 'check', 'spilling', 'summary', 'daysSentence', 'ecoliCheck', 'dayTable'];
+  'listHeadline', 'openDay', 'listPath', 'headNote', 'spotItem', 'spotRow', 'markerTip', 'check', 'spilling', 'summary', 'daysSentence', 'ecoliCheck', 'dayTable'];
 const plainCtx = () => pageContext(PAGE, {ROOT: {pathname: '/'}});
 const text = h => h.replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
 // A river with days but no contributors: the build still computes an E. coli figure for it (35% here).
@@ -518,10 +533,10 @@ test('the comparison has a column a spot, the five days first with the day picke
   assert.match(html, /<span>Distance<span class="lab-note">In a straight line, not by road<\/span><\/span><\/th><\/tr><tr><td headers="cmp-dist cmp-s0">a<\/td>/);
   // The five days, each cell naming its day; the day picked (tomorrow here) shaded.
   assert.deepEqual([...html.matchAll(/<tr( class="on" aria-current="true")?><td class="d0" headers="cmp-days cmp-s0"><span class="day">([^<]+)<\/span>/g)].map(m => [m[2], !!m[1]]),
-    [['Today', false], ['Tomorrow', true], ['Fri 2 Oct', false], ['Sat 3 Oct', false], ['Sun 4 Oct', false]]);
-  assert.match(html, /<span class="day">Tomorrow<\/span><span class="hl high">High risk: sewage spills<\/span>/);
+    [['Today', false], ['Thu', true], ['Fri', false], ['Sat', false], ['Sun', false]]);   // as the day strip names them (6 Nov 2026)
+  assert.match(html, /<span class="day">Thu<\/span><span class="hl high">High risk: sewage spills<\/span>/);
   // B has no fifth day: it says so, in the muted grey, not "Low risk".
-  assert.match(html, /<td headers="cmp-days cmp-s1"><span class="day">Sun 4 Oct<\/span><span class="hl na">No forecast for this day<\/span><\/td><\/tr>/);
+  assert.match(html, /<td headers="cmp-days cmp-s1"><span class="day">Sun<\/span><span class="hl na">No forecast for this day<\/span><\/td><\/tr>/);
   // The river with nothing upstream: one cell for the five days, in the plain level's words, never "Low risk".
   assert.equal([...html.matchAll(/rowspan="5"/g)].length, 1);
   assert.match(html, /<td class="same" rowspan="5" headers="cmp-days cmp-s2"><span class="hl clear">No monitored overflow found upstream<\/span>\. The same on every day\.<\/td>/);

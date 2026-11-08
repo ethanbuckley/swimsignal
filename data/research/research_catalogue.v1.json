@@ -760,6 +760,104 @@
    "branch": "claude/carry-spill-water-2026-11-05",
    "branch_exists": true,
    "date": "2026-11-05"
+  },
+  "618": {
+   "n": 618,
+   "state": "open",
+   "branch": "claude/bench-ecoli900-rc0",
+   "branch_exists": true,
+   "date": null
+  },
+  "620": {
+   "n": 620,
+   "state": "merged",
+   "branch": "claude/satellite-shore-margin",
+   "branch_exists": true,
+   "date": "2026-11-05"
+  },
+  "621": {
+   "n": 621,
+   "state": "merged",
+   "branch": "codex/shoreline-band-check",
+   "branch_exists": true,
+   "date": "2026-11-05"
+  },
+  "622": {
+   "n": 622,
+   "state": "open",
+   "branch": "claude/shore-band-second-sample",
+   "branch_exists": true,
+   "date": null
+  },
+  "623": {
+   "n": 623,
+   "state": "open",
+   "branch": "claude/satellite-shoreline-sensitivity-71b4b0",
+   "branch_exists": true,
+   "date": null
+  },
+  "624": {
+   "n": 624,
+   "state": "open",
+   "branch": "claude/satellite-pilot-signal",
+   "branch_exists": true,
+   "date": null
+  },
+  "625": {
+   "n": 625,
+   "state": "open",
+   "branch": "claude/loving-chebyshev-9168ae",
+   "branch_exists": true,
+   "date": null
+  },
+  "626": {
+   "n": 626,
+   "state": "open",
+   "branch": "claude/priceless-sanderson-55f620",
+   "branch_exists": true,
+   "date": null
+  },
+  "627": {
+   "n": 627,
+   "state": "open",
+   "branch": "claude/river-rises-readout",
+   "branch_exists": true,
+   "date": null
+  },
+  "631": {
+   "n": 631,
+   "state": "open",
+   "branch": "claude/river-rise-history",
+   "branch_exists": true,
+   "date": null
+  },
+  "630": {
+   "n": 630,
+   "state": "open",
+   "branch": "claude/lake-usual-line",
+   "branch_exists": true,
+   "date": null
+  },
+  "638": {
+   "n": 638,
+   "state": "open",
+   "branch": "claude/backtest-release-candidate-ef93ca",
+   "branch_exists": true,
+   "date": "2026-11-06"
+  },
+  "640": {
+   "n": 640,
+   "state": "open",
+   "branch": "claude/radar-per-overflow-test",
+   "branch_exists": true,
+   "date": null
+  },
+  "639": {
+   "n": 639,
+   "state": "open",
+   "branch": "claude/live-status-2026-backtest-6e8c93",
+   "branch_exists": true,
+   "date": "2026-11-06"
   }
  },
  "entries": [
@@ -1018,6 +1116,107 @@
    ]
   },
   {
+   "id": "lake-line-candidates",
+   "title": "Lake line chance from the concentration model, with a lake-specific wet response",
+   "section": "promising",
+   "project": "LAKE-CONC",
+   "topics": [
+    "e. coli",
+    "lakes",
+    "model"
+   ],
+   "verdict": "No candidate met the shadow guardrails. Non-inferiority to production's lake chance at 900 was not shown for any of the three (interval upper ends +0.0026 to +0.0031 against a +0.002 margin, though every point estimate was below production's), and the lake wet response (B) also failed at 500 at unseen lakes. The best line chance, B, had skill 0.047 over the usual lake rate with the interval spanning zero; recalibration (A, C) did not help. B improved the concentration log score at known lakes (+0.0205, interval +0.0010 to +0.0484) but not the order of samples within a lake. Held out by lake and forward, the concentration model's median ordered a lake's own samples better than production's lake chance (rho difference +0.22 and +0.30, intervals above zero).",
+   "scope": "637 EA samples at 12 lake bathing waters, May-September 2024-26, already-read development data; season-out, lake-out and forward folds, protocol committed before any score. 16 results over 900: the non-inferiority margin was narrower than these rows allow, a design fault recorded in the record. 2012-22 lake seasons could not be rebuilt without new Open-Meteo calls.",
+   "stage": "development",
+   "stage_note": "No shadow logger and nothing live. The plain concentration model and B (with A's and C's maps) are frozen for a 2027 read: data/research/lake_line_frozen.v2.json (fitted without Colwick's old-pin rows, after a pre-stated materiality check found the difference material) with v1 read beside it, computed from the lake range shadow's logged inputs. Diagnosis: Derwent Water's results over 900 are a summer-long rise that rain and modelled spill exposure do not track.",
+   "next": "Read the frozen file against the 2027 lake samples, on or after 15 Oct 2027 (docs/LAKE-LINE-CANDIDATES-2026-11.md).",
+   "read_on": "2027-10-15",
+   "records": [
+    {
+     "doc": "docs/LAKE-LINE-CANDIDATES-2026-11.md",
+     "quote": "**No candidate meets N1-N4, so by section 5 none is logged.**"
+    },
+    {
+     "doc": "docs/LAKE-LINE-CANDIDATES-2026-11.md",
+     "quote": "| B1. Concentration log score above plain, interval above zero | | **+0.0205 [+0.0010, +0.0484] yes** (ISO weeks: [−0.0013, +0.0435]) | |"
+    }
+   ],
+   "prs": [
+    625
+   ]
+  },
+  {
+   "id": "derwent-water-diagnosis",
+   "title": "Derwent Water's high E. coli results: diagnosis and a lake seasonal response",
+   "section": "promising",
+   "project": "LAKE-CONC",
+   "topics": [
+    "e. coli",
+    "lakes",
+    "overflows"
+   ],
+   "verdict": "By the plan's rule, Derwent Water's results over 900 are not explained by recorded spills at its three monitored overflows upstream: 30-day spill hours ranked its counts with rho 0.28 (interval −0.19 to +0.58), its overflows spilled less in its worst season (172 hours) than in 2024 (220), and 1 of its 4 dry-day results over 900 had a recorded spill in the 7 days before. At Coniston Water recorded spills did track counts (7-day rho 0.48, interval +0.27 to +0.62). Derwent's counts rose with water temperature and day of season (rho 0.37, interval +0.15 to +0.56). A lake-specific seasonal response (candidate D) failed all three of its conditions. Low lake level at Lodore did not track its results either (rho −0.12, interval −0.48 to +0.36); outflow at Portinscale could not be judged because the EA holds no 2024-25 flow there.",
+   "scope": "Derwent Water at Crow Park, 40 samples in 2024-25 for recorded spills (no 2026 event records) and 59 in 2024-26 for temperature, with Coniston Water and Windermere for comparison; seen samples, described. The EA's 2026 bathing water profile was read for named sources. A source is inferred, not established.",
+   "stage": "archived",
+   "stage_note": "A Derwent line chance from the inputs the model reads is archived: five variants failed on these rows and the measurements contradict the rain-driven spill mechanism there. The diagnosis is the deliverable. The frozen plain and B models keep their 2027 read.",
+   "reopen_when": "A dated input that tracks Derwent Water's dry-weather results, judged under its own protocol: the EA's private-discharge permits for the upper catchment with occupancy, the EA's in-season investigation results for this bathing water (an outside contact for Ethan), a lake temperature record beside the samples, or Portinscale's 2024-25 daily flow once the EA publishes it.",
+   "records": [
+    {
+     "doc": "docs/DERWENT-WATER-DIAGNOSIS-2026-11.md",
+     "quote": "**Answer by the plan's rule: not explained by recorded spills at these overflows.**"
+    },
+    {
+     "doc": "docs/DERWENT-WATER-DIAGNOSIS-2026-11.md",
+     "quote": "| D1. Log score D − plain above zero, interval above zero | −0.003 [−0.018, +0.010] | **fail** |"
+    },
+    {
+     "doc": "docs/DERWENT-WATER-DIAGNOSIS-2026-11.md",
+     "quote": "**Answer by the stated rule: low lake level does not track Derwent's high results.**"
+    }
+   ],
+   "prs": [
+    625
+   ]
+  },
+  {
+   "id": "lake-order-2012-22",
+   "title": "Lake E. coli order on 2012-2022 seasons: the frozen concentration models against production's chance",
+   "section": "promising",
+   "project": "LAKE-CONC",
+   "topics": [
+    "e. coli",
+    "lakes",
+    "model"
+   ],
+   "verdict": "The primary question held for every frozen model. On 962 samples at Windermere and Frensham, 2012-22, the concentration model's median ordered a lake's own samples better than production's lake chance. Corrected figures (6 Nov 2026), mean within-site rho difference: +0.147 (interval +0.082 to +0.210) for the plain model, +0.176 (+0.116 to +0.237) for the lake wet-response model, and +0.155 (+0.094 to +0.216) for the live lake-range-v1 (0.286 against 0.132). The first report used rows with uncalibrated exposure (+0.156 and +0.182); the conclusion did not change. With 9 results over 900, a line chance could not be judged.",
+   "scope": "An out-of-time development comparison on outcomes #584 had already examined; the models were frozen on 2024-26 data before these rows were joined. Five sampling sites on two water bodies. #584 had already published a close relative of this ordering result for its own candidate.",
+   "stage": "development",
+   "stage_note": "Built in #630, live once Ethan merges and deploys: in season, the lake tile at the 11 lake bathing waters with their own samples says whether today's likely reading from lake-range-v1 is higher (at least twice), lower (at most half) or about the lake's usual for that time of year, usual being the same estimate at the lake's median 2023-26 inputs. Not at average-lake spots, out of season or at Colwick. No level, colour or line chance; the lake range shadow is unchanged.",
+   "next": "The 2027 read of the lake range shadow on or after 15 Oct 2027, as monitoring: the ordering and the proposal's direction check; the line comes off for 2028 if either fails. A re-check of the shadow in the first week of May 2027.",
+   "records": [
+    {
+     "doc": "docs/LAKE-LINE-2012-22-CHECK-2026-11.md",
+     "quote": "| **plain − production form** | **+0.156 [+0.090, +0.218]: holds** |"
+    },
+    {
+     "doc": "docs/LAKE-RANGE-DIRECTION-PROPOSAL-2026-11.md",
+     "quote": "It is a product decision for Ethan."
+    },
+    {
+     "doc": "docs/LAKE-LINE-2012-22-CHECK-2026-11.md",
+     "quote": "**Does the conclusion change? No.** The primary question still **holds for every frozen model**, with intervals above"
+    },
+    {
+     "doc": "docs/LAKE-RANGE-DIRECTION-PROPOSAL-2026-11.md",
+     "quote": "The line is built as proposed above, the tile line only"
+    }
+   ],
+   "prs": [
+    625,
+    630
+   ]
+  },
+  {
    "id": "spill-duration",
    "title": "How long a running spill goes on",
    "section": "promising",
@@ -1092,6 +1291,35 @@
     342
    ],
    "register_note": "The register says the 235 line \"passed 6/7\", which reads as if only that line did; the doc says each line met six of the seven conditions."
+  },
+  {
+   "id": "lake-own-rate",
+   "title": "A lake over-900 chance from the lake's own sample rate",
+   "section": "negative",
+   "project": "LAKE-CONC",
+   "topics": [
+    "e. coli",
+    "lakes",
+    "model"
+   ],
+   "verdict": "Failed as stated. Skill over the usual lake rate was 0.042 against a margin of 0.10, with the interval on the Brier difference spanning zero (+0.00104, −0.00235 to +0.00574); production's form was not beaten with the interval below zero (−0.00138, −0.00610 to +0.00198); without Derwent Water, which held 12 of the 16 results over 900, skill was −0.010. The pooled AUC of 0.81 came from between lakes: within a lake the own rate from the other seasons ranked a season backwards (mean within-site AUC 0.15).",
+   "scope": "637 EA samples at 12 lake bathing waters on six water bodies, May-September 2024-26, already-read development data; the protocol, margin and schemes were committed before any score. 16 results over 900 give an interval about ±0.004 wide on a Brier of 0.025, so the test was underpowered for its margin. It does not rule out a daily lake chance of a different kind.",
+   "stage": "archived",
+   "stage_note": "This exceedance candidate is archived. No shadow log and no page change followed; the over-900 chance stays off lake pages. The lake range (concentration) stays in shadow_lake_range_v1 for its 2027 read, and the past-sample tile already states each lake's count over 900.",
+   "reopen_when": "The 2027 lake season's samples judged forward with the own history frozen before 1 May 2027; a candidate carrying a within-season signal at a lake (a lake-specific wet-day response, or a recalibrated line probability from the lake range model); or an account of Derwent Water's 2025 season. Each under its own protocol, not a rerun of this candidate.",
+   "records": [
+    {
+     "doc": "docs/LAKE-OWN-RATE-TEST-2026-11.md",
+     "quote": "| 1. Skill over the usual rate at least 0.10, interval above zero | skill **0.042**; Brier(usual) − Brier(candidate) +0.00104 [−0.00235, +0.00574] (ISO weeks: [−0.00116, +0.00363]) | **fail** |"
+    },
+    {
+     "doc": "docs/LAKE-OWN-RATE-TEST-2026-11.md",
+     "quote": "**The ranking gain is between lakes, not within one.**"
+    }
+   ],
+   "prs": [
+    625
+   ]
   },
   {
    "id": "lake-temperature",
@@ -1313,11 +1541,11 @@
     "spills",
     "live data"
    ],
-   "verdict": "On 2025 data the status input helped at every lead; at lead 0 Brier 0.0265 against 0.0362 (−27%, interval −0.0125 to −0.0070). About half the lead-0 gain comes from how the label is defined. With status missing the candidate is worse, so it needs a fallback.",
-   "scope": "2025 EA event data, retrospective; needs confirmation on SwimSignal's own polls.",
+   "verdict": "Two held-out periods say the status input helps. On 2025 it beat the same model without status at every lead (lead 0 Brier 0.0265 against 0.0362). On January to August 2026, as a frozen-model backtest, it passed all five conditions at every lead against that model and against production with the fallback (lead 1: 0.0316 against production's 0.0419). Not better than production at United Utilities beyond lead 0. About half the lead-0 gain comes from how the label is defined.",
+   "scope": "EA start/stop records for 2025 and January to August 2026, status rebuilt at 00:00 UTC; the poll-based status is tested only by the shadow.",
    "stage": "scheduled",
-   "stage_note": "Running in shadow beside the live forecast, 25 October to 21 November 2026. Not adopted and not dropped.",
-   "next": "Read on or after 23 November 2026.",
+   "stage_note": "Running in shadow beside the live forecast, 25 October to 21 November 2026. A switch is drafted, off by default (PR 639). Not adopted and not dropped.",
+   "next": "Read the shadow on or after 23 November 2026; then Ethan decides the switch and United Utilities.",
    "read_on": "2026-11-23",
    "records": [
     {
@@ -1327,11 +1555,16 @@
     {
      "doc": "docs/LIVE-STATUS-SHADOW-TEST-2026-10.md",
      "quote": "- **Runs** 28 target days, 25 Oct to 21 Nov 2026. **Read** on or after 23 Nov 2026."
+    },
+    {
+     "doc": "docs/LIVE-STATUS-BACKTEST-2026-11.md",
+     "quote": "Both questions pass all five of #254's conditions at every lead, 0 to 4."
     }
    ],
    "prs": [
     254,
-    262
+    262,
+    639
    ]
   },
   {
@@ -1438,28 +1671,49 @@
   },
   {
    "id": "river-rises",
-   "title": "River rises from upstream gauges",
+   "title": "River rises from upstream gauges, radar and the gauge's own history",
    "section": "scheduled",
    "topics": [
     "rivers",
     "gauges"
    ],
-   "verdict": "Not yet run. The programme notes give a median arrival of 1.5 hours, which becomes about an hour of warning at most river spots once publication delay is taken off.",
-   "scope": "River spots with an upstream EA gauge. A river-rise figure is not a swimming-safety forecast.",
-   "stage": "scheduled",
-   "stage_note": "Scope and harness are in an open draft PR; fetch and scoring refuse to run before 2 November 2026.",
-   "next": "Review, then fetch, on or after 2 November 2026.",
-   "read_on": "2026-11-02",
+   "verdict": "Failed as stated, run 5 to 6 November 2026 on 33 spot gauges in 13 river systems (hindcast, archived 15-minute series, 20 November 2024 to 24 October 2026). C1 (upstream gauges added to the spot gauge's own trend): Brier skill 0.0199, 95% interval −0.1849 to 0.0723, labelled \"Too uncertain\"; worse when read three hours late (−0.0617, \"Possible harm\"). C2 (radar added): skill against C1 0.0415, interval 0.0017 to 0.0826, below the 0.05 needed, hit rate 0.115 at the 0.5 line; labelled \"Better\" against C1 only, with no shown gain over the spot's own trend. Median lead gained 1 h on 100 of 677 onsets. The base rate by gauge and month ranked the next three hours best (AUC 0.815). 119 EA requests, all within the caps. C3 (development on seen data, 6 November 2026; radar plus the gauge-month base rate, blocked and embargoed splits): skill against the base rate 0.077, river-system interval −0.062 to 0.174, and against the spot gauge's trend 0.103, interval −0.033 to 0.175; not shown better than either. Better than C2 (0.030, interval 0.013 to 0.106). The gain is mostly one river system, about 0.02 with forward-only training, and gone with a 3-hour delay.",
+   "scope": "River spots with an upstream EA level gauge on the Hydrology API; the next 3 h (6 h secondary) at hours when the site shows no word. A rare target (0.6% of hours). Says nothing about swimming safety, the real-time feed's own gaps, or a model that includes the base rate, which was not fitted.",
+   "stage": "development",
+   "stage_note": "Not adopted as a forecast; no early-warning wording. The gauge-month history is built as a dated observation in #631 (open; merging is Ethan's): data/research/river_rise_history.v1.json with its contract, one history line in the River level cell at the river spots whose gauge it covers (49 in November on the 26 October build), and a Research page entry. C3 and its references are frozen. A shadow logger (river-shadow/) is built and tested but not deployed: deploying it, setting GITHUB_DISPATCH_TOKEN for 30-minute builds, or declining is Ethan's decision.",
+   "next": "Ethan merges #631 (the history observation). Ethan's decision on the logger; then a winter shadow 1 December 2026 to 28 February 2027, read on or after 8 March 2027 (it can only show a gain of about 0.14). Meanwhile a regulated-reach fallback rule, stated before any score.",
    "records": [
     {
-     "doc": "docs/AI-PROGRAMME-2026-10.md",
-     "quote": "- Upstream gauges give about an hour of warning at most river spots (median arrival 1.5 h, before a 0.5 h median"
+     "doc": "docs/RIVER-RISES-SCOPE-2026-10.md",
+     "quote": "**Both candidates fail the stated conditions. Nothing is adopted. Nothing on the site changes.**"
+    },
+    {
+     "doc": "docs/RIVER-RISES-SCOPE-2026-10.md",
+     "quote": "| 1. Brier skill, 95% cluster interval (13 river systems, 2,000 draws) | ≥ 0.05, lower end > 0 | **0.0199 [−0.1849, 0.0723]** | fails |"
+    },
+    {
+     "doc": "docs/RIVER-RISES-SCOPE-2026-10.md",
+     "quote": "**Verdict: fails** (conditions 1 and 3). **Near-miss label: Better** (d 0.0415 ≥ B 0.02, lower end 0.0017 > 0)."
+    },
+    {
+     "doc": "docs/RIVER-RISES-C3-2026-11.md",
+     "quote": "**C3 is not shown better than the gauge-month base rate (R1). Under the outcome map above, the deliverable is the"
+    },
+    {
+     "doc": "docs/RIVER-RISES-C3-2026-11.md",
+     "quote": "| **C3 vs R1** | **0.077** | **−0.062 to 0.174** | 0.047 to 0.108 |"
+    },
+    {
+     "doc": "docs/RIVER-RISE-HISTORY-CONTRACT-v1.md",
+     "quote": "A month is shown only with at least **480 hours counted** (20 days of hours) **and readings in both of its years**"
     }
    ],
    "prs": [
-    383
+    383,
+    627,
+    631
    ],
-   "register_note": "The register says \"median lead around 1.5 h\"; the doc says median arrival 1.5 h and about an hour of warning. The primary record is in open PR #383, not on main."
+   "register_note": "The register's row rounds the figures; both records hold the intervals, the per-system diagnosis and the latency figures."
   },
   {
    "id": "missing-event-end",
@@ -1550,7 +1804,7 @@
    "scope": "A model trained on United Utilities applied to other companies in 2025.",
    "stage": "waiting",
    "stage_note": "The cached radar and extraction are kept.",
-   "next": "Reuse for river-rise and event-timing questions where resolution matters.",
+   "next": "Reuse for river-rise and event-timing questions where resolution matters. Rain at each overflow's own position was tested on 6 November 2026 (#640): no gain over the cell. That run found full-day cell radar 7.8% better than the lead-0 forecast once the model is refitted; radar up to the issue hour is the next stated test.",
    "records": [
     {
      "doc": "docs/RADAR-RAIN-CHECK-2026-10.md",
@@ -1558,9 +1812,32 @@
     }
    ],
    "prs": [
-    343
+    343,
+    640
    ],
    "register_note": "The register's \"even perfect rain added little\" holds only against same-day forecast rain; the doc says perfect rain would recover most of the loss at leads 1 to 4."
+  },
+  {
+   "id": "radar-per-overflow",
+   "title": "Radar rain at each overflow's own position",
+   "section": "negative",
+   "topics": [
+    "rain"
+   ],
+   "verdict": "Not shown, run 6 November 2026 (verdict N). With the spill model's form refitted on each rain source and scored out of fold on 2025 (3,778 overflows, 1,374,430 overflow-days), rain from the 3 x 3 block of 1 km radar pixels around each overflow scored Brier 0.0342 against 0.0341 for the 10 km cell's radar: a difference of +0.00012, 95% interval −0.00020 to +0.00044 (overflow × week). A gain of 1% is ruled out. The overflow's own pixel did slightly worse. Thames Water January to August 2026, with models frozen on 2025: −0.00056, interval −0.00211 to +0.00056. Refitted on full-day cell radar, the model beat the same model on the lead-0 forecast by 7.8%; with radar only for the two days before, by 0.9%, interval including zero.",
+   "scope": "Nine English companies' overflows in cells with cell radar and lead-0 forecasts, 2025 (labels already scored in #343, so development evidence, not confirmation), and Thames Water in 2026. Same-day and two-day rain only; longer rain from ERA5-Land in every arm. Says nothing about river rises, event timing or a model that knows each company.",
+   "stage": "archived",
+   "stage_note": "Archived as a spill-model input. The per-overflow radar stays private for river-rise and event-timing questions. The next deliverable from this run is radar for the day up to issue time at cell scale, which needs its own stated test.",
+   "reopen_when": "A model that knows each company is adopted (A8, upgraded-overflow option B or a nine-company refit), or the EA 2026 start/stop files give a second labelled year with per-overflow radar.",
+   "records": [
+    {
+     "doc": "docs/RADAR-PER-OVERFLOW-TEST-2026-11.md",
+     "quote": "**Verdict N: rain at the overflow's own position is not shown to beat the cell's radar. The interval also rules out a\ngain of 1%.**"
+    }
+   ],
+   "prs": [
+    640
+   ]
   },
   {
    "id": "glofas",
@@ -1711,10 +1988,10 @@
    "topics": [
     "nations"
    ],
-   "verdict": "Plans, not tests. Wales has the data but not the permission; Scotland could be forecast with its spill records once a test passes; Ireland has no reusable spill data.",
-   "scope": "Plans only; nothing built.",
+   "verdict": "Scotland's hindcast passed Gate A on 1 Nov 2026: the English spill model, with Scottish covariates, beats each overflow's own history at leads 0 to 3, but forecasts 72% of the spill-days that happened. Wales passed its Gate A on 10 Oct and waits on Dŵr Cymru's permission; Ireland has no reusable spill data.",
+   "scope": "Scotland: 254 overflows, 2022-25, the 12 Sep model. Wales: Hafren Dyfrdwy and Dŵr Cymru's English overflows. Directories only in Ireland.",
    "stage": "waiting",
-   "stage_note": "Directories are live; forecasts wait on licences and local tests.",
+   "stage_note": "Directories are live; Scotland's shadow scores run since 11 Oct; nothing Scottish is published before Gate B and outside review.",
    "next": "Expand observations and evidence first, then licence and local validation before forecasting.",
    "records": [
     {
@@ -1723,6 +2000,10 @@
     },
     {
      "doc": "docs/SCOTLAND-PLAN-2026-10.md"
+    },
+    {
+     "doc": "docs/SCOTLAND-HINDCAST-2026-11.md",
+     "quote": "All four parts were tested and all four pass."
     },
     {
      "doc": "docs/IRELAND-PLAN-2026-10.md"
@@ -2155,7 +2436,7 @@
    "scope": "Rivers May to September for the test. The year-round estimate everywhere else is labelled provisional.",
    "stage": "live",
    "stage_note": "River estimate shipped in #418. From 31 October 2026 a labelled provisional estimate runs all year at the named spots, clicked points and directory waters, each worded by what was measured.",
-   "next": "The winter error readout, and the sea curve's error outside England.",
+   "next": "The sea curve's error outside England. Winter was judged on past winters in #638 (entry water-temp-winter).",
    "records": [
     {
      "doc": "docs/WATER-TEMPERATURE-MODEL-TEST-2026-10.md",
@@ -2181,6 +2462,38 @@
     548
    ],
    "register_note": "The register says about 93 Open-Meteo calls a day; the baseline record says about 91."
+  },
+  {
+   "id": "water-temp-winter",
+   "title": "Water temperature, October to April: a frozen-model backtest on past winters",
+   "section": "adopted",
+   "topics": [
+    "temperature",
+    "rivers",
+    "lakes"
+   ],
+   "verdict": "The live October-April route (the summer curves in the 7-day air) read too warm in winters 2023-25: rivers RMSE 2.27 °C (interval 2.05 to 2.49), bias +1.54; lakes 3.64 °C (3.17 to 4.08), bias +3.08; inconclusive for rivers and a fail for lakes by the stated rule. A winter curve (W2), fitted on those winters and frozen before any older winter was fetched, passed on winters it had never seen: rivers 1.63 °C (1.43 to 1.85) on 2022-23, 0.80 better than the old route (0.39 to 1.14); lakes 1.76 °C (1.49 to 2.04) on 634 samples from 2020-23, 1.83 better (1.16 to 2.53), after the first 266 lake rows fell short of the 300-row gate (amendment 1, written before its requests). Lakes read about 2 °C cold in April.",
+   "scope": "EA spot samples (determinand 0076) at 149 cells in the primary test, two-way intervals by water group and month; air from Open-Meteo's Historical Forecast API through the model's bridge. A daily estimate against single samples at monitoring points, not swim spots; says nothing about safety or cold-water risk.",
+   "stage": "development",
+   "stage_note": "Built in #638: the winter curves at every river and lake spot, map click and directory water from October to April, worded 'typically within 2 °C in a test on past winters'. Not live until Ethan merges and a site build deploys. May-September routes, the sea curve and pollution levels unchanged.",
+   "next": "After 30 April 2027: the same script on winter 2026-27 at the same cells (monitoring; rollback if a type is more than 0.5 °C worse than its figure here).",
+   "records": [
+    {
+     "doc": "docs/WATER-TEMP-WINTER-BACKTEST-2026-11.md",
+     "quote": "| Lakes | 1,139 | 137 | **3.64 °C** [3.17, 4.08] | **+3.08 °C** [+2.34, +3.71] | 23% | **fail**, material bias |"
+    },
+    {
+     "doc": "docs/WATER-TEMP-WINTER-BACKTEST-2026-11.md",
+     "quote": "| Rivers | 2,468 | 325 | 2.43 °C [1.89, 2.92], bias +1.70 | **1.63 °C [1.43, 1.85]**, bias +0.07 [−0.35, +0.49] | **−0.80 °C [−1.14, −0.39]** | W2 passes; gain beyond 0.3, interval below zero: **adopt** |"
+    },
+    {
+     "doc": "docs/WATER-TEMP-WINTER-BACKTEST-2026-11.md",
+     "quote": "| W2 − frozen | **−1.83 °C [−2.53, −1.16]** | | | gain beyond 0.3, interval below zero: **adopt** |"
+    }
+   ],
+   "prs": [
+    638
+   ]
   },
   {
    "id": "advisories-anomalies",
@@ -2555,6 +2868,179 @@
    ],
    "prs": [
     611
+   ]
+  },
+  {
+   "id": "bench-ecoli900",
+   "title": "Open benchmark, first task: E. coli over 900 at inland bathing waters",
+   "section": "data",
+   "topics": [
+    "ecoli",
+    "benchmark",
+    "bathing waters"
+   ],
+   "verdict": "Release candidate 0, exploratory on seen 2023-26 data: retrospective hindcasts, not prospective performance. Fitted forward (2025-26, 1,023 samples), the production model's form had lower Brier than the month-of-year rate (paired difference 0.017, interval 0.006 to 0.032; skill 0.184) and than the last sample. The leave-one-year-out hindsight's skill of 0.315 uses a different sample and fitting scheme. Within each season the month rate ranks at about chance; the last sample's small edge depends on how soon a result is known.",
+   "scope": "38 inland bathing waters, May to September 2023-26, 2,265 Environment Agency samples; protocol fixed before scoring, forward-only and result-known variants added after a review; site bootstrap. Neither model estimate is an issued forecast.",
+   "stage": "development",
+   "stage_note": "One command reproduces the scores from committed files; no new data published. The model columns stay out of any release until their licence questions (Open-Meteo redistribution; which spill histories the exposure uses) are settled. The dataset licence, a DOI and outside submissions are Ethan's decisions.",
+   "records": [
+    {
+     "doc": "docs/BENCH-ECOLI900-2026-11.md",
+     "quote": "**Exploratory, on seen data:**"
+    },
+    {
+     "doc": "docs/BENCH-ECOLI900-2026-11.md",
+     "quote": "| 3. Model hindsight | 0.0824 [0.0542, 0.1135] | 0.315 [0.173, 0.409] | 0.854 [0.757, 0.913] |"
+    },
+    {
+     "doc": "docs/BENCH-ECOLI900-2026-11.md",
+     "quote": "| 3. Model, forward fit | 0.0756 [0.0478, 0.1074] | 0.184 [0.068, 0.319] | 0.801 [0.708, 0.881] |"
+    }
+   ],
+   "prs": [
+    618
+   ]
+  },
+  {
+   "id": "sat-shore-margin",
+   "title": "Satellite lake readings: the shore margin",
+   "section": "satellite",
+   "topics": [
+    "lakes",
+    "satellite"
+   ],
+   "verdict": "Exploratory, offline, on cached scene classification. In clear scenes the outermost ring of a site's water is classed as not water 7.3% of the time at the bathing lakes, the second ring 1.73% against 1.20% inside: under the pre-stated rule the one-pixel margin is kept. A two-pixel margin keeps every site and makes 10 to 12% more scenes usable; a three-pixel one drops 3 bathing lakes and 7 chlorophyll points.",
+   "scope": "18 bathing-water lakes (14 past the size rule) and 40 chlorophyll points, every cached scene 2020-26; the satellite tests' own caches, unchanged. The original classification check could not measure the index shift because no band pixels were cached; the separate follow-up measured 50 selected site-scenes. Not an algae or safety finding.",
+   "stage": "reference",
+   "stage_note": "Production keeps margin 1. Two 50-scene band comparisons found a median absolute shift of 0.0041 and 13 of 98 scenes shifting by 0.02 or more; the outlier inspection (sat-shore-outliers, #623) found the large shifts are near-zero-reflectance scenes, not a mask-width effect. From contract 1.4 (#624) every new pilot reading records its brightness, pixel IQR and inner-core reading with a low-signal mark. Review the margin in the 2027 protocol before 1 May 2027.",
+   "records": [
+    {
+     "doc": "docs/SATELLITE-SHORE-MARGIN-2026-11.md",
+     "quote": "**Under the rule fixed above: no change recommended.**"
+    },
+    {
+     "doc": "docs/SATELLITE-SHORE-MARGIN-2026-11.md",
+     "quote": "| Bathing lakes | 7.26% (4,328 of 59,645) | 1.73% | 1.52% | 1.20% |"
+    },
+    {
+     "doc": "docs/SATELLITE-SHORE-BANDS-2026-11.md",
+     "quote": "Seven of 50 pairs changed by at least 0.02 in absolute value."
+    },
+    {
+     "doc": "docs/SATELLITE-SHORE-BANDS-2026-11.md",
+     "quote": "| margin 2 minus margin 1 | 50 | -0.0034 | -0.0093 to -0.0006 | 0.0041 | 0.0205 | 0.0614 | 44 of 50 |"
+    }
+   ],
+   "prs": [
+    620,
+    621,
+    622,
+    623,
+    624
+   ]
+  },
+  {
+   "id": "sat-shore-outliers",
+   "title": "Satellite lake readings: the images behind the shore-margin outliers, and a sensitivity flag",
+   "section": "satellite",
+   "topics": [
+    "lakes",
+    "satellite"
+   ],
+   "verdict": "Exploratory, 26 selected scenes read (118 requests, 72.3 MiB) plus the second sample's 50. The 0.23 Serpentine shift and both Lake District outliers are scenes where the water's B4 and B5 reflectance is a few thousandths (inner B4 0.0005, B5 0.0007 to 0.0025), so the index is a ratio of noise and the brighter one-pixel shore rim steers the median; not a shore bloom, bottom or mask-width effect. Pre-stated pair test: 5 of 5 big same-day pairs have their extreme scene dark or spread, 1 of 4 small pairs flagged. Proposed flags (brightness below 0.015, pixel IQR at or above 0.10, narrow core) catch 17 of 17 shifts of 0.02 or more on 76 seen scenes; dark-or-spread marks 10 of 50 in the stratified sample.",
+   "scope": "14 bathing-water lakes, seen imagery 2020-26; thresholds set on the second sample's 50 scenes, so exploratory. Says nothing about chlorophyll, algae, safety, or which margin is more accurate; firing rate across the unread archive unknown.",
+   "stage": "live",
+   "stage_note": "Built as contract 1.4 (#624): the weekly pilot and refresher record brightness, pixel IQR and the inner-core reading on every new reading, and /lakes.html shows a low-signal note (brightness < 0.015 or IQR >= 0.10). Earlier readings unmarked; thresholds provisional until the 2027 protocol review.",
+   "next": "Pilot diagnostics (contract minor version) so the flags accumulate prospectively; include in the 2027 shallow-lake protocol review before 1 May 2027.",
+   "records": [
+    {
+     "doc": "docs/SATELLITE-SHORE-OUTLIERS-2026-11.md",
+     "quote": "**The Serpentine outlier (24 June 2026, 0.24 to 0.007) is dark water, not a shore bloom.**"
+    },
+    {
+     "doc": "docs/SATELLITE-SHORE-OUTLIERS-2026-11.md",
+     "quote": "**5 of 5 big pairs** have their extreme scene dark or spread (every one is dark), and"
+    },
+    {
+     "doc": "docs/SATELLITE-SHORE-OUTLIERS-2026-11.md",
+     "quote": "| Both | 76 | 17 | 17 / 9 / 8 | 26 / 14 / 3 | 35 / 10 / 7 | 50 / 17 / 0 |"
+    }
+   ],
+   "prs": [
+    623,
+    624
+   ]
+  },
+  {
+   "id": "sat-low-signal-chlorophyll",
+   "title": "Satellite lake readings: the low-signal rule against lab chlorophyll",
+   "section": "satellite",
+   "topics": [
+    "lakes",
+    "satellite"
+   ],
+   "project": "SAT-OBS",
+   "verdict": "Exploratory, on the lab chlorophyll test's seen pairs; 206 of 207 scenes read (897 requests, 463.8 MiB, caches unchanged; the one run became two after a dropped connection, with the amendment recorded first). Contract 1.4's rule flags 43 of 206 pairs (21%; deeper lakes 28%, shallow 12%), the flagged readings low at low-chlorophyll lakes. Without them the pooled Spearman is 0.580 against 0.501 (paired difference +0.080, interval −0.023 to +0.176) and the within-lake Spearman 0.395 against 0.292 (+0.102, −0.037 to +0.255): under the pre-stated reading, mixed, not shown. The inner-core reading in place of the core reading changes the pooled Spearman by +0.004.",
+   "scope": "38 EA chlorophyll monitoring points, May to September 2021-2026 scenes within a day of a lab sample; thresholds fixed on bathing-lake scenes before any lab pair was seen with them, but the pairs and lab values were seen in #386. Not a pass of #386 (the four conditions recomputed on the unflagged subset hold as figures, which is description of a post-hoc subset), not an algae, toxin or safety finding. One pair of 207 unread.",
+   "stage": "reference",
+   "stage_note": "Nothing adopted; the display rule, readings and /lakes.html note stay as contract 1.4 wrote them. The 2027 shallow-lake protocol review gets the direction, size and flagged-share expectation to pre-state, and the exclusion as a candidate secondary analysis.",
+   "next": "2027 shallow-lake protocol review before 1 May 2027: pre-state the flag exclusion as a secondary analysis with a margin below +0.08; the inner-core variant need not be carried.",
+   "records": [
+    {
+     "doc": "docs/SATELLITE-LOW-SIGNAL-CHLOROPHYLL-2026-11.md",
+     "quote": "**43 of 206 pairs (20.9%)** would carry the low-signal mark: 19 dark and spread, 21 spread only, 3 dark only."
+    },
+    {
+     "doc": "docs/SATELLITE-LOW-SIGNAL-CHLOROPHYLL-2026-11.md",
+     "quote": "| B − A: the flag's effect, core reading | **+0.080** [−0.023, +0.176] | **+0.102** [−0.037, +0.255] |"
+    },
+    {
+     "doc": "docs/SATELLITE-LOW-SIGNAL-CHLOROPHYLL-2026-11.md",
+     "quote": "beforehand the result is **mixed, not shown**."
+    },
+    {
+     "doc": "docs/SATELLITE-LOW-SIGNAL-CHLOROPHYLL-2026-11.md",
+     "quote": "**This is not a pass.** B is a subset chosen by a rule applied to seen pairs,"
+    }
+   ],
+   "prs": [
+    626
+   ]
+  },
+  {
+   "id": "sat-chl-candidates",
+   "title": "Satellite lake readings: quality-aware chlorophyll candidates against the lab chlorophyll baseline",
+   "section": "satellite",
+   "topics": [
+    "lakes",
+    "satellite"
+   ],
+   "project": "SAT-OBS",
+   "verdict": "Development on seen 2021-2026 pairs, not fresh confirmation. 183 of 207 paired scenes read (803 requests, 418.4 MiB; the fetch ended on a second dropped connection, as pre-stated). Out-of-fold skill gain over #386's baseline on held-out lakes: A, low-signal readings excluded, +0.143 [+0.005, +0.306] at 81% coverage; C, brightness and pixel spread as covariates, +0.137 [+0.034, +0.233]; both keep the direction on held-out seasons and forward years, so both meet the pre-stated bar for a shadow log. B, weighting by a fitted noise model, +0.017 [−0.066, +0.139], is not supported; D, a per-pixel brightness floor, +0.034 [−0.122, +0.178], is inconclusive (its lower end is beyond the −0.05 harm margin). E, a three-day composite, was not tested. The lake's own training mean scores higher than every candidate on held-out seasons and years.",
+   "scope": "38 EA chlorophyll monitoring points, May to September 2021-2026, samples with a usable scene within a day. A was proposed after #626 showed the unflagged subset agreeing better on these same pairs, so its support is not independent of that; C uses brightness partly as a chlorophyll signal. No claim of a chlorophyll measurement, or about algae, toxins or safety; #386's verdict and #626's readout unchanged.",
+   "stage": "development",
+   "stage_note": "Frozen model (B0, A, C) and a versioned shadow log kept off the site built; the weekly pilot and the refresher write it from the first run after the PR merges. Weekly reads at the 38 points in 2027 need the runner the register lists as open.",
+   "next": "Shadow read on 2027 pairs on or after 1 Feb 2028 (not worse: gain lower end above −0.05; better: gain +0.03 with lower end above 0; at least 60 pairs at 10 lakes). Meanwhile a lake-history-plus-satellite candidate on the same holdouts, and a refetch with a pre-stated retry rule to test E.",
+   "records": [
+    {
+     "doc": "docs/SATELLITE-CHL-CANDIDATES-2026-11.md",
+     "quote": "| A | **+0.143 [+0.005, +0.306]** | +0.148 [−0.002, +0.326] | +0.127 [−0.031, +0.299] | yes |"
+    },
+    {
+     "doc": "docs/SATELLITE-CHL-CANDIDATES-2026-11.md",
+     "quote": "| C | **+0.137 [+0.034, +0.233]** | +0.133 [+0.029, +0.227] | +0.096 [−0.102, +0.230] | yes |"
+    },
+    {
+     "doc": "docs/SATELLITE-CHL-CANDIDATES-2026-11.md",
+     "quote": "**candidate E was not tested.**"
+    },
+    {
+     "doc": "docs/SATELLITE-CHL-CANDIDATES-2026-11.md",
+     "quote": "2. **A's support is not independent of #626.**"
+    }
+   ],
+   "prs": [
+    626
    ]
   }
  ]

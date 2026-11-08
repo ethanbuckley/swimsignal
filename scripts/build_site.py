@@ -312,6 +312,12 @@ PUSH_URL_ENV, PUSH_KEY_ENV = "DIPCAST_PUSH_URL", "DIPCAST_VAPID_PUBLIC_KEY"
 # deployed. It adds "dates": true to the push settings in spots.json, which is what shows "Alert me
 # about this date" on the organisers' page; an older Worker would refuse the request.
 PUSH_DATES_ENV = "DIPCAST_PUSH_DATES"
+# Saved-spot alerts for official advice (push/README.md, "Official advice at a saved spot"): "1" once the
+# Worker that sends them is deployed. It adds "advice": true to the push settings in spots.json, which
+# changes the Alerts tile's and the privacy notice's words, and makes scripts/alerts.js put
+# "advice_alerts": true in alerts.json, which is what lets the Worker send them. So the words and the
+# sending switch on in the same build; an older Worker ignores the flag.
+PUSH_ADVICE_ENV = "DIPCAST_PUSH_ADVICE"
 # With alerts on, the privacy notice's sentences that say nothing leaves the device, and that
 # SwimSignal holds no personal data, would be untrue: each is swapped for one that is not. A test
 # checks that every one is still in the notice, so a rewrite cannot leave one behind unswapped.
@@ -344,7 +350,11 @@ def push_config() -> dict | None:
     dates = os.environ.get(PUSH_DATES_ENV, "").strip().lower()
     if dates not in ("", "0", "1", "true"):
         log.warning("%s must be 1 or unset: alerts for a date left off", PUSH_DATES_ENV)
-    return {"url": url, "key": key, **({"dates": True} if dates in ("1", "true") else {})}
+    advice = os.environ.get(PUSH_ADVICE_ENV, "").strip().lower()
+    if advice not in ("", "0", "1", "true"):
+        log.warning("%s must be 1 or unset: alerts for official advice left off", PUSH_ADVICE_ENV)
+    return {"url": url, "key": key, **({"dates": True} if dates in ("1", "true") else {}),
+            **({"advice": True} if advice in ("1", "true") else {})}
 
 
 def email_config() -> dict | None:
@@ -402,9 +412,10 @@ def with_ask(html: str) -> str:
     return privacy_updated(html, "Ask SwimSignal")
 
 
-def with_push(html: str, on: bool, email: bool = False, dates: bool = False) -> str:
+def with_push(html: str, on: bool, email: bool = False, dates: bool = False, advice: bool = False) -> str:
     """The privacy page: the alerts section when alerts are on (in the browser, by email or both),
-    else the planned-feature note. dates: alerts for a date are on too (DIPCAST_PUSH_DATES)."""
+    else the planned-feature note. dates: alerts for a date are on too (DIPCAST_PUSH_DATES). advice:
+    saved-spot alerts for official advice are on too (DIPCAST_PUSH_ADVICE)."""
     if not (on or email):
         return html
     # An email sign-up sends the saved spots too, and its record is described under Alerts, so the
@@ -414,6 +425,8 @@ def with_push(html: str, on: bool, email: bool = False, dates: bool = False) -> 
     if email:
         html = html.replace(PUSH_SWAPS[0][1], PUSH_SWAPS[0][1] + "\n" + EMAIL_SHORT_LINE, 1)
     push_section = PUSH_PRIVACY
+    for a, b in PUSH_ADVICE_SWAPS if on and advice else []:
+        push_section = push_section.replace(a, b)
     for a, b in PUSH_DATES_SWAPS if on and dates else []:
         push_section = push_section.replace(a, b)
     for a, b in PUSH_DATES_PAGE_SWAPS if on and dates else []:
@@ -442,6 +455,14 @@ PUSH_PRIVACY = (
     "IP address when you turn alerts on or off or change your saved spots, and about once a week when you open the "
     "site, as any web server would; "
     '<a href="https://www.cloudflare.com/privacypolicy/">Cloudflare\'s privacy policy</a> applies to that.</p>')
+
+# Saved-spot alerts for official advice, once DIPCAST_PUSH_ADVICE is set: one more use of the same record,
+# nothing more stored. Each "before" is in PUSH_PRIVACY (a test checks), and none is in a date swap's.
+PUSH_ADVICE_SWAPS = [
+    ("to send a notification when one of those spots' forecast reaches high or very high risk",
+     "to send a notification when one of those spots' forecast reaches high or very high risk, or when official "
+     "advice is newly shown at one of them"),
+]
 
 # Alerts for a date (push/README.md, "Alerts for a date"), once DIPCAST_PUSH_DATES is set: the record
 # can also hold up to 10 pairs of a spot and a date, for one more use, and is kept while it has any.
@@ -2771,7 +2792,8 @@ def with_warning_words(html: str, verification: Path) -> str:
     rest = [r for r in rows if r is not own]
     spills = sum(r["hits"] + r["misses"] for r in rest)
     if own and own.get("hits") and w.get("hits") and spills:
-        said += (f" {own['hits']} of the {w['hits']} warnings that came true were at {escape(own['company'])}, the one company "
+        # Counts with thousands commas: "990 of the 2990 warnings" on About and Clubs (5 Nov 2026).
+        said += (f" {int(own['hits']):,} of the {int(w['hits']):,} warnings that came true were at {escape(own['company'])}, the one company "
                  f"the spill model learned from. At the other companies, so far, it warned of "
                  f"{share_words(sum(r['hits'] for r in rest) / spills)} spills.")
     return WARN_FIGURES.sub(lambda m: m.group(1) + said + m.group(2), html, count=1)
@@ -2804,7 +2826,7 @@ def not_found_page(root: str) -> str:
         f'<ul><li><a href="{r}">All spots</a>, each with its five-day forecast</li><li><a href="{r}saved/">Your saved spots</a></li>'
         f'<li><a href="{r}feedback.html?type=spot">Ask for a spot to be added</a></li></ul></main>\n'
         f'<footer class="site-foot"><div class="rule"><p>{BRAND} is a free, non-commercial pollution risk forecast for river and lake swim spots in England, run by Ethan Buckley. A forecast, not a water test.</p>'
-        f'<p><a href="{r}terms.html">Terms of use</a> · <a href="{r}privacy.html">Privacy</a> · <a href="{r}feedback.html">Feedback</a> · <a href="{r}research.html">Research</a></p></div></footer></body></html>\n')
+        f'<p><a href="{r}terms.html">Terms of use</a> · <a href="{r}privacy.html">Privacy</a> · <a href="{r}feedback.html">Feedback</a> · <a href="{r}research.html">Research and data</a></p></div></footer></body></html>\n')
 
 
 def robots(root: str) -> str:
@@ -3044,7 +3066,8 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
                 scotland: dict | None = None, email: bool = False, ireland: dict | None = None,
                 northern_ireland: dict | None = None, support: str | None = None, tiles: dict | None = None,
                 push_dates: bool = False, spot_cards: dict[str, str] | None = None, cards_v: str = "",
-                overflows: pd.DataFrame | None = None, generated: pd.Timestamp | None = None, ask: bool = False) -> int:
+                overflows: pd.DataFrame | None = None, generated: pd.Timestamp | None = None, ask: bool = False,
+                push_advice: bool = False) -> int:
     """Every HTML page, the sitemap and the app files. Returns the number of spot pages. A spot
     whose id is not letters, digits and hyphens gets no page of its own and keeps ?spot=.
     support is the Ko-fi page tips go to (support_url), or None for no tips; tiles the map tile
@@ -3071,7 +3094,7 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
             s = s.replace(a, b)
         if name == "about.html":
             s = with_counts(s, results)
-        if name == "clubs.html":
+        if name in ("clubs.html", "about.html"):   # about.html since 5 Nov 2026: its "How good it is" gave no figure
             s = with_warning_words(s, site / "data" / "verification.json")   # build() writes it before the pages
         if name == "coverage.html":
             from dipcast.coastal import render
@@ -3091,7 +3114,7 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
                        lambda _: render_ni(northern_ireland), s, flags=re.S)
         if name == "privacy.html" and ask:
             s = with_ask(s)
-        s = with_counter(with_push(s, push, email, push_dates) if name == "privacy.html" else s, token)
+        s = with_counter(with_push(s, push, email, push_dates, push_advice) if name == "privacy.html" else s, token)
         s = with_share_meta(with_tiles(s, name, tiles), name, root)
         (site / name).write_text(with_support(s, name) if support else s)
     if support:
@@ -3151,6 +3174,7 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     write_sampling_planner(site, token, root)   # where samples are thin, and the sampling simulation's results (Research)
     write_model_scorecard(site, token, root)   # each model's test record and stage: before the data page lists data/research/
     write_lake_temperatures(site)   # data/research/lake-temperatures/, before the data page lists data/
+    write_rise_history(site)   # data/research/river_rise_history.json, before the data page lists data/research/
     write_data_page(site, token, root)   # lists what is in data/, so build() writes the data files first
     write_quality_page(site, overflows, generated, token, root=root)
     write_embed(site)
@@ -3337,7 +3361,7 @@ def write_traces(site: Path, traces: dict[str, list[str]], upstream: dict[str, l
 # spot's page asks for its own data/spot/<id>.json. spots.json itself stays whole, for anyone who
 # reads it, for the organisers' page and the decision record, and for scripts/alerts.js. The lab
 # results an organisation sent (measured) are a spot page's alone too.
-DETAIL_FIELDS = ("contributors", "guide", "measured", "linked", "seasonal", "stretches", "sample_history", "lab")   # linked: spot_links, the Nearby card's; seasonal: past spills by month; stretches: an outing's finish (stretches.py); sample_history: the link to every EA sample (attach_sample_history)
+DETAIL_FIELDS = ("contributors", "guide", "measured", "linked", "seasonal", "stretches", "sample_history", "lab", "rise_history")   # linked: spot_links, the Nearby card's; seasonal: past spills by month; stretches: an outing's finish (stretches.py); sample_history: the link to every EA sample (attach_sample_history)
 
 
 def reach_by_company(contributors: list[dict]) -> list[list]:
@@ -3777,6 +3801,89 @@ def write_lake_temperatures_page(site: Path, token: str | None = None, root: str
     """lake-temperatures.html and lake-temperatures.js beside the app, which read data/research/lake-temperatures/
     (write_lake_temperatures, run before the data page). Returns the script's version."""
     return write_scripted_page(site, "lake-temperatures.html", ("lake-temperatures.js",), ("lake-temperatures.js",), token, root)
+
+
+# River rise history (docs/RIVER-RISE-HISTORY-CONTRACT-v1.md): for each river gauge of the river-rises run and each
+# calendar month, 21 Nov 2024 to 24 Oct 2026, how many hours (when the site would have shown no word) were followed
+# within 3 hours by a rise of more than a fifth of the gauge's usual range. The research side exports one file,
+# data/research/river_rise_history.v1.json (scripts/export_river_rise_history.py, from the C3 record's committed table:
+# the build fetches nothing). It is history, not a forecast: the spot page's River level cell says one line of it for
+# the month (index.html, riseHistoryLine, conditionsSummary). A spot gets the line only where its tile's gauge is the gauge the history is for
+# (river_state.measure's station), and only the months the export's display rule allows (enough hours counted, both
+# years): any other month is null, and the page says nothing for it. Per spot, in its own file (DETAIL_FIELDS), not in
+# the list's. The export is copied whole to data/research/river_rise_history.json for the data page and the Research
+# page. A file of another schema, or another major version, is not used.
+RISE_HISTORY = config.ROOT / "data" / "research" / "river_rise_history.v1.json"
+RISE_HISTORY_SCHEMA, RISE_HISTORY_MAJOR = "swimsignal.river-rise-history", "1"
+
+
+def read_rise_history(path: Path | None = None) -> tuple[dict | None, str | None]:
+    """The export and None, or None and why it is not used."""
+    path = path or RISE_HISTORY
+    if not path.is_file():
+        return None, "no export in this build"
+    try:
+        doc = json.loads(path.read_text())
+    except ValueError:
+        return None, "export is not JSON"
+    if doc.get("schema") != RISE_HISTORY_SCHEMA or str(doc.get("version", "")).split(".")[0] != RISE_HISTORY_MAJOR:
+        return None, f"export is {doc.get('schema')} {doc.get('version')}, not {RISE_HISTORY_SCHEMA} {RISE_HISTORY_MAJOR}.x"
+    return doc, None
+
+
+def gauge_ref(measure: str | None) -> str | None:
+    """The station of a flood-monitoring level measure ("F1903-level-stage-i-15_min-m" is F1903), with spaces as
+    underscores: the measure of Old Wye Bridge is 055807_TG_320, the station list's reference 055807_TG 320."""
+    if not measure or "-level-" not in measure:
+        return None
+    return re.sub(r"\s+", "_", measure.split("-level-", 1)[0])
+
+
+def rise_month_shown(m: dict | None, display: dict) -> bool:
+    """The export's display rule (`display`): at least min_hours hours counted, and readings in min_years years."""
+    return bool(m) and isinstance(m.get("hours"), int) and m["hours"] >= int(display.get("min_hours") or 10**9) \
+        and (m.get("years_in_month") or 0) >= int(display.get("min_years") or 2) and isinstance(m.get("years"), list)
+
+
+def attach_rise_history(results: list[dict], path: Path | None = None) -> dict:
+    """`rise_history` on each river spot the export serves whose River level tile shows the same gauge: the gauge, the
+    period, and the twelve months in order, each as counted or null where the display rule says nothing. Lakes, spots
+    with no gauge reading, and spots whose tile shows another gauge get none. Returns the build's health entry."""
+    doc, why = read_rise_history(path)
+    for r in results:
+        r.pop("rise_history", None)
+    if why:
+        return {"available": False, "why": why}
+    display = doc.get("display") or {}
+    by_spot = {s: g for g in doc.get("gauges") or [] for s in g.get("spots") or []}
+    n, other = 0, []
+    for r in results:
+        g, rs = by_spot.get(r.get("id")), r.get("river_state")
+        if not g or not rs or rs.get("water") == "lake" or r.get("kind") == "lake":
+            continue
+        if gauge_ref(rs.get("measure")) != re.sub(r"\s+", "_", str(g.get("gauge"))):
+            other.append(r["id"])   # the tile names another gauge: its history would be read as this one's
+            continue
+        months = {m.get("month"): m for m in g.get("months") or []}
+        r["rise_history"] = {"gauge": g.get("gauge"), "station": g.get("label"), "river": g.get("river"),
+                             "period": doc.get("period"),
+                             "months": [{k: months[i][k] for k in ("hours", "rise_hours", "rises", "years")}
+                                        if rise_month_shown(months.get(i), display) else None for i in range(1, 13)]}
+        n += 1
+    return {"available": True, "version": doc.get("version"), "spots": n, "other_gauge": other}
+
+
+def write_rise_history(site: Path, path: Path | None = None) -> dict:
+    """data/research/river_rise_history.json: the export whole, or saying it is not published (`available` false, with
+    why). Run before the data page lists data/research/. Returns the build's health entry."""
+    out = site / "data" / "research"
+    out.mkdir(parents=True, exist_ok=True)
+    doc, why = read_rise_history(path)
+    if why:
+        (out / "river_rise_history.json").write_text(json.dumps({"schema": RISE_HISTORY_SCHEMA, "available": False, "why": why}))
+        return {"available": False, "why": why}
+    (out / "river_rise_history.json").write_text(json.dumps({**doc, "available": True}, separators=(",", ":"), ensure_ascii=False))
+    return {"available": True, "gauges": len(doc.get("gauges") or [])}
 
 
 # Spill durations (docs/SPILL-DURATIONS-CONTRACT-v1.md): how long each storm overflow's spills lasted in 2024 and 2025,
@@ -4719,6 +4826,7 @@ def build(refresh: bool = True) -> dict:
     water_est = attach_water_temperature_estimate(results) if refresh else {"estimated": 0, "routes": {}, "missing": {"no refresh": 1}}   # every river and lake spot, all year (#492); cached rain cells
     n_levels = attach_river_levels(results) if refresh else 0   # observations beside the forecast, network only
     n_flows = attach_flow_state(results, any_alerts=any_floods) if refresh else {}   # river high or rising, flood alerts: not part of the level
+    rise_history = attach_rise_history(results)   # past quick rises at the tile's gauge, from a file: history, never a level
     n_weather = attach_weather(results) if refresh else 0
     generated = pd.Timestamp.now(tz="Europe/London")
     # Raises before anything is written if the build is bad. The live check needs this run's poll.
@@ -4737,6 +4845,7 @@ def build(refresh: bool = True) -> dict:
     health["lab_samples"] = n_lab
     health["sample_history"] = n_history
     health["lab_links"] = n_lab_links
+    health["river_rise_history"] = rise_history
     health["typical_readings"] = n_typical
     if water_body is None:
         health["warnings"].append("data/raw/rnags.json is missing or unreadable: no spot says what the Environment Agency lists on its water body")
@@ -4875,6 +4984,7 @@ def build(refresh: bool = True) -> dict:
                                        coastal=coastal, wales=wales, scotland=scotland, email=email is not None,
                                        ireland=ireland, northern_ireland=northern_ireland, support=support_url(), tiles=tile_config(),
                                        push_dates=bool(push and push.get("dates")), ask=ask is not None,
+                                       push_advice=bool(push and push.get("advice")),
                                        spot_cards=spot_cards, cards_v=generated.strftime("%Y%m%d%H%M"),
                                        overflows=_overflows(), generated=generated)
     # Swimmers' reviews: the published ones into site/reviews/, and their sections into the pages just written.

@@ -1,0 +1,37 @@
+{
+ "what": "Water temperature, October to April: the winter curves (W2) adopted by docs/WATER-TEMP-WINTER-BACKTEST-2026-11.md. Each is the Mohseni form in the bridged 7-day air, fitted on EA samples from winters 2023-25 and tested on winters it never saw.",
+ "record": "docs/WATER-TEMP-WINTER-BACKTEST-2026-11.md",
+ "candidate_sha256": "c86720d0c1557f2fb14c6733ab0d5e0014ba122366be64e1e2847a74808d729d",
+ "months": [
+  10,
+  11,
+  12,
+  1,
+  2,
+  3,
+  4
+ ],
+ "curves": {
+  "river": [
+   0.5430378011587952,
+   20.658083686365085,
+   10.25747839101004,
+   0.16624538331499503
+  ],
+  "lake": [
+   2.4891750947069116,
+   16.16853478737081,
+   8.665315496039446,
+   0.35722429726119065
+  ]
+ },
+ "typical_c": {
+  "river": 1.63,
+  "lake": 1.76
+ },
+ "within_c": 2,
+ "test": {
+  "river": "winter 2022 (October 2022 to April 2023), 2,468 EA samples at 325 waters",
+  "lake": "winters 2020 to 2022 (October 2020 to April 2023), 634 EA samples at 94 waters"
+ }
+}

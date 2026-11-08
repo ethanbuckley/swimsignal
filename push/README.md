@@ -1,6 +1,6 @@
 # SwimSignal push alerts
 
-This is a Cloudflare Worker that sends Web Push notifications for SwimSignal. A visitor turns on alerts on the Saved page, and their browser registers with the Worker along with the ids of their saved spots. Every 2 minutes the Worker reads the site's `data/alerts.json` and either revalidates a pending batch or identifies newly high spots. When a saved spot has just become high or very high, it queues one notification for each visitor who saved it, and at most one for each spot in 20 hours: the site is rebuilt several times a day, and a spot near the line can cross it more than once. Visitors who ask also get a weekly note on Thursday evenings with the lowest-risk days ahead ([The weekly note](#the-weekly-note)). It has no npm dependencies. The encryption (RFC 8291) and sender signature (RFC 8292) use the Web Crypto API built into Workers. The same Worker can send these alerts by email too; that part is off until it is set up ([Email alerts](#email-alerts)). It also asks GitHub to build the site every 30 minutes, once a token is set ([Starting the site's build](#starting-the-sites-build)).
+This is a Cloudflare Worker that sends Web Push notifications for SwimSignal. A visitor turns on alerts on the Saved page, and their browser registers with the Worker along with the ids of their saved spots. Every 2 minutes the Worker reads the site's `data/alerts.json` and either revalidates a pending batch or identifies newly high spots. When a saved spot has just become high or very high, it queues one notification for each visitor who saved it, and at most one for each spot in 20 hours: the site is rebuilt several times a day, and a spot near the line can cross it more than once. Once turned on, official advice newly shown at a saved spot queues one too, whatever the spot's level ([Official advice at a saved spot](#official-advice-at-a-saved-spot)). Visitors who ask also get a weekly note on Thursday evenings with the lowest-risk days ahead ([The weekly note](#the-weekly-note)). It has no npm dependencies. The encryption (RFC 8291) and sender signature (RFC 8292) use the Web Crypto API built into Workers. The same Worker can send these alerts by email too; that part is off until it is set up ([Email alerts](#email-alerts)). It also asks GitHub to build the site every 30 minutes, once a token is set ([Starting the site's build](#starting-the-sites-build)).
 
 ## What it stores
 
@@ -95,6 +95,61 @@ Merge first, then deploy from an up-to-date main within about 3 minutes: `git sw
 The most likely mistake is deploying from a checkout that does not have the merge yet. It happens because the local main stays behind GitHub until it is pulled, and wrangler deploys whatever is on disk: the old Worker, with no error. Before deploying, `ls src/weekly.js` (from `push/`) should list the file.
 
 On a Thursday after 18:00 UK time, `npx wrangler tail` shows `weekly: 2026-10-08: N weekly notes to send`, and two minutes later `weekly: sent N, removed 0, failed 0; 0 still queued`.
+
+## Official advice at a saved spot
+
+"Official advice appeared at a spot I saved, and I heard nothing." Until 8 Nov 2026 a saved-spot alert went out only when a spot rose to high or very high. A spot at low risk could gain an advice-against-bathing notice (`official` in `alerts.json`) and no alert went out; only [alerts for a date](#alerts-for-a-date) carried the news. Now a notice that is newly shown at a saved spot sends one alert to each browser that saved it. It is off until the build turns it on ([Deploying it](#deploying-it-1)).
+
+### What it says
+
+The same as a high-risk alert for that spot, with "New official notice" as its marker: the spot's name, then the headline, then what to do, which is the notice itself while it shows (`scripts/alerts.js`).
+
+```
+Frensham Great Pond
+New official notice · Low risk for the next five days. Official: EA advice against bathing (harmful algae) · since 19 Jun · checked 26 Oct. Follow it first; the level is SwimSignal's sewage forecast only.
+```
+
+Its tag carries a short mark of the notice (`dipspot-<id>-n<8 hex>`), so it never silently replaces an earlier high-risk alert for the spot (the service worker sets no `renotify`). Several spots in one alert: "New official advice at 2 of your saved spots", or "3 of your saved spots: high risk or new official advice" when some also rose. Tapping opens the spot, or the Saved page for several.
+
+### How it decides
+
+Once a build, beside the rises, from the notices `state` already keeps for alerts for a date (`notices`, compared without the check, `noticeKey` in `src/shared.js`, so a re-check is not news). A spot's notice is news when it is not empty and differs from the last build's: one appeared, or it changed to another (`newAdvice` in `src/index.js`).
+
+- **At most once a day for each spot.** `state.advised` keeps when each spot was last alerted for advice, and a spot is not alerted again for 20 hours, the same rule as rises. It is separate from the rises' 20 hours, so a rise in the morning does not hide a notice in the afternoon.
+- **A spot that rises with a new notice gets one alert, the rise.** It already leads with the notice's marker and gives the notice as what to do, and counts as told for the notice too.
+- **No alert when a notice lifts.** Saved-spot alerts are warnings: a spot falling back from high sends none either. "No longer shown" would read as an all-clear, and neither SwimSignal's level nor a lifted notice is one. The spot's page shows the change, and alerts for a date still tell of a lift on an asked-for day.
+- **Checked again when sent.** A queued advice alert goes out only if the spot still shows that notice in the latest `alerts.json` (or is now high). A notice lifted before sending sends nothing.
+- **Off until the build says so.** The Worker sends these only while `alerts.json` has `"advice_alerts": true`, which `scripts/alerts.js` writes only when `spots.json` has `push.advice`, set by the repository variable `DIPCAST_PUSH_ADVICE`. The same build changes the Alerts tile and the privacy notice to say these alerts exist. So the words and the sending switch on together, and deleting the variable switches both off with no redeploy.
+
+A notice already showing when it is turned on is not news: it was in the last build. A `state` from before notices compares none.
+
+### Free-plan budget
+
+No new KV keys, lists or writes beyond those a rise already uses: the decision lives in `state`, written once a build already, and the alerts go through the same queue, `SENDS_PER_RUN` a run. A build with a new notice lists the subscriptions once, as a build with a rise does. `state` grows by one timestamp for each spot alerted in the last 20 hours.
+
+### Not by email
+
+Email alerts are off for now, and their sign-up asks consent for alerts when a spot turns high. Advice alerts are push only, and the tile says so when email is on.
+
+### Deploying it
+
+Deploy the Worker first, then set the variable. The new Worker does nothing new until a build says `"advice_alerts": true`, so deploying it first is safe.
+
+1. Merge the pull request. Then, in a terminal: `git switch main && git pull`.
+2. `cd push`, then `grep -c newAdvice src/index.js`. It prints a number above 0. If it prints 0, the pull did not bring the merge: stop and pull again.
+3. `npx wrangler deploy`. It prints the Worker's address, as in [Setup](#setup) step 6.
+4. In GitHub: Settings, Secrets and variables, Actions, Variables, New repository variable. Name `DIPCAST_PUSH_ADVICE`, value `1`. (`site.yml` passes it to the build.)
+5. Wait for the next site build (every 30 minutes).
+
+How you will know it worked:
+
+- `curl -s https://swimsignal.co.uk/data/alerts.json | python3 -c "import json,sys; print(json.load(sys.stdin).get('advice_alerts'))"` prints `True`.
+- The Saved page's Alerts tile says "Another when official advice is newly shown at one of them, also at most once a day for each." The privacy notice's Alerts section says "or when official advice is newly shown at one of them".
+- When a notice next appears at a saved spot, `npx wrangler tail` shows `cron: ...: 0 spots rose to high, 1 with new official advice, N alerts to send`, and two minutes later `cron: sent N, ...`.
+
+The most likely mistake is setting the variable before step 3. It happens because the variable takes effect at the next build, which can come before you have deployed. The old Worker ignores `advice_alerts`, so the tile and the privacy notice would promise alerts that are not sent. Nothing errors, so nothing tells you. If it happens, deploy at once, or delete the variable until you can.
+
+To turn it off, delete the variable: the next build removes the words and the flag, and the Worker stops sending them.
 
 ## Alerts for a date
 
@@ -310,6 +365,8 @@ So a second cron, every 30 minutes (`*/30 * * * *` in `wrangler.toml`), asks Git
 4. If GitHub refuses, it logs the status with what to check and throws, so the run shows as an error in the Worker's cron events.
 
 GitHub's own schedule stays in `site.yml` as the fallback. The workflow's `concurrency: site` runs one build at a time; a request that arrives while one runs waits, and a newer request replaces a waiting one, so builds never pile up. At :00 and :30 both of this Worker's crons fire, as two separate runs, each with its own limits.
+
+There is a second way that needs no token: the job `next-build` in `site.yml`, switched on by the repository variable `SELF_PACE` set to `1` (off by default). Each build asks for the next one 30 minutes after it started, with the workflow's own token. Turn on one of the two, not both: a run this Worker asks for counts as a manual run, and each manual run republishes the `state` release.
 
 ### The token
 

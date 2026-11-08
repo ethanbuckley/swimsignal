@@ -120,3 +120,26 @@ test('the share picture draws the live status: first where nothing reports or ri
   assert.match(PAGE, /if \(lead\) \{ g\.fillStyle = v\('--ink'\); g\.font = `700 40px \$\{F\}`; y = wrapText\(g, ans\.cardLive \+ \(ans\.blind \? '\. Modelled forecast:' : '\.'\)/);
   assert.match(PAGE, /if \(live && !lead && !head\.startsWith\(live\)\)/);
 });
+
+// A map tap (anypoint.js) follows the same rule as a listed spot (PR #648's follow-up, 8 Nov 2026). Its `now` gave no
+// weights, so levels.js read it as fully watched: a tap on the Dee at Chester, where 1 of 18 reports live and the
+// Dŵr Cymru overflows with most of the weight have no feed, said plain "Low risk from sewage spills", where Sandy
+// Lane on the same water says the forecast is modelled. Here the listed spot's own inputs (anypoint_spot.json) with
+// one light overflow left reporting, the rest given no feed, and no spill lately.
+test('a map tap with few reporting says the level is the modelled forecast, as a listed spot does', () => {
+  const A = require('../src/dipcast/site/anypoint.js');
+  const fx = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'anypoint_spot.json'), 'utf8'));
+  const all = A.forecast(fx.rows, fx.od, fx.cal), light = all.contributors.reduce((a, b) => b.weight < a.weight ? b : a);
+  const od = { ...fx.od, ended_h: fx.od.ended_h.map(() => null), status: fx.od.status.map((s, i) => String(i) === light.site_id ? 0 : -2) };   // no spill lately
+  const f = A.forecast(fx.rows, od, fx.cal);
+  const tap = { id: 'point-53.18770,-2.88850', unlisted: true, source: 'unlisted', name: 'River Dee', kind: 'river', location: { mode: 'river' },
+    assumptions: { max_upstream_km: 60, recent_spill_hours: 48 }, ...f, days: f.days.slice(0, 5).map((x, i) => ({ ...x, date: DAYS[i], rain_48h_mm: 1 })) };
+  assert.equal(tap.now.monitored_upstream, 1);
+  assert.equal(L.nowUnknown(tap), true);
+  const answer = vm.runInContext('answerWords', page())(tap);
+  assert.match(answer, /Modelled forecast: most of the model's weight here is on overflows that do not report live/);
+  // All reporting, as the fixture has it: the level stands with no qualifier.
+  const full = { ...tap, ...all, days: tap.days };
+  assert.equal(L.nowUnknown(full), false);
+  assert.doesNotMatch(vm.runInContext('answerWords', page())(full), /Modelled forecast/);
+});

@@ -17,3 +17,10 @@ test('on Plan it makes that spot the outing in the plan shown; elsewhere it open
   assert.match(fn, /PLAN_NEW = true; openPlan\(planFromSpot\(s, planBase\(\), planDates\(\)\.includes\(day\) \? day : null\)\);/);
   assert.match(app, /box\.querySelectorAll\('\[data-compare-plan\]'\)\.forEach\(b => b\.addEventListener\('click', \(\) => compareToPlan\(/);
 });
+test('a comparison asks for each spot\'s own file, for its guide, and is drawn again when it comes', () => {
+  const fn = app.slice(app.indexOf('function drawComparison('), app.indexOf('function comparePin('));
+  assert.match(fn, /const want = spots\.filter\(s => typeof spotDetail === 'function' && s\.detail_file && !s\.detail_loaded && !s\.detail_missing\);/);
+  assert.match(fn, /if \(want\.length\) Promise\.all\(want\.map\(spotDetail\)\)\.then\(\(\) => \{/);
+  // Not over a comparison that has changed since, or one no longer on the page.
+  assert.match(fn, /if \(COMPARING !== c \|\| !box\.isConnected \|\| drawn !== ids\.join\(\)\) return;/);
+});

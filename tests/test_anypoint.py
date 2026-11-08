@@ -423,6 +423,65 @@ def test_a_click_on_a_side_arm_goes_where_the_arm_leaves_its_river(world, tmp_pa
     assert transport.locate_pin(net, *bng_to_lonlat(at.x, at.y)).placement is None
 
 
+def test_the_side_arms_come_from_the_cache_only_while_everything_they_read_is_unchanged(world, tmp_path, monkeypatch):
+    """cached_arm_heads (Nov 2026: arm_heads took 100-220 s of every build) gives exactly arm_heads' answer: from
+    the cache while its key holds, worked out again when the network, the links asked about or the code change,
+    and worked out when the file is broken. The files a build writes are the same from a warm cache."""
+    bap = _bap()
+    net, lakes, ov = world
+    lids = list(net.links.index)
+    cache = tmp_path / "arms.pkl"
+    want = bap.arm_heads(net, lids)
+    assert want   # the world has side arms to cache
+    cold, how = bap.cached_arm_heads(net, lids, cache)
+    assert (cold, how) == (want, "cold") and cache.exists()
+    calls = []
+    real = bap.arm_heads
+    monkeypatch.setattr(bap, "arm_heads", lambda *a: calls.append(1) or real(*a))
+    warm, how = bap.cached_arm_heads(net, lids, cache)
+    assert (warm, how, calls) == (want, "warm", [])
+    # The links asked about.
+    assert bap.cached_arm_heads(net, lids[:-1], cache)[1] == "stale" and calls == [1]
+    assert bap.cached_arm_heads(net, lids, cache)[1] == "stale" and calls == [1, 1]
+    # A renamed link: the name decides which channels an arm may move to.
+    renamed = RiverNetwork(net.links.assign(watercourse_name=net.links["watercourse_name"].replace("River Avon", "River Avon Two")),
+                           net.graph, upstream_m=dict(net.upstream_m), repairs=net.repairs)
+    got, how = bap.cached_arm_heads(renamed, lids, cache)
+    assert how == "stale" and got == bap.arm_heads(renamed, lids)
+    # Network lengths, the graph and a DIPCAST_ setting.
+    longer = RiverNetwork(net.links, net.graph, upstream_m={k: v + 1.0 for k, v in net.upstream_m.items()}, repairs=net.repairs)
+    assert bap.arms_key(longer, lids) != bap.arms_key(net, lids)
+    graph = net.graph.copy()
+    u, v = next(iter(graph.edges))
+    graph.edges[u, v]["length"] = graph.edges[u, v]["length"] + 1.0
+    assert bap.arms_key(RiverNetwork(net.links, graph, upstream_m=dict(net.upstream_m), repairs=net.repairs), lids) != bap.arms_key(net, lids)
+    key = bap.arms_key(net, lids)
+    monkeypatch.setenv("DIPCAST_ARMS_TEST", "1")
+    assert bap.arms_key(net, lids) != key
+    monkeypatch.delenv("DIPCAST_ARMS_TEST")
+    # The code: the source of this script is part of the key.
+    own = bap.__file__
+    monkeypatch.setattr(bap, "__file__", str(tmp_path / "other.py"))
+    (tmp_path / "other.py").write_text("# another version\n")
+    assert bap.arms_key(net, lids) != key
+    monkeypatch.setattr(bap, "__file__", own)
+    assert bap.arms_key(net, lids) == key
+    # A broken file is worked out again, never fatal.
+    cache.write_bytes(b"not a pickle")
+    assert bap.cached_arm_heads(net, lids, cache) == (want, "unreadable")
+    # No path: worked out, nothing saved.
+    assert bap.cached_arm_heads(net, lids, None) == (want, "off")
+    # The files: the same bytes from a cold and a warm cache, and from no cache.
+    table, _ = bap.upstream_table(net, ov, lakes, "net0", "lakes0", None)
+    trees = []
+    for name, arms_cache in (("none", None), ("cold", tmp_path / "files-arms.pkl"), ("warm", tmp_path / "files-arms.pkl")):
+        out = tmp_path / name
+        meta = bap.write_files(out, net, ov, table, "net0", arms_cache=arms_cache)
+        assert meta["counts"]["arms_cache"] == {"none": "off"}.get(name, name)
+        trees.append({str(f.relative_to(out)): f.read_bytes() for f in sorted(out.rglob("*")) if f.is_file()})
+    assert trees[0] == trees[1] == trees[2] and any(b'"arms"' in b for b in trees[0].values())
+
+
 def test_the_index_keeps_every_vertex_so_a_click_on_a_kink_is_on_its_link(world, tmp_path):
     """The page measures a click against the index's lines, the API against the network's. Lines simplified
     to 30 m put U1's kink 25 m from its line, and the pond's centreline, 35 m away, won by the lake rule
