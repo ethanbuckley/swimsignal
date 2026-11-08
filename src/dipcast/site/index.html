@@ -31,10 +31,10 @@
      2026). main() takes the answer from FORECAST; the catch only stops an early failure being
      reported before main() gets to it, and main() still gets the error. The forecast is
      spots-lite.json, without each spot's overflows and guide; a spot's page asks for its own here
-     too (DETAIL, data/spot/<id>.json), so the two arrive together. Each screen asks for the picture
-     it shows, and only that one: a wide desktop's views draw the wide sky (build_site.SKY_PRELOAD;
-     a spot's page draws it from 801 px). -->
-<link rel="preload" href="icons/fells.webp" as="image" fetchpriority="high" media="(max-width: 1099px)">
+     too (DETAIL, data/spot/<id>.json), so the two arrive together. The phone's picture needs no
+     request: the build writes icons/fells.webp into the style below (build_site.with_inline_sky),
+     so it paints with the page's first paint. A wide desktop's views draw the wide sky, asked for
+     here (build_site.SKY_PRELOAD; a spot's page draws it from 801 px). -->
 <link rel="preload" href="icons/fells-wide.webp" as="image" fetchpriority="high" media="(min-width: 1100px)">
 <script>window.FORECAST = fetch('data/spots-lite.json', { cache: 'no-cache' }); FORECAST.catch(() => {});
   { const m = location.pathname.match(/\/spot\/([A-Za-z0-9_-]+)\/?$/);
@@ -52,8 +52,15 @@
 <meta name="apple-mobile-web-app-title" content="SwimSignal">
 <!-- The map library, Leaflet 1.9.4, served from this site (vendor/leaflet/, with its licence) so
      that no third party receives a request for it, as for the fonts. Pinned by hash: a changed file
-     is refused rather than run (tests/test_design_tokens.py checks the hashes against the files). -->
-<link rel="stylesheet" href="vendor/leaflet/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=">
+     is refused rather than run (tests/test_design_tokens.py checks the hashes against the files).
+     Its stylesheet does not hold back the first paint: preloaded, it becomes a stylesheet when it
+     arrives. Only the map uses it, and app.js draws the map after every script has come. As an
+     ordinary stylesheet the first screen waited for it: on a slow phone connection the page had
+     arrived at 0.72 s and painted at 1.44 s (5 Nov 2026). Without it, Lighthouse's throttled
+     runs on a GitHub runner painted at 0.93-0.96 s, 20 of 20 (8 Nov; a loaded Mac's had painted at
+     2.7 s in about half, PR #617). Not media="print": that is fetched last,
+     and on a spot's page it came 0.5 s before the map. -->
+<link rel="preload" as="style" href="vendor/leaflet/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" onload="this.onload=null;this.rel='stylesheet'">
 <!-- The map tiles come from one other host, named in the privacy notice. Opening its connection
      while the page is read saves a round trip on the first tile (Lighthouse, 16 Oct 2026: 214 ms on
      a phone). build_site.with_tiles swaps the host for DIPCAST_TILES'. No crossorigin: Leaflet asks
@@ -1763,6 +1770,9 @@ const TintedTiles = L.TileLayer.extend({
 });
 // The build swaps the tile layer line inside this call (build_site.TILE_LINE); without the filter, as is.
 const tintTiles = layer => tileColour ? new TintedTiles(layer._url, layer.options) : layer;
+// Leaflet's stylesheet is preloaded and applied when it arrives (the head): applied here too, before the
+// map, in case it has not arrived yet or the browser does not preload.
+document.querySelectorAll('link[rel=preload][as=style]').forEach(l => { l.onload = null; l.rel = 'stylesheet'; });
 const map = L.map('map', { zoomControl: true, dragging: !TOUCH, zoomAnimation: !STILL, fadeAnimation: !STILL, markerZoomAnimation: !STILL,
   inertia: !STILL }).setView([53.6, -2.0], 6);
 map.attributionControl.setPrefix(false);   // the map's credit is the tiles', as on the small map; the terms credit Leaflet
@@ -2068,7 +2078,9 @@ async function sendSub(sub, weekly = weeklyOn(), off = alertOff()) {
   try { localStorage.setItem(PUSH_KEY, JSON.stringify({ endpoint: sub.endpoint, spots, weekly, at: Date.now(), ...(off.length ? { off } : {}) })); } catch (e) { /* only saves a re-send */ }
 }
 async function alertsOn() {
-  if (await Notification.requestPermission() !== 'granted') throw new Error('notifications are not allowed for this site');
+  // Not allowed: the browser's answer goes with the error, for what the tile says next (bindAlerts).
+  const answer = await Notification.requestPermission();
+  if (answer !== 'granted') throw Object.assign(new Error('notifications are not allowed for this site'), { answer });
   const reg = await pushReg(); if (!reg) throw new Error('the offline copy is not running, so notifications cannot be set up');
   const had = await pushDeadline(reg.pushManager.getSubscription(), 'the browser did not answer; try again', 8000);
   const sub = had || await pushDeadline(reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64(DATA.push.key) }),
@@ -2160,7 +2172,9 @@ async function bindAlerts() {
       // Refused at the browser's question just now: the tile as blocked, with where to allow them, read out from there.
       if (on && Notification.permission === 'denied' && alertsPermChanged()) { const p = document.getElementById('alerts-blocked'); if (p) p.focus(); return; }
       show(!on); ALERT_UI.down = serviceDown(e);
-      m.textContent = ALERT_UI.down ? 'Could not reach the alert service, so alerts are as they were. Try again later.' : `Could not change alerts: ${e.message}.`; }
+      // The question closed without "Allow", or refused without a block: what happened, and how to be asked again (lists.js).
+      m.textContent = e.answer ? notAllowedSaid({ answer: e.answer, again: ALERT_UI.refused++ > 0, ios: IOS, app: STANDALONE, safari: SAFARI_MAC, touch: TOUCH })
+        : ALERT_UI.down ? 'Could not reach the alert service, so alerts are as they were. Try again later.' : `Could not change alerts: ${e.message}.`; }
     drawSpotAlerts();
   });
 }
@@ -2185,7 +2199,8 @@ function watchAlertPerm() {
 // or on again, off with the way to the Alerts tile (which holds what turning them on sends), or why this browser
 // cannot have them. A tick sends the list again without that spot; nothing else is sent, and dates asked for on
 // the organisers' page or an outing (push.dates) are kept by the alert service, as the app never sends them.
-const ALERT_UI = { on: null, down: false };   // notifications on in this browser (null: not checked yet); the service not answering
+// refused: how often the browser's question got no "Allow" on this visit (bindAlerts, notAllowedSaid).
+const ALERT_UI = { on: null, down: false, refused: 0 };   // notifications on in this browser (null: not checked yet); the service not answering
 const alertCan = () => !canPush() ? (IN_APP ? 'inapp' : IOS && !navigator.standalone ? 'ios' : 'none')
   : offlineOff() ? 'offline' : Notification.permission === 'denied' ? 'blocked' : 'yes';
 // The alert service not answering (a network error, a time-out, a 5xx), rather than the browser refusing.
@@ -2199,7 +2214,7 @@ function drawSpotAlerts() {
     p.dataset.kind = st.kind;
     p.innerHTML = (st.toggle ? `<label class="alert-tick"><input type="checkbox" data-alert-spot="${esc(id)}"${st.checked ? ' checked' : ''}><span>Alerts for this spot</span></label>` : '')
       + (st.text ? `<span class="alert-said">${esc(st.text)}</span>` : '')
-      + (st.link ? ` <button type="button" class="linkbtn small" data-to-alerts>${st.kind === 'off' || st.kind === 'email' ? 'Set up alerts' : 'See Alerts'}</button>` : '');
+      + (st.link ? ` <button type="button" class="linkbtn small" data-to-alerts>${st.kind === 'off' ? 'Set up alerts' : 'See Alerts'}</button>` : '');
   });
 }
 async function toggleSpotAlert(box) {

@@ -4,6 +4,7 @@ is shown for days), every page carries
 absolute preview links, a spot's page has a relative <base>, and the live scorer reports when the
 observation records its coverage rule needs begin."""
 
+import base64
 import json
 import re
 import shutil
@@ -143,8 +144,30 @@ def test_the_built_pages_open_on_the_views_opening_as_the_script_draws_it(tmp_pa
     # The list's own call has no class, so its frame is the built one; Saved adds 'wide-list' (20 Oct 2026).
     assert "const cols = (h, cls = '') => `<div class=\"cols${cls ? ' ' + cls : ''}\"><div class=\"col-list\">${h}</div>${MAP_TILE}</div>`;" in page
     assert 'const MAP_TILE = `<div class="col-map"><section class="tile map-tile"' in page and "setPanel(h + cols(v));" in page
-    # Each screen preloads the sky it draws: the wide one from 1,100 px on the app's views.
+    # A wide desktop preloads the wide sky, from 1,100 px on the app's views.
     assert bs.SKY_PRELOAD in page and bs.SKY_PRELOAD in home
+
+
+def test_nothing_is_fetched_before_a_phones_first_paint(tmp_path):
+    """A phone's largest paint is the sky behind the opening (LCP). The page carries that picture in its
+    style, so it paints with the first paint, and the map's stylesheet does not block that paint
+    (5 Nov 2026: on a slow phone connection 1.46 s became 0.91 s in a probe)."""
+    bs = _build_site()
+    bs.write_pages(tmp_path, SPOTS, root="https://example.org/")
+    sky = base64.b64encode((ROOT / "src" / "dipcast" / "site" / "icons" / "fells.webp").read_bytes()).decode()
+    pages = [tmp_path / "index.html", tmp_path / "spot" / "wharfe-ilkley" / "index.html", tmp_path / "saved" / "index.html", tmp_path / "plan" / "index.html"]
+    for f in pages:
+        html = f.read_text()
+        head = html.split("</head>", 1)[0]
+        assert html.count(f"url(data:image/webp;base64,{sky})") == 1 and "url(icons/fells.webp)" not in html, f
+        assert 'href="icons/fells.webp"' not in head, f   # nothing left to preload on a phone
+        # The only stylesheets in the head are inline, or preloaded and applied when they arrive.
+        assert not re.search(r'<link rel="stylesheet"', head), f
+        assert ('<link rel="preload" as="style" href="vendor/leaflet/leaflet.css" integrity="sha256-'
+                in head and "onload=\"this.onload=null;this.rel='stylesheet'\">" in head), f
+    # The source keeps the file's name, which the build replaces, and the file is still published.
+    assert "url(icons/fells.webp)" in (ROOT / "src" / "dipcast" / "site" / "index.html").read_text()
+    assert (tmp_path / "icons" / "fells.webp").exists()
 
 
 @pytest.mark.skipif(shutil.which("node") is None, reason="needs Node")
