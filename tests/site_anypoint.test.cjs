@@ -34,6 +34,25 @@ test('the page\'s transport arithmetic gives a listed spot\'s forecast to three 
   near(got.upstream_summary.sum_weight, fx.expect.upstream_summary.sum_weight, 0.0005 + 1e-9, 'sum of weights');
 });
 
+// Right now's weights, as forecast.live_counts gives a spot's (8 Nov 2026): the weight of the overflows counted
+// here, and of those among them reporting live, so levels.js (nowWatched) can tell how much of what matters here
+// is watched. In the fixture all 15 report.
+test('a tapped point gives the weight upstream and the weight reporting live, as a listed spot does', () => {
+  const fx = fixture('anypoint_spot.json');
+  const got = A.forecast(fx.rows, fx.od, fx.cal);
+  near(got.now.upstream_weight, fx.expect.upstream_summary.sum_weight, 0.0005 + 1e-9, 'weight upstream');
+  assert.equal(got.now.monitored_weight, got.now.upstream_weight);
+  // One reporting: its own weight. A monitor offline (-1) or with no feed (-2) is not reporting; a discharge is.
+  const w = got.contributors.map(c => c.weight), k = w.indexOf(Math.min(...w)), one = Number(got.contributors[k].site_id);
+  const only = (s, rest = -2) => A.forecast(fx.rows, { ...fx.od, ended_h: fx.od.ended_h.map(() => null),   // no spill lately
+    status: fx.od.status.map((_, i) => i === one ? s : rest) }, fx.cal).now;
+  near(only(0).monitored_weight, w[k], 0.0005 + 1e-9, 'one quiet');
+  near(only(1).monitored_weight, w[k], 0.0005 + 1e-9, 'one discharging');
+  assert.equal(only(-1).monitored_weight, 0);
+  near(only(-1, 0).monitored_weight, got.now.upstream_weight - w[k], 0.001, 'all but one');
+  assert.deepEqual([A.forecast([], fx.od, fx.cal).now.monitored_weight, A.forecast([], fx.od, fx.cal).now.upstream_weight], [0, 0]);
+});
+
 test('the calibration follows numpy.interp, flat beyond the knots, and keeps an unknown unknown', () => {
   const c = { iso_x: [0, 0.1, 1], iso_y: [0.01, 0.2, 0.9] };
   near(A.calibrate(0.05, c), 0.105, 1e-12, 'between knots');

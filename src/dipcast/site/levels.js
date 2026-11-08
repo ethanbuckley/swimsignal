@@ -202,8 +202,8 @@ const nowUnknownWhy = s => !Math.min(overflows(s), (s.now || {}).monitored_upstr
 // where the count stands. Sandy Lane, Chester (6 Nov 2026): a large "0 discharging" over "1 of 13 report
 // live". On that night's build two of the 91 spots with overflows upstream had 1 to 49% reporting: Sandy
 // Lane (1 of 13) and Barcombe Mills (1 of 46). The next lowest was over 75%, so any cut from 8% to 75%
-// picks the same two; half is "most do not report". A clicked point (anypoint.js) has no weights, so its
-// count decides: the Dee at Chester, 1 of 18. A discharge is a reading, and its count stays.
+// picks the same two; half is "most do not report". A clicked point (anypoint.js) gives the weights too
+// (8 Nov 2026): the Dee at Chester, 1 of 18 with 1.1% of the weight. A discharge is a reading, and its count stays.
 const nowFew = s => { const n = s.now || {}, total = overflows(s), mon = Math.min(total, n.monitored_upstream ?? total);
   if (!total || !mon || (n.discharging_upstream || 0) > 0) return '';
   return mon < total * NOW_WATCHED_SHARE ? 'count' : nowWatched(s) < NOW_WATCHED_SHARE ? 'weight' : ''; };

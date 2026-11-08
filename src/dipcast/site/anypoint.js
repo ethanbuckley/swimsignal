@@ -250,7 +250,13 @@ const AnyPoint = (() => {
     const recent = contrib.map((c, k) => c > 0 && !run[k] && status[k] !== -3);
     const quiet = state.map((st, k) => st === 'live' && status[k] === 0 && !recent[k]);
     const stale = state.map((st, k) => st === 'stale' && !run[k] && !recent[k]);
-    const monitored = counted(run.map((x, k) => x || recent[k] || quiet[k])), fd = {}, fs = {}, fr = {}, frSince = {};
+    const reporting = run.map((x, k) => x || recent[k] || quiet[k]);
+    const monitored = counted(reporting), fd = {}, fs = {}, fr = {}, frSince = {};
+    // The weight of the overflows counted here, and of those reporting live (forecast.live_counts), so the page
+    // can tell how much of what matters here is watched (levels.js, nowWatched), as on a listed spot's page. Without
+    // them a tap on the Dee at Chester, 1 of 18 reporting and the Dŵr Cymru overflows with the weight unwatched,
+    // read as fully watched and said plain "Low risk" (8 Nov 2026). Worked out here: no data file grows.
+    const weightOf = keep => Math.round(w.reduce((s, x, k) => s + (here[k] && keep(k) ? x : 0), 0) * 1e4) / 1e4;
     rows.forEach((r, k) => {
       if (!here[k]) return;
       if (down[k]) fd[company[k]] = (fd[company[k]] || 0) + 1;
@@ -259,6 +265,7 @@ const AnyPoint = (() => {
         fr[c] = (fr[c] || 0) + 1; if (t && (!frSince[c] || Date.parse(t) > Date.parse(frSince[c]))) frSince[c] = t; } });
     const now = { risk: r3(nowRisk), label: riskLabel(nowRisk), discharging_upstream: counted(run),
       recent_upstream: counted(recent), monitored_upstream: monitored,
+      monitored_weight: weightOf(k => reporting[k]), upstream_weight: weightOf(() => true),
       feed_down_upstream: counted(down),
       feed_down: Object.keys(fd).sort().map(c => ({ company: c, overflows: fd[c], since: (od.feed_down_since || {})[c] ?? null })),
       stale_upstream: counted(stale),
