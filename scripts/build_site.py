@@ -117,7 +117,7 @@ SPOT_SKY_PRELOAD = SKY_PRELOAD.replace('1100px', '801px')
 # written into the app page's style as a data address. It is that screen's largest paint (LCP). Fetched,
 # it arrived 0.7 s after the page on a slow phone connection, sharing it with the fonts and the forecast;
 # in the page it paints with the first paint: 1.46 s became 0.91 s with the stylesheet change in index.html
-# (5 Nov 2026, a probe on slow-4G throttling; about half of Lighthouse's own throttled runs painted at 2.7 s). It adds 10.7 kB to each app page compressed and saves the picture's 9.0 kB request: 1.7 kB more
+# (5 Nov 2026, a probe on slow-4G throttling; 8 Nov, 20 of 20 Lighthouse devtools-throttled runs on a GitHub runner at 0.93-0.96 s). It adds 10.7 kB to each app page compressed and saves the picture's 9.0 kB request: 1.7 kB more
 # on a first visit, 10.7 kB more on a later page that would have had the picture cached.
 SKY_URL = "url(icons/fells.webp)"
 

@@ -388,8 +388,8 @@ forecast (5 October 2026). Since then the build writes each view's opening into 
 5 November 2026 the phone's picture too: `build_site.with_inline_sky` puts `icons/fells.webp` into
 the page's style as a data address, so nothing is fetched before a phone's first paint. On a slow
 phone connection that paint, and the largest, came at 0.91 s rather than 1.46 s in 18 of 18 runs
-of a probe; in Lighthouse's own throttled runs it did in about half, and the rest painted at 2.7 s
-(Chrome's render-blocking fonts; PR notes). The page is 10.7 kB larger compressed, and the 9.0 kB
+of a probe, and at 0.93-0.96 s rather than 1.49-1.73 s in 20 of 20 of Lighthouse's own throttled runs
+on a GitHub runner (8 November; on a loaded Mac about half had painted at 2.7 s, PR #617). The page is 10.7 kB larger compressed, and the 9.0 kB
 request is gone. A wide screen still preloads the wide
 sky, `icons/fells-wide.webp`. A spot's page asks for the spot's own file there too, `data/spot/<id>.json` (`DETAIL`): its overflows and guide, which `spots-lite.json` leaves out (6 October 2026). The Home Screen app's status bar is
 `black-translucent`: the page draws under it, its white text sits on the slate, and the header's
