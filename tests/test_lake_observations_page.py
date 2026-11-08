@@ -63,11 +63,12 @@ def test_research_and_the_viewer_are_written_and_linked_from_every_page(tmp_path
     assert "<title>Research and data · SwimSignal</title>" in research and 'href="lakes.html"' in research
     assert "<title>Satellite lake observations · SwimSignal</title>" in lakes and '<script src="lakes.js?v=' in lakes
     assert (tmp_path / "lakes.js").read_bytes() == (bs.TEMPLATE.parent / "lakes.js").read_bytes()
-    # In the header (desktop) and the foot (every width) of the app and of every prose page.
+    # In the foot (every width) of the app and of every prose page. It left the header and the More menu on 6 Nov 2026
+    # (docs/STRATEGY-REVIEW-2026-11.md, build step 1): one entry for organisations took its place.
     for page in ("index.html", "about.html", "methods.html", "verification.html", "data.html", "feedback.html", "clubs.html",
                  "organisers.html", "sites.html", "lakes.html", "research.html", "404.html"):
         html = (tmp_path / page).read_text()
-        assert html.count("research.html") >= 2, page
+        assert html.count("research.html") >= 1, page
 
 
 def test_the_data_page_lists_the_lake_files_on_a_fresh_build(tmp_path):

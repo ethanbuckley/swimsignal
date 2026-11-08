@@ -1111,7 +1111,7 @@ SCOTLAND_CREDIT = {"use": "always", "credit": "Contains Scottish Water data: ove
                    "Scottish Water's stated open licence", "changed": "SwimSignal matched and modelled them (Scotland trial)."}
 
 
-FOOTER_COMPANIES = "and Yorkshire Water via the National Storm Overflow Hub"
+FOOTER_COMPANIES = "via the National Storm Overflow Hub"
 
 
 def with_scotland_credit(html: str) -> str:
@@ -1121,8 +1121,7 @@ def with_scotland_credit(html: str) -> str:
         return html
     if html.count(FOOTER_COMPANIES) != 1:
         raise ValueError(f"index.html's footer has lost {FOOTER_COMPANIES!r}, where the Scotland trial's credit goes")
-    return html.replace(FOOTER_COMPANIES, FOOTER_COMPANIES + ", and Scottish Water's overflow status and event history "
-                        "(OGL v3.0 and Scottish Water's stated open licence; Scotland trial)")
+    return html.replace(FOOTER_COMPANIES, FOOTER_COMPANIES + " and Scottish Water's overflow status and event history (Scotland trial)")
 
 
 def data_credits(root: str) -> dict:
@@ -2485,7 +2484,7 @@ PAGE_DESCRIPTION = re.compile(r'<meta name="description" content="([^"]*)">\n?')
 # script. A browser without popovers (iOS before 17) ignores popovertarget, so MORE_FALLBACK opens the list as a plain
 # toggle there instead of leaving a button that does nothing (found on the live site, 31 Oct 2026). index.html's bar
 # has the same.
-MORE_LINKS = (("verification.html", "Accuracy"), ("about.html", "About"), ("lab/", "Research Lab"), ("research.html", "Research &amp; data"), ("feedback.html", "Feedback"))
+MORE_LINKS = (("verification.html", "Accuracy"), ("about.html", "About"), ("clubs.html", "For organisations"), ("feedback.html", "Feedback"))
 MORE_FALLBACK = "if(!('popover' in this)){this.setAttribute('aria-expanded',this.nextElementSibling.classList.toggle('open'))}"
 MORE_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>'
 
@@ -2577,7 +2576,7 @@ def home_lead(n: int, days: list[str] | None = None, where: str = ENGLAND_ONLY_W
     days: the forecast's five dates, for the strip of days (index.html's list-days), today checked; its
     counts wait for the forecast."""
     return ('<div id="result" data-built data-nosnippet><div class="lead"><section class="intro"><h1>Check the water before you go</h1>'
-            f'<p class="lede">Five-day pollution risk forecasts for {n} swim spots {where}<span class="lede-map">, and for any river or lake you '
+            f'<p class="lede">Pollution risk for the next five days at {n} river and lake swim spots {where}<span class="lede-map">, and anywhere you '
             '<span class="w-touch">tap</span><span class="w-click">click</span> on the map</span>. <a href="#about">How it works</a></p>'
             f'<div class="search">{SEARCH_ICON}<label class="sr" for="q">Find a spot</label><input type="search" id="q" '
             f'placeholder="River, lake or town" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" value="">{NEAR_PIN}</div>'
@@ -2585,7 +2584,7 @@ def home_lead(n: int, days: list[str] | None = None, where: str = ENGLAND_ONLY_W
             '<div class="toolbar"><fieldset class="day-strip list-days" id="listday"><legend class="sr">When are you swimming?</legend>'
             + ''.join(f'<label><input type="radio" name="list-day" value="{d}"{" checked" if i == 0 else ""}><span>'
                       f'{"Today" if i == 0 else pd.Timestamp(d).strftime("%a")} <span class="dd">\u00a0</span></span></label>' for i, d in enumerate(days or []))
-            + f'</fieldset></div><p class="small muted strip-note">Under each day: the spots at low risk, of {n}.</p>'
+            + '</fieldset></div><p class="small muted strip-note"> Open a spot to see why. Save the ones you use to keep them at the top.</p>'
             f'</div><div class="cols"><div class="col-list"><p class="sr" aria-busy="true">Loading forecasts…</p>{SKELETON_TILE}</div>'
             # The map's tile, as index.html's MAP_TILE frames it, empty until the script moves the map in.
             '<div class="col-map"><div class="tile map-tile"></div></div></div></div>')
@@ -2803,7 +2802,7 @@ def site_header(r: str, current: str = "") -> str:
     """The header every page shares (page.css .top): the mark and the main links, `current` (a link's href, such as
     "lab/") marked as the page you are on. The prose pages and the app write the same links by hand."""
     links = (("plan/", "Plan a swim", ""), ("saved/", "Saved", ""), ("verification.html", "Accuracy", ""), ("about.html", "About", ""),
-             ("lab/", "Research Lab", "desk-only"))   # Research and data and Feedback: the More menu and every foot (2 Nov 2026)
+             ("clubs.html", "For organisations", "desk-only"))   # Research, the Lab and Feedback: About, the foot and the More menu (6 Nov 2026)
     nav = "".join(f'<a{f' class="{c}"' if c else ""}{' aria-current="page"' if h == current else ""} href="{r}{h}">{t}</a>' for h, t, c in links)
     return f'<header class="top"><a class="brand" href="{r}">{MARK}{BRAND}</a><nav aria-label="Site">{nav}</nav></header>'
 

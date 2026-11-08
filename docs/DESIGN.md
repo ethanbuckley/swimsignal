@@ -2124,6 +2124,31 @@ has one wording:
 - **"Notifications are blocked for this site in your browser settings." is said once,** in the Alerts tile. Each
   saved card said it too.
 
+## One product in the bar, one entry for organisations (6 November 2026)
+
+The first build step of the strategy review (`docs/STRATEGY-REVIEW-2026-11.md`, section 9): the site reads as one
+thing, the forecast, and everything else is reached from About, the foot or the organisations page.
+
+- **Navigation.** The desktop header has five links: Plan a swim, Saved, Accuracy, About, For organisations
+  (`clubs.html`). Research Lab left the header and the phone's More; the Lab is reached from Research & data, from
+  About, from the accuracy page's exhibit and from each spot's "Explore the evidence". The More menu is Accuracy,
+  About, For organisations, Feedback (`build_site.MORE_LINKS`; the app's bar lists the same). A Lab page's header
+  marks nothing current; the labnav does.
+- **For organisations** is `clubs.html` retitled: the one page for clubs, centres, leaders, schools and event
+  organisers, which links the organisers' page, the signs, the sites view, the decision record, the overflow history
+  and the sampling partners. The foot's two links (For event organisers, For clubs, centres and leaders) became one.
+- **The home page's opening is one sentence:** "Pollution risk for the next five days at N river and lake swim
+  spots in England [, and in Scotland as a trial], and anywhere you tap/click on the map. How it works". "As a
+  trial" stays (8 Nov 2026): a tap in Scotland is not forecast (#647), so "England and Scotland … anywhere you tap"
+  would claim more than the site does; the coverage page says what the trial is. The line under the day strip no longer explains the
+  strip ("70 low risk" says it); it keeps the first visit's hint and is hidden afterwards.
+- **The Research Lab block after the list went.** Its five exhibits stay on Research & data and on each spot.
+- **The foot's data credit is one line:** the providers named (the Hub, the Environment Agency with the flood API's
+  required sentence, OS, Open-Meteo and the Met Office, OpenStreetMap) and "All credits and licences", which is the
+  terms page's full list with every licence. `embed.js` keeps its full credit, since it sits on another site.
+- **Counts.** The README's spot counts are checked against the spot files by `tests/test_readme_counts.py`; the
+  site's own counts were already the build's.
+
 ## Alert wording after the phone audit (8 November 2026)
 
 Three smaller alert lines left by the 6 November audit (#642):

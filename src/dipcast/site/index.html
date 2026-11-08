@@ -575,11 +575,6 @@
   .routes small { display:block; font:600 var(--fs-meta)/1.3 var(--font-mono); color:var(--muted); }
   .routes b { display:block; margin:1px 0 2px; font:600 var(--fs-body)/1.3 var(--font-display); color:var(--link); }
   .routes a:hover b { text-decoration:underline; text-decoration-thickness:1px; text-underline-offset:2px; }
-  .lab-invite { margin-top:28px; padding-top:10px; border-top:1px solid var(--ink); }   /* a section in the Lab's manner: an ink rule over its name */
-  .lab-invite .routes { grid-template-columns:repeat(2, minmax(0, 1fr)); gap:0 20px; }
-  @media (max-width:540px) { .lab-invite .routes { grid-template-columns:minmax(0, 1fr); } }
-  .lab-invite h2 { margin:0; font:600 var(--fs-head)/1.25 var(--font-display); }
-  .lab-invite > p { margin:4px 0 0; font-size:var(--fs-note); color:var(--muted); }
   .t-credit { margin:6px 0 0; font-size:var(--fs-meta); } .t-credit a { color:var(--muted); }
   .t-note { margin:8px 0 0; font-size:var(--fs-meta); color:var(--muted); } .t-note a { color:inherit; }
   /* A fold at a tile's foot under a name of its own (explain): the E. coli estimate's "Experimental
@@ -1580,7 +1575,7 @@
     <button type="button" class="hbtn phone-only" id="mapbtn">Map</button>
     <a href="verification.html" class="desk-only">Accuracy</a>
     <a href="about.html" class="desk-only">About</a>
-    <a href="lab/" class="desk-only">Research Lab</a>
+    <a href="clubs.html" class="desk-only">For organisations</a>
   </nav>
 </header>
 <div id="app">
@@ -1639,8 +1634,8 @@
       </details>
     </section>
     <footer class="fine">
-      <p><a href="about.html">About SwimSignal</a> · <a href="verification.html">How accurate is it?</a> · <a href="methods.html">Method</a> · <a href="spots.html">Every spot</a> · <a href="research.html">Research and data</a> · <a href="coverage.html">Coasts, Wales, Scotland, Ireland and algae</a> · <a href="organisers.html">For event organisers</a> · <a href="clubs.html">For clubs, centres and leaders</a> · <a href="feedback.html">Feedback</a> · <a href="feedback.html?type=spot">Request a spot</a> · <a href="terms.html">Terms of use</a> · <a href="privacy.html">Privacy</a> · <a href="https://github.com/ethanbuckley/swimsignal">Source code</a> (MIT)</p>
-      <p>Data: storm overflow status from Anglian, Northumbrian, Severn Trent, South West, Southern, Thames, United Utilities, Wessex and Yorkshire Water via the National Storm Overflow Hub (<a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>; combined and modelled by SwimSignal) · Environment Agency data © Environment Agency copyright and/or database right (<a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/">OGL v3.0</a>); river levels: this uses Environment Agency flood and river level data from the real-time data API (Beta) · Contains OS data © Crown copyright and database right 2026 · <a href="https://open-meteo.com/">Weather data by Open-Meteo.com</a> (CC BY 4.0), from Met Office forecasts © Crown copyright (<a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>) · Map © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors. None of these bodies endorses SwimSignal. <a href="terms.html#data">All credits and licences</a>.</p>
+      <p><a href="about.html">About SwimSignal</a> · <a href="verification.html">How accurate is it?</a> · <a href="methods.html">Method</a> · <a href="spots.html">Every spot</a> · <a href="research.html">Research and data</a> · <a href="coverage.html">Coasts, Wales, Scotland, Ireland and algae</a> · <a href="clubs.html">For organisations</a> · <a href="feedback.html">Feedback</a> · <a href="feedback.html?type=spot">Request a spot</a> · <a href="terms.html">Terms of use</a> · <a href="privacy.html">Privacy</a> · <a href="https://github.com/ethanbuckley/swimsignal">Source code</a> (MIT)</p>
+      <p>Data: the water companies’ live overflow feeds via the National Storm Overflow Hub · © Environment Agency copyright and/or database right; this uses Environment Agency flood and river level data from the real-time data API (Beta) · Contains OS data © Crown copyright and database right 2026 · Open-Meteo and the Met Office · Map © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors. None of these bodies endorses SwimSignal. <a href="terms.html#data">All credits and licences</a>.</p>
     </footer>
   </main>
 </div>
@@ -1651,7 +1646,7 @@
   <a href="saved/" id="nav-saved" aria-label="Saved spots"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4Z"/></svg>Saved<span class="n" id="nav-saved-n" hidden></span></a>
   <!-- The same list and fallback as build_site.MORE_LINKS and MORE_FALLBACK, which the prose pages' bar draws. -->
   <button type="button" popovertarget="more-menu" aria-label="More pages" onclick="if(!('popover' in this)){this.setAttribute('aria-expanded',this.nextElementSibling.classList.toggle('open'))}"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>More</button>
-  <ul class="more-menu" id="more-menu" popover><li><a href="verification.html">Accuracy</a></li><li><a href="about.html">About</a></li><li><a href="lab/">Research Lab</a></li><li><a href="research.html">Research &amp; data</a></li><li><a href="feedback.html">Feedback</a></li></ul>
+  <ul class="more-menu" id="more-menu" popover><li><a href="verification.html">Accuracy</a></li><li><a href="about.html">About</a></li><li><a href="clubs.html">For organisations</a></li><li><a href="feedback.html">Feedback</a></li></ul>
 </nav>
 <!-- The built page defers every script here and serves the inline one as app.js (build_site.split_app_script),
      so none holds up the first paint. Deferred scripts run in the order of their tags: keep the order. -->
@@ -3804,7 +3799,7 @@ function renderList() {
   // level in words. Everything down to the caveat's line is also in the built home page, so it and the
   // picture paint before the forecast arrives (scripts/build_site.py, home_lead): what depends on the
   // forecast comes after it, so that nothing above it moves when the script draws this.
-  let h = `<div class="lead"><section class="intro"><h1>Check the water before you go</h1><p class="lede">Five-day pollution risk forecasts for ${DATA.spots.length} swim spots ${spotsWhere()}<span class="lede-map">, and for any river or lake you ${TOUCH ? 'tap' : 'click'} on the map</span>. <a href="#about">How it works</a></p>`
+  let h = `<div class="lead"><section class="intro"><h1>Check the water before you go</h1><p class="lede">Pollution risk for the next five days at ${DATA.spots.length} river and lake swim spots ${spotsWhere()}<span class="lede-map">, and anywhere you ${TOUCH ? 'tap' : 'click'} on the map</span>. <a href="#about">How it works</a></p>`
     + `<div class="search">${SEARCH_ICON}<label class="sr" for="q">Find a spot</label><input type="search" id="q" placeholder="River, lake or town" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" value="${esc(VIEW.q)}">${'geolocation' in navigator ? NEAR_PIN : ''}</div>`
     + ('geolocation' in navigator ? `<p class="small muted geo" id="geo-cta" aria-live="polite"${VIEW.geoMsg && VIEW.geoAt === 'cta' ? '' : ' hidden'}>${VIEW.geoAt === 'cta' ? esc(VIEW.geoMsg) : ''}</p>` : '') + '</section>'
     // The five days as a strip, as Plan has them, each with how many spots are at low risk that day: the day's
@@ -3812,10 +3807,11 @@ function renderList() {
     // weekend's best day in a line under it). It opens on today (renderList).
     + `<div class="toolbar"><fieldset class="day-strip list-days" id="listday"><legend class="sr">When are you swimming?</legend>${fiveDays().map(iso => `<label><input type="radio" name="list-day" value="${iso}"${VIEW.day === iso ? ' checked' : ''}>`
       + `<span>${shortDay(iso)} <span class="dd"><b>${lowOn(iso)}</b> <span class="nw">low risk</span></span></span></label>`).join('')}</fieldset></div>`
-    + `<p class="small muted strip-note">Under each day: how many of the ${DATA.spots.length} spots are at low risk${DATA.spots.some(s => !lowEligible(s)) ? ', not counting any under official advice restricting swimming' : ''}.`
-    // A first visit (nothing saved or planned, no spot opened yet): what to do here, in the same line, so the first
-    // spot moves down one line at most (30 Oct 2026). Once a spot is saved, Your places takes over.
-    + `${!SAVED.size && !OPENED && !(typeof planOuting === 'function' && planOuting(stored(PLAN_KEY), planDates(), id => DATA.spots.some(x => x.id === id)))
+    // A first visit (nothing saved or planned, no spot opened yet): what to do here, one line under the strip, so the
+    // first spot moves down one line at most (30 Oct 2026). Once a spot is saved, Your places takes over. The strip's
+    // own words ("70 low risk") need no explanation under it (6 Nov 2026).
+    + `<p class="small muted strip-note"${!SAVED.size && !OPENED && !(typeof planOuting === 'function' && planOuting(stored(PLAN_KEY), planDates(), id => DATA.spots.some(x => x.id === id)))
+      ? '' : ' hidden'}>${!SAVED.size && !OPENED && !(typeof planOuting === 'function' && planOuting(stored(PLAN_KEY), planDates(), id => DATA.spots.some(x => x.id === id)))
       ? ' Open a spot to see why. Save the ones you use to keep them at the top.' : ''}</p>`
     + `<p class="planner-note" id="low-note-list"${VIEW.lowOnly ? '' : ' hidden'}>${lowListNote()}</p>`;
   h += notices(null, true) + '</div>';
@@ -3844,15 +3840,7 @@ function renderList() {
   v += `<p class="small muted after">Updated several times a day. <a href="#levels">What the levels mean</a>.</p>`
     // Who it is for, at the foot: the same forecast serves anyone who gets in the water
     // (clubs.html says how wet each activity gets), and groups and events have their own tools.
-    + `<p class="small muted after">For swimming and water sports. Forecasts, not water tests. <a href="clubs.html">Tools for clubs, centres and events</a>.</p>`
-    // After the list, where finding a spot is done: the evidence behind the forecasts, for anyone who wants more.
-    + `<section class="lab-invite" aria-labelledby="lab-invite-h"><h2 id="lab-invite-h"><a href="lab/">Research Lab</a></h2>`
-    + `<p>The evidence behind the forecasts, in pictures. Exploratory: it changes no forecast.</p>`
-    + labRoutes([[1, 'lab/lake-from-space/', 'The lake from space', 'Satellite pictures of lakes, cloud included.'],
-      [2, 'lab/pollution/', 'Where does the pollution go?', 'The rivers joining overflows to spots.'],
-      [3, 'lab/forecasts/', 'How good are the forecasts?', 'Every past sample: catches and misses.'],
-      [4, 'lab/workspace/', 'Catchment workspace', 'Rain, spills and samples on one timeline.'],
-      [5, 'lab/sampling/', 'Sampling gaps', 'Where lab samples are thin, and what a season would fill.']]) + `</section>`;
+    + `<p class="small muted after">For swimming and water sports. Forecasts, not water tests. <a href="clubs.html">For organisations: clubs, centres and events</a>.</p>`;
   setPanel(h + cols(v));
   if (saved.length) bindItems(document.getElementById('saved-list'));
   document.getElementById('listday').addEventListener('change', e => setMapDay(e.target.value));
