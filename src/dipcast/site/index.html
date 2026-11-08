@@ -2108,7 +2108,10 @@ function alertsCard() {
   // it stays, word for word, one tap away and before the button; the first sentence is in view.
   // Email (DATA.email) is offered beside push, for browsers that cannot take push: on an iPhone,
   // push needs the Home Screen app, so most visitors there could not have alerts at all.
-  const what = `${DATA.push && DATA.email ? 'A notification or an email' : DATA.push ? 'A notification' : 'An email'} when one of your saved spots reaches high or very high risk, at most once a day for each.`;
+  // Official advice newly shown at a saved spot sends a notification too, once the build turns it on (DATA.push.advice,
+  // DIPCAST_PUSH_ADVICE), in the same build that lets the Worker send them (push/README.md). Email sends no such alert.
+  const what = `${DATA.push && DATA.email ? 'A notification or an email' : DATA.push ? 'A notification' : 'An email'} when one of your saved spots reaches high or very high risk, at most once a day for each.`
+    + (DATA.push && DATA.push.advice ? ` ${DATA.email ? 'A notification also' : 'Another'} when official advice is newly shown at one of them, also at most once a day for each.` : '');
   let h = `<section class="sec tile" aria-labelledby="alerts-h" id="alerts" data-perm="${alertPerm()}"><h2 class="sec-h" id="alerts-h">Alerts</h2><p class="sub">${what}</p>`;
   if (DATA.push) {
     const sends = 'Turning alerts on sends your browser\'s push address and the list of your saved spots, and nothing else about you, to SwimSignal\'s alert service. Ticking the weekly note adds only that you want it. Alerts reach you through your browser maker\'s push service (Google, Apple, Mozilla or Microsoft), encrypted so it cannot read them. '
@@ -2196,7 +2199,8 @@ function drawSpotAlerts() {
   if (!DATA || typeof spotAlert !== 'function') return;
   const can = alertCan(), off = alertOff();
   document.querySelectorAll('[data-alert]').forEach(p => {
-    const id = p.dataset.alert, st = spotAlert({ push: !!DATA.push, email: !!DATA.email, can, on: ALERT_UI.on, off: off.includes(id), down: ALERT_UI.down });
+    const id = p.dataset.alert, st = spotAlert({ push: !!DATA.push, email: !!DATA.email, can, on: ALERT_UI.on, off: off.includes(id), down: ALERT_UI.down,
+      advice: !!(DATA.push && DATA.push.advice) });
     p.dataset.kind = st.kind;
     p.innerHTML = (st.toggle ? `<label class="alert-tick"><input type="checkbox" data-alert-spot="${esc(id)}"${st.checked ? ' checked' : ''}><span>Alerts for this spot</span></label>` : '')
       + (st.text ? `<span class="alert-said">${esc(st.text)}</span>` : '')

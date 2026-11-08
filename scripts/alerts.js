@@ -60,5 +60,8 @@ for (const s of data.spots) {
     url: PAGE_ID.test(s.id) ? `${root}spot/${s.id}/` : `${root}?spot=${encodeURIComponent(s.id)}`, ...(b ? { best: b } : {}),
     ...(L.daily(s) ? { days: daysOf(s) } : {}) };
 }
-// The data credits travel with every published data file (build_site.data_credits).
-fs.writeFileSync(out, JSON.stringify({ generated_at: data.generated_at, ...(data.credits ? { credits: data.credits } : {}), dates, words, spots }));
+// The data credits travel with every published data file (build_site.data_credits). advice_alerts: the build
+// turned on saved-spot alerts for official advice (spots.json push.advice, DIPCAST_PUSH_ADVICE), so the Worker
+// sends them only in the same build that changes the Alerts tile and the privacy notice to say so.
+fs.writeFileSync(out, JSON.stringify({ generated_at: data.generated_at, ...(data.credits ? { credits: data.credits } : {}),
+  ...(data.push && data.push.advice === true ? { advice_alerts: true } : {}), dates, words, spots }));

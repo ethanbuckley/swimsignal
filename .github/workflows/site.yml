@@ -137,6 +137,8 @@ jobs:
           DIPCAST_VAPID_PUBLIC_KEY: ${{ vars.DIPCAST_VAPID_PUBLIC_KEY }}
           # Alerts for a date (push/README.md): 1 once the Worker that takes dates is deployed; unset = no date alerts.
           DIPCAST_PUSH_DATES: ${{ vars.DIPCAST_PUSH_DATES }}
+          # Alerts for official advice at a saved spot (push/README.md): 1 once the Worker that sends them is deployed.
+          DIPCAST_PUSH_ADVICE: ${{ vars.DIPCAST_PUSH_ADVICE }}
           # Email alerts (push/README.md, "Email alerts"): the Worker's address; unset = no email sign-up.
           DIPCAST_EMAIL_URL: ${{ vars.DIPCAST_EMAIL_URL }}
           # Reviews (reviews/README.md): the review Worker's address; unset = no reviews on the site.

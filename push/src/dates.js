@@ -120,7 +120,8 @@ function noticeNews(spot, p) {
 }
 // A short mark of the notice for a tag, so a notice's news never silently replaces the notification for
 // the same level (sw.js sets no renotify): FNV-1a over the key, eight hex digits ('' gives one value too).
-function noticeTag(spot) {
+// Saved-spot advice alerts (index.js) tag theirs the same way.
+export function noticeTag(spot) {
   const text = noticeKey(spot);
   let h = 0x811c9dc5;
   for (let i = 0; i < text.length; i++) { h ^= text.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; }

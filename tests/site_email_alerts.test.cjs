@@ -26,6 +26,16 @@ test('push alone keeps its words', () => {
   assert.match(card({push: PUSH}, {ios: true, push: false}), /On iPhone and iPad, alerts work only in the Home Screen app: .*save your spots in it\.<\/p>/);
 });
 
+test('alerts for official advice are said only once the build turns them on, and never as an email', () => {
+  const advice = {...PUSH, advice: true};
+  assert.match(card({push: advice}), /<p class="sub">A notification when one of your saved spots reaches high or very high risk, at most once a day for each\. Another when official advice is newly shown at one of them, also at most once a day for each\.<\/p>/);
+  assert.match(card({push: advice, email: EMAIL}), /<p class="sub">A notification or an email when one of your saved spots reaches high or very high risk, at most once a day for each\. A notification also when official advice is newly shown at one of them, also at most once a day for each\.<\/p>/);
+  for (const data of [{push: PUSH}, {push: PUSH, email: EMAIL}, {email: EMAIL}]) assert.doesNotMatch(card(data), /official advice/);
+  // What turning them on sends is unchanged: nothing more is sent or kept for them.
+  const sends = h => h.slice(h.indexOf('What turning alerts on sends'), h.indexOf('</details>'));
+  assert.equal(sends(card({push: advice})), sends(card({push: PUSH})));
+});
+
 test('email alone: a labelled field, the consent fold, then the button', () => {
   const h = card({email: EMAIL});
   assert.match(h, /<p class="sub">An email when one of your saved spots/);
