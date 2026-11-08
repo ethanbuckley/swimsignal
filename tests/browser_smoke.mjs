@@ -35,6 +35,11 @@ const PAGES = [
   // Notifications blocked for the site: the Alerts tile says where to allow them, with no button that cannot work,
   // and gives the button back once they are allowed and the page is in view again.
   ['saved/', '#scards .places li', 'blocked'],
+  // The browser's question closed without a choice (requestPermission gives 'default'): what happened and how to be
+  // asked again, then, closed again, where to allow them (8 Nov 2026: "Could not change alerts: ...not allowed").
+  ['saved/', '#scards .places li', 'dismissed'],
+  // An iPhone outside the Home Screen app (no PushManager): the Alerts tile says what to do once; the cards say nothing.
+  ['saved/', '#scards .places li', 'iphone'],
   // A saved spot's page says where its alerts are, and "Go to alerts" opens the Saved page at the Alerts tile.
   [`index.html?spot=${IDS[0]}`, '#save-hint', 'spot-alerts'],
   // A town typed in the search: the spots near it, under the spots named for it (fixture places.json; no rivers file).
@@ -101,9 +106,14 @@ for (const [w, h, mobile] of [[375, 812, true], [1440, 900, false]]) {
       globalThis.Date = F; })();` }, s);
     // The Saved route needs a fresh browser state, then two saved spots for the comparison to exist.
     // In a try: it runs in every frame, and a spot page's sandboxed frames may not read storage.
-    if (saved) await send('Page.addScriptToEvaluateOnNewDocument', { source: `try { localStorage.clear(); ${saved === 'saved' || saved === 'blocked' ? `localStorage.setItem('dipcast.saved', ${JSON.stringify(JSON.stringify(IDS.slice(0, 2)))});` : ''}${saved === 'spot-alerts' ? `localStorage.setItem('dipcast.saved', ${JSON.stringify(JSON.stringify(IDS.slice(0, 1)))});` : ''} } catch (e) { /* a frame without storage */ }` }, s);
+    if (saved) await send('Page.addScriptToEvaluateOnNewDocument', { source: `try { localStorage.clear(); ${['saved', 'blocked', 'dismissed', 'iphone'].includes(saved) ? `localStorage.setItem('dipcast.saved', ${JSON.stringify(JSON.stringify(IDS.slice(0, 2)))});` : ''}${saved === 'spot-alerts' ? `localStorage.setItem('dipcast.saved', ${JSON.stringify(JSON.stringify(IDS.slice(0, 1)))});` : ''} } catch (e) { /* a frame without storage */ }` }, s);
     const notify = setting => send('Browser.setPermission', { permission: { name: 'notifications' }, setting, origin: BASE.slice(0, -1) });
     if (saved === 'blocked') await notify('denied');
+    if (saved === 'dismissed') { await notify('prompt');
+      await send('Page.addScriptToEvaluateOnNewDocument', { source: `if (self.Notification) Notification.requestPermission = () => Promise.resolve('default');` }, s); }
+    if (saved === 'iphone') {
+      await send('Emulation.setUserAgentOverride', { userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.6 Mobile/15E148 Safari/604.1' }, s);
+      await send('Page.addScriptToEvaluateOnNewDocument', { source: `delete self.PushManager;` }, s); }
     await send('Page.navigate', { url: BASE + page }, s);
     let shown = false;
     for (let t = 0; t < 40 && !shown; t++) { await sleep(250);
@@ -149,6 +159,28 @@ for (const [w, h, mobile] of [[375, 812, true], [1440, 900, false]]) {
       for (let t = 0; t < 20 && !(after && after.button); t++) { await sleep(100); after = await tile(); }
       if (!after || !after.button || after.blocked) errors.push(`Alerts tile once allowed again: ${JSON.stringify(after)}`);
       await send('Browser.resetPermissions', {});
+    }
+    if (shown && saved === 'dismissed') {
+      const r = await send('Runtime.evaluate', { awaitPromise: true, returnByValue: true, expression: `(async () => {
+        const b = document.getElementById('alerts-btn'), m = document.getElementById('alerts-msg'); if (!b) return 'no Turn on alerts button';
+        for (let t = 0; t < 40 && b.disabled; t++) await new Promise(r => setTimeout(r, 100));
+        const said = [];
+        for (const n of [1, 2]) { b.click(); for (let t = 0; t < 30 && (b.disabled || !m.textContent); t++) await new Promise(r => setTimeout(r, 100));
+          said.push(m.textContent); }
+        return said; })()` }, s);
+      const [first, second] = r.result?.result?.value || [];
+      if (!/^You did not allow notifications, so alerts are still off\. (Tap|Click) Turn on alerts to be asked again\.$/.test(first || ''))
+        errors.push(`Alerts tile, question closed once: ${JSON.stringify(first)}`);
+      if (!/^You did not allow notifications, so alerts are still off\. Your browser may not ask again for a while\. To allow them, /.test(second || ''))
+        errors.push(`Alerts tile, question closed twice: ${JSON.stringify(second)}`);
+      await send('Browser.resetPermissions', {});
+    }
+    if (shown && saved === 'iphone') {
+      const v = (await send('Runtime.evaluate', { returnByValue: true, expression: `(() => { const h = document.getElementById('alerts-h'), t = h && h.closest('section');
+        return { cards: [...document.querySelectorAll('#scards [data-alert]')].map(p => p.textContent), tile: t ? t.textContent : '' }; })()` }, s)).result?.result?.value;
+      if (!v || !v.cards.length || v.cards.some(c => c)) errors.push(`iPhone: saved cards should say nothing about alerts: ${JSON.stringify(v && v.cards)}`);
+      if (!v || (v.tile.match(/work only in the Home Screen app: tap Share, then Add to Home Screen/g) || []).length !== 1) errors.push(`iPhone: Alerts tile: ${JSON.stringify(v && v.tile)}`);
+      await send('Emulation.setUserAgentOverride', { userAgent: '' }, s);
     }
     if (shown && saved === 'spot-alerts') {
       const r = await send('Runtime.evaluate', { awaitPromise: true, returnByValue: true, expression: `(async () => {

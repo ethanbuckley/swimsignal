@@ -94,11 +94,10 @@ test('alerts: each state a card can be in says what it is, plainly', () => {
   // Blocked in the browser's settings: the Alerts tile says so once (index.html, bindAlerts), not each card.
   assert.deepEqual(st({can: 'blocked'}), {kind: 'blocked', text: '', toggle: false, checked: false, link: false});
   assert.deepEqual(Li.spotAlert({push: true, email: true, can: 'blocked'}), {kind: 'blocked', text: '', toggle: false, checked: false, link: false});
-  for (const can of ['ios', 'inapp', 'offline', 'none']) assert.equal(st({can}).text, 'Notifications cannot be had in this browser.', can);
-  // Where email alerts exist, a browser without notifications is pointed to them, and what they cover is said.
+  // No notifications in this browser at all: the tile says why and what to do, once (8 Nov 2026; site_alerts_wording).
+  for (const can of ['ios', 'inapp', 'offline', 'none']) assert.deepEqual(st({can}), {kind: 'unavailable', text: '', toggle: false, checked: false, link: false}, can);
   const mail = Li.spotAlert({push: true, email: true, can: 'ios'});
-  assert.equal(mail.kind, 'email'); assert.match(mail.text, /cover the spots saved when you sign up/);
-  assert.equal(Li.spotAlert({push: false, email: true}).kind, 'email');
+  assert.equal(mail.text, '');
   // No state turns alerts on from a card: the consent wording is in the Alerts tile.
   for (const x of [st({on: false}), mail]) assert.equal(x.toggle, false);
 });

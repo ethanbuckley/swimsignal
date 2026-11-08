@@ -203,11 +203,12 @@ function spotAlert({ push = false, email = false, can = 'none', on = null, off =
   }
   if (down) return r('down', 'The alert service did not answer, so alerts could not be checked. Try again later.', { link: true });
   if (push && can === 'yes') return on === null ? r('checking', '') : r('off', 'Alerts are off.', { link: true });
-  // Blocked in the browser's settings: the Alerts tile says so, once (index.html, bindAlerts). Until 6 Nov 2026 every
-  // saved card said it too, the same sentence under each, and the Alerts tile below them a further time.
+  // No notifications here, for whatever reason: the Alerts tile says why, and what to do, once (index.html, alertsCard).
+  // Blocked in the browser's settings until 6 Nov 2026, and the rest (an iPhone outside the Home Screen app, an in-app
+  // browser, the offline copy off, no web push) until 8 Nov 2026, every saved card said it too: "Notifications cannot
+  // be had in this browser." under each, then the tile below them. Where email alerts exist, the tile holds their form.
   if (push && can === 'blocked') return r('blocked', '');
-  if (push && !email) return r('unavailable', 'Notifications cannot be had in this browser.', { link: true });
-  return r('email', 'Notifications cannot be had in this browser. Alerts by email cover the spots saved when you sign up.', { link: true });
+  return r('unavailable', '');
 }
 // The line under Save on a spot's page (index.html, bindSave): where alerts for this spot are set up. The Alerts
 // tile on the Saved page holds what they cover and what turning them on sends, and says what to do when this
@@ -238,8 +239,23 @@ function unblockHow({ ios = false, app = false, safari = false, touch = false } 
   return `To allow them, ${touch ? 'tap' : 'click'} the icon to the left of the web address, then turn on Notifications${touch ? ' (it may be under Permissions)' : ''}.` + back;
 }
 
+// The Alerts tile's message when the browser's question about notifications got no "Allow" and the site is not blocked
+// (index.html, bindAlerts). A blocked site is drawn as blocked instead, with unblockHow. Until 8 Nov 2026 this read "Could
+// not change alerts: notifications are not allowed for this site.", which said neither what happened nor what to do.
+//   answer  what Notification.requestPermission() gave: 'default' when the question was closed without a choice
+//           (Chrome, Firefox), 'denied' when the browser refused without blocking the site for good
+//   again   this already happened once on this visit
+// Closed once: asking again works. Chrome stops asking a site for 7 days after the third close, and Firefox can refuse
+// for a while after "Block" without remembering it; neither may then read as blocked, so a second refusal, or a
+// refusal that is not a block, says where to allow them instead. how: unblockHow's device flags.
+function notAllowedSaid({ answer = 'default', again = false, ...how } = {}) {
+  const said = 'You did not allow notifications, so alerts are still off.';
+  if (answer === 'default' && !again) return `${said} ${how.touch ? 'Tap' : 'Click'} Turn on alerts to be asked again.`;
+  return `${said} Your browser may not ask again for a while. ${unblockHow(how)}`;
+}
+
 if (typeof module === 'object' && module.exports) {
   module.exports = { LISTS_KEY, FIRST_LIST, SHARED_LIST, LIST_NAME_MAX, LINK_SPOTS_MAX, listName, listIds, freeListName, readLists, listsReadable,
     listsText, allSaved, listById, shownList, addToList, removeFromList, moveToList, copyToList, makeList, renameList, deleteList, pickList,
-    keepSpots, sameList, shareHash, readShared, PASTE_MAX, pastedList, planListName, sitesHash, addSharedList, savedGroups, alertSpots, spotAlert, saveAlertHint, unblockHow };
+    keepSpots, sameList, shareHash, readShared, PASTE_MAX, pastedList, planListName, sitesHash, addSharedList, savedGroups, alertSpots, spotAlert, saveAlertHint, unblockHow, notAllowedSaid };
 }

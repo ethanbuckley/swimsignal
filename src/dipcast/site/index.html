@@ -2073,7 +2073,9 @@ async function sendSub(sub, weekly = weeklyOn(), off = alertOff()) {
   try { localStorage.setItem(PUSH_KEY, JSON.stringify({ endpoint: sub.endpoint, spots, weekly, at: Date.now(), ...(off.length ? { off } : {}) })); } catch (e) { /* only saves a re-send */ }
 }
 async function alertsOn() {
-  if (await Notification.requestPermission() !== 'granted') throw new Error('notifications are not allowed for this site');
+  // Not allowed: the browser's answer goes with the error, for what the tile says next (bindAlerts).
+  const answer = await Notification.requestPermission();
+  if (answer !== 'granted') throw Object.assign(new Error('notifications are not allowed for this site'), { answer });
   const reg = await pushReg(); if (!reg) throw new Error('the offline copy is not running, so notifications cannot be set up');
   const had = await pushDeadline(reg.pushManager.getSubscription(), 'the browser did not answer; try again', 8000);
   const sub = had || await pushDeadline(reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64(DATA.push.key) }),
@@ -2165,7 +2167,9 @@ async function bindAlerts() {
       // Refused at the browser's question just now: the tile as blocked, with where to allow them, read out from there.
       if (on && Notification.permission === 'denied' && alertsPermChanged()) { const p = document.getElementById('alerts-blocked'); if (p) p.focus(); return; }
       show(!on); ALERT_UI.down = serviceDown(e);
-      m.textContent = ALERT_UI.down ? 'Could not reach the alert service, so alerts are as they were. Try again later.' : `Could not change alerts: ${e.message}.`; }
+      // The question closed without "Allow", or refused without a block: what happened, and how to be asked again (lists.js).
+      m.textContent = e.answer ? notAllowedSaid({ answer: e.answer, again: ALERT_UI.refused++ > 0, ios: IOS, app: STANDALONE, safari: SAFARI_MAC, touch: TOUCH })
+        : ALERT_UI.down ? 'Could not reach the alert service, so alerts are as they were. Try again later.' : `Could not change alerts: ${e.message}.`; }
     drawSpotAlerts();
   });
 }
@@ -2190,7 +2194,8 @@ function watchAlertPerm() {
 // or on again, off with the way to the Alerts tile (which holds what turning them on sends), or why this browser
 // cannot have them. A tick sends the list again without that spot; nothing else is sent, and dates asked for on
 // the organisers' page or an outing (push.dates) are kept by the alert service, as the app never sends them.
-const ALERT_UI = { on: null, down: false };   // notifications on in this browser (null: not checked yet); the service not answering
+// refused: how often the browser's question got no "Allow" on this visit (bindAlerts, notAllowedSaid).
+const ALERT_UI = { on: null, down: false, refused: 0 };   // notifications on in this browser (null: not checked yet); the service not answering
 const alertCan = () => !canPush() ? (IN_APP ? 'inapp' : IOS && !navigator.standalone ? 'ios' : 'none')
   : offlineOff() ? 'offline' : Notification.permission === 'denied' ? 'blocked' : 'yes';
 // The alert service not answering (a network error, a time-out, a 5xx), rather than the browser refusing.
@@ -2204,7 +2209,7 @@ function drawSpotAlerts() {
     p.dataset.kind = st.kind;
     p.innerHTML = (st.toggle ? `<label class="alert-tick"><input type="checkbox" data-alert-spot="${esc(id)}"${st.checked ? ' checked' : ''}><span>Alerts for this spot</span></label>` : '')
       + (st.text ? `<span class="alert-said">${esc(st.text)}</span>` : '')
-      + (st.link ? ` <button type="button" class="linkbtn small" data-to-alerts>${st.kind === 'off' || st.kind === 'email' ? 'Set up alerts' : 'See Alerts'}</button>` : '');
+      + (st.link ? ` <button type="button" class="linkbtn small" data-to-alerts>${st.kind === 'off' ? 'Set up alerts' : 'See Alerts'}</button>` : '');
   });
 }
 async function toggleSpotAlert(box) {

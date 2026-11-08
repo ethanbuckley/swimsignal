@@ -228,7 +228,7 @@ const outingList = (list, pairs, on) => pairs.reduce((l, p) => outingDates().wit
 const outingEarlier = (asked, list, pairs) => asked.filter(a => outingDates().hasDate(list, a.spot, a.date) && !pairs.some(p => p.spot === a.spot && p.date === a.date));
 
 // What the alerts part of the tile says, as HTML. a = { state, pairs, list, earlier, saved (the Saved page's
-// address), app (an in-app browser's name) }. state: 'none' (the site's date alerts are off: nothing said),
+// address), app (an in-app browser's name), unblock (where to allow notifications on this device, lists.js unblockHow) }. state: 'none' (the site's date alerts are off: nothing said),
 // 'cannot', 'ios', 'inapp', 'blocked' (no notifications here: the calendar file instead), 'off' (alerts not
 // on in this browser), 'on'.
 function outingAlert(a) {
@@ -237,7 +237,9 @@ function outingAlert(a) {
     case 'cannot': return `<p class="small">This browser cannot show notifications from websites, so SwimSignal cannot alert you about this outing. ${instead}</p>`;
     case 'ios': return `<p class="small">On iPhone and iPad, notifications work only in the Home Screen app, so SwimSignal cannot alert you about this outing here. ${instead}</p>`;
     case 'inapp': return `<p class="small">Alerts cannot be turned on in the ${outEsc(a.app)} app's browser, so SwimSignal cannot alert you about this outing here. ${instead}</p>`;
-    case 'blocked': return `<p class="small">Notifications are blocked for this site in your browser settings, so SwimSignal cannot alert you about this outing. ${instead}</p>`;
+    // Until 8 Nov 2026 this said only that they were blocked, not how to allow them; the Saved page's tile said how.
+    case 'blocked': return `<p class="small">Notifications are blocked for this site in your browser settings, so SwimSignal cannot alert you about this outing. `
+      + `${a.unblock ? `${outEsc(a.unblock)} Or add it to your calendar.` : instead}</p>`;
     case 'off': return `<p class="small">To be alerted about this outing, first turn on alerts in this browser, on the <a href="${outEsc(a.saved)}" id="outing-to-alerts">Saved page</a>.</p>`;
     case 'on': break;
     default: return '';
@@ -679,12 +681,24 @@ async function outingPushState() {
   const sub = Notification.permission === 'granted' ? await pushSub().catch(() => null) : null;
   return sub ? { state: 'on', sub } : { state: 'off' };
 }
+// Blocked, then allowed in the browser's settings ("Then come back to this page"): the alerts part drawn again when the
+// page is back in view or the browser says it changed, as the Saved page's tile is (index.html, alertsPermChanged).
+let OUTING_ALERT_BY = null, OUTING_PERM_WATCHED = false;
+function watchOutingPerm() {
+  if (OUTING_PERM_WATCHED || !canPush()) return; OUTING_PERM_WATCHED = true;
+  const again = () => { const el = document.getElementById('outing-alert');
+    if (el && el.dataset.state === 'blocked' && Notification.permission !== 'denied' && OUTING_ALERT_BY) bindOutingAlert(OUTING_ALERT_BY); };
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') again(); });
+  // Allowed from the icon by the web address, the page stays in view: where the browser says so (Permissions API), at once.
+  if (navigator.permissions) navigator.permissions.query({ name: 'notifications' }).then(p => p.addEventListener('change', again)).catch(() => {});
+}
 // The alerts part of the tile, once the push state is known. Nothing is sent until a button is pressed;
 // then the whole list goes, as on the organisers' page.
 async function bindOutingAlert(byId) {
   const el = document.getElementById('outing-alert'), msg = document.getElementById('outing-alert-msg');
   const D = outingDates(), st = await outingPushState();
   if (!el || !el.isConnected) return;   // the tile was drawn again meanwhile
+  el.dataset.state = st.state; OUTING_ALERT_BY = byId; watchOutingPerm();
   const t = outingRules().today(), pairs = outingPairs(PLAN, byId), endpoint = st.sub && st.sub.endpoint;
   let mem = null;   // the list as last sent, where this browser cannot keep it
   const kept = key => { try { return D.keptDates(localStorage.getItem(key), endpoint, t); } catch (e) { return []; } };
@@ -692,7 +706,8 @@ async function bindOutingAlert(byId) {
   const named = ps => ps.map(p => ({ ...p, name: byId.has(p.spot) ? byId.get(p.spot).name : p.spot }));
   const paint = () => {
     const list = read();
-    el.innerHTML = outingAlert({ state: st.state, pairs, list, earlier: named(outingEarlier(asked(), list, pairs)), saved: savedPath(), app: IN_APP });
+    el.innerHTML = outingAlert({ state: st.state, pairs, list, earlier: named(outingEarlier(asked(), list, pairs)), saved: savedPath(), app: IN_APP,
+      unblock: st.state === 'blocked' && typeof unblockHow === 'function' ? unblockHow({ ios: IOS, app: STANDALONE, safari: SAFARI_MAC, touch: TOUCH }) : '' });
     const go = document.getElementById('outing-to-alerts');
     if (go) go.addEventListener('click', e => { if (!plainClick(e)) return; e.preventDefault(); openSaved();
       const h = document.getElementById('alerts-h'); if (h) { h.tabIndex = -1; h.scrollIntoView({ block: 'start' }); h.focus({ preventScroll: true }); } });
