@@ -635,27 +635,34 @@ const barcombe = week(['low', 'low', 'low', 'low', 'low'], { id: 'ouse-barcombe-
   now: { risk: 0.026, label: 'low', discharging_upstream: 0, recent_upstream: 1, monitored_upstream: 1, feed_down_upstream: 0, feed_down: [],
     stale_upstream: 44, no_feed_upstream: 0, monitored_weight: 0.0575, upstream_weight: 4.4581, feeds_on_change: ['Southern Water'],
     feed_stale: [{ company: 'Southern Water', overflows: 44, since: '2026-11-06T16:24:28+00:00', on_change: true }] } });
-// A clicked point (anypoint.js) has no weights: the count alone decides.
+// A clicked point (anypoint.js) gives the weights too from 8 Nov 2026; these are the Dee at Chester's on the 08:23 build
+// of that day (1.1% of the weight reports). An object with no weights is judged by the count alone (deeCount).
 const deeTap = week(['low', 'low', 'low', 'low', 'low'], { id: 'point', name: 'River Dee', source: 'unlisted', upstream_summary: { overflows: 18 },
-  now: { risk: 0, label: 'low', discharging_upstream: 0, recent_upstream: 0, monitored_upstream: 1, feed_down_upstream: 0, feed_down: [], stale_upstream: 0, feed_stale: [] } });
+  now: { risk: 0, label: 'low', discharging_upstream: 0, recent_upstream: 0, monitored_upstream: 1, feed_down_upstream: 0, feed_down: [], stale_upstream: 0, feed_stale: [],
+    monitored_weight: 0.0871, upstream_weight: 8.2365 } });
 const withNow = (s, now) => ({ ...s, now: { ...s.now, ...now } });
+const deeCount = withNow(deeTap, { monitored_weight: undefined, upstream_weight: undefined });
 
 test('where fewer than half report, or they carry under half the weight, a 0 is not a count', () => {
   assert.equal(L.nowFew(sandyLane), 'count');
   assert.equal(L.nowFew(barcombe), 'count');
   assert.equal(L.nowFew(deeTap), 'count');
+  assert.equal(L.nowFew(deeCount), 'count');
   // Half or more by number but under half the weight: the overflows that matter most do not report.
   assert.equal(L.nowFew(withNow(sandyLane, { monitored_upstream: 7 })), 'weight');
   // Half or more by number and by weight: the count stands. At exactly half, still a count.
   assert.equal(L.nowFew(withNow(sandyLane, { monitored_upstream: 12, monitored_weight: 3.5 })), '');
-  assert.equal(L.nowFew(withNow(deeTap, { monitored_upstream: 9 })), '');
+  assert.equal(L.nowFew(withNow(deeCount, { monitored_upstream: 9 })), '');
+  assert.equal(L.nowFew(withNow(deeTap, { monitored_upstream: 9 })), 'weight');   // the Dŵr Cymru overflows carry the weight
+  assert.equal(L.nowFew(withNow(deeTap, { monitored_upstream: 9, monitored_weight: 4.2 })), '');
   // None reporting is Unknown already (nowTile); a discharge is a reading, and its count stays.
   assert.equal(L.nowFew(withNow(sandyLane, { monitored_upstream: 0 })), '');
   assert.equal(L.nowFew(withNow(sandyLane, { discharging_upstream: 1 })), '');
   assert.equal(L.nowFew({ ...sandyLane, upstream_summary: { overflows: 0 } }), '');
   // The rule only says how the count is shown: the levels, the headline and right now's level are as they were.
   assert.equal(L.nowUnknown(sandyLane), true);
-  assert.equal(L.nowUnknown(deeTap), false);
+  assert.equal(L.nowUnknown(deeTap), true);   // as Sandy Lane on the same water (anypoint.js gives the weights)
+  assert.equal(L.nowUnknown(deeCount), false);
   assert.equal(L.level(deeTap), 'low');
 });
 
@@ -676,7 +683,8 @@ test('the Right now tile gives no large 0 where too few report, and keeps the po
   // Every figure the tile can show for these spots is a word, never a number 0.
   for (const [s, n] of [[sandyLane, 13], [barcombe, 46], [deeTap, 18]]) assert.notEqual(tile(s, n).fig, 0);
   // Unchanged: most report, so the count stands; one discharging, so the count stands.
-  assert.deepEqual([tile(withNow(deeTap, { monitored_upstream: 12 }), 18).fig, tile(withNow(deeTap, { monitored_upstream: 12 }), 18).unit], [0, 'discharging']);
+  const most = withNow(deeTap, { monitored_upstream: 12, monitored_weight: 6 });
+  assert.deepEqual([tile(most, 18).fig, tile(most, 18).unit], [0, 'discharging']);
   assert.deepEqual([tile(withNow(deeTap, { discharging_upstream: 1 }), 18).fig, tile(withNow(deeTap, { discharging_upstream: 1 }), 18).figTone], [1, 'hot']);
   assert.equal(tile(withNow(sandyLane, { monitored_upstream: 0 }), 13).fig, 'Unknown');
 });
@@ -688,9 +696,9 @@ test('the evidence row, the comparison and a kept swim say the same where too fe
   // The comparison (experience.js, compareNow) leads with right now not known where the headline does.
   const { compareNow } = require('../src/dipcast/site/experience.js');
   assert.equal(compareNow(sandyLane), 'Right now not known here. 1 of 13 report live: none discharging. Whether the rest are is not known. Not reporting: 12 with no live feed.');
-  assert.equal(compareNow(deeTap), '1 of 18 report live: none discharging. Whether the rest are is not known. Not reporting: 17 offline or with no live feed.');
+  assert.equal(compareNow(deeTap), 'Right now not known here. 1 of 18 report live: none discharging. Whether the rest are is not known. Not reporting: 17 offline or with no live feed.');
   // Most report: the count leads, as before.
-  assert.match(compareNow(withNow(deeTap, { monitored_upstream: 12 })), /^0 discharging\. 12 of 18 report live\./);
+  assert.match(compareNow(withNow(deeTap, { monitored_upstream: 12, monitored_weight: 6 })), /^0 discharging\. 12 of 18 report live\./);
   // A kept swim (journal.js) keeps no "none of the 13 discharging".
   const J = require('../src/dipcast/site/journal.js');
   const kept = J.journalSeen(sandyLane, DATES[0], DATES[0], GEN, '21:30');

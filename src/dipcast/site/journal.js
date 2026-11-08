@@ -49,9 +49,10 @@ const jnObj = v => !!v && typeof v === 'object' && !Array.isArray(v);
 function jnSeenOk(s) {
   if (!jnObj(s)) return null;
   const head = jnText(s.head, 120); if (!head) return null;
-  const of = jnInt(s.of, 1, 100000), dis = of === null ? null : jnInt(s.dis, 0, of);
+  // mon: how many of them reported live, kept from 8 Nov 2026 (journalSeen); null on a swim kept before.
+  const of = jnInt(s.of, 1, 100000), dis = of === null ? null : jnInt(s.dis, 0, of), mon = dis === null ? null : jnInt(s.mon, Math.max(1, dis), of);
   return { head, level: JN_LEVELS.includes(s.level) || JN_PLAIN.includes(s.level) ? s.level : null, issued: jnWhen(s.issued),
-    rain: jnNum(s.rain, 0, 2000), dis, of: dis === null ? null : of,
+    rain: jnNum(s.rain, 0, 2000), dis, of: dis === null ? null : of, mon,
     river: jnObj(s.river) && jnNum(s.river.m, -50, 100) !== null ? { m: s.river.m, word: jnText(s.river.word, 40) } : null,
     temp: jnObj(s.temp) && jnNum(s.temp.c, -5, 45) !== null ? { c: s.temp.c } : null };
 }
@@ -114,16 +115,26 @@ function journalSeen(d, date, today, issued, time) {
   // whose 14 have no live feed. A lake's own gauge (river_state.water "lake") is not a river
   // level, and its words are not these: kept out.
   // Nor where too few report (levels.js, nowFew): "none of the 13 discharging" at Sandy Lane, where 1 of 13 reports.
+  // How many reported is kept with the count (mon), so the rest are not read as not discharging (journalSeenWords).
   const known = !!total && ((now.monitored_upstream ?? total) > 0 || (now.discharging_upstream || 0) > 0) && !R.nowFew(d);
+  const mon = Math.min(total, now.monitored_upstream ?? total);   // a build with no count: all, as levels.js reads it
   return jnSeenOk({ head, level, issued, rain: x && typeof x.rain_48h_mm === 'number' ? Math.round(x.rain_48h_mm * 10) / 10 : null,
-    dis: known ? now.discharging_upstream || 0 : null, of: known ? total : null,
+    dis: known ? now.discharging_upstream || 0 : null, of: known ? total : null, mon: known ? mon : null,
     river: !rs.stale && rs.water !== 'lake' && typeof rs.level_m === 'number' ? { m: rs.level_m, word: JN_RIVER[rs.label] || '' } : null, temp });
 }
 // The figures kept with a swim, as phrases: the rain, the overflows, the river and the water.
+// The overflows: out of all of them only where all reported live; where some did not, how many did first, in the
+// evidence row's words (evidence.js), so the rest are not read as not discharging (8 Nov 2026: "none of the 14
+// overflows upstream discharging" with 10 of 14 reporting). A swim kept before then has no count of those
+// reporting (mon null): its discharges stand, and a 0 is said as none reported discharging. One overflow is kept
+// only where it reported (journalSeen).
 function journalSeenWords(s) {
   const out = [];
   if (s.rain !== null) out.push(s.rain === 0 ? 'no rain in the last two days' : s.rain < 0.5 ? 'under 1 mm of rain in the last two days' : `${Math.round(s.rain)} mm of rain in the last two days`);
-  if (s.of) out.push(s.of === 1 ? `the overflow upstream ${s.dis ? '' : 'not '}discharging` : s.dis ? `${s.dis} of ${s.of} overflows upstream discharging` : `none of the ${s.of} overflows upstream discharging`);
+  if (s.of) out.push(s.of === 1 ? `the overflow upstream ${s.dis ? '' : 'not '}discharging`
+    : s.mon !== null && s.mon !== undefined && s.mon < s.of ? `${s.mon} of ${s.of} overflows upstream report live: ${s.dis || 'none'} discharging`
+    : s.dis ? `${s.dis} of ${s.of} overflows upstream discharging`
+    : s.mon === s.of ? `none of the ${s.of} overflows upstream discharging` : 'no overflow upstream reported discharging');
   if (s.river) out.push(`river ${s.river.m.toFixed(2)} m${s.river.word ? ', ' + s.river.word : ''}`);
   if (s.temp) out.push(`water ${Math.round(s.temp.c)}°C`);
   return out;

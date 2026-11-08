@@ -49,7 +49,7 @@ test('old or odd stored values read as absent, never as an error', () => {
   const [a, b, d] = list;
   assert.equal(a.level, null); assert.equal(a.time, ''); assert.equal(a.minutes, null); assert.equal(a.note.length, 280);
   assert.equal(a.photos, 0); assert.equal(a.at, ''); assert.equal(a.name, '');
-  assert.deepEqual(a.seen, { head: 'Low risk', level: null, issued: '', rain: null, dis: null, of: null, river: null, temp: null });
+  assert.deepEqual(a.seen, { head: 'Low risk', level: null, issued: '', rain: null, dis: null, of: null, mon: null, river: null, temp: null });
   assert.equal(b.minutes, null, 'a number as text is not a number'); assert.equal(b.photos, 0); assert.equal(b.seen, null);
   assert.equal(d.key, `d@${TODAY}`, 'a key that is not one is made again from the spot and day'); assert.equal(d.minutes, null);
 });
@@ -63,7 +63,7 @@ test('newest first: the day, then the time, then when it was logged', () => {
 
 test('keeps what the spot\'s page showed on the day of the swim', () => {
   assert.deepEqual(j.journalSeen(spot(), TODAY, TODAY, ISSUED, LATER),
-    { head: 'Low risk', level: 'low', issued: ISSUED, rain: 0, dis: 0, of: 21, river: { m: 0.197, word: 'low water' }, temp: { c: 14.9 } });
+    { head: 'Low risk', level: 'low', issued: ISSUED, rain: 0, dis: 0, of: 21, mon: 21, river: { m: 0.197, word: 'low water' }, temp: { c: 14.9 } });
   const raised = spot({ days: [day(TODAY, 'high', 0.5, 14.26), ...spot().days.slice(1)], now: { label: 'moderate', discharging_upstream: 2 } });
   const s = j.journalSeen(raised, TODAY, TODAY, ISSUED, LATER);
   assert.equal(s.head, 'High risk: sewage spills'); assert.equal(s.level, 'high'); assert.equal(s.rain, 14.3); assert.equal(s.dis, 2);
@@ -113,7 +113,7 @@ test('a reading the page would not show is not kept', () => {
 test('a spot with nothing to forecast keeps its plain level, its rain and its readings', () => {
   const plain = spot({ upstream_summary: { overflows: 0 }, now: {}, river_state: undefined });
   assert.deepEqual(j.journalSeen(plain, TODAY, TODAY, ISSUED, LATER),
-    { head: 'No monitored overflow found upstream', level: 'no overflows', issued: ISSUED, rain: 0, dis: null, of: null, river: null, temp: { c: 14.9 } });
+    { head: 'No monitored overflow found upstream', level: 'no overflows', issued: ISSUED, rain: 0, dis: null, of: null, mon: null, river: null, temp: { c: 14.9 } });
   const lake = { id: 'x', name: 'X', error: 'An isolated lake: no river flows into it', days: [], upstream_summary: { overflows: 0 } };
   assert.equal(j.journalSeen(lake, TODAY, TODAY, ISSUED, LATER).level, 'no river connection');
 });
@@ -136,13 +136,42 @@ test('a swim keeps no overflow count where none reports, and no lake level as a 
   assert.equal(j.journalSeen(lake, TODAY, TODAY, ISSUED, LATER).river, null);
 });
 
+// PR #648's follow-up (8 Nov 2026): with 10 of 14 reporting, a kept swim said "none of the 14 overflows upstream
+// discharging", so the 4 that do not report read as not discharging. It keeps how many reported and says so, in
+// the evidence row's words (evidence.js: "1 of 13 report live: none discharging"). All reporting: as before.
+test('a kept swim says how many overflows reported, never the ones that did not as not discharging', () => {
+  const kept = now => j.journalSeen(spot({ upstream_summary: { overflows: 14 }, now: { label: 'low', ...now } }), TODAY, TODAY, ISSUED, LATER);
+  const words = s => j.journalSeenWords(s).find(x => /overflow/.test(x));
+  const ten = kept({ discharging_upstream: 0, monitored_upstream: 10 });
+  assert.deepEqual([ten.dis, ten.of, ten.mon], [0, 14, 10]);
+  assert.equal(words(ten), '10 of 14 overflows upstream report live: none discharging');
+  assert.equal(words(kept({ discharging_upstream: 2, monitored_upstream: 10 })), '10 of 14 overflows upstream report live: 2 discharging');
+  assert.equal(words(kept({ discharging_upstream: 0, monitored_upstream: 14 })), 'none of the 14 overflows upstream discharging');
+  assert.equal(words(kept({ discharging_upstream: 3, monitored_upstream: 14 })), '3 of 14 overflows upstream discharging');
+  // A build that gives no count of those reporting is read as all reporting, as levels.js reads it (nowWatched).
+  assert.equal(words(kept({ discharging_upstream: 0 })), 'none of the 14 overflows upstream discharging');
+  // Too few report (levels.js, nowFew): nothing kept, as before; a discharge is kept with how many reported.
+  assert.equal(words(kept({ discharging_upstream: 0, monitored_upstream: 3 })), undefined);
+  assert.equal(words(kept({ discharging_upstream: 1, monitored_upstream: 3 })), '3 of 14 overflows upstream report live: 1 discharging');
+  // Read back from storage, and through a saved copy: the count of those reporting survives, and a wrong one is dropped.
+  const back = x => j.journalEntries([{ id: 'a', date: TODAY, seen: x }])[0].seen;
+  assert.equal(back(ten).mon, 10);
+  for (const bad of [15, -1, 0, 2.5, '10']) assert.equal(back({ ...ten, mon: bad }).mon, null, String(bad));
+  assert.equal(back({ ...ten, dis: 3, mon: 2 }).mon, null, 'fewer reporting than discharging');
+  // A swim kept before 8 Nov 2026 has no count of those reporting, so whether all did is not known: a 0 is said
+  // as none reported discharging, not as none discharging. A discharge is a reading and its count stays.
+  assert.equal(words(back({ ...ten, mon: undefined })), 'no overflow upstream reported discharging');
+  assert.equal(words(back({ ...ten, dis: 2, mon: undefined })), '2 of 14 overflows upstream discharging');
+  assert.equal(words(back({ head: 'Low risk', dis: 0, of: 1 })), 'the overflow upstream not discharging');   // kept only where it reported
+});
+
 test('what was kept, in words', () => {
-  const w = s => j.journalSeenWords({ head: 'Low risk', level: 'low', issued: '', rain: null, dis: null, of: null, river: null, temp: null, ...s });
-  assert.deepEqual(w({ rain: 0, dis: 0, of: 16, river: { m: 0.311, word: 'low water' }, temp: { c: 16.2 } }),
+  const w = s => j.journalSeenWords({ head: 'Low risk', level: 'low', issued: '', rain: null, dis: null, of: null, mon: null, river: null, temp: null, ...s });
+  assert.deepEqual(w({ rain: 0, dis: 0, of: 16, mon: 16, river: { m: 0.311, word: 'low water' }, temp: { c: 16.2 } }),
     ['no rain in the last two days', 'none of the 16 overflows upstream discharging', 'river 0.31 m, low water', 'water 16°C']);
-  assert.deepEqual(w({ rain: 0.3, dis: 2, of: 15 }), ['under 1 mm of rain in the last two days', '2 of 15 overflows upstream discharging']);
-  assert.deepEqual(w({ rain: 14.2, dis: 1, of: 1, river: { m: 1, word: '' } }), ['14 mm of rain in the last two days', 'the overflow upstream discharging', 'river 1.00 m']);
-  assert.deepEqual(w({ dis: 0, of: 1 }), ['the overflow upstream not discharging']);
+  assert.deepEqual(w({ rain: 0.3, dis: 2, of: 15, mon: 15 }), ['under 1 mm of rain in the last two days', '2 of 15 overflows upstream discharging']);
+  assert.deepEqual(w({ rain: 14.2, dis: 1, of: 1, mon: 1, river: { m: 1, word: '' } }), ['14 mm of rain in the last two days', 'the overflow upstream discharging', 'river 1.00 m']);
+  assert.deepEqual(w({ dis: 0, of: 1, mon: 1 }), ['the overflow upstream not discharging']);
   assert.deepEqual(w({}), []);
 });
 
