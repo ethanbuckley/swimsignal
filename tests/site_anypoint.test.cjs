@@ -249,15 +249,15 @@ const NI = { 'Lagan in Belfast': [54.5866, -5.9295], 'Erne at Enniskillen': [54.
 const ROI = { 'Liffey in Dublin': [53.3461, -6.2733], 'Shannon at Athlone': [53.4239, -7.9407], 'Lough Derg at Mountshannon': [52.9293, -8.42816],
   'Lifford, west of the Foyle (450 m from the border)': [54.8340, -7.4870], 'Ballyshannon, on the Erne': [54.5025, -8.1880],
   'Galway': [53.274, -9.049], 'Dingle': [52.1408, -10.2686], 'Dublin Bay': [53.33, -6.13] };
-test('a click in Northern Ireland or the Republic says England only and names the official source there', () => {
+test('a click in Northern Ireland or the Republic says there is no overflow data there and names the official source there', () => {
   for (const [what, [lat, lon]] of Object.entries(NI)) assert.equal(A.outsideWhere(lat, lon, outside), 'northern_ireland', what);
   for (const [what, [lat, lon]] of Object.entries(ROI)) assert.equal(A.outsideWhere(lat, lon, outside), 'republic_of_ireland', what);
   const ni = A.place(54.5866, -5.9295, { ...files, tiles: {}, outside });
   assert.equal(ni.mode, 'none');
   assert.equal(ni.outside, 'northern_ireland');
-  assert.equal(ni.error, 'SwimSignal has overflow data for England only, so it has no forecast in Northern Ireland.');
+  assert.equal(ni.error, 'SwimSignal does not have overflow data for Northern Ireland, so it has no forecast here.');
   const roi = A.place(53.3461, -6.2733, { ...files, tiles: {}, outside });
-  assert.equal(roi.error, 'SwimSignal has overflow data for England only, so it has no forecast in the Republic of Ireland.');
+  assert.equal(roi.error, 'SwimSignal does not have overflow data for the Republic of Ireland, so it has no forecast here.');
   assert.match(A.OUTSIDE.northern_ireland.see, /href="https:\/\/www\.daera-ni\.gov\.uk\/articles\/bathing-water-quality-dashboard"/);
   assert.match(A.OUTSIDE.republic_of_ireland.see, /href="https:\/\/www\.beaches\.ie\/"/);
   // Nothing about the water itself: no level, no "no overflow", no "clean".
