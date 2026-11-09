@@ -8,6 +8,49 @@
   "version": "1.0.0",
   "sha256": "416c597bc24b87610631814f00325ad5f60a475b7f9d14fd4d10a22393ee10e1"
  },
- "rows": [],
- "updated": "2026-11-06T12:32:53+00:00"
+ "rows": [
+  {
+   "source": "pilot",
+   "site": "bw-ukd1101-45800",
+   "item_id": "S2B_T30UVF_20261109T112210_L2A",
+   "tile": "MGRS-30UVF",
+   "acquired": "2026-11-09T11:26:10.918000Z",
+   "read_at": "2026-11-09T16:30:01+00:00",
+   "model_version": "1.0.0",
+   "inputs": {
+    "reading": 0.274725,
+    "core_brightness": 0.00199,
+    "index_iqr": 0.35559,
+    "low_signal": true
+   },
+   "values": {
+    "fallback": 1.0177,
+    "B0": 1.4683,
+    "A": null,
+    "C": 0.2193
+   }
+  },
+  {
+   "source": "pilot",
+   "site": "wqa-AN-ANT160",
+   "item_id": "S2C_T31UCU_20261108T110245_L2A",
+   "tile": "MGRS-31UCU",
+   "acquired": "2026-11-08T11:06:28.578000Z",
+   "read_at": "2026-11-09T16:30:01+00:00",
+   "model_version": "1.0.0",
+   "inputs": {
+    "reading": -0.103244,
+    "core_brightness": 0.05255,
+    "index_iqr": 0.06004,
+    "low_signal": false
+   },
+   "values": {
+    "fallback": 1.0177,
+    "B0": 0.8677,
+    "A": 0.5155,
+    "C": 0.6466
+   }
+  }
+ ],
+ "updated": "2026-11-09T16:30:01+00:00"
 }
