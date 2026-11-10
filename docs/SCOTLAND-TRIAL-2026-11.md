@@ -10,6 +10,7 @@ the model's under-forecast is fixed. Built behind `DIPCAST_SCOTLAND_TRIAL`, off 
 |---|---|---|
 | Gate A ([write-up](SCOTLAND-HINDCAST-2026-11.md)) | 254 overflows, 52,891 spill-days, 2022-25 | PASS: beats each overflow's own history at leads 0-3 (lead 0 BSS 0.18, 0.13 to 0.23). Forecast 72% of the spill-days that happened |
 | Calibration map (`scripts/scotland_recalibration.py`) | Fitted 2022-24 (168,095 rows), checked 2025 | PASS, 12 of 12 parts (below). Exploratory: 2025 was seen in aggregate before the rule was written |
+| Frozen-model backtest on 2021 ([record](SCOTLAND-2021-BACKTEST-2026-11.md)) | 83 overflows, 6,804 spill-days, 2021, lead 0; history from archived editions | PASS on all three parts: BSS vs earlier years 0.280 (0.187 to 0.368), level 0.967, gain over unmapped 0.089 (0.047 to 0.123). A year neither model nor map saw: confirmation at lead 0 |
 | Gate B, live shadow (`scottish_shadow.py`) | 11 Oct to 31 Oct 2026 | Not passed: skill +0.01 to +0.22 in five pieces, every interval crosses zero, 3 to 7 days each |
 | Outside review | | None yet |
 
@@ -87,6 +88,6 @@ for, and a new model needs a new map and check.
 | Field | Content |
 |---|---|
 | Stage | Limited forecast (research workflow): three SEPA lochs, labelled trial |
-| Supported claim | On 2022-25 Scottish Water records, the English model with Scottish covariates ranks overflow-days better than their history, and with Scotland's map its level is right on 2025 at leads 0-3 |
+| Supported claim | On 2022-25 Scottish Water records, the English model with Scottish covariates ranks overflow-days better than their history, and with Scotland's map its level is right on 2025 at leads 0-3. On 2021, unseen, the mapped forecast beats each overflow's history at the right level at lead 0 |
 | Next deliverables | 1. Gate B from the shadow after its Nov-Jan window. 2. A shadow arm with Scotland's map, so the live check scores what the trial shows. 3. Scottish river spots, each with an authority's own access statement. 4. Click-anywhere in Scotland. 5. Outside review (Stirling invitation, Ethan's) |
 | Release route | Owner sets the variable; rollback is deleting it |
