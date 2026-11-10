@@ -58,3 +58,19 @@ text = "Anglian Water says swimming at Rutland Water is only permitted in design
 status = "confirmed"
 source = "https://anglianwaterparks.co.uk/faqs"
 source_name = "Anglian Water"
+
+# Historical photo from Geograph, chosen 10 November 2026 (guides/photo-candidates/decisions.tsv): its subject is 313 m from the spot's pin, its camera 303 m; checked against its title, its words, its grid reference and the picture.
+[[photo]]
+file = "geograph-5571186.jpg"
+width = 640
+height = 427
+topic = "overview"
+caption = "Rutland Water shoreline at the Sykes Lane picnic site, looking south."
+credit = "Mat Fascione"
+taken = 2017-10-15
+status = "historical"
+title = "Rutland Water shoreline at the Sykes Lane picnic site"
+source = "https://www.geograph.org.uk/photo/5571186"
+source_name = "Geograph"
+licence = "https://creativecommons.org/licenses/by-sa/2.0/"
+changes = "Re-encoded as a JPEG at the same size, 640 x 427, with all metadata removed."

@@ -58,3 +58,19 @@ text = "Swim only from the beach out to the buoy line, where the lifeguards watc
 status = "confirmed"
 source = "https://www.cotswoldcountryparkandbeach.com/visiting-us/faqs"
 source_name = "Cotswold Country Park and Beach"
+
+# Historical photo from Geograph, chosen 10 November 2026 (guides/photo-candidates/decisions.tsv): its subject is 120 m from the spot's pin, its camera 162 m; checked against its title, its words, its grid reference and the picture.
+[[photo]]
+file = "geograph-5043722.jpg"
+width = 640
+height = 480
+topic = "overview"
+caption = "Artificial beach, Cotswold Country Park & Beach, looking south-east."
+credit = "Vieve Forward"
+taken = 2016-07-21
+status = "historical"
+title = "Artificial beach, Cotswold Country Park & Beach"
+source = "https://www.geograph.org.uk/photo/5043722"
+source_name = "Geograph"
+licence = "https://creativecommons.org/licenses/by-sa/2.0/"
+changes = "Re-encoded as a JPEG at the same size, 640 x 480, with all metadata removed."

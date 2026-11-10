@@ -179,8 +179,10 @@ def parse_guide(raw: dict, spot_id: str, photos_dir: Path, today: date | None = 
         raise GuideError(f"how must be desk (from published pages) or visit (someone went), not {raw.get('how')!r}")
     guide["how"] = raw["how"]
     facts = raw.get("fact") or []
-    if not isinstance(facts, list) or not facts:
-        raise GuideError("a guide needs at least one [[fact]]")
+    # A guide may start with a photo alone (10 November 2026): a historical photo of the place before anyone has
+    # checked where to park or get in. The tile then says nothing is checked yet and names every topic as missing.
+    if not isinstance(facts, list) or (not facts and not raw.get("photo")):
+        raise GuideError("a guide needs at least one [[fact]] or [[photo]]")
     guide["facts"] = []
     for i, f in enumerate(facts, 1):
         what = f"fact {i}"

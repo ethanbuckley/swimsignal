@@ -79,3 +79,19 @@ text = "Canoes, kayaks and paddleboards are allowed on Windermere. Powered craft
 status = "confirmed"
 source = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/lakes-activities-guide/"
 source_name = "Lake District National Park Authority"
+
+# Historical photo from Geograph, chosen 10 November 2026 (guides/photo-candidates/decisions.tsv): its subject is 181 m from the spot's pin, its camera 203 m; checked against its title, its words, its grid reference and the picture.
+[[photo]]
+file = "geograph-4697219.jpg"
+width = 640
+height = 480
+topic = "overview"
+caption = "Lake Windermere at Waterhead, near Ambleside, looking south-south-east."
+credit = "Malc McDonald"
+taken = 2015-10-10
+status = "historical"
+title = "Lake Windermere at Waterhead, near Ambleside"
+source = "https://www.geograph.org.uk/photo/4697219"
+source_name = "Geograph"
+licence = "https://creativecommons.org/licenses/by-sa/2.0/"
+changes = "Re-encoded as a JPEG at the same size, 640 x 480, with all metadata removed."

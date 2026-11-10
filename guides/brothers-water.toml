@@ -31,3 +31,19 @@ text = "Canoes, kayaks and paddleboards are not allowed on Brothers Water."
 status = "confirmed"
 source = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/lakes-activities-guide/"
 source_name = "Lake District National Park Authority"
+
+# Historical photo from Geograph, chosen 10 November 2026 (guides/photo-candidates/decisions.tsv): its subject is 92 m from the spot's pin, its camera 168 m; checked against its title, its words, its grid reference and the picture.
+[[photo]]
+file = "geograph-5413007.jpg"
+width = 640
+height = 427
+topic = "overview"
+caption = "Looking across Brothers Water, looking east."
+credit = "Russel Wills"
+taken = 2017-05-31
+status = "historical"
+title = "Looking across Brothers Water"
+source = "https://www.geograph.org.uk/photo/5413007"
+source_name = "Geograph"
+licence = "https://creativecommons.org/licenses/by-sa/2.0/"
+changes = "Re-encoded as a JPEG at the same size, 640 x 427, with all metadata removed."

@@ -72,3 +72,19 @@ text = "Open water swimming is only during advertised group times. The swim seas
 status = "confirmed"
 source = "https://anglianwaterparks.co.uk/rutland-water-park/other-activities/open-water-swimming"
 source_name = "Anglian Water"
+
+# Historical photo from Geograph, chosen 10 November 2026 (guides/photo-candidates/decisions.tsv): its subject is 212 m from the spot's pin, its camera 294 m; checked against its title, its words, its grid reference and the picture.
+[[photo]]
+file = "geograph-7149299.jpg"
+width = 640
+height = 360
+topic = "overview"
+caption = "Whitwell Creek, Rutland Water, looking north-west."
+credit = "Chris Morgan"
+taken = 2022-04-16
+status = "historical"
+title = "Whitwell Creek, Rutland Water"
+source = "https://www.geograph.org.uk/photo/7149299"
+source_name = "Geograph"
+licence = "https://creativecommons.org/licenses/by-sa/2.0/"
+changes = "Re-encoded as a JPEG at the same size, 640 x 360, with all metadata removed."

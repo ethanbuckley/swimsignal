@@ -44,3 +44,19 @@ text = "The Environment Agency says the River Cam through Cambridge is popular f
 status = "confirmed"
 source = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukh1201-09801"
 source_name = "Environment Agency bathing water profile"
+
+# Historical photo from Geograph, chosen 10 November 2026 (guides/photo-candidates/decisions.tsv): its subject is 53 m from the spot's pin, its camera 62 m; checked against its title, its words, its grid reference and the picture.
+[[photo]]
+file = "geograph-4251605.jpg"
+width = 640
+height = 430
+topic = "overview"
+caption = "River Cam, Sheep's Green, looking south-south-east."
+credit = "N Chadwick"
+taken = 2014-10-05
+status = "historical"
+title = "River Cam, Sheep's Green"
+source = "https://www.geograph.org.uk/photo/4251605"
+source_name = "Geograph"
+licence = "https://creativecommons.org/licenses/by-sa/2.0/"
+changes = "Re-encoded as a JPEG at the same size, 640 x 430, with all metadata removed."

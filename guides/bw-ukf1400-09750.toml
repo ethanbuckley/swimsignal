@@ -114,3 +114,19 @@ text = "Children may swim if supervised one-to-one by a parent or guardian. All 
 status = "confirmed"
 source = "https://whollyhealthy.co.uk/faqs/"
 source_name = "WholeHealth, which runs the swim sessions"
+
+# Historical photo from Geograph, chosen 10 November 2026 (guides/photo-candidates/decisions.tsv): its subject is 161 m from the spot's pin, its camera 162 m; checked against its title, its words, its grid reference and the picture.
+[[photo]]
+file = "geograph-8335614.jpg"
+width = 640
+height = 427
+topic = "overview"
+caption = "West Lake in Colwick Country Park, looking south."
+credit = "DS Pugh"
+taken = 2026-06-03
+status = "historical"
+title = "West Lake in Colwick Country Park"
+source = "https://www.geograph.org.uk/photo/8335614"
+source_name = "Geograph"
+licence = "https://creativecommons.org/licenses/by-sa/2.0/"
+changes = "Re-encoded as a JPEG at the same size, 640 x 427, with all metadata removed."

@@ -93,3 +93,19 @@ text = "Competent swimmers only, with lifeguards on duty. Children must be 8 or 
 status = "confirmed"
 source = "https://www.cityoflondon.gov.uk/things-to-do/green-spaces/hampstead-heath/where-to-go-at-hampstead-heath/mixed-pond"
 source_name = "City of London Corporation"
+
+# Historical photo from Geograph, chosen 10 November 2026 (guides/photo-candidates/decisions.tsv): its subject is 42 m from the spot's pin, its camera 132 m; checked against its title, its words, its grid reference and the picture.
+[[photo]]
+file = "geograph-8182058.jpg"
+width = 640
+height = 480
+topic = "overview"
+caption = "Mixed bathing Pond, Hampstead Heath, looking north."
+credit = "Richard Rogerson"
+taken = 2025-08-20
+status = "historical"
+title = "Mixed bathing Pond, Hampstead Heath"
+source = "https://www.geograph.org.uk/photo/8182058"
+source_name = "Geograph"
+licence = "https://creativecommons.org/licenses/by-sa/2.0/"
+changes = "Re-encoded as a JPEG at the same size, 640 x 480, with all metadata removed."
