@@ -141,6 +141,42 @@ function relTable(rows) {
     + `<td class="bars"><span class="bar f" style="--w:${(100*r.forecast).toFixed(1)}%"></span><span class="bar o" style="--w:${(100*r.observed).toFixed(1)}%"></span></td></tr>`;
   return t + `</table><p class="bar-key"><i></i>Forecast <i class="o"></i>Observed. A well-calibrated forecast has bars of the same length in every row.</p>`;
 }
+// Two simple rules on the same forecasts (forecast_log: live.simple_refs, docs/SIMPLE-REFERENCES-LIVE-2026-11.md, 10 Nov
+// 2026): persistence and a rain rule, each a forecast someone could have issued that morning, with the skill against
+// each and its interval. Where SwimSignal does not beat a rule the words say so; "beats" needs the whole interval above 0.
+const RULE_NAME = R => ({persistence: `Spilling now or in the last ${R.settings.recent_spill_hours} h`,
+  rain: `Rain over ${R.settings.rain_mm} mm in two days`, climatology: "Each overflow's long-run rate"});
+const VERDICT = {beats: 'SwimSignal beats it', worse: 'SwimSignal does worse', unclear: 'Not shown either way yet', too_few: 'Too few spills to judge'};
+const LEADS_SAID = {'0': 'Same day', '1-4': 'In advance (1–4 days)'};
+const ci = (c, k) => { const s = c.skill && c.skill[k], i = c.ci && c.ci[k];
+  return s === null || s === undefined ? '–' : `${f(s, 2)}${i && i.lo !== null ? ` (${f(i.lo, 2)} to ${f(i.hi, 2)})` : ''}`; };
+// "beats both rules", "does worse than persistence and is not shown better or worse than the rain rule", ...
+function againstRules(c) {
+  const v = c.verdict || {}, say = {beats: 'beats', worse: 'does worse than', unclear: 'is not shown better or worse than', too_few: 'has too few spills to judge against'};
+  if (v.persistence === v.rain) return `${say[v.rain]} ${v.rain === 'beats' || v.rain === 'worse' ? 'both rules' : 'either rule'}`;
+  return `${say[v.persistence]} persistence and ${say[v.rain]} the rain rule`;
+}
+const ruleCell = (R, lg) => (R.cells || []).find(c => c.company === 'All companies' && c.leads === lg && c.skill);
+function simpleRules(R) {
+  const N = RULE_NAME(R), c0 = ruleCell(R, '0'), c1 = ruleCell(R, '1-4');
+  let t = `<p>Two rules anyone could use without SwimSignal, scored on the same forecasts as above. <b>Persistence:</b> an overflow the map shows spilling, or spilled in the last ${R.settings.recent_spill_hours} hours, when the forecast was issued will spill on the day. <b>A rain rule:</b> it will spill if more than ${R.settings.rain_mm} mm of rain is forecast over the day and the day before. Each rule's yes and no get a chance from the ${R.settings.fit_days} days of results before the forecast was issued, so each is a forecast someone could have made that morning.</p>`;
+  const said = [c0 && `On the same day, SwimSignal ${againstRules(c0)}.`, c1 && `In advance, it ${againstRules(c1)}.`].filter(Boolean).join(' ');
+  if (said) t += `<p>${said}</p>`;
+  t += `<table><tr><th>When</th><th>Against</th><th class="num">Skill (95% interval)</th><th>Result</th><th class="num">Forecasts</th><th class="num">Its Brier</th><th class="num">SwimSignal's</th></tr>`;
+  for (const c of [c0, c1].filter(Boolean)) for (const k of ['persistence', 'rain', 'climatology'])
+    t += `<tr><td>${LEADS_SAID[c.leads]}</td><td>${N[k]}</td><td class="num nw">${ci(c, k)}</td><td>${VERDICT[c.verdict[k]] || '–'}</td><td class="num">${n0(c.rows)}</td><td class="num">${f(c.brier[k])}</td><td class="num">${f(c.brier.forecast)}</td></tr>`;
+  t += '</table>';
+  t += `<p class="small muted">Skill is 1 − SwimSignal's Brier score ÷ the rule's, on the same forecasts: above 0, SwimSignal's error is lower. "Beats" needs the whole interval above 0, "does worse" the whole interval below it. The interval resamples overflows and weeks together, ${n0(R.settings.resamples)} times. These are the ${n0(R.common_rows)} of ${n0(R.scored_rows)} scored forecasts on which both rules could be applied${R.first_common_day ? `, from ${day(R.first_common_day)}` : ''}. Persistence cannot be applied when the overflow's status at the issue time is not known: a gap of more than ${R.settings.max_gap_h} h between the site's runs in the ${R.settings.recent_spill_hours} hours before, which leaves out whole days when the site ran rarely. The rain rule cannot be applied when either day's rain was not logged.</p>`;
+  t += `<p class="small muted">The rules, the ${R.settings.rain_mm} mm line and how each is scored were <a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/SIMPLE-REFERENCES-LIVE-2026-11.md">written down</a> before any of these scores was computed. Forecasts up to 23 October were scored against similar rules once before, so these figures describe the record; they are not a fresh test. The 2027 season is the fresh one: the rules are <a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/PREREGISTRATION-2027-AMENDMENT-4.md">added to the 2027 evaluation</a> as secondary references.</p>`;
+  const rows = (R.cells || []).filter(c => c.company && c.company !== 'All companies');
+  if (rows.length) {
+    const cell = (c, k) => c.skill ? `${ci(c, k)}${c.verdict && c.verdict[k] ? `, ${{beats: 'beats', worse: 'worse', unclear: 'not shown', too_few: 'too few'}[c.verdict[k]]}` : ''}` : '–';
+    let b = `<p class="small muted">The same comparison for each company. A company with fewer than ${R.settings.min_spill_rows} spills among its forecasts is too few to judge. "Not shown" means the interval runs from below 0 to above it.</p><table><tr><th>Company</th><th>When</th><th class="num">Forecasts</th><th class="num">Spills</th><th class="num">Against persistence</th><th class="num">Against the rain rule</th></tr>`;
+    for (const c of rows) b += `<tr><td>${c.company}</td><td>${LEADS_SAID[c.leads]}</td><td class="num">${n0(c.rows)}</td><td class="num">${n0(c.spill_rows)}</td><td class="num nw">${cell(c, 'persistence')}</td><td class="num nw">${cell(c, 'rain')}</td></tr>`;
+    t += fold('How does each company compare?', b + '</table>');
+  }
+  return t;
+}
 async function main() {
   const d = await (await fetch('/api/verification')).json();
   // The build wrote the figures below from its own copy of this file (scripts/prerender_verification.js),
@@ -177,6 +213,7 @@ async function main() {
     if (o.mean_forecast !== undefined) live += `<p class="small muted">Mean forecast ${pct(o.mean_forecast)} against ${pct(o.calibrated.base_rate)} observed. Climatology knows nothing about the weather, so in a dry spell a forecast that uses rain beats it easily${o.climatology_mean !== undefined ? `: here the long-run rates averaged ${pct(o.climatology_mean)} a day` : ''}. The flat hindsight line is the harder test: a forecast that scores worse than it is pitched at the wrong level for the period, whatever its ranking skill.${o.period_base_rate_brier ? ` Against it, SwimSignal's error is ${(100 * (1 - o.calibrated.brier / o.period_base_rate_brier)).toFixed(1)}% ${o.calibrated.brier < o.period_base_rate_brier ? 'lower' : 'higher'}.` : ''}</p>`;
     live += ruleText;
     h += section('live-scoring', 'Live scoring of issued forecasts', live);
+    if (L.simple_refs && L.simple_refs.cells) h += section('simple-rules', 'Against two simple rules', simpleRules(L.simple_refs));
     if (L.by_lead) { let t = `<p class="small muted">"Today" is the same-day forecast as of 08:00; the other rows are forecasts made in advance${L.in_advance ? ` (all advance leads pooled: n = ${L.in_advance.n.toLocaleString()}, Brier ${f(L.in_advance.brier_cal)}, climatology ${f(L.in_advance.climatology_brier)}, skill ${f(1 - L.in_advance.brier_cal / L.in_advance.climatology_brier, 2)}${L.in_advance.auc ? ', AUC ' + f(L.in_advance.auc, 3) : ''})` : ''}.</p><table><tr><th>Lead (days)</th><th class="num">n</th><th class="num">Spill rate</th><th class="num">Brier</th><th class="num">Climatology</th><th class="num">Skill</th></tr>`;
       for (const r of L.by_lead) t += `<tr><td>${r.lead === 0 ? 'Today (same day, as of 08:00)' : r.lead === 1 ? 'Tomorrow' : r.lead}</td><td class="num">${r.n.toLocaleString()}</td><td class="num">${pct(r.base_rate)}</td><td class="num">${f(r.brier_cal)}</td><td class="num">${f(r.climatology_brier)}</td><td class="num">${r.climatology_brier ? f(1 - r.brier_cal / r.climatology_brier, 2) : '–'}</td></tr>`;
       h += section('by-lead', 'By lead time', t + '</table>'); }
@@ -595,6 +632,9 @@ function inShort(d) {
   if (hi) offline.push(`<b>Offline, over-confident at the top end:</b> days forecast at about ${Math.round(100 * hi.forecast)}% had a spill ${Math.round(100 * hi.observed)}% of the time.`);
   if (L.n_scored && L.overall) {
     pts.push(`<b>Live, against what the overflows then did:</b> ${scoredWords(L)}. The error is ${liveSkill}% lower than each overflow's long-run rate${O.climatology_mean !== undefined ? `, which ran high: ${pct(O.climatology_mean)} a day against ${pct(O.calibrated.base_rate)} observed` : ''}.${flatWords ? ` It is ${flatWords}.` : ''}${short ? ` ${short} day${short === 1 ? ' is' : 's are'} too few to judge across different weather.` : ''} <a href="#live-scoring">Details</a>`);
+    // Against the two simple rules (10 Nov 2026): said in words, whichever way they fall.
+    const R = L.simple_refs, r0 = R && ruleCell(R, '0'), r1 = R && ruleCell(R, '1-4');
+    if (r0 || r1) pts.push(`<b>Live, against two simple rules</b> (spilling now or in the last ${R.settings.recent_spill_hours} hours; over ${R.settings.rain_mm} mm of rain forecast in two days): ${[r0 && `on the same day, SwimSignal ${againstRules(r0)}`, r1 && `in advance, it ${againstRules(r1)}`].filter(Boolean).join('; ')}. <a href="#simple-rules">Details</a>`);
     // Whose spills the warnings caught (11 Oct 2026): the headline figures are mostly the training company's.
     if (own && WT.hits) { const rest = WT.by_company.filter(r => r !== own && r.company !== NO_COMPANY), sp = rest.reduce((a, r) => a + r.hits + r.misses, 0), h = rest.reduce((a, r) => a + r.hits, 0);
       pts.push(`<b>Live warnings${own.hits > WT.hits / 2 ? ', mostly at one company' : ', by company'}:</b> ${n0(own.hits)} of the ${n0(WT.hits)} warnings that came true were at ${own.company}, where the spill model was trained.${sp ? ` At the other companies, ${n0(h)} of ${n0(sp)} forecasts for a day with a spill were warnings.` : ''} <a href="#warnings">Warnings by company</a>`); }
