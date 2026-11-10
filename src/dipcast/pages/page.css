@@ -70,6 +70,7 @@ a:focus-visible { border-radius: var(--radius-ring); }   /* a rounded ring on te
 b, strong { font-weight: 600; }
 code { font: var(--fs-note) var(--font-mono); }   /* file names on the terms page, at the note size: at the body size the monospaced face looks larger than the text round it */
 pre { margin: 0 0 14px; padding: 10px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.45; }   /* code to copy (the embed on About): wrapped, between hairlines, as a table */
+pre.example { white-space: pre; overflow-wrap: normal; overflow-x: auto; -webkit-overflow-scrolling: touch; font: var(--fs-meta)/1.45 var(--font-mono); }   /* a data record on the data feed page: its lines kept whole, scrolled sideways on a phone, as .tw scrolls a table */
 
 /* The header every page shares: the slate bar, the mark, the wordmark and the main links in white,
    the current page underlined in white. */

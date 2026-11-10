@@ -182,6 +182,13 @@ the licence to its deed, gives the changes, says the copy here is under the same
 beside it that it is not SwimSignal's and shows that day only: not today's access, permission, water
 level or conditions. It never says "Verified" or "seen on site".
 
+## A spot's opening
+
+`guides/openings/openings.toml` holds a short opening for the most-visited spots: one or two sentences of plain fact about the
+place, with the pages they come from and the day they were read. The build adds a sentence on the overflows upstream
+from its own trace. Same rule as a guide: every fact says who says so. The file's head has the format and the rules;
+`uv run pytest -q tests/test_openings.py` checks it.
+
 ## Where facts come from
 
 - Swimmers send details and photos from the "Tell us" link on the tile, which opens the feedback form

@@ -2167,7 +2167,8 @@ async function bindAlerts() {
   show(was); ALERT_UI.on = was; drawSpotAlerts();
   b.addEventListener('click', async () => {
     const on = !b.dataset.on; b.disabled = true; m.textContent = '';
-    try { await (on ? alertsOn() : alertsOff()); show(on); ALERT_UI.on = on; ALERT_UI.down = false; m.textContent = on ? 'Alerts are on for your saved spots.' : 'Alerts are off.'; }
+    try { await (on ? alertsOn() : alertsOff()); show(on); ALERT_UI.on = on; ALERT_UI.down = false; m.textContent = on ? 'Alerts are on for your saved spots.' : 'Alerts are off.';
+      if (on) countAction('alerts'); }
     catch (e) {
       // Refused at the browser's question just now: the tile as blocked, with where to allow them, read out from there.
       if (on && Notification.permission === 'denied' && alertsPermChanged()) { const p = document.getElementById('alerts-blocked'); if (p) p.focus(); return; }
@@ -2243,7 +2244,7 @@ function bindEmailAlerts() {
     try {
       const res = await fetch(DATA.email.url + 'email/subscribe', { method: 'POST', signal: AbortSignal.timeout(15000), headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, spots, website: f.elements.website.value }) });
-      if (res.ok) { m.textContent = `Check your inbox at ${email}: open the link in the email and press Confirm. Nothing more is sent until you do.`; input.value = ''; }
+      if (res.ok) { m.textContent = `Check your inbox at ${email}: open the link in the email and press Confirm. Nothing more is sent until you do.`; input.value = ''; countAction('alerts'); }
       else if (res.status === 429) m.textContent = 'Too many sign-ups from this connection. Try again in an hour.';
       else { const why = (await res.text().catch(() => '')).slice(0, 120); m.textContent = why && res.status !== 404 ? `Could not sign up: ${why}.` : `Could not sign up: the alert service answered ${res.status}.`; }
     } catch (err) { m.textContent = 'Could not reach the alert service. Check your connection and try again.'; }
@@ -3336,7 +3337,9 @@ function showDay(d, iso) {
 }
 function bindDays(d) {
   const days = document.querySelectorAll('#day-strip [data-day]');
-  days.forEach(b => b.addEventListener('click', () => showDay(d, b.dataset.day === DAY ? null : b.dataset.day)));
+  days.forEach(b => b.addEventListener('click', () => { const iso = b.dataset.day === DAY ? null : b.dataset.day;
+    if (iso) countAction('day', d.id);   // a day picked, not the summary put back
+    showDay(d, iso); }));
   if (DAY && days.length) showDay(d, DAY);
   else if (DAY) showDay(d, null);   // no day to pick here (nothing upstream to forecast): the summary, and a plain address
 }
@@ -4854,6 +4857,7 @@ function planSuggest() {
 }
 // The status under the place, the count, the groups and the map. fit: move the map to the plan's reach
 // (a new start or distance), which typing the day or the kind does not.
+let PLAN_COUNTED = '';   // the place the last plan counted (countAction) started from: a new day or distance is the same plan
 function drawPlan(fit = false) {
   const box = document.getElementById('plan-results'); if (!box) return;   // left the page while a place or a position was on its way
   planAddress();
@@ -4870,6 +4874,7 @@ function drawPlan(fit = false) {
       + (geo ? `<button type="button" class="btn primary" data-plan-here>Use my location</button>` : '') + '</div>' + planSuggest();
     return; }
   const r = planSpots(DATA.spots, PLAN, s => km(from, [s.lat, s.lon]) / MILE_KM), on = dayWord(PLAN.day);
+  if (planWhere() !== PLAN_COUNTED) { PLAN_COUNTED = planWhere(); countAction('plan'); }   // once for each place started from
   const reach = PLAN.within ? `within ${PLAN.within} miles of ${planWhere()}` : `by distance from ${planWhere()}`;
   const better = r.count ? betterDay(r.groups.flat().map(o => o.s), PLAN.day, planDates()) : null;
   sayOnChange(sum, (!r.count ? '' : `<b>${r.count} ${planNoun(r.count)}</b> ${reach}.`
@@ -5098,6 +5103,22 @@ function openPlan(hash = '') {
 for (const id of ['planbtn', 'nav-plan'])
   document.getElementById(id).addEventListener('click', e => { if (!DATA || !plainClick(e)) return; e.preventDefault(); openPlan(); });
 
+// Action counts (actions/, the Worker, and its README): on only when the build put the Worker's address in
+// <meta name="swimsignal-actions"> (DIPCAST_ACTIONS_URL). Five actions each add one to that day's total: a spot opened,
+// a day picked on a spot's page, a spot saved, a plan made, alerts turned on. The request holds the action's name and,
+// for the first three, the spot's id: nothing about the visitor, and nothing is stored on the device for it. Not sent
+// where the browser has objected: "Don't count my visits" (dipcast.count, as counter.js), Global Privacy Control or Do
+// Not Track. It never throws and never waits, so with the switch off or the Worker down the page is the same.
+const ACTIONS_URL = (document.querySelector('meta[name="swimsignal-actions"]') || {}).content || '';
+function countAction(event, spotId) {
+  if (!ACTIONS_URL) return;
+  try { if (localStorage.getItem('dipcast.count') === 'off') return; } catch (e) { /* no storage: no choice kept to honour */ }
+  if (navigator.globalPrivacyControl === true || navigator.doNotTrack === '1') return;
+  const body = JSON.stringify(spotId ? { event, spot_id: spotId } : { event });
+  try { if (navigator.sendBeacon && navigator.sendBeacon(ACTIONS_URL, body)) return; } catch (e) { /* try fetch */ }
+  try { fetch(ACTIONS_URL, { method: 'POST', body, keepalive: true, mode: 'no-cors', credentials: 'omit' }).catch(() => {}); } catch (e) { /* not counted */ }
+}
+
 // ------------------------------------------------------------------------------ one spot
 // Opening a spot is a history entry, so a phone's back button returns to the list, not off the site.
 // day: a date to open in its strip (a Saved card's day), else the summary. From a marker on a phone's
@@ -5139,6 +5160,7 @@ function spotDetail(s) {
 }
 function openSpot(s, fly, push, day) {
   const id = s.id; current = s; DAY = day; closePick();
+  countAction('spot', id);
   const fromMap = mapMode();
   if (push) {
     keepPlace();
@@ -5205,6 +5227,7 @@ function bindSave(d) {
     const was = document.getElementById('save-hint'); if (was) was.remove();
     const l = listNow(), on = !l.spots.includes(d.id), kept = setLists(on ? addToList(LISTS, l.id, d.id) : removeFromList(LISTS, l.id, d.id));
     b.setAttribute('aria-pressed', String(on)); b.innerHTML = saveLabel(on);
+    if (on) countAction('save', d.id);
     // Said under the button, where the eye is: at the foot of the page (share-msg) it was some
     // 6,700 px below a phone's first screen, so a first save said nothing of where the spot went.
     const m = document.getElementById('save-msg') || document.getElementById('share-msg'), where = PHONE.matches ? 'in the bar at the bottom' : 'at the top of the page';
@@ -5738,7 +5761,7 @@ function render(d) {
   // and the reviews mount. Why: the forecast's tiles, then what the level rests on (evidence.js).
   const fx = facts(d), waterTop = fx.filter(o => o.icon === ICON.rating).map(tile).join('')
     + (typeof measuredTile === 'function' ? measuredTile(d, Date.now()) : '');   // lab results an organisation sent (measured.js): not part of the level
-  const guide = typeof guideTile === 'function' ? guideTile(d, serverToday) : '', atWater = waterTop + guide;
+  const guide = (typeof placeTile === 'function' ? placeTile(d) : '') + (typeof guideTile === 'function' ? guideTile(d, serverToday) : ''), atWater = waterTop + guide;   // the place, then its practical guide
   const tiles = dayTiles(d, DAY) + nowTiles(d) + lakeTempHost(d) + localSamplesHost(d);   // the open day's forecast, then the readings, then a lake's past temperatures and local samples
   // The folded detail after the tiles. On a desktop it goes under the first column (col-more), which
   // is otherwise the shorter; on a phone it follows the tiles.
@@ -6173,9 +6196,12 @@ if ('serviceWorker' in navigator) {
 // The page-view counter, when the build switched it on (counter.js is then inline as #page-counter):
 // the free, simple way to object that PECR Schedule A1 asks for. counter.js reads the same key before
 // it loads anything, so the choice holds from the next page opened in this browser.
-if (document.getElementById('page-counter')) {
+// The action counts (countAction) honour the same choice, so the row shows for either; it says which are counted.
+if (document.getElementById('page-counter') || ACTIONS_URL) {
   const COUNT_KEY = 'dipcast.count';
   const row = document.getElementById('count-row'), b = document.getElementById('count-btn'), m = document.getElementById('count-msg');
+  row.querySelector('span').textContent = document.getElementById('page-counter') ? (ACTIONS_URL ? 'Page views and a few actions are counted, without cookies.' : 'Page views are counted, without cookies.')
+    : 'A few actions are counted, without cookies.';
   const countOff = () => { try { return localStorage.getItem(COUNT_KEY) === 'off'; } catch (e) { return false; } };
   const label = () => { b.textContent = countOff() ? 'Count my visits again' : "Don't count my visits"; };
   row.hidden = false; label();

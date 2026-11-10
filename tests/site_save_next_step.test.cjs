@@ -31,7 +31,7 @@ function saveSetup({push = true, email = false, many = false, kept = true, phone
   const lists = {lists: many ? [{id: 'l1', name: 'My spots', spots: []}, {id: 'l2', name: 'Weekend & <Club>', spots: ids}] : [{id: 'l1', name: 'Saved spots', spots: ids}]};
   const ctx = vm.createContext({
     document: {getElementById: id => els[id] || null}, DATA: {...(push ? {push: {url: 'https://push.invalid/'}} : {}), ...(email ? {email: {url: 'https://push.invalid/'}} : {})},
-    saveAlertHint, alertCan: () => can, toAlerts: () => { toAlerts++; },
+    saveAlertHint, alertCan: () => can, toAlerts: () => { toAlerts++; }, countAction: () => {},
     LISTS: lists, listNow: () => lists.lists[many ? 1 : 0], manyLists: () => many, setLists: () => kept,
     addToList: x => x, removeFromList: x => x, saveLabel: on => (on ? 'Saved' : 'Save'), PHONE: {matches: phone},
     esc: s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'), savedPath: () => '/saved/',
