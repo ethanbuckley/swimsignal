@@ -74,6 +74,26 @@ and record it rather than guess. Asset IDs: `sw_history.assign_sites` with the e
 the local reported and non-reported workbooks' summaries, so an old ID maps to the current one by measurement
 point. The time-zone rule, day records, text cells and the 60-day cut are sw_history's.
 
+*Amendment 2, 10 Nov 2026, after both downloads and before any loader run, label join or forecast.* Read so far:
+sheet names, header rows, the first two data rows of each sheet, the user guides and metadata, and the summary's
+bathing-season column. No event was counted.
+
+- **2017 has no measurement point.** The 2017-2021 edition's guide says the Scottish Water measurement point "has only
+  been included on the returns for 2018 onwards"; the 2017 sheet has only the SEPA description ("CSO event"). Rule: a
+  2017 row takes the single measurement point its Asset ID has in the same edition's 2018-2021 sheets. Where the
+  Asset ID has no point there, or more than one, its 2017 rows are kept apart under their own id and join no current
+  overflow. The 2017 sheet's name ends in a space; it is read like the others.
+- **Positions.** The 2017-2021 summary has no grid references. Positions come from the other summaries by
+  measurement point, as `assign_sites` does.
+- **Bathing-season-only reporting.** The summaries flag 4 overflows that reported only in the bathing season (June to
+  mid-September) in 2019-2022 or 2021-2022, the same 4 in all three editions, the local one included. Gate A's rules
+  do not read the flag; their other days count as no spill. The gated rows keep them, as Gate A did. Reported, not
+  gated: the scores without them.
+- **Licence.** The 2017-2021 edition's metadata: "This information is licensed under the terms of the Open
+  Government Licence." Both editions' guides say events are each "discrete spill greater than 15 minutes".
+- **Uptime.** Neither edition has "No. of Days Data" before 2023, so 2017-2021 uptime is unknown and kept, as Gate A
+  kept 2021 and 2022.
+
 **Covariates for 2021's rows.** `sw_covariates.covariates(events, yearly, first_year=F)` over the local events and
 the archived years together, where F is the first year the archived editions hold. This follows the rule's own
 words: FIRST_YEAR is "the first year the Scottish files hold". F is passed as an argument; the module's default
