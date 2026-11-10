@@ -44,6 +44,8 @@ const guideDays = (a, b) => Math.round((Date.parse(b + 'T12:00:00Z') - Date.pars
 // how far to trust the whole guide, and, past a year, that it may be out of date.
 function guideChecked(g, today) {
   const when = guideDay(g.checked);
+  // A guide with a photo and no facts yet (guides.py): nothing in it says where to park, get in or who can swim.
+  if (!(g.facts || []).length) return 'No facts checked here yet: only a photo of the place, below.';
   if (![...(g.facts || []), ...(g.photos || [])].some(x => x.status === 'confirmed')) {
     return `Swimmers' suggestions only, gathered up to ${when}: nothing here has been checked by SwimSignal yet.`;
   }
@@ -188,17 +190,32 @@ const knowTile = (d, kinds, id = 'know') => `<section class="tile know" id="${id
   + `<h2 class="t-lab" id="know-h">${guideIcon()}<span>Know this spot?</span></h2>`
   + `<ul class="know-list">${KNOW.filter(k => kinds.includes(k)).map(k => knowItem(k, d)).join('')}</ul></section>`;
 
+// A spot's opening (src/dipcast/openings.py; docs/DESIGN.md, "A spot's opening"): two or three sentences of plain
+// fact about the place, the water and how people reach it from the pages it cites, then what this build's trace of
+// the river network found upstream. A tile just before the practical guide, in the part about the water, with its
+// pages linked under it as the guide's are. Nothing for a spot without one, or a point clicked on the map.
+function placeTile(d) {
+  const o = d && !d.unlisted && d.opening;
+  if (!o || !o.place) return '';
+  const pages = (o.sources || []).filter(s => guideHttps(s.url)).map(s => `<a href="${guideEsc(s.url)}">${guideEsc(s.name)}</a>`);
+  return `<section class="tile place" id="place" aria-labelledby="place-h"><h2 class="t-lab" id="place-h">${(typeof ICON === 'object' && ICON.pin) || ''}<span>The place</span></h2>`
+    + `<p class="t-say">${guideEsc(o.place)}${o.upstream ? ' ' + guideEsc(o.upstream) : ''}</p>`
+    + `<p class="g-src">${pages.length ? `<span class="g-who">Sources</span>: ${pages.join(', ')}. ` : ''}`
+    + `${o.upstream ? 'The overflows are from this forecast\'s trace of the river network.' : ''}</p></section>`;
+}
+
 // The guide's tile. Without a guide, the shared tile with the guide's line, in the guide's place
 // (id guide: the notes and the reviews mount after it).
 function guideTile(d, today) {
   if (!d || d.unlisted) return '';   // a point clicked on the map (anypoint.js) is not a spot anyone has guided
   if (d.detail_missing) return '';   // its guide is in data/spot/<id>.json, which did not arrive: not "no guide yet"
   const g = d.guide;
-  if (!g || !Array.isArray(g.facts) || !g.facts.length) return knowTile(d, ['guide'], 'guide');
+  const facts = g && Array.isArray(g.facts) ? g.facts : [], photos = g && Array.isArray(g.photos) ? g.photos : [];
+  if (!facts.length && !photos.length) return knowTile(d, ['guide'], 'guide');
   const head = `<h2 class="t-lab" id="guide-h">${guideIcon()}<span>Practical guide</span></h2>`;
   return `<section class="tile g-tile" id="guide" aria-labelledby="guide-h">${head}`
     + `<p class="t-say">${guideChecked(g, today)}</p>`
-    + guideFacts(g) + guideGaps(g)
+    + (facts.length ? guideFacts(g) : '') + guideGaps(g)
     + (g.photos || []).map((p, i) => guidePhoto(p, i, g)).join('')
     + guideAsk(d) + '</section>';
 }
@@ -233,5 +250,5 @@ function knowOpen(kind, sec) {
 }
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { GUIDE_TOPICS, GUIDE_PADDLE, GUIDE_OPTIONAL, GUIDE_STALE_DAYS, GUIDE_SHOW, guideTile, knowTile, KNOW, guideChecked, guideSource, guideRuns, guideFacts, guideGaps, guidePhoto, guideHistorical, GUIDE_LICENCES, guideDays, guideClick, showRest };
+  module.exports = { placeTile, GUIDE_TOPICS, GUIDE_PADDLE, GUIDE_OPTIONAL, GUIDE_STALE_DAYS, GUIDE_SHOW, guideTile, knowTile, KNOW, guideChecked, guideSource, guideRuns, guideFacts, guideGaps, guidePhoto, guideHistorical, GUIDE_LICENCES, guideDays, guideClick, showRest };
 }

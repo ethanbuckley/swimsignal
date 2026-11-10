@@ -67,6 +67,7 @@ from pathlib import Path
 import duckdb
 import numpy as np
 import pandas as pd
+import pyarrow as pa
 from sklearn.metrics import roc_auc_score
 
 from dipcast import config
@@ -189,6 +190,33 @@ OVERFLOW_COLUMNS = ("issued_at", "issue_day", "lat", "lon", "site_id", "has_live
                     "weight", "rain_available", "version", "rain_mm", "travel_h", "p_cal_members", "rain_members",
                     "p_status", "status_known", "spilling_at_issue", "spill_hours_24h", "spill_days_7d")
 
+# The Arrow type append_rows gives a value for each DuckDB column type: the type executemany bound the same Python
+# value as, so DuckDB stores it exactly as before (a FLOAT column still gets a double and casts it itself).
+_ARROW = {"TIMESTAMP WITH TIME ZONE": pa.timestamp("us", tz="UTC"), "DATE": pa.date32(), "DOUBLE": pa.float64(),
+          "FLOAT": pa.float64(), "FLOAT[]": pa.list_(pa.float64()), "VARCHAR": pa.string(), "BOOLEAN": pa.bool_(),
+          "INTEGER": pa.int64()}
+
+
+def append_rows(con: duckdb.DuckDBPyConnection, table: str, columns: tuple[str, ...], rows: list[tuple]) -> None:
+    """Insert `rows`, tuples in `columns` order, into `table` in one statement from an Arrow table. executemany
+    took about half a millisecond a row, some 8 seconds a build. Columns are named, so a column added later never
+    shifts the others."""
+    if not rows:
+        return
+    types = {r[0]: r[1] for r in con.execute(f"DESCRIBE {table}").fetchall()}
+    arrays = []
+    for name, values in zip(columns, zip(*rows)):
+        kind = _ARROW[types[name]]
+        if pa.types.is_timestamp(kind):
+            # To the microsecond by truncating, as executemany did; Arrow's own conversion would round.
+            values = [None if v is None else pd.Timestamp(v).tz_convert("UTC").to_pydatetime(warn=False) for v in values]
+        arrays.append(pa.array(values, type=kind))
+    con.register("_append_rows", pa.Table.from_arrays(arrays, names=list(columns)))
+    try:
+        con.execute(f"INSERT INTO {table} ({', '.join(columns)}) SELECT {', '.join(columns)} FROM _append_rows")
+    finally:
+        con.unregister("_append_rows")
+
 
 def log_forecast(issued_at: pd.Timestamp, lat: float, lon: float, mode: str, watercourse: str | None,
                  now_risk: float, days: pd.DatetimeIndex, risk: np.ndarray,
@@ -240,15 +268,11 @@ def log_forecast(issued_at: pd.Timestamp, lat: float, lon: float, mode: str, wat
                              d.date(), lead, float(p_raw[i, j]), float(p_cal[i, j]), float(ov["weight"].iloc[i]), ok, version, rain,
                              travel[i], _m(None if members is None else members["p"][:, i, j]),
                              _m(None if members is None else members["rain"][:, i, j]), *_s(i, j)))
-    # By name, so a column added later never shifts the others.
     with _LOCK:
         con = _conn()
         try:
-            con.executemany(f"INSERT INTO forecast_points ({', '.join(POINT_COLUMNS)}) "
-                            f"VALUES ({', '.join('?' * len(POINT_COLUMNS))})", pts)
-            if rows:
-                con.executemany(f"INSERT INTO forecast_overflows ({', '.join(OVERFLOW_COLUMNS)}) "
-                                f"VALUES ({', '.join('?' * len(OVERFLOW_COLUMNS))})", rows)
+            append_rows(con, "forecast_points", POINT_COLUMNS, pts)
+            append_rows(con, "forecast_overflows", OVERFLOW_COLUMNS, rows)
         finally:
             con.close()
 
@@ -607,7 +631,26 @@ def verify_live(as_of: date | None = None, store: LiveStore | None = None) -> di
                           for b, g in r.groupby(band, observed=True)]
     if len(fc) >= 200:
         out["reliability"] = reliability_table(y, fc["p_cal"].to_numpy()).round(4).to_dict("records")
+    # Two simple rules on the same rows, with intervals (docs/SIMPLE-REFERENCES-LIVE-2026-11.md). England only: a store
+    # has no poll log. A failure leaves the rest of the scores in place.
+    if store is None and poll_log is not None:
+        try:
+            out["simple_refs"] = _simple_refs(fc, hist, cov_all, poll_log, cutoff)
+        except Exception as e:  # noqa: BLE001 - beside the scores, never in their way
+            log.warning("simple reference scoring failed: %s", e)
     return _finish(out, as_of, fc, store=store)
+
+
+def _simple_refs(fc: pd.DataFrame, hist: pd.DataFrame, cov: pd.DataFrame, poll_log: pd.DataFrame, cutoff: date) -> dict:
+    from dipcast import simple_references as sr
+    first = sr.FIRST_DAY
+    with _LOCK:
+        con = _conn()
+        try:
+            rain = sr.rain_log_rows(con, first, cutoff, sr.epoch_ms(fc["issued_at"]))
+        finally:
+            con.close()
+    return sr.score(fc, rain, hist, cov, poll_log)
 
 
 def warning_counts(y, p, warn_at: float) -> dict:

@@ -23,3 +23,19 @@ text = "The Falls toilets on Riverside Road, Richmond, are open 8am to 8pm, Mond
 status = "confirmed"
 source = "https://www.northyorks.gov.uk/leisure-tourism-and-culture/public-toilets/public-toilets/falls-toilets-richmond"
 source_name = "North Yorkshire Council"
+
+# Historical photo from Geograph, chosen 10 November 2026 (guides/photo-candidates/decisions.tsv): its subject is 47 m from the spot's pin, its camera 43 m; checked against its title, its words, its grid reference and the picture.
+[[photo]]
+file = "geograph-3858488.jpg"
+width = 640
+height = 480
+topic = "overview"
+caption = "Richmond Falls on the River Swale, looking south-south-east."
+credit = "Gareth James"
+taken = 2014-02-19
+status = "historical"
+title = "Richmond Falls on the River Swale"
+source = "https://www.geograph.org.uk/photo/3858488"
+source_name = "Geograph"
+licence = "https://creativecommons.org/licenses/by-sa/2.0/"
+changes = "Re-encoded as a JPEG at the same size, 640 x 480, with all metadata removed."

@@ -31,6 +31,7 @@ from dipcast.access import attach_access
 from dipcast.algae import by_site, refresh_algae
 from dipcast.forecast_log import describe_fetch, latest_samples, load_poll_log, load_verification, samples_status
 from dipcast.guides import attach_guides, boat_note, copy_photos
+from dipcast.openings import attach_openings
 from dipcast import official_advice
 from dipcast.samples import attach_measured
 from dipcast.ingest import rainfall
@@ -381,6 +382,65 @@ def ask_config() -> dict | None:
         log.warning("%s must be https://host/: Ask SwimSignal left off", ASK_URL_ENV)
         return None
     return {"url": url}
+
+
+# Action counts (actions/, the Worker, and its README): on when DIPCAST_ACTIONS_URL is set to the Worker's address.
+# It goes in the app's head as <meta name="swimsignal-actions">, which turns on countAction in index.html, and the
+# privacy notice gains its section, two sentences change and "(action counts)" follows its date. What the section says
+# is what actions/src/index.js does: a day's totals, and per-spot totals for three actions; no IP address, user agent,
+# cookie or identifier. Set it only once the Worker is deployed and answering (actions/README.md, "Deploying").
+ACTIONS_URL_ENV = "DIPCAST_ACTIONS_URL"
+ACTIONS_META = '<meta name="swimsignal-actions" content="{url}">'
+ACTIONS_PRIVACY = (
+    '<h2 id="action-counts">Action counts</h2>\n<p>To learn whether the site is useful, SwimSignal counts how often five '
+    "things are done on it: a spot's page opened, a day picked on a spot's page, a spot saved, a plan made on Plan a "
+    "swim, and alerts turned on. When you do one, your browser sends SwimSignal's counting service, which runs on "
+    "Cloudflare Workers, the name of the action and, for the first three, which spot. The service adds one to that "
+    "day's total and keeps nothing else: not your IP address, not your browser's details, no cookie and no identifier, "
+    "so it cannot tell whether two actions came from the same person or the same device. Nothing is stored on your "
+    "device for it. The daily totals hold nothing about anyone, and are kept to compare one week with another. "
+    "Cloudflare sees your IP address when the count is sent, as any web server would; "
+    '<a href="https://www.cloudflare.com/privacypolicy/">Cloudflare\'s privacy policy</a> applies to that. Your actions '
+    "are not counted if you choose \"Don't count my visits\" under \"Saved spots, offline use and your data\" at the "
+    "bottom of the home page, or if your browser sends Global Privacy Control or Do Not Track.</p>\n")
+# The short version's sentence about analytics, with the page-view counter off and on (NO_COUNTER, WITH_COUNTER).
+ACTIONS_SWAPS = [
+    (NO_COUNTER[1], "There is no third-party tracking. Five actions, such as saving a spot, are counted as daily totals "
+                    "that hold nothing about who did them (see Action counts)."),
+    ("There is no other analytics or tracking.", "Five actions, such as saving a spot, are also counted as daily totals "
+     "that hold nothing about who did them (see Action counts). There is no other analytics or tracking."),
+]
+
+
+def actions_url() -> str | None:
+    url = os.environ.get(ACTIONS_URL_ENV, "").strip()
+    if not url:
+        return None
+    if not re.fullmatch(r"https://[A-Za-z0-9.-]+(:\d+)?/", url):
+        log.warning("%s must be https://host/: action counts left off", ACTIONS_URL_ENV)
+        return None
+    return url
+
+
+def with_actions(html: str, name: str, url: str | None) -> str:
+    """With action counts on: the app's head names the Worker, and the privacy notice says what is counted. Run after
+    with_counter, whose sentence it may change. Unchanged with url None."""
+    if not url:
+        return html
+    if name == "index.html":
+        if "</head>" not in html:
+            raise ValueError("index.html has no </head> for the action counter's address")
+        return html.replace("</head>", ACTIONS_META.format(url=escape(url)) + "</head>", 1)
+    if name == "privacy.html":
+        if "<h2>The server version</h2>" not in html:
+            raise ValueError("privacy.html has lost its heading The server version, before which the action counts go")
+        swapped = [a for a, _ in ACTIONS_SWAPS if a in html]
+        if len(swapped) != 1:
+            raise ValueError("privacy.html: the short version's analytics sentence no longer matches ACTIONS_SWAPS")
+        html = html.replace(swapped[0], dict(ACTIONS_SWAPS)[swapped[0]], 1)
+        html = html.replace("<h2>The server version</h2>", ACTIONS_PRIVACY + "<h2>The server version</h2>", 1)
+        return privacy_updated(html, "action counts")
+    return html
 
 
 # With Ask on, the privacy notice gains this section before "The server version", and "(Ask SwimSignal)"
@@ -2525,6 +2585,28 @@ def with_share_meta(page: str, path: str, root: str) -> str:
     return with_phone_nav(head + sep + rest)
 
 
+def spot_description(spot: dict) -> str:
+    """The page's description, its search result's words: the spot's opening where it has one (src/dipcast/openings.py,
+    two or three sentences of fact about the place, none of them today's level), else spot_blurb."""
+    text = (spot.get("opening") or {}).get("text")
+    return text if isinstance(text, str) and text.strip() else spot_blurb(spot)
+
+
+def place_html(spot: dict) -> str:
+    """The opening as guide.js's placeTile draws it, for the built page: there for a crawler and a reader without
+    scripts, then drawn again by the page in its place before the practical guide. "" without an opening."""
+    o = spot.get("opening") or {}
+    if not o.get("place"):
+        return ""
+    pages = [f'<a href="{escape(s["url"])}">{escape(s["name"])}</a>' for s in o.get("sources") or []
+             if isinstance(s.get("url"), str) and s["url"].startswith("https://")]
+    up = o.get("upstream") or ""
+    return ('<section class="tile place" id="place" aria-labelledby="place-h"><h2 class="t-lab" id="place-h"><span>The place</span></h2>'
+            f'<p class="t-say">{escape(o["place"])}{" " + escape(up) if up else ""}</p>'
+            f'<p class="g-src">{("<span class=" + chr(34) + "g-who" + chr(34) + ">Sources</span>: " + ", ".join(pages) + ". ") if pages else ""}'
+            f'{"The overflows are from this forecast&#x27;s trace of the river network." if up else ""}</p></section>')
+
+
 def spot_blurb(spot: dict) -> str:
     """One sentence for a spot's search result and link preview. It leaves out today's level:
     messaging apps keep a preview for days, and a level in it would go stale."""
@@ -2590,6 +2672,54 @@ def home_lead(n: int, days: list[str] | None = None, where: str = ENGLAND_ONLY_W
             '<div class="col-map"><div class="tile map-tile"></div></div></div></div>')
 
 
+# Structured data for search engines (schema.org, as JSON-LD in the <head>): the spot as a Place, and, where the spot
+# has a forecast, the forecast as a Dataset whose files are the ones the data page lists. Nothing in it changes with
+# the day: like the description, a level here would outlive its forecast in a search engine's copy.
+DATASET_LICENCE = ("SwimSignal's own forecasts may be reused for non-commercial purposes with credit; the data from the water "
+                   "companies, the Environment Agency and the other providers keeps its own licence (see the data page).")
+
+
+def spot_photo(spot: dict) -> dict | None:
+    """The spot's picture for its Place: the guide's first overview photo, else its first photo of any topic."""
+    photos = (spot.get("guide") or {}).get("photos") or []
+    return next((p for p in photos if p.get("topic") == "overview"), photos[0] if photos else None)
+
+
+def spot_structured_data(spot: dict, root: str, description: str) -> str:
+    """The spot's page's JSON-LD: a schema.org Place (name, position, the river or lake it is on, and a photo where its
+    guide has one, with its photographer and licence), and a Dataset for the forecast where there is one. The JSON is
+    written so that no "<" can close the script element early."""
+    url = f"{root}spot/{spot['id']}/"
+    place = {"@type": "Place", "@id": f"{url}#place", "name": spot["name"], "url": url, "description": description}
+    if isinstance(spot.get("lat"), (int, float)) and isinstance(spot.get("lon"), (int, float)):
+        place["geo"] = {"@type": "GeoCoordinates", "latitude": round(float(spot["lat"]), 5), "longitude": round(float(spot["lon"]), 5)}
+    water = (spot.get("location") or {}).get("watercourse") or spot.get("river")
+    if water:
+        place["containedInPlace"] = {"@type": "LakeBodyOfWater" if spot.get("kind") == "lake" else "RiverBodyOfWater", "name": water}
+    photo = spot_photo(spot)
+    if photo:
+        img = {"@type": "ImageObject", "contentUrl": f"{root}guides/photos/{photo['file']}", "width": photo["w"], "height": photo["h"],
+               "caption": photo["caption"], "creator": {"@type": "Person", "name": photo["credit"]}}
+        if photo.get("status") == "historical":
+            img.update({"license": photo["licence"], "acquireLicensePage": photo["source"],
+                        "creditText": f"{photo['credit']}, {photo.get('source_name') or 'Geograph'}"})
+        place["image"] = img
+    graph = [place]
+    if not spot.get("error"):
+        graph.append({
+            "@type": "Dataset", "@id": f"{url}#forecast", "name": f"Pollution risk forecast for {spot['name']}",
+            "description": (f"Five-day pollution risk forecast for {spot['name']}: a level for each day from live storm overflow "
+                            "status, rainfall forecasts and the river network, with the overflows upstream and the inputs it "
+                            "rests on. Updated several times a day. A forecast, not a water test."),
+            "url": url, "isAccessibleForFree": True, "license": f"{root}data.html", "usageInfo": DATASET_LICENCE,
+            "creator": {"@type": "Organization", "name": BRAND, "url": root},
+            "spatialCoverage": {"@id": f"{url}#place"},
+            "distribution": [{"@type": "DataDownload", "encodingFormat": "application/json", "contentUrl": f"{root}data/spots.json"}],
+        })
+    data = json.dumps({"@context": "https://schema.org", "@graph": graph}, ensure_ascii=False, separators=(",", ":"))
+    return '<script type="application/ld+json">' + data.replace("<", "\\u003c") + "</script>"
+
+
 def spot_page(template: str, spot: dict, root: str, top: str | None = None, card: tuple[str, str] | None = None,
               feed: bool = False, issued: pd.Timestamp | None = None) -> str:
     """A spot's own page: the map page with the spot's name, description and address in its
@@ -2599,10 +2729,11 @@ def spot_page(template: str, spot: dict, root: str, top: str | None = None, card
     (write_feeds). issued: the forecast's issue time, which the note for readers without scripts names
     (noscript_note)."""
     url = f"{root}spot/{spot['id']}/"
-    blurb = spot_blurb(spot)
+    blurb = spot_description(spot)
     page = PAGE_META.sub(lambda m: page_meta(f"{spot['name']}: pollution risk forecast · {BRAND}", blurb, url, root,
                                              base="../../", image=card,
-                                             feed=(f"spot/{spot['id']}/feed.xml", f"{BRAND} · {spot['name']}") if feed else None),
+                                             feed=(f"spot/{spot['id']}/feed.xml", f"{BRAND} · {spot['name']}") if feed else None)
+                       + "\n" + spot_structured_data(spot, root, blurb),
                        template, count=1)
     if top:
         # The script's own view of a spot is view-spot: the About section folded to a line, Map in the header.
@@ -2613,10 +2744,10 @@ def spot_page(template: str, spot: dict, root: str, top: str | None = None, card
         # The note goes before the answer: "Today" and "right now" in it are the issue time's, and a reader
         # without scripts meets them first. The script keeps only the answer's element (overBuilt), so the
         # note goes wherever it stands.
-        return page.replace(LOADING, f'<div id="result" data-built data-nosnippet><noscript><p class="muted">{escape(noscript_note(issued))}</p></noscript>{top}</div>', 1)
+        return page.replace(LOADING, f'<div id="result" data-built data-nosnippet><noscript><p class="muted">{escape(noscript_note(issued))}</p></noscript>{top}{place_html(spot)}</div>', 1)
     return page.replace(LOADING, '<div id="result" data-nosnippet><div class="top-row"><a href="./" class="back">All spots</a></div>'
                                  f'<section class="answer"><h2 class="spot-name">{escape(spot["name"])}</h2>'
-                                 f'<p class="muted">{escape(blurb)} Loading the forecast…</p></section>{SKELETON_TILE}</div>', 1)
+                                 f'<p class="muted">{escape(spot_blurb(spot))} Loading the forecast…</p></section>{SKELETON_TILE}</div>', 1)   # the short line: the stand-in must not be taller than the answer
 
 
 # Above a built spot page's answer, for a reader without scripts: what they are seeing, and what not.
@@ -2833,7 +2964,7 @@ def robots(root: str) -> str:
 
 
 def sitemap(root: str, spot_ids: list[str], day: str, extra: list[str] | None = None, overflow_ids: list[str] | None = None) -> str:
-    urls = [root, f"{root}plan/", f"{root}about.html", f"{root}verification.html", f"{root}methods.html", f"{root}testing.html", f"{root}coverage.html", f"{root}data.html", f"{root}organisers.html", f"{root}sites.html", f"{root}record.html", f"{root}demo.html", f"{root}clubs.html", f"{root}quality.html", f"{root}spots.html", f"{root}research.html", f"{root}lakes.html", f"{root}lake-temperatures.html", f"{root}durations.html", f"{root}samples.html", f"{root}waterhead.html", f"{root}research-catalogue.html", f"{root}sampling-planner.html", f"{root}partners.html", f"{root}models.html"] +[f"{root}{x}" for x in extra or []] + [f"{root}spot/{i}/" for i in spot_ids] + [f"{root}spot/{i}/profile/" for i in spot_ids] + [f"{root}overflow/{i}/" for i in overflow_ids or []]
+    urls = [root, f"{root}plan/", f"{root}about.html", f"{root}verification.html", f"{root}methods.html", f"{root}testing.html", f"{root}coverage.html", f"{root}data.html", f"{root}organisers.html", f"{root}sites.html", f"{root}record.html", f"{root}demo.html", f"{root}clubs.html", f"{root}quality.html", f"{root}spots.html", f"{root}research.html", f"{root}lakes.html", f"{root}lake-temperatures.html", f"{root}durations.html", f"{root}samples.html", f"{root}waterhead.html", f"{root}research-catalogue.html", f"{root}sampling-planner.html", f"{root}partners.html", f"{root}models.html", f"{root}data-feed.html"] +[f"{root}{x}" for x in extra or []] + [f"{root}spot/{i}/" for i in spot_ids] + [f"{root}spot/{i}/profile/" for i in spot_ids] + [f"{root}overflow/{i}/" for i in overflow_ids or []]
     body = "".join(f"<url><loc>{escape(u)}</loc><lastmod>{day}</lastmod></url>" for u in urls)
     return f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{body}</urlset>\n'
 
@@ -3066,7 +3197,7 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
                 northern_ireland: dict | None = None, support: str | None = None, tiles: dict | None = None,
                 push_dates: bool = False, spot_cards: dict[str, str] | None = None, cards_v: str = "",
                 overflows: pd.DataFrame | None = None, generated: pd.Timestamp | None = None, ask: bool = False,
-                push_advice: bool = False) -> int:
+                push_advice: bool = False, actions: str | None = None) -> int:
     """Every HTML page, the sitemap and the app files. Returns the number of spot pages. A spot
     whose id is not letters, digits and hyphens gets no page of its own and keeps ?spot=.
     support is the Ko-fi page tips go to (support_url), or None for no tips; tiles the map tile
@@ -3074,11 +3205,13 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     card in cards/spot/ (write_spot_cards); cards_v goes on its address, so a preview fetched again
     gets this build's card rather than a cached one. overflows: this build's overflow table, for the
     data-quality page (write_quality_page); generated: the forecast's issue time, which that page gives.
-    ask: Ask SwimSignal is on (ask_config), which adds its section to the privacy notice."""
+    ask: Ask SwimSignal is on (ask_config), which adds its section to the privacy notice. actions: the action
+    counter's address (actions_url), or None for no action counts."""
     root = root or site_url()
     stamp = shell_stamp()
     template = with_tiles(with_build(TEMPLATE.read_text(), stamp), "index.html", tiles)
     template = with_scotland_credit(template)
+    template = with_actions(template, "index.html", actions)   # the counter's address, for countAction; nothing when off
     if not (PAGE_META.search(template) and LOADING in template):
         raise ValueError("index.html has lost its page-meta block or its loading placeholder")
     template = lean_page(template)   # its CSS comments and comment-only script lines: the source keeps them
@@ -3114,6 +3247,7 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
         if name == "privacy.html" and ask:
             s = with_ask(s)
         s = with_counter(with_push(s, push, email, push_dates, push_advice) if name == "privacy.html" else s, token)
+        s = with_actions(s, name, actions)   # after the counter, whose sentence it changes
         s = with_share_meta(with_tiles(s, name, tiles), name, root)
         (site / name).write_text(with_support(s, name) if support else s)
     if support:
@@ -3175,6 +3309,7 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     write_lake_temperatures(site)   # data/research/lake-temperatures/, before the data page lists data/
     write_rise_history(site)   # data/research/river_rise_history.json, before the data page lists data/research/
     write_data_page(site, token, root)   # lists what is in data/, so build() writes the data files first
+    write_feed_page(site, token, root)   # one record from each file it shows: after them, and after the profiles' CSVs
     write_quality_page(site, overflows, generated, token, root=root)
     write_embed(site)
     write_organisers(site, token, root)
@@ -3360,7 +3495,7 @@ def write_traces(site: Path, traces: dict[str, list[str]], upstream: dict[str, l
 # spot's page asks for its own data/spot/<id>.json. spots.json itself stays whole, for anyone who
 # reads it, for the organisers' page and the decision record, and for scripts/alerts.js. The lab
 # results an organisation sent (measured) are a spot page's alone too.
-DETAIL_FIELDS = ("contributors", "guide", "measured", "linked", "seasonal", "stretches", "sample_history", "lab", "rise_history")   # linked: spot_links, the Nearby card's; seasonal: past spills by month; stretches: an outing's finish (stretches.py); sample_history: the link to every EA sample (attach_sample_history)
+DETAIL_FIELDS = ("contributors", "guide", "measured", "linked", "seasonal", "stretches", "sample_history", "lab", "rise_history", "opening")   # linked: spot_links, the Nearby card's; seasonal: past spills by month; stretches: an outing's finish (stretches.py); sample_history: the link to every EA sample (attach_sample_history)
 
 
 def reach_by_company(contributors: list[dict]) -> list[list]:
@@ -3413,6 +3548,125 @@ def write_data_page(site: Path, token: str | None = None, root: str | None = Non
                  "Add a row and a section for each to src/dipcast/pages/data.html")
     (site / "data.html").write_text(with_counter(with_share_meta(page, "data.html", root or site_url()), token))
     return extra
+
+
+# The data feed, data-feed.html: one page for an app, a charity or a group that already reaches swimmers, linked from
+# For organisations. It says what the files hold, how often they change, the sources' licences, the credit to show
+# and what the feed is not, with no prices. Each example is one record from this build's own file (feed_examples),
+# so it cannot drift from the fields; the live warning figures and the credit are this build's too.
+REWRITES += [('href="/data-feed"', 'href="data-feed.html"')]   # For organisations links it
+FEED_SPOT = "bw-uke4100-08901"   # Wharfe at Cromwheel, Ilkley, the clubs page's example spot: the examples' spot where it is listed
+FEED_EXAMPLE = re.compile(r'(<pre class="example" data-example="([a-z-]+)">).*?(</pre>)', re.DOTALL)
+FEED_CREDIT = re.compile(r'(<blockquote id="feed-credit">).*?(</blockquote>)', re.DOTALL)
+
+
+def _keep(d: dict, keys: tuple[str, ...]) -> dict:
+    """d with only these keys, in this order, where it has them."""
+    return {k: d[k] for k in keys if k in d}
+
+
+def _pretty(x, pad: str = "") -> str:
+    """JSON indented by two spaces, with a list of plain values on one line: an example's 19 dates take one line, not 19."""
+    one = lambda v: json.dumps(v, ensure_ascii=False, default=str)
+    if isinstance(x, dict) and x:
+        return "{\n" + ",\n".join(f"{pad}  {one(k)}: {_pretty(v, pad + '  ')}" for k, v in x.items()) + f"\n{pad}}}"
+    if isinstance(x, list) and any(isinstance(v, (dict, list)) for v in x):
+        return "[\n" + ",\n".join(f"{pad}  {_pretty(v, pad + '  ')}" for v in x) + f"\n{pad}]"
+    return json.dumps(x, ensure_ascii=False, default=str, separators=(", ", ": "))
+
+
+def _csv_head(path: Path) -> str:
+    """A CSV's header and first row, without its # comment lines and its byte-order mark."""
+    rows = [x for x in path.read_text(encoding="utf-8-sig").splitlines() if x and not x.startswith("#")]
+    return "\n".join(rows[:2])
+
+
+def feed_examples(data: Path) -> dict[str, str]:
+    """One record from each file data-feed.html shows, as text, from a build's data/ folder (and the spot's overflow
+    history CSV beside it, ../spot/<id>/profile/), by the name in the page's data-example. The spot is FEED_SPOT where
+    it is listed, else the first spot with an overflow upstream; lists are cut to their first entry and some fields are
+    left out, as the page says. A file missing or not as expected gives no example, and the page keeps its words."""
+    out: dict[str, str] = {}
+    try:
+        doc = json.loads((data / "spots.json").read_text())
+        spots = doc["spots"]
+        s = next((x for x in spots if x.get("id") == FEED_SPOT), None) or next(x for x in spots if x.get("contributors"))
+    except (OSError, ValueError, KeyError, TypeError, StopIteration):
+        return out
+    sid = s["id"]
+    dump = _pretty
+
+    def put(name: str, make) -> None:
+        try:
+            out[name] = make()
+        except (OSError, ValueError, KeyError, IndexError, TypeError, AttributeError):
+            pass
+
+    first_upstream = lambda: json.loads((data / "upstream" / f"{sid}.json").read_text())["overflows"][0]
+    put("spots", lambda: dump({**_keep(doc, ("generated_at", "n")), "spots": [{
+        **_keep(s, ("id", "name", "kind", "river", "source", "lat", "lon")),
+        "now": _keep(s["now"], ("risk", "label", "discharging_upstream", "recent_upstream", "monitored_upstream", "no_feed_upstream")),
+        "days": [_keep(s["days"][0], ("date", "risk", "label", "expected_spilling_overflows", "p_ecoli_gt900",
+                                      "in_validated_season", "rain_48h_mm", "data_status"))],
+        "upstream_summary": _keep(s["upstream_summary"], ("overflows", "with_live_feed", "without_live_feed", "companies")),
+        "contributors": [_keep(s["contributors"][0], ("site_id", "company", "site_name", "distance_km", "travel_h", "weight",
+                                                      "status", "data_state", "feed_updated_at", "p_spill_days"))]}]}))
+    put("alerts", lambda: dump((lambda a: {"generated_at": a["generated_at"],
+                                           "spots": {sid: {k: v for k, v in a["spots"][sid].items() if k != "days"}}})(
+        json.loads((data / "alerts.json").read_text()))))
+    put("upstream", lambda: dump({"id": sid, "generated_at": doc["generated_at"], "overflows": [first_upstream()]}))
+
+    def overflow_feature() -> str:
+        features = json.loads((data / "overflows.geojson").read_text())["features"]
+        try:
+            want = first_upstream()["site_id"]
+        except (OSError, ValueError, KeyError, IndexError):
+            want = None
+        f = next((x for x in features if x["properties"].get("site_id") == want), features[0])
+        return dump({"type": "FeatureCollection", "features": [f]})
+    put("overflows", overflow_feature)
+
+    def anypoint() -> str:
+        ids = json.loads((data / "anypoint" / "overflow_ids.json").read_text())
+        days = json.loads((data / "anypoint" / "overflow_days.json").read_text())
+        try:
+            i = ids["ids"].index(first_upstream()["site_id"])
+        except (OSError, ValueError, KeyError, IndexError):
+            i = 0
+        return dump({"overflow_ids.json": {"ids_version": ids.get("ids_version"), **{k: ids[k][i] for k in ("ids", "name", "lat", "lon")}},
+                     "overflow_days.json": {**_keep(days, ("generated_at", "ids", "days", "today", "scale")),
+                                            **{k: days[k][i] for k in ("p", "status", "ended_h") if k in days}}})
+    put("anypoint", anypoint)
+    put("history", lambda: _csv_head(data.parent / "spot" / sid / "profile" / "monitored-storm-overflows.csv"))
+    put("seasonal", lambda: dump({"id": sid, "seasonal": s["seasonal"]}))
+    put("durations", lambda: (lambda d: dump({**_keep(d, ("id", "name", "period")), "overflows": d["overflows"][:1]}))(
+        json.loads((data / "research" / "spill_durations" / f"{sid}.json").read_text())))
+    put("spot-scores", lambda: (lambda d: dump({**_keep(d, ("generated_at", "warn_at", "unit", "first_day", "last_day")),
+                                                 "spots": {sid: d["spots"][sid]}}))(json.loads((data / "spot_scores.json").read_text())))
+    put("scored-csv", lambda: _csv_head(data / "verification_live.csv"))
+    put("warning-table", lambda: dump({"live": {"warning_table": _keep(
+        json.loads((data / "verification.json").read_text())["live"]["warning_table"],
+        ("warn_at", "level", "unit", "n", "hits", "misses", "false_alarms", "hit_rate", "warnings_true", "base_rate",
+         "n_days", "first_day", "last_day"))}}))
+    return out
+
+
+def write_feed_page(site: Path, token: str | None = None, root: str | None = None) -> list[str]:
+    """data-feed.html, from this build's files: write after everything it shows (data/, the overflow history CSVs).
+    Returns the examples it could not fill, which are announced: the page then keeps its own words there."""
+    root = root or site_url()
+    page = with_warning_words((STATIC / "data-feed.html").read_text(), site / "data" / "verification.json")
+    for a, b in REWRITES:
+        page = page.replace(a, b)
+    examples = feed_examples(site / "data")
+    missing = [m[2] for m in FEED_EXAMPLE.finditer(page) if m[2] not in examples]
+    page = FEED_EXAMPLE.sub(lambda m: m[1] + escape(examples[m[2]], quote=False) + m[3] if m[2] in examples else m[0], page)
+    c = data_credits(root)
+    page = FEED_CREDIT.sub(lambda m: m[1] + escape(f'{c["attribution"]} {c["modified"]}', quote=False) + m[2], page, count=1)
+    if missing:
+        announce(f"data-feed.html has no example from this build for {', '.join(missing)}: it keeps its placeholder words there")
+    (site / "data-feed.html").write_text(with_counter(with_share_meta(page, "data-feed.html", root), token))
+    return missing
 
 
 # The embed, embed.html?spot=<id>: one spot's card for a club's or a council's page (embed.js says
@@ -4805,6 +5059,7 @@ def build(refresh: bool = True) -> dict:
     attach_companies(results, upstream)
     attach_access(results)
     guides = attach_guides(results)   # practical guides from guides/: parking, paths, entry and exit
+    openings = attach_openings(results)   # the place in two or three sentences, from guides/openings/openings.toml and the trace
     n_algae = attach_algae(results, fetch=refresh)
     n_lab = attach_lab_samples(results)   # read from the samples refresh_all's scoring fetched: no request
     n_history = attach_sample_history(results)   # from the research export, a file: no request
@@ -4895,6 +5150,8 @@ def build(refresh: bool = True) -> dict:
         health["water_temperature_estimate"]["logged"] = log_water_temp_estimates(results, pd.Timestamp.now(tz="UTC"))
     health["guides"] = guides["guides"]
     health["warnings"] += guides["warnings"]
+    health["openings"] = openings["openings"]
+    health["warnings"] += openings["warnings"]
     health["measured"] = {"spots": measured["spots"], "samples": measured["samples"]}
     health["warnings"] += measured["warnings"]
     for w in health["warnings"]:
@@ -4983,7 +5240,7 @@ def build(refresh: bool = True) -> dict:
                                        coastal=coastal, wales=wales, scotland=scotland, email=email is not None,
                                        ireland=ireland, northern_ireland=northern_ireland, support=support_url(), tiles=tile_config(),
                                        push_dates=bool(push and push.get("dates")), ask=ask is not None,
-                                       push_advice=bool(push and push.get("advice")),
+                                       push_advice=bool(push and push.get("advice")), actions=actions_url(),
                                        spot_cards=spot_cards, cards_v=generated.strftime("%Y%m%d%H%M"),
                                        overflows=_overflows(), generated=generated)
     # Swimmers' reviews: the published ones into site/reviews/, and their sections into the pages just written.

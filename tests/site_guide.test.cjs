@@ -244,3 +244,32 @@ test("a topic shows its first source's facts and folds the rest; who can swim sh
   assert.ok(rules.indexOf('Byelaw on boats.') < rules.indexOf('<details'), 'two sources of who can swim in view');
   assert.match(rules, /<summary>2 more from other sources<\/summary>/);
 });
+
+test('the place: its opening, its pages linked, and nothing for a spot without one or a clicked point', () => {
+  const opening = { place: 'A pool on the beck <b>.', upstream: 'SwimSignal\'s trace finds no monitored storm overflow; runoff is not traced.',
+    sources: [{ name: 'Park Authority', url: 'https://park.example/pool' }, { name: 'Bad', url: 'javascript:alert(1)' }] };
+  const html = g.placeTile({ id: 'a', name: 'Pool', opening });
+  assert.match(html, /<section class="tile place" id="place" aria-labelledby="place-h">/);
+  assert.match(html, /<span>The place<\/span>/);
+  assert.match(html, /A pool on the beck &lt;b&gt;\. SwimSignal&#39;s trace finds/);
+  assert.match(html, /<span class="g-who">Sources<\/span>: <a href="https:\/\/park\.example\/pool">Park Authority<\/a>\. The overflows are from this forecast/);
+  assert.doesNotMatch(html, /javascript:/, 'only https pages are linked');
+  assert.equal(g.placeTile({ id: 'b', name: 'B' }), '');
+  assert.equal(g.placeTile({ id: 'c', name: 'C', unlisted: true, opening }), '');
+});
+
+test('a guide with a historical photo and no facts yet says nothing is checked, and names every topic as missing', () => {
+  const photo = { file: 'geograph-1.jpg', w: 640, h: 480, topic: 'overview', caption: 'The river, looking north.', credit: 'A. Person',
+    taken: '2020-05-01', status: 'historical', title: 'The river', source: 'https://www.geograph.org.uk/photo/1', source_name: 'Geograph',
+    licence: 'https://creativecommons.org/licenses/by-sa/2.0/', changes: 'Re-encoded as a JPEG at the same size, 640 x 480, with all metadata removed.', labels: [] };
+  const html = g.guideTile({ id: 'a', name: 'A', guide: { checked: '2026-11-10', how: 'desk', facts: [], photos: [photo] } }, '2026-11-10');
+  assert.match(html, /class="tile g-tile"/);
+  assert.match(html, /No facts checked here yet: only a photo of the place, below\./);
+  assert.doesNotMatch(html, /Verified|Checked \d/);
+  assert.doesNotMatch(html, /<dl class="g-facts">/, 'no empty list of facts');
+  assert.match(html, /Not in this guide yet: parking, path to the water, getting in, getting out, toilets, changing, fees and booking, opening times, who can swim\./);
+  assert.match(html, /<span class="g-who">Historical photo<\/span> by A\. Person/);
+  assert.match(html, /guides\/photos\/geograph-1\.jpg/);
+  // No facts and no photos: still the short tile asking for a guide.
+  assert.match(g.guideTile({ id: 'b', name: 'B', guide: { checked: '2026-11-10', how: 'desk', facts: [], photos: [] } }, '2026-11-10'), /Know this spot\?/);
+});

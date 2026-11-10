@@ -177,10 +177,22 @@ licence = "https://creativecommons.org/licenses/by-sa/2.0/"   # the deed's exact
 changes = "Re-encoded as a JPEG at the same size, 640 x 480, with all metadata removed."
 ```
 
+A guide may hold a historical photo and no facts yet (10 November 2026: 108 spots got one this way, see
+`guides/photo-candidates/README.md`). Its tile then says "No facts checked here yet: only a photo of the place,
+below." and lists every topic under "Not in this guide yet". It still needs `checked` (the day the photo was chosen)
+and `how = "desk"`. A guide with neither a fact nor a photo is an error.
+
 The page says "Historical photo by Oliver Dixon, taken 16 May 2023", links the title to its page and
 the licence to its deed, gives the changes, says the copy here is under the same licence, and says
 beside it that it is not SwimSignal's and shows that day only: not today's access, permission, water
 level or conditions. It never says "Verified" or "seen on site".
+
+## A spot's opening
+
+`guides/openings/openings.toml` holds a short opening for the most-visited spots: one or two sentences of plain fact about the
+place, with the pages they come from and the day they were read. The build adds a sentence on the overflows upstream
+from its own trace. Same rule as a guide: every fact says who says so. The file's head has the format and the rules;
+`uv run pytest -q tests/test_openings.py` checks it.
 
 ## Where facts come from
 

@@ -72,3 +72,19 @@ text = "Rubber dinghies and canoes may only be put on the river between the Cave
 status = "confirmed"
 source = "https://boltonabbey.com/your-visit/faqs/"
 source_name = "Bolton Abbey Estate"
+
+# Historical photo from Geograph, chosen 10 November 2026 (guides/photo-candidates/decisions.tsv): its subject is 165 m from the spot's pin, its camera 290 m; checked against its title, its words, its grid reference and the picture.
+[[photo]]
+file = "geograph-7490618.jpg"
+width = 640
+height = 480
+topic = "overview"
+caption = "River Wharfe above Bolton Abbey, looking west."
+credit = "Oliver Dixon"
+taken = 2023-05-19
+status = "historical"
+title = "River Wharfe above Bolton Abbey"
+source = "https://www.geograph.org.uk/photo/7490618"
+source_name = "Geograph"
+licence = "https://creativecommons.org/licenses/by-sa/2.0/"
+changes = "Re-encoded as a JPEG at the same size, 640 x 480, with all metadata removed."

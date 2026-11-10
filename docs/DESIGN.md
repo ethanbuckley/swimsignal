@@ -2186,3 +2186,56 @@ from sewage spills" (`levels.js`, `HEAD_SCOPE`). The review overstated the drift
 
 Left for after PR #645 lands, since it edits the same line: the organisations page's opening says "forecasts the
 risk of sewage pollution at a spot"; it should say the spot's pollution risk forecast.
+
+## The data feed page (10 November 2026)
+
+`data-feed.html`, linked from For organisations, is for apps, charities and networks that already reach swimmers
+(build step 7 of the strategy review). It is a prose page like the data files page, and leans on it for the fields:
+
+- **What a licensee gets** in five groups (each spot's forecast, the overflows upstream with live status, any point,
+  spill history, the scored record). Each file has one record from this build, folded under "Example: <file>":
+  `build_site.feed_examples` takes the clubs page's spot (Wharfe at Cromwheel) from the build's own files, cuts lists
+  to their first entry and leaves some fields out, so an example cannot drift from the fields. A record is a
+  `pre.example`: whole lines, scrolled sideways inside itself on a phone, at the meta size.
+- **The cadence as measured**, never "every 30 minutes": that is only what the schedule asks for.
+- **The licences** as a ruled list (`dl.fields`), source over licence and "In a paid product", not a three-column
+  table, which squeezed the words on a phone. Open-Meteo's free plan is non-commercial; the consents register is in
+  no file; Scottish Water's live status names no licence.
+- **The credit** is `data_credits`' own words, filled in by the build. The live warning figures are the clubs
+  page's (`with_warning_words`).
+- **No prices.** The way in is hello@swimsignal.co.uk or For organisations.
+
+## A spot's opening (10 November 2026)
+
+Step 3 of the 6 November strategy review: spot pages as a search asset. Google sent about a dozen visits a week and
+the spot pages were "discovered, not indexed"; every page's description was the same sentence with the name changed.
+The 40 most-visited spots now have an **opening**: two or three sentences of plain fact about the place
+(`guides/openings/openings.toml`, `src/dipcast/openings.py`).
+
+- **What it says.** One or two hand-written sentences on the water and how people reach it, each fact from a page the
+  entry cites (most restate facts already in the spot's practical guide, from the same pages) or from what the site
+  already shows (the river, the lake's size). Then one sentence the build writes from its own trace: how many monitored
+  storm overflows are upstream, whose, the nearest by water, and how many do not report live. Where the trace finds
+  none it says what is not traced; an isolated lake says no overflow can be traced to it. Missing data is never "low".
+- **What it never says.** No safety claim and no verdict on the water, no advert's words (the file is checked for
+  them), no prices or hours (those stay in the guide, dated). Permission is said as the source says it, named as theirs.
+- **Where it shows.** As the page's description (its search result and link preview, in place of the one-line blurb),
+  as the Place's description in the structured data, and as a tile, "The place", just before the practical guide in the
+  part about the water, its pages linked under it as the guide's are (`guide.js`, `placeTile`). Not in the opening
+  under the sky: the five days stay where "A tighter opening" (20 October 2026) put them. The build also writes the tile
+  into the built page after the five days, for a crawler and a reader without scripts; the script draws it again in
+  its place.
+- **Which spots.** Ranked by spot-page visits in the private weekly counts (figures not in the repository), then the
+  rest of the Lake District focus area; the file's head says how.
+
+## A photo of each place (10 November 2026)
+
+Step 3 of the strategy review, its photo half. 108 spots now carry one historical photo from Geograph, an overview
+of the water, through the practical guide (`guides/<id>.toml`, status `historical`; "Historical photos" under
+Practical guides above). The photo sits where a guide's photos already sit, at the foot of the guide tile, with the
+historical-photo line under it. It is also the Place's `image` in the structured data. It is not a banner over the
+answer: that would push the five days down, against "A tighter opening".
+
+A spot that had no guide now has one holding only the photo. Its tile's first line says "No facts checked here yet:
+only a photo of the place, below.", and "Not in this guide yet" names every topic, so the picture is never read as
+a checked guide. The choices and the rejected candidates are in `guides/photo-candidates/decisions.tsv`.

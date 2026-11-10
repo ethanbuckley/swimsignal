@@ -23,7 +23,7 @@ def _build_site():
 
 
 def spot_ids() -> set[str]:
-    return {r["id"] for f in ("spots.csv", "spots-osm.csv") for r in csv.DictReader((ROOT / f).open())}
+    return {r["id"] for f in ("spots.csv", "spots-osm.csv", "spots-scotland.csv") for r in csv.DictReader((ROOT / f).open())}   # the Scotland trial's spots have guides too
 
 
 def parse(text: str, photos: Path = ROOT / "guides" / "photos"):
@@ -62,7 +62,9 @@ def test_every_guide_in_the_repository_is_valid_and_belongs_to_a_spot():
     guides, warnings = gd.load_guides(spot_ids())
     assert warnings == []
     for sid, g in guides.items():
-        assert g["facts"], sid
+        assert g["facts"] or g["photos"], sid   # a guide may start with a photo alone (10 Nov 2026)
+        if not g["facts"]:   # then it is someone else's published photo, never a fact SwimSignal states
+            assert all(p["status"] == "historical" and not p["labels"] for p in g["photos"]), sid
         for f in g["facts"]:
             if f["status"] == "confirmed":
                 assert f.get("source") or f.get("seen"), (sid, f)
@@ -254,3 +256,29 @@ def test_the_page_and_the_build_list_the_same_topics():
     js = (ROOT / "src" / "dipcast" / "site" / "guide.js").read_text()
     for key, label in gd.TOPICS.items():
         assert f"['{key}', '{label}']" in js
+
+
+def test_a_guide_may_start_with_a_photo_and_still_needs_one_thing():
+    photo = """
+checked = 2026-10-03
+how = "desk"
+
+[[photo]]
+file = "cromwheel-upstream-2021.jpg"
+width = 640
+height = 480
+topic = "overview"
+caption = "The river looking upstream."
+credit = "Malc McDonald"
+taken = 2021-06-14
+status = "historical"
+title = "River Wharfe, Ilkley"
+source = "https://www.geograph.org.uk/photo/6979159"
+source_name = "Geograph"
+licence = "https://creativecommons.org/licenses/by-sa/2.0/"
+changes = "Re-encoded as a JPEG at the same size, 640 x 480, with all metadata removed."
+"""
+    g = parse(photo)
+    assert g["facts"] == [] and g["photos"][0]["status"] == "historical"
+    with pytest.raises(gd.GuideError, match="at least one"):
+        parse('checked = 2026-10-03\nhow = "desk"\n')

@@ -495,3 +495,59 @@ test('a clicked point says the share in Wales in its own words', () => {
   assert.equal(L.walesWords(point, true), 'Overflows in Wales not counted (88% of the river above)');
   assert.match(L.walesWords({ ...point, unlisted: false }), /above this spot is in Wales/);
 });
+
+// River and lake names outside England (names/, scripts/make_outside_names.py), read through namesNear with fetch
+// answered from data/raw/outside_names. A click there named nothing: every one was "This point" (backlog, Oct 2026).
+const NAMES = path.join(__dirname, '..', 'data', 'raw', 'outside_names');
+const namesFetch = async url => {
+  const f = path.join(NAMES, url.replace(/^data\/anypoint\/names\//, '').split('?')[0]);
+  return fs.existsSync(f) ? { ok: true, status: 200, json: async () => JSON.parse(fs.readFileSync(f, 'utf8')) } : { ok: false, status: 404 };
+};
+test('a click outside England is given the name of its river or lake, and keeps its words', async () => {
+  const was = globalThis.fetch;
+  globalThis.fetch = namesFetch;
+  try {
+    const cfg = { ...files.cfg, snap_m: 1500, lake_shore_m: 150 };
+    const want = {
+      'Tay at Perth': [56.396, -3.4265, 'River Tay'], 'Tweed at Kelso': [55.5975, -2.433, 'River Tweed'],
+      'Taff in Cardiff': [51.4815, -3.1835, 'River Taff'],
+      // OS's Welsh name with its English alternative, as everywhere else on the site ("Afon Gwy").
+      'Wye at Builth Wells': [52.1505, -3.4035, 'River Wye'], 'Dee at Llangollen': [52.9705, -3.171, 'River Dee'],
+      // Lakes by their own names, never the stream OS runs through them ("Arn Burn" in Loch Lomond).
+      'Loch Lomond between Luss and Milarrochy': [56.085, -4.60, 'Loch Lomond'], 'Loch Ness': [57.30, -4.45, 'Loch Ness'],
+      // Ireland from OpenStreetMap. Lough Derg 350 m off the Nenagh River's mouth said "Nenagh River" without the lakes.
+      'Lough Derg off Dromineer': [52.93, -8.30, 'Lough Derg'], 'Shannon at Athlone': [53.4239, -7.9407, 'Shannon'],
+      'Lagan in Belfast': [54.5866, -5.9295, 'Lagan'],
+    };
+    for (const [what, [lat, lon, name]] of Object.entries(want)) {
+      const near = await A.namesNear(lat, lon, cfg);
+      const got = A.place(lat, lon, { ...files, cfg, tiles: {}, outside, names: near });
+      assert.equal(got.name, name, what);
+      assert.equal(got.mode, 'none', what);
+      assert.equal(got.error, A.OUTSIDE[got.outside].error, what);   // the words are the nation's, as before
+    }
+    // Nothing named within the snap distance: still "This point". Without the files, as before.
+    const sea = await A.namesNear(55.2, -5.4, cfg);   // the North Channel, far from either shore's water
+    assert.equal(A.place(55.2, -5.4, { ...files, cfg, tiles: {}, outside, names: sea }).name, 'This point');
+    assert.equal(A.place(56.396, -3.4265, { ...files, cfg, tiles: {}, outside }).name, 'This point');
+  } finally {
+    globalThis.fetch = was;
+  }
+});
+
+test('outside England: a lake first within the shore distance, then the nearest named line, and a lake line has no name', () => {
+  // One square at the origin, q = 1e-4 degrees: a river 300 m north of the click, a line through a lake 200 m south.
+  const q = 1e-4, lat = 0.01, lon = 0.01, deg = 0.25;
+  const at = (dy, dx = 0) => [Math.round((lon + dx) / q), Math.round((lat + dy) / q)];
+  const line = (name, dy) => [name, ...at(dy, -0.01), 200, 0];
+  const sq = { r: 0, c: 0, names: ['Lake', 'River'], lines: [line(1, 0.0027), line(-1, -0.0018)] };
+  assert.equal(A.outsideName(lat, lon, { q, deg, squares: [sq] }, 1500, 150), null);   // the lake line is nearer
+  assert.equal(A.outsideName(lat, lon, { q, deg, squares: [{ ...sq, lines: [sq.lines[0]] }] }, 1500, 150), 'River');
+  assert.equal(A.outsideName(lat, lon, { q, deg, squares: [{ ...sq, lines: [sq.lines[0]] }] }, 250, 150), null);   // out of reach
+  // A lake ring 100 m away wins over a nearer river line; 200 m away it does not count.
+  const ring = dy => [0, ...at(dy, -0.001), 20, 0, 0, 10, -20, 0, 0, -10];
+  const river = [1, ...at(0.0005, -0.01), 200, 0];
+  assert.equal(A.outsideName(lat, lon, { q, deg, squares: [{ ...sq, lines: [river], lakes: [ring(0.0009)] }] }, 1500, 150), 'Lake');
+  assert.equal(A.outsideName(lat, lon, { q, deg, squares: [{ ...sq, lines: [river], lakes: [ring(0.0018)] }] }, 1500, 150), 'River');
+  assert.equal(A.outsideName(lat, lon, null, 1500, 150), null);
+});

@@ -865,6 +865,27 @@
    "branch": "claude/scotland-2026-backtest-inventory",
    "branch_exists": true,
    "date": "2026-11-08"
+  },
+  "338": {
+   "n": 338,
+   "state": "merged",
+   "branch": "docs/interim-usefulness-2026-10",
+   "branch_exists": true,
+   "date": "2026-10-26"
+  },
+  "662": {
+   "n": 662,
+   "state": "open",
+   "branch": "claude/priceless-grothendieck-ac0416",
+   "branch_exists": true,
+   "date": "2026-11-10"
+  },
+  "666": {
+   "n": 666,
+   "state": "open",
+   "branch": "claude/amazing-jepsen-2d2156",
+   "branch_exists": true,
+   "date": "2026-11-10"
   }
  },
  "entries": [
@@ -1051,6 +1072,32 @@
     357
    ],
    "register_note": "The register credits \"15% on Welsh set\" to the version 2 offset arm; the doc's 15.2% Welsh figure is version 2's pooled layer, with no offsets there. The register calls −0.00550 \"pooled\", but in the doc \"pooled\" names the other arm (−0.00424)."
+  },
+  {
+   "id": "combined-candidate",
+   "title": "Combined spill candidate: live status on top of regional routing",
+   "section": "promising",
+   "project": "REGIONAL",
+   "topics": [
+    "spills",
+    "live data",
+    "companies",
+    "model"
+   ],
+   "verdict": "Scored once on January to August 2026 as a frozen-model backtest. It passed its bar at eight companies and for all nine together: lower Brier score than today's model, same-day persistence and a 10 mm rain rule at leads 1 and 2, every interval below zero (lead 1, all nine: 0.0307 against 0.0419). It failed at United Utilities, where it was not shown better than today's model beyond lead 0. It was not shown better than the live-status input alone. Development evidence: the routing rule and the combination were chosen after 2026 had been seen.",
+   "scope": "EA start/stop records, January to August 2026, 13,426 overflows at nine English companies; status rebuilt from the complete record at 00:00 UTC; reanalysis rain decides, archived forecast rain reported. Not tested on polled status or on unseen months.",
+   "stage": "development",
+   "stage_note": "Frozen (commit 4d66d7c7) and not adopted. Nothing on the site changes. United Utilities stays on today's model.",
+   "next": "Build a shadow logger for the combined candidate, with its window and bar stated before it opens (PR due 17 November 2026); later, rerun the backtest unchanged on the EA's September to December 2026 records.",
+   "records": [
+    {
+     "doc": "docs/COMBINED-CANDIDATE-BACKTEST-2026-11.md",
+     "quote": "**combined-v1 passes the bar at eight companies and for all nine together. It fails at United Utilities**"
+    }
+   ],
+   "prs": [
+    666
+   ]
   },
   {
    "id": "concentration",
@@ -1687,7 +1734,7 @@
    "verdict": "Failed as stated, run 5 to 6 November 2026 on 33 spot gauges in 13 river systems (hindcast, archived 15-minute series, 20 November 2024 to 24 October 2026). C1 (upstream gauges added to the spot gauge's own trend): Brier skill 0.0199, 95% interval −0.1849 to 0.0723, labelled \"Too uncertain\"; worse when read three hours late (−0.0617, \"Possible harm\"). C2 (radar added): skill against C1 0.0415, interval 0.0017 to 0.0826, below the 0.05 needed, hit rate 0.115 at the 0.5 line; labelled \"Better\" against C1 only, with no shown gain over the spot's own trend. Median lead gained 1 h on 100 of 677 onsets. The base rate by gauge and month ranked the next three hours best (AUC 0.815). 119 EA requests, all within the caps. C3 (development on seen data, 6 November 2026; radar plus the gauge-month base rate, blocked and embargoed splits): skill against the base rate 0.077, river-system interval −0.062 to 0.174, and against the spot gauge's trend 0.103, interval −0.033 to 0.175; not shown better than either. Better than C2 (0.030, interval 0.013 to 0.106). The gain is mostly one river system, about 0.02 with forward-only training, and gone with a 3-hour delay.",
    "scope": "River spots with an upstream EA level gauge on the Hydrology API; the next 3 h (6 h secondary) at hours when the site shows no word. A rare target (0.6% of hours). Says nothing about swimming safety, the real-time feed's own gaps, or a model that includes the base rate, which was not fitted.",
    "stage": "development",
-   "stage_note": "Not adopted as a forecast; no early-warning wording. The gauge-month history is built as a dated observation in #631 (open; merging is Ethan's): data/research/river_rise_history.v1.json with its contract, one history line in the River level cell at the river spots whose gauge it covers (49 in November on the 26 October build), and a Research page entry. C3 and its references are frozen. A shadow logger (river-shadow/) is built and tested but not deployed: deploying it, setting GITHUB_DISPATCH_TOKEN for 30-minute builds, or declining is Ethan's decision.",
+   "stage_note": "Not adopted as a forecast; no early-warning wording. The gauge-month history is built as a dated observation in #631 (open; merging is Ethan's): data/research/river_rise_history.v1.json with its contract, one history line in the River level cell at the river spots whose gauge it covers (49 in November on the 26 October build), and a Research page entry. C3 and its references are frozen. The shadow logger (river-shadow/) was deployed on 10 Nov 2026 on Ethan's yes and logs hourly; window 1 Dec-28 Feb, read 8 Mar 2027.",
    "next": "Ethan merges #631 (the history observation). Ethan's decision on the logger; then a winter shadow 1 December 2026 to 28 February 2027, read on or after 8 March 2027 (it can only show a gain of about 0.14). Meanwhile a regulated-reach fallback rule, stated before any score.",
    "records": [
     {
@@ -3053,6 +3100,52 @@
    ],
    "prs": [
     626
+   ]
+  },
+  {
+   "id": "simple-references",
+   "title": "Persistence and a rain rule beside the live spill forecast, on the Accuracy page and in the 2027 evaluation",
+   "section": "scheduled",
+   "topics": [
+    "spills",
+    "evaluation",
+    "accuracy",
+    "rain",
+    "live data"
+   ],
+   "project": "SIMPLE-REFS",
+   "verdict": "Interim read (#338, 29 Sep to 23 Oct 2026, rules fitted on the rows scored): no water company passed the promise rule; in advance the forecast's skill against persistence and the rain rule was about 0.07 to 0.09 with every interval crossing 0, and on the same day persistence scored better than the forecast (skill -0.05, -0.19 to 0.17). First page figures (#662, to 8 Nov 2026, each rule fitted only on the 28 days before the issue): on the same day the forecast beats rain over 10 mm, 0.18 (0.05 to 0.23), and is not shown better or worse than persistence, 0.06 (-0.05 to 0.15); in advance it beats neither rule, 0.21 (-0.04 to 0.29) and 0.18 (-0.03 to 0.24). Thames Water same day does worse than persistence (-0.42, -1.01 to -0.13); United Utilities beats both rules at both leads.",
+   "scope": "Live scored spill forecasts, monitored overflows in England, autumn 2026, on the 63% of scored forecasts where both rules can be applied (a day drops out when the site ran too rarely for the 8-hour status rule). Seen data: a running description of the record, not a fresh test. The status rebuild reads event times published after the issue, which flatters persistence a little. Says nothing about E. coli or a spot's level.",
+   "stage": "live",
+   "stage_note": "Computed on every build by forecast_log.verify_live (live.simple_refs) and shown in 'Against two simple rules' on the Accuracy page from the first build after #662 merges. Amendment 4 adds the same rules to the 2027 evaluation as secondary references; the primary outcomes and frozen files are unchanged.",
+   "next": "A diagnosis of Thames Water's same-day loss to persistence (level or ranking) by 30 Nov 2026; the 2027 secondary read after the season, with the primary.",
+   "records": [
+    {
+     "doc": "docs/INTERIM-USEFULNESS-2026-10.md",
+     "quote": "**No company passes the promise rule.**"
+    },
+    {
+     "doc": "docs/SIMPLE-REFERENCES-LIVE-2026-11.md",
+     "quote": "| Same day | 25,613 | 1,476 | 0.0415 | 0.06 (−0.05 to 0.15), not shown | **0.18 (0.05 to 0.23), beats** |"
+    },
+    {
+     "doc": "docs/SIMPLE-REFERENCES-LIVE-2026-11.md",
+     "quote": "**In advance, it beats neither rule.**"
+    },
+    {
+     "doc": "docs/PREREGISTRATION-2027-AMENDMENT-4.md",
+     "quote": "This amendment adds them as **secondary**"
+    }
+   ],
+   "prs": [
+    338,
+    662
+   ],
+   "links": [
+    {
+     "label": "Against two simple rules, on the Accuracy page",
+     "href": "verification.html#simple-rules"
+    }
    ]
   }
  ]

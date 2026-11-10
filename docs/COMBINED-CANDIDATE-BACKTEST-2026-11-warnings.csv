@@ -1,0 +1,1081 @@
+rain,lead,company,predictor,rows,warnings,hits,misses,false_alarms,hit_rate,false_alarm_share
+ERA5-Land,0,Anglian Water,combined-v1,all,10257,8339,5014,1918,0.624504,0.186994
+ERA5-Land,0,Anglian Water,combined-v1,common,10251,8333,5013,1918,0.624382,0.187104
+ERA5-Land,0,Anglian Water,production,all,1359,919,12434,440,0.0688235,0.323767
+ERA5-Land,0,Anglian Water,production,common,1359,919,12427,440,0.0688596,0.323767
+ERA5-Land,0,Anglian Water,live status alone,all,10458,8264,5089,2194,0.618887,0.209792
+ERA5-Land,0,Anglian Water,live status alone,common,10452,8258,5088,2194,0.618762,0.209912
+ERA5-Land,0,Anglian Water,routing alone,all,5024,3133,10220,1891,0.234629,0.376393
+ERA5-Land,0,Anglian Water,routing alone,common,5024,3133,10213,1891,0.234752,0.376393
+ERA5-Land,0,Anglian Water,persistence P,common,13411,7549,5797,5862,0.565638,0.437104
+ERA5-Land,0,Anglian Water,rain rule R,common,0,0,13346,0,0,
+ERA5-Land,0,Anglian Water,P as a yes/no warning,common,18418,8909,4437,9509,0.667541,0.516288
+ERA5-Land,0,Anglian Water,R as a yes/no warning,common,33222,5922,7424,27300,0.443728,0.821745
+ERA5-Land,0,Northumbrian Water,combined-v1,all,10964,8147,10884,2817,0.428091,0.256932
+ERA5-Land,0,Northumbrian Water,combined-v1,common,10963,8146,10871,2817,0.428354,0.256955
+ERA5-Land,0,Northumbrian Water,production,all,2136,1621,17410,515,0.0851768,0.241105
+ERA5-Land,0,Northumbrian Water,production,common,2136,1621,17396,515,0.0852395,0.241105
+ERA5-Land,0,Northumbrian Water,live status alone,all,11278,8265,10766,3013,0.434291,0.267157
+ERA5-Land,0,Northumbrian Water,live status alone,common,11277,8264,10753,3013,0.434559,0.267181
+ERA5-Land,0,Northumbrian Water,routing alone,all,6293,4544,14487,1749,0.238768,0.277928
+ERA5-Land,0,Northumbrian Water,routing alone,common,6293,4544,14473,1749,0.238944,0.277928
+ERA5-Land,0,Northumbrian Water,persistence P,common,14553,5933,13084,8620,0.311984,0.592318
+ERA5-Land,0,Northumbrian Water,rain rule R,common,0,0,19017,0,0,
+ERA5-Land,0,Northumbrian Water,P as a yes/no warning,common,30522,8007,11010,22515,0.421044,0.737665
+ERA5-Land,0,Northumbrian Water,R as a yes/no warning,common,50387,10684,8333,39703,0.561813,0.787961
+ERA5-Land,0,Severn Trent Water,combined-v1,all,22065,17257,13621,4808,0.558877,0.217902
+ERA5-Land,0,Severn Trent Water,combined-v1,common,22061,17253,13606,4808,0.559091,0.217941
+ERA5-Land,0,Severn Trent Water,production,all,4544,3180,27698,1364,0.102986,0.300176
+ERA5-Land,0,Severn Trent Water,production,common,4544,3180,27679,1364,0.103049,0.300176
+ERA5-Land,0,Severn Trent Water,live status alone,all,21518,16650,14228,4868,0.539219,0.226229
+ERA5-Land,0,Severn Trent Water,live status alone,common,21513,16646,14213,4867,0.539421,0.226235
+ERA5-Land,0,Severn Trent Water,routing alone,all,12441,9083,21795,3358,0.294158,0.269914
+ERA5-Land,0,Severn Trent Water,routing alone,common,12441,9083,21776,3358,0.294339,0.269914
+ERA5-Land,0,Severn Trent Water,persistence P,common,29072,14091,16768,14981,0.456625,0.515307
+ERA5-Land,0,Severn Trent Water,rain rule R,common,0,0,30859,0,0,
+ERA5-Land,0,Severn Trent Water,P as a yes/no warning,common,44783,17824,13035,26959,0.577595,0.601992
+ERA5-Land,0,Severn Trent Water,R as a yes/no warning,common,79271,16771,14088,62500,0.543472,0.788435
+ERA5-Land,0,South West Water,combined-v1,all,29808,22981,6452,6827,0.78079,0.229032
+ERA5-Land,0,South West Water,combined-v1,common,29768,22952,6426,6816,0.781265,0.228971
+ERA5-Land,0,South West Water,production,all,19441,14571,14862,4870,0.495057,0.250502
+ERA5-Land,0,South West Water,production,common,19395,14557,14821,4838,0.495507,0.249446
+ERA5-Land,0,South West Water,live status alone,all,29837,22830,6603,7007,0.77566,0.234843
+ERA5-Land,0,South West Water,live status alone,common,29794,22799,6579,6995,0.776057,0.234779
+ERA5-Land,0,South West Water,routing alone,all,26543,18807,10626,7736,0.638977,0.291452
+ERA5-Land,0,South West Water,routing alone,common,26493,18792,10586,7701,0.639662,0.290681
+ERA5-Land,0,South West Water,persistence P,common,29122,19788,9590,9334,0.673565,0.320514
+ERA5-Land,0,South West Water,rain rule R,common,0,0,29378,0,0,
+ERA5-Land,0,South West Water,P as a yes/no warning,common,38148,22511,6867,15637,0.766254,0.409904
+ERA5-Land,0,South West Water,R as a yes/no warning,common,74003,20620,8758,53383,0.701886,0.721363
+ERA5-Land,0,Southern Water,combined-v1,all,12780,10414,3623,2366,0.741896,0.185133
+ERA5-Land,0,Southern Water,combined-v1,common,12776,10410,3621,2366,0.741929,0.185191
+ERA5-Land,0,Southern Water,production,all,3686,3177,10860,509,0.22633,0.13809
+ERA5-Land,0,Southern Water,production,common,3686,3177,10854,509,0.226427,0.13809
+ERA5-Land,0,Southern Water,live status alone,all,13243,10496,3541,2747,0.747738,0.20743
+ERA5-Land,0,Southern Water,live status alone,common,13239,10492,3539,2747,0.747773,0.207493
+ERA5-Land,0,Southern Water,routing alone,all,7615,6093,7944,1522,0.434067,0.199869
+ERA5-Land,0,Southern Water,routing alone,common,7615,6093,7938,1522,0.434253,0.199869
+ERA5-Land,0,Southern Water,persistence P,common,15069,8678,5353,6391,0.618488,0.424116
+ERA5-Land,0,Southern Water,rain rule R,common,0,0,14031,0,0,
+ERA5-Land,0,Southern Water,P as a yes/no warning,common,19134,9912,4119,9222,0.706436,0.481969
+ERA5-Land,0,Southern Water,R as a yes/no warning,common,33242,8809,5222,24433,0.627824,0.735004
+ERA5-Land,0,Thames Water,combined-v1,all,7476,6695,1661,781,0.801221,0.104468
+ERA5-Land,0,Thames Water,combined-v1,common,7472,6691,1661,781,0.801125,0.104524
+ERA5-Land,0,Thames Water,production,all,1413,1128,7228,285,0.134993,0.201699
+ERA5-Land,0,Thames Water,production,common,1413,1128,7224,285,0.135057,0.201699
+ERA5-Land,0,Thames Water,live status alone,all,7852,6777,1579,1075,0.811034,0.136908
+ERA5-Land,0,Thames Water,live status alone,common,7848,6773,1579,1075,0.810943,0.136978
+ERA5-Land,0,Thames Water,routing alone,all,4227,3166,5190,1061,0.378889,0.251005
+ERA5-Land,0,Thames Water,routing alone,common,4227,3166,5186,1061,0.379071,0.251005
+ERA5-Land,0,Thames Water,persistence P,common,8732,6259,2093,2473,0.749401,0.283211
+ERA5-Land,0,Thames Water,rain rule R,common,0,0,8352,0,0,
+ERA5-Land,0,Thames Water,P as a yes/no warning,common,10298,6739,1613,3559,0.806873,0.345601
+ERA5-Land,0,Thames Water,R as a yes/no warning,common,14777,3579,4773,11198,0.42852,0.757799
+ERA5-Land,0,United Utilities,combined-v1,all,23270,13613,15669,9657,0.464893,0.414998
+ERA5-Land,0,United Utilities,combined-v1,common,23262,13605,15656,9657,0.464953,0.415141
+ERA5-Land,0,United Utilities,production,all,20404,10616,18666,9788,0.362544,0.47971
+ERA5-Land,0,United Utilities,production,common,20400,10614,18647,9786,0.362735,0.479706
+ERA5-Land,0,United Utilities,live status alone,all,27769,14936,14346,12833,0.510074,0.462134
+ERA5-Land,0,United Utilities,live status alone,common,27761,14929,14332,12832,0.510201,0.462231
+ERA5-Land,0,United Utilities,routing alone,all,20404,10616,18666,9788,0.362544,0.47971
+ERA5-Land,0,United Utilities,routing alone,common,20400,10614,18647,9786,0.362735,0.479706
+ERA5-Land,0,United Utilities,persistence P,common,18375,5598,23663,12777,0.191313,0.695347
+ERA5-Land,0,United Utilities,rain rule R,common,0,0,29261,0,0,
+ERA5-Land,0,United Utilities,P as a yes/no warning,common,46870,13123,16138,33747,0.448481,0.720013
+ERA5-Land,0,United Utilities,R as a yes/no warning,common,126575,20057,9204,106518,0.685452,0.841541
+ERA5-Land,0,Wessex Water,combined-v1,all,17792,13946,6257,3846,0.690294,0.216165
+ERA5-Land,0,Wessex Water,combined-v1,common,17783,13939,6254,3844,0.690289,0.216162
+ERA5-Land,0,Wessex Water,production,all,6315,5085,15118,1230,0.251695,0.194774
+ERA5-Land,0,Wessex Water,production,common,6315,5085,15108,1230,0.25182,0.194774
+ERA5-Land,0,Wessex Water,live status alone,all,17727,13811,6392,3916,0.683611,0.220906
+ERA5-Land,0,Wessex Water,live status alone,common,17716,13803,6390,3913,0.683554,0.220874
+ERA5-Land,0,Wessex Water,routing alone,all,12512,8948,11255,3564,0.442905,0.284847
+ERA5-Land,0,Wessex Water,routing alone,common,12512,8948,11245,3564,0.443124,0.284847
+ERA5-Land,0,Wessex Water,persistence P,common,20724,12659,7534,8065,0.6269,0.389162
+ERA5-Land,0,Wessex Water,rain rule R,common,0,0,20193,0,0,
+ERA5-Land,0,Wessex Water,P as a yes/no warning,common,27752,14017,6176,13735,0.694151,0.494919
+ERA5-Land,0,Wessex Water,R as a yes/no warning,common,53647,12173,8020,41474,0.602833,0.773091
+ERA5-Land,0,Yorkshire Water,combined-v1,all,23571,17473,12515,6098,0.582666,0.258708
+ERA5-Land,0,Yorkshire Water,combined-v1,common,23564,17468,12497,6096,0.582947,0.2587
+ERA5-Land,0,Yorkshire Water,production,all,5957,4386,25602,1571,0.146259,0.263723
+ERA5-Land,0,Yorkshire Water,production,common,5957,4386,25579,1571,0.146371,0.263723
+ERA5-Land,0,Yorkshire Water,live status alone,all,22728,16711,13277,6017,0.557256,0.26474
+ERA5-Land,0,Yorkshire Water,live status alone,common,22718,16704,13261,6014,0.55745,0.264724
+ERA5-Land,0,Yorkshire Water,routing alone,all,15371,10844,19144,4527,0.361611,0.294516
+ERA5-Land,0,Yorkshire Water,routing alone,common,15371,10844,19121,4527,0.361889,0.294516
+ERA5-Land,0,Yorkshire Water,persistence P,common,25881,12667,17298,13214,0.422727,0.510568
+ERA5-Land,0,Yorkshire Water,rain rule R,common,0,0,29965,0,0,
+ERA5-Land,0,Yorkshire Water,P as a yes/no warning,common,44629,16293,13672,28336,0.543734,0.634923
+ERA5-Land,0,Yorkshire Water,R as a yes/no warning,common,73971,16239,13726,57732,0.541932,0.780468
+ERA5-Land,0,all nine,combined-v1,all,157983,118865,75696,39118,0.610939,0.247609
+ERA5-Land,0,all nine,combined-v1,common,157900,118797,75605,39103,0.611089,0.247644
+ERA5-Land,0,all nine,production,all,65255,44683,149878,20572,0.229661,0.315256
+ERA5-Land,0,all nine,production,common,65205,44667,149735,20538,0.229766,0.314976
+ERA5-Land,0,all nine,live status alone,all,162410,118740,75821,43670,0.610297,0.268887
+ERA5-Land,0,all nine,live status alone,common,162318,118668,75734,43650,0.610426,0.268917
+ERA5-Land,0,all nine,routing alone,all,110430,75234,119327,35196,0.386686,0.318718
+ERA5-Land,0,all nine,routing alone,common,110376,75217,119185,35159,0.386915,0.318538
+ERA5-Land,0,all nine,persistence P,common,174939,93222,101180,81717,0.479532,0.467117
+ERA5-Land,0,all nine,rain rule R,common,0,0,194402,0,0,
+ERA5-Land,0,all nine,P as a yes/no warning,common,280554,117335,77067,163219,0.603569,0.581774
+ERA5-Land,0,all nine,R as a yes/no warning,common,539095,114854,79548,424241,0.590807,0.78695
+forecast,0,Anglian Water,combined-v1,all,784,632,271,152,0.699889,0.193878
+forecast,0,Anglian Water,production,all,187,148,755,39,0.163898,0.208556
+forecast,0,Anglian Water,live status alone,all,818,632,271,186,0.699889,0.227384
+forecast,0,Anglian Water,routing alone,all,477,320,583,157,0.354374,0.32914
+forecast,0,Anglian Water,"production, no lead map",all,191,150,753,41,0.166113,0.21466
+forecast,0,Anglian Water,persistence P,common,952,581,315,371,0.648438,0.389706
+forecast,0,Anglian Water,rain rule R,common,0,0,896,0,0,
+forecast,0,Anglian Water,combined-v1,common,779,627,269,152,0.699777,0.195122
+forecast,0,Anglian Water,production,common,186,148,748,38,0.165179,0.204301
+forecast,0,Anglian Water,live status alone,common,813,627,269,186,0.699777,0.228782
+forecast,0,Anglian Water,routing alone,common,471,319,577,152,0.356027,0.322718
+forecast,0,Anglian Water,"production, no lead map",common,190,150,746,40,0.167411,0.210526
+forecast,0,Severn Trent Water,combined-v1,all,7249,5464,3883,1785,0.584573,0.246241
+forecast,0,Severn Trent Water,production,all,1924,1392,7955,532,0.148925,0.276507
+forecast,0,Severn Trent Water,live status alone,all,6776,5093,4254,1683,0.544881,0.248377
+forecast,0,Severn Trent Water,routing alone,all,4622,3357,5990,1265,0.359153,0.273691
+forecast,0,Severn Trent Water,"production, no lead map",all,1950,1412,7935,538,0.151065,0.275897
+forecast,0,Severn Trent Water,persistence P,common,9300,4209,5126,5091,0.450884,0.547419
+forecast,0,Severn Trent Water,rain rule R,common,0,0,9335,0,0,
+forecast,0,Severn Trent Water,combined-v1,common,7242,5458,3877,1784,0.584681,0.246341
+forecast,0,Severn Trent Water,production,common,1924,1392,7943,532,0.149116,0.276507
+forecast,0,Severn Trent Water,live status alone,common,6768,5087,4248,1681,0.544938,0.248375
+forecast,0,Severn Trent Water,routing alone,common,4619,3355,5980,1264,0.3594,0.273652
+forecast,0,Severn Trent Water,"production, no lead map",common,1950,1412,7923,538,0.151259,0.275897
+forecast,0,South West Water,combined-v1,all,53,51,3,2,0.944444,0.0377358
+forecast,0,South West Water,production,all,47,43,11,4,0.796296,0.0851064
+forecast,0,South West Water,live status alone,all,55,53,1,2,0.981481,0.0363636
+forecast,0,South West Water,routing alone,all,60,52,2,8,0.962963,0.133333
+forecast,0,South West Water,"production, no lead map",all,47,43,11,4,0.796296,0.0851064
+forecast,0,South West Water,persistence P,common,58,52,2,6,0.962963,0.103448
+forecast,0,South West Water,rain rule R,common,0,0,54,0,0,
+forecast,0,South West Water,combined-v1,common,53,51,3,2,0.944444,0.0377358
+forecast,0,South West Water,production,common,47,43,11,4,0.796296,0.0851064
+forecast,0,South West Water,live status alone,common,55,53,1,2,0.981481,0.0363636
+forecast,0,South West Water,routing alone,common,60,52,2,8,0.962963,0.133333
+forecast,0,South West Water,"production, no lead map",common,47,43,11,4,0.796296,0.0851064
+forecast,0,Thames Water,combined-v1,all,3776,3460,544,316,0.864136,0.0836864
+forecast,0,Thames Water,production,all,814,675,3329,139,0.168581,0.170762
+forecast,0,Thames Water,live status alone,all,3975,3513,491,462,0.877373,0.116226
+forecast,0,Thames Water,routing alone,all,2221,1803,2201,418,0.4503,0.188204
+forecast,0,Thames Water,"production, no lead map",all,827,687,3317,140,0.171578,0.169287
+forecast,0,Thames Water,persistence P,common,4392,3359,624,1033,0.843334,0.2352
+forecast,0,Thames Water,rain rule R,common,0,0,3983,0,0,
+forecast,0,Thames Water,combined-v1,common,3766,3451,532,315,0.866432,0.0836431
+forecast,0,Thames Water,production,common,806,670,3313,136,0.168215,0.168734
+forecast,0,Thames Water,live status alone,common,3962,3503,480,459,0.879488,0.115851
+forecast,0,Thames Water,routing alone,common,2211,1799,2184,412,0.45167,0.186341
+forecast,0,Thames Water,"production, no lead map",common,819,682,3301,137,0.171228,0.167277
+forecast,0,United Utilities,combined-v1,all,1218,671,357,547,0.652724,0.449097
+forecast,0,United Utilities,production,all,1401,638,390,763,0.620623,0.544611
+forecast,0,United Utilities,live status alone,all,1414,745,283,669,0.724708,0.473126
+forecast,0,United Utilities,routing alone,all,1415,642,386,773,0.624514,0.54629
+forecast,0,United Utilities,"production, no lead map",all,1415,642,386,773,0.624514,0.54629
+forecast,0,United Utilities,persistence P,common,746,307,693,439,0.307,0.588472
+forecast,0,United Utilities,rain rule R,common,0,0,1000,0,0,
+forecast,0,United Utilities,combined-v1,common,1195,661,339,534,0.661,0.446862
+forecast,0,United Utilities,production,common,1356,627,373,729,0.627,0.537611
+forecast,0,United Utilities,live status alone,common,1390,731,269,659,0.731,0.474101
+forecast,0,United Utilities,routing alone,common,1368,630,370,738,0.63,0.539474
+forecast,0,United Utilities,"production, no lead map",common,1368,630,370,738,0.63,0.539474
+forecast,0,Wessex Water,combined-v1,all,3339,2644,1290,695,0.672089,0.208146
+forecast,0,Wessex Water,production,all,1316,1042,2892,274,0.26487,0.208207
+forecast,0,Wessex Water,live status alone,all,3383,2677,1257,706,0.680478,0.208691
+forecast,0,Wessex Water,routing alone,all,2449,1704,2230,745,0.433147,0.304206
+forecast,0,Wessex Water,"production, no lead map",all,1331,1051,2883,280,0.267158,0.210368
+forecast,0,Wessex Water,persistence P,common,4001,2398,1535,1603,0.609713,0.40065
+forecast,0,Wessex Water,rain rule R,common,0,0,3933,0,0,
+forecast,0,Wessex Water,combined-v1,common,3338,2643,1290,695,0.672006,0.208209
+forecast,0,Wessex Water,production,common,1316,1042,2891,274,0.264938,0.208207
+forecast,0,Wessex Water,live status alone,common,3382,2676,1257,706,0.680397,0.208752
+forecast,0,Wessex Water,routing alone,common,2449,1704,2229,745,0.433257,0.304206
+forecast,0,Wessex Water,"production, no lead map",common,1331,1051,2882,280,0.267226,0.210368
+forecast,0,Yorkshire Water,combined-v1,all,2913,2110,1172,803,0.642901,0.275661
+forecast,0,Yorkshire Water,production,all,1213,921,2361,292,0.280622,0.240725
+forecast,0,Yorkshire Water,live status alone,all,2979,2117,1165,862,0.645034,0.289359
+forecast,0,Yorkshire Water,routing alone,all,2312,1652,1630,660,0.503352,0.285467
+forecast,0,Yorkshire Water,"production, no lead map",all,1231,929,2353,302,0.283059,0.245329
+forecast,0,Yorkshire Water,persistence P,common,3201,1636,1633,1565,0.500459,0.48891
+forecast,0,Yorkshire Water,rain rule R,common,0,0,3269,0,0,
+forecast,0,Yorkshire Water,combined-v1,common,2911,2108,1161,803,0.644846,0.27585
+forecast,0,Yorkshire Water,production,common,1213,921,2348,292,0.281738,0.240725
+forecast,0,Yorkshire Water,live status alone,common,2977,2115,1154,862,0.646987,0.289553
+forecast,0,Yorkshire Water,routing alone,common,2312,1652,1617,660,0.505353,0.285467
+forecast,0,Yorkshire Water,"production, no lead map",common,1231,929,2340,302,0.284185,0.245329
+forecast,0,all nine,combined-v1,all,19332,15032,7520,4300,0.666548,0.222429
+forecast,0,all nine,production,all,6902,4859,17693,2043,0.215458,0.296001
+forecast,0,all nine,live status alone,all,19400,14830,7722,4570,0.657591,0.235567
+forecast,0,all nine,routing alone,all,13556,9530,13022,4026,0.422579,0.29699
+forecast,0,all nine,"production, no lead map",all,6992,4914,17638,2078,0.217896,0.297197
+forecast,0,all nine,persistence P,common,22650,12542,9928,10108,0.558166,0.446269
+forecast,0,all nine,rain rule R,common,0,0,22470,0,0,
+forecast,0,all nine,combined-v1,common,19284,14999,7471,4285,0.667512,0.222205
+forecast,0,all nine,production,common,6848,4843,17627,2005,0.215532,0.292786
+forecast,0,all nine,live status alone,common,19347,14792,7678,4555,0.6583,0.235437
+forecast,0,all nine,routing alone,common,13490,9511,12959,3979,0.423275,0.294959
+forecast,0,all nine,"production, no lead map",common,6936,4897,17573,2039,0.217935,0.293973
+ERA5-Land,1,Anglian Water,combined-v1,all,8901,6542,6811,2359,0.489927,0.265026
+ERA5-Land,1,Anglian Water,combined-v1,common,8894,6538,6805,2356,0.489995,0.264898
+ERA5-Land,1,Anglian Water,production,all,1359,919,12434,440,0.0688235,0.323767
+ERA5-Land,1,Anglian Water,production,common,1359,919,12424,440,0.0688751,0.323767
+ERA5-Land,1,Anglian Water,live status alone,all,9387,6583,6770,2804,0.492998,0.298711
+ERA5-Land,1,Anglian Water,live status alone,common,9380,6579,6764,2801,0.493068,0.298614
+ERA5-Land,1,Anglian Water,routing alone,all,5024,3133,10220,1891,0.234629,0.376393
+ERA5-Land,1,Anglian Water,routing alone,common,5024,3133,10210,1891,0.234805,0.376393
+ERA5-Land,1,Anglian Water,persistence P,common,10387,5284,8059,5103,0.396013,0.491287
+ERA5-Land,1,Anglian Water,rain rule R,common,0,0,13343,0,0,
+ERA5-Land,1,Anglian Water,P as a yes/no warning,common,18167,7316,6027,10851,0.548302,0.597292
+ERA5-Land,1,Anglian Water,R as a yes/no warning,common,33222,5922,7421,27300,0.443828,0.821745
+ERA5-Land,1,Northumbrian Water,combined-v1,all,9725,6590,12441,3135,0.346277,0.322365
+ERA5-Land,1,Northumbrian Water,combined-v1,common,9714,6587,12426,3127,0.346447,0.321907
+ERA5-Land,1,Northumbrian Water,production,all,2136,1621,17410,515,0.0851768,0.241105
+ERA5-Land,1,Northumbrian Water,production,common,2120,1619,17394,501,0.0851523,0.236321
+ERA5-Land,1,Northumbrian Water,live status alone,all,10039,6656,12375,3383,0.349745,0.336986
+ERA5-Land,1,Northumbrian Water,live status alone,common,10025,6653,12360,3372,0.349918,0.336359
+ERA5-Land,1,Northumbrian Water,routing alone,all,6293,4544,14487,1749,0.238768,0.277928
+ERA5-Land,1,Northumbrian Water,routing alone,common,6269,4542,14471,1727,0.238889,0.275483
+ERA5-Land,1,Northumbrian Water,persistence P,common,13331,4447,14566,8884,0.233893,0.666417
+ERA5-Land,1,Northumbrian Water,rain rule R,common,0,0,19013,0,0,
+ERA5-Land,1,Northumbrian Water,P as a yes/no warning,common,29872,6276,12737,23596,0.33009,0.789904
+ERA5-Land,1,Northumbrian Water,R as a yes/no warning,common,50324,10682,8331,39642,0.561826,0.787735
+ERA5-Land,1,Severn Trent Water,combined-v1,all,19502,14243,16635,5259,0.461267,0.269665
+ERA5-Land,1,Severn Trent Water,combined-v1,common,19498,14240,16602,5258,0.461708,0.269669
+ERA5-Land,1,Severn Trent Water,production,all,4544,3180,27698,1364,0.102986,0.300176
+ERA5-Land,1,Severn Trent Water,production,common,4537,3179,27663,1358,0.103074,0.299317
+ERA5-Land,1,Severn Trent Water,live status alone,all,19465,13876,17002,5589,0.449381,0.287131
+ERA5-Land,1,Severn Trent Water,live status alone,common,19458,13871,16971,5587,0.449744,0.287131
+ERA5-Land,1,Severn Trent Water,routing alone,all,12441,9083,21795,3358,0.294158,0.269914
+ERA5-Land,1,Severn Trent Water,routing alone,common,12437,9083,21759,3354,0.294501,0.269679
+ERA5-Land,1,Severn Trent Water,persistence P,common,23882,9426,21416,14456,0.305622,0.605309
+ERA5-Land,1,Severn Trent Water,rain rule R,common,0,0,30842,0,0,
+ERA5-Land,1,Severn Trent Water,P as a yes/no warning,common,44015,14303,16539,29712,0.463751,0.675043
+ERA5-Land,1,Severn Trent Water,R as a yes/no warning,common,79260,16770,14072,62490,0.543739,0.788418
+ERA5-Land,1,South West Water,combined-v1,all,30079,22173,7260,7906,0.753338,0.262841
+ERA5-Land,1,South West Water,combined-v1,common,30000,22120,7213,7880,0.754099,0.262667
+ERA5-Land,1,South West Water,production,all,19441,14571,14862,4870,0.495057,0.250502
+ERA5-Land,1,South West Water,production,common,19364,14551,14782,4813,0.496062,0.248554
+ERA5-Land,1,South West Water,live status alone,all,30176,22078,7355,8098,0.75011,0.268359
+ERA5-Land,1,South West Water,live status alone,common,30085,22019,7314,8066,0.750656,0.268107
+ERA5-Land,1,South West Water,routing alone,all,26543,18807,10626,7736,0.638977,0.291452
+ERA5-Land,1,South West Water,routing alone,common,26461,18787,10546,7674,0.640473,0.290012
+ERA5-Land,1,South West Water,persistence P,common,23969,15815,13518,8154,0.539154,0.340189
+ERA5-Land,1,South West Water,rain rule R,common,0,0,29333,0,0,
+ERA5-Land,1,South West Water,P as a yes/no warning,common,37627,20959,8374,16668,0.714519,0.44298
+ERA5-Land,1,South West Water,R as a yes/no warning,common,73919,20615,8718,53304,0.702792,0.721114
+ERA5-Land,1,Southern Water,combined-v1,all,11927,9113,4924,2814,0.649213,0.235935
+ERA5-Land,1,Southern Water,combined-v1,common,11923,9109,4915,2814,0.649529,0.236014
+ERA5-Land,1,Southern Water,production,all,3686,3177,10860,509,0.22633,0.13809
+ERA5-Land,1,Southern Water,production,common,3686,3177,10847,509,0.22654,0.13809
+ERA5-Land,1,Southern Water,live status alone,all,12424,9215,4822,3209,0.656479,0.25829
+ERA5-Land,1,Southern Water,live status alone,common,12418,9209,4815,3209,0.65666,0.258415
+ERA5-Land,1,Southern Water,routing alone,all,7615,6093,7944,1522,0.434067,0.199869
+ERA5-Land,1,Southern Water,routing alone,common,7615,6093,7931,1522,0.434469,0.199869
+ERA5-Land,1,Southern Water,persistence P,common,11740,6495,7529,5245,0.463135,0.446763
+ERA5-Land,1,Southern Water,rain rule R,common,0,0,14024,0,0,
+ERA5-Land,1,Southern Water,P as a yes/no warning,common,19034,8862,5162,10172,0.631917,0.534412
+ERA5-Land,1,Southern Water,R as a yes/no warning,common,33242,8809,5215,24433,0.628137,0.735004
+ERA5-Land,1,Thames Water,combined-v1,all,7070,5969,2387,1101,0.714337,0.155728
+ERA5-Land,1,Thames Water,combined-v1,common,7062,5961,2387,1101,0.714063,0.155905
+ERA5-Land,1,Thames Water,production,all,1413,1128,7228,285,0.134993,0.201699
+ERA5-Land,1,Thames Water,production,common,1413,1128,7220,285,0.135122,0.201699
+ERA5-Land,1,Thames Water,live status alone,all,7591,6135,2221,1456,0.734203,0.191806
+ERA5-Land,1,Thames Water,live status alone,common,7583,6127,2221,1456,0.733948,0.192008
+ERA5-Land,1,Thames Water,routing alone,all,4227,3166,5190,1061,0.378889,0.251005
+ERA5-Land,1,Thames Water,routing alone,common,4227,3166,5182,1061,0.379253,0.251005
+ERA5-Land,1,Thames Water,persistence P,common,6939,4792,3556,2147,0.57403,0.309411
+ERA5-Land,1,Thames Water,rain rule R,common,0,0,8348,0,0,
+ERA5-Land,1,Thames Water,P as a yes/no warning,common,10265,6151,2197,4114,0.736823,0.400779
+ERA5-Land,1,Thames Water,R as a yes/no warning,common,14777,3579,4769,11198,0.428725,0.757799
+ERA5-Land,1,United Utilities,combined-v1,all,20549,10870,18412,9679,0.371218,0.47102
+ERA5-Land,1,United Utilities,combined-v1,common,20534,10858,18365,9676,0.371557,0.471218
+ERA5-Land,1,United Utilities,production,all,20404,10616,18666,9788,0.362544,0.47971
+ERA5-Land,1,United Utilities,production,common,20380,10603,18620,9777,0.362831,0.479735
+ERA5-Land,1,United Utilities,live status alone,all,25876,12721,16561,13155,0.434431,0.508386
+ERA5-Land,1,United Utilities,live status alone,common,25859,12709,16514,13150,0.434897,0.508527
+ERA5-Land,1,United Utilities,routing alone,all,20404,10616,18666,9788,0.362544,0.47971
+ERA5-Land,1,United Utilities,routing alone,common,20380,10603,18620,9777,0.362831,0.479735
+ERA5-Land,1,United Utilities,persistence P,common,15343,3483,25740,11860,0.119187,0.772991
+ERA5-Land,1,United Utilities,rain rule R,common,0,0,29223,0,0,
+ERA5-Land,1,United Utilities,P as a yes/no warning,common,46098,9208,20015,36890,0.315094,0.800252
+ERA5-Land,1,United Utilities,R as a yes/no warning,common,126477,20031,9192,106446,0.685453,0.841623
+ERA5-Land,1,Wessex Water,combined-v1,all,17565,13054,7149,4511,0.646142,0.256818
+ERA5-Land,1,Wessex Water,combined-v1,common,17546,13041,7143,4505,0.646106,0.256754
+ERA5-Land,1,Wessex Water,production,all,6315,5085,15118,1230,0.251695,0.194774
+ERA5-Land,1,Wessex Water,production,common,6315,5085,15099,1230,0.251932,0.194774
+ERA5-Land,1,Wessex Water,live status alone,all,17678,12972,7231,4706,0.642083,0.266207
+ERA5-Land,1,Wessex Water,live status alone,common,17654,12957,7227,4697,0.641944,0.266059
+ERA5-Land,1,Wessex Water,routing alone,all,12512,8948,11255,3564,0.442905,0.284847
+ERA5-Land,1,Wessex Water,routing alone,common,12510,8948,11236,3562,0.443321,0.284732
+ERA5-Land,1,Wessex Water,persistence P,common,16687,9698,10486,6989,0.48048,0.418829
+ERA5-Land,1,Wessex Water,rain rule R,common,0,0,20184,0,0,
+ERA5-Land,1,Wessex Water,P as a yes/no warning,common,27468,12928,7256,14540,0.640507,0.529343
+ERA5-Land,1,Wessex Water,R as a yes/no warning,common,53621,12173,8011,41448,0.603101,0.772981
+ERA5-Land,1,Yorkshire Water,combined-v1,all,21653,15246,14742,6407,0.508403,0.295894
+ERA5-Land,1,Yorkshire Water,combined-v1,common,21642,15239,14715,6403,0.508747,0.29586
+ERA5-Land,1,Yorkshire Water,production,all,5957,4386,25602,1571,0.146259,0.263723
+ERA5-Land,1,Yorkshire Water,production,common,5956,4385,25569,1571,0.146391,0.263768
+ERA5-Land,1,Yorkshire Water,live status alone,all,21273,14612,15376,6661,0.487262,0.31312
+ERA5-Land,1,Yorkshire Water,live status alone,common,21253,14600,15354,6653,0.487414,0.313038
+ERA5-Land,1,Yorkshire Water,routing alone,all,15371,10844,19144,4527,0.361611,0.294516
+ERA5-Land,1,Yorkshire Water,routing alone,common,15370,10843,19111,4527,0.361988,0.294535
+ERA5-Land,1,Yorkshire Water,persistence P,common,23131,10087,19867,13044,0.33675,0.563919
+ERA5-Land,1,Yorkshire Water,rain rule R,common,0,0,29954,0,0,
+ERA5-Land,1,Yorkshire Water,P as a yes/no warning,common,43766,13450,16504,30316,0.449022,0.692684
+ERA5-Land,1,Yorkshire Water,R as a yes/no warning,common,73943,16238,13716,57705,0.542098,0.780398
+ERA5-Land,1,all nine,combined-v1,all,146971,103800,90761,43171,0.533509,0.293738
+ERA5-Land,1,all nine,combined-v1,common,146813,103693,90571,43120,0.533774,0.293707
+ERA5-Land,1,all nine,production,all,65255,44683,149878,20572,0.229661,0.315256
+ERA5-Land,1,all nine,production,common,65130,44646,149618,20484,0.229821,0.314509
+ERA5-Land,1,all nine,live status alone,all,153909,104848,89713,49061,0.538895,0.318766
+ERA5-Land,1,all nine,live status alone,common,153715,104724,89540,48991,0.539081,0.318713
+ERA5-Land,1,all nine,routing alone,all,110430,75234,119327,35196,0.386686,0.318718
+ERA5-Land,1,all nine,routing alone,common,110293,75198,119066,35095,0.387092,0.318198
+ERA5-Land,1,all nine,persistence P,common,145409,69527,124737,75882,0.3579,0.521852
+ERA5-Land,1,all nine,rain rule R,common,0,0,194264,0,0,
+ERA5-Land,1,all nine,P as a yes/no warning,common,276312,99453,94811,176859,0.511948,0.64007
+ERA5-Land,1,all nine,R as a yes/no warning,common,538785,114819,79445,423966,0.591046,0.786893
+forecast,1,Anglian Water,combined-v1,all,685,503,400,182,0.557032,0.265693
+forecast,1,Anglian Water,production,all,150,113,790,37,0.125138,0.246667
+forecast,1,Anglian Water,live status alone,all,716,500,403,216,0.55371,0.301676
+forecast,1,Anglian Water,routing alone,all,407,263,640,144,0.291251,0.353808
+forecast,1,Anglian Water,"production, no lead map",all,174,128,775,46,0.14175,0.264368
+forecast,1,Anglian Water,persistence P,common,731,402,472,329,0.459954,0.450068
+forecast,1,Anglian Water,rain rule R,common,0,0,874,0,0,
+forecast,1,Anglian Water,combined-v1,common,675,495,379,180,0.566362,0.266667
+forecast,1,Anglian Water,production,common,132,102,772,30,0.116705,0.227273
+forecast,1,Anglian Water,live status alone,common,704,491,383,213,0.561785,0.302557
+forecast,1,Anglian Water,routing alone,common,380,248,626,132,0.283753,0.347368
+forecast,1,Anglian Water,"production, no lead map",common,153,116,758,37,0.132723,0.24183
+forecast,1,Severn Trent Water,combined-v1,all,6218,4044,5303,2174,0.432652,0.34963
+forecast,1,Severn Trent Water,production,all,1524,909,8438,615,0.0972505,0.403543
+forecast,1,Severn Trent Water,live status alone,all,5979,3814,5533,2165,0.408045,0.362101
+forecast,1,Severn Trent Water,routing alone,all,4063,2644,6703,1419,0.282872,0.349249
+forecast,1,Severn Trent Water,"production, no lead map",all,1780,1062,8285,718,0.113619,0.403371
+forecast,1,Severn Trent Water,persistence P,common,7466,2680,6589,4786,0.289136,0.641039
+forecast,1,Severn Trent Water,rain rule R,common,0,0,9269,0,0,
+forecast,1,Severn Trent Water,combined-v1,common,5956,3981,5288,1975,0.429496,0.331598
+forecast,1,Severn Trent Water,production,common,1142,842,8427,300,0.0908404,0.262697
+forecast,1,Severn Trent Water,live status alone,common,5734,3752,5517,1982,0.40479,0.345657
+forecast,1,Severn Trent Water,routing alone,common,3702,2576,6693,1126,0.277916,0.30416
+forecast,1,Severn Trent Water,"production, no lead map",common,1380,994,8275,386,0.107239,0.27971
+forecast,1,South West Water,combined-v1,all,55,52,2,3,0.962963,0.0545455
+forecast,1,South West Water,production,all,37,36,18,1,0.666667,0.027027
+forecast,1,South West Water,live status alone,all,57,53,1,4,0.981481,0.0701754
+forecast,1,South West Water,routing alone,all,56,51,3,5,0.944444,0.0892857
+forecast,1,South West Water,"production, no lead map",all,38,36,18,2,0.666667,0.0526316
+forecast,1,South West Water,persistence P,common,47,40,13,7,0.754717,0.148936
+forecast,1,South West Water,rain rule R,common,0,0,53,0,0,
+forecast,1,South West Water,combined-v1,common,54,51,2,3,0.962264,0.0555556
+forecast,1,South West Water,production,common,36,35,18,1,0.660377,0.0277778
+forecast,1,South West Water,live status alone,common,56,52,1,4,0.981132,0.0714286
+forecast,1,South West Water,routing alone,common,55,50,3,5,0.943396,0.0909091
+forecast,1,South West Water,"production, no lead map",common,37,35,18,2,0.660377,0.0540541
+forecast,1,Thames Water,combined-v1,all,3631,3100,904,531,0.774226,0.146241
+forecast,1,Thames Water,production,all,626,523,3481,103,0.130619,0.164537
+forecast,1,Thames Water,live status alone,all,3841,3183,821,658,0.794955,0.17131
+forecast,1,Thames Water,routing alone,all,2133,1729,2275,404,0.431818,0.189405
+forecast,1,Thames Water,"production, no lead map",all,732,596,3408,136,0.148851,0.185792
+forecast,1,Thames Water,persistence P,common,3583,2667,1234,916,0.683671,0.255652
+forecast,1,Thames Water,rain rule R,common,0,0,3901,0,0,
+forecast,1,Thames Water,combined-v1,common,3573,3053,848,520,0.78262,0.145536
+forecast,1,Thames Water,production,common,542,462,3439,80,0.118431,0.147601
+forecast,1,Thames Water,live status alone,common,3764,3123,778,641,0.800564,0.170298
+forecast,1,Thames Water,routing alone,common,2025,1653,2248,372,0.423738,0.183704
+forecast,1,Thames Water,"production, no lead map",common,635,528,3373,107,0.13535,0.168504
+forecast,1,United Utilities,combined-v1,all,1116,533,495,583,0.518482,0.522401
+forecast,1,United Utilities,production,all,1147,533,495,614,0.518482,0.53531
+forecast,1,United Utilities,live status alone,all,1379,628,400,751,0.610895,0.544598
+forecast,1,United Utilities,routing alone,all,1270,569,459,701,0.553502,0.551969
+forecast,1,United Utilities,"production, no lead map",all,1270,569,459,701,0.553502,0.551969
+forecast,1,United Utilities,persistence P,common,539,178,833,361,0.176063,0.669759
+forecast,1,United Utilities,rain rule R,common,0,0,1011,0,0,
+forecast,1,United Utilities,combined-v1,common,1095,528,483,567,0.522255,0.517808
+forecast,1,United Utilities,production,common,1110,524,487,586,0.518299,0.527928
+forecast,1,United Utilities,live status alone,common,1363,619,392,744,0.612265,0.545855
+forecast,1,United Utilities,routing alone,common,1229,560,451,669,0.553907,0.544345
+forecast,1,United Utilities,"production, no lead map",common,1229,560,451,669,0.553907,0.544345
+forecast,1,Wessex Water,combined-v1,all,3177,2428,1506,749,0.617184,0.235757
+forecast,1,Wessex Water,production,all,1003,831,3103,172,0.211235,0.171486
+forecast,1,Wessex Water,live status alone,all,3240,2431,1503,809,0.617946,0.249691
+forecast,1,Wessex Water,routing alone,all,2229,1583,2351,646,0.402389,0.289816
+forecast,1,Wessex Water,"production, no lead map",all,1134,918,3016,216,0.23335,0.190476
+forecast,1,Wessex Water,persistence P,common,3427,2034,1823,1393,0.527353,0.406478
+forecast,1,Wessex Water,rain rule R,common,0,0,3857,0,0,
+forecast,1,Wessex Water,combined-v1,common,3161,2415,1442,746,0.626134,0.236001
+forecast,1,Wessex Water,production,common,948,796,3061,152,0.206378,0.160338
+forecast,1,Wessex Water,live status alone,common,3216,2413,1444,803,0.625616,0.249689
+forecast,1,Wessex Water,routing alone,common,2171,1536,2321,635,0.398237,0.292492
+forecast,1,Wessex Water,"production, no lead map",common,1074,878,2979,196,0.227638,0.182495
+forecast,1,Yorkshire Water,combined-v1,all,2942,1899,1383,1043,0.578611,0.354521
+forecast,1,Yorkshire Water,production,all,1056,760,2522,296,0.231566,0.280303
+forecast,1,Yorkshire Water,live status alone,all,2984,1924,1358,1060,0.586228,0.355228
+forecast,1,Yorkshire Water,routing alone,all,2311,1531,1751,780,0.466484,0.337516
+forecast,1,Yorkshire Water,"production, no lead map",all,1228,857,2425,371,0.261121,0.302117
+forecast,1,Yorkshire Water,persistence P,common,2728,1306,1967,1422,0.399022,0.521261
+forecast,1,Yorkshire Water,rain rule R,common,0,0,3273,0,0,
+forecast,1,Yorkshire Water,combined-v1,common,2930,1896,1377,1034,0.579285,0.352901
+forecast,1,Yorkshire Water,production,common,1053,759,2514,294,0.231897,0.279202
+forecast,1,Yorkshire Water,live status alone,common,2971,1921,1352,1050,0.586923,0.353416
+forecast,1,Yorkshire Water,routing alone,common,2296,1527,1746,769,0.466544,0.33493
+forecast,1,Yorkshire Water,"production, no lead map",common,1222,856,2417,366,0.261534,0.299509
+forecast,1,all nine,combined-v1,all,17824,12559,9993,5265,0.556891,0.295388
+forecast,1,all nine,production,all,5543,3705,18847,1838,0.164287,0.331589
+forecast,1,all nine,live status alone,all,18196,12533,10019,5663,0.555738,0.311222
+forecast,1,all nine,routing alone,all,12469,8370,14182,4099,0.371142,0.328735
+forecast,1,all nine,"production, no lead map",all,6356,4166,18386,2190,0.184729,0.344556
+forecast,1,all nine,persistence P,common,18521,9307,12931,9214,0.418518,0.497489
+forecast,1,all nine,rain rule R,common,0,0,22238,0,0,
+forecast,1,all nine,combined-v1,common,17444,12419,9819,5025,0.558458,0.288065
+forecast,1,all nine,production,common,4963,3520,18718,1443,0.158288,0.290752
+forecast,1,all nine,live status alone,common,17808,12371,9867,5437,0.5563,0.305312
+forecast,1,all nine,routing alone,common,11858,8150,14088,3708,0.36649,0.3127
+forecast,1,all nine,"production, no lead map",common,5730,3967,18271,1763,0.178388,0.307679
+ERA5-Land,2,Anglian Water,combined-v1,all,8373,6040,7313,2333,0.452333,0.278634
+ERA5-Land,2,Anglian Water,combined-v1,common,8366,6034,7301,2332,0.452493,0.278747
+ERA5-Land,2,Anglian Water,production,all,1359,919,12434,440,0.0688235,0.323767
+ERA5-Land,2,Anglian Water,production,common,1359,919,12416,440,0.0689164,0.323767
+ERA5-Land,2,Anglian Water,live status alone,all,8768,6111,7242,2657,0.45765,0.303034
+ERA5-Land,2,Anglian Water,live status alone,common,8760,6105,7230,2655,0.457818,0.303082
+ERA5-Land,2,Anglian Water,routing alone,all,5024,3133,10220,1891,0.234629,0.376393
+ERA5-Land,2,Anglian Water,routing alone,common,5024,3133,10202,1891,0.234946,0.376393
+ERA5-Land,2,Anglian Water,persistence P,common,10157,4881,8454,5276,0.366029,0.519445
+ERA5-Land,2,Anglian Water,rain rule R,common,0,0,13335,0,0,
+ERA5-Land,2,Anglian Water,P as a yes/no warning,common,17851,6675,6660,11176,0.500562,0.626071
+ERA5-Land,2,Anglian Water,R as a yes/no warning,common,33222,5922,7413,27300,0.444094,0.821745
+ERA5-Land,2,Northumbrian Water,combined-v1,all,9432,6227,12804,3205,0.327203,0.339801
+ERA5-Land,2,Northumbrian Water,combined-v1,common,9421,6224,12783,3197,0.327458,0.339348
+ERA5-Land,2,Northumbrian Water,production,all,2136,1621,17410,515,0.0851768,0.241105
+ERA5-Land,2,Northumbrian Water,production,common,2118,1618,17389,500,0.0851265,0.236072
+ERA5-Land,2,Northumbrian Water,live status alone,all,9574,6175,12856,3399,0.324471,0.355024
+ERA5-Land,2,Northumbrian Water,live status alone,common,9558,6172,12835,3386,0.324722,0.354258
+ERA5-Land,2,Northumbrian Water,routing alone,all,6293,4544,14487,1749,0.238768,0.277928
+ERA5-Land,2,Northumbrian Water,routing alone,common,6266,4541,14466,1725,0.238912,0.275295
+ERA5-Land,2,Northumbrian Water,persistence P,common,11881,4114,14893,7767,0.216447,0.653733
+ERA5-Land,2,Northumbrian Water,rain rule R,common,0,0,19007,0,0,
+ERA5-Land,2,Northumbrian Water,P as a yes/no warning,common,29731,5610,13397,24121,0.295154,0.811308
+ERA5-Land,2,Northumbrian Water,R as a yes/no warning,common,50261,10677,8330,39584,0.56174,0.787569
+ERA5-Land,2,Severn Trent Water,combined-v1,all,18640,13582,17296,5058,0.43986,0.271352
+ERA5-Land,2,Severn Trent Water,combined-v1,common,18637,13581,17254,5056,0.440441,0.271288
+ERA5-Land,2,Severn Trent Water,production,all,4544,3180,27698,1364,0.102986,0.300176
+ERA5-Land,2,Severn Trent Water,production,common,4537,3179,27656,1358,0.103097,0.299317
+ERA5-Land,2,Severn Trent Water,live status alone,all,18644,13088,17790,5556,0.423862,0.298005
+ERA5-Land,2,Severn Trent Water,live status alone,common,18636,13084,17751,5552,0.424323,0.297918
+ERA5-Land,2,Severn Trent Water,routing alone,all,12441,9083,21795,3358,0.294158,0.269914
+ERA5-Land,2,Severn Trent Water,routing alone,common,12436,9083,21752,3353,0.294568,0.26962
+ERA5-Land,2,Severn Trent Water,persistence P,common,22410,8563,22272,13847,0.277704,0.617894
+ERA5-Land,2,Severn Trent Water,rain rule R,common,0,0,30835,0,0,
+ERA5-Land,2,Severn Trent Water,P as a yes/no warning,common,43311,13080,17755,30231,0.424193,0.697998
+ERA5-Land,2,Severn Trent Water,R as a yes/no warning,common,79249,16769,14066,62480,0.54383,0.788401
+ERA5-Land,2,South West Water,combined-v1,all,30065,21901,7532,8164,0.744097,0.271545
+ERA5-Land,2,South West Water,combined-v1,common,29960,21836,7471,8124,0.745078,0.271162
+ERA5-Land,2,South West Water,production,all,19441,14571,14862,4870,0.495057,0.250502
+ERA5-Land,2,South West Water,production,common,19355,14550,14757,4805,0.496468,0.248256
+ERA5-Land,2,South West Water,live status alone,all,30309,21846,7587,8463,0.742228,0.279224
+ERA5-Land,2,South West Water,live status alone,common,30179,21774,7533,8405,0.742962,0.278505
+ERA5-Land,2,South West Water,routing alone,all,26543,18807,10626,7736,0.638977,0.291452
+ERA5-Land,2,South West Water,routing alone,common,26448,18785,10522,7663,0.640973,0.289738
+ERA5-Land,2,South West Water,persistence P,common,23457,14694,14613,8763,0.501382,0.373577
+ERA5-Land,2,South West Water,rain rule R,common,0,0,29307,0,0,
+ERA5-Land,2,South West Water,P as a yes/no warning,common,37201,20012,9295,17189,0.68284,0.462057
+ERA5-Land,2,South West Water,R as a yes/no warning,common,73892,20614,8693,53278,0.703381,0.721025
+ERA5-Land,2,Southern Water,combined-v1,all,11887,9063,4974,2824,0.645651,0.23757
+ERA5-Land,2,Southern Water,combined-v1,common,11880,9057,4919,2823,0.648039,0.237626
+ERA5-Land,2,Southern Water,production,all,3686,3177,10860,509,0.22633,0.13809
+ERA5-Land,2,Southern Water,production,common,3671,3168,10808,503,0.226674,0.13702
+ERA5-Land,2,Southern Water,live status alone,all,12463,9167,4870,3296,0.65306,0.264463
+ERA5-Land,2,Southern Water,live status alone,common,12449,9156,4820,3293,0.655123,0.264519
+ERA5-Land,2,Southern Water,routing alone,all,7615,6093,7944,1522,0.434067,0.199869
+ERA5-Land,2,Southern Water,routing alone,common,7576,6080,7896,1496,0.435031,0.197466
+ERA5-Land,2,Southern Water,persistence P,common,11545,6253,7723,5292,0.44741,0.45838
+ERA5-Land,2,Southern Water,rain rule R,common,0,0,13976,0,0,
+ERA5-Land,2,Southern Water,P as a yes/no warning,common,18935,8654,5322,10281,0.619204,0.542963
+ERA5-Land,2,Southern Water,R as a yes/no warning,common,33035,8766,5210,24269,0.627218,0.734645
+ERA5-Land,2,Thames Water,combined-v1,all,6969,5764,2592,1205,0.689804,0.172909
+ERA5-Land,2,Thames Water,combined-v1,common,6956,5752,2587,1204,0.689771,0.173088
+ERA5-Land,2,Thames Water,production,all,1413,1128,7228,285,0.134993,0.201699
+ERA5-Land,2,Thames Water,production,common,1413,1128,7211,285,0.135268,0.201699
+ERA5-Land,2,Thames Water,live status alone,all,7381,5906,2450,1475,0.706798,0.199837
+ERA5-Land,2,Thames Water,live status alone,common,7369,5894,2445,1475,0.706799,0.200163
+ERA5-Land,2,Thames Water,routing alone,all,4227,3166,5190,1061,0.378889,0.251005
+ERA5-Land,2,Thames Water,routing alone,common,4223,3166,5173,1057,0.379662,0.250296
+ERA5-Land,2,Thames Water,persistence P,common,6753,4532,3807,2221,0.54347,0.328891
+ERA5-Land,2,Thames Water,rain rule R,common,0,0,8339,0,0,
+ERA5-Land,2,Thames Water,P as a yes/no warning,common,10228,5900,2439,4328,0.707519,0.423152
+ERA5-Land,2,Thames Water,R as a yes/no warning,common,14745,3575,4764,11170,0.428708,0.757545
+ERA5-Land,2,United Utilities,combined-v1,all,20744,10800,18482,9944,0.368827,0.479368
+ERA5-Land,2,United Utilities,combined-v1,common,20724,10785,18406,9939,0.369463,0.479589
+ERA5-Land,2,United Utilities,production,all,20404,10616,18666,9788,0.362544,0.47971
+ERA5-Land,2,United Utilities,production,common,20348,10588,18603,9760,0.362715,0.479654
+ERA5-Land,2,United Utilities,live status alone,all,26481,12664,16618,13817,0.432484,0.52177
+ERA5-Land,2,United Utilities,live status alone,common,26457,12647,16544,13810,0.43325,0.521979
+ERA5-Land,2,United Utilities,routing alone,all,20404,10616,18666,9788,0.362544,0.47971
+ERA5-Land,2,United Utilities,routing alone,common,20348,10588,18603,9760,0.362715,0.479654
+ERA5-Land,2,United Utilities,persistence P,common,13325,3501,25690,9824,0.119934,0.737261
+ERA5-Land,2,United Utilities,rain rule R,common,0,0,29191,0,0,
+ERA5-Land,2,United Utilities,P as a yes/no warning,common,45282,8837,20354,36445,0.30273,0.804845
+ERA5-Land,2,United Utilities,R as a yes/no warning,common,126084,20010,9181,106074,0.685485,0.841296
+ERA5-Land,2,Wessex Water,combined-v1,all,17524,12807,7396,4717,0.633916,0.269174
+ERA5-Land,2,Wessex Water,combined-v1,common,17495,12790,7387,4705,0.63389,0.268934
+ERA5-Land,2,Wessex Water,production,all,6315,5085,15118,1230,0.251695,0.194774
+ERA5-Land,2,Wessex Water,production,common,6310,5085,15092,1225,0.25202,0.194136
+ERA5-Land,2,Wessex Water,live status alone,all,17545,12750,7453,4795,0.631094,0.273297
+ERA5-Land,2,Wessex Water,live status alone,common,17510,12731,7446,4779,0.630966,0.27293
+ERA5-Land,2,Wessex Water,routing alone,all,12512,8948,11255,3564,0.442905,0.284847
+ERA5-Land,2,Wessex Water,routing alone,common,12496,8948,11229,3548,0.443475,0.283931
+ERA5-Land,2,Wessex Water,persistence P,common,16181,9129,11048,7052,0.452446,0.43582
+ERA5-Land,2,Wessex Water,rain rule R,common,0,0,20177,0,0,
+ERA5-Land,2,Wessex Water,P as a yes/no warning,common,27181,12401,7776,14780,0.614611,0.543762
+ERA5-Land,2,Wessex Water,R as a yes/no warning,common,53568,12173,8004,41395,0.603311,0.772756
+ERA5-Land,2,Yorkshire Water,combined-v1,all,21429,14960,15028,6469,0.498866,0.301881
+ERA5-Land,2,Yorkshire Water,combined-v1,common,21417,14953,14992,6464,0.499349,0.301816
+ERA5-Land,2,Yorkshire Water,production,all,5957,4386,25602,1571,0.146259,0.263723
+ERA5-Land,2,Yorkshire Water,production,common,5956,4385,25560,1571,0.146435,0.263768
+ERA5-Land,2,Yorkshire Water,live status alone,all,21042,14217,15771,6825,0.47409,0.324351
+ERA5-Land,2,Yorkshire Water,live status alone,common,21017,14205,15740,6812,0.47437,0.324119
+ERA5-Land,2,Yorkshire Water,routing alone,all,15371,10844,19144,4527,0.361611,0.294516
+ERA5-Land,2,Yorkshire Water,routing alone,common,15370,10843,19102,4527,0.362097,0.294535
+ERA5-Land,2,Yorkshire Water,persistence P,common,21116,9608,20337,11508,0.320855,0.54499
+ERA5-Land,2,Yorkshire Water,rain rule R,common,0,0,29945,0,0,
+ERA5-Land,2,Yorkshire Water,P as a yes/no warning,common,43047,13392,16553,29655,0.44722,0.688898
+ERA5-Land,2,Yorkshire Water,R as a yes/no warning,common,73934,16238,13707,57696,0.542261,0.780372
+ERA5-Land,2,all nine,combined-v1,all,145063,101144,93417,43919,0.519858,0.302758
+ERA5-Land,2,all nine,combined-v1,common,144856,101012,93100,43844,0.52038,0.302673
+ERA5-Land,2,all nine,production,all,65255,44683,149878,20572,0.229661,0.315256
+ERA5-Land,2,all nine,production,common,65067,44620,149492,20447,0.229867,0.314245
+ERA5-Land,2,all nine,live status alone,all,152207,101924,92637,50283,0.523867,0.330359
+ERA5-Land,2,all nine,live status alone,common,151935,101768,92344,50167,0.524275,0.330187
+ERA5-Land,2,all nine,routing alone,all,110430,75234,119327,35196,0.386686,0.318718
+ERA5-Land,2,all nine,routing alone,common,110187,75167,118945,35020,0.387235,0.317823
+ERA5-Land,2,all nine,persistence P,common,136825,65275,128837,71550,0.336275,0.522931
+ERA5-Land,2,all nine,rain rule R,common,0,0,194112,0,0,
+ERA5-Land,2,all nine,P as a yes/no warning,common,272767,94561,99551,178206,0.487147,0.653327
+ERA5-Land,2,all nine,R as a yes/no warning,common,537990,114744,79368,423246,0.591123,0.786717
+forecast,2,Anglian Water,combined-v1,all,592,447,456,145,0.495017,0.244932
+forecast,2,Anglian Water,production,all,101,87,816,14,0.0963455,0.138614
+forecast,2,Anglian Water,live status alone,all,607,439,464,168,0.486157,0.276771
+forecast,2,Anglian Water,routing alone,all,328,222,681,106,0.245847,0.323171
+forecast,2,Anglian Water,"production, no lead map",all,139,116,787,23,0.128461,0.165468
+forecast,2,Anglian Water,persistence P,common,726,372,452,354,0.451456,0.487603
+forecast,2,Anglian Water,rain rule R,common,0,0,824,0,0,
+forecast,2,Anglian Water,combined-v1,common,542,410,414,132,0.497573,0.243542
+forecast,2,Anglian Water,production,common,62,57,767,5,0.0691748,0.0806452
+forecast,2,Anglian Water,live status alone,common,559,405,419,154,0.491505,0.275492
+forecast,2,Anglian Water,routing alone,common,255,176,648,79,0.213592,0.309804
+forecast,2,Anglian Water,"production, no lead map",common,93,80,744,13,0.0970874,0.139785
+forecast,2,Severn Trent Water,combined-v1,all,5806,3930,5417,1876,0.420456,0.323114
+forecast,2,Severn Trent Water,production,all,1219,905,8442,314,0.0968225,0.257588
+forecast,2,Severn Trent Water,live status alone,all,5611,3676,5671,1935,0.393281,0.344858
+forecast,2,Severn Trent Water,routing alone,all,3941,2609,6738,1332,0.279127,0.337985
+forecast,2,Severn Trent Water,"production, no lead map",all,1772,1218,8129,554,0.130309,0.312641
+forecast,2,Severn Trent Water,persistence P,common,7424,2429,6547,4995,0.270611,0.672818
+forecast,2,Severn Trent Water,rain rule R,common,0,0,8976,0,0,
+forecast,2,Severn Trent Water,combined-v1,common,5317,3689,5287,1628,0.410985,0.306188
+forecast,2,Severn Trent Water,production,common,802,718,8258,84,0.0799911,0.104738
+forecast,2,Severn Trent Water,live status alone,common,5149,3440,5536,1709,0.383244,0.331909
+forecast,2,Severn Trent Water,routing alone,common,3223,2329,6647,894,0.25947,0.277381
+forecast,2,Severn Trent Water,"production, no lead map",common,1207,990,7986,217,0.110294,0.179785
+forecast,2,South West Water,combined-v1,all,52,50,4,2,0.925926,0.0384615
+forecast,2,South West Water,production,all,28,27,27,1,0.5,0.0357143
+forecast,2,South West Water,live status alone,all,53,50,4,3,0.925926,0.0566038
+forecast,2,South West Water,routing alone,all,53,49,5,4,0.907407,0.0754717
+forecast,2,South West Water,"production, no lead map",all,31,30,24,1,0.555556,0.0322581
+forecast,2,South West Water,persistence P,common,45,37,14,8,0.72549,0.177778
+forecast,2,South West Water,rain rule R,common,0,0,51,0,0,
+forecast,2,South West Water,combined-v1,common,50,48,3,2,0.941176,0.04
+forecast,2,South West Water,production,common,26,25,26,1,0.490196,0.0384615
+forecast,2,South West Water,live status alone,common,51,48,3,3,0.941176,0.0588235
+forecast,2,South West Water,routing alone,common,50,46,5,4,0.901961,0.08
+forecast,2,South West Water,"production, no lead map",common,29,28,23,1,0.54902,0.0344828
+forecast,2,Thames Water,combined-v1,all,3529,2948,1056,581,0.736264,0.164636
+forecast,2,Thames Water,production,all,465,394,3610,71,0.0984016,0.152688
+forecast,2,Thames Water,live status alone,all,3782,3030,974,752,0.756743,0.198837
+forecast,2,Thames Water,routing alone,all,2020,1560,2444,460,0.38961,0.227723
+forecast,2,Thames Water,"production, no lead map",all,657,519,3485,138,0.12962,0.210046
+forecast,2,Thames Water,persistence P,common,3437,2446,1359,991,0.642838,0.288333
+forecast,2,Thames Water,rain rule R,common,0,0,3805,0,0,
+forecast,2,Thames Water,combined-v1,common,3392,2845,960,547,0.7477,0.161262
+forecast,2,Thames Water,production,common,382,328,3477,54,0.0862024,0.141361
+forecast,2,Thames Water,live status alone,common,3647,2932,873,715,0.770565,0.196052
+forecast,2,Thames Water,routing alone,common,1806,1407,2398,399,0.369777,0.22093
+forecast,2,Thames Water,"production, no lead map",common,545,435,3370,110,0.114323,0.201835
+forecast,2,United Utilities,combined-v1,all,1173,516,512,657,0.501946,0.560102
+forecast,2,United Utilities,production,all,1013,476,552,537,0.463035,0.530109
+forecast,2,United Utilities,live status alone,all,1431,595,433,836,0.578794,0.584207
+forecast,2,United Utilities,routing alone,all,1303,562,466,741,0.546693,0.568688
+forecast,2,United Utilities,"production, no lead map",all,1303,562,466,741,0.546693,0.568688
+forecast,2,United Utilities,persistence P,common,532,160,834,372,0.160966,0.699248
+forecast,2,United Utilities,rain rule R,common,0,0,994,0,0,
+forecast,2,United Utilities,combined-v1,common,1157,506,488,651,0.509054,0.562662
+forecast,2,United Utilities,production,common,988,464,530,524,0.466801,0.530364
+forecast,2,United Utilities,live status alone,common,1416,587,407,829,0.590543,0.585452
+forecast,2,United Utilities,routing alone,common,1266,544,450,722,0.547284,0.5703
+forecast,2,United Utilities,"production, no lead map",common,1266,544,450,722,0.547284,0.5703
+forecast,2,Wessex Water,combined-v1,all,2907,2182,1752,725,0.554652,0.249398
+forecast,2,Wessex Water,production,all,688,577,3357,111,0.14667,0.161337
+forecast,2,Wessex Water,live status alone,all,2967,2226,1708,741,0.565836,0.249747
+forecast,2,Wessex Water,routing alone,all,1920,1304,2630,616,0.331469,0.320833
+forecast,2,Wessex Water,"production, no lead map",all,919,737,3197,182,0.187341,0.198041
+forecast,2,Wessex Water,persistence P,common,3302,1824,1983,1478,0.479117,0.447608
+forecast,2,Wessex Water,rain rule R,common,0,0,3807,0,0,
+forecast,2,Wessex Water,combined-v1,common,2818,2128,1679,690,0.55897,0.244855
+forecast,2,Wessex Water,production,common,607,525,3282,82,0.137904,0.135091
+forecast,2,Wessex Water,live status alone,common,2875,2169,1638,706,0.56974,0.245565
+forecast,2,Wessex Water,routing alone,common,1783,1222,2585,561,0.320988,0.314638
+forecast,2,Wessex Water,"production, no lead map",common,815,673,3134,142,0.17678,0.174233
+forecast,2,Yorkshire Water,combined-v1,all,2680,1724,1558,956,0.525289,0.356716
+forecast,2,Yorkshire Water,production,all,711,496,2786,215,0.151127,0.302391
+forecast,2,Yorkshire Water,live status alone,all,2591,1707,1575,884,0.52011,0.341181
+forecast,2,Yorkshire Water,routing alone,all,2023,1296,1986,727,0.394881,0.359367
+forecast,2,Yorkshire Water,"production, no lead map",all,994,652,2630,342,0.198659,0.344064
+forecast,2,Yorkshire Water,persistence P,common,2645,1224,2035,1421,0.375575,0.53724
+forecast,2,Yorkshire Water,rain rule R,common,0,0,3259,0,0,
+forecast,2,Yorkshire Water,combined-v1,common,2654,1716,1543,938,0.526542,0.353429
+forecast,2,Yorkshire Water,production,common,707,494,2765,213,0.15158,0.301273
+forecast,2,Yorkshire Water,live status alone,common,2568,1699,1560,869,0.521326,0.338396
+forecast,2,Yorkshire Water,routing alone,common,1991,1287,1972,704,0.394906,0.353591
+forecast,2,Yorkshire Water,"production, no lead map",common,980,645,2614,335,0.197913,0.341837
+forecast,2,all nine,combined-v1,all,16739,11797,10755,4942,0.523102,0.295239
+forecast,2,all nine,production,all,4225,2962,19590,1263,0.131341,0.298935
+forecast,2,all nine,live status alone,all,17042,11723,10829,5319,0.519821,0.312111
+forecast,2,all nine,routing alone,all,11588,7602,14950,3986,0.337088,0.343977
+forecast,2,all nine,"production, no lead map",all,5815,3834,18718,1981,0.170007,0.340671
+forecast,2,all nine,persistence P,common,18111,8492,13224,9619,0.391048,0.531114
+forecast,2,all nine,rain rule R,common,0,0,21716,0,0,
+forecast,2,all nine,combined-v1,common,15930,11342,10374,4588,0.522288,0.28801
+forecast,2,all nine,production,common,3574,2611,19105,963,0.120234,0.269446
+forecast,2,all nine,live status alone,common,16265,11280,10436,4985,0.519433,0.306486
+forecast,2,all nine,routing alone,common,10374,7011,14705,3363,0.32285,0.324176
+forecast,2,all nine,"production, no lead map",common,4935,3395,18321,1540,0.156336,0.312057
+ERA5-Land,3,Anglian Water,combined-v1,all,8128,5814,7539,2314,0.435408,0.284695
+ERA5-Land,3,Anglian Water,combined-v1,common,7957,5708,7319,2249,0.438167,0.282644
+ERA5-Land,3,Anglian Water,production,all,1359,919,12434,440,0.0688235,0.323767
+ERA5-Land,3,Anglian Water,production,common,1164,806,12221,358,0.0618715,0.30756
+ERA5-Land,3,Anglian Water,live status alone,all,8504,5806,7547,2698,0.434809,0.317262
+ERA5-Land,3,Anglian Water,live status alone,common,8305,5691,7336,2614,0.436862,0.31475
+ERA5-Land,3,Anglian Water,routing alone,all,5024,3133,10220,1891,0.234629,0.376393
+ERA5-Land,3,Anglian Water,routing alone,common,4765,2982,10045,1783,0.228909,0.374187
+ERA5-Land,3,Anglian Water,persistence P,common,10030,4811,8216,5219,0.36931,0.520339
+ERA5-Land,3,Anglian Water,rain rule R,common,0,0,13027,0,0,
+ERA5-Land,3,Anglian Water,P as a yes/no warning,common,17471,6501,6526,10970,0.49904,0.627898
+ERA5-Land,3,Anglian Water,R as a yes/no warning,common,32078,5619,7408,26459,0.431335,0.824833
+ERA5-Land,3,Northumbrian Water,combined-v1,all,9160,6010,13021,3150,0.315801,0.343886
+ERA5-Land,3,Northumbrian Water,combined-v1,common,9147,6006,12999,3141,0.316022,0.343391
+ERA5-Land,3,Northumbrian Water,production,all,2136,1621,17410,515,0.0851768,0.241105
+ERA5-Land,3,Northumbrian Water,production,common,2118,1618,17387,500,0.0851355,0.236072
+ERA5-Land,3,Northumbrian Water,live status alone,all,9275,5928,13103,3347,0.311492,0.360863
+ERA5-Land,3,Northumbrian Water,live status alone,common,9258,5925,13080,3333,0.31176,0.360013
+ERA5-Land,3,Northumbrian Water,routing alone,all,6293,4544,14487,1749,0.238768,0.277928
+ERA5-Land,3,Northumbrian Water,routing alone,common,6266,4541,14464,1725,0.238937,0.275295
+ERA5-Land,3,Northumbrian Water,persistence P,common,11738,4071,14934,7667,0.214207,0.653178
+ERA5-Land,3,Northumbrian Water,rain rule R,common,0,0,19005,0,0,
+ERA5-Land,3,Northumbrian Water,P as a yes/no warning,common,29631,5829,13176,23802,0.306709,0.80328
+ERA5-Land,3,Northumbrian Water,R as a yes/no warning,common,50261,10677,8328,39584,0.5618,0.787569
+ERA5-Land,3,Severn Trent Water,combined-v1,all,18154,13042,17836,5112,0.422372,0.281591
+ERA5-Land,3,Severn Trent Water,combined-v1,common,17688,12877,17684,4811,0.421354,0.271992
+ERA5-Land,3,Severn Trent Water,production,all,4544,3180,27698,1364,0.102986,0.300176
+ERA5-Land,3,Severn Trent Water,production,common,3818,2984,27577,834,0.0976408,0.218439
+ERA5-Land,3,Severn Trent Water,live status alone,all,18285,12531,18347,5754,0.405823,0.314684
+ERA5-Land,3,Severn Trent Water,live status alone,common,17757,12340,18221,5417,0.403783,0.305063
+ERA5-Land,3,Severn Trent Water,routing alone,all,12441,9083,21795,3358,0.294158,0.269914
+ERA5-Land,3,Severn Trent Water,routing alone,common,11706,8866,21695,2840,0.290108,0.242611
+ERA5-Land,3,Severn Trent Water,persistence P,common,22135,8468,22093,13667,0.277085,0.617438
+ERA5-Land,3,Severn Trent Water,rain rule R,common,0,0,30561,0,0,
+ERA5-Land,3,Severn Trent Water,P as a yes/no warning,common,41840,12130,18431,29710,0.396911,0.710086
+ERA5-Land,3,Severn Trent Water,R as a yes/no warning,common,77004,16502,14059,60502,0.539969,0.785699
+ERA5-Land,3,South West Water,combined-v1,all,29712,21513,7920,8199,0.730914,0.275949
+ERA5-Land,3,South West Water,combined-v1,common,28880,20823,7717,8057,0.729608,0.278982
+ERA5-Land,3,South West Water,production,all,19441,14571,14862,4870,0.495057,0.250502
+ERA5-Land,3,South West Water,production,common,18492,13849,14691,4643,0.485249,0.251082
+ERA5-Land,3,South West Water,live status alone,all,29846,21423,8010,8423,0.727856,0.282215
+ERA5-Land,3,South West Water,live status alone,common,29005,20742,7798,8263,0.726769,0.284882
+ERA5-Land,3,South West Water,routing alone,all,26543,18807,10626,7736,0.638977,0.291452
+ERA5-Land,3,South West Water,routing alone,common,25663,18110,10430,7553,0.634548,0.294315
+ERA5-Land,3,South West Water,persistence P,common,23123,13850,14690,9273,0.485284,0.401029
+ERA5-Land,3,South West Water,rain rule R,common,0,0,28540,0,0,
+ERA5-Land,3,South West Water,P as a yes/no warning,common,36911,19133,9407,17778,0.670392,0.481645
+ERA5-Land,3,South West Water,R as a yes/no warning,common,72600,19870,8670,52730,0.696216,0.726309
+ERA5-Land,3,Southern Water,combined-v1,all,11639,8823,5214,2816,0.628553,0.241945
+ERA5-Land,3,Southern Water,combined-v1,common,11318,8528,4942,2790,0.633111,0.24651
+ERA5-Land,3,Southern Water,production,all,3686,3177,10860,509,0.22633,0.13809
+ERA5-Land,3,Southern Water,production,common,3310,2846,10624,464,0.211284,0.140181
+ERA5-Land,3,Southern Water,live status alone,all,12163,8837,5200,3326,0.62955,0.273452
+ERA5-Land,3,Southern Water,live status alone,common,11823,8528,4942,3295,0.633111,0.278694
+ERA5-Land,3,Southern Water,routing alone,all,7615,6093,7944,1522,0.434067,0.199869
+ERA5-Land,3,Southern Water,routing alone,common,7174,5723,7747,1451,0.42487,0.202258
+ERA5-Land,3,Southern Water,persistence P,common,11390,6357,7113,5033,0.471938,0.441879
+ERA5-Land,3,Southern Water,rain rule R,common,0,0,13470,0,0,
+ERA5-Land,3,Southern Water,P as a yes/no warning,common,18814,8634,4836,10180,0.64098,0.541086
+ERA5-Land,3,Southern Water,R as a yes/no warning,common,32143,8264,5206,23879,0.613512,0.742899
+ERA5-Land,3,Thames Water,combined-v1,all,6863,5598,2758,1265,0.669938,0.184322
+ERA5-Land,3,Thames Water,combined-v1,common,6697,5464,2671,1233,0.671666,0.184112
+ERA5-Land,3,Thames Water,production,all,1413,1128,7228,285,0.134993,0.201699
+ERA5-Land,3,Thames Water,production,common,1217,989,7146,228,0.121573,0.187346
+ERA5-Land,3,Thames Water,live status alone,all,7232,5681,2675,1551,0.679871,0.214463
+ERA5-Land,3,Thames Water,live status alone,common,7036,5534,2601,1502,0.68027,0.213474
+ERA5-Land,3,Thames Water,routing alone,all,4227,3166,5190,1061,0.378889,0.251005
+ERA5-Land,3,Thames Water,routing alone,common,4014,3016,5119,998,0.370744,0.24863
+ERA5-Land,3,Thames Water,persistence P,common,6633,4487,3648,2146,0.551567,0.323534
+ERA5-Land,3,Thames Water,rain rule R,common,0,0,8135,0,0,
+ERA5-Land,3,Thames Water,P as a yes/no warning,common,10190,5870,2265,4320,0.721573,0.423945
+ERA5-Land,3,Thames Water,R as a yes/no warning,common,14216,3376,4759,10840,0.414997,0.762521
+ERA5-Land,3,United Utilities,combined-v1,all,20639,10789,18493,9850,0.368452,0.477252
+ERA5-Land,3,United Utilities,combined-v1,common,20605,10767,18398,9838,0.369175,0.477457
+ERA5-Land,3,United Utilities,production,all,20404,10616,18666,9788,0.362544,0.47971
+ERA5-Land,3,United Utilities,production,common,20302,10577,18588,9725,0.362661,0.479017
+ERA5-Land,3,United Utilities,live status alone,all,26230,12707,16575,13523,0.433953,0.515555
+ERA5-Land,3,United Utilities,live status alone,common,26192,12687,16478,13505,0.435008,0.515615
+ERA5-Land,3,United Utilities,routing alone,all,20404,10616,18666,9788,0.362544,0.47971
+ERA5-Land,3,United Utilities,routing alone,common,20302,10577,18588,9725,0.362661,0.479017
+ERA5-Land,3,United Utilities,persistence P,common,12826,3729,25436,9097,0.127859,0.709262
+ERA5-Land,3,United Utilities,rain rule R,common,0,0,29165,0,0,
+ERA5-Land,3,United Utilities,P as a yes/no warning,common,44288,8340,20825,35948,0.285959,0.811687
+ERA5-Land,3,United Utilities,R as a yes/no warning,common,125990,19999,9166,105991,0.685719,0.841265
+ERA5-Land,3,Wessex Water,combined-v1,all,17182,12462,7741,4720,0.616839,0.274706
+ERA5-Land,3,Wessex Water,combined-v1,common,16748,12150,7552,4598,0.616689,0.27454
+ERA5-Land,3,Wessex Water,production,all,6315,5085,15118,1230,0.251695,0.194774
+ERA5-Land,3,Wessex Water,production,common,5728,4704,14998,1024,0.238757,0.178771
+ERA5-Land,3,Wessex Water,live status alone,all,17311,12413,7790,4898,0.614414,0.282941
+ERA5-Land,3,Wessex Water,live status alone,common,16824,12064,7638,4760,0.612324,0.282929
+ERA5-Land,3,Wessex Water,routing alone,all,12512,8948,11255,3564,0.442905,0.284847
+ERA5-Land,3,Wessex Water,routing alone,common,11942,8568,11134,3374,0.43488,0.282532
+ERA5-Land,3,Wessex Water,persistence P,common,16007,8883,10819,7124,0.450868,0.445055
+ERA5-Land,3,Wessex Water,rain rule R,common,0,0,19702,0,0,
+ERA5-Land,3,Wessex Water,P as a yes/no warning,common,26867,12229,7473,14638,0.620698,0.544832
+ERA5-Land,3,Wessex Water,R as a yes/no warning,common,52313,11704,7998,40609,0.594051,0.77627
+ERA5-Land,3,Yorkshire Water,combined-v1,all,21088,14466,15522,6622,0.482393,0.314017
+ERA5-Land,3,Yorkshire Water,combined-v1,common,21064,14460,15479,6604,0.482982,0.313521
+ERA5-Land,3,Yorkshire Water,production,all,5957,4386,25602,1571,0.146259,0.263723
+ERA5-Land,3,Yorkshire Water,production,common,5944,4385,25554,1559,0.146464,0.262281
+ERA5-Land,3,Yorkshire Water,live status alone,all,20533,13693,16295,6840,0.456616,0.333122
+ERA5-Land,3,Yorkshire Water,live status alone,common,20500,13681,16258,6819,0.456962,0.332634
+ERA5-Land,3,Yorkshire Water,routing alone,all,15371,10844,19144,4527,0.361611,0.294516
+ERA5-Land,3,Yorkshire Water,routing alone,common,15353,10843,19096,4510,0.36217,0.293754
+ERA5-Land,3,Yorkshire Water,persistence P,common,20833,9528,20411,11305,0.318247,0.542649
+ERA5-Land,3,Yorkshire Water,rain rule R,common,0,0,29939,0,0,
+ERA5-Land,3,Yorkshire Water,P as a yes/no warning,common,42089,12639,17300,29450,0.422158,0.699708
+ERA5-Land,3,Yorkshire Water,R as a yes/no warning,common,73882,16238,13701,57644,0.542369,0.780217
+ERA5-Land,3,all nine,combined-v1,all,142565,98517,96044,44048,0.506355,0.308968
+ERA5-Land,3,all nine,combined-v1,common,140104,96783,94761,43321,0.505278,0.309206
+ERA5-Land,3,all nine,production,all,65255,44683,149878,20572,0.229661,0.315256
+ERA5-Land,3,all nine,production,common,62093,42758,148786,19335,0.223228,0.311388
+ERA5-Land,3,all nine,live status alone,all,149379,99019,95542,50360,0.508936,0.337129
+ERA5-Land,3,all nine,live status alone,common,146700,97192,94352,49508,0.507413,0.337478
+ERA5-Land,3,all nine,routing alone,all,110430,75234,119327,35196,0.386686,0.318718
+ERA5-Land,3,all nine,routing alone,common,107185,73226,118318,33959,0.382293,0.316826
+ERA5-Land,3,all nine,persistence P,common,134715,64184,127360,70531,0.335087,0.523557
+ERA5-Land,3,all nine,rain rule R,common,0,0,191544,0,0,
+ERA5-Land,3,all nine,P as a yes/no warning,common,268101,91305,100239,176796,0.476679,0.659438
+ERA5-Land,3,all nine,R as a yes/no warning,common,530487,112249,79295,418238,0.586022,0.788404
+forecast,3,Anglian Water,combined-v1,all,548,410,493,138,0.454042,0.251825
+forecast,3,Anglian Water,production,all,90,69,834,21,0.076412,0.233333
+forecast,3,Anglian Water,live status alone,all,550,397,506,153,0.439646,0.278182
+forecast,3,Anglian Water,routing alone,all,338,213,690,125,0.23588,0.369822
+forecast,3,Anglian Water,"production, no lead map",all,139,101,802,38,0.111849,0.273381
+forecast,3,Anglian Water,persistence P,common,702,375,439,327,0.460688,0.465812
+forecast,3,Anglian Water,rain rule R,common,0,0,814,0,0,
+forecast,3,Anglian Water,combined-v1,common,467,360,454,107,0.44226,0.229122
+forecast,3,Anglian Water,production,common,39,33,781,6,0.0405405,0.153846
+forecast,3,Anglian Water,live status alone,common,475,354,460,121,0.434889,0.254737
+forecast,3,Anglian Water,routing alone,common,244,157,657,87,0.192875,0.356557
+forecast,3,Anglian Water,"production, no lead map",common,67,55,759,12,0.0675676,0.179104
+forecast,3,Severn Trent Water,combined-v1,all,4363,3137,6210,1226,0.335616,0.280999
+forecast,3,Severn Trent Water,production,all,411,341,9006,70,0.0364823,0.170316
+forecast,3,Severn Trent Water,live status alone,all,4171,2901,6446,1270,0.310367,0.304483
+forecast,3,Severn Trent Water,routing alone,all,2621,1829,7518,792,0.195678,0.302175
+forecast,3,Severn Trent Water,"production, no lead map",all,772,598,8749,174,0.0639777,0.225389
+forecast,3,Severn Trent Water,persistence P,common,7150,2346,6481,4804,0.265775,0.671888
+forecast,3,Severn Trent Water,rain rule R,common,0,0,8827,0,0,
+forecast,3,Severn Trent Water,combined-v1,common,3988,2858,5969,1130,0.323779,0.28335
+forecast,3,Severn Trent Water,production,common,254,213,8614,41,0.0241305,0.161417
+forecast,3,Severn Trent Water,live status alone,common,3822,2637,6190,1185,0.298742,0.310047
+forecast,3,Severn Trent Water,routing alone,common,2140,1519,7308,621,0.172086,0.290187
+forecast,3,Severn Trent Water,"production, no lead map",common,545,426,8401,119,0.048261,0.218349
+forecast,3,South West Water,combined-v1,all,55,52,2,3,0.962963,0.0545455
+forecast,3,South West Water,production,all,27,27,27,0,0.5,0
+forecast,3,South West Water,live status alone,all,55,52,2,3,0.962963,0.0545455
+forecast,3,South West Water,routing alone,all,45,43,11,2,0.796296,0.0444444
+forecast,3,South West Water,"production, no lead map",all,29,29,25,0,0.537037,0
+forecast,3,South West Water,persistence P,common,44,36,14,8,0.72,0.181818
+forecast,3,South West Water,rain rule R,common,0,0,50,0,0,
+forecast,3,South West Water,combined-v1,common,52,49,1,3,0.98,0.0576923
+forecast,3,South West Water,production,common,25,25,25,0,0.5,0
+forecast,3,South West Water,live status alone,common,51,48,2,3,0.96,0.0588235
+forecast,3,South West Water,routing alone,common,41,39,11,2,0.78,0.0487805
+forecast,3,South West Water,"production, no lead map",common,27,27,23,0,0.54,0
+forecast,3,Thames Water,combined-v1,all,3314,2799,1205,515,0.699051,0.155401
+forecast,3,Thames Water,production,all,343,282,3722,61,0.0704296,0.177843
+forecast,3,Thames Water,live status alone,all,3531,2876,1128,655,0.718282,0.1855
+forecast,3,Thames Water,routing alone,all,1627,1274,2730,353,0.318182,0.216964
+forecast,3,Thames Water,"production, no lead map",all,485,386,3618,99,0.0964036,0.204124
+forecast,3,Thames Water,persistence P,common,3343,2398,1367,945,0.636919,0.28268
+forecast,3,Thames Water,rain rule R,common,0,0,3765,0,0,
+forecast,3,Thames Water,combined-v1,common,3076,2624,1141,452,0.696946,0.146944
+forecast,3,Thames Water,production,common,216,190,3575,26,0.0504648,0.12037
+forecast,3,Thames Water,live status alone,common,3288,2704,1061,584,0.718194,0.177616
+forecast,3,Thames Water,routing alone,common,1365,1091,2674,274,0.289774,0.200733
+forecast,3,Thames Water,"production, no lead map",common,324,274,3491,50,0.0727756,0.154321
+forecast,3,United Utilities,combined-v1,all,999,421,607,578,0.409533,0.578579
+forecast,3,United Utilities,production,all,846,386,642,460,0.375486,0.543735
+forecast,3,United Utilities,live status alone,all,1323,525,503,798,0.5107,0.603175
+forecast,3,United Utilities,routing alone,all,1134,482,546,652,0.468872,0.574956
+forecast,3,United Utilities,"production, no lead map",all,1134,482,546,652,0.468872,0.574956
+forecast,3,United Utilities,persistence P,common,535,156,821,379,0.159672,0.708411
+forecast,3,United Utilities,rain rule R,common,0,0,977,0,0,
+forecast,3,United Utilities,combined-v1,common,964,397,580,567,0.406346,0.588174
+forecast,3,United Utilities,production,common,799,360,617,439,0.368475,0.549437
+forecast,3,United Utilities,live status alone,common,1263,493,484,770,0.504606,0.60966
+forecast,3,United Utilities,routing alone,common,1070,449,528,621,0.45957,0.580374
+forecast,3,United Utilities,"production, no lead map",common,1070,449,528,621,0.45957,0.580374
+forecast,3,Wessex Water,combined-v1,all,2705,2049,1885,656,0.520844,0.242514
+forecast,3,Wessex Water,production,all,679,497,3437,182,0.126335,0.268041
+forecast,3,Wessex Water,live status alone,all,2844,2114,1820,730,0.537367,0.256681
+forecast,3,Wessex Water,routing alone,all,1823,1211,2723,612,0.307829,0.33571
+forecast,3,Wessex Water,"production, no lead map",all,884,647,3287,237,0.164464,0.2681
+forecast,3,Wessex Water,persistence P,common,3203,1813,1970,1390,0.479249,0.433968
+forecast,3,Wessex Water,rain rule R,common,0,0,3783,0,0,
+forecast,3,Wessex Water,combined-v1,common,2541,1956,1827,585,0.51705,0.230224
+forecast,3,Wessex Water,production,common,557,435,3348,122,0.114988,0.219031
+forecast,3,Wessex Water,live status alone,common,2684,2025,1758,659,0.535289,0.245529
+forecast,3,Wessex Water,routing alone,common,1613,1103,2680,510,0.291568,0.316181
+forecast,3,Wessex Water,"production, no lead map",common,726,564,3219,162,0.149088,0.22314
+forecast,3,Yorkshire Water,combined-v1,all,2412,1531,1751,881,0.466484,0.365257
+forecast,3,Yorkshire Water,production,all,504,339,2943,165,0.103291,0.327381
+forecast,3,Yorkshire Water,live status alone,all,2373,1523,1759,850,0.464046,0.358196
+forecast,3,Yorkshire Water,routing alone,all,1694,1104,2178,590,0.33638,0.348288
+forecast,3,Yorkshire Water,"production, no lead map",all,833,532,2750,301,0.162096,0.361345
+forecast,3,Yorkshire Water,persistence P,common,2656,1176,2039,1480,0.365785,0.557229
+forecast,3,Yorkshire Water,rain rule R,common,0,0,3215,0,0,
+forecast,3,Yorkshire Water,combined-v1,common,2359,1502,1713,857,0.467185,0.36329
+forecast,3,Yorkshire Water,production,common,490,330,2885,160,0.102644,0.326531
+forecast,3,Yorkshire Water,live status alone,common,2324,1494,1721,830,0.464697,0.357143
+forecast,3,Yorkshire Water,routing alone,common,1627,1071,2144,556,0.333126,0.341733
+forecast,3,Yorkshire Water,"production, no lead map",common,800,513,2702,287,0.159565,0.35875
+forecast,3,all nine,combined-v1,all,14396,10399,12153,3997,0.461112,0.277647
+forecast,3,all nine,production,all,2900,1941,20611,959,0.0860678,0.33069
+forecast,3,all nine,live status alone,all,14847,10388,12164,4459,0.460624,0.30033
+forecast,3,all nine,routing alone,all,9282,6156,16396,3126,0.272969,0.336781
+forecast,3,all nine,"production, no lead map",all,4276,2775,19777,1501,0.123049,0.351029
+forecast,3,all nine,persistence P,common,17633,8300,13131,9333,0.387289,0.529292
+forecast,3,all nine,rain rule R,common,0,0,21431,0,0,
+forecast,3,all nine,combined-v1,common,13447,9746,11685,3701,0.454762,0.275229
+forecast,3,all nine,production,common,2380,1586,19845,794,0.0740049,0.333613
+forecast,3,all nine,live status alone,common,13907,9755,11676,4152,0.455182,0.298555
+forecast,3,all nine,routing alone,common,8100,5429,16002,2671,0.253325,0.329753
+forecast,3,all nine,"production, no lead map",common,3559,2308,19123,1251,0.107694,0.351503
+ERA5-Land,4,Anglian Water,combined-v1,all,7840,5605,7748,2235,0.419756,0.285077
+ERA5-Land,4,Anglian Water,combined-v1,common,7389,5285,7352,2104,0.418216,0.284748
+ERA5-Land,4,Anglian Water,production,all,1359,919,12434,440,0.0688235,0.323767
+ERA5-Land,4,Anglian Water,production,common,1042,706,11931,336,0.0558677,0.322457
+ERA5-Land,4,Anglian Water,live status alone,all,8309,5639,7714,2670,0.422302,0.321338
+ERA5-Land,4,Anglian Water,live status alone,common,7819,5307,7330,2512,0.419957,0.321269
+ERA5-Land,4,Anglian Water,routing alone,all,5024,3133,10220,1891,0.234629,0.376393
+ERA5-Land,4,Anglian Water,routing alone,common,4421,2735,9902,1686,0.216428,0.381362
+ERA5-Land,4,Anglian Water,persistence P,common,11029,5418,7219,5611,0.428741,0.50875
+ERA5-Land,4,Anglian Water,rain rule R,common,0,0,12637,0,0,
+ERA5-Land,4,Anglian Water,P as a yes/no warning,common,17105,6607,6030,10498,0.52283,0.613739
+ERA5-Land,4,Anglian Water,R as a yes/no warning,common,30763,5232,7405,25531,0.414022,0.829926
+ERA5-Land,4,Northumbrian Water,combined-v1,all,9185,5967,13064,3218,0.313541,0.350354
+ERA5-Land,4,Northumbrian Water,combined-v1,common,9132,5944,13020,3188,0.313436,0.349102
+ERA5-Land,4,Northumbrian Water,production,all,2136,1621,17410,515,0.0851768,0.241105
+ERA5-Land,4,Northumbrian Water,production,common,2112,1614,17350,498,0.0851086,0.235795
+ERA5-Land,4,Northumbrian Water,live status alone,all,9110,5847,13184,3263,0.307236,0.358178
+ERA5-Land,4,Northumbrian Water,live status alone,common,9064,5828,13136,3236,0.307319,0.357017
+ERA5-Land,4,Northumbrian Water,routing alone,all,6293,4544,14487,1749,0.238768,0.277928
+ERA5-Land,4,Northumbrian Water,routing alone,common,6186,4513,14451,1673,0.237977,0.270449
+ERA5-Land,4,Northumbrian Water,persistence P,common,12048,4465,14499,7583,0.235446,0.629399
+ERA5-Land,4,Northumbrian Water,rain rule R,common,0,0,18964,0,0,
+ERA5-Land,4,Northumbrian Water,P as a yes/no warning,common,29625,6316,12648,23309,0.333052,0.786802
+ERA5-Land,4,Northumbrian Water,R as a yes/no warning,common,49704,10638,8326,39066,0.560958,0.785973
+ERA5-Land,4,Severn Trent Water,combined-v1,all,17972,12890,17988,5082,0.417449,0.282773
+ERA5-Land,4,Severn Trent Water,combined-v1,common,16784,12209,17688,4575,0.408369,0.272581
+ERA5-Land,4,Severn Trent Water,production,all,4544,3180,27698,1364,0.102986,0.300176
+ERA5-Land,4,Severn Trent Water,production,common,3422,2666,27231,756,0.0891728,0.220923
+ERA5-Land,4,Severn Trent Water,live status alone,all,18040,12387,18491,5653,0.401159,0.313359
+ERA5-Land,4,Severn Trent Water,live status alone,common,16789,11683,18214,5106,0.390775,0.304128
+ERA5-Land,4,Severn Trent Water,routing alone,all,12441,9083,21795,3358,0.294158,0.269914
+ERA5-Land,4,Severn Trent Water,routing alone,common,10778,8290,21607,2488,0.277285,0.230841
+ERA5-Land,4,Severn Trent Water,persistence P,common,23785,9447,20450,14338,0.315985,0.602817
+ERA5-Land,4,Severn Trent Water,rain rule R,common,0,0,29897,0,0,
+ERA5-Land,4,Severn Trent Water,P as a yes/no warning,common,40372,11816,18081,28556,0.395224,0.707322
+ERA5-Land,4,Severn Trent Water,R as a yes/no warning,common,74616,15842,14055,58774,0.529886,0.787686
+ERA5-Land,4,South West Water,combined-v1,all,29575,21272,8161,8303,0.722726,0.280744
+ERA5-Land,4,South West Water,combined-v1,common,28389,20363,7847,8026,0.721836,0.282715
+ERA5-Land,4,South West Water,production,all,19441,14571,14862,4870,0.495057,0.250502
+ERA5-Land,4,South West Water,production,common,18209,13657,14553,4552,0.484119,0.249986
+ERA5-Land,4,South West Water,live status alone,all,29847,21178,8255,8669,0.719532,0.290448
+ERA5-Land,4,South West Water,live status alone,common,28692,20300,7910,8392,0.719603,0.292486
+ERA5-Land,4,South West Water,routing alone,all,26543,18807,10626,7736,0.638977,0.291452
+ERA5-Land,4,South West Water,routing alone,common,25209,17849,10361,7360,0.632719,0.291959
+ERA5-Land,4,South West Water,persistence P,common,25136,15080,13130,10056,0.534562,0.400064
+ERA5-Land,4,South West Water,rain rule R,common,0,0,28210,0,0,
+ERA5-Land,4,South West Water,P as a yes/no warning,common,36613,18509,9701,18104,0.656115,0.494469
+ERA5-Land,4,South West Water,R as a yes/no warning,common,71308,19565,8645,51743,0.693548,0.725627
+ERA5-Land,4,Southern Water,combined-v1,all,11174,8621,5416,2553,0.614163,0.228477
+ERA5-Land,4,Southern Water,combined-v1,common,10646,8131,4940,2515,0.622064,0.236239
+ERA5-Land,4,Southern Water,production,all,3686,3177,10860,509,0.22633,0.13809
+ERA5-Land,4,Southern Water,production,common,3214,2753,10318,461,0.210619,0.143435
+ERA5-Land,4,Southern Water,live status alone,all,11681,8653,5384,3028,0.616442,0.259224
+ERA5-Land,4,Southern Water,live status alone,common,11154,8168,4903,2986,0.624895,0.267707
+ERA5-Land,4,Southern Water,routing alone,all,7615,6093,7944,1522,0.434067,0.199869
+ERA5-Land,4,Southern Water,routing alone,common,6937,5507,7564,1430,0.421314,0.206141
+ERA5-Land,4,Southern Water,persistence P,common,13053,7143,5928,5910,0.546477,0.452769
+ERA5-Land,4,Southern Water,rain rule R,common,0,0,13071,0,0,
+ERA5-Land,4,Southern Water,P as a yes/no warning,common,18695,8761,4310,9934,0.670262,0.531372
+ERA5-Land,4,Southern Water,R as a yes/no warning,common,31251,7870,5201,23381,0.602096,0.748168
+ERA5-Land,4,Thames Water,combined-v1,all,6707,5463,2893,1244,0.653782,0.185478
+ERA5-Land,4,Thames Water,combined-v1,common,6468,5268,2714,1200,0.659985,0.185529
+ERA5-Land,4,Thames Water,production,all,1413,1128,7228,285,0.134993,0.201699
+ERA5-Land,4,Thames Water,production,common,1200,974,7008,226,0.122025,0.188333
+ERA5-Land,4,Thames Water,live status alone,all,7276,5623,2733,1653,0.67293,0.227185
+ERA5-Land,4,Thames Water,live status alone,common,7017,5426,2556,1591,0.67978,0.226735
+ERA5-Land,4,Thames Water,routing alone,all,4227,3166,5190,1061,0.378889,0.251005
+ERA5-Land,4,Thames Water,routing alone,common,3903,2929,5053,974,0.366951,0.249552
+ERA5-Land,4,Thames Water,persistence P,common,7397,4948,3034,2449,0.619895,0.33108
+ERA5-Land,4,Thames Water,rain rule R,common,0,0,7982,0,0,
+ERA5-Land,4,Thames Water,P as a yes/no warning,common,10154,5921,2061,4233,0.741794,0.41688
+ERA5-Land,4,Thames Water,R as a yes/no warning,common,13687,3227,4755,10460,0.404285,0.764229
+ERA5-Land,4,United Utilities,combined-v1,all,20043,10700,18582,9343,0.365412,0.466148
+ERA5-Land,4,United Utilities,combined-v1,common,19954,10642,18414,9312,0.366258,0.466673
+ERA5-Land,4,United Utilities,production,all,20404,10616,18666,9788,0.362544,0.47971
+ERA5-Land,4,United Utilities,production,common,20193,10518,18538,9675,0.361991,0.479126
+ERA5-Land,4,United Utilities,live status alone,all,26068,12704,16578,13364,0.43385,0.512659
+ERA5-Land,4,United Utilities,live status alone,common,25906,12620,16436,13286,0.434334,0.512854
+ERA5-Land,4,United Utilities,routing alone,all,20404,10616,18666,9788,0.362544,0.47971
+ERA5-Land,4,United Utilities,routing alone,common,20193,10518,18538,9675,0.361991,0.479126
+ERA5-Land,4,United Utilities,persistence P,common,13745,3954,25102,9791,0.136082,0.712332
+ERA5-Land,4,United Utilities,rain rule R,common,0,0,29056,0,0,
+ERA5-Land,4,United Utilities,P as a yes/no warning,common,43495,8087,20969,35408,0.278325,0.814071
+ERA5-Land,4,United Utilities,R as a yes/no warning,common,125272,19911,9145,105361,0.685263,0.841058
+ERA5-Land,4,Wessex Water,combined-v1,all,16997,12250,7953,4747,0.606346,0.279285
+ERA5-Land,4,Wessex Water,combined-v1,common,16445,11867,7635,4578,0.608502,0.278382
+ERA5-Land,4,Wessex Water,production,all,6315,5085,15118,1230,0.251695,0.194774
+ERA5-Land,4,Wessex Water,production,common,5675,4667,14835,1008,0.239309,0.177621
+ERA5-Land,4,Wessex Water,live status alone,all,17194,12175,8028,5019,0.602633,0.291904
+ERA5-Land,4,Wessex Water,live status alone,common,16631,11792,7710,4839,0.604656,0.290963
+ERA5-Land,4,Wessex Water,routing alone,all,12512,8948,11255,3564,0.442905,0.284847
+ERA5-Land,4,Wessex Water,routing alone,common,11740,8437,11065,3303,0.432622,0.281346
+ERA5-Land,4,Wessex Water,persistence P,common,17496,9820,9682,7676,0.503538,0.438729
+ERA5-Land,4,Wessex Water,rain rule R,common,0,0,19502,0,0,
+ERA5-Land,4,Wessex Water,P as a yes/no warning,common,26562,11984,7518,14578,0.614501,0.548829
+ERA5-Land,4,Wessex Water,R as a yes/no warning,common,51058,11510,7992,39548,0.590196,0.77457
+ERA5-Land,4,Yorkshire Water,combined-v1,all,20748,14290,15698,6458,0.476524,0.311259
+ERA5-Land,4,Yorkshire Water,combined-v1,common,20600,14207,15558,6393,0.477306,0.31034
+ERA5-Land,4,Yorkshire Water,production,all,5957,4386,25602,1571,0.146259,0.263723
+ERA5-Land,4,Yorkshire Water,production,common,5881,4342,25423,1539,0.145876,0.26169
+ERA5-Land,4,Yorkshire Water,live status alone,all,20033,13477,16511,6556,0.449413,0.32726
+ERA5-Land,4,Yorkshire Water,live status alone,common,19874,13392,16373,6482,0.449924,0.326155
+ERA5-Land,4,Yorkshire Water,routing alone,all,15371,10844,19144,4527,0.361611,0.294516
+ERA5-Land,4,Yorkshire Water,routing alone,common,15152,10727,19038,4425,0.36039,0.292041
+ERA5-Land,4,Yorkshire Water,persistence P,common,22429,10038,19727,12391,0.337242,0.552454
+ERA5-Land,4,Yorkshire Water,rain rule R,common,0,0,29765,0,0,
+ERA5-Land,4,Yorkshire Water,P as a yes/no warning,common,41260,12499,17266,28761,0.419923,0.697067
+ERA5-Land,4,Yorkshire Water,R as a yes/no warning,common,73185,16072,13693,57113,0.539963,0.780392
+ERA5-Land,4,all nine,combined-v1,all,140241,97058,97503,43183,0.498856,0.30792
+ERA5-Land,4,all nine,combined-v1,common,135807,93916,95168,41891,0.496689,0.30846
+ERA5-Land,4,all nine,production,all,65255,44683,149878,20572,0.229661,0.315256
+ERA5-Land,4,all nine,production,common,60948,41897,147187,19051,0.221579,0.312578
+ERA5-Land,4,all nine,live status alone,all,147558,97683,96878,49875,0.502069,0.338003
+ERA5-Land,4,all nine,live status alone,common,142946,94516,94568,48430,0.499862,0.338799
+ERA5-Land,4,all nine,routing alone,all,110430,75234,119327,35196,0.386686,0.318718
+ERA5-Land,4,all nine,routing alone,common,104519,71505,117579,33014,0.378165,0.315866
+ERA5-Land,4,all nine,persistence P,common,146118,70313,118771,75805,0.371861,0.518793
+ERA5-Land,4,all nine,rain rule R,common,0,0,189084,0,0,
+ERA5-Land,4,all nine,P as a yes/no warning,common,263881,90500,98584,173381,0.478623,0.657042
+ERA5-Land,4,all nine,R as a yes/no warning,common,520844,109867,79217,410977,0.581049,0.78906
+forecast,4,Anglian Water,combined-v1,all,481,373,530,108,0.413068,0.224532
+forecast,4,Anglian Water,production,all,43,38,865,5,0.0420819,0.116279
+forecast,4,Anglian Water,live status alone,all,518,370,533,148,0.409745,0.285714
+forecast,4,Anglian Water,routing alone,all,277,195,708,82,0.215947,0.296029
+forecast,4,Anglian Water,"production, no lead map",all,94,77,826,17,0.0852713,0.180851
+forecast,4,Anglian Water,persistence P,common,812,428,368,384,0.537688,0.472906
+forecast,4,Anglian Water,rain rule R,common,0,0,796,0,0,
+forecast,4,Anglian Water,combined-v1,common,429,331,465,98,0.415829,0.228438
+forecast,4,Anglian Water,production,common,32,28,768,4,0.0351759,0.125
+forecast,4,Anglian Water,live status alone,common,466,329,467,137,0.413317,0.293991
+forecast,4,Anglian Water,routing alone,common,216,146,650,70,0.183417,0.324074
+forecast,4,Anglian Water,"production, no lead map",common,69,54,742,15,0.0678392,0.217391
+forecast,4,Severn Trent Water,combined-v1,all,4373,2933,6414,1440,0.313791,0.329293
+forecast,4,Severn Trent Water,production,all,593,487,8860,106,0.0521023,0.178752
+forecast,4,Severn Trent Water,live status alone,all,4321,2796,6551,1525,0.299133,0.352928
+forecast,4,Severn Trent Water,routing alone,all,2958,1883,7464,1075,0.201455,0.363421
+forecast,4,Severn Trent Water,"production, no lead map",all,1241,885,8462,356,0.0946828,0.286865
+forecast,4,Severn Trent Water,persistence P,common,7700,2550,6308,5150,0.287875,0.668831
+forecast,4,Severn Trent Water,rain rule R,common,0,0,8858,0,0,
+forecast,4,Severn Trent Water,combined-v1,common,4024,2721,6137,1303,0.30718,0.323807
+forecast,4,Severn Trent Water,production,common,472,415,8443,57,0.0468503,0.120763
+forecast,4,Severn Trent Water,live status alone,common,3970,2599,6259,1371,0.293407,0.34534
+forecast,4,Severn Trent Water,routing alone,common,2482,1634,7224,848,0.184466,0.34166
+forecast,4,Severn Trent Water,"production, no lead map",common,991,756,8102,235,0.0853466,0.237134
+forecast,4,South West Water,combined-v1,all,52,49,5,3,0.907407,0.0576923
+forecast,4,South West Water,production,all,26,25,29,1,0.462963,0.0384615
+forecast,4,South West Water,live status alone,all,52,48,6,4,0.888889,0.0769231
+forecast,4,South West Water,routing alone,all,44,40,14,4,0.740741,0.0909091
+forecast,4,South West Water,"production, no lead map",all,32,29,25,3,0.537037,0.09375
+forecast,4,South West Water,persistence P,common,50,42,7,8,0.857143,0.16
+forecast,4,South West Water,rain rule R,common,0,0,49,0,0,
+forecast,4,South West Water,combined-v1,common,48,45,4,3,0.918367,0.0625
+forecast,4,South West Water,production,common,23,22,27,1,0.44898,0.0434783
+forecast,4,South West Water,live status alone,common,49,45,4,4,0.918367,0.0816327
+forecast,4,South West Water,routing alone,common,41,37,12,4,0.755102,0.097561
+forecast,4,South West Water,"production, no lead map",common,29,26,23,3,0.530612,0.103448
+forecast,4,Thames Water,combined-v1,all,3101,2627,1377,474,0.656094,0.152854
+forecast,4,Thames Water,production,all,174,161,3843,13,0.0402098,0.0747126
+forecast,4,Thames Water,live status alone,all,3381,2711,1293,670,0.677073,0.198166
+forecast,4,Thames Water,routing alone,all,1568,1226,2778,342,0.306194,0.218112
+forecast,4,Thames Water,"production, no lead map",all,434,346,3658,88,0.0864136,0.202765
+forecast,4,Thames Water,persistence P,common,3843,2718,944,1125,0.742217,0.29274
+forecast,4,Thames Water,rain rule R,common,0,0,3662,0,0,
+forecast,4,Thames Water,combined-v1,common,2892,2451,1211,441,0.669306,0.15249
+forecast,4,Thames Water,production,common,98,86,3576,12,0.0234844,0.122449
+forecast,4,Thames Water,live status alone,common,3178,2543,1119,635,0.694429,0.199811
+forecast,4,Thames Water,routing alone,common,1312,1023,2639,289,0.279356,0.220274
+forecast,4,Thames Water,"production, no lead map",common,301,231,3431,70,0.0630803,0.232558
+forecast,4,United Utilities,combined-v1,all,1147,429,599,718,0.417315,0.625981
+forecast,4,United Utilities,production,all,811,326,702,485,0.317121,0.598027
+forecast,4,United Utilities,live status alone,all,1498,539,489,959,0.524319,0.640187
+forecast,4,United Utilities,routing alone,all,1292,472,556,820,0.459144,0.634675
+forecast,4,United Utilities,"production, no lead map",all,1292,472,556,820,0.459144,0.634675
+forecast,4,United Utilities,persistence P,common,578,160,818,418,0.163599,0.723183
+forecast,4,United Utilities,rain rule R,common,0,0,978,0,0,
+forecast,4,United Utilities,combined-v1,common,1086,400,578,686,0.408998,0.631676
+forecast,4,United Utilities,production,common,741,298,680,443,0.304703,0.597841
+forecast,4,United Utilities,live status alone,common,1404,505,473,899,0.51636,0.640313
+forecast,4,United Utilities,routing alone,common,1193,436,542,757,0.445808,0.634535
+forecast,4,United Utilities,"production, no lead map",common,1193,436,542,757,0.445808,0.634535
+forecast,4,Wessex Water,combined-v1,all,2722,1961,1973,761,0.498475,0.279574
+forecast,4,Wessex Water,production,all,492,387,3547,105,0.0983732,0.213415
+forecast,4,Wessex Water,live status alone,all,2825,2006,1928,819,0.509914,0.289912
+forecast,4,Wessex Water,routing alone,all,1879,1194,2740,685,0.303508,0.364556
+forecast,4,Wessex Water,"production, no lead map",all,937,658,3276,279,0.16726,0.297759
+forecast,4,Wessex Water,persistence P,common,3453,1993,1766,1460,0.530194,0.422821
+forecast,4,Wessex Water,rain rule R,common,0,0,3759,0,0,
+forecast,4,Wessex Water,combined-v1,common,2614,1884,1875,730,0.501197,0.279265
+forecast,4,Wessex Water,production,common,435,346,3413,89,0.0920458,0.204598
+forecast,4,Wessex Water,live status alone,common,2727,1935,1824,792,0.514765,0.290429
+forecast,4,Wessex Water,routing alone,common,1712,1087,2672,625,0.289173,0.36507
+forecast,4,Wessex Water,"production, no lead map",common,806,569,3190,237,0.15137,0.294045
+forecast,4,Yorkshire Water,combined-v1,all,2542,1413,1869,1129,0.43053,0.444138
+forecast,4,Yorkshire Water,production,all,570,310,2972,260,0.0944546,0.45614
+forecast,4,Yorkshire Water,live status alone,all,2450,1378,1904,1072,0.419866,0.437551
+forecast,4,Yorkshire Water,routing alone,all,1915,1019,2263,896,0.310481,0.467885
+forecast,4,Yorkshire Water,"production, no lead map",all,1044,526,2756,518,0.160268,0.496169
+forecast,4,Yorkshire Water,persistence P,common,2830,1289,1903,1541,0.403822,0.544523
+forecast,4,Yorkshire Water,rain rule R,common,0,0,3192,0,0,
+forecast,4,Yorkshire Water,combined-v1,common,2417,1379,1813,1038,0.432018,0.429458
+forecast,4,Yorkshire Water,production,common,533,302,2890,231,0.0946115,0.433396
+forecast,4,Yorkshire Water,live status alone,common,2323,1347,1845,976,0.421992,0.420146
+forecast,4,Yorkshire Water,routing alone,common,1766,984,2208,782,0.308271,0.442809
+forecast,4,Yorkshire Water,"production, no lead map",common,938,508,2684,430,0.159148,0.458422
+forecast,4,all nine,combined-v1,all,14418,9785,12767,4633,0.433886,0.321334
+forecast,4,all nine,production,all,2709,1734,20818,975,0.076889,0.359911
+forecast,4,all nine,live status alone,all,15045,9848,12704,5197,0.43668,0.34543
+forecast,4,all nine,routing alone,all,9933,6029,16523,3904,0.267338,0.393033
+forecast,4,all nine,"production, no lead map",all,5074,2993,19559,2081,0.132716,0.41013
+forecast,4,all nine,persistence P,common,19266,9180,12114,10086,0.431107,0.523513
+forecast,4,all nine,rain rule R,common,0,0,21294,0,0,
+forecast,4,all nine,combined-v1,common,13510,9211,12083,4299,0.432563,0.318209
+forecast,4,all nine,production,common,2334,1497,19797,837,0.0703015,0.358612
+forecast,4,all nine,live status alone,common,14117,9303,11991,4814,0.436884,0.341007
+forecast,4,all nine,routing alone,common,8722,5347,15947,3375,0.251104,0.386953
+forecast,4,all nine,"production, no lead map",common,4327,2580,18714,1747,0.121161,0.403744

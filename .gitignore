@@ -69,6 +69,9 @@ data/raw/*
 # The rivers and lakes the home page's search finds on the map (scripts/make_waters.py).
 !data/raw/waters.json
 !data/raw/outside_england.json
+# River and lake names where a click outside England is (OS Open Rivers, OGL v3.0, in os/; OpenStreetMap, ODbL, in osm/;
+# scripts/make_outside_names.py): read by the page's name for the point only.
+!data/raw/outside_names/
 # Checked joins of outfalls on streams OS Open Rivers does not draw (overflows.apply_joins).
 !data/raw/overflow_joins.csv
 # Overflow upgrades their company has announced, with the page that says so: read by the page's note only, never the model (build_site.attach_upgrades).
@@ -93,3 +96,6 @@ profiles/
 
 # The Workers' npm packages (ask/: the Anthropic SDK)
 node_modules/
+
+# Wrangler local cache (account id and name): never commit
+.wrangler/
