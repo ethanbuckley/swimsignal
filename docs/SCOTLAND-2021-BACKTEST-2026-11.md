@@ -94,6 +94,19 @@ bathing-season column. No event was counted.
 - **Uptime.** Neither edition has "No. of Days Data" before 2023, so 2017-2021 uptime is unknown and kept, as Gate A
   kept 2021 and 2022.
 
+*Amendment 3, 10 Nov 2026, after the loader's first run on the files, before any label join or forecast.* Read: row
+statuses and how measurement points link to current IDs. No spill count, duration or day was looked at.
+
+- **Summary order.** The text above puts the edition's own summary first. In the local edition that order maps old IDs
+  to current ones, because its own summary is current. An archived summary still lists works' points under the works'
+  STW id. With it first, 72 of the 2017-2021 edition's 244 points keep an old id, against the stated aim. So the
+  current summaries go first, then the edition's own (`ingest/sw_archive.py`). For the 2020-2024 edition the order
+  changes nothing (0 of 309 points).
+- **Linkage, counted.** Of the 126 overflows with a 2021 count in the committed covariates, 112 have a 2020 row with
+  a count ("events" or "no events") in the 2020-2024 edition. 18 of 2020's 138 points link to no current id: mostly
+  works whose point names changed form in 2021. No fuzzy name matching is added; those overflows have no 2020 count
+  and are not in G(2021). Of 2017's 10,034 rows, 7,159 (53 Asset IDs) stay apart under the 2017 rule above.
+
 **Covariates for 2021's rows.** `sw_covariates.covariates(events, yearly, first_year=F)` over the local events and
 the archived years together, where F is the first year the archived editions hold. This follows the rule's own
 words: FIRST_YEAR is "the first year the Scottish files hold". F is passed as an argument; the module's default
