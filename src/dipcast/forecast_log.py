@@ -607,7 +607,26 @@ def verify_live(as_of: date | None = None, store: LiveStore | None = None) -> di
                           for b, g in r.groupby(band, observed=True)]
     if len(fc) >= 200:
         out["reliability"] = reliability_table(y, fc["p_cal"].to_numpy()).round(4).to_dict("records")
+    # Two simple rules on the same rows, with intervals (docs/SIMPLE-REFERENCES-LIVE-2026-11.md). England only: a store
+    # has no poll log. A failure leaves the rest of the scores in place.
+    if store is None and poll_log is not None:
+        try:
+            out["simple_refs"] = _simple_refs(fc, hist, cov_all, poll_log, cutoff)
+        except Exception as e:  # noqa: BLE001 - beside the scores, never in their way
+            log.warning("simple reference scoring failed: %s", e)
     return _finish(out, as_of, fc, store=store)
+
+
+def _simple_refs(fc: pd.DataFrame, hist: pd.DataFrame, cov: pd.DataFrame, poll_log: pd.DataFrame, cutoff: date) -> dict:
+    from dipcast import simple_references as sr
+    first = sr.FIRST_DAY
+    with _LOCK:
+        con = _conn()
+        try:
+            rain = sr.rain_log_rows(con, first, cutoff, sr.epoch_ms(fc["issued_at"]))
+        finally:
+            con.close()
+    return sr.score(fc, rain, hist, cov, poll_log)
 
 
 def warning_counts(y, p, warn_at: float) -> dict:
