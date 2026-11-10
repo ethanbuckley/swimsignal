@@ -1,8 +1,6 @@
 # River-rises shadow logger
 
-**Status, 6 November 2026: built and tested, not deployed.** A new Worker's availability, permissions and cost are
-unresolved (creating its namespace was refused by the session's permission layer), and the research workflow says not
-to require one until they are. Deploying it is Ethan's decision: `docs/RIVER-RISES-C3-2026-11.md`, "Amendment".
+**Status, 10 November 2026: deployed.** Ethan approved it on 10 Nov. Namespace `SHADOW` id `8f4d8ebac45d41fdb6315764c1b4290c` (in `wrangler.toml`), Worker version `cb8845d0`, schedule `0 * * * *`. Any request to its URL returns 404, as designed. The first hourly record is checked with step 6 below.
 
 A Cloudflare Worker that records, once an hour, the river levels and the radar file list that a research
 candidate would have had at that hour. The candidate and its scoring are in

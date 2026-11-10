@@ -9,7 +9,7 @@ compatibility_date = "2026-11-01"
 # and paste the id it prints in place of the placeholder below (README, "Deploying").
 [[kv_namespaces]]
 binding = "SHADOW"
-id = "REPLACE_WITH_THE_SHADOW_NAMESPACE_ID"
+id = "8f4d8ebac45d41fdb6315764c1b4290c"
 
 [triggers]
 # Once an hour, on the hour (UTC). Each run makes at most 3 requests (src/index.js, MAX_REQUESTS).
