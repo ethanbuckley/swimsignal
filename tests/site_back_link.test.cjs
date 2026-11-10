@@ -20,7 +20,7 @@ function open({shown = 'saved', hash = '', many = false, fromMap = false} = {}) 
   const own = many ? [{id: 'l1', name: 'My spots', spots: []}, {id: 'l2', name: 'Weekend', spots: []}] : [{id: 'l1', name: 'Saved spots', spots: []}];
   const noop = () => {};
   const ctx = vm.createContext({
-    shown, current: null, DAY: null, location: {hash},
+    shown, current: null, DAY: null, location: {hash}, countAction: noop,   // the action counter: tests/site_action_counts.test.cjs
     history: {state: null, pushState(st, t, url) { pushed.push({st, url}); location.hash = ''; }, replaceState: noop},
     readShared: lists.readShared, planDates: () => ['2026-10-26'], manyLists: () => many, listNow: () => own[many ? 1 : 0],
     keepPlace: noop, mapMode: () => fromMap, setMapMode: noop, map: {getCenter: () => ({lat: 0, lng: 0}), getZoom: () => 9, fitBounds: noop},
