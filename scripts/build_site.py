@@ -2833,7 +2833,7 @@ def robots(root: str) -> str:
 
 
 def sitemap(root: str, spot_ids: list[str], day: str, extra: list[str] | None = None, overflow_ids: list[str] | None = None) -> str:
-    urls = [root, f"{root}plan/", f"{root}about.html", f"{root}verification.html", f"{root}methods.html", f"{root}testing.html", f"{root}coverage.html", f"{root}data.html", f"{root}organisers.html", f"{root}sites.html", f"{root}record.html", f"{root}demo.html", f"{root}clubs.html", f"{root}quality.html", f"{root}spots.html", f"{root}research.html", f"{root}lakes.html", f"{root}lake-temperatures.html", f"{root}durations.html", f"{root}samples.html", f"{root}waterhead.html", f"{root}research-catalogue.html", f"{root}sampling-planner.html", f"{root}partners.html", f"{root}models.html"] +[f"{root}{x}" for x in extra or []] + [f"{root}spot/{i}/" for i in spot_ids] + [f"{root}spot/{i}/profile/" for i in spot_ids] + [f"{root}overflow/{i}/" for i in overflow_ids or []]
+    urls = [root, f"{root}plan/", f"{root}about.html", f"{root}verification.html", f"{root}methods.html", f"{root}testing.html", f"{root}coverage.html", f"{root}data.html", f"{root}organisers.html", f"{root}sites.html", f"{root}record.html", f"{root}demo.html", f"{root}clubs.html", f"{root}quality.html", f"{root}spots.html", f"{root}research.html", f"{root}lakes.html", f"{root}lake-temperatures.html", f"{root}durations.html", f"{root}samples.html", f"{root}waterhead.html", f"{root}research-catalogue.html", f"{root}sampling-planner.html", f"{root}partners.html", f"{root}models.html", f"{root}data-feed.html"] +[f"{root}{x}" for x in extra or []] + [f"{root}spot/{i}/" for i in spot_ids] + [f"{root}spot/{i}/profile/" for i in spot_ids] + [f"{root}overflow/{i}/" for i in overflow_ids or []]
     body = "".join(f"<url><loc>{escape(u)}</loc><lastmod>{day}</lastmod></url>" for u in urls)
     return f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{body}</urlset>\n'
 
@@ -3175,6 +3175,7 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     write_lake_temperatures(site)   # data/research/lake-temperatures/, before the data page lists data/
     write_rise_history(site)   # data/research/river_rise_history.json, before the data page lists data/research/
     write_data_page(site, token, root)   # lists what is in data/, so build() writes the data files first
+    write_feed_page(site, token, root)   # one record from each file it shows: after them, and after the profiles' CSVs
     write_quality_page(site, overflows, generated, token, root=root)
     write_embed(site)
     write_organisers(site, token, root)
@@ -3413,6 +3414,125 @@ def write_data_page(site: Path, token: str | None = None, root: str | None = Non
                  "Add a row and a section for each to src/dipcast/pages/data.html")
     (site / "data.html").write_text(with_counter(with_share_meta(page, "data.html", root or site_url()), token))
     return extra
+
+
+# The data feed, data-feed.html: one page for an app, a charity or a group that already reaches swimmers, linked from
+# For organisations. It says what the files hold, how often they change, the sources' licences, the credit to show
+# and what the feed is not, with no prices. Each example is one record from this build's own file (feed_examples),
+# so it cannot drift from the fields; the live warning figures and the credit are this build's too.
+REWRITES += [('href="/data-feed"', 'href="data-feed.html"')]   # For organisations links it
+FEED_SPOT = "bw-uke4100-08901"   # Wharfe at Cromwheel, Ilkley, the clubs page's example spot: the examples' spot where it is listed
+FEED_EXAMPLE = re.compile(r'(<pre class="example" data-example="([a-z-]+)">).*?(</pre>)', re.DOTALL)
+FEED_CREDIT = re.compile(r'(<blockquote id="feed-credit">).*?(</blockquote>)', re.DOTALL)
+
+
+def _keep(d: dict, keys: tuple[str, ...]) -> dict:
+    """d with only these keys, in this order, where it has them."""
+    return {k: d[k] for k in keys if k in d}
+
+
+def _pretty(x, pad: str = "") -> str:
+    """JSON indented by two spaces, with a list of plain values on one line: an example's 19 dates take one line, not 19."""
+    one = lambda v: json.dumps(v, ensure_ascii=False, default=str)
+    if isinstance(x, dict) and x:
+        return "{\n" + ",\n".join(f"{pad}  {one(k)}: {_pretty(v, pad + '  ')}" for k, v in x.items()) + f"\n{pad}}}"
+    if isinstance(x, list) and any(isinstance(v, (dict, list)) for v in x):
+        return "[\n" + ",\n".join(f"{pad}  {_pretty(v, pad + '  ')}" for v in x) + f"\n{pad}]"
+    return json.dumps(x, ensure_ascii=False, default=str, separators=(", ", ": "))
+
+
+def _csv_head(path: Path) -> str:
+    """A CSV's header and first row, without its # comment lines and its byte-order mark."""
+    rows = [x for x in path.read_text(encoding="utf-8-sig").splitlines() if x and not x.startswith("#")]
+    return "\n".join(rows[:2])
+
+
+def feed_examples(data: Path) -> dict[str, str]:
+    """One record from each file data-feed.html shows, as text, from a build's data/ folder (and the spot's overflow
+    history CSV beside it, ../spot/<id>/profile/), by the name in the page's data-example. The spot is FEED_SPOT where
+    it is listed, else the first spot with an overflow upstream; lists are cut to their first entry and some fields are
+    left out, as the page says. A file missing or not as expected gives no example, and the page keeps its words."""
+    out: dict[str, str] = {}
+    try:
+        doc = json.loads((data / "spots.json").read_text())
+        spots = doc["spots"]
+        s = next((x for x in spots if x.get("id") == FEED_SPOT), None) or next(x for x in spots if x.get("contributors"))
+    except (OSError, ValueError, KeyError, TypeError, StopIteration):
+        return out
+    sid = s["id"]
+    dump = _pretty
+
+    def put(name: str, make) -> None:
+        try:
+            out[name] = make()
+        except (OSError, ValueError, KeyError, IndexError, TypeError, AttributeError):
+            pass
+
+    first_upstream = lambda: json.loads((data / "upstream" / f"{sid}.json").read_text())["overflows"][0]
+    put("spots", lambda: dump({**_keep(doc, ("generated_at", "n")), "spots": [{
+        **_keep(s, ("id", "name", "kind", "river", "source", "lat", "lon")),
+        "now": _keep(s["now"], ("risk", "label", "discharging_upstream", "recent_upstream", "monitored_upstream", "no_feed_upstream")),
+        "days": [_keep(s["days"][0], ("date", "risk", "label", "expected_spilling_overflows", "p_ecoli_gt900",
+                                      "in_validated_season", "rain_48h_mm", "data_status"))],
+        "upstream_summary": _keep(s["upstream_summary"], ("overflows", "with_live_feed", "without_live_feed", "companies")),
+        "contributors": [_keep(s["contributors"][0], ("site_id", "company", "site_name", "distance_km", "travel_h", "weight",
+                                                      "status", "data_state", "feed_updated_at", "p_spill_days"))]}]}))
+    put("alerts", lambda: dump((lambda a: {"generated_at": a["generated_at"],
+                                           "spots": {sid: {k: v for k, v in a["spots"][sid].items() if k != "days"}}})(
+        json.loads((data / "alerts.json").read_text()))))
+    put("upstream", lambda: dump({"id": sid, "generated_at": doc["generated_at"], "overflows": [first_upstream()]}))
+
+    def overflow_feature() -> str:
+        features = json.loads((data / "overflows.geojson").read_text())["features"]
+        try:
+            want = first_upstream()["site_id"]
+        except (OSError, ValueError, KeyError, IndexError):
+            want = None
+        f = next((x for x in features if x["properties"].get("site_id") == want), features[0])
+        return dump({"type": "FeatureCollection", "features": [f]})
+    put("overflows", overflow_feature)
+
+    def anypoint() -> str:
+        ids = json.loads((data / "anypoint" / "overflow_ids.json").read_text())
+        days = json.loads((data / "anypoint" / "overflow_days.json").read_text())
+        try:
+            i = ids["ids"].index(first_upstream()["site_id"])
+        except (OSError, ValueError, KeyError, IndexError):
+            i = 0
+        return dump({"overflow_ids.json": {"ids_version": ids.get("ids_version"), **{k: ids[k][i] for k in ("ids", "name", "lat", "lon")}},
+                     "overflow_days.json": {**_keep(days, ("generated_at", "ids", "days", "today", "scale")),
+                                            **{k: days[k][i] for k in ("p", "status", "ended_h") if k in days}}})
+    put("anypoint", anypoint)
+    put("history", lambda: _csv_head(data.parent / "spot" / sid / "profile" / "monitored-storm-overflows.csv"))
+    put("seasonal", lambda: dump({"id": sid, "seasonal": s["seasonal"]}))
+    put("durations", lambda: (lambda d: dump({**_keep(d, ("id", "name", "period")), "overflows": d["overflows"][:1]}))(
+        json.loads((data / "research" / "spill_durations" / f"{sid}.json").read_text())))
+    put("spot-scores", lambda: (lambda d: dump({**_keep(d, ("generated_at", "warn_at", "unit", "first_day", "last_day")),
+                                                 "spots": {sid: d["spots"][sid]}}))(json.loads((data / "spot_scores.json").read_text())))
+    put("scored-csv", lambda: _csv_head(data / "verification_live.csv"))
+    put("warning-table", lambda: dump({"live": {"warning_table": _keep(
+        json.loads((data / "verification.json").read_text())["live"]["warning_table"],
+        ("warn_at", "level", "unit", "n", "hits", "misses", "false_alarms", "hit_rate", "warnings_true", "base_rate",
+         "n_days", "first_day", "last_day"))}}))
+    return out
+
+
+def write_feed_page(site: Path, token: str | None = None, root: str | None = None) -> list[str]:
+    """data-feed.html, from this build's files: write after everything it shows (data/, the overflow history CSVs).
+    Returns the examples it could not fill, which are announced: the page then keeps its own words there."""
+    root = root or site_url()
+    page = with_warning_words((STATIC / "data-feed.html").read_text(), site / "data" / "verification.json")
+    for a, b in REWRITES:
+        page = page.replace(a, b)
+    examples = feed_examples(site / "data")
+    missing = [m[2] for m in FEED_EXAMPLE.finditer(page) if m[2] not in examples]
+    page = FEED_EXAMPLE.sub(lambda m: m[1] + escape(examples[m[2]], quote=False) + m[3] if m[2] in examples else m[0], page)
+    c = data_credits(root)
+    page = FEED_CREDIT.sub(lambda m: m[1] + escape(f'{c["attribution"]} {c["modified"]}', quote=False) + m[2], page, count=1)
+    if missing:
+        announce(f"data-feed.html has no example from this build for {', '.join(missing)}: it keeps its placeholder words there")
+    (site / "data-feed.html").write_text(with_counter(with_share_meta(page, "data-feed.html", root), token))
+    return missing
 
 
 # The embed, embed.html?spot=<id>: one spot's card for a club's or a council's page (embed.js says

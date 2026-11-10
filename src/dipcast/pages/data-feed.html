@@ -1,0 +1,145 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Data feed · SwimSignal</title>
+<meta name="description" content="For apps, charities and groups that already reach swimmers: what SwimSignal's data feed holds, how often it changes, the licences of its sources, the credit to show, and what it is not.">
+<meta name="theme-color" content="#3d5b5d">
+<link rel="icon" href="/static/icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png">
+<link rel="stylesheet" href="/static/page.css">
+<link rel="preload" href="/static/fonts/SourceSans3-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/static/fonts/SourceSerif4-latin.woff2" as="font" type="font/woff2" crossorigin></head><body><a class="skip" href="#main">Skip to content</a>
+<header class="top"><a class="brand" href="/"><svg viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" fill="#0f5a61"/><path d="M430-20C330 110 470 230 300 290S110 380 190 540" fill="none" stroke="#5CC2B5" stroke-width="70" stroke-linecap="round"/><circle cx="318" cy="138" r="38" fill="#F08A4B"/><circle cx="165" cy="358" r="46" fill="none" stroke="#fff" stroke-width="22"/></svg>SwimSignal</a>
+<nav aria-label="Site"><a href="/plan/">Plan a swim</a><a href="/saved/">Saved</a><a href="/verification">Accuracy</a><a href="/about">About</a><a class="desk-only" href="/clubs">For organisations</a></nav></header>
+<main class="doc" id="main">
+<!-- The data feed, for apps, charities and groups that already reach swimmers (step 7 of the 90-day list in the strategy
+     review, kept in the private repository). Written 10 November 2026 and checked against the code, the published files
+     and the licences that day. build_site.write_feed_page fills in, from this build's own files:
+       - each <pre class="example" data-example="…">, one record from the file it names (feed_examples);
+       - #warn-figures, the live warning figures, as on the clubs page (with_warning_words);
+       - #feed-credit, the credit every data file carries (data_credits).
+     The words inside them here are the fallback, from the build of 9 November 2026.
+     Sources opened on 10 November 2026: open-meteo.com/en/terms and /en/pricing (the free API is non-commercial; "A
+     subscription grants a commercial use licence"; "Historical, climate, ensemble, and satellite radiation APIs require
+     the Professional API Plan or higher"); environment.data.gov.uk/flood-monitoring/doc/reference (OGL, its required
+     sentence, and "should not be relied upon for safety critical applications"). The build gaps: site.yml's comment
+     (7 October to 6 November 2026) and the 100 latest successful site.yml runs read with gh api on 10 November 2026.
+     No prices on this page: a licence is agreed by email. -->
+<h1>The data feed</h1>
+<p class="lead">For apps, charities and groups that already reach swimmers. SwimSignal's forecasts, the storm overflows behind them, their spill history and the forecast's scored record are files you can read. This page says what is in them, how often they change, what you may reuse and the credit to show.</p>
+
+<aside class="summary" aria-labelledby="feed-short">
+<h2 id="feed-short">In short</h2>
+<ul>
+<li>Every listed river and lake spot in England: its pollution risk level for five days, the monitored storm overflows upstream with their live status, their spill history and how the forecast has done there.</li>
+<li>Any point on a river or lake in England, worked out from the click-anywhere files by an open-source script.</li>
+<li>Rebuilt hours apart, not every few minutes: scheduled builds have been a median 4.6 to 5.8 hours apart.</li>
+<li>Most sources allow commercial reuse with a credit. The rain comes from Open-Meteo's free plan, which is for non-commercial use only: a paid feed needs SwimSignal on an Open-Meteo subscription first.</li>
+<li>A forecast, not a water test. Not a toxin measurement. Not a swimming clearance.</li>
+<li>No prices here. To talk about a licence, email <a href="mailto:hello@swimsignal.co.uk">hello@swimsignal.co.uk</a> or start from <a href="/clubs">For organisations</a>.</li>
+</ul>
+</aside>
+
+<h2 id="what">What you get</h2>
+<p>The feed is the set of files the site itself is built from. They are public today, in the site's <code>data/</code> folder, served by GitHub Pages. Another website can read them: they are sent with <code>Access-Control-Allow-Origin: *</code>. The <a href="data.html">data files page</a> lists every field. Below, each group of files with one record from it, taken from this build. In the examples, lists are cut to their first entry and some fields are left out.</p>
+
+<h3 id="spots">Each spot's forecast</h3>
+<p><a href="data.html#spots-json"><code>spots.json</code></a> holds every listed spot. For each: where it is, and its five days, each with its sewage spill risk (a 0–100 score for sewage from upstream reaching the spot, stored as 0 to 1; it is a score, not a probability) and its pollution risk level. Where a spot has one, a day also has the E. coli estimate: the chance a sample would show over 900 E. coli per 100 ml. It has been tested from May to September only, which <code>in_validated_season</code> says. <code>now</code> says how many overflows upstream are discharging at the last poll, how many report live, and how many cannot be seen. <a href="data.html#spots-lite-json"><code>spots-lite.json</code></a> is the same without each spot's overflows, which are in <code>spot/&lt;id&gt;.json</code>.</p>
+<details class="fold"><summary>Example: spots.json</summary>
+<pre class="example" data-example="spots">Filled in from this build's spots.json.</pre>
+</details>
+<p><a href="data.html#alerts-json"><code>alerts.json</code></a> is the smallest file: each spot's level, headline and what to do, worded as the site words them, and, where the level changes from day to day, each day's level, as places in its <code>words</code> list (left out of the example). The same are in <a href="data.html#feeds">Atom feeds</a>, for every spot, each area and each spot on its own.</p>
+<details class="fold"><summary>Example: alerts.json</summary>
+<pre class="example" data-example="alerts">Filled in from this build's alerts.json.</pre>
+</details>
+
+<h3 id="upstream">The overflows upstream, with live status</h3>
+<p><a href="data.html#upstream"><code>upstream/&lt;id&gt;.json</code></a> lists every monitored storm overflow within 60 km upstream of a spot along the rivers: the company's name and id for it, how far upstream and how long its water takes to arrive, its model weight (a modelled relative contribution, 0 to 1; not a measured concentration and not a chance of contamination), its long-term average spills a year, and what its company's live feed said at the build's poll. <a href="data.html#overflows-geojson"><code>overflows.geojson</code></a> has every overflow on the map, with the same status.</p>
+<details class="fold"><summary>Example: upstream/&lt;id&gt;.json</summary>
+<pre class="example" data-example="upstream">Filled in from this build's upstream/ files.</pre>
+</details>
+<details class="fold"><summary>Example: overflows.geojson</summary>
+<pre class="example" data-example="overflows">Filled in from this build's overflows.geojson.</pre>
+</details>
+<p>A status is 1 discharging, 0 not discharging, −1 monitor offline, −2 no live feed (all of Dŵr Cymru Welsh Water's overflows: SwimSignal reuses none of its own data, only the Environment Agency's annual returns) or −3 unknown. <code>data_state</code> says whether it is current: a status from a feed that has not updated within 6 hours is <code>stale</code>.</p>
+
+<h3 id="any-point">Any point on a river or lake</h3>
+<p>On the map, a tap anywhere on a river or lake in England gets five days too. There is no file for each point, and no hosted service to ask. The page works out the point's forecast in the browser, from the files in <a href="data.html#anypoint"><code>anypoint/</code></a>: the river network, the overflows that can reach each stretch, and each overflow's chance of spilling on each day. The script that does it, <a href="https://github.com/ethanbuckley/swimsignal/blob/main/src/dipcast/site/anypoint.js">anypoint.js</a>, is open source under the MIT licence, so an app could run it too; it has not been packaged for that. A point has no E. coli estimate, no river gauge and no bathing-water sample. Wales, Scotland and the island of Ireland are not covered.</p>
+<p>The files are columns: one position for each overflow, in the order of <code>overflow_ids.json</code>. The example puts together one overflow's values from two of them.</p>
+<details class="fold"><summary>Example: anypoint/</summary>
+<pre class="example" data-example="anypoint">Filled in from this build's anypoint/ files.</pre>
+</details>
+
+<h3 id="history">Spill history</h3>
+<p>Each spot's overflow history page has a CSV beside it, <code>spot/&lt;id&gt;/profile/monitored-storm-overflows.csv</code>: every monitored overflow upstream, with its spills, spill hours and monitor uptime in each year from 2021 to 2025, from the Environment Agency's annual returns. In <code>spots.json</code>, <code>seasonal</code> counts, month by month, the days with a spill recorded at the spot's overflows. <a href="data.html#research"><code>research/spill_durations/&lt;id&gt;.json</code></a> gives how long their spills lasted in 2024 and 2025. These are records of the past, not forecasts.</p>
+<details class="fold"><summary>Example: monitored-storm-overflows.csv</summary>
+<pre class="example" data-example="history">Filled in from this build's overflow history files.</pre>
+</details>
+<details class="fold"><summary>Example: seasonal, in spots.json</summary>
+<pre class="example" data-example="seasonal">Filled in from this build's spots.json.</pre>
+</details>
+<details class="fold"><summary>Example: research/spill_durations/&lt;id&gt;.json</summary>
+<pre class="example" data-example="durations">Filled in from this build's spill durations.</pre>
+</details>
+
+<h3 id="record">The scored record</h3>
+<p>Every forecast the site issues is logged and later scored against what the overflows did. <a href="data.html#verification-live-csv"><code>verification_live.csv</code></a> has one row for each scored overflow, day and lead, so anyone can check the scores. <a href="data.html#verification-spots-live-csv"><code>verification_spots_live.csv</code></a> does the same for each spot's level. <a href="data.html#spot-scores-json"><code>spot_scores.json</code></a> counts the hits, misses and false alarms at each spot's overflows. <a href="data.html#verification-json"><code>verification.json</code></a> holds everything on the <a href="/verification">Accuracy page</a>.</p>
+<details class="fold"><summary>Example: spot_scores.json</summary>
+<pre class="example" data-example="spot-scores">Filled in from this build's spot_scores.json.</pre>
+</details>
+<details class="fold"><summary>Example: verification_live.csv</summary>
+<pre class="example" data-example="scored-csv">Filled in from this build's verification_live.csv.</pre>
+</details>
+<details class="fold"><summary>Example: the warning table, in verification.json</summary>
+<pre class="example" data-example="warning-table">Filled in from this build's verification.json.</pre>
+</details>
+<p>Today the fields change when the site does, without notice. The <a href="https://github.com/ethanbuckley/swimsignal/blob/main/scripts/build_site.py">build script</a> writes them.</p>
+
+<h2 id="cadence">How often it changes</h2>
+<ul>
+<li>The whole forecast is rebuilt by a scheduled job. It asks to run every 30 minutes, but GitHub runs scheduled jobs when it has room. From 7 October to 6 November 2026 the scheduled builds were a median 4.6 hours apart; 95 in 100 gaps were under 7.7 hours, and the longest was 10.1 hours. From 31 October to 9 November 2026: a median 5.8 hours, at most 10.6 hours. A change to the site's code builds it again in between.</li>
+<li>A build took a median 14 minutes from 1 to 6 November 2026. <code>generated_at</code> in each file says when its forecast was issued.</li>
+<li>The live status is read once, at the build. So "not discharging" can be hours old, and a spill that started after the poll is not in the files. Each overflow's <code>feed_updated_at</code> says when its company's feed last updated.</li>
+<li>The annual returns behind the spill history come once a year. The Environment Agency publishes bathing-water samples days after they are taken.</li>
+<li>Each build overwrites the files: the public folder keeps only the latest forecast. Browsers may keep a copy for 10 minutes.</li>
+</ul>
+
+<h2 id="licences">Licences</h2>
+<p>The forecasts, levels and scores are SwimSignal's own. Today the <a href="/terms">terms of use</a> let anyone reuse them for non-commercial purposes with a credit; any other use, an app with subscriptions or adverts included, is by agreement. The data they are made from keeps its own licence, and a licence from SwimSignal cannot widen it. The sources, and what each allows:</p>
+<dl class="fields" id="feed-licences">
+<dt>Storm overflow status from nine water companies, via the National Storm Overflow Hub; overflow ids from the Stream ID lookup</dt><dd><b>Licence:</b> <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. <b>In a paid product:</b> Allowed, with the credit, the licence's link and a note that the data was changed.</dd>
+<dt>Environment Agency data: annual returns, start and stop records, bathing-water ratings and samples, river levels and flood alerts, water temperatures, water bodies</dt><dd><b>Licence:</b> <a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/">OGL v3.0</a>. <b>In a paid product:</b> Allowed, with the credit. The flood and river level data needs its own sentence, which is in the credit below. The Environment Agency says its real-time data "should not be relied upon for safety critical applications".</dd>
+<dt>Ordnance Survey OS Open Rivers and OS Open Names</dt><dd><b>Licence:</b> OGL v3.0. <b>In a paid product:</b> Allowed, with "Contains OS data © Crown copyright and database right".</dd>
+<dt>Rainfall, weather and soil moisture, from Open-Meteo</dt><dd><b>Licence:</b> Data: CC BY 4.0; the Met Office's forecasts for England within it: <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>. <b>In a paid product:</b> Not on Open-Meteo's free plan, which is for non-commercial use only. A paid feed needs SwimSignal on an Open-Meteo subscription, which "grants a commercial use licence". The build also asks Open-Meteo's ensemble service, which needs its Professional plan or higher. The rainfall figures stay under CC BY-SA 4.0: if you republish them, they keep that licence.</dd>
+<dt>Swim spots chosen from OpenStreetMap (those with <code>"source": "openstreetmap"</code>)</dt><dd><b>Licence:</b> <a href="https://opendatacommons.org/licenses/odbl/1-0/">ODbL 1.0</a>. <b>In a paid product:</b> Allowed, with "© OpenStreetMap contributors". A database you make from them must be offered under the ODbL too.</dd>
+<dt>Lake residence times, HydroLAKES v1.0</dt><dd><b>Licence:</b> CC BY 4.0. <b>In a paid product:</b> Allowed, with the credit.</dd>
+<dt>ERA5-Land, which the models were trained on; Met Office HadUK-Grid, which the water temperature estimate was trained on</dt><dd><b>Licence:</b> Copernicus licence; OGL v3.0. <b>In a paid product:</b> Not in the files: only models trained on them are. Their notices are in the credit.</dd>
+<dt>Scottish Water's overflow status and history (Scotland trial)</dt><dd><b>Licence:</b> History: OGL v3.0. Live status: no named licence; Scottish Water's page says "an open license for reuse". <b>In a paid product:</b> Not confirmed for commercial reuse. Ask before reusing the Scotland trial's data.</dd>
+</dl>
+<p>Not in any file, and not part of any feed: the Environment Agency's register of consented discharges, whose licence allows internal use only and forbids publishing it.</p>
+<p>The files on the bathing waters of Wales, Scotland and the island of Ireland, the coast directory and the research files are official or research records beside the forecast. Each keeps its own licence, given on the <a href="data.html">data files page</a>.</p>
+<p class="small muted">Read from each licence and provider's terms on 10 November 2026; not reviewed by a lawyer. That ShareAlike in CC BY-SA 4.0 reaches only the rainfall figures, not the forecasts made from them, is SwimSignal's reading of the licence, not checked by a lawyer.</p>
+
+<h2 id="credit">The credit to show</h2>
+<p>Wherever you show anything from the feed, show this credit. Every JSON file carries it in its <code>credits</code> field, and each CSV in its comment lines or a <code>credits</code> column. The <a href="/terms#data">full credits</a> give each source's notice.</p>
+<blockquote id="feed-credit">Contains Scottish Water data: overflow event history (OGL v3.0) and live overflow status from Scottish Water's near-real-time API. Storm overflow status from Anglian Water Services, Northumbrian Water, Severn Trent Water, South West Water, Southern Water (© 2026), Thames Water, United Utilities, Wessex Water (© 2024) and Yorkshire Water, via the National Storm Overflow Hub, CC BY 4.0; overflow identifiers matched with the Stream ID lookup, via Stream, CC BY 4.0. Environment Agency data © Environment Agency copyright and/or database right, OGL v3.0; river levels: this uses Environment Agency flood and river level data from the real-time data API (Beta). Contains OS data © Crown copyright and database right 2026. Weather data by Open-Meteo.com, CC BY 4.0, from Met Office forecasts © Crown copyright, CC BY-SA 4.0: rainfall figures stay under CC BY-SA 4.0. Soil moisture from ECMWF's IFS forecasts, served by Open-Meteo, CC BY 4.0. The river water-temperature estimate was trained on Met Office HadUK-Grid air temperature, OGL v3.0. Lake residence times from HydroLAKES v1.0 (Messager et al. 2016, Nature Communications 7: 13603), CC BY 4.0. The models were trained on ERA5-Land reanalysis (doi:10.24381/cds.e2161bac): contains modified Copernicus Climate Change Service information 2026; neither the European Commission nor ECMWF is responsible for any use that may be made of the Copernicus information or data it contains. Combined, filtered and modelled by SwimSignal. The forecasts, levels and scores are SwimSignal's own estimates, not the data providers'. None of the providers endorses SwimSignal.</blockquote>
+<p>Also:</p>
+<ul>
+<li>Name SwimSignal as the source of the forecasts, levels and scores, with a link to <a href="/">the site</a> or the spot's page.</li>
+<li>Where you show a spot from OpenStreetMap, say "Location © OpenStreetMap contributors".</li>
+<li>Do not suggest that SwimSignal or any provider endorses your product.</li>
+</ul>
+
+<h2 id="not">What it is not</h2>
+<ul>
+<li>Not a water test. Nothing in the feed was measured in the water at the spot, apart from the Environment Agency's and partners' lab samples, which are dated and labelled.</li>
+<li>Not a toxin measurement. The algae check is the Environment Agency's sampler's observation on a date; it does not tell harmful algae from harmless kinds.</li>
+<li>Not a swimming clearance. A low level means only that nothing the forecast looks at flags the day. It covers monitored storm overflows only: not treated sewage from sewage works, farm runoff, wildlife, other bathers or a pollution incident.</li>
+<li>Not complete. Some overflows have no live monitor, a company's feed can be late or down, and rain forecasts are wrong more often the further ahead they look.</li>
+</ul>
+<p>How good it is today: <span id="warn-figures">It misses most spills. Its live scores cover 33 days between 29 September and 8 November 2026. At the high risk line, it warned of about one in three spills. About one in two of its warnings were followed by a spill. 990 of the 2,990 warnings that came true were at United Utilities, the one company the spill model learned from. At the other companies, so far, it warned of about three in ten spills.</span> The <a href="/verification">Accuracy page</a> has the full scores, updated with every build.</p>
+
+<h2 id="talk">Talk to us</h2>
+<p>There is no price list. Email <a href="mailto:hello@swimsignal.co.uk">hello@swimsignal.co.uk</a> with what you would show and to whom, or start from <a href="/clubs">For organisations</a>. SwimSignal is run by one person, Ethan Buckley.</p>
+</main>
+<footer class="site-foot"><div class="rule"><p>SwimSignal is a free, non-commercial pollution risk forecast for river and lake swim spots in England, run by Ethan Buckley. A forecast, not a water test: check the signs at the water before you swim.</p>
+<p><a href="/terms">Terms of use</a> · <a href="/privacy">Privacy</a> · <a href="/feedback">Feedback</a> · <a href="/methods">Method</a> · <a href="/research">Research and data</a> · <a href="/terms#data">Data credits</a> · <a href="https://github.com/ethanbuckley/swimsignal">Source code</a> (MIT)</p></div></footer>
+</body></html>

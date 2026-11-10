@@ -2186,3 +2186,21 @@ from sewage spills" (`levels.js`, `HEAD_SCOPE`). The review overstated the drift
 
 Left for after PR #645 lands, since it edits the same line: the organisations page's opening says "forecasts the
 risk of sewage pollution at a spot"; it should say the spot's pollution risk forecast.
+
+## The data feed page (10 November 2026)
+
+`data-feed.html`, linked from For organisations, is for apps, charities and networks that already reach swimmers
+(build step 7 of the strategy review). It is a prose page like the data files page, and leans on it for the fields:
+
+- **What a licensee gets** in five groups (each spot's forecast, the overflows upstream with live status, any point,
+  spill history, the scored record). Each file has one record from this build, folded under "Example: <file>":
+  `build_site.feed_examples` takes the clubs page's spot (Wharfe at Cromwheel) from the build's own files, cuts lists
+  to their first entry and leaves some fields out, so an example cannot drift from the fields. A record is a
+  `pre.example`: whole lines, scrolled sideways inside itself on a phone, at the meta size.
+- **The cadence as measured**, never "every 30 minutes": that is only what the schedule asks for.
+- **The licences** as a ruled list (`dl.fields`), source over licence and "In a paid product", not a three-column
+  table, which squeezed the words on a phone. Open-Meteo's free plan is non-commercial; the consents register is in
+  no file; Scottish Water's live status names no licence.
+- **The credit** is `data_credits`' own words, filled in by the build. The live warning figures are the clubs
+  page's (`with_warning_words`).
+- **No prices.** The way in is hello@swimsignal.co.uk or For organisations.
