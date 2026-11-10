@@ -1,8 +1,10 @@
 # Action counter
 
-**Status, 10 November 2026: built and tested; namespace created (id in `wrangler.toml`); not deployed.** The deploy
-was refused by the session's permission layer, so it is Ethan's step: "Deploying", from step 3. Until then, and until
-`DIPCAST_ACTIONS_URL` is set, the site sends nothing and its pages are unchanged.
+**Status, 10 November 2026: deployed** (version d7d05436), at `https://swimsignal-actions.swimsignal-push.workers.dev`.
+One test event was counted, read back from KV and deleted; the namespace was then empty. **`READ_TOKEN` is not set**:
+setting it was refused by the session's permission layer, so GET answers 404 until Ethan runs step 3 below. A token
+was generated and kept outside this repository for that. The site sends nothing until `DIPCAST_ACTIONS_URL` is set
+(step 6).
 
 A Cloudflare Worker that counts five things done on swimsignal.co.uk, as daily totals. It answers one question that
 Cloudflare Web Analytics (sampled page views) cannot: are people using the site, and is that rising week on week. It
@@ -97,10 +99,10 @@ node --test test/*.test.js
 
 1. `cd actions`
 2. Done on 10 Nov 2026: `npx wrangler kv namespace create COUNTS`, its id is in `wrangler.toml`.
-3. `npx wrangler secret put READ_TOKEN`, pasting a long random string (for example from `openssl rand -hex 24`).
+3. (Ethan) `npx wrangler secret put READ_TOKEN`, pasting a long random string (for example from `openssl rand -hex 24`).
    Keep it outside this repository.
-4. `npx wrangler deploy`. It prints the address, `https://swimsignal-actions.swimsignal-push.workers.dev`.
-5. Check it: post one event and read it back.
+4. Done on 10 Nov 2026: `npx wrangler deploy`. It prints the address, `https://swimsignal-actions.swimsignal-push.workers.dev`.
+5. Done on 10 Nov 2026 (read from KV, since GET had no token yet). Check it: post one event and read it back.
    ```sh
    curl -s -X POST -H "Origin: https://swimsignal.co.uk" --data '{"event":"plan"}' https://swimsignal-actions.swimsignal-push.workers.dev/
    ```
