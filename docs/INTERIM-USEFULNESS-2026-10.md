@@ -372,6 +372,10 @@ Row counts in brackets are the rows each chance was fitted on.
 Not filed. Ethan decides whether to add it before 1 May 2027. The wording below would go under §17
 as written, with its date set to the day it is filed.
 
+**Filed, 10 November 2026,** in a revised form as [amendment 4](PREREGISTRATION-2027-AMENDMENT-4.md), whose last
+section lists the differences. The draft below is kept as written. The same rules are on the Accuracy page from that
+date ([SIMPLE-REFERENCES-LIVE-2026-11.md](SIMPLE-REFERENCES-LIVE-2026-11.md)).
+
 > ### Amendment 2, [date filed]: persistence and a rain rule as secondary references
 >
 > **Why.** Section 7 compares the spill forecasts with climatology only. A swimmer or an organiser
