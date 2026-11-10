@@ -16,3 +16,19 @@ text = "The Authority strongly encourages visitors to consider places away from 
 status = "confirmed"
 source = "https://www.yorkshiredales.org.uk/places/burnsall/"
 source_name = "Yorkshire Dales National Park Authority"
+
+# Historical photo from Geograph, chosen 10 November 2026 (guides/photo-candidates/decisions.tsv): its subject is 122 m from the spot's pin, its camera 108 m; checked against its title, its words, its grid reference and the picture.
+[[photo]]
+file = "geograph-8120688.jpg"
+width = 640
+height = 480
+topic = "overview"
+caption = "Burnsall Bridge and the River Wharfe, looking east."
+credit = "Gareth James"
+taken = 2025-07-22
+status = "historical"
+title = "Burnsall Bridge and the River Wharfe"
+source = "https://www.geograph.org.uk/photo/8120688"
+source_name = "Geograph"
+licence = "https://creativecommons.org/licenses/by-sa/2.0/"
+changes = "Re-encoded as a JPEG at the same size, 640 x 480, with all metadata removed."

@@ -2227,3 +2227,15 @@ The 40 most-visited spots now have an **opening**: two or three sentences of pla
   its place.
 - **Which spots.** Ranked by spot-page visits in the private weekly counts (figures not in the repository), then the
   rest of the Lake District focus area; the file's head says how.
+
+## A photo of each place (10 November 2026)
+
+Step 3 of the strategy review, its photo half. 108 spots now carry one historical photo from Geograph, an overview
+of the water, through the practical guide (`guides/<id>.toml`, status `historical`; "Historical photos" under
+Practical guides above). The photo sits where a guide's photos already sit, at the foot of the guide tile, with the
+historical-photo line under it. It is also the Place's `image` in the structured data. It is not a banner over the
+answer: that would push the five days down, against "A tighter opening".
+
+A spot that had no guide now has one holding only the photo. Its tile's first line says "No facts checked here yet:
+only a photo of the place, below.", and "Not in this guide yet" names every topic, so the picture is never read as
+a checked guide. The choices and the rejected candidates are in `guides/photo-candidates/decisions.tsv`.

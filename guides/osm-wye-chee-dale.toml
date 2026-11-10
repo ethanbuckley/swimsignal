@@ -1,0 +1,20 @@
+# River Wye, Chee Dale, Derbyshire. A historical photo only, 10 November 2026: nothing about parking, paths, getting in or
+# who can swim has been checked yet. Add facts as guides/README.md says.
+checked = 2026-11-10
+how = "desk"
+
+# Historical photo from Geograph, chosen 10 November 2026 (guides/photo-candidates/decisions.tsv): its subject is 99 m from the spot's pin, its camera 96 m; checked against its title, its words, its grid reference and the picture.
+[[photo]]
+file = "geograph-2840014.jpg"
+width = 410
+height = 640
+topic = "overview"
+caption = "River Wye, Chee Dale, looking east."
+credit = "Andrew Hill"
+taken = 2012-03-08
+status = "historical"
+title = "River Wye, Chee Dale"
+source = "https://www.geograph.org.uk/photo/2840014"
+source_name = "Geograph"
+licence = "https://creativecommons.org/licenses/by-sa/2.0/"
+changes = "Re-encoded as a JPEG at the same size, 410 x 640, with all metadata removed."

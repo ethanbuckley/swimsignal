@@ -107,3 +107,19 @@ text = "Before jumping in, the club says it is safest to enter first by the step
 status = "confirmed"
 source = "https://www.farleighswimming.co.uk/safety-and-club-rules"
 source_name = "Farleigh and District Swimming Club"
+
+# Historical photo from Geograph, chosen 10 November 2026 (guides/photo-candidates/decisions.tsv): its subject is 15 m from the spot's pin, its camera 72 m; checked against its title, its words, its grid reference and the picture.
+[[photo]]
+file = "geograph-4455009.jpg"
+width = 480
+height = 640
+topic = "overview"
+caption = "The ''Slippery Weir'' at Farleigh Hungerford in the River Frome, looking west-south-west."
+credit = "Dr Duncan Pepper"
+taken = 2015-05-01
+status = "historical"
+title = "The ''Slippery Weir'' at Farleigh Hungerford in the River Frome"
+source = "https://www.geograph.org.uk/photo/4455009"
+source_name = "Geograph"
+licence = "https://creativecommons.org/licenses/by-sa/2.0/"
+changes = "Re-encoded as a JPEG at the same size, 480 x 640, with all metadata removed."

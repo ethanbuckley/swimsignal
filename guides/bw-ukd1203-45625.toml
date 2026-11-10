@@ -58,3 +58,19 @@ text = "Canoes, kayaks and paddleboards are allowed on Windermere. Powered craft
 status = "confirmed"
 source = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/lakes-activities-guide/"
 source_name = "Lake District National Park Authority"
+
+# Historical photo from Geograph, chosen 10 November 2026 (guides/photo-candidates/decisions.tsv): its subject is 20 m from the spot's pin, its camera 173 m; checked against its title, its words, its grid reference and the picture.
+[[photo]]
+file = "geograph-8000810.jpg"
+width = 640
+height = 456
+topic = "overview"
+caption = "YMCA Lakeside North Camp, looking west-south-west."
+credit = "Steve Houldsworth"
+taken = 2025-03-20
+status = "historical"
+title = "YMCA Lakeside North Camp"
+source = "https://www.geograph.org.uk/photo/8000810"
+source_name = "Geograph"
+licence = "https://creativecommons.org/licenses/by-sa/2.0/"
+changes = "Re-encoded as a JPEG at the same size, 640 x 456, with all metadata removed."

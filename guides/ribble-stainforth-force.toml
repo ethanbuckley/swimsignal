@@ -30,3 +30,19 @@ text = "Parking: up to 2 hours £3.80 (an extra hour with a Blue Badge displayed
 status = "confirmed"
 source = "https://www.yorkshiredales.org.uk/plan-your-visit/essential-information/car-parks-and-toilets/"
 source_name = "Yorkshire Dales National Park Authority"
+
+# Historical photo from Geograph, chosen 10 November 2026 (guides/photo-candidates/decisions.tsv): its subject is 213 m from the spot's pin, its camera 233 m; checked against its title, its words, its grid reference and the picture.
+[[photo]]
+file = "geograph-7940184.jpg"
+width = 640
+height = 480
+topic = "overview"
+caption = "Stainforth Force on the River Ribble, looking north."
+credit = "Colin Park"
+taken = 2024-09-21
+status = "historical"
+title = "Stainforth Force on the River Ribble"
+source = "https://www.geograph.org.uk/photo/7940184"
+source_name = "Geograph"
+licence = "https://creativecommons.org/licenses/by-sa/2.0/"
+changes = "Re-encoded as a JPEG at the same size, 640 x 480, with all metadata removed."

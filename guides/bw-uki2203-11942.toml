@@ -59,3 +59,19 @@ status = "confirmed"
 source = "https://consult.defra.gov.uk/water/13-proposed-bathing-water-sites/supporting_documents/designation-consultation-doc-final-v2pdf"
 source_name = "Defra"
 source_date = "2026-02"
+
+# Historical photo from Geograph, chosen 10 November 2026 (guides/photo-candidates/decisions.tsv): its subject is 258 m from the spot's pin, its camera 292 m; checked against its title, its words, its grid reference and the picture.
+[[photo]]
+file = "geograph-2140554.jpg"
+width = 640
+height = 430
+topic = "overview"
+caption = "River Thames near Kingston, looking west."
+credit = "N Chadwick"
+taken = 2010-08-25
+status = "historical"
+title = "River Thames near Kingston"
+source = "https://www.geograph.org.uk/photo/2140554"
+source_name = "Geograph"
+licence = "https://creativecommons.org/licenses/by-sa/2.0/"
+changes = "Re-encoded as a JPEG at the same size, 640 x 430, with all metadata removed."

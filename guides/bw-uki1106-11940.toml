@@ -85,3 +85,19 @@ text = "No diving or bombing."
 status = "confirmed"
 source = "https://sportsandleisure.royalparks.org.uk/booking-terms/swimming-bookings-terms-conditions"
 source_name = "The Royal Parks"
+
+# Historical photo from Geograph, chosen 10 November 2026 (guides/photo-candidates/decisions.tsv): its subject is 52 m from the spot's pin, its camera 183 m; checked against its title, its words, its grid reference and the picture.
+[[photo]]
+file = "geograph-8263641.jpg"
+width = 640
+height = 349
+topic = "overview"
+caption = "Hyde Park: Serpentine Lido, looking south-west."
+credit = "Jim Osley"
+taken = 2026-03-04
+status = "historical"
+title = "Hyde Park : Serpentine Lido"
+source = "https://www.geograph.org.uk/photo/8263641"
+source_name = "Geograph"
+licence = "https://creativecommons.org/licenses/by-sa/2.0/"
+changes = "Re-encoded as a JPEG at the same size, 640 x 349, with all metadata removed."

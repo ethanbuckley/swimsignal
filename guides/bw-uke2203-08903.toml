@@ -40,3 +40,19 @@ status = "confirmed"
 source = "https://www.gov.uk/government/consultations/bathing-waters-proposed-designation-of-27-new-bathing-waters-in-england/outcome/summary-of-responses-and-government-response"
 source_name = "Defra"
 source_date = "2024-05"
+
+# Historical photo from Geograph, chosen 10 November 2026 (guides/photo-candidates/decisions.tsv): its subject is 16 m from the spot's pin, its camera 35 m; checked against its title, its words, its grid reference and the picture.
+[[photo]]
+file = "geograph-6715303.jpg"
+width = 640
+height = 532
+topic = "overview"
+caption = "Old mill race and weir on the River Nidd, Knaresborough, looking south-south-west."
+credit = "habiloid"
+taken = 2013-03-31
+status = "historical"
+title = "Old mill race and weir on the River Nidd, Knaresborough"
+source = "https://www.geograph.org.uk/photo/6715303"
+source_name = "Geograph"
+licence = "https://creativecommons.org/licenses/by-sa/2.0/"
+changes = "Re-encoded as a JPEG at the same size, 640 x 532, with all metadata removed."

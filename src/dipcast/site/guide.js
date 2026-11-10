@@ -44,6 +44,8 @@ const guideDays = (a, b) => Math.round((Date.parse(b + 'T12:00:00Z') - Date.pars
 // how far to trust the whole guide, and, past a year, that it may be out of date.
 function guideChecked(g, today) {
   const when = guideDay(g.checked);
+  // A guide with a photo and no facts yet (guides.py): nothing in it says where to park, get in or who can swim.
+  if (!(g.facts || []).length) return 'No facts checked here yet: only a photo of the place, below.';
   if (![...(g.facts || []), ...(g.photos || [])].some(x => x.status === 'confirmed')) {
     return `Swimmers' suggestions only, gathered up to ${when}: nothing here has been checked by SwimSignal yet.`;
   }
@@ -208,11 +210,12 @@ function guideTile(d, today) {
   if (!d || d.unlisted) return '';   // a point clicked on the map (anypoint.js) is not a spot anyone has guided
   if (d.detail_missing) return '';   // its guide is in data/spot/<id>.json, which did not arrive: not "no guide yet"
   const g = d.guide;
-  if (!g || !Array.isArray(g.facts) || !g.facts.length) return knowTile(d, ['guide'], 'guide');
+  const facts = g && Array.isArray(g.facts) ? g.facts : [], photos = g && Array.isArray(g.photos) ? g.photos : [];
+  if (!facts.length && !photos.length) return knowTile(d, ['guide'], 'guide');
   const head = `<h2 class="t-lab" id="guide-h">${guideIcon()}<span>Practical guide</span></h2>`;
   return `<section class="tile g-tile" id="guide" aria-labelledby="guide-h">${head}`
     + `<p class="t-say">${guideChecked(g, today)}</p>`
-    + guideFacts(g) + guideGaps(g)
+    + (facts.length ? guideFacts(g) : '') + guideGaps(g)
     + (g.photos || []).map((p, i) => guidePhoto(p, i, g)).join('')
     + guideAsk(d) + '</section>';
 }

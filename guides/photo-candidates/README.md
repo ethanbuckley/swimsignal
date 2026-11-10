@@ -1,7 +1,9 @@
 # Photo candidates from Geograph
 
 `geograph-shortlist.tsv` lists up to 12 Geograph photos for each spot that might show the swim place. It is
-a shortlist for a person to check, not a choice. Nothing on the site reads it. A photo reaches a spot's
+a shortlist for a person to check, not a choice. Nothing on the site reads it.
+`decisions.tsv` records every candidate that was looked at, whether it was used, and why not; and every spot
+left without a photo, with the reason. A photo reaches a spot's
 page only as a `[[photo]]` with `status = "historical"` in its guide (`guides/README.md`, "Historical
 photos"), after someone has looked at it and checked its place.
 
@@ -63,5 +65,23 @@ here records why.
 Size: at most about 363 detail requests (3 × 121) and 121 downloads, at one a second. That is about 8
 minutes of requests.
 
-A spot with no guide yet needs one before it can show a photo. The guides parser needs at least one fact,
-so photo-only guides would need a small change there first.
+
+## Done, 10 November 2026
+
+Ethan's key was used for 343 requests at one a second: details for 171 candidates and their 640 px copies.
+That is within the "about 500" stated when the key was asked for.
+
+- **Rounds.** The first round took the best unflagged candidate for each spot. The second took one or two more for
+  the spots whose first was rejected.
+- **How each was checked.** Each picture was looked at beside its title, the photographer's words (from the free
+  `gridimage_text` dump) and its subject and camera distances from the pin.
+- **Rejected:**
+  - a photo of something else: a road, a car park, a café, the wrong pond;
+  - water in flood or spate;
+  - a camera far from the place;
+  - recognisable people close up, especially children.
+- **Result.** 108 spots now have a historical overview photo in their guide (`guides/<id>.toml`, files
+  `guides/photos/geograph-<id>.jpg`). 14 have none, and `decisions.tsv` says why. Cromwheel keeps the three photos
+  from 30 October.
+- **New guides.** A spot without a guide got a new one holding the photo alone. Its tile says nothing is checked
+  yet, and lists every topic as missing.

@@ -51,3 +51,19 @@ text = "Riverside car park is disabled-only, next to the River Ribble at Edisfor
 status = "confirmed"
 source = "https://www.ribblevalley.gov.uk/car-parks/car-parks-parking/15"
 source_name = "Ribble Valley Borough Council"
+
+# Historical photo from Geograph, chosen 10 November 2026 (guides/photo-candidates/decisions.tsv): its subject is 40 m from the spot's pin, its camera 57 m; checked against its title, its words, its grid reference and the picture.
+[[photo]]
+file = "geograph-7853237.jpg"
+width = 640
+height = 480
+topic = "overview"
+caption = "Edisford Bridge, looking north-north-east."
+credit = "Kevin Waterhouse"
+taken = 2024-08-05
+status = "historical"
+title = "Edisford Bridge"
+source = "https://www.geograph.org.uk/photo/7853237"
+source_name = "Geograph"
+licence = "https://creativecommons.org/licenses/by-sa/2.0/"
+changes = "Re-encoded as a JPEG at the same size, 640 x 480, with all metadata removed."

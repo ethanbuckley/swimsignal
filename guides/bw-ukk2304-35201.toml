@@ -58,3 +58,19 @@ text = "French Weir Park is open all day, all year round."
 status = "confirmed"
 source = "https://www.somerset.gov.uk/locations/french-weir-park/"
 source_name = "Somerset Council"
+
+# Historical photo from Geograph, chosen 10 November 2026 (guides/photo-candidates/decisions.tsv): its subject is 162 m from the spot's pin, its camera 132 m; checked against its title, its words, its grid reference and the picture.
+[[photo]]
+file = "geograph-7061700.jpg"
+width = 640
+height = 480
+topic = "overview"
+caption = "French Weir, Taunton, looking south."
+credit = "Stephen Craven"
+taken = 2021-07-15
+status = "historical"
+title = "French Weir, Taunton"
+source = "https://www.geograph.org.uk/photo/7061700"
+source_name = "Geograph"
+licence = "https://creativecommons.org/licenses/by-sa/2.0/"
+changes = "Re-encoded as a JPEG at the same size, 640 x 480, with all metadata removed."

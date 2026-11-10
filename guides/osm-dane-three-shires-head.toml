@@ -1,0 +1,20 @@
+# River Dane, Panniers Pool, Three Shires Head. A historical photo only, 10 November 2026: nothing about parking, paths, getting in or
+# who can swim has been checked yet. Add facts as guides/README.md says.
+checked = 2026-11-10
+how = "desk"
+
+# Historical photo from Geograph, chosen 10 November 2026 (guides/photo-candidates/decisions.tsv): its subject is 11 m from the spot's pin, its camera 23 m; checked against its title, its words, its grid reference and the picture.
+[[photo]]
+file = "geograph-7028430.jpg"
+width = 640
+height = 459
+topic = "overview"
+caption = "Three Shires Head Bridge - crossing The River Dane, looking north-north-west."
+credit = "Neil Theasby"
+taken = 2021-11-25
+status = "historical"
+title = "Three Shires Head Bridge - crossing The River Dane"
+source = "https://www.geograph.org.uk/photo/7028430"
+source_name = "Geograph"
+licence = "https://creativecommons.org/licenses/by-sa/2.0/"
+changes = "Re-encoded as a JPEG at the same size, 640 x 459, with all metadata removed."
