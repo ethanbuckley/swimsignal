@@ -383,3 +383,42 @@ test('the checking tables are folded under their questions, the headings left ou
   const bare = await render({...live()});
   assert.equal((bare.live.innerHTML + bare.offline.innerHTML).split('href="/lab/forecasts/"').length, 2);
 });
+
+// Two simple rules beside the forecast (forecast_log: live.simple_refs; docs/SIMPLE-REFERENCES-LIVE-2026-11.md). Where
+// SwimSignal does not beat a rule, the words say so, in the section and in In short.
+const REFS = (v0, v1, extra = {}) => {
+  const cell = (leads, v, company = 'All companies', spills = 1476) => ({company, leads, scored_rows: 34370, status_known: 26690, rain_known: 34313,
+    rows: 25613, overflows: 1200, spill_rows: spills, spill_rate: 0.058, mean_forecast: 0.072, too_few: v.too_few || false,
+    brier: {forecast: 0.0415, persistence: 0.0440, rain: 0.0504, climatology: 0.0577},
+    skill: {persistence: 0.056, rain: 0.176, climatology: 0.28},
+    ci: {persistence: {lo: -0.048, hi: 0.148}, rain: {lo: 0.054, hi: 0.233}, climatology: {lo: 0.21, hi: 0.479}},
+    verdict: {persistence: v.p, rain: v.r, climatology: 'beats'}});
+  return {protocol: 'docs/SIMPLE-REFERENCES-LIVE-2026-11.md',
+    settings: {rain_mm: 10, recent_spill_hours: 48, max_gap_h: 8, fit_days: 28, min_fit_rows: 100, resamples: 2000, min_spill_rows: 20},
+    first_day: '2026-09-29', last_day: '2026-11-08', first_common_day: '2026-10-02', scored_rows: 162005, common_rows: 102673,
+    cells: [cell('0', v0), cell('1-4', v1), cell('0', {p: 'too_few', r: 'too_few', too_few: true}, 'Northumbrian Water', 18)], ...extra};
+};
+
+test('the simple rules sit beside the forecast, and a rule it does not beat is named in words', async () => {
+  const els = await render(live({n_scored: 162005, overall: {...OVERALL, calibrated: {brier: 0.0415, base_rate: 0.05}, raw: {brier: 0.05}},
+    warning_table: SPILL, simple_refs: REFS({p: 'unclear', r: 'beats'}, {p: 'worse', r: 'worse'})}));
+  const sec = text(els.live.innerHTML.slice(els.live.innerHTML.indexOf('id="simple-rules"')));
+  assert.match(sec, /^[^]*Against two simple rules/);
+  assert.match(sec, /On the same day, SwimSignal is not shown better or worse than persistence and beats the rain rule\. In advance, it does worse than both rules\./);
+  assert.match(sec, /Same day Spilling now or in the last 48 h 0\.06 \(-0\.05 to 0\.15\) Not shown either way yet 25,613 0\.0440 0\.0415/);
+  assert.match(sec, /Same day Rain over 10 mm in two days 0\.18 \(0\.05 to 0\.23\) SwimSignal beats it/);
+  assert.match(sec, /In advance \(1–4 days\) Spilling now or in the last 48 h [^A-Z]* SwimSignal does worse/);
+  assert.match(sec, /These are the 102,673 of 162,005 scored forecasts on which both rules could be applied, from 2 Oct 2026\./);
+  assert.match(sec, /Northumbrian Water Same day 25,613 18 0\.06 \(-0\.05 to 0\.15\), too few/);
+  // The live table comes first, then the rules, then the by-lead table.
+  const h = els.live.innerHTML;
+  assert.ok(h.indexOf('id="live-scoring"') < h.indexOf('id="simple-rules"'));
+  const short = text(els.short.innerHTML);
+  assert.match(short, /Live, against two simple rules \(spilling now or in the last 48 hours; over 10 mm of rain forecast in two days\): on the same day, SwimSignal is not shown better or worse than persistence and beats the rain rule; in advance, it does worse than both rules\./);
+});
+
+test('without simple rules in the data, the page has no such section or line', async () => {
+  const els = await render(live({n_scored: 100, overall: {...OVERALL, calibrated: {brier: 0.0415, base_rate: 0.05}, raw: {brier: 0.05}}, warning_table: SPILL}));
+  assert.ok(!els.live.innerHTML.includes('simple-rules'));
+  assert.ok(!text(els.short.innerHTML).includes('simple rules'));
+});
