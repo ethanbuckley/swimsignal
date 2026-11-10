@@ -865,6 +865,13 @@
    "branch": "claude/scotland-2026-backtest-inventory",
    "branch_exists": true,
    "date": "2026-11-08"
+  },
+  "666": {
+   "n": 666,
+   "state": "open",
+   "branch": "claude/amazing-jepsen-2d2156",
+   "branch_exists": true,
+   "date": "2026-11-10"
   }
  },
  "entries": [
@@ -1051,6 +1058,32 @@
     357
    ],
    "register_note": "The register credits \"15% on Welsh set\" to the version 2 offset arm; the doc's 15.2% Welsh figure is version 2's pooled layer, with no offsets there. The register calls −0.00550 \"pooled\", but in the doc \"pooled\" names the other arm (−0.00424)."
+  },
+  {
+   "id": "combined-candidate",
+   "title": "Combined spill candidate: live status on top of regional routing",
+   "section": "promising",
+   "project": "REGIONAL",
+   "topics": [
+    "spills",
+    "live data",
+    "companies",
+    "model"
+   ],
+   "verdict": "Scored once on January to August 2026 as a frozen-model backtest. It passed its bar at eight companies and for all nine together: lower Brier score than today's model, same-day persistence and a 10 mm rain rule at leads 1 and 2, every interval below zero (lead 1, all nine: 0.0307 against 0.0419). It failed at United Utilities, where it was not shown better than today's model beyond lead 0. It was not shown better than the live-status input alone. Development evidence: the routing rule and the combination were chosen after 2026 had been seen.",
+   "scope": "EA start/stop records, January to August 2026, 13,426 overflows at nine English companies; status rebuilt from the complete record at 00:00 UTC; reanalysis rain decides, archived forecast rain reported. Not tested on polled status or on unseen months.",
+   "stage": "development",
+   "stage_note": "Frozen (commit 4d66d7c7) and not adopted. Nothing on the site changes. United Utilities stays on today's model.",
+   "next": "Build a shadow logger for the combined candidate, with its window and bar stated before it opens (PR due 17 November 2026); later, rerun the backtest unchanged on the EA's September to December 2026 records.",
+   "records": [
+    {
+     "doc": "docs/COMBINED-CANDIDATE-BACKTEST-2026-11.md",
+     "quote": "**combined-v1 passes the bar at eight companies and for all nine together. It fails at United Utilities**"
+    }
+   ],
+   "prs": [
+    666
+   ]
   },
   {
    "id": "concentration",
