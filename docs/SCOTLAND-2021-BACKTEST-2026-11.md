@@ -178,6 +178,14 @@ at most 1,000 a UTC day while the D4 ensemble-rain read runs (to 19 November), b
 (`rainfall.spend`, `DIPCAST_OPEN_METEO_DAILY_CALLS=1000`) in a scratch cache, at most 500 an hour, stopping at the
 first refusal. About three UTC days of wall time. No fetch beside another Open-Meteo job on this Mac.
 
+*Amendment 4, 10 Nov 2026 about 11:10 UTC, after 36 of 43 cell-years of 2020 were fetched and before any 2021
+forecast.* The daily pace rises from 1,000 to 1,200 by the scripts' count, for today only, so the last 3 requests
+(7 cell-years, about 183 calls) run now instead of after 00:05 UTC on 11 November. Ethan asked for the backtest
+to go ahead today. The 1,000 figure was a pace this protocol set itself, not a limit: by Open-Meteo's own rule the
+whole fetch is about 112 calls, this Mac's address is separate from the GitHub runners' production budget, and the
+scratch ledger is not production's. The total stays within Ethan's approved 2,190 and within `--max-total 1200`.
+The model, map, test year, set G and pass rule do not change.
+
 ## 9. What follows each outcome
 
 - **PASS.** Recorded in this file, the inventory, the register and the catalogue. The trial's evidence gains "checked
