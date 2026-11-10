@@ -56,7 +56,16 @@ event over 15 min 30 s or of unknown duration; a day record labels its local dat
 - the 2017-2021 edition (captured 19 Dec 2022, 3,817,619 bytes) for every year before 2020 that it holds.
 
 Each year comes from the newest edition that holds it. 2021 rows in the archived editions are not used for labels
-or covariates. A different size from the one listed means a different file: stop and record it.
+or covariates.
+
+*Amendment 1, 10 Nov 2026, before either download.* The sizes above are the Internet Archive's CDX `length` field,
+which is the length of the compressed archive record, not of the file. They identify the capture, not the bytes.
+The files are fetched by capture, with the `id_` form so the archive returns them unaltered:
+
+- `https://web.archive.org/web/20221219134526id_/https://www.scottishwater.co.uk/-/media/ScottishWater/Document-Hub/Key-Publications/Urban-Water-Improvements/141222SWReportedOverflowEventDataToSEPA20172021SummaryLatest.xlsx`
+- `https://web.archive.org/web/20251007090441id_/https://www.scottishwater.co.uk/-/media/ScottishWater/Document-Hub/Key-Publications/Improving-Urban-Waters/CSO-DATA/SW-Reported-Overflow-Event-Data-to-SEPA-20202024--Summary---280325-v1.xlsx`
+
+Each file's own size and SHA-256 are recorded. A reply that is not an xlsx workbook stops the run.
 
 **Reading them.** `sw_history.read_workbook` where the layout matches (summary sheet, "Overflow Events in <year>"
 sheets, the same column names). Where it does not, a loader for the older layout maps each column by its header
