@@ -33,6 +33,21 @@ derivative of OpenStreetMap, and the whole file would have to be offered under t
 The build reads both and credits OpenStreetMap on the terms page and in the `credits` field of
 `data/spots.json`, where each spot from `spots-osm.csv` carries `"source": "openstreetmap"`.
 
+## data/raw/outside_names: OS data and OpenStreetMap, kept apart
+
+`scripts/make_outside_names.py` writes the river and lake names the click-anywhere map gives a point in Wales,
+Scotland or Ireland, and the build publishes a copy at `data/anypoint/names/`. Its two folders have different
+licences, so they never share a file:
+
+- `data/raw/outside_names/os/` is from OS Open Rivers: Contains OS data © Crown copyright and database right 2026,
+  under the Open Government Licence v3.0.
+- `data/raw/outside_names/osm/` is a database derived from OpenStreetMap, © OpenStreetMap contributors, under the
+  [Open Database Licence 1.0](https://opendatacommons.org/licenses/odbl/1-0/): Ireland's named rivers, canals and
+  streams and the named lakes of Ireland, Wales and Scotland. If you use, share or adapt it, credit OpenStreetMap's
+  contributors, keep the licence with it, and offer any database you make from it under the ODbL too.
+
+`index.json` carries each folder's credit and licence.
+
 ## data/raw/lake_residence.csv is under CC BY 4.0
 
 `data/raw/lake_residence.csv` holds residence times, volumes, depths and flows of lakes from HydroLAKES v1.0
