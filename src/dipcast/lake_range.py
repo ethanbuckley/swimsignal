@@ -179,7 +179,7 @@ def sig2(v: float) -> float | None:
 def log_shadow(issued_at: pd.Timestamp, lat: float, lon: float, days: pd.DatetimeIndex, r48: np.ndarray,
                r24: np.ndarray, risk: np.ndarray, out: dict, version: str | None, path=None) -> int:
     """Append one lake spot's rows (leads 0 and later) to TABLE; returns the rows written."""
-    from dipcast.forecast_log import LOCAL_TZ, _LOCK, _conn
+    from dipcast.forecast_log import LOCAL_TZ, _LOCK, _conn, append_rows
     issue_day = issued_at.tz_convert(LOCAL_TZ).date()
 
     def _f(x):
@@ -202,7 +202,7 @@ def log_shadow(issued_at: pd.Timestamp, lat: float, lon: float, days: pd.Datetim
                     issued_at TIMESTAMPTZ, issue_day DATE, lat DOUBLE, lon DOUBLE, bw_id VARCHAR, basis VARCHAR,
                     target_day DATE, lead INTEGER, in_season BOOLEAN, rain_48h DOUBLE, rain_24h DOUBLE, risk DOUBLE,
                     median DOUBLE, low DOUBLE, high DOUBLE, rule VARCHAR, model_sha VARCHAR, version VARCHAR)""")
-            con.executemany(f"INSERT INTO {TABLE} ({', '.join(COLUMNS)}) VALUES ({', '.join('?' * len(COLUMNS))})", rows)
+            append_rows(con, TABLE, COLUMNS, rows)
         finally:
             con.close()
     return len(rows)

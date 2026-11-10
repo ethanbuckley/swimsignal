@@ -73,7 +73,7 @@ def routed(sd: pd.DataFrame, ov: pd.DataFrame, days: pd.DatetimeIndex, p_raw: np
 def log_shadow(issued_at: pd.Timestamp, lat: float, lon: float, days: pd.DatetimeIndex, ov: pd.DataFrame,
                p_raw: np.ndarray, p_cal: np.ndarray, shadow: dict, version: str | None, path=None) -> int:
     """Append one spot's shadow rows (leads 0 and later) to TABLE; returns the rows written."""
-    from dipcast.forecast_log import LOCAL_TZ, _LOCK, _conn
+    from dipcast.forecast_log import LOCAL_TZ, _LOCK, _conn, append_rows
     issue_day = issued_at.tz_convert(LOCAL_TZ).date()
 
     def _f(x):
@@ -98,7 +98,7 @@ def log_shadow(issued_at: pd.Timestamp, lat: float, lon: float, days: pd.Datetim
                     issued_at TIMESTAMPTZ, issue_day DATE, lat DOUBLE, lon DOUBLE, site_id VARCHAR, company VARCHAR,
                     target_day DATE, lead INTEGER, p_regional DOUBLE, route VARCHAR, p_raw DOUBLE, p_cal DOUBLE,
                     rule VARCHAR, v2_sha VARCHAR, version VARCHAR)""")
-            con.executemany(f"INSERT INTO {TABLE} ({', '.join(COLUMNS)}) VALUES ({', '.join('?' * len(COLUMNS))})", rows)
+            append_rows(con, TABLE, COLUMNS, rows)
         finally:
             con.close()
     return len(rows)
