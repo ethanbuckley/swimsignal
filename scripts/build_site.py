@@ -2590,6 +2590,54 @@ def home_lead(n: int, days: list[str] | None = None, where: str = ENGLAND_ONLY_W
             '<div class="col-map"><div class="tile map-tile"></div></div></div></div>')
 
 
+# Structured data for search engines (schema.org, as JSON-LD in the <head>): the spot as a Place, and, where the spot
+# has a forecast, the forecast as a Dataset whose files are the ones the data page lists. Nothing in it changes with
+# the day: like the description, a level here would outlive its forecast in a search engine's copy.
+DATASET_LICENCE = ("SwimSignal's own forecasts may be reused for non-commercial purposes with credit; the data from the water "
+                   "companies, the Environment Agency and the other providers keeps its own licence (see the data page).")
+
+
+def spot_photo(spot: dict) -> dict | None:
+    """The spot's picture for its Place: the guide's first overview photo, else its first photo of any topic."""
+    photos = (spot.get("guide") or {}).get("photos") or []
+    return next((p for p in photos if p.get("topic") == "overview"), photos[0] if photos else None)
+
+
+def spot_structured_data(spot: dict, root: str, description: str) -> str:
+    """The spot's page's JSON-LD: a schema.org Place (name, position, the river or lake it is on, and a photo where its
+    guide has one, with its photographer and licence), and a Dataset for the forecast where there is one. The JSON is
+    written so that no "<" can close the script element early."""
+    url = f"{root}spot/{spot['id']}/"
+    place = {"@type": "Place", "@id": f"{url}#place", "name": spot["name"], "url": url, "description": description}
+    if isinstance(spot.get("lat"), (int, float)) and isinstance(spot.get("lon"), (int, float)):
+        place["geo"] = {"@type": "GeoCoordinates", "latitude": round(float(spot["lat"]), 5), "longitude": round(float(spot["lon"]), 5)}
+    water = (spot.get("location") or {}).get("watercourse") or spot.get("river")
+    if water:
+        place["containedInPlace"] = {"@type": "LakeBodyOfWater" if spot.get("kind") == "lake" else "RiverBodyOfWater", "name": water}
+    photo = spot_photo(spot)
+    if photo:
+        img = {"@type": "ImageObject", "contentUrl": f"{root}guides/photos/{photo['file']}", "width": photo["w"], "height": photo["h"],
+               "caption": photo["caption"], "creator": {"@type": "Person", "name": photo["credit"]}}
+        if photo.get("status") == "historical":
+            img.update({"license": photo["licence"], "acquireLicensePage": photo["source"],
+                        "creditText": f"{photo['credit']}, {photo.get('source_name') or 'Geograph'}"})
+        place["image"] = img
+    graph = [place]
+    if not spot.get("error"):
+        graph.append({
+            "@type": "Dataset", "@id": f"{url}#forecast", "name": f"Pollution risk forecast for {spot['name']}",
+            "description": (f"Five-day pollution risk forecast for {spot['name']}: a level for each day from live storm overflow "
+                            "status, rainfall forecasts and the river network, with the overflows upstream and the inputs it "
+                            "rests on. Updated several times a day. A forecast, not a water test."),
+            "url": url, "isAccessibleForFree": True, "license": f"{root}data.html", "usageInfo": DATASET_LICENCE,
+            "creator": {"@type": "Organization", "name": BRAND, "url": root},
+            "spatialCoverage": {"@id": f"{url}#place"},
+            "distribution": [{"@type": "DataDownload", "encodingFormat": "application/json", "contentUrl": f"{root}data/spots.json"}],
+        })
+    data = json.dumps({"@context": "https://schema.org", "@graph": graph}, ensure_ascii=False, separators=(",", ":"))
+    return '<script type="application/ld+json">' + data.replace("<", "\\u003c") + "</script>"
+
+
 def spot_page(template: str, spot: dict, root: str, top: str | None = None, card: tuple[str, str] | None = None,
               feed: bool = False, issued: pd.Timestamp | None = None) -> str:
     """A spot's own page: the map page with the spot's name, description and address in its
@@ -2602,7 +2650,8 @@ def spot_page(template: str, spot: dict, root: str, top: str | None = None, card
     blurb = spot_blurb(spot)
     page = PAGE_META.sub(lambda m: page_meta(f"{spot['name']}: pollution risk forecast · {BRAND}", blurb, url, root,
                                              base="../../", image=card,
-                                             feed=(f"spot/{spot['id']}/feed.xml", f"{BRAND} · {spot['name']}") if feed else None),
+                                             feed=(f"spot/{spot['id']}/feed.xml", f"{BRAND} · {spot['name']}") if feed else None)
+                       + "\n" + spot_structured_data(spot, root, blurb),
                        template, count=1)
     if top:
         # The script's own view of a spot is view-spot: the About section folded to a line, Map in the header.
