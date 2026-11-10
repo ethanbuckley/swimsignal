@@ -13,6 +13,11 @@ written and no score was computed. No 2026 outcome was read beyond counting the 
 Water's annual files, with events from 2017 to 2020. With one of them, the trial's frozen model and map could be
 scored on 2021, a year neither was fitted or checked on. That needs Ethan's yes to download two files (section 5).
 
+**Update, 10 November 2026: the 2021 backtest ran and passed** ([record](SCOTLAND-2021-BACKTEST-2026-11.md), PR #658).
+Ethan said yes to both files. On 83 overflows and 6,804 spill-days, the trial forecast beat each overflow's
+earlier years (BSS 0.280, 0.187 to 0.368), its level was 0.967, and the map beat the unmapped forecast (0.089,
+0.047 to 0.123). Lead 0 only. It supports the existing limited release only.
+
 **Checked** means read or run on 8 November 2026. *Inferred* means a deduction no source settles.
 
 ## 1. The forecast a backtest would test
@@ -93,14 +98,19 @@ calls a year (*inferred*, if the same cells).
 **Licence:** the 2020-24 edition was published under the same data.gov.uk record that names OGL v3 now
 (`c885ee0b…`). The 2017-21 edition's licence is not checked.
 
+**Done, 10 November 2026** ([record](SCOTLAND-2021-BACKTEST-2026-11.md), PR #658). Protocol pushed 00:33 UTC,
+before either download. The sizes above are CDX record lengths, not file sizes (amendment 1); the files are 4,100,505
+and 5,115,373 bytes. The 2017-21 edition's metadata names OGL v3. 83 overflows were testable, in 43 cells; 2020's
+rain took 1,124 calls by the hindcast's count. Result: PASS on B1, B2 and B3 at lead 0.
+
 ## 6. Continuation
 
 | Field | Content |
 |---|---|
 | Identity | SCOT-TRIAL. This record, PR #654; no code changed |
-| Evidence | No 2026 outcome record exists. Nothing scored |
+| Evidence | No 2026 outcome record exists. Nothing scored. 10 Nov: the 2021 frozen-model backtest passed (PR #658, lead 0, 83 overflows) |
 | Stage | Unchanged: limited forecast, labelled trial. Gate B window runs to January 2027 |
-| Next deliverable | A frozen-model backtest of the trial's model and map on 2021, protocol pushed before the download. Done when it is scored and recorded |
+| Next deliverable | A frozen-model backtest of the trial's model and map on 2021, protocol pushed before the download. Done when it is scored and recorded. Done 10 Nov (PR #658); next is the trial's shadow arm with Scotland's map |
 | Milestone and budget | On Ethan's yes to download the two archived files (about 8.9 MB). About 2,190 Open-Meteo calls, capped at 1,000 a day while D4 runs (to 19 Nov) |
 | Also | Protocol for a 2026 backtest pushed by the end of February 2027, before Scottish Water's 2026 file |
 | Release route | Unchanged. The trial switch stays Ethan's. A pass would support the existing limited release and change no level or threshold |

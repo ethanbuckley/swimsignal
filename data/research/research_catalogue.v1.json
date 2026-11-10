@@ -886,6 +886,13 @@
    "branch": "claude/amazing-jepsen-2d2156",
    "branch_exists": true,
    "date": "2026-11-10"
+  },
+  "658": {
+   "n": 658,
+   "state": "open",
+   "branch": "claude/scotland-2021-backtest",
+   "branch_exists": true,
+   "date": "2026-11-10"
   }
  },
  "entries": [
@@ -2082,11 +2089,11 @@
     "scotland",
     "calibration"
    ],
-   "verdict": "Gate A passed on Scottish Water's 2022-25 records. A calibration map fitted on 2022-24 brought the forecast's level from 0.62-0.67 to 0.98-1.03 on 2025 at leads 0 to 3, passing all 12 parts of its rule; exploratory, since 2025 had been seen in aggregate. Live scores (Gate B) have not passed.",
+   "verdict": "Gate A passed on Scottish Water's 2022-25 records. A calibration map fitted on 2022-24 brought the forecast's level from 0.62-0.67 to 0.98-1.03 on 2025 at leads 0 to 3, passing all 12 parts of its rule; exploratory, since 2025 had been seen in aggregate. A frozen-model backtest on 2021, a year neither model nor map saw, passed all three parts at lead 0 on 83 overflows: skill against earlier years 0.28 (0.19 to 0.37), level 0.97, and the map beat the unmapped forecast. Live scores (Gate B) have not passed.",
    "scope": "Three SEPA inland bathing waters (Dores, Loch Morlich, Luss Bay), 1,485 Scottish Water overflows, the production spill model (808da63d) only.",
    "stage": "development",
    "stage_note": "Built behind DIPCAST_SCOTLAND_TRIAL, off until the owner switches it on; labelled a trial on every page it reaches.",
-   "next": "A frozen-model backtest of the trial's model and map on 2021, from archived Scottish Water editions, on Ethan's yes to the download; a 2026 backtest protocol before Scottish Water's 2026 file (March 2027); a shadow arm with Scotland's map, Gate B after November to January, Scottish river spots, click-anywhere in Scotland, outside review.",
+   "next": "A shadow arm with Scotland's map, so Gate B scores what the trial shows; Gate B after November to January; a 2026 backtest protocol before Scottish Water's 2026 file (March 2027); Scottish river spots, click-anywhere in Scotland, outside review.",
    "records": [
     {
      "doc": "docs/SCOTLAND-TRIAL-2026-11.md",
@@ -2095,12 +2102,17 @@
     {
      "doc": "docs/SCOTLAND-2026-BACKTEST-INVENTORY-2026-11.md",
      "quote": "No complete record of Scottish Water's 2026 overflow events is published or held anywhere this"
+    },
+    {
+     "doc": "docs/SCOTLAND-2021-BACKTEST-2026-11.md",
+     "quote": "**PASS. B1, B2 and B3 all hold.**"
     }
    ],
    "prs": [
     587,
     591,
-    654
+    654,
+    658
    ]
   },
   {

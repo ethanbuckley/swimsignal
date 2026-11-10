@@ -199,3 +199,68 @@ The model, map, test year, set G and pass rule do not change.
   year 2021-25, and any refitted map tested under its own protocol on 2018-20, not on 2021.
 - **NOT COMPLETE.** Record the counts. Next deliverable: add 2018-20 as test years under a new protocol, with
   Ethan's yes to their calls.
+
+## 10. Result, 10 November 2026
+
+**PASS. B1, B2 and B3 all hold.** Scored at 11:28 UTC on 10 November 2026 with the code at 096d91ea, after
+amendments 1 to 4. The summary is [`SCOTLAND-2021-BACKTEST-2026-11.json`](SCOTLAND-2021-BACKTEST-2026-11.json)
+(scores only, no Scottish Water rows). Every frozen input's SHA-256 was the same after the run as before it.
+
+**Coverage.** First history year F = 2017. 94 overflows were eligible in 2021; 83 are in G(2021) with rain, in 43
+rain cells. 30,295 overflow-days, 6,804 of them spill-days (base rate 0.225), 53 ISO weeks. The minimum (10
+overflows, 100 spill-days) is met.
+
+**Rain.** All 86 cell-years cached. 2020's 43 cell-years took 15 requests: 1,124 calls by the scripts' count,
+about 112 by Open-Meteo's own rule. Booked in the scratch ledger: 1,124 of the day's 1,200 (amendment 4). No
+refusal, no failed request. The shared rain cache was not written.
+
+| Part | Rule | Result | Holds |
+|---|---|---|---|
+| B1 | Lower 95% bound of BSS against earlier years > 0 | 0.280 (0.187 to 0.368) | Yes |
+| B2 | Level between 0.9 and 1.1 | 0.967 | Yes |
+| B3 | Lower 95% bound of 1 − Brier(mapped) / Brier(unmapped) > 0 | 0.089 (0.047 to 0.123) | Yes |
+
+**Reported beside it, not gated** (BSS against earlier years, 95% interval, level):
+
+| Arm | Brier | BSS vs earlier years | Level |
+|---|---:|---|---:|
+| Trial forecast (production model, Scotland's map) | 0.106 | 0.280 (0.187 to 0.368) | 0.97 |
+| Production model unmapped | 0.117 | 0.210 (0.100 to 0.316) | 0.66 |
+| Production, England's lead-0 calibration | 0.116 | 0.212 (0.104 to 0.319) | 0.65 |
+| Gate A's arm (holdout model, Scottish covariates) | 0.125 | 0.155 (0.029 to 0.279) | 0.62 |
+| Default covariates | 0.199 | −0.350 (−0.543 to −0.152) | 0.14 |
+| Earlier years | 0.147 | 0 | 1.12 |
+| Flat rate (uses the answer) | 0.174 | −0.181 (−0.312 to −0.057) | 1.00 |
+
+- **Ranking.** AUC 0.882 (0.850 to 0.910). The map changes the level, not the order (unmapped AUC is the same).
+- **Reliability by tenths.** Close below 0.3. From 0.3 to 0.7 the forecast is 5 to 10 points under what happened
+  (0.548 forecast, 0.644 observed in 0.5-0.6). In the top tenth it is over: 0.946 forecast, 0.863 observed, 736
+  rows.
+- **Wet and dry days.** Wet: BSS 0.344 (0.237 to 0.436), level 0.93. Dry: 0.241 (0.121 to 0.362), level 1.00.
+- **By type.** CSO, 46 overflows: BSS 0.379 (0.280 to 0.469). SSSO, 33: 0.234 (0.103 to 0.354). 4 not in the API.
+- **By local authority.** Only South Lanarkshire (20 overflows) is not marked small: 0.203 (−0.064 to 0.371). Fife,
+  Argyll and Bute and the rest are 1 to 7 overflows each; their intervals are wide and some cross zero.
+- **Without the three bathing-season-only overflows** (CSO002405, CSO005517, CSO005890): 80 overflows, BSS 0.285
+  (0.189 to 0.370), level 0.948, B3 0.095 (0.055 to 0.127). PASS.
+- **History from 2020 only** (first_year 2020, as Gate A's 2022 rows had one year): BSS 0.308 (0.220 to 0.395),
+  level 1.084, B3 0.041 (−0.010 to 0.082). B3 would not hold. This sensitivity was named in section 6 as reported,
+  not gated, and the gated result stands. What it shows: with one year of history the unmapped forecast already
+  runs higher, so the map's gain over it is not shown. The live trial takes its history from 2021 to 2025, longer
+  than either variant here (inference, not tested).
+
+**Development or confirmation.** By the research workflow's definition this is a frozen-model backtest, so it counts
+as confirmation for the limited release, within these bounds:
+
+- Lead 0 with the rain that fell (ERA5-Land). Leads 1 to 3, which use forecast rain, rest on the 2025 check, which
+  stays exploratory.
+- The 83 reported overflows with a 2020 count, not the trial's 1,485 overflows or the live feed.
+- 2021's annual counts were inputs to 2022's rows when the map was fitted (section 3). No 2021 day was forecast or
+  scored before this run, and nothing in the model, map or rule was chosen after seeing one.
+
+**What follows (section 9, PASS).** It supports the existing limited release only: three SEPA lochs, labelled trial.
+Nothing live changes and `DIPCAST_SCOTLAND_TRIAL` stays Ethan's. Gate B continues as monitoring. Next deliverable:
+the shadow arm with Scotland's map (trial next step 2), so the live check scores what the trial shows.
+
+**Found on the way, not acted on.** Gate A's loader ignores Scottish Water's "Bathing Season Spills Only Reporting?"
+flag, so for 4 overflows in 2019-22 days outside the season count as no spill. That touches Gate A's 2022 rows. The
+3 such overflows here change the result little (above).
