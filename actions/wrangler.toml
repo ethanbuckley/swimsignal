@@ -1,0 +1,19 @@
+# The action counter (README). Nothing here is secret: this file is committed, so anything in it is public.
+name = "swimsignal-actions"
+main = "src/index.js"
+compatibility_date = "2026-11-01"
+workers_dev = true
+preview_urls = false
+
+# Its own namespace, not the push Worker's, created on 10 Nov 2026 with
+#   npx wrangler kv namespace create COUNTS
+# One key a UTC day, d/YYYY-MM-DD, holding that day's totals (README, "Records").
+[[kv_namespaces]]
+binding = "COUNTS"
+id = "b2fed43ceff2420fae65cf2a6d9733b4"
+
+[vars]
+ALLOWED_ORIGIN = "https://swimsignal.co.uk"
+# READ_TOKEN is a secret, not a var: it opens GET. Without it GET answers 404. Set it with
+#   npx wrangler secret put READ_TOKEN
+# Never write it in this file.

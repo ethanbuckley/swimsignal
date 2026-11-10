@@ -65,7 +65,7 @@ function form(fetch, value = 'ann@example.org') {
   const msg = {textContent: ''}, button = {disabled: false};
   const email = {value, checkValidity: () => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(value), focus() {}};
   const f = {elements: {email, website: {value: ''}}, querySelector: () => button, addEventListener: (_, fn) => { submit = fn; }};
-  const ctx = vm.createContext({DATA: {email: EMAIL, spots: [{id: 'a'}, {id: 'b'}]}, SAVED: new Set(['a', 'gone']), fetch, AbortSignal,
+  const ctx = vm.createContext({DATA: {email: EMAIL, spots: [{id: 'a'}, {id: 'b'}]}, SAVED: new Set(['a', 'gone']), fetch, AbortSignal, countAction: () => {},
     document: {getElementById: id => ({'alert-mail': f, 'alerts-mail-msg': msg})[id]}});
   vm.runInContext(source + ';bindEmailAlerts();', ctx);
   return {send: () => submit({preventDefault() {}}), msg, email, button};

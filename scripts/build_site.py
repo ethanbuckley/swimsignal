@@ -383,6 +383,65 @@ def ask_config() -> dict | None:
     return {"url": url}
 
 
+# Action counts (actions/, the Worker, and its README): on when DIPCAST_ACTIONS_URL is set to the Worker's address.
+# It goes in the app's head as <meta name="swimsignal-actions">, which turns on countAction in index.html, and the
+# privacy notice gains its section, two sentences change and "(action counts)" follows its date. What the section says
+# is what actions/src/index.js does: a day's totals, and per-spot totals for three actions; no IP address, user agent,
+# cookie or identifier. Set it only once the Worker is deployed and answering (actions/README.md, "Deploying").
+ACTIONS_URL_ENV = "DIPCAST_ACTIONS_URL"
+ACTIONS_META = '<meta name="swimsignal-actions" content="{url}">'
+ACTIONS_PRIVACY = (
+    '<h2 id="action-counts">Action counts</h2>\n<p>To learn whether the site is useful, SwimSignal counts how often five '
+    "things are done on it: a spot's page opened, a day picked on a spot's page, a spot saved, a plan made on Plan a "
+    "swim, and alerts turned on. When you do one, your browser sends SwimSignal's counting service, which runs on "
+    "Cloudflare Workers, the name of the action and, for the first three, which spot. The service adds one to that "
+    "day's total and keeps nothing else: not your IP address, not your browser's details, no cookie and no identifier, "
+    "so it cannot tell whether two actions came from the same person or the same device. Nothing is stored on your "
+    "device for it. The daily totals hold nothing about anyone, and are kept to compare one week with another. "
+    "Cloudflare sees your IP address when the count is sent, as any web server would; "
+    '<a href="https://www.cloudflare.com/privacypolicy/">Cloudflare\'s privacy policy</a> applies to that. Your actions '
+    "are not counted if you choose \"Don't count my visits\" under \"Saved spots, offline use and your data\" at the "
+    "bottom of the home page, or if your browser sends Global Privacy Control or Do Not Track.</p>\n")
+# The short version's sentence about analytics, with the page-view counter off and on (NO_COUNTER, WITH_COUNTER).
+ACTIONS_SWAPS = [
+    (NO_COUNTER[1], "There is no third-party tracking. Five actions, such as saving a spot, are counted as daily totals "
+                    "that hold nothing about who did them (see Action counts)."),
+    ("There is no other analytics or tracking.", "Five actions, such as saving a spot, are also counted as daily totals "
+     "that hold nothing about who did them (see Action counts). There is no other analytics or tracking."),
+]
+
+
+def actions_url() -> str | None:
+    url = os.environ.get(ACTIONS_URL_ENV, "").strip()
+    if not url:
+        return None
+    if not re.fullmatch(r"https://[A-Za-z0-9.-]+(:\d+)?/", url):
+        log.warning("%s must be https://host/: action counts left off", ACTIONS_URL_ENV)
+        return None
+    return url
+
+
+def with_actions(html: str, name: str, url: str | None) -> str:
+    """With action counts on: the app's head names the Worker, and the privacy notice says what is counted. Run after
+    with_counter, whose sentence it may change. Unchanged with url None."""
+    if not url:
+        return html
+    if name == "index.html":
+        if "</head>" not in html:
+            raise ValueError("index.html has no </head> for the action counter's address")
+        return html.replace("</head>", ACTIONS_META.format(url=escape(url)) + "</head>", 1)
+    if name == "privacy.html":
+        if "<h2>The server version</h2>" not in html:
+            raise ValueError("privacy.html has lost its heading The server version, before which the action counts go")
+        swapped = [a for a, _ in ACTIONS_SWAPS if a in html]
+        if len(swapped) != 1:
+            raise ValueError("privacy.html: the short version's analytics sentence no longer matches ACTIONS_SWAPS")
+        html = html.replace(swapped[0], dict(ACTIONS_SWAPS)[swapped[0]], 1)
+        html = html.replace("<h2>The server version</h2>", ACTIONS_PRIVACY + "<h2>The server version</h2>", 1)
+        return privacy_updated(html, "action counts")
+    return html
+
+
 # With Ask on, the privacy notice gains this section before "The server version", and "(Ask SwimSignal)"
 # after its date. What it says is what ask/src/index.js does: the question goes to the Worker and to
 # Anthropic; the Worker keeps a keyed hash of the connection and the day, deleted the day after, and the
@@ -3066,7 +3125,7 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
                 northern_ireland: dict | None = None, support: str | None = None, tiles: dict | None = None,
                 push_dates: bool = False, spot_cards: dict[str, str] | None = None, cards_v: str = "",
                 overflows: pd.DataFrame | None = None, generated: pd.Timestamp | None = None, ask: bool = False,
-                push_advice: bool = False) -> int:
+                push_advice: bool = False, actions: str | None = None) -> int:
     """Every HTML page, the sitemap and the app files. Returns the number of spot pages. A spot
     whose id is not letters, digits and hyphens gets no page of its own and keeps ?spot=.
     support is the Ko-fi page tips go to (support_url), or None for no tips; tiles the map tile
@@ -3074,11 +3133,13 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     card in cards/spot/ (write_spot_cards); cards_v goes on its address, so a preview fetched again
     gets this build's card rather than a cached one. overflows: this build's overflow table, for the
     data-quality page (write_quality_page); generated: the forecast's issue time, which that page gives.
-    ask: Ask SwimSignal is on (ask_config), which adds its section to the privacy notice."""
+    ask: Ask SwimSignal is on (ask_config), which adds its section to the privacy notice. actions: the action
+    counter's address (actions_url), or None for no action counts."""
     root = root or site_url()
     stamp = shell_stamp()
     template = with_tiles(with_build(TEMPLATE.read_text(), stamp), "index.html", tiles)
     template = with_scotland_credit(template)
+    template = with_actions(template, "index.html", actions)   # the counter's address, for countAction; nothing when off
     if not (PAGE_META.search(template) and LOADING in template):
         raise ValueError("index.html has lost its page-meta block or its loading placeholder")
     template = lean_page(template)   # its CSS comments and comment-only script lines: the source keeps them
@@ -3114,6 +3175,7 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
         if name == "privacy.html" and ask:
             s = with_ask(s)
         s = with_counter(with_push(s, push, email, push_dates, push_advice) if name == "privacy.html" else s, token)
+        s = with_actions(s, name, actions)   # after the counter, whose sentence it changes
         s = with_share_meta(with_tiles(s, name, tiles), name, root)
         (site / name).write_text(with_support(s, name) if support else s)
     if support:
@@ -4983,7 +5045,7 @@ def build(refresh: bool = True) -> dict:
                                        coastal=coastal, wales=wales, scotland=scotland, email=email is not None,
                                        ireland=ireland, northern_ireland=northern_ireland, support=support_url(), tiles=tile_config(),
                                        push_dates=bool(push and push.get("dates")), ask=ask is not None,
-                                       push_advice=bool(push and push.get("advice")),
+                                       push_advice=bool(push and push.get("advice")), actions=actions_url(),
                                        spot_cards=spot_cards, cards_v=generated.strftime("%Y%m%d%H%M"),
                                        overflows=_overflows(), generated=generated)
     # Swimmers' reviews: the published ones into site/reviews/, and their sections into the pages just written.
