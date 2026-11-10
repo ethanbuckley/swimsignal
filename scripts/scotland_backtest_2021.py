@@ -56,9 +56,13 @@ SRC_2020 = "Scottish Water reported 2020-2024 (archived 7 Oct 2025)"
 SRC_2017 = "Scottish Water reported 2017-2021 (archived 19 Dec 2022)"
 MAPPED, ENGLAND = "trial forecast (production, Scotland's map)", "production, England's lead-0 calibration"
 
-# Gate A's code reads these module constants at call time; this run sets them for 2021 only.
-hs.TEST_YEARS = [TEST_YEAR]
-hs.FIRST_RAIN_YEAR = TEST_YEAR - 1
+
+
+def use_2021() -> None:
+    """Gate A's code reads these module constants at call time. Set them for this run only, from main, so that
+    importing this script (as its tests do) leaves Gate A's own defaults alone."""
+    hs.TEST_YEARS = [TEST_YEAR]
+    hs.FIRST_RAIN_YEAR = TEST_YEAR - 1
 
 
 def sha256(p: Path) -> str:
@@ -281,6 +285,7 @@ def reported(df: pd.DataFrame, n_boot: int) -> dict:
 
 
 def main(argv: list[str] | None = None) -> dict:
+    use_2021()
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--edition-2017", type=Path, required=True)
     ap.add_argument("--edition-2020", type=Path, required=True)
