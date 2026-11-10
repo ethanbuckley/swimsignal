@@ -75,7 +75,7 @@ side's chance is
 > (spills + 0.5) ÷ (rows + 1)
 
 over the **fitting rows**: scored rows of the same lead L, on the same side of the same rule, all companies pooled,
-on which that rule has a chance, with target day from I − 28 to I − 1. The page's outcome for target day I − 1 is
+on which that rule can be applied (status known for P; both days' rain for R), with target day from I − 28 to I − 1. The page's outcome for target day I − 1 is
 known to the 08:00 build of day I. Nothing from day I or later enters. If the side has fewer than 100 fitting rows,
 the row has no chance from that rule.
 
@@ -148,7 +148,9 @@ Every outcome leads to the page showing what it shows; nothing is adopted or wit
 
 ## Changes after this statement
 
-None yet.
+1. **Wording, 10 November 2026, before any score was computed.** The fitting rows were described as rows "on which
+   that rule has a chance", which is circular (a chance needs the fit). They are the rows on which the rule can be
+   applied: status known for P, both days' rain for R. The intended rule is unchanged.
 
 ## Results
 
