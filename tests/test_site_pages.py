@@ -1270,3 +1270,50 @@ def test_information_pages_offer_mobile_navigation_and_map_handoff(tmp_path):
     assert '<a href="https://example.org/swim/research.html">Research and data</a>' in lost and 'href="index.html"' not in lost
     assert "url.searchParams.get('map') === '1'" in app
     assert "url.searchParams.delete('map'); history.replaceState(history.state, '', url); setMapMode(true);" in app
+
+
+def _ld(page: str) -> dict:
+    head = page.split("</head>")[0]
+    found = re.findall(r'<script type="application/ld\+json">(.*?)</script>', head, re.DOTALL)
+    assert len(found) == 1, "one JSON-LD block in the head"
+    return json.loads(found[0])
+
+
+def test_a_spots_page_describes_the_place_and_its_forecast_as_structured_data(tmp_path):
+    """Search engines read a spot as a schema.org Place, with its position and water, and its forecast as a Dataset
+    whose file the data page lists; nothing in either is today's level. A spot with no forecast is a Place only."""
+    bs = _build_site()
+    spots = [
+        {**SPOTS[0], "lat": 53.931894, "lon": -1.81618, "river": "River Wharfe", "location": {"watercourse": "River Wharfe"},
+         "guide": {"photos": [
+             {"file": "a-sign.jpg", "w": 640, "h": 480, "topic": "rules", "caption": "A sign.", "credit": "A. Person",
+              "status": "historical", "source": "https://www.geograph.org.uk/photo/1", "source_name": "Geograph",
+              "licence": "https://creativecommons.org/licenses/by-sa/2.0/", "title": "Sign", "changes": "Re-encoded."},
+             {"file": "the-river.jpg", "w": 640, "h": 427, "topic": "overview", "caption": "The river </script> upstream.",
+              "credit": "Oliver Dixon", "status": "historical", "source": "https://www.geograph.org.uk/photo/7486475",
+              "source_name": "Geograph", "licence": "https://creativecommons.org/licenses/by-sa/2.0/", "title": "Bridge",
+              "changes": "Re-encoded."}]}},
+        {**SPOTS[1], "lat": 54.4, "lon": -3.0, "location": {"watercourse": "A Tarn"}},
+    ]
+    bs.write_pages(tmp_path, spots, root="https://example.org/swim/", day="2026-09-29")
+    page = (tmp_path / "spot" / "wharfe-ilkley" / "index.html").read_text()
+    assert "</script> upstream" not in page.split("</head>")[0]   # a "<" in the data cannot end the script early
+    ld = _ld(page)
+    assert ld["@context"] == "https://schema.org"
+    place, data = ld["@graph"]
+    assert place["@type"] == "Place" and place["name"] == 'Wharfe at "Cromwheel" & Ilkley'
+    assert place["url"] == "https://example.org/swim/spot/wharfe-ilkley/" and place["@id"].endswith("#place")
+    assert place["geo"] == {"@type": "GeoCoordinates", "latitude": 53.93189, "longitude": -1.81618}
+    assert place["containedInPlace"] == {"@type": "RiverBodyOfWater", "name": "River Wharfe"}
+    assert place["description"] == bs.spot_blurb(spots[0])   # the page's own description, word for word
+    img = place["image"]   # the overview, not the first photo
+    assert img["contentUrl"] == "https://example.org/swim/guides/photos/the-river.jpg" and img["creator"]["name"] == "Oliver Dixon"
+    assert img["license"] == "https://creativecommons.org/licenses/by-sa/2.0/" and img["acquireLicensePage"].endswith("/7486475")
+    assert data["@type"] == "Dataset" and data["spatialCoverage"] == {"@id": place["@id"]}
+    assert data["distribution"][0]["contentUrl"] == "https://example.org/swim/data/spots.json" and (tmp_path / "data.html").exists()
+    assert data["license"] == "https://example.org/swim/data.html" and data["isAccessibleForFree"] is True
+    assert 50 <= len(data["description"]) <= 5000   # Google's bounds for a dataset's description
+    assert "very high" not in json.dumps(ld).lower()   # no level: a search engine's copy outlives the forecast
+    tarn = _ld((tmp_path / "spot" / "tarn" / "index.html").read_text())
+    assert [g["@type"] for g in tarn["@graph"]] == ["Place"]   # no forecast here, so no dataset
+    assert tarn["@graph"][0]["containedInPlace"]["@type"] == "LakeBodyOfWater" and "image" not in tarn["@graph"][0]
