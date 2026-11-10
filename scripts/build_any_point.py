@@ -35,6 +35,8 @@ Everything is written under site/data/anypoint/:
   outside_england.json Wales, Scotland and the island of Ireland, widened over their estuaries, where a
                        click gets "England only", and which part of the island is Northern Ireland (a
                        copy of data/raw/outside_england.json, scripts/make_outside_england.py)
+  names/               river and lake names there, so such a click can name its water: a copy of
+                       data/raw/outside_names/ (scripts/make_outside_names.py)
 
 A click is placed as transport._locate places it: inside or within 150 m of a WFD lake polygon it
 is that lake (one with no lake centreline inside takes the centreline nearest the click within
@@ -146,6 +148,7 @@ CACHE_VERSION = 8         # bump when the table's rules change (6: lakes crossed
                           # 8: no centreline for a WFD lake with none inside)
 OUT = "anypoint"
 OUTSIDE_ENGLAND = config.RAW / "outside_england.json"
+OUTSIDE_NAMES = config.RAW / "outside_names"
 RAIN_CELLS_PER_BUILD = int(os.environ.get("DIPCAST_ANYPOINT_RAIN_CELLS", "300"))
 RAIN_MAX_AGE_H = 24.0
 RAIN_REFRESH_H = 12.0   # a cell is asked for at most every 12 hours (module docstring, "Rain")
@@ -1357,6 +1360,19 @@ def write_overflow_days(out: Path, ov: pd.DataFrame, ids: list[str], idv: str, p
             "no_data_share": round(float(np.isnan(p).mean()), 4) if p.size else 0.0}
 
 
+def copy_outside(out: Path, shape: Path = OUTSIDE_ENGLAND, names: Path = OUTSIDE_NAMES) -> None:
+    """Copy the outline of everywhere outside England and the names there into `out`. The overflow data is England's:
+    without the outline a click in Wales or Scotland near the border is traced as if in England, and finds no overflow
+    upstream. The names only name the water at such a click."""
+    if shape.exists():
+        shutil.copyfile(shape, out / OUTSIDE_ENGLAND.name)
+    else:
+        log.warning("any-point data: %s is missing, so the page cannot tell a click outside England", shape)
+    shutil.rmtree(out / "names", ignore_errors=True)   # no square left from an older copy
+    if names.is_dir():
+        shutil.copytree(names, out / "names")
+
+
 def size_of(path: Path) -> int:
     return sum(f.stat().st_size for f in path.rglob("*") if f.is_file())
 
@@ -1387,12 +1403,7 @@ def build(site: Path, net: RiverNetwork, ov: pd.DataFrame, probabilities, credit
         "tiles": meta["tiles"], "dilution_scale": DIL_SCALE, "p_scale": P_SCALE,
         "forms": FORMS, "snap_m": PIN_SNAP_M, "lake_snap_m": LAKE_SNAP_M, "lake_shore_m": LAKE_SHORE_M,
         "lake_bias": transport.LAKE_BIAS, **({"credits": credits} if credits else {})}, separators=(",", ":")))
-    # The overflow data is England's: without this file a click in Wales or Scotland near the border is
-    # traced as if in England, and finds no overflow upstream.
-    if OUTSIDE_ENGLAND.exists():
-        shutil.copyfile(OUTSIDE_ENGLAND, out / OUTSIDE_ENGLAND.name)
-    else:
-        log.warning("any-point data: %s is missing, so the page cannot tell a click outside England", OUTSIDE_ENGLAND)
+    copy_outside(out)
     summary = {**stats, **meta["counts"], "tiles": len(meta["tiles"]), "overflows": days["n"], "days": days["days"],
                "rain": days["rain"], "rain_unavailable_share": days["no_data_share"],
                "outside_england": OUTSIDE_ENGLAND.exists(), "bytes": size_of(out),

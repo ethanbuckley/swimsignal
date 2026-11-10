@@ -502,6 +502,19 @@ const AnyPoint = (() => {
       .catch(e => { memo.delete(name); throw e; }));
     return memo.get(name);
   };
+  // The name squares near a click outside England, from every source that has them, or null from a build without them.
+  async function namesNear(lat, lon, cfg) {
+    const ix = await json('names/index.json').catch(() => null);
+    if (!ix) return null;
+    const want = Object.entries(ix.sources).flatMap(([src, s]) =>
+      squares(lat, lon, { snap_m: cfg.snap_m, tile_deg: ix.tile_deg, tiles: s.tiles }).map(k => [src, k]));
+    const got = await Promise.all(want.map(async ([src, k]) => {
+      const t = await json(`names/${src}/${k}.json`).catch(() => null);
+      const [r, c] = k.split('_').map(Number);
+      return t && { ...t, r, c };
+    }));
+    return { q: ix.q, deg: ix.tile_deg, squares: got.filter(Boolean) };
+  }
   // The squares within the snap distance of a click that have files.
   function squares(lat, lon, cfg) {
     const dy = (cfg.snap_m + 100) / 111000, dx = dy / Math.cos(lat * RAD), have = new Set(cfg.tiles), out = new Set();
@@ -550,13 +563,45 @@ const AnyPoint = (() => {
         + '<a href="https://www.beaches.ie/" rel="noopener">beaches.ie</a>.' },
   };
   const CHECK_SIGNS = 'A forecast, not a water test: check the signs at the water before you swim.';
+  // The water a click outside England is on, though it has no forecast there (names/, scripts/make_outside_names.py:
+  // OS Open Rivers in Wales and Scotland, OpenStreetMap on the island of Ireland and for the named lakes of all three).
+  // A named lake the click is on or within the lake shore distance of, as a click in England is placed on a lake;
+  // else the nearest named river or stream within the snap distance. A line through a lake has no name (OS names
+  // those after a stream: Loch Lomond's is "Arn Burn"), so a click nearest one, as a click with nothing near, stays
+  // "This point". The name only: what the card says about the point does not change.
+  // A square's points, [lat, lon]: the first from its south-west corner, the rest as differences, in q degrees.
+  function unflat(v, lat0, lon0, q) {
+    const out = [];
+    let x = 0, y = 0;
+    for (let k = 1; k + 1 < v.length; k += 2) { x += v[k]; y += v[k + 1]; out.push([lat0 + y * q, lon0 + x * q]); }
+    return out;
+  }
+  // near: {q, deg, squares: [{r, c, names, lines, lakes}]}, from namesNear.
+  function outsideName(lat, lon, near, reach, shore) {
+    if (!near) return null;
+    const xy = frame(lat, lon);
+    let lake = null, line = null;
+    for (const t of near.squares) {
+      const lat0 = t.r * near.deg, lon0 = t.c * near.deg;
+      for (const v of t.lakes || []) {
+        const ring = unflat(v, lat0, lon0, near.q);
+        const d = inRing(lon, lat, ring.map(([a, b]) => [b, a])) ? 0 : nearestOnLine(ring.map(([a, b]) => xy(a, b))).d;
+        if (d <= shore && (!lake || d < lake.d)) lake = { d, name: t.names[v[0]] };
+      }
+      for (const v of t.lines) {
+        const { d } = nearestOnLine(unflat(v, lat0, lon0, near.q).map(([a, b]) => xy(a, b)));
+        if (d <= reach && (!line || d < line.d)) line = { d, name: v[0] >= 0 ? t.names[v[0]] : null };
+      }
+    }
+    return lake ? lake.name : line ? line.name : null;
+  }
   const NOT_HERE = 'Each level is that spot\'s own forecast, not this point\'s.';
 
   // Where a click goes and the overflows upstream of it, from the files: {mode, kind, name,
   // location, rows} or, where there is no forecast, {error}. files: {cfg: tiles.json, lakes:
   // lakes.json, od: overflow_days.json, tiles: {square: {index, links}}} for the squares near it,
   // and outside: outside_england.json, or null from a build without it; scotland: true while the
-  // Scotland trial lists its spots.
+  // Scotland trial lists its spots; names: namesNear's, for a click outside England.
   // A reservoir can be filled by pumping from a river, which the network does not show.
   const ISOLATED = 'An isolated lake: the river network links no monitored storm overflow to it, '
     + 'so the forecast has nothing to say about it. A reservoir filled by pumping from a river can still take in river water. '
@@ -568,7 +613,8 @@ const AnyPoint = (() => {
     const { cfg, lakes, od, tiles, outside = null, outlines = {}, waters = {}, scotland = false } = files, a = od.assumptions;
     const at0 = outsideWhere(lat, lon, outside);
     const where = at0 === 'wales_scotland' && scotland && lat >= WALES_NORTH_LAT ? 'scotland_trial' : at0;
-    if (where) return { mode: 'none', kind: '', name: 'This point', error: OUTSIDE[where].error, outside: where };
+    if (where) return { mode: 'none', kind: '', name: outsideName(lat, lon, files.names, cfg.snap_m, cfg.lake_shore_m) || 'This point',
+      error: OUTSIDE[where].error, outside: where };
     const poly = lakePolygon(lat, lon, lakes, cfg.lake_shore_m, outlines);
     // A WFD lake with no lake centreline inside takes the one nearest the click within 1.5 km
     // (transport._in_polygon). With none, a click on its water is the isolated lake, and one on its
@@ -623,7 +669,8 @@ const AnyPoint = (() => {
       .map(async i => [i, await json(`lake_outlines/${i}.json`).catch(() => null)])));
     const keys = needsSquares(lat, lon, lakes, cfg, outside, outlines) ? squares(lat, lon, cfg) : [];
     const tiles = Object.fromEntries(await Promise.all(keys.map(async k => [k, await tile(k, cfg)])));
-    let at = place(lat, lon, { cfg, lakes, od, tiles, outside, outlines, scotland });
+    const names = outsideEngland(lat, lon, outside) ? await namesNear(lat, lon, cfg) : null;   // only a click outside England reads them
+    let at = place(lat, lon, { cfg, lakes, od, tiles, outside, outlines, scotland, names });
     if (at.need) {
       for (const k of at.need) tiles[k] = await tile(k, cfg);
       at = place(lat, lon, { cfg, lakes, od, tiles, outside, outlines, scotland });
@@ -756,7 +803,7 @@ const AnyPoint = (() => {
   }
 
   return { historyDays, interp, calibrate, shiftByTravel, combineDaily, missingShare, riskLabel, rowsAt, lakeRows, transportOf, forecast, rainAt, waterAt,
-    frame, nearestOnLine, waterWay, decodeIndex, lakeName, candidates, inRing, polygonDistance, outlineDistance, nearLakes, lakePolygon, outlinesNeeded, needsSquares, outsideEngland, outsideWhere, OUTSIDE, WALES_NORTH_LAT, locate, place, tileKey, squares, point, open, onMapClick, POINT_ZOOM };
+    frame, nearestOnLine, waterWay, decodeIndex, lakeName, candidates, inRing, polygonDistance, outlineDistance, nearLakes, lakePolygon, outlinesNeeded, needsSquares, outsideEngland, outsideWhere, outsideName, namesNear, unflat, OUTSIDE, WALES_NORTH_LAT, locate, place, tileKey, squares, point, open, onMapClick, POINT_ZOOM };
 })();
 
 if (typeof window !== 'undefined' && typeof map !== 'undefined') {
