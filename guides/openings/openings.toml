@@ -1,0 +1,348 @@
+# Spot openings: two or three sentences of plain fact about each place, for its page ("The place", before the
+# practical guide), its description in search results and its structured data. src/dipcast/openings.py reads this
+# file; docs/DESIGN.md, "A spot's opening", says how the page shows it.
+#
+# Each entry is the hand-written part: one or two sentences on the water and how people reach it. The build adds one
+# sentence of its own from that run's trace of the river network (the monitored storm overflows upstream, whose they
+# are, how many report live, the nearest), so that part never goes stale here.
+#
+# The rules, which tests/test_openings.py checks:
+# - Every fact is from a page the entry lists in `sources` (the landowner's, a council's, a national park's, the
+#   Environment Agency's bathing water profile), or from what the site already shows (the river, the lake and its
+#   size in km², which the site takes from the Environment Agency's lake outlines). For a spot with a practical guide
+#   the entry restates facts already in it, from the same pages, and `checked` is the day the guide gives; the others'
+#   pages were read on 10 November 2026.
+# - No safety claim, no verdict on the water, no advert's words ("popular", "best", "stunning"). Permission is said
+#   only as the source says it, and named as theirs. Prices and opening hours stay in the guide, where they are dated.
+# - One or two sentences, at most 330 characters.
+#
+# Which spots (10 November 2026). The 40 most-visited spot pages, ranked by the spot-page visits in the weekly counts
+# for the weeks starting 19 Oct, 26 Oct and 2 Nov 2026, summed (the figures themselves are private and not in this
+# repository). Those weeks name 26 spots; the other 14 are the rest of the Cumbria and Lake District focus area that
+# Ethan chose on 25 Oct 2026, in that list's order. The entries below are in that order.
+
+[ribble-stainforth-force]
+text = "Stainforth Force is on the River Ribble, a walk from the Yorkshire Dales National Park Authority's car park in Stainforth village. The Authority's route follows the Pennine Bridleway signs under the road and over the railway, crosses a narrow packhorse bridge and takes the footpath through the fields to the falls."
+checked = 2026-10-29
+sources = [
+  { name = "Yorkshire Dales National Park Authority", url = "https://www.yorkshiredales.org.uk/places/stainforth_force/" },
+  { name = "Yorkshire Dales National Park Authority: car parks", url = "https://www.yorkshiredales.org.uk/plan-your-visit/essential-information/car-parks-and-toilets/" },
+]
+
+[bw-ukh1201-09801]
+text = "Sheep's Green is an Environment Agency designated bathing water on the River Cam in Cambridge, where cattle graze Sheep's Green and Coe Fen each year. Cambridge City Council says you can reach it from Fen Causeway, Lammas Land, Mill Lane and Trumpington Road, and a level path runs around the site."
+checked = 2026-10-03
+sources = [
+  { name = "Environment Agency bathing water profile", url = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukh1201-09801" },
+  { name = "Cambridge City Council", url = "https://www.cambridge.gov.uk/sheeps-green-and-coe-fen-local-nature-reserve" },
+]
+
+[bw-ukj2310-11945]
+text = "Frensham Great Pond is a 0.3 km² lake and an Environment Agency designated bathing water, with its main car park on Bacon Lane, Churt. Waverley Borough Council allows swimming only at the Great Pond, within the marked areas, on a sandy beach in front of the Ranger's Office and the main car park."
+checked = 2026-10-03
+sources = [
+  { name = "Waverley Borough Council", url = "https://www.waverley.gov.uk/services/greenspaces-leisure-and-things-to-do/greenspaces-in-waverley/key-sites/frensham-great-pond" },
+  { name = "Environment Agency bathing water profile", url = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukj2310-11945" },
+]
+
+[osm-windermere-waterhead]
+text = "Waterhead is on the north basin of Windermere at Ambleside, by the pier Windermere Lake Cruises sails from, with a pay and display car park. The National Park Authority says swimming is allowed on Windermere and lists it among the busier lakes, with motorboats, sailing boats and other craft."
+checked = 2026-10-20
+sources = [
+  { name = "Windermere Lake Cruises", url = "https://www.windermere-lakecruises.co.uk/find-us" },
+  { name = "Lake District National Park Authority: car parks", url = "https://lakedistrict.gov.uk/explore/visitor-facilities/car-parks-and-parking/" },
+  { name = "Lake District National Park Authority: swimming", url = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/swimming-in-the-lake-district/" },
+  { name = "Lake District National Park Authority: lakes guide", url = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/lakes-activities-guide/" },
+]
+
+[stour-dedham]
+text = "Dedham is on the River Stour, joined to Flatford by riverside meadows that the National Trust's Flatford and Constable country walk crosses to a bridge at Dedham. The National Trust lists car parks for the walk at Manningtree station, Flatford and Dedham."
+checked = 2026-11-10
+sources = [
+  { name = "National Trust", url = "https://www.nationaltrust.org.uk/visit/suffolk/flatford/flatford-and-constable-country-walk" },
+]
+
+[osm-thames-long-bridges]
+text = "Longbridges, where two small backwaters of the River Thames meet in Oxford, was once an open-air river bathing place and is now a nature reserve, reached on foot or by bike along the Thames Path. Oxford City Council says it is not a designated bathing area and does not recommend swimming there."
+checked = 2026-10-20
+sources = [
+  { name = "Oxford City Council", url = "https://www.oxford.gov.uk/directory-record/680/longbridges-nature-park" },
+]
+
+[bw-ukd4308-46501]
+text = "Edisford Bridge is an Environment Agency designated bathing water on the River Ribble, where a gently sloping shingle beach is exposed when the river is low. Public parking is at Ribble Valley Borough Council's Edisford Road car park, opposite Ribblesdale pool."
+checked = 2026-10-26
+sources = [
+  { name = "Environment Agency bathing water profile", url = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukd4308-46501" },
+  { name = "Ribble Valley Borough Council", url = "https://www.ribblevalley.gov.uk/parks-open-spaces/edisford-bridge" },
+  { name = "Ribble Valley Borough Council: Edisford Road car park", url = "https://www.ribblevalley.gov.uk/car-parks/car-parks-parking/6" },
+]
+
+[osm-itchen-compton-lock]
+text = "Compton Lock, also known as Twyford Lock, is on the Itchen Navigation on the west side of Twyford Meads, where a weir and footbridge have replaced the lock gates. Compton and Shawford Parish Council describes a wooded path to Compton Lock from the end of Bridge Lane."
+checked = 2026-11-10
+sources = [
+  { name = "Twyford Parish Council", url = "https://twyfordhants-pc.gov.uk/fishing/" },
+  { name = "Compton and Shawford Parish Council", url = "https://comptonshawford-pc.gov.uk/open-spaces/" },
+]
+
+[wye-hereford]
+text = "Bishop's Meadow is on the River Wye in Hereford, about 0.2 km from the Environment Agency's river level gauge at Old Wye Bridge. Herefordshire Council licenses its tennis courts and recreation area."
+checked = 2026-11-10
+sources = [
+  { name = "Environment Agency: River Wye level at Old Wye Bridge", url = "https://check-for-flooding.service.gov.uk/station/4017" },
+  { name = "Herefordshire Council", url = "https://councillors.herefordshire.gov.uk/ieDecisionDetails.aspx?ID=10629" },
+]
+
+[wharfe-burnsall]
+text = "Burnsall is a village on the River Wharfe in the Yorkshire Dales. The National Park Authority says parking there is extremely limited, that the field once used as the visitors' car park is closed, and encourages visitors to consider places away from Burnsall."
+checked = 2026-10-29
+sources = [
+  { name = "Yorkshire Dales National Park Authority", url = "https://www.yorkshiredales.org.uk/places/burnsall/" },
+]
+
+[thames-henley]
+text = "At Henley-on-Thames, Mill and Marsh Meadows, Henley Town Council's main recreational park, lie beside the River Thames upstream of Henley Bridge, with the Thames Path on the towpath along their eastern side. Meadow Road leads into the park's pay and display car park."
+checked = 2026-11-10
+sources = [
+  { name = "Henley Town Council", url = "https://www.henleytowncouncil.gov.uk/services/green-spaces-parks/" },
+]
+
+[osm-dart-dartington]
+text = "Dartington Pontoon is on the River Dart. The Dartington Hall Trust's riverside path runs for two miles alongside the river on the Dartington Hall estate, with car parking at Totnes Pavilion in Borough Park and at the Cider Press Centre."
+checked = 2026-11-10
+sources = [
+  { name = "Dartington Hall Trust", url = "https://www.dartington.org/visit/walks" },
+]
+
+[bw-ukg2200-36071]
+text = "This Environment Agency designated bathing water is on the River Severn in Shrewsbury, entered from the northern bank by the canoe launch ramp, just upstream of Frankwell Footbridge. Shropshire Council's Frankwell Riverside car park is next to the ramp."
+checked = 2026-10-26
+sources = [
+  { name = "Environment Agency bathing water profile", url = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukg2200-36071" },
+  { name = "Shropshire Council", url = "https://next.shropshire.gov.uk/parking/find-my-nearest-car-park/shrewsbury-frankwell-riverside/" },
+]
+
+[bw-ukj1403-11947]
+text = "Wallingford Beach is an Environment Agency designated bathing water on the east bank of the River Thames, immediately south of Wallingford Bridge, where a sloping bank by an area of grassland leads into the water. From the Thames Path you cross the bridge to reach it, and Riverside car park is close by."
+checked = 2026-10-03
+sources = [
+  { name = "Environment Agency bathing water profile", url = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukj1403-11947" },
+]
+
+[bw-ukd1230-45750]
+text = "Coniston Boating Centre is an Environment Agency designated bathing water on the north-western shore of Coniston Water, with a gravel beach, about half a mile on foot from Coniston village. The Boating Centre says you are welcome to swim from it, and advises a route along the shoreline because the lake is busy with boats."
+checked = 2026-10-03
+sources = [
+  { name = "Environment Agency bathing water profile", url = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukd1230-45750" },
+  { name = "Coniston Boating Centre: location", url = "https://www.conistonboatingcentre.co.uk/visiting-information/location-and-travel/" },
+  { name = "Coniston Boating Centre: visiting", url = "https://www.conistonboatingcentre.co.uk/visiting-information/" },
+]
+
+[wye-symonds-yat]
+text = "At Symonds Yat the River Wye is crossed by a hand ferry from the Saracen's Head in Symonds Yat East, which does not run when the river is in flood, and a couple of boats operate from there, generally between March and October. A steep path leads down to the riverside at Symonds Yat East."
+checked = 2026-11-10
+sources = [
+  { name = "Wye Valley National Landscape: on the water", url = "https://www.wyevalley-nl.org.uk/exploring-wye-valley-aonb/on-the-water/" },
+  { name = "Wye Valley National Landscape: views", url = "https://www.wyevalley-nl.org.uk/exploring-wye-valley-aonb/views-and-picnic/" },
+]
+
+[grasmere]
+text = "Grasmere is a 0.6 km² lake where motor boats are prohibited, and the National Park Authority says swimming is allowed. A smooth path runs from the lower White Moss Common car park beside the River Rothay to Penny Rock Wood, and the National Trust's lakeshore walk passes Penny Rock Beach."
+checked = 2026-10-03
+sources = [
+  { name = "Lake District National Park Authority: lakes guide", url = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/lakes-activities-guide/" },
+  { name = "Lake District National Park Authority: Grasmere and Rydal", url = "https://lakedistrict.gov.uk/explore/places-to-go/explore-grasmere-and-rydal/" },
+  { name = "Lake District National Park Authority: White Moss Common", url = "https://lakedistrict.gov.uk/route/white-moss-common/" },
+  { name = "National Trust", url = "https://www.nationaltrust.org.uk/visit/lake-district/allan-bank-and-grasmere/walking-at-allan-bank-and-grasmere" },
+]
+
+[thames-port-meadow]
+text = "Port Meadow is 136.9 hectares of open common land in north Oxford with the River Thames flowing through it, reached from Walton Well Road or Aristotle Lane in the south and from Godstow and Wolvercote in the north. Oxford City Council says it is not a designated bathing area and does not recommend swimming there."
+checked = 2026-11-10
+sources = [
+  { name = "Oxford City Council", url = "https://www.oxford.gov.uk/portmeadow" },
+  { name = "Oxford City Council: directory", url = "https://www.oxford.gov.uk/directory-record/246/port-meadow" },
+]
+
+[cam-grantchester]
+text = "Grantchester Meadows are 50 acres on the western bank of the River Cam between Cambridge and Grantchester, mostly owned by King's College and managed by Cambridge Past, Present & Future. CPPF says the river here does not meet bathing water standards and is sometimes polluted, including from sewage treatment plants upstream."
+checked = 2026-11-10
+sources = [
+  { name = "Cambridge Past, Present & Future", url = "https://cambridgeppf.org/grantchester-meadows/" },
+]
+
+[medway-tonbridge]
+text = "In Tonbridge the River Medway runs past Tonbridge Castle, where the borough council's River Walk follows the river beside the castle, with public car parks within walking distance. The Environment Agency's Medway navigation runs from Allington up to Town Lock in Tonbridge."
+checked = 2026-11-10
+sources = [
+  { name = "Tonbridge and Malling Borough Council", url = "https://www.tmbc.gov.uk/event-sites-advertising/event-spaces/2" },
+  { name = "Environment Agency", url = "https://www.gov.uk/guidance/river-medway-bridges-locks-and-facilities-for-boaters" },
+]
+
+[thames-clifton-hampden]
+text = "Clifton Hampden's six-arched red brick bridge over the River Thames, built about 1864 to a design by Sir Gilbert Scott, replaced a ford and a ferry. The Thames Path runs here from Abingdon, and you can walk under the bridge into Clifton Wharf, a meadow with places to sit."
+checked = 2026-11-10
+sources = [
+  { name = "Historic England", url = "https://historicengland.org.uk/listing/the-list/list-entry/1059815" },
+  { name = "Thames Path National Trail", url = "https://www.nationaltrail.co.uk/en_GB/short-routes/abingdon-culham-clifton-hampden-circular-walk/" },
+]
+
+[bw-ukd6300-40752]
+text = "Sandy Lane is an Environment Agency designated bathing water on the River Dee in east Chester, next to Sandy Lane Park, where the east bank is a shallow slope into the water with a concrete slipway at its northern end. Cheshire West and Chester Council says swimming in the River Dee currently isn't encouraged."
+checked = 2026-10-04
+sources = [
+  { name = "Environment Agency bathing water profile", url = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukd6300-40752" },
+  { name = "Cheshire West and Chester Council", url = "https://www.cheshirewestandchester.gov.uk/residents/leisure-parks-and-events/parks-and-open-spaces/river-dee" },
+]
+
+[gordale-janets-foss]
+text = "Janet's Foss is a waterfall on Gordale Beck, on the Malham Tarn Estate. The National Trust's walk to it starts at the National Park pay and display car park in Malham village and follows a signposted, surfaced path."
+checked = 2026-11-10
+sources = [
+  { name = "National Trust", url = "https://www.nationaltrust.org.uk/visit/yorkshire/yorkshire-dales/malham-village-to-janets-foss" },
+]
+
+[bw-ukd1101-45800]
+text = "Crow Park is an Environment Agency designated bathing water on Derwent Water at Keswick, with a grassed area and a gravel beach. The National Trust's accessible walk from Keswick's Lakeside car park reaches the lake down 150 m of tarmac past Theatre by the Lake."
+checked = 2026-10-20
+sources = [
+  { name = "Environment Agency bathing water profile", url = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukd1101-45800" },
+  { name = "National Trust", url = "https://static.nationaltrust.org.uk/trails/visit/lake-district/borrowdale-and-derwent-water/derwent-water-and-cockshot-wood-accessible-loop-walking.pdf" },
+]
+
+[loughrigg-tarn]
+text = "Loughrigg Tarn lies in a bowl beneath the steep flank of Loughrigg Fell, with a wide bridleway, newly surfaced by the National Trust, around and above it. The National Park Authority's route starts from an informal layby up a minor road off the A593, 2.5 km from Ambleside."
+checked = 2026-11-10
+sources = [
+  { name = "Lake District National Park Authority", url = "https://lakedistrict.gov.uk/route/loughrigg-tarn-circuit/" },
+]
+
+[brothers-water]
+text = "Brothers Water is a 0.2 km² lake with National Trust pay and display parking at Cow Bridge, next to the water. The National Park Authority lists swimming there as allowed, and canoes, kayaks, paddleboards, sailing boats and powered craft as not allowed."
+checked = 2026-10-28
+sources = [
+  { name = "National Trust", url = "https://www.nationaltrust.org.uk/visit/lake-district/aira-force-and-gowbarrow-park/hartsop-to-hayeswater-gill-trail" },
+  { name = "Lake District National Park Authority: lakes guide", url = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/lakes-activities-guide/" },
+]
+
+[bw-ukd1203-45625]
+text = "This Environment Agency designated bathing water is a shallow sloping beach of shingle and gravel on the western edge of Windermere's south basin, at YMCA Lakeside. YMCA Lakeside, reached from the A590 at Newby Bridge, says its site has half a mile of shoreline and 100 acres of private woodland."
+checked = 2026-10-20
+sources = [
+  { name = "Environment Agency bathing water profile", url = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukd1203-45625" },
+  { name = "YMCA Lakeside: how to find us", url = "https://lakesideymca.co.uk/about-ymca-lakeside/how-to-find-us/" },
+  { name = "YMCA Lakeside", url = "https://lakesideymca.co.uk/about-ymca-lakeside/" },
+]
+
+[bw-ukd1203-45650]
+text = "Millerground is an Environment Agency designated bathing water on Windermere's north basin, with a very shallow sloping gravel beach and larger rocks towards the water's edge. The National Trust's 2018 access statement says the route down to Low Millerground is steep but well surfaced."
+checked = 2026-10-03
+sources = [
+  { name = "Environment Agency bathing water profile", url = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukd1203-45650" },
+  { name = "National Trust access statement", url = "https://nt.global.ssl.fastly.net/binaries/content/assets/website/national/regions/lake-district/places/stagshaw-garden-and-ambleside/pdf/stagshaw-garden-and-ambleside-access-statement.pdf" },
+]
+
+[bw-ukd1203-45675]
+text = "Rayrigg Meadow is an Environment Agency designated bathing water on Windermere's north basin, with a shallow sloping gravel beach and larger rocks towards the water's edge. Westmorland and Furness Council lists public jetties, swimming areas and an accessible path to the lake shore there, and runs a car park at Rayrigg Meadow."
+checked = 2026-10-03
+sources = [
+  { name = "Environment Agency bathing water profile", url = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukd1203-45675" },
+  { name = "Westmorland and Furness Council", url = "https://www.westmorlandandfurness.gov.uk/parks-culture-and-leisure/parks-and-open-spaces/parks-and-public-gardens/rayrigg-meadow" },
+  { name = "Westmorland and Furness Council: car park", url = "https://www.westmorlandandfurness.gov.uk/parking-streets-and-transport/parking/find-car-park-near-you/rayrigg-meadow-car-park" },
+]
+
+[bw-ukd1203-45700]
+text = "Fell Foot is an Environment Agency designated bathing water on Windermere's south basin, where a gravel beach is left exposed when the lake level is low. It is in the National Trust's Fell Foot park, where paths run downhill from the North and South car parks to the lakeshore and the Stagecoach 6 bus stops outside the entrance."
+checked = 2026-10-03
+sources = [
+  { name = "Environment Agency bathing water profile", url = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukd1203-45700" },
+  { name = "National Trust: access at Fell Foot", url = "https://www.nationaltrust.org.uk/visit/lake-district/fell-foot/access-at-fell-foot" },
+  { name = "National Trust: Fell Foot", url = "https://www.nationaltrust.org.uk/visit/lake-district/fell-foot" },
+]
+
+[bw-ukd1230-45725]
+text = "Brown Howe is an Environment Agency designated bathing water on the south-western shore of Coniston Water, with a gravel beach. The National Park Authority's Brown Howe car park, on the same shore, is pay and display, with seasonal toilets."
+checked = 2026-10-20
+sources = [
+  { name = "Environment Agency bathing water profile", url = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukd1230-45725" },
+  { name = "Lake District National Park Authority: car parks", url = "https://lakedistrict.gov.uk/explore/visitor-facilities/car-parks-and-parking/" },
+]
+
+[bw-ukd1230-45775]
+text = "Monk Coniston is an Environment Agency designated bathing water on the northern shore of Coniston Water, with a grassed area and a gravel beach. A step-free route of 3.66 km links the lakeshore here with Coniston village, and the National Park Authority's Monk Coniston car park is pay and display."
+checked = 2026-10-03
+sources = [
+  { name = "Environment Agency bathing water profile", url = "https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukd1230-45775" },
+  { name = "Lake District National Park Authority: Monk Coniston route", url = "https://lakedistrict.gov.uk/route/monk-coniston/" },
+]
+
+[lune-devils-bridge]
+text = "Devil's Bridge is a Grade I listed medieval bridge of three arches over the River Lune north-east of Kirkby Lonsdale, which carried the Kendal to Skipton road until Stanley Bridge replaced it in the 1930s. The town's website lists two free car parks at Devil's Bridge."
+checked = 2026-11-10
+sources = [
+  { name = "Historic England: the bridge", url = "https://historicengland.org.uk/listing/the-list/list-entry/1086899" },
+  { name = "Historic England: scheduled monument", url = "https://historicengland.org.uk/listing/the-list/list-entry/1007209" },
+  { name = "Kirkby Lonsdale", url = "https://www.kirkbylonsdale.co.uk/parking-and-toilets/" },
+]
+
+[ullswater-glenridding]
+text = "Glenridding is a village on the west shore of Ullswater, where the steamers from Pooley Bridge call at Glenridding Pier, 100 m from the Ullswater Information Centre and the large visitor car park. The National Park Authority says swimming is allowed on Ullswater, as are boats, with a 10 mph limit for powered craft."
+checked = 2026-10-03
+sources = [
+  { name = "Lake District National Park Authority: Ullswater Information Centre", url = "https://lakedistrict.gov.uk/explore/information-centres/ullswater-information-centre/" },
+  { name = "Lake District National Park Authority: lakes guide", url = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/lakes-activities-guide/" },
+]
+
+[ullswater-pooley-bridge]
+text = "From Pooley Bridge a Miles without Stiles route runs 0.9 km along the Ullswater shore past Dunmere, then a rough path continues 150 m to a gate and a boardwalk onto the shingle shore of Gale Bay. The National Park Authority's Eusemere and Dunmallard Hill car parks at Pooley Bridge are pay and display."
+checked = 2026-10-03
+sources = [
+  { name = "Lake District National Park Authority: Pooley Bridge to Gale Bay", url = "https://lakedistrict.gov.uk/route/pooley-bridge-to-gale-bay/" },
+  { name = "Lake District National Park Authority: car parks", url = "https://lakedistrict.gov.uk/explore/visitor-facilities/car-parks-and-parking/" },
+]
+
+[buttermere]
+text = "Buttermere is a 0.9 km² lake circled by a 4.5-mile lakeshore path, with a National Trust car park just outside the hamlet and a National Park Authority car park in the village. The National Park Authority says swimming is allowed and lists Buttermere among the quieter lakes, with few or no motorboats."
+checked = 2026-10-03
+sources = [
+  { name = "National Trust", url = "https://www.nationaltrust.org.uk/visit/lake-district/buttermere-valley" },
+  { name = "National Trust: things to do", url = "https://www.nationaltrust.org.uk/visit/lake-district/buttermere-valley/things-to-do-in-buttermere-valley" },
+  { name = "Lake District National Park Authority: car parks", url = "https://lakedistrict.gov.uk/explore/visitor-facilities/car-parks-and-parking/" },
+  { name = "Lake District National Park Authority: swimming", url = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/swimming-in-the-lake-district/" },
+  { name = "Lake District National Park Authority: lakes guide", url = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/lakes-activities-guide/" },
+]
+
+[crummock-water]
+text = "Crummock Water is a 2.6 km² lake reached from the National Trust's Lanthwaite Wood car park at Loweswater. The National Park Authority lists swimming as allowed, and canoes, kayaks, paddleboards and rowing boats with a permit sold at the Buttermere and Lanthwaite Wood car parks."
+checked = 2026-10-28
+sources = [
+  { name = "National Trust", url = "https://www.nationaltrust.org.uk/visit/lake-district/buttermere-valley/lanthwaite-wood-and-crummock-water-walk" },
+  { name = "Lake District National Park Authority: lakes guide", url = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/lakes-activities-guide/" },
+]
+
+[wastwater]
+text = "Wastwater is a 2.8 km² lake in Wasdale, with the National Trust's largest car park in the valley, Lake Head, just north of the lake. The National Park Authority lists swimming as allowed there, with canoes, kayaks, paddleboards and rowing boats, and no sailing boats or powered craft."
+checked = 2026-10-28
+sources = [
+  { name = "National Trust", url = "https://www.nationaltrust.org.uk/visit/lake-district/wasdale/car-parks-in-wasdale" },
+  { name = "Lake District National Park Authority: lakes guide", url = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/lakes-activities-guide/" },
+]
+
+[rydal-water]
+text = "Rydal Water is a 0.3 km² lake with a low-level path along its shores, reached on foot from the White Moss Common or Pelter Bridge car parks. The National Park Authority says swimming is allowed there for individual recreational swimmers only, and no boats or boards."
+checked = 2026-10-03
+sources = [
+  { name = "National Trust", url = "https://www.nationaltrust.org.uk/visit/lake-district/allan-bank-and-grasmere/walking-at-allan-bank-and-grasmere" },
+  { name = "Lake District National Park Authority: White Moss Common to Steps End", url = "https://lakedistrict.gov.uk/route/white-moss-common-to-steps-end/" },
+  { name = "Lake District National Park Authority: lakes guide", url = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/lakes-activities-guide/" },
+]
+
+[derwent-water-calfclose]
+text = "Calfclose Bay on Derwent Water is 250 m across the road from the National Trust's Great Wood car park, 1.8 miles outside Keswick on the B5289, and a 15-minute walk from Keswick Launch's Ashness Gate jetty. The National Park Authority says swimming is allowed on Derwentwater, as are boats, with a 10 mph limit for powered craft."
+checked = 2026-10-20
+sources = [
+  { name = "National Trust: car parks", url = "https://www.nationaltrust.org.uk/visit/lake-district/borrowdale-and-derwent-water/car-parks-in-borrowdale-and-derwent-water" },
+  { name = "Keswick Launch", url = "https://keswick-launch.co.uk/explore/listing/calfclose-bay/" },
+  { name = "Lake District National Park Authority: lakes guide", url = "https://lakedistrict.gov.uk/explore/things-to-do/on-the-water/lakes-activities-guide/" },
+]

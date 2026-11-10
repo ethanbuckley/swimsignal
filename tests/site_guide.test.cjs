@@ -244,3 +244,16 @@ test("a topic shows its first source's facts and folds the rest; who can swim sh
   assert.ok(rules.indexOf('Byelaw on boats.') < rules.indexOf('<details'), 'two sources of who can swim in view');
   assert.match(rules, /<summary>2 more from other sources<\/summary>/);
 });
+
+test('the place: its opening, its pages linked, and nothing for a spot without one or a clicked point', () => {
+  const opening = { place: 'A pool on the beck <b>.', upstream: 'SwimSignal\'s trace finds no monitored storm overflow; runoff is not traced.',
+    sources: [{ name: 'Park Authority', url: 'https://park.example/pool' }, { name: 'Bad', url: 'javascript:alert(1)' }] };
+  const html = g.placeTile({ id: 'a', name: 'Pool', opening });
+  assert.match(html, /<section class="tile place" id="place" aria-labelledby="place-h">/);
+  assert.match(html, /<span>The place<\/span>/);
+  assert.match(html, /A pool on the beck &lt;b&gt;\. SwimSignal&#39;s trace finds/);
+  assert.match(html, /<span class="g-who">Sources<\/span>: <a href="https:\/\/park\.example\/pool">Park Authority<\/a>\. The overflows are from this forecast/);
+  assert.doesNotMatch(html, /javascript:/, 'only https pages are linked');
+  assert.equal(g.placeTile({ id: 'b', name: 'B' }), '');
+  assert.equal(g.placeTile({ id: 'c', name: 'C', unlisted: true, opening }), '');
+});
