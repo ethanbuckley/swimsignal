@@ -27,7 +27,8 @@ test('the page puts nearby, then the water, then why, in the order a swimmer ask
 test("the EA's rating, with today's advice at its foot, leads the water, and the guide follows it", () => {
   // Between them, the lab results an organisation sent (measured.js), when there are any.
   assert.match(render, /waterTop = fx\.filter\(o => o\.icon === ICON\.rating\)\.map\(tile\)\.join\(''\)\n\s+\+ \(typeof measuredTile === 'function' \? measuredTile\(d, Date\.now\(\)\) : ''\);/);
-  assert.match(render, /const guide = typeof guideTile === 'function' \? guideTile\(d, serverToday\) : '', atWater = waterTop \+ guide;/);
+  // The place (its opening, guide.js placeTile) comes just before the practical guide, as one block.
+  assert.match(render, /const guide = \(typeof placeTile === 'function' \? placeTile\(d\) : ''\) \+ \(typeof guideTile === 'function' \? guideTile\(d, serverToday\) : ''\), atWater = waterTop \+ guide;/);
   // A desktop: the rating and lab results beside the nearby spots, then the guide across the section, where the
   // notes and reviews mount after it.
   assert.match(desk, /`<div class="col-a">\$\{top\}<\/div><div class="col-b">\$\{o\.nearby\}<\/div>`/);

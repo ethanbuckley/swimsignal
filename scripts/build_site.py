@@ -31,6 +31,7 @@ from dipcast.access import attach_access
 from dipcast.algae import by_site, refresh_algae
 from dipcast.forecast_log import describe_fetch, latest_samples, load_poll_log, load_verification, samples_status
 from dipcast.guides import attach_guides, boat_note, copy_photos
+from dipcast.openings import attach_openings
 from dipcast import official_advice
 from dipcast.samples import attach_measured
 from dipcast.ingest import rainfall
@@ -2525,6 +2526,28 @@ def with_share_meta(page: str, path: str, root: str) -> str:
     return with_phone_nav(head + sep + rest)
 
 
+def spot_description(spot: dict) -> str:
+    """The page's description, its search result's words: the spot's opening where it has one (src/dipcast/openings.py,
+    two or three sentences of fact about the place, none of them today's level), else spot_blurb."""
+    text = (spot.get("opening") or {}).get("text")
+    return text if isinstance(text, str) and text.strip() else spot_blurb(spot)
+
+
+def place_html(spot: dict) -> str:
+    """The opening as guide.js's placeTile draws it, for the built page: there for a crawler and a reader without
+    scripts, then drawn again by the page in its place before the practical guide. "" without an opening."""
+    o = spot.get("opening") or {}
+    if not o.get("place"):
+        return ""
+    pages = [f'<a href="{escape(s["url"])}">{escape(s["name"])}</a>' for s in o.get("sources") or []
+             if isinstance(s.get("url"), str) and s["url"].startswith("https://")]
+    up = o.get("upstream") or ""
+    return ('<section class="tile place" id="place" aria-labelledby="place-h"><h2 class="t-lab" id="place-h"><span>The place</span></h2>'
+            f'<p class="t-say">{escape(o["place"])}{" " + escape(up) if up else ""}</p>'
+            f'<p class="g-src">{("<span class=" + chr(34) + "g-who" + chr(34) + ">Sources</span>: " + ", ".join(pages) + ". ") if pages else ""}'
+            f'{"The overflows are from this forecast&#x27;s trace of the river network." if up else ""}</p></section>')
+
+
 def spot_blurb(spot: dict) -> str:
     """One sentence for a spot's search result and link preview. It leaves out today's level:
     messaging apps keep a preview for days, and a level in it would go stale."""
@@ -2647,7 +2670,7 @@ def spot_page(template: str, spot: dict, root: str, top: str | None = None, card
     (write_feeds). issued: the forecast's issue time, which the note for readers without scripts names
     (noscript_note)."""
     url = f"{root}spot/{spot['id']}/"
-    blurb = spot_blurb(spot)
+    blurb = spot_description(spot)
     page = PAGE_META.sub(lambda m: page_meta(f"{spot['name']}: pollution risk forecast · {BRAND}", blurb, url, root,
                                              base="../../", image=card,
                                              feed=(f"spot/{spot['id']}/feed.xml", f"{BRAND} · {spot['name']}") if feed else None)
@@ -2662,10 +2685,10 @@ def spot_page(template: str, spot: dict, root: str, top: str | None = None, card
         # The note goes before the answer: "Today" and "right now" in it are the issue time's, and a reader
         # without scripts meets them first. The script keeps only the answer's element (overBuilt), so the
         # note goes wherever it stands.
-        return page.replace(LOADING, f'<div id="result" data-built data-nosnippet><noscript><p class="muted">{escape(noscript_note(issued))}</p></noscript>{top}</div>', 1)
+        return page.replace(LOADING, f'<div id="result" data-built data-nosnippet><noscript><p class="muted">{escape(noscript_note(issued))}</p></noscript>{top}{place_html(spot)}</div>', 1)
     return page.replace(LOADING, '<div id="result" data-nosnippet><div class="top-row"><a href="./" class="back">All spots</a></div>'
                                  f'<section class="answer"><h2 class="spot-name">{escape(spot["name"])}</h2>'
-                                 f'<p class="muted">{escape(blurb)} Loading the forecast…</p></section>{SKELETON_TILE}</div>', 1)
+                                 f'<p class="muted">{escape(spot_blurb(spot))} Loading the forecast…</p></section>{SKELETON_TILE}</div>', 1)   # the short line: the stand-in must not be taller than the answer
 
 
 # Above a built spot page's answer, for a reader without scripts: what they are seeing, and what not.
@@ -3410,7 +3433,7 @@ def write_traces(site: Path, traces: dict[str, list[str]], upstream: dict[str, l
 # spot's page asks for its own data/spot/<id>.json. spots.json itself stays whole, for anyone who
 # reads it, for the organisers' page and the decision record, and for scripts/alerts.js. The lab
 # results an organisation sent (measured) are a spot page's alone too.
-DETAIL_FIELDS = ("contributors", "guide", "measured", "linked", "seasonal", "stretches", "sample_history", "lab", "rise_history")   # linked: spot_links, the Nearby card's; seasonal: past spills by month; stretches: an outing's finish (stretches.py); sample_history: the link to every EA sample (attach_sample_history)
+DETAIL_FIELDS = ("contributors", "guide", "measured", "linked", "seasonal", "stretches", "sample_history", "lab", "rise_history", "opening")   # linked: spot_links, the Nearby card's; seasonal: past spills by month; stretches: an outing's finish (stretches.py); sample_history: the link to every EA sample (attach_sample_history)
 
 
 def reach_by_company(contributors: list[dict]) -> list[list]:
@@ -4974,6 +4997,7 @@ def build(refresh: bool = True) -> dict:
     attach_companies(results, upstream)
     attach_access(results)
     guides = attach_guides(results)   # practical guides from guides/: parking, paths, entry and exit
+    openings = attach_openings(results)   # the place in two or three sentences, from guides/openings/openings.toml and the trace
     n_algae = attach_algae(results, fetch=refresh)
     n_lab = attach_lab_samples(results)   # read from the samples refresh_all's scoring fetched: no request
     n_history = attach_sample_history(results)   # from the research export, a file: no request
@@ -5064,6 +5088,8 @@ def build(refresh: bool = True) -> dict:
         health["water_temperature_estimate"]["logged"] = log_water_temp_estimates(results, pd.Timestamp.now(tz="UTC"))
     health["guides"] = guides["guides"]
     health["warnings"] += guides["warnings"]
+    health["openings"] = openings["openings"]
+    health["warnings"] += openings["warnings"]
     health["measured"] = {"spots": measured["spots"], "samples": measured["samples"]}
     health["warnings"] += measured["warnings"]
     for w in health["warnings"]:

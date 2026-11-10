@@ -5738,7 +5738,7 @@ function render(d) {
   // and the reviews mount. Why: the forecast's tiles, then what the level rests on (evidence.js).
   const fx = facts(d), waterTop = fx.filter(o => o.icon === ICON.rating).map(tile).join('')
     + (typeof measuredTile === 'function' ? measuredTile(d, Date.now()) : '');   // lab results an organisation sent (measured.js): not part of the level
-  const guide = typeof guideTile === 'function' ? guideTile(d, serverToday) : '', atWater = waterTop + guide;
+  const guide = (typeof placeTile === 'function' ? placeTile(d) : '') + (typeof guideTile === 'function' ? guideTile(d, serverToday) : ''), atWater = waterTop + guide;   // the place, then its practical guide
   const tiles = dayTiles(d, DAY) + nowTiles(d) + lakeTempHost(d) + localSamplesHost(d);   // the open day's forecast, then the readings, then a lake's past temperatures and local samples
   // The folded detail after the tiles. On a desktop it goes under the first column (col-more), which
   // is otherwise the shorter; on a phone it follows the tiles.
