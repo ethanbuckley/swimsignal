@@ -129,3 +129,11 @@ the list, the climatology and the version split and writes every stratum. It say
   recorded hash are untouched.
 
 ## Hashes at filing
+
+| File | SHA-256 on 10 November 2026 |
+|---|---|
+| `src/dipcast/simple_references.py` | `f1d9edafd079b92bd3b007f470ab13931ae07578eef98e1a1e08d4bc27cc5a70` |
+| `scripts/simple_references.py` | `0a8771ec1d06c417888291270aacb361259db21c3a2b2a6c1b005d6648543b74` |
+
+A record, not a freeze: the Accuracy page runs the same module, and a fix to it before the tag is allowed and listed
+here as a dated note. The tag freezes both files (freeze step 4, as amended above).
