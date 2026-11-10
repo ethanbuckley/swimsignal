@@ -18,6 +18,18 @@ DARTMOOR = "https://www.dartmoor.gov.uk/enjoy-dartmoor/planning-your-visit/visit
 # authority page saying no was found, which is not a yes. Checked that day, not on CHECKED.
 NOV_SPOTS = {"osm-tame-dosthill", "osm-blackaton-shilley-pool"}
 NOV_CHECKED = "2026-11-01"
+# Curated English river spots listed on 10 Nov 2026 under the same relaxed rule
+# (docs/SPOT-ADDITIONS-ENGLAND-2026-11-10.md): a guide, council or press page says people swim there and no owner
+# or authority page saying no was found. Their positions are from OGL sources, not OpenStreetMap.
+NOV10_SPOTS = {"avon-barton-farm", "windrush-minster-lovell", "little-ouse-santon-downham", "barle-landacre",
+               "fowey-golitha-falls", "fowey-respryn", "swale-kisdon-force", "south-tyne-featherstone",
+               "ribble-brungerley", "esk-tongue-pot"}
+NOV10_CHECKED = "2026-11-10"
+LAKES_SWIM = "https://www.lakedistrict.gov.uk/explore/things-to-do/on-the-water/swimming-in-the-lake-district/"
+BARTON_FARM = ("https://bradfordonavontowncouncil.gov.uk/your-community/places-and-spaces/parks-green-spaces/"
+               "barton-farm-country-park/wild-or-open-swimming-in-bradford-on-avon/")
+SANTON = "https://www.forestryengland.uk/st-helens-picnic-site/important-historic-site"
+GOLITHA = "https://www.gov.uk/government/publications/cornwalls-national-nature-reserves/cornwalls-nature-reserves"
 
 
 # Scotland: the statutory right of responsible access (Land Reform (Scotland) Act 2003, Part 1) and the Scottish
@@ -34,9 +46,10 @@ def access_note(spot: dict) -> dict | None:
                         "byelaws, and asks swimmers to keep away from water intakes, abstraction points and spillways. "
                         "That is not a check of this entry point, its currents or the cold: follow the Code and any "
                         "signs at the water."}
-    if spot.get("source") != "openstreetmap" and spot.get("id") not in PEAK_SPOTS:
+    if spot.get("source") != "openstreetmap" and spot.get("id") not in PEAK_SPOTS | NOV10_SPOTS:
         return None
-    note = {"status": "unconfirmed", "checked_at": NOV_CHECKED if spot["id"] in NOV_SPOTS else CHECKED,
+    checked = NOV_CHECKED if spot["id"] in NOV_SPOTS else NOV10_CHECKED if spot["id"] in NOV10_SPOTS else CHECKED
+    note = {"status": "unconfirmed", "checked_at": checked,
             "text": "Permission to enter the water at this point has not been confirmed. A mapped swimming place or public footpath does not establish swimming permission. Check current signs and the landowner's rules."}
     if spot["id"] in PEAK_SPOTS:
         note.update(status="restricted_guidance", url=PEAK,
@@ -53,6 +66,18 @@ def access_note(spot: dict) -> dict | None:
     elif spot["id"] == "osm-blackaton-shilley-pool":
         note.update(url=DARTMOOR,
                     text="Dartmoor National Park Authority says you can swim in Dartmoor's rivers if you get in from land you have a right to be on. Natural England's maps put this point on Dartmoor commons, which are open to the public. No page names this pool, and nobody has checked the way in on the ground.")
+    elif spot["id"] == "avon-barton-farm":
+        note.update(url=BARTON_FARM,
+                    text="Bradford on Avon Town Council, which manages Barton Farm Country Park, says people may be seen in the river near the park from May to September, and warns against jumping or diving into unknown water. It does not say swimming is allowed or forbidden. Permission at this point has not been confirmed: check current signs.")
+    elif spot["id"] == "little-ouse-santon-downham":
+        note.update(url=SANTON,
+                    text="Forestry England runs the St Helen's picnic site beside the river. Its pages say nothing about entering the water, and ask visitors to help stop erosion of the riverbank, which is part of a scheduled monument. Permission at this point has not been confirmed: check current signs.")
+    elif spot["id"] == "fowey-golitha-falls":
+        note.update(url=GOLITHA,
+                    text="Golitha Falls is a National Nature Reserve managed by Natural England. Its pages set no rule on swimming and ask for extra care after heavy rain. The river forms a series of cascades here. Permission at this point has not been confirmed: check current signs.")
+    elif spot["id"] == "esk-tongue-pot":
+        note.update(url=LAKES_SWIM,
+                    text="The Lake District National Park Authority says you can swim in most of the lakes, tarns and rivers in the park; the Esk is not on its list of waters where swimming is not allowed. The pool sits beneath a waterfall. Permission at this particular point has not been confirmed: check the bank and any signs.")
     return note
 
 
