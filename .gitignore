@@ -93,3 +93,6 @@ profiles/
 
 # The Workers' npm packages (ask/: the Anthropic SDK)
 node_modules/
+
+# Wrangler local cache (account id and name): never commit
+.wrangler/
