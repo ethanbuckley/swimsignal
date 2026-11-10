@@ -152,6 +152,79 @@ Every outcome leads to the page showing what it shows; nothing is adopted or wit
    that rule has a chance", which is circular (a chance needs the fit). They are the rows on which the rule can be
    applied: status known for P, both days' rain for R. The intended rule is unchanged.
 
-## Results
+## First results, 10 November 2026
 
-Not computed at the time of the statement. The page shows them on every build.
+Computed after the statement and its clarification were pushed (commits `2240c42f` and `70416255`, 00:36 and 00:37 UTC
+on 10 November). The page recomputes them on every build; these are the first, kept as a record.
+
+**Inputs**, read only: the `state` release of 9 November 2026, 21:22 UTC (`dipcast.duckdb` `c5ed9dd5…6ebc4`,
+`live_history.parquet` `3a4847bd…28724`, `live_coverage.parquet` `a5bbf950…16be`, `poll_log.parquet` `dcc68a12…25c7`)
+and the published `verification_live.csv` of the same build (`2a1dfb30…842b`, 162,005 rows, target days 29 September
+to 8 November 2026). Every row joined its logged forecast with the same issue time (162,005 of 162,005).
+`forecast_log.verify_live` run on the same state in a scratch folder gave the same rows and the same figures to the
+CSV's four-decimal rounding.
+
+**Check of the moved code.** With the interim read's own in-sample fit on 29 September to 23 October,
+`scripts/simple_references.py --interim-check` gives 117,324 rows, 91,444 with a known status, 107,650 with both days'
+rain and 91,391 common, and skill −0.05 against persistence and 0.07 against rain over 10 mm on the same day, 0.09 and
+0.07 in advance: the interim read's figures. The unit tests also check the status and rain code against the interim
+script's on random inputs.
+
+### What the page says now
+
+| Cell | Forecasts | Spills | SwimSignal's Brier | Against persistence | Against rain over 10 mm | Against the long-run rate |
+|---|---:|---:|---:|---|---|---|
+| Same day | 25,613 | 1,476 | 0.0415 | 0.06 (−0.05 to 0.15), not shown | **0.18 (0.05 to 0.23), beats** | 0.28 (0.21 to 0.48), beats |
+| In advance (1–4 days) | 77,060 | 5,397 | 0.0512 | 0.21 (−0.04 to 0.29), not shown | 0.18 (−0.03 to 0.24), not shown | 0.23 (0.18 to 0.38), beats |
+
+Skill with its 95% interval, two-way bootstrap over 1,304 overflows and 6 blocks. The rules' own Brier scores: same day
+persistence 0.0440, rain 0.0504, long-run rate 0.0577; in advance 0.0647, 0.0621 and 0.0662.
+
+- **Same day, SwimSignal beats the rain rule** and is not shown better or worse than persistence.
+- **In advance, it beats neither rule.** Both intervals cross 0. So on this record the claim "beats a rain rule" can
+  be made for the same-day forecast and must be withheld for forecasts made in advance.
+- Against the best of the three references in each draw (in the JSON, not on the page): same day 0.06 (−0.05 to
+  0.13), in advance 0.18 (−0.05 to 0.23). Neither is shown above 0.
+
+By company:
+
+| Company | Same day: persistence | Same day: rain | In advance: persistence | In advance: rain |
+|---|---|---|---|---|
+| Anglian Water | −0.06 (−0.21 to 0.15) | 0.04 (−0.06 to 0.15) | 0.01 (−0.08 to 0.10) | 0.02 (−0.05 to 0.08) |
+| Northumbrian Water | too few (18 spills) | too few | 0.23 (−0.13 to 0.45) | 0.20 (−0.01 to 0.40) |
+| Severn Trent Water | −0.10 (−0.62 to 0.11) | 0.03 (−0.46 to 0.18) | 0.10 (−0.18 to 0.32) | 0.08 (−0.19 to 0.16) |
+| South West Water | 0.24 (−0.79 to 0.56) | 0.41 (−0.21 to 0.64) | 0.34 (−0.74 to 0.53) | 0.34 (−0.44 to 0.50) |
+| Southern Water | 0.27 (−0.49 to 0.99) | 0.43 (−0.06 to 0.84) | 0.49 (−0.99 to 0.57) | 0.44 (−0.87 to 0.53) |
+| Thames Water | **−0.42 (−1.01 to −0.13), worse** | −0.20 (−0.41 to 0.03) | −0.03 (−0.51 to 0.13) | −0.05 (−0.43 to 0.09) |
+| United Utilities | **0.25 (0.10 to 0.34), beats** | **0.27 (0.16 to 0.35), beats** | **0.32 (0.09 to 0.46), beats** | **0.27 (0.06 to 0.41), beats** |
+| Wessex Water | −0.02 (−0.44 to 0.54) | 0.20 (−0.30 to 0.29) | 0.26 (−0.60 to 0.33) | 0.22 (−0.67 to 0.29) |
+| Yorkshire Water | 0.10 (−0.09 to 0.23) | **0.19 (0.01 to 0.31), beats** | 0.19 (−0.01 to 0.30) | 0.15 (−0.01 to 0.25) |
+
+- In Thames Water's area the same-day forecast does worse than persistence. This repeats the interim read's finding
+  on a longer record and with a rule fitted only on earlier days.
+- United Utilities, the one company the spill model was trained on, is the only company where the forecast beats both
+  rules at both leads.
+
+### Coverage
+
+102,673 of 162,005 scored forecasts (63%) have both rules, from 2 October (the first days lack 100 fitting rows on
+the active side). Status known: 78% of same-day rows, 69% of advance rows. Both days' rain: 92% of advance rows.
+
+Whole issue days have no known status: 27 and 28 October, 3, 4, 6 and 7 November. On those days the site ran 4 to
+18 times (48 scheduled), and an overnight gap between runs exceeded the 8-hour rule. So the comparison leaves out days
+when the pipeline ran rarely. Whether those days were wetter or drier than the rest was not checked. Southern Water
+has a known status on only 20–32% of its rows, as the interim read found (its feed stamps records only on change).
+
+### What the numbers suggest, inferred and not tested
+
+- The persistence figure moved from −0.05 (interim, in-sample fit, to 23 October) to +0.06 (trailing fit, to
+  8 November). Two things changed at once: the chances are now fitted on earlier days only, and two more weeks were
+  added. Which one moved it was not separated.
+- Six 7-day blocks, the last of six days. The intervals will narrow as weeks are added, and one wet spell still
+  weighs heavily.
+
+### Next
+
+Per "What follows": the cells where the forecast does not beat a rule get a diagnosis, not a model change. Thames
+Water same day is the first: the calibration check (`docs/CALIBRATION-CHECK-2026-10.md`) already found its chances
+too high on average and too extreme, so the question is whether the loss to persistence is level or ranking. The page keeps the figures current; the prospective test is the 2027 season under amendment 4.
