@@ -1,0 +1,232 @@
+{
+ "inputs": {
+  "zip2026_sha256": "d0dbf32fb8622f98fe072466598d706590e5f8e667619cba7d0639c6555a1a8f",
+  "coverage_sha256": "a5bbf9506a1f0b211364d7eb3dcd7f020d1c6bf1bd57d0e08e62a64c3c1816be",
+  "annual_returns_sha256": "9f8604f9bbea29b993deadaf70ca92ae9a08050aaa717a731c58e8269db45065",
+  "event_files": {
+   "<main checkout>/data/processed/ea_events_anglian_water.parquet": "9d6b7f9d245e8ef7c0158d8c7a76bc67fa7369c9c71263f4d82a2f3ab8e96505",
+   "<main checkout>/data/processed/ea_events_northumbrian_water.parquet": "db27541813d2798672113a73a0703c87cd1309550f13cc697a162dc4ef0cd237",
+   "<main checkout>/data/processed/ea_events_severn_trent_water.parquet": "750c3482b16bb320c5b9b655ae3dd3ff96535d8e06397f9a514726889f96e504",
+   "<main checkout>/data/processed/ea_events_south_west_water.parquet": "b6452a8038c70d96c2b27adf6821c442553542b75dfda5547afd0a5ecc12ce51",
+   "<main checkout>/data/processed/ea_events_southern_water.parquet": "0dc7648a1f1736a2c168749ffaa05c8edf41751fe9df7f0f2de2d5a81b0ea525",
+   "<main checkout>/data/processed/ea_events_thames_water.parquet": "4c8afc5a013c943034b9ee916911154eadd826514eb621e6a9fb012478e6ef2e",
+   "<main checkout>/data/processed/ea_events_united_utilities.parquet": "c245fb7cd382d3f42c4603f7d8b7f98ce6cf119422f13b4ba6b09f56c5809d9c",
+   "<main checkout>/data/processed/ea_events_wessex_water.parquet": "26ca5cd0a0060d0e85b1314cea8509cf6037fea4d85ecccafdb68a17c35a02e3",
+   "<main checkout>/data/processed/ea_events_yorkshire_water.parquet": "dca57cf63abca6781224c608b85f509b715b150b57b5aa5f0e901da1c8cbbe78",
+   "<scratch>/root/data/processed/ea_events_anglian_water.parquet": "f760ed1abcf053a223d40feef4ad4a6f1c17c01d3c31267a71ed85276e190d80",
+   "<scratch>/root/data/processed/ea_events_northumbrian_water.parquet": "81ef070791beb5ec7f8677d7aa4de08886805f4c48218c17586b3536ff498c41",
+   "<scratch>/root/data/processed/ea_events_severn_trent_water.parquet": "9ae15d877240424c7c191eabda3ef7d5d85d40c466b72e6c667ed393f6ff6d92",
+   "<scratch>/root/data/processed/ea_events_south_west_water.parquet": "1ea65a88e632c76886b79c99a5a0940156e3f0943f2b3aa7c5b5957b4aab389e",
+   "<scratch>/root/data/processed/ea_events_southern_water.parquet": "3cf669e9e8e471723ff73e611fa9b0356339c93fdb114840c04a1e556ebbe66c",
+   "<scratch>/root/data/processed/ea_events_thames_water.parquet": "9fc0f12038d27143db297332f9658d01dc8b2de322b618616b99153683d8bdc3",
+   "<scratch>/root/data/processed/ea_events_united_utilities.parquet": "54aeb21abf61162fc12f911a302d4c6f36a7460f60267d8b972ddfd9f46d0ea1",
+   "<scratch>/root/data/processed/ea_events_wessex_water.parquet": "babde477dd116d014fd35ec97c8a5457052b56665f48d20b026682ac6f4f7447",
+   "<scratch>/root/data/processed/ea_events_yorkshire_water.parquet": "ba328569e90c3899e4611ecdd9272cda77a4bbbd82b98b8fe7a1be9acabd60c2"
+  },
+  "rain_2026": {
+   "cells": 1606,
+   "files": 3212,
+   "shared_2026": 196,
+   "fetched_2026a": 1410,
+   "file_list_sha256": "4054e2c6b5096f782ce5e5aba96f2ac921ea9d7924145c11d74bf278e036c650"
+  },
+  "lead_rain_2026": {
+   "files": 206,
+   "cells": 206,
+   "file_list_sha256": "53a74e9c7528745347faa26a9c7e9fdf960056d6f9b5a24d364742248f6553da"
+  }
+ },
+ "window_e": {
+  "reference": "2026-10-05 to 2026-11-01",
+  "reference_days": 28,
+  "days_needed": 20,
+  "candidates": 13972,
+  "pass": 13426,
+  "edm_50_not_ilkley": 13972
+ },
+ "merged_events": 3674298,
+ "models": {
+  "candidates": {
+   "0": "deb5e1e5ee64df0e48e789b9b8eba9bb0be76fba4a23e6745f6a259cec436d00",
+   "1": "e0756b1e97485d458bafb868480d73b8c95c502f4136aa05937cb166d3909c3e",
+   "2": "ed5bb2b9a39ee222303e3c923b824deffde00e1c63eca89371a3800e51c894da",
+   "3": "5180de7086c682fcfebcc9b02e12e197bbd7fb09d5aeb7dfeb940350d8a1360f",
+   "4": "ecc835c96d707534d88dbecf6f286c59adb90839f31985926110b85ec4824066"
+  },
+  "d2": "1603678923ccdd1553830fa67c2069714c0a836c9df7e8c52578aabd729b5bcc",
+  "production": "faa7917e2be725a9441b277fc111091c5bdffe45c80ab4fd042682aa9de4210e",
+  "lead_map": "734202bc7f22af38fd72d65c4038bb51828b11f5436ed1de40ffa0f381ad0f09",
+  "v2": "9e0fc54a9356e4cea528606422dc569691453fc3ab98ea31986f19437ba501f2"
+ },
+ "settings": {
+  "clip": 1e-06,
+  "rain_rule_mm": 10.0,
+  "fit_days": 28,
+  "min_fit_rows": 100,
+  "warn_at": 0.4,
+  "n_boot": 2000,
+  "seed": 20261106
+ },
+ "status_unknown": {
+  "lead 0": 21,
+  "lead 1": 24,
+  "lead 2": 27,
+  "lead 3": 30,
+  "lead 4": 33
+ },
+ "rule_rows": {
+  "ERA5-Land lead 0": {
+   "P": 3249089,
+   "R": 3248955,
+   "common": 3248952
+  },
+  "forecast lead 0": {
+   "rows": 350173,
+   "common": 348178
+  },
+  "ERA5-Land lead 1": {
+   "P": 3235663,
+   "R": 3235220,
+   "common": 3235217
+  },
+  "forecast lead 1": {
+   "rows": 350173,
+   "common": 345603
+  },
+  "ERA5-Land lead 2": {
+   "P": 3222237,
+   "R": 3221010,
+   "common": 3221007
+  },
+  "forecast lead 2": {
+   "rows": 350173,
+   "common": 341996
+  },
+  "ERA5-Land lead 3": {
+   "P": 3208811,
+   "R": 3200101,
+   "common": 3200098
+  },
+  "forecast lead 3": {
+   "rows": 350173,
+   "common": 339547
+  },
+  "ERA5-Land lead 4": {
+   "P": 3195385,
+   "R": 3177137,
+   "common": 3177134
+  },
+  "forecast lead 4": {
+   "rows": 350173,
+   "common": 338782
+  }
+ },
+ "route_rows": {
+  "v2": 2723301,
+  "production": 539217,
+  "production_rows_all_united_utilities": true
+ },
+ "bar": {
+  "Anglian Water": {
+   "passes": true,
+   "lead 1 vs production": true,
+   "lead 1 vs persistence P": true,
+   "lead 1 vs rain rule R": true,
+   "lead 2 vs production": true,
+   "lead 2 vs persistence P": true,
+   "lead 2 vs rain rule R": true
+  },
+  "Northumbrian Water": {
+   "passes": true,
+   "lead 1 vs production": true,
+   "lead 1 vs persistence P": true,
+   "lead 1 vs rain rule R": true,
+   "lead 2 vs production": true,
+   "lead 2 vs persistence P": true,
+   "lead 2 vs rain rule R": true
+  },
+  "Severn Trent Water": {
+   "passes": true,
+   "lead 1 vs production": true,
+   "lead 1 vs persistence P": true,
+   "lead 1 vs rain rule R": true,
+   "lead 2 vs production": true,
+   "lead 2 vs persistence P": true,
+   "lead 2 vs rain rule R": true
+  },
+  "South West Water": {
+   "passes": true,
+   "lead 1 vs production": true,
+   "lead 1 vs persistence P": true,
+   "lead 1 vs rain rule R": true,
+   "lead 2 vs production": true,
+   "lead 2 vs persistence P": true,
+   "lead 2 vs rain rule R": true
+  },
+  "Southern Water": {
+   "passes": true,
+   "lead 1 vs production": true,
+   "lead 1 vs persistence P": true,
+   "lead 1 vs rain rule R": true,
+   "lead 2 vs production": true,
+   "lead 2 vs persistence P": true,
+   "lead 2 vs rain rule R": true
+  },
+  "Thames Water": {
+   "passes": true,
+   "lead 1 vs production": true,
+   "lead 1 vs persistence P": true,
+   "lead 1 vs rain rule R": true,
+   "lead 2 vs production": true,
+   "lead 2 vs persistence P": true,
+   "lead 2 vs rain rule R": true
+  },
+  "United Utilities": {
+   "passes": false,
+   "lead 1 vs production": false,
+   "lead 1 vs persistence P": true,
+   "lead 1 vs rain rule R": true,
+   "lead 2 vs production": false,
+   "lead 2 vs persistence P": true,
+   "lead 2 vs rain rule R": true
+  },
+  "Wessex Water": {
+   "passes": true,
+   "lead 1 vs production": true,
+   "lead 1 vs persistence P": true,
+   "lead 1 vs rain rule R": true,
+   "lead 2 vs production": true,
+   "lead 2 vs persistence P": true,
+   "lead 2 vs rain rule R": true
+  },
+  "Yorkshire Water": {
+   "passes": true,
+   "lead 1 vs production": true,
+   "lead 1 vs persistence P": true,
+   "lead 1 vs rain rule R": true,
+   "lead 2 vs production": true,
+   "lead 2 vs persistence P": true,
+   "lead 2 vs rain rule R": true
+  },
+  "all nine": {
+   "passes": true,
+   "lead 1 vs production": true,
+   "lead 1 vs persistence P": true,
+   "lead 1 vs rain rule R": true,
+   "lead 2 vs production": true,
+   "lead 2 vs persistence P": true,
+   "lead 2 vs rain rule R": true
+  }
+ },
+ "run": {
+  "commit": "4d66d7c77bad18fcae84e5c33245fbd7f151b13d",
+  "start_utc": "2026-11-10T01:07:07Z",
+  "end_utc": "2026-11-10T01:10:19Z",
+  "seconds": 192,
+  "peak_rss_gb": 4.04,
+  "exit": 0,
+  "shared_inputs_fingerprint_before": "6cbda499",
+  "shared_inputs_fingerprint_after": "6cbda499",
+  "open_meteo_calls": 0
+ }
+}
