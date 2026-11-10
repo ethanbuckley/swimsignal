@@ -1,0 +1,25 @@
+name: Test the action counter
+
+on:
+  pull_request:
+    paths: ["actions/**", ".github/workflows/actions-tests.yml"]
+  push:
+    branches: [main]
+    paths: ["actions/**", ".github/workflows/actions-tests.yml"]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      # No npm install: the Worker has no dependencies.
+      - name: Test the Worker
+        run: node --test actions/test/*.test.js
