@@ -2203,7 +2203,7 @@ async function alertsOff() {   // true if alerts were on
   const res = await fetch(DATA.push.url + 'unsubscribe', { method: 'POST', signal: AbortSignal.timeout(15000), headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ endpoint: sub.endpoint }) });
   if (!res.ok) throw new Error(`the alert service answered ${res.status}; try again`);
   await pushDeadline(sub.unsubscribe(), 'the browser could not turn notifications off; try again', 8000);
-  try { localStorage.removeItem(PUSH_KEY); } catch (e) { /* nothing kept */ }
+  try { localStorage.removeItem(PUSH_KEY); localStorage.removeItem('dipcast.pushclears'); } catch (e) { /* nothing kept */ }   // the alert service's record is gone, and with it any "back to low risk" request (CLEARS_KEY)
   return true;
 }
 // The list changed, or the page opened: send it again if it differs from what the service holds,
@@ -2230,7 +2230,7 @@ function alertsCard() {
     + (DATA.push && DATA.push.advice ? ` ${DATA.email ? 'A notification also' : 'Another'} when official advice is newly shown at one of them, also at most once a day for each.` : '');
   let h = `<section class="sec tile" aria-labelledby="alerts-h" id="alerts" data-perm="${alertPerm()}"><h2 class="sec-h" id="alerts-h">Alerts</h2><p class="sub">${what}</p>`;
   if (DATA.push) {
-    const sends = 'Turning alerts on sends your browser\'s push address and the list of your saved spots, and nothing else about you, to SwimSignal\'s alert service. Ticking the weekly note adds only that you want it. Alerts reach you through your browser maker\'s push service (Google, Apple, Mozilla or Microsoft), encrypted so it cannot read them. '
+    const sends = 'Turning alerts on sends your browser\'s push address and the list of your saved spots, and nothing else about you, to SwimSignal\'s alert service. Ticking the weekly note adds only that you want it. ' + (DATA.push.clears === true ? 'Asking, on a spot\'s page, to hear when it is back to low risk adds only that spot. ' : '') + 'Alerts reach you through your browser maker\'s push service (Google, Apple, Mozilla or Microsoft), encrypted so it cannot read them. '
       + 'You can turn them off here at any time, which deletes what the alert service holds. An alert can be late or not come at all, so no alert does not mean the water is clean. <a href="privacy.html">Privacy notice</a>.';
     const body = canPush() && offlineOff() ? `<p class="small tight">Alerts need the offline copy, which is turned off in this browser. <a href="#your-data">Turn it back on</a> to use them.</p>`
       // Blocked: no button, since the browser refuses without asking; where to allow them instead. The tile is
@@ -5531,48 +5531,86 @@ function clearDay(d) {
   const up = ls.findIndex(o => rank(o.l) >= 1), back = up < 0 ? null : ls.slice(up + 1).find(o => o.l === 'low');
   return back && back.x.date > today() ? back.x.date : null;
 }
-// The way to hear about that day, under the five days: alerts for a date (spotdate.js; the Worker's dates.js), which
-// the organisers' page and a plan's outing already ask for. A message goes each time that day's level here changes,
-// up or down, in the page's own words for the day. It is not a message that the water is clear, and the Worker sends
-// none: a spot falling back from high sends nothing (push/src/index.js, newAdvice). With alerts not yet on in this
-// browser it points to the Saved page, where what turning them on sends is said; where this browser cannot have
-// notifications it says nothing, as a saved card does (the Alerts tile says why, once).
+// The way to hear about it, under the five days. Two forms, by what the build has turned on:
+// - "Tell me when it is back to low risk" (DATA.push.clears, DIPCAST_PUSH_CLEARS; the Worker's clears.js): one message
+//   the first time a build gives this spot the level low, then the request is gone; it lapses after 14 days. Until 11
+//   Nov 2026 the alert service sent warnings only, because a message that a spot had fallen back "would read as an
+//   all-clear"; Ethan chose to offer this one, asked for spot by spot. So the line under the button says it is the
+//   forecast's level, not a test of the water, and the message ends with the page's own caveat.
+// - Otherwise, where a low day is ahead (clearDay), alerts for that date (spotdate.js; the Worker's dates.js), which
+//   the organisers' page and a plan's outing already ask for: a message each time that day's level here changes.
+// With alerts not yet on in this browser it points to the Saved page, where what turning them on sends is said; where
+// this browser cannot have notifications it says nothing, as a saved card does (the Alerts tile says why, once).
 const BELL = '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 16v-5a6 6 0 0 1 12 0v5l1.5 2h-15Z"/><path d="M10 20.5h4"/></svg>';
-function clearAlert({ state, date, on, saved }) {
-  if (!date || (state !== 'on' && state !== 'off')) return '';
-  const at = new Date(date + 'T12:00:00'), day = at.toLocaleDateString('en-GB', { weekday: 'long' }), full = at.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
-  if (state === 'off') return `<p class="small muted">To hear if ${day}'s forecast here changes, first turn on alerts in this browser, from the Saved page. <a href="${esc(saved)}" id="clear-to-alerts">Go to alerts</a></p>`;
+function clearAlert({ state, kind = 'date', date, on, saved }) {
+  if ((kind === 'date' && !date) || (state !== 'on' && state !== 'off')) return '';
+  const at = date ? new Date(date + 'T12:00:00') : null, day = at ? at.toLocaleDateString('en-GB', { weekday: 'long' }) : '';
+  const go = `<a href="${esc(saved)}" id="clear-to-alerts">Go to alerts</a>`;
+  if (kind === 'low') {
+    if (state === 'off') return `<p class="small muted">To hear when this spot is back to low risk, first turn on alerts in this browser, from the Saved page. ${go}</p>`;
+    return on ? `<p class="clear-on">You will get one message when this spot's forecast level is low risk again. The request lapses after ${CLEAR_DAYS} days.</p><button type="button" class="btn quiet" data-clear="stop">Stop this alert</button>`
+      : `<button type="button" class="btn primary" data-clear="add">${BELL}Tell me when it is back to low risk</button>`
+        + `<p class="small muted">One message, the first time this spot's forecast level is low risk again${date ? `: the forecast says ${dayName(date)}` : ''}. The forecast's level, not a test of the water.</p>`;
+  }
+  const full = at.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+  if (state === 'off') return `<p class="small muted">To hear if ${day}'s forecast here changes, first turn on alerts in this browser, from the Saved page. ${go}</p>`;
   return on ? `<p class="clear-on">Alerts are on for ${full} here: a message each time that day's level changes.</p><button type="button" class="btn quiet" data-clear="stop">Stop alerts for ${day}</button>`
     : `<button type="button" class="btn" data-clear="add">${BELL}Alert me if ${day}'s forecast changes</button>`
       + `<p class="small muted">Forecast low risk ${dayWord(date)}. A message each time that day's level here changes, up or down.</p>`;
 }
+// The spots this browser asked to hear about, kept to show which are on (dipcast.pushclears): {endpoint, clears: [{spot,
+// until}]}, each with the day it lapses, as the Worker keeps it. The Worker deletes a request when it answers it and
+// cannot tell the page, so the page forgets one when it sees its spot at low risk (forgetClear), or when it lapses.
+const CLEARS_KEY = 'dipcast.pushclears', CLEAR_DAYS = 14;
+const keptClears = (raw, endpoint, t) => { let v = null; try { v = JSON.parse(raw || 'null'); } catch (e) { /* none */ }
+  return v && v.endpoint === endpoint && Array.isArray(v.clears) ? v.clears.filter(c => c && typeof c.spot === 'string' && typeof c.until === 'string' && c.until >= t) : []; };
+const withClear = (list, spot, on, t) => on ? (list.some(c => c.spot === spot) ? list : [...list, { spot, until: addDays(t, CLEAR_DAYS) }]) : list.filter(c => c.spot !== spot);
+// What POST /subscribe gets: the push subscription and the spots asked about, nothing else (the saved spots, the
+// weekly note and the dates, left out, stay as the Worker has them). Throws with the words the page shows.
+async function sendClears(url, sub, list, fetcher = fetch) {
+  const res = await fetcher(url + 'subscribe', { method: 'POST', signal: AbortSignal.timeout(15000), headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ subscription: sub.toJSON(), clears: list.map(c => c.spot) }) }).catch(() => { throw new Error('the alert service could not be reached. Check your connection and try again'); });
+  if (!res.ok) { const why = (await res.text().catch(() => '')).slice(0, 120); throw new Error(res.status === 400 && why ? why : `the alert service answered ${res.status}`); }
+}
+function forgetClear(id) {
+  try { const v = JSON.parse(localStorage.getItem(CLEARS_KEY) || 'null');
+    if (v && Array.isArray(v.clears) && v.clears.some(c => c && c.spot === id)) localStorage.setItem(CLEARS_KEY, JSON.stringify({ ...v, clears: v.clears.filter(c => c && c.spot !== id) })); } catch (e) { /* nothing kept */ }
+}
 // Drawn once the push state is known (outing.js, outingPushState: no permission is asked). Nothing is sent until a
-// button is pressed; then the whole list of dates goes, as on the organisers' page, and is kept in this browser.
+// button is pressed; then the whole list goes, as on the organisers' page, and is kept in this browser.
 async function mountClear(d) {
   const sec = (document.getElementById('days-h') || { closest: () => null }).closest('section');
-  const date = PAGE_ID.test(d.id) && rank(level(d)) >= 1 ? clearDay(d) : null;
-  if (!sec || !date || typeof outingPushState !== 'function' || typeof SpotDate !== 'object') return;
+  const kind = DATA.push && DATA.push.clears === true ? 'low' : 'date', raised = rank(level(d)) >= 1;
+  if (kind === 'low' && level(d) === 'low') forgetClear(d.id);   // seen at low risk: the Worker has answered it, or will at once
+  const date = PAGE_ID.test(d.id) && raised ? clearDay(d) : null;
+  if (!sec || !PAGE_ID.test(d.id) || !raised || (kind === 'date' && !date) || typeof outingPushState !== 'function' || typeof SpotDate !== 'object') return;
   const st = await outingPushState();
   if (current !== d || !sec.isConnected || document.getElementById('clear-line')) return;   // the page moved on meanwhile
   const D = SpotDate, endpoint = st.sub && st.sub.endpoint;
   let mem = null;   // the list as last sent, where this browser cannot keep it
-  const read = () => { if (mem) return mem; try { return D.keptDates(localStorage.getItem(D.DATES_KEY), endpoint, today()); } catch (e) { return []; } };
-  const html = () => clearAlert({ state: st.state, date, on: D.hasDate(read(), d.id, date), saved: savedPath() });
+  const stored = () => { try { return localStorage.getItem(kind === 'low' ? CLEARS_KEY : D.DATES_KEY); } catch (e) { return null; } };
+  const read = () => mem || (kind === 'low' ? keptClears(stored(), endpoint, today()) : D.keptDates(stored(), endpoint, today()));
+  const isOn = () => kind === 'low' ? read().some(c => c.spot === d.id) : D.hasDate(read(), d.id, date);
+  const html = () => clearAlert({ state: st.state, kind, date, on: isOn(), saved: savedPath() });
   if (!html()) return;
   const host = '<div class="clear-line" id="clear-line"></div><p class="small muted clear-msg" id="clear-msg" aria-live="polite"></p>', plan = sec.querySelector('.plan-here-line');
   if (plan) plan.insertAdjacentHTML('beforebegin', host); else sec.insertAdjacentHTML('beforeend', host);
-  const el = document.getElementById('clear-line'), msg = document.getElementById('clear-msg'), day = new Date(date + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'long' });
+  const el = document.getElementById('clear-line'), msg = document.getElementById('clear-msg'), day = date ? new Date(date + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'long' }) : '';
   const paint = () => {
     el.innerHTML = html();
     const go = document.getElementById('clear-to-alerts');
     if (go) go.addEventListener('click', e => { if (!plainClick(e)) return; e.preventDefault(); openSaved();
       const h = document.getElementById('alerts-h'); if (h) { h.tabIndex = -1; h.scrollIntoView({ block: 'start' }); h.focus({ preventScroll: true }); } });
     el.querySelectorAll('[data-clear]').forEach(b => b.addEventListener('click', async () => {
-      const turnOn = b.dataset.clear === 'add', next = D.withDate(read(), d.id, date, turnOn);
+      const turnOn = b.dataset.clear === 'add', next = kind === 'low' ? withClear(read(), d.id, turnOn, today()) : D.withDate(read(), d.id, date, turnOn);
       b.disabled = true; msg.textContent = '';
-      try { await D.sendDates(DATA.push.url, st.sub, next); mem = next; D.storeDates(st.sub, next); paint();
-        msg.textContent = turnOn ? `Alerts are on for ${day}.` : `Alerts are off for ${day}.`;
-      } catch (e) { b.disabled = false; msg.textContent = `Could not change alerts for this date: ${e.message}.`; }
+      try {
+        if (kind === 'low') { await sendClears(DATA.push.url, st.sub, next); mem = next;
+          try { localStorage.setItem(CLEARS_KEY, JSON.stringify({ endpoint, clears: next })); } catch (e) { /* kept in memory for the page */ } }
+        else { await D.sendDates(DATA.push.url, st.sub, next); mem = next; D.storeDates(st.sub, next); }
+        paint();
+        msg.textContent = kind === 'low' ? (turnOn ? 'You will be told when this spot is back to low risk.' : 'This alert is off.') : turnOn ? `Alerts are on for ${day}.` : `Alerts are off for ${day}.`;
+      } catch (e) { b.disabled = false; msg.textContent = `Could not change ${kind === 'low' ? 'this alert' : 'alerts for this date'}: ${e.message}.`; }
     }));
   };
   paint();

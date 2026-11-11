@@ -63,17 +63,81 @@ test('what the page offers: a button with alerts on in this browser, the way to 
   for (const h of [ask, on, off]) assert.doesNotMatch(text(h), /\b(safe|clean|clear|all clear)\b/i);
 });
 
-test('the page: asked only at a raised spot with a page of its own, with the dates already kept, and nothing sent until a button is pressed', () => {
+test('the page: asked only at a raised spot with a page of its own, with the lists already kept, and nothing sent until a button is pressed', () => {
   const mount = PAGE.slice(PAGE.indexOf('async function mountClear(d) {'), PAGE.indexOf('\nfunction actions(d) {'));
-  assert.match(mount, /const date = PAGE_ID\.test\(d\.id\) && rank\(level\(d\)\) >= 1 \? clearDay\(d\) : null;/);
+  assert.match(mount, /const kind = DATA\.push && DATA\.push\.clears === true \? 'low' : 'date', raised = rank\(level\(d\)\) >= 1;/);
+  assert.match(mount, /if \(!sec \|\| !PAGE_ID\.test\(d\.id\) \|\| !raised \|\| \(kind === 'date' && !date\)/);
   assert.match(mount, /const st = await outingPushState\(\);/, 'the push state the outing reads: no permission is asked');
-  assert.match(mount, /D\.keptDates\(localStorage\.getItem\(D\.DATES_KEY\), endpoint, today\(\)\)/);
-  assert.match(mount, /const turnOn = b\.dataset\.clear === 'add', next = D\.withDate\(read\(\), d\.id, date, turnOn\);/);
-  assert.match(mount, /await D\.sendDates\(DATA\.push\.url, st\.sub, next\); mem = next; D\.storeDates\(st\.sub, next\); paint\(\);/);
-  assert.equal((mount.match(/sendDates\(/g) || []).length, 1, 'one send, in the click');
-  assert.ok(mount.indexOf('sendDates(') > mount.indexOf("addEventListener('click', async"));
-  assert.doesNotMatch(mount, /requestPermission|subscribe\(/);
+  assert.match(mount, /D\.keptDates\(stored\(\), endpoint, today\(\)\)/);
+  assert.match(mount, /keptClears\(stored\(\), endpoint, today\(\)\)/);
+  assert.match(mount, /await D\.sendDates\(DATA\.push\.url, st\.sub, next\); mem = next; D\.storeDates\(st\.sub, next\);/);
+  assert.match(mount, /await sendClears\(DATA\.push\.url, st\.sub, next\); mem = next;/);
+  assert.equal((mount.match(/sendDates\(|sendClears\(/g) || []).length, 2, 'one send of each kind, in the click');
+  assert.ok(mount.indexOf('sendClears(') > mount.indexOf("addEventListener('click', async"));
+  assert.doesNotMatch(mount, /requestPermission|\.subscribe\(/);
   assert.match(PAGE, /mountClear\(d\);   \/\/ alerts for the day a raised spot is forecast low/);
+});
+
+// "Tell me when it is back to low risk" (push/src/clears.js), once the build turns it on (DATA.push.clears).
+function lowPage() {
+  const store = new Map(), root = 'https://example.org/swim/';
+  const localStorage = {getItem: k => store.has(k) ? store.get(k) : null, setItem: (k, v) => store.set(k, String(v)), removeItem: k => store.delete(k)};
+  const ctx = vm.createContext({console, URL, URLSearchParams, Intl, AbortSignal, history: {state: null}, location: new URL(root),
+    navigator: {onLine: true}, localStorage, sessionStorage: localStorage, addEventListener() {}, setTimeout, clearTimeout,
+    ROOT: new URL(root), map: null, TOUCH: false, STILL: false});
+  ctx.window = ctx;
+  vm.runInContext(`Date.now = () => ${NOW};`, ctx);
+  for (const f of ['eatoday.js', 'experience.js', 'levels.js', 'lists.js'])
+    vm.runInContext(fs.readFileSync(path.join(ROOT, 'src/dipcast/site', f), 'utf8'), ctx);
+  vm.runInContext(spots.reached(PAGE, ['clearAlert', 'keptClears', 'withClear', 'sendClears', 'forgetClear'], ['ROOT', 'map', 'TOUCH', 'STILL']), ctx);
+  vm.runInContext(`setToday("${DAYS[0]}"); DATA = {generated_at: "${GEN}", spots: []};`, ctx);
+  return {ctx, store};
+}
+
+test('back to low risk: one button, what the message is and is not, and the same three states', () => {
+  const {ctx} = lowPage(), saved = '/swim/saved/';
+  const ask = call(ctx, 'clearAlert', {state: 'on', kind: 'low', date: DAYS[3], on: false, saved});
+  assert.match(ask, /^<button type="button" class="btn primary" data-clear="add"><svg class="ic"[^>]*>.*<\/svg>Tell me when it is back to low risk<\/button>/);
+  assert.equal(text(ask).replace(/^Tell me when it is back to low risk /, ''),
+    "One message, the first time this spot's forecast level is low risk again: the forecast says Saturday. The forecast's level, not a test of the water.");
+  // No low day in the five: the button is still offered, without a day.
+  assert.match(text(call(ctx, 'clearAlert', {state: 'on', kind: 'low', date: null, on: false, saved})), /low risk again\. The forecast's level, not a test of the water\.$/);
+  const on = call(ctx, 'clearAlert', {state: 'on', kind: 'low', date: DAYS[3], on: true, saved});
+  assert.equal(text(on), "You will get one message when this spot's forecast level is low risk again. The request lapses after 14 days. Stop this alert");
+  const off = call(ctx, 'clearAlert', {state: 'off', kind: 'low', date: DAYS[3], on: false, saved});
+  assert.equal(text(off), 'To hear when this spot is back to low risk, first turn on alerts in this browser, from the Saved page. Go to alerts');
+  assert.doesNotMatch(off, /<button/);
+  for (const state of ['none', 'cannot', 'ios', 'inapp', 'blocked']) assert.equal(call(ctx, 'clearAlert', {state, kind: 'low', date: DAYS[3], on: false, saved}), '', state);
+  for (const h of [ask, on, off]) assert.doesNotMatch(text(h), /\b(safe|clean|all clear)\b/i);
+});
+
+test('back to low risk: the browser keeps the spots it asked about, each with the day it lapses, and sends only their ids', async () => {
+  const {ctx, store} = lowPage(), end = 'https://fcm.googleapis.com/fcm/send/x';
+  const plain = v => JSON.parse(JSON.stringify(v));
+  assert.deepEqual(plain(call(ctx, 'withClear', [], 'dart', true, DAYS[0])), [{spot: 'dart', until: '2026-11-25'}]);
+  const one = [{spot: 'dart', until: '2026-11-20'}];
+  assert.deepEqual(plain(call(ctx, 'withClear', one, 'dart', true, DAYS[0])), one, 'asked again: the day it lapses is kept');
+  assert.deepEqual(plain(call(ctx, 'withClear', one, 'dart', false, DAYS[0])), []);
+  const raw = JSON.stringify({endpoint: end, clears: [{spot: 'dart', until: '2026-11-20'}, {spot: 'old', until: '2026-11-10'}, {spot: 5}]});
+  assert.deepEqual(plain(call(ctx, 'keptClears', raw, end, DAYS[0])), one, 'a lapsed request, and anything malformed, is left out');
+  assert.deepEqual(plain(call(ctx, 'keptClears', raw, 'https://other.example/', DAYS[0])), [], "another push address's list is not this one's");
+  assert.deepEqual(plain(call(ctx, 'keptClears', 'not json', end, DAYS[0])), []);
+  // What is sent: the subscription and the ids. Nothing else.
+  const calls = [];
+  const fetcher = async (url, init) => { calls.push([url, JSON.parse(init.body), init.method]); return {ok: true}; };
+  await call(ctx, 'sendClears', 'https://push.example/', {toJSON: () => ({endpoint: end, keys: {}})}, one, fetcher);
+  assert.deepEqual(calls, [['https://push.example/subscribe', {subscription: {endpoint: end, keys: {}}, clears: ['dart']}, 'POST']]);
+  await assert.rejects(call(ctx, 'sendClears', 'https://push.example/', {toJSON: () => ({})}, one, async () => ({ok: false, status: 400, text: async () => 'at most 10 spots to hear about'})),
+    /at most 10 spots to hear about/);
+  await assert.rejects(call(ctx, 'sendClears', 'https://push.example/', {toJSON: () => ({})}, one, async () => { throw new Error('offline'); }), /the alert service could not be reached/);
+  // Seen at low risk, the page forgets the request: the Worker has answered it and cannot say so.
+  store.set('dipcast.pushclears', raw);
+  call(ctx, 'forgetClear', 'dart');
+  assert.deepEqual(JSON.parse(store.get('dipcast.pushclears')).clears.map(c => c.spot), ['old', 5]);
+  assert.match(PAGE, /if \(kind === 'low' && level\(d\) === 'low'\) forgetClear\(d\.id\);/);
+  // Turning alerts off deletes the service's record, so the browser's note goes too; the Saved page's consent says what asking adds.
+  assert.match(PAGE, /localStorage\.removeItem\(PUSH_KEY\); localStorage\.removeItem\('dipcast\.pushclears'\);/);
+  assert.match(PAGE, /\(DATA\.push\.clears === true \? 'Asking, on a spot\\'s page, to hear when it is back to low risk adds only that spot\. ' : ''\)/);
 });
 
 test('a phone\'s full map over the list has the five days as a strip, each with its count; the select stays elsewhere', () => {

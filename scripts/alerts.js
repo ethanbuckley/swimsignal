@@ -64,4 +64,7 @@ for (const s of data.spots) {
 // turned on saved-spot alerts for official advice (spots.json push.advice, DIPCAST_PUSH_ADVICE), so the Worker
 // sends them only in the same build that changes the Alerts tile and the privacy notice to say so.
 fs.writeFileSync(out, JSON.stringify({ generated_at: data.generated_at, ...(data.credits ? { credits: data.credits } : {}),
-  ...(data.push && data.push.advice === true ? { advice_alerts: true } : {}), dates, words, spots }));
+  ...(data.push && data.push.advice === true ? { advice_alerts: true } : {}),
+  // clear_alerts: the build turned on "back to low risk" (spots.json push.clears, DIPCAST_PUSH_CLEARS), so the Worker
+  // sends one only in the same build that offers it on the page and says it in the privacy notice (push/src/clears.js).
+  ...(data.push && data.push.clears === true ? { clear_alerts: true } : {}), dates, words, spots }));

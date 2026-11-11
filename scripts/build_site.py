@@ -319,6 +319,12 @@ PUSH_DATES_ENV = "DIPCAST_PUSH_DATES"
 # "advice_alerts": true in alerts.json, which is what lets the Worker send them. So the words and the
 # sending switch on in the same build; an older Worker ignores the flag.
 PUSH_ADVICE_ENV = "DIPCAST_PUSH_ADVICE"
+# Back to low risk (push/README.md, "Back to low risk"): "1" once the Worker that takes the requests is deployed.
+# It adds "clears": true to the push settings in spots.json, which shows "Tell me when it is back to low risk" on
+# a raised spot's page and changes the Alerts tile's and the privacy notice's words, and makes scripts/alerts.js
+# put "clear_alerts": true in alerts.json, which is what lets the Worker send them. An older Worker would refuse
+# the request, so the Worker goes first.
+PUSH_CLEARS_ENV = "DIPCAST_PUSH_CLEARS"
 # With alerts on, the privacy notice's sentences that say nothing leaves the device, and that
 # SwimSignal holds no personal data, would be untrue: each is swapped for one that is not. A test
 # checks that every one is still in the notice, so a rewrite cannot leave one behind unswapped.
@@ -354,8 +360,11 @@ def push_config() -> dict | None:
     advice = os.environ.get(PUSH_ADVICE_ENV, "").strip().lower()
     if advice not in ("", "0", "1", "true"):
         log.warning("%s must be 1 or unset: alerts for official advice left off", PUSH_ADVICE_ENV)
+    clears = os.environ.get(PUSH_CLEARS_ENV, "").strip().lower()
+    if clears not in ("", "0", "1", "true"):
+        log.warning("%s must be 1 or unset: back to low risk left off", PUSH_CLEARS_ENV)
     return {"url": url, "key": key, **({"dates": True} if dates in ("1", "true") else {}),
-            **({"advice": True} if advice in ("1", "true") else {})}
+            **({"advice": True} if advice in ("1", "true") else {}), **({"clears": True} if clears in ("1", "true") else {})}
 
 
 def email_config() -> dict | None:
@@ -472,10 +481,11 @@ def with_ask(html: str) -> str:
     return privacy_updated(html, "Ask SwimSignal")
 
 
-def with_push(html: str, on: bool, email: bool = False, dates: bool = False, advice: bool = False) -> str:
+def with_push(html: str, on: bool, email: bool = False, dates: bool = False, advice: bool = False, clears: bool = False) -> str:
     """The privacy page: the alerts section when alerts are on (in the browser, by email or both),
     else the planned-feature note. dates: alerts for a date are on too (DIPCAST_PUSH_DATES). advice:
-    saved-spot alerts for official advice are on too (DIPCAST_PUSH_ADVICE)."""
+    saved-spot alerts for official advice are on too (DIPCAST_PUSH_ADVICE). clears: a spot's "back to low
+    risk" message can be asked for too (DIPCAST_PUSH_CLEARS)."""
     if not (on or email):
         return html
     # An email sign-up sends the saved spots too, and its record is described under Alerts, so the
@@ -491,6 +501,8 @@ def with_push(html: str, on: bool, email: bool = False, dates: bool = False, adv
         push_section = push_section.replace(a, b)
     for a, b in PUSH_DATES_PAGE_SWAPS if on and dates else []:
         html = html.replace(a, b)
+    for a, b in PUSH_CLEARS_SWAPS if on and clears else []:   # after the dates': one of them ends where a dates swap ends
+        push_section = push_section.replace(a, b)
     section = (push_section + "\n" if on else "<h2>Alerts</h2>\n") + (EMAIL_PRIVACY if email else "")
     return re.sub(r"<h2>If alerts are added</h2>\s*<p>.*?</p>", lambda _: section.rstrip("\n"), html, count=1, flags=re.DOTALL)
 
@@ -522,6 +534,22 @@ PUSH_ADVICE_SWAPS = [
     ("to send a notification when one of those spots' forecast reaches high or very high risk",
      "to send a notification when one of those spots' forecast reaches high or very high risk, or when official "
      "advice is newly shown at one of them"),
+]
+
+# Back to low risk (push/README.md, "Back to low risk"), once DIPCAST_PUSH_CLEARS is set: the record can also
+# hold up to 10 spots to hear about, each with the day the request lapses, for one message each. Each "before"
+# is in PUSH_PRIVACY and still there after the advice and date swaps (a test checks), which run first.
+PUSH_CLEARS_SWAPS = [
+    (", and nothing else: no name, email address or location.",
+     ", and, if you ask on a spot's page to hear when it is back to low risk, that spot's identifier and the day "
+     "the request lapses, and nothing else: no name, email address or location."),
+    ("The weekly note is off until you tick it, and unticking it stops it. ",
+     "The weekly note is off until you tick it, and unticking it stops it. If you ask to hear when a spot is back "
+     "to low risk, the alert service sends one notification the first time that spot's forecast level is low risk "
+     "again, unless official advice restricting swimming shows there. It gives the forecast's level, not a test of "
+     "the water. The request is deleted once that notification is sent, when you stop it on the spot's page, or "
+     "after 14 days if the spot has not returned to low risk. Your browser keeps a note of the spots you asked "
+     "about, so that the page can show which are on. "),
 ]
 
 # Alerts for a date (push/README.md, "Alerts for a date"), once DIPCAST_PUSH_DATES is set: the record
@@ -3197,7 +3225,7 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
                 northern_ireland: dict | None = None, support: str | None = None, tiles: dict | None = None,
                 push_dates: bool = False, spot_cards: dict[str, str] | None = None, cards_v: str = "",
                 overflows: pd.DataFrame | None = None, generated: pd.Timestamp | None = None, ask: bool = False,
-                push_advice: bool = False, actions: str | None = None) -> int:
+                push_advice: bool = False, actions: str | None = None, push_clears: bool = False) -> int:
     """Every HTML page, the sitemap and the app files. Returns the number of spot pages. A spot
     whose id is not letters, digits and hyphens gets no page of its own and keeps ?spot=.
     support is the Ko-fi page tips go to (support_url), or None for no tips; tiles the map tile
@@ -3246,7 +3274,7 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
                        lambda _: render_ni(northern_ireland), s, flags=re.S)
         if name == "privacy.html" and ask:
             s = with_ask(s)
-        s = with_counter(with_push(s, push, email, push_dates, push_advice) if name == "privacy.html" else s, token)
+        s = with_counter(with_push(s, push, email, push_dates, push_advice, push_clears) if name == "privacy.html" else s, token)
         s = with_actions(s, name, actions)   # after the counter, whose sentence it changes
         s = with_share_meta(with_tiles(s, name, tiles), name, root)
         (site / name).write_text(with_support(s, name) if support else s)
@@ -5240,7 +5268,7 @@ def build(refresh: bool = True) -> dict:
                                        coastal=coastal, wales=wales, scotland=scotland, email=email is not None,
                                        ireland=ireland, northern_ireland=northern_ireland, support=support_url(), tiles=tile_config(),
                                        push_dates=bool(push and push.get("dates")), ask=ask is not None,
-                                       push_advice=bool(push and push.get("advice")), actions=actions_url(),
+                                       push_advice=bool(push and push.get("advice")), push_clears=bool(push and push.get("clears")), actions=actions_url(),
                                        spot_cards=spot_cards, cards_v=generated.strftime("%Y%m%d%H%M"),
                                        overflows=_overflows(), generated=generated)
     # Swimmers' reviews: the published ones into site/reviews/, and their sections into the pages just written.

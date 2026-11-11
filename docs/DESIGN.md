@@ -2391,3 +2391,33 @@ of Saved and Plan a swim, which can show today and tomorrow together.
 **Checked:** headless Chrome at 375 px on the day's live data (the map; Dartington with alerts off);
 `tests/site_day_alert.test.cjs`. Not checked: the button with alerts on (no subscription is made in testing), a
 real notification, Safari.
+
+## Back to low risk, asked for (11 November 2026)
+
+Shown the Worker's rule against a message that a spot has fallen back ("The day it is forecast low", above), Ethan
+chose to build it: "Yes, build it". It is off until he deploys the Worker and sets `DIPCAST_PUSH_CLEARS`
+(`push/README.md`, "Back to low risk").
+
+- **Where:** a spot at moderate risk or higher with a page of its own, under the five days, over "Plan a swim here".
+  With the switch on it takes the place of the date alert's button there.
+- **The button:** "Tell me when it is back to low risk", the primary button, with the bell. Under it: "One message,
+  the first time this spot's forecast level is low risk again: the forecast says Saturday. The forecast's level, not
+  a test of the water." With no low day in the five, the day is left out.
+- **On:** "You will get one message when this spot's forecast level is low risk again. The request lapses after 14
+  days." and "Stop this alert".
+- **Alerts not yet on in this browser:** one line that points to the Saved page. Nothing is turned on from a spot.
+  Where notifications cannot be had, nothing is said.
+- **The message:** the spot's name with "back to low risk", the page's headline and what to do, then "A forecast, not
+  a water test: check the signs at the water before you swim." Never while a notice restricting swimming shows there.
+- **What is kept:** the alert service keeps the spot's id and the day the request lapses. The browser keeps the same
+  (`dipcast.pushclears`) to show which are on, and forgets a request when it sees the spot at low risk, since the
+  service cannot tell it the message went. Turning alerts off removes both.
+- **Said where consent is given:** the Alerts tile's "What turning alerts on sends" gains "Asking, on a spot's page,
+  to hear when it is back to low risk adds only that spot." The privacy notice gains two sentences
+  (`PUSH_CLEARS_SWAPS` in `build_site.py`). Both only with the switch on. The notice's wording is a draft for Ethan
+  to read before he sets the variable.
+- **Unchanged:** saving a spot still sends nothing when it falls back from high.
+
+**Checked:** the Worker's tests (`push/test/clears.test.js`), the page's (`tests/site_day_alert.test.cjs`), the
+build's (`tests/test_site_pages.py`); the button, on and stop on the real page in a browser, with the alert service
+stubbed. Not checked: a real subscription or a real notification (none is made in testing), the deployed Worker.

@@ -13,6 +13,7 @@ import { drainEmails, emailOn, handleEmail, queueEmails } from './email.js';
 import { runWeekly } from './weekly.js';
 import { cleanDates, dateFor, dateNews, datesOf, dayLevels, londonToday, noticeTag, noticesOf, pairKey } from './dates.js';
 import { DISPATCH_CRON, runDispatch } from './dispatch.js';
+import { cleanClears, clearFor, clearedNow, clearsOf, withUntil } from './clears.js';
 
 export { forecastExpiry };
 
@@ -121,25 +122,29 @@ export async function subKey(endpoint) {
 // The app (the Saved page) sends the saved spots and the weekly note, and never dates; the
 // organisers' page sends dates alone ("Alerts for a date", dates.js). What a request leaves out is
 // kept from the record: the app does not know the dates, and the organisers' page does not know the
-// saved spots. A request with spots and no weekly turns the note off, as it always has.
+// saved spots. A request with spots and no weekly turns the note off, as it always has. A spot's page
+// sends the spots to hear about when they are back to low risk alone ("Back to low risk", clears.js),
+// kept the same way.
 async function subscribe(data, env, { now }) {
   check(isObject(data), 'body must be a JSON object');
   const subscription = await cleanSubscription(data.subscription);
-  check(data.spots !== undefined || data.dates !== undefined, 'spots must be an array');
+  check(data.spots !== undefined || data.dates !== undefined || data.clears !== undefined, 'spots must be an array');
   const spots = data.spots === undefined ? undefined : cleanSpots(data.spots);
   // The weekly note (weekly.js): off unless the page says true. Kept only when on.
   check(data.weekly === undefined || typeof data.weekly === 'boolean', 'weekly must be true or false');
   const today = londonToday(now());
   const dates = data.dates === undefined ? undefined : cleanDates(data.dates, today);
+  const asked = data.clears === undefined ? undefined : cleanClears(data.clears);
   const key = await subKey(subscription.endpoint);
-  const old = spots === undefined || dates === undefined ? await env.PUSH.get(key, 'json') : null;
+  const old = await env.PUSH.get(key, 'json');   // what the request leaves out is kept, and a spot already asked about keeps the day it lapses
   const record = {
     subscription,
     spots: spots ?? (Array.isArray(old?.spots) ? old.spots : []),
     weekly: data.weekly !== undefined ? data.weekly : spots === undefined && old?.weekly === true,
     dates: (dates ?? datesOf(old)).filter((d) => d.date >= today),
+    clears: (asked ? withUntil(asked, clearsOf(old), today) : clearsOf(old)).filter((c) => c.until >= today),
   };
-  if (record.spots.length === 0 && record.dates.length === 0) { await env.PUSH.delete(key); return; }
+  if (record.spots.length === 0 && record.dates.length === 0 && record.clears.length === 0) { await env.PUSH.delete(key); return; }
   await putRecord(env, key, record, now);
 }
 
@@ -147,11 +152,12 @@ async function subscribe(data, env, { now }) {
 // bytes), so the cron finds who to alert from a list of keys alone instead of reading every
 // record. Too many for the metadata, and the cron reads the record. Fields that are off are left
 // out, so a record that never asked for the note or a date is as it was before them.
-async function putRecord(env, key, { subscription, spots, weekly, dates }, now) {
-  const metadata = { s: spots, ...(weekly ? { w: 1 } : {}), ...(dates.length ? { d: dates.map((d) => pairKey(d.spot, d.date)) } : {}) };
+async function putRecord(env, key, { subscription, spots, weekly, dates, clears = [] }, now) {
+  const metadata = { s: spots, ...(weekly ? { w: 1 } : {}), ...(dates.length ? { d: dates.map((d) => pairKey(d.spot, d.date)) } : {}),
+    ...(clears.length ? { c: clears.map((c) => pairKey(c.spot, c.until)) } : {}) };   // each spot to hear about, with the day it lapses
   const meta = JSON.stringify(metadata).length <= 1024 ? { metadata } : {};
   await env.PUSH.put(key, JSON.stringify({ subscription, spots, ...(weekly ? { weekly: true } : {}), ...(dates.length ? { dates } : {}),
-    updated: new Date(now()).toISOString() }), meta);
+    ...(clears.length ? { clears } : {}), updated: new Date(now()).toISOString() }), meta);
 }
 
 async function unsubscribe(data, env) {
@@ -260,12 +266,15 @@ async function runPush(env, { fetch, log, now }, seen) {
     for (const id of fresh) if (risen.includes(id) || advised.includes(id)) adviceAt[id] = new Date(t).toISOString();
     const advice = Object.fromEntries(advised.map((id) => [id, noticeKey(alerts.spots[id])]));
     const news = dateNews(alerts, prev.days, prev.notices);
-    if (risen.length || advised.length || news.size) ({ items, tidy } = await queueFor(env, alerts, new Set(risen), news, londonToday(t), tally, log, advice));
+    // Back to low risk (clears.js): the spots at low risk in this build, for whoever asked to hear of one. Empty
+    // unless the build turned the alert on, so nothing more is read until then.
+    const cleared = clearedNow(alerts);
+    if (risen.length || advised.length || news.size || cleared.size) ({ items, tidy } = await queueFor(env, alerts, new Set(risen), news, londonToday(t), tally, log, advice, cleared));
     // Before the state below, like the push queue: if the state is not written, the rise is found
     // again next run, and queueEmails merges it with what is already queued for each address.
     if (risen.length && emailOn(env)) seen.emailsQueued = await queueEmails(env, alerts, new Set(risen));
-    const dated = items.filter((x) => x.dates).length;
-    log(`cron: ${alerts.generated_at}: ${risen.length} spots rose to high${advised.length ? `, ${advised.length} with new official advice` : ''}, ${items.length - dated} alerts to send${dated ? `, ${dated} date notices` : ''}${seen.emailsQueued ? `, ${seen.emailsQueued} emails queued` : ''}`);
+    const dated = items.filter((x) => x.dates).length, lows = items.filter((x) => x.clears).length;
+    log(`cron: ${alerts.generated_at}: ${risen.length} spots rose to high${advised.length ? `, ${advised.length} with new official advice` : ''}, ${items.length - dated - lows} alerts to send${dated ? `, ${dated} date notices` : ''}${lows ? `, ${lows} back to low risk` : ''}${seen.emailsQueued ? `, ${seen.emailsQueued} emails queued` : ''}`);
   }
   const state = { generated_at: alerts.generated_at, ranks, ...(Object.keys(alerted).length ? { alerted } : {}), ...(Object.keys(adviceAt).length ? { advised: adviceAt } : {}),
     ...(Object.keys(days).length ? { days } : {}), ...(notices ? { notices } : {}) };
@@ -284,7 +293,8 @@ async function runPush(env, { fetch, log, now }, seen) {
 // date compare it) is new since the last build, or has changed to another: appeared, not lifted. A notice
 // lifting sends no saved-spot alert: these alerts are warnings (a spot falling back from high sends none
 // either), and "no longer shown" would read as an all-clear, which neither SwimSignal's level nor a
-// lifted notice is. The page shows the change. notices: the last build's noticesOf; none in a state
+// lifted notice is. The page shows the change. (One message does say a spot is back to low risk, to whoever asked
+// for it from that spot's page, hedged as clears.js says; saved-spot alerts still send none.) notices: the last build's noticesOf; none in a state
 // from before notices, which compares nothing, so the first build after deploying records only.
 export function newAdvice(alerts, notices) {
   if (!isObject(notices)) return [];
@@ -296,10 +306,11 @@ export function newAdvice(alerts, notices) {
 // date that is news (dates.js), [{key, dates: [{spot, date, from, notice?}]}]. The spots and dates come
 // from each key's metadata; a record without them (too many to fit) is read. Also the records that
 // still hold a date before today, to forget it (tidy), at most TIDY_PER_RUN a run.
-async function queueFor(env, alerts, risen, news, today, tally, log, advice = {}) {
+async function queueFor(env, alerts, risen, news, today, tally, log, advice = {}, cleared = new Set()) {
   const items = [], tidy = [];
   for (const { name: key, metadata } of await listKeys(env.PUSH, 'sub:')) {
     let spots = metadata?.s, dates = (Array.isArray(metadata?.d) ? metadata.d : []).map((p) => { const [spot, date] = String(p).split(' '); return { spot, date }; });
+    let clears = (Array.isArray(metadata?.c) ? metadata.c : []).map((p) => { const [spot, until] = String(p).split(' '); return { spot, until }; });
     if (!Array.isArray(spots)) {
       const record = await env.PUSH.get(key, 'json').catch(() => null);
       if (record && !isPushService(record.subscription?.endpoint)) {
@@ -310,13 +321,17 @@ async function queueFor(env, alerts, risen, news, today, tally, log, advice = {}
       }
       spots = record?.spots ?? [];
       dates = datesOf(record);
+      clears = clearsOf(record);
     }
     const hits = spots.filter((id) => risen.has(id) || id in advice), adv = hits.filter((id) => id in advice);
     if (hits.length) items.push({ key, spots: Object.fromEntries(hits.map(id => [id, alerts.spots[id]])),
       ...(adv.length ? { advice: Object.fromEntries(adv.map((id) => [id, advice[id]])) } : {}) });
     const told = dates.filter((d) => news.has(pairKey(d.spot, d.date))).map((d) => ({ ...d, ...news.get(pairKey(d.spot, d.date)) }));
     if (told.length) items.push({ key, dates: told });
-    if (tidy.length < TIDY_PER_RUN && dates.some((d) => d.date < today)) tidy.push(key);
+    // One message for the spots this subscriber asked to hear about that are at low risk now (clears.js).
+    const low = clears.filter((c) => c.until >= today && cleared.has(c.spot)).map((c) => c.spot);
+    if (low.length) items.push({ key, clears: low });
+    if (tidy.length < TIDY_PER_RUN && (dates.some((d) => d.date < today) || clears.some((c) => c.until < today))) tidy.push(key);
   }
   return { items, tidy };
 }
@@ -330,8 +345,9 @@ async function forgetPast(env, keys, t, log) {
       const record = await env.PUSH.get(key, 'json');
       if (!record) continue;
       const dates = datesOf(record).filter((d) => d.date >= today), spots = Array.isArray(record.spots) ? record.spots : [];
-      if (!spots.length && !dates.length) await env.PUSH.delete(key);
-      else await putRecord(env, key, { subscription: record.subscription, spots, weekly: record.weekly === true, dates }, () => t);
+      const clears = clearsOf(record).filter((c) => c.until >= today);   // a request to hear of low risk that lapsed unanswered
+      if (!spots.length && !dates.length && !clears.length) await env.PUSH.delete(key);
+      else await putRecord(env, key, { subscription: record.subscription, spots, weekly: record.weekly === true, dates, clears }, () => t);
     } catch (err) { log(`push ${key.slice(4, 16)}: dates not tidied: ${err?.message}`); }
   }
   log(`dates: forgot past dates in ${keys.length} records`);
@@ -344,8 +360,8 @@ async function drain(env, queued, perRun, authorize, tally, { fetch, log, now, a
     if ((item.next_attempt ?? 0) <= at && batch.length < perRun) batch.push(item);
     else rest.push(item);
   }
-  const alert = alertFor(alerts, env.SITE_URL), date = dateFor(alerts, env.SITE_URL);
-  const messageFor = (record, item) => (item.dates ? date(record, item) : alert(record, item));
+  const alert = alertFor(alerts, env.SITE_URL), date = dateFor(alerts, env.SITE_URL), low = clearFor(alerts, env.SITE_URL, londonToday(at));
+  const messageFor = (record, item) => (item.clears ? low(record, item) : item.dates ? date(record, item) : alert(record, item));
   const kept = await send(env, batch, authorize, tally, { fetch, log, now, alerts, expires, messageFor });
   rest.push(...kept); // retries do not block recipients who have not had an attempt yet
   if (rest.length) await env.PUSH.put('queue', JSON.stringify({ ...queued, items: rest }));
@@ -406,6 +422,9 @@ async function send(env, batch, authorize, tally, { fetch, log, now, alerts, exp
       } else if (res.ok) {
         await res.body?.cancel();
         tally.sent++;
+        // Back to low risk is one message: the spots it answered leave the record (clears.js). A record with
+        // nothing else left is deleted, as when its last saved spot goes.
+        if (item.clears) await answered(env, key, record, item.clears, now);
       } else {
         const why = redact(await res.text().catch(() => ''), endpoint);
         fail(key, `HTTP ${status}${why ? `: ${why}` : ''}`);
@@ -418,6 +437,13 @@ async function send(env, batch, authorize, tally, { fetch, log, now, alerts, exp
   return kept;
 }
 class TransportError extends Error {}
+
+// The record without the "back to low risk" requests a message has just answered.
+async function answered(env, key, record, ids, now) {
+  const clears = clearsOf(record).filter((c) => !ids.includes(c.spot)), spots = Array.isArray(record.spots) ? record.spots : [], dates = datesOf(record);
+  if (!spots.length && !dates.length && !clears.length) await env.PUSH.delete(key);
+  else await putRecord(env, key, { subscription: record.subscription, spots, weekly: record.weekly === true, dates, clears }, now);
+}
 
 async function eachLimit(items, limit, fn) {
   let next = 0;
