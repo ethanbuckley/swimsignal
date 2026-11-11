@@ -42,8 +42,11 @@ function saveSetup({push = true, email = false, many = false, kept = true, phone
 }
 
 test("Save says what it did under the button, not at the foot of the page", () => {
-  // The empty line sits straight under the row with the back link and Save, before the notices.
-  assert.match(page, /\$\{saveButton\(d\)\}<\/div>`;\n[^\n]*\n\s*h \+= '<p class="small muted save-msg" id="save-msg" aria-live="polite"><\/p>';\n\s*h \+= notices\(d\);/);
+  // The empty line sits straight under the row with the back link and Save, before the notices. With the place's
+  // photo (11 Nov 2026) the row sits on the photo on a phone, so the line ends the answer, above the five days:
+  // still on the first screen, never at the foot of the page.
+  assert.match(page, /saveMsg = '<p class="small muted save-msg" id="save-msg" aria-live="polite"><\/p>';\n\s*if \(!hero\) h \+= saveMsg;\n\s*h \+= notices\(d\);/);
+  assert.match(page, /<p class="kind">\$\{tags\.join\(' · '\)\}<\/p>\$\{hero \? saveMsg : ''\}<\/section>`;/);
   assert.match(page, /\.save-msg:empty \{ margin:0; \}/);   // empty, it takes no room on the built page
   const s = saveSetup();
   s.click();

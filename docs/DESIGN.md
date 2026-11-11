@@ -2301,16 +2301,29 @@ fells as every other spot's.
 **The place's photo opens the answer** (`guideHero` in `guide.js`; `spotTop` writes it first inside `#risk-hero`).
 - The guide's overview photo, where it is a historical one with no labels: 109 of 133 spots on 11 November. A spot
   without one keeps the sky.
-- One line under it: "Historical photo by Derek Harper, 20 May 2020, CC BY-SA 2.0. It shows that day only. About this
-  photo". The licence is linked, and named only where the page knows it. "About this photo" goes to the guide, which
-  keeps the photo with its full line (title, source, changes, "Not taken by SwimSignal").
-- A phone: edge to edge, square, 176 px tall. From 801 px: 240 px tall with the one radius. From 1,100 px: beside the
-  answer's words, 440 px wide.
+- One line under it, the day first, since the photo is of that day and not today: "Photo from 20 May 2020 · Derek
+  Harper · CC BY-SA 2.0 · About". The licence is linked, and named only where the page knows it. "About" goes to the
+  guide, which keeps the photo with its full line (title, source, changes, "Not taken by SwimSignal", "It shows that
+  day only"). Each part keeps to one line with its dot after it, so a 320 px phone's second line never starts with a
+  dot. (The first build's line was two lines, "Historical photo by ..., CC BY-SA 2.0. It shows that day only. About
+  this photo"; Ethan liked the photo and asked for the opening to be more polished.)
+- A phone: from the header down, edge to edge, square, 212 px tall. **The back link and Save sit on the photo**, as
+  white buttons with the map controls' lift, 16 px in from its top and sides (`.top-row:has(+ [data-notices]:empty +
+  .answer > .hero)`). With a notice to read first (stale, offline) they stay above it, on the paper, and the photo
+  follows the notice.
+- A phone: **the words start at the left edge**, as the photo's line does: the name, the level, when, the issue time,
+  the place. Centred under a photo with a left-hand caption, they read as two layouts.
+- What Save did, and the line on saving for alerts, end the answer, under its words, where the spot has a photo
+  (`spotTop`): above the photo they were a strip of paper between the header and the picture. Without a photo they
+  stay under Save, as before.
+- From 801 px: 240 px tall with the one radius, the back link and Save above it. From 1,100 px: beside the answer's
+  words, 440 px wide.
 - With a photo the page has no sky. The tiles sit on the paper as cards with a hairline, as the working screens' do.
 - It is in the build's copy of the page (`scripts/prerender_spots.js` loads `guide.js`), inside the answer, so
   `overBuilt` keeps its element and the picture is painted once. It is not lazy, and asks for a high priority.
-- **The cost, accepted:** the five days start lower. Dartington at 375 x 812: the level at about 455 px and the five
-  days' tile at about 615 px. This turns round "A photo of each place" (10 November), which kept the photo out of the
+- **The cost, accepted:** the five days start lower. Dartington at 375 x 812, before the photo: the five days' tile
+  at about 426 px, four day rows on the first screen. With it, polished: the level at about 390 px, the tile at about
+  575 px, and the first day row on the first screen. (As first built: the tile at about 618 px and no day row.) This turns round "A photo of each place" (10 November), which kept the photo out of the
   opening for that reason.
 
 **The river as a sketch** (`riverSketch`), at the foot of "Where the risk comes from" on today's view.
