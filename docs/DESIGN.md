@@ -2235,7 +2235,8 @@ Step 3 of the strategy review, its photo half. 108 spots now carry one historica
 of the water, through the practical guide (`guides/<id>.toml`, status `historical`; "Historical photos" under
 Practical guides above). The photo sits where a guide's photos already sit, at the foot of the guide tile, with the
 historical-photo line under it. It is also the Place's `image` in the structured data. It is not a banner over the
-answer: that would push the five days down, against "A tighter opening".
+answer: that would push the five days down, against "A tighter opening". (Turned round the next day, from mock-ups
+Ethan approved: "A spot's page: the place first", 11 November 2026. The guide keeps the photo and its full line.)
 
 A spot that had no guide now has one holding only the photo. Its tile's first line says "No facts checked here yet:
 only a photo of the place, below.", and "Not in this guide yet" names every topic, so the picture is never read as
@@ -2290,3 +2291,67 @@ gains two tiles, which go while the list is searched or filtered:
 **Checked:** headless Chrome on the day's live data at 320, 375 and 1,440 px, a first visit and four saved spots
 (three raised); the node tests (`tests/site_today_home.test.cjs`). Not checked: the built page's first paint with
 spots saved (the preview serves the page unbuilt), Safari, a screen reader.
+
+## A spot's page: the place first (11 November 2026)
+
+The second part of the swimmer's redesign (mock-ups Ethan approved, "build it all"). Measured on the live site that
+day, River Dart, Dartington Pontoon was 6,033 px tall at 606 px wide, 1,506 words, and its picture was the same drawn
+fells as every other spot's.
+
+**The place's photo opens the answer** (`guideHero` in `guide.js`; `spotTop` writes it first inside `#risk-hero`).
+- The guide's overview photo, where it is a historical one with no labels: 109 of 133 spots on 11 November. A spot
+  without one keeps the sky.
+- One line under it, the day first, since the photo is of that day and not today: "Photo from 20 May 2020 · Derek
+  Harper · CC BY-SA 2.0 · About". The licence is linked, and named only where the page knows it. "About" goes to the
+  guide, which keeps the photo with its full line (title, source, changes, "Not taken by SwimSignal", "It shows that
+  day only"). Each part keeps to one line with its dot after it, so a 320 px phone's second line never starts with a
+  dot. (The first build's line was two lines, "Historical photo by ..., CC BY-SA 2.0. It shows that day only. About
+  this photo"; Ethan liked the photo and asked for the opening to be more polished.)
+- A phone: from the header down, edge to edge, square, 212 px tall. **The back link and Save sit on the photo**, as
+  white buttons with the map controls' lift, 16 px in from its top and sides (`.top-row:has(+ [data-notices]:empty +
+  .answer > .hero)`). With a notice to read first (stale, offline) they stay above it, on the paper, and the photo
+  follows the notice.
+- **The words start at the left edge at every width**, as the photo's line does. Centred under a photo with a
+  left-hand caption, they read as two layouts. Their order, drawn with `order` on the answer (a flex column; the wide
+  desktop's grid takes it too): the name; what kind of water it is, straight under the name at the meta size (it sat
+  under the issue time, the third grey line in a row); the level; when; the issue time. The page's own order, and a
+  screen reader's, is unchanged: the kind still follows the words, as at a spot without a photo.
+- The photo's box is the sky's colour until the picture arrives.
+- What Save did, and the line on saving for alerts, end the answer at the meta size, under its words, where the spot has a photo
+  (`spotTop`): above the photo they were a strip of paper between the header and the picture. Without a photo they
+  stay under Save, as before.
+- From 801 px: 240 px tall with the one radius, the back link and Save above it. From 1,100 px: beside the answer's
+  words, 440 px wide.
+- With a photo the page has no sky. The tiles sit on the paper as cards with a hairline, as the working screens' do.
+- It is in the build's copy of the page (`scripts/prerender_spots.js` loads `guide.js`), inside the answer, so
+  `overBuilt` keeps its element and the picture is painted once. It is not lazy, and asks for a high priority.
+- **The cost, accepted:** the five days start lower. Dartington at 375 x 812, before the photo: the five days' tile
+  at about 426 px, four day rows on the first screen. With it, polished: the level at about 390 px, the tile at about
+  575 px, and the first day row on the first screen. (As first built: the tile at about 618 px and no day row.) This turns round "A photo of each place" (10 November), which kept the photo out of the
+  opening for that reason.
+
+**The river as a sketch** (`riverSketch`), at the foot of "Where the risk comes from" on today's view.
+- Up to five of the overflows that count here, in order along the water, the furthest first, then the spot, ringed,
+  under "Here". Each row: its distance, its plain name and what its monitor last reported.
+- One discharging, or whose latest spill began in the last 48 hours, is drawn in the discharging colour and is chosen
+  first; the rest by model weight. A spill that has ended says when it began and how long it ran ("Spilled Tuesday
+  09:30, for 22 minutes."). The other status words are the overflows list's own (`statusSaid`, `statusText`).
+- Through a lake it says how the water comes, in `overflowWhere`'s words ("Across the lake.").
+- Its last line says it is a sketch, not to scale, how many of the overflows upstream it shows and how they were
+  chosen, and links the overflows that matter most.
+- On a low day there is no sentence to give, so the sketch stands alone under "Where a spill would come from".
+- The river's line is the rain's blue at 35%: the map's water blue is not a token.
+
+**Past spills, this month in a sentence** (`seasonalWords().now`): "November in those years: a spill reported on 42
+of 60 days. The smallest share: June, 11 of 60." Under the chart's lead, over the columns.
+
+**"Lower risk nearby" never offers a spot at high or very high risk.** Under a very high Dartington it listed River
+Teign, Fingle Bridge, reading "High risk right now": lower, and its own advice is to choose a lower day or spot.
+
+**A phone, a low day.** Today at low risk, or with no monitored overflow found upstream, and no day picked: the
+conditions come first, over the five days, with "Log a swim here" under them, which opens the journal's own form at
+the foot of the page (`phoneFolds`, `lowNow`). Any other day keeps the order of 5 November. A desktop is unchanged.
+
+**Checked:** headless Chrome on the day's live data: Dartington (very high) at 375, 900 and 1,440 px, Windermere at
+Millerground (low) at 375 px; `tests/site_spot_place.test.cjs`. Not checked: the built page (the preview serves the
+page unbuilt), the largest paint's time with the photo, Safari, a screen reader.

@@ -537,6 +537,44 @@
   .top-row .save { margin-top:0; }
   .save-msg { margin:8px 0 4px; } .save-msg:empty { margin:0; }   /* what Save did, under it; empty, no room */
   .answer { text-align:center; padding:4px 0 0; }
+  /* The place's photo, first in the answer (guideHero; 11 Nov 2026). With it the page has no sky: the photo is the
+     place, the tiles sit on the paper as cards with a hairline, as the working screens' do, and the band under the
+     answer is the tiles' own gap. Its line is the meta size, at the left edge, under the picture. */
+  .answer .hero { margin:0 0 16px; }
+  .hero img { display:block; width:100%; height:240px; object-fit:cover; border-radius:var(--radius); background:var(--sky); }   /* the sky's colour until the photo arrives */
+  .hero figcaption { margin:6px 0 0; font-size:var(--fs-meta); line-height:1.35; color:var(--muted); text-align:left; }
+  .hero figcaption a { color:inherit; }
+  .hero figcaption > span { white-space:nowrap; }
+  .answer .save-msg:not(:empty) { margin:10px 0 0; }   /* with the photo, what Save did and its hint end the answer */
+  .answer:has(.hero)::before { display:none; }
+  /* With the photo the opening reads down the left edge, at every width: the photo and its line, the name, what
+     kind of water it is straight under the name (it sat under the issue time, the third grey line in a row), then
+     the level, when, and the issue time; what Save did, and its line on alerts, close it at the meta size. The order
+     is drawn, not moved: the page's order, and a screen reader's, is the one without a photo. */
+  .answer:has(.hero) { display:flex; flex-direction:column; margin-bottom:16px; text-align:left; }
+  .answer:has(.hero) > .hero { order:-3; }
+  .answer:has(.hero) > .spot-name { order:-2; margin:0; max-width:none; text-wrap:pretty; }
+  .answer:has(.hero) > .kind { order:-1; margin:6px 0 0; }
+  .answer:has(.hero) > :not(.hero), .answer:has(.hero) #answer-words > * { margin-left:0; margin-right:0; }
+  .answer:has(.hero) .big, .answer:has(.hero) .big-head { margin-top:16px; text-wrap:pretty; }
+  .answer:has(.hero) .save-msg { font-size:var(--fs-meta); }
+  body.view-spot #result:has(.hero) .tile { background:var(--card); -webkit-backdrop-filter:none; backdrop-filter:none; box-shadow:inset 0 0 0 1px var(--line); }
+  /* The river as a sketch (riverSketch): the water as one line, the overflows on it in order, the spot ringed at its foot. */
+  .sketch { position:relative; list-style:none; margin:14px 0 0; padding:0; }
+  .sketch::before { content:""; position:absolute; left:71px; top:8px; bottom:10px; width:6px; background:var(--rain); opacity:.35; }
+  .sketch li { position:relative; display:grid; grid-template-columns:56px 20px minmax(0, 1fr); gap:0 8px; padding:0 0 14px; }
+  .sketch li:last-child { padding-bottom:0; }
+  .sketch .rk { padding-top:2px; font-size:var(--fs-meta); color:var(--muted); text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .sketch .rd { justify-self:center; width:10px; height:10px; margin-top:6px; border-radius:50%; background:var(--ov-quiet); box-shadow:0 0 0 3px var(--card); }
+  .sketch .on .rd { width:14px; height:14px; margin-top:4px; background:var(--veryhigh); }
+  .sketch .off .rd { background:var(--ov-off); }
+  .sketch .here .rd { width:8px; height:8px; margin-top:3px; background:var(--card); box-shadow:0 0 0 4px var(--brand); }
+  .sketch .rw { font-size:var(--fs-note); line-height:1.4; }
+  .sketch .rw b { display:block; font-weight:600; }
+  .sketch .rw span { color:var(--muted); }
+  .sketch .on .rw span { color:var(--k-veryhigh); }
+  .log-here { margin:0; }
+  .log-here .btn { width:100%; }
   .answer .kind { margin:8px 0 0; font-size:var(--fs-meta); line-height:1.35; color:var(--muted); }
   .answer .spot-name { margin:0 auto;  max-width:16em; text-wrap:balance; }
   .big { margin:12px auto 0; max-width:15em; font:600 var(--fs-title)/1.1 var(--font-text); letter-spacing:-.01em; color:var(--k-na); text-wrap:balance; }
@@ -1245,6 +1283,11 @@
        left-aligned columns gave a wide screen four left edges. Phones keep the centred answer. */
     .lead > * { max-width:760px; }
     .answer { text-align:left; }
+    /* A wide desktop: the words on the left, the photo beside them. */
+    .answer:has(.hero) { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 440px); column-gap:40px; align-items:start; }
+    .answer:has(.hero) > * { grid-column:1; }
+    .answer:has(.hero) > .hero { grid-column:2; grid-row:1 / span 8; margin:0; }
+    .answer:has(.hero) .hero img { height:280px; }
     .answer > *, .answer .spot-name, .answer .act, .answer .scope, .answer .flow, .answer .gaps, .answer .official,
       .answer .cover, .answer .ci, .big, .big-head { margin-left:0; margin-right:0; }
     /* A shorter opening, so the first spots and most of the map's tile are on a 1,440 x 900 screen:
@@ -1343,6 +1386,19 @@
     dialog.sheet { margin:auto auto 0; border-radius:var(--radius) var(--radius) 0 0; padding-bottom:calc(20px + env(safe-area-inset-bottom)); }
     .answer::before, .lead::before { left:calc(-16px - env(safe-area-inset-left)); right:calc(-16px - env(safe-area-inset-right)); }
     .answer { margin-bottom:48px; }   /* the fells' band, 128 px on a wider screen (the sky and the glass) */
+    .answer:has(.hero) { margin-bottom:8px; padding-top:0; }
+    /* A phone: the photo from the header down, edge to edge, square, 212 px tall. The back link and Save sit on it, as
+       white buttons with the map controls' lift, where no notice comes between them and the photo. */
+    .answer .hero { margin:0 calc(-16px - env(safe-area-inset-right)) 16px calc(-16px - env(safe-area-inset-left)); }
+    #panel:has(.answer > .hero) { padding-top:0; }   /* the photo meets the header; a notice above it keeps its own space (below) */
+    #panel:has(.answer > .hero) .top-row { margin-top:16px; }
+    .hero img { height:212px; border-radius:0; }
+    .hero figcaption { margin:8px calc(16px + env(safe-area-inset-right)) 0 calc(16px + env(safe-area-inset-left)); }
+    .top-row:has(+ [data-notices]:empty + .answer > .hero) { position:relative; z-index:1; height:44px; margin:16px 0 -60px; }
+    .top-row:has(+ [data-notices]:empty + .answer > .hero) .back { padding:0 14px 0 10px; border-radius:var(--radius); background:var(--card); color:var(--ink); box-shadow:var(--lift); }
+    .top-row:has(+ [data-notices]:empty + .answer > .hero) .save { border-color:transparent; box-shadow:var(--lift); }
+    .answer:has(.hero) > .spot-name { margin-top:4px; }
+
     .lead { margin-bottom:28px; }     /* the list's band is shorter, so its first spots reach the first screen */
     .desk-only { display:none !important; }
     #map-wrap { display:none; }
@@ -5614,8 +5670,36 @@ function whereFrom(d) {
   const now = first && n.source ? sourceSentence(own(n.source), 'now') : '';
   const lead = now && (!day || n.risk >= x.risk) ? now : day, named = lead ? (lead === now ? n.source : x.source).site_id : null;
   const said = [lead, first ? arriveSentence(d, named) : '', first ? clearSentence(d) : ''].filter(Boolean);
-  return said.length ? `<section class="tile" aria-labelledby="whence-h"><h2 class="t-lab" id="whence-h">${ICON.spills}<span>Where the risk comes from</span></h2>`
-    + said.map(t => `<p class="t-say">${t}</p>`).join('') + '</section>' : '';
+  // Then the river as a sketch (riverSketch), on today's view; with no sentence to give (a low day), the sketch alone,
+  // under a heading that says what it then shows.
+  const sketch = first && typeof riverSketch === 'function' ? riverSketch(d) : '';
+  return said.length || sketch ? `<section class="tile" aria-labelledby="whence-h"><h2 class="t-lab" id="whence-h">${ICON.spills}<span>${said.length ? 'Where the risk comes from' : 'Where a spill would come from'}</span></h2>`
+    + said.map(t => `<p class="t-say">${t}</p>`).join('') + sketch + '</section>' : '';
+}
+// The river as a sketch (11 Nov 2026; docs/DESIGN.md, "A spot's page: the place first"): up to five of the overflows
+// that count here, placed in order along the water from the furthest down to the spot, each with its distance, its
+// plain name and what its monitor last reported. One that is discharging, or whose latest spill began in the last 48
+// hours, is drawn in the discharging colour and comes first in the choice; the rest are taken by model weight, the
+// order the overflows' list has them in. Not to scale, and it says so, with how many it leaves out. The status words
+// are the overflows list's own (statusSaid, statusText); a spill that has ended says when it began and how long it ran.
+const SKETCH_ROWS = 5, SKETCH_HOURS = 48;
+function riverSketch(d, nowMs = Date.parse(DATA.generated_at)) {
+  const cs = (d.contributors || []).filter(c => c.weight > 0 || c.status === 1), total = allUpstream(d);
+  if (!cs.length) return '';
+  const far = c => (Number(c.distance_km) || 0) + (Number(c.lake_distance_km) || 0), began = c => Date.parse(c.latest_event_start);
+  const recent = c => drawnStatus(c) === 1 || (began(c) >= nowMs - SKETCH_HOURS * 3600000 && began(c) <= nowMs);
+  const shown = [...cs.filter(recent), ...cs.filter(c => !recent(c))].slice(0, SKETCH_ROWS).sort((a, b) => far(b) - far(a));
+  const said = c => { const mins = (Date.parse(c.latest_event_end) - began(c)) / 60000;
+    if (drawnStatus(c) === 1) return `${cap(statusSaid(c, nowMs))}.`;
+    if (recent(c)) return `Spilled ${new Date(began(c)).toLocaleString('en-GB', { weekday: 'long', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' })}${mins >= 0 ? `, for ${feedSpan(mins)}` : ''}.`;
+    return `${cap(statusText(c.status, c))}.${c.latest_event_end ? ` Last spill ended ${endedOn(c.latest_event_end)}.` : ''}`; };
+  const row = c => `<li class="${recent(c) ? 'on' : drawnStatus(c) === -1 ? 'off' : 'quiet'}"><span class="rk">${atSpot(c) ? 'Here' : `${fmt(far(c), 1)}&nbsp;km`}</span><span class="rd" aria-hidden="true"></span>`
+    + `<span class="rw"><b>${overflowSaid(c)}</b><span>${way(c)}${esc(said(c))}</span></span></li>`;
+  // Through a lake, how it comes, in overflowWhere's words: "Across the lake." or "Upstream by river and lake."
+  const way = c => { const w = overflowWhere(c).split(/[,:]/)[0].replace(/^[\d.]+\s*km\s+/, ''); return /lake/.test(w) ? cap(w) + '. ' : ''; };
+  const of = shown.length >= total ? (total === 1 ? 'the monitored overflow upstream' : `the ${total} monitored overflows upstream`) : `${shown.length} of the ${total} monitored overflows upstream`;
+  return `<ol class="sketch">${shown.map(row).join('')}<li class="here"><span class="rk">Here</span><span class="rd" aria-hidden="true"></span><span class="rw"><b>${esc(d.name)}</b></span></li></ol>`
+    + `<p class="t-key">A sketch of the water, not to scale: ${of}${shown.length < total ? ', any that spilled in the last 48 hours first, then by model weight' : ''}. <a href="#overflows">The overflows that matter most</a>, with each one's weight.</p>`;
 }
 // The overflows that matter most, as rows, each with its reach drawn: on a phone a five-column table
 // was too tight to read. Their circles go on the map, a bigger one for more reach. Each row: its names,
@@ -5750,7 +5834,9 @@ const otherAsWell = (d, near) => { const three = near.slice(0, 3);
 function nearby(d, reach = NEAR_KM) {
   const lv = s => DAY ? dayLevel(s, DAY) : level(s), mine = rank(lv(d)), lower = mine >= 1 || advisedAgainst(d), poor = advisedAgainst(d);
   const officialShown = s => typeof eaTodayRestricts === 'function' && eaTodayRestricts(s);   // a notice that restricts swimming
-  const alts = otherAsWell(d, DATA.spots.filter(s => s.id !== d.id && (!lower || (!advisedAgainst(s) && !officialShown(s) && ORDER[lv(s)] !== undefined && rank(lv(s)) < mine
+  // Lower, and never high or very high itself (11 Nov 2026): under a very high spot, "Lower risk nearby" offered one
+  // that read "High risk right now", whose own advice is to choose a lower day or spot.
+  const alts = otherAsWell(d, DATA.spots.filter(s => s.id !== d.id && (!lower || (!advisedAgainst(s) && !officialShown(s) && ORDER[lv(s)] !== undefined && rank(lv(s)) < Math.min(mine, rank('high'))
       && (DAY || (notHigherAnyDay(s, d) && !nowUnknown(s))) && (!poor || ratedBetter(s)))))
     .map(s => [s, km([d.lat, d.lon], [s.lat, s.lon])]).filter(([, k]) => k <= reach).sort((a, b) => a[1] - b[1]));
   if (!alts.length) return '';
@@ -5794,15 +5880,20 @@ function spotTop(d) {
   // marker was tapped on (bindBack goes back to any of them), or all the spots. Save sits opposite it.
   const back = backTo(history.state);
   let h = `<div class="top-row"><a href="${esc(back.href)}" class="back" id="back">${back.named ? `<span class="bn">${esc(back.label)}</span>` : esc(back.label)}</a>${saveButton(d)}</div>`;
-  // What Save did, under the button that was pressed (bindSave). Empty, it takes no room.
-  h += '<p class="small muted save-msg" id="save-msg" aria-live="polite"></p>';
+  // What Save did, under the button that was pressed (bindSave). Empty, it takes no room. With the place's photo
+  // (hero, below) it ends the answer instead, under its words: on a phone the back link and Save then sit on the photo, which
+  // must come straight after them, with no notice between (.top-row:has(+ [data-notices]:empty + .answer > .hero)).
+  const hero = typeof guideHero === 'function' ? guideHero(d) : '', saveMsg = '<p class="small muted save-msg" id="save-msg" aria-live="polite"></p>';
+  if (!hero) h += saveMsg;
   h += notices(d);
   // The answer, under the sky: its name, then any official advice (eatoday.js, eaTodayOfficial), above the
   // level and apart from it, then its words (answerWords), then the place (kind, water, size; under the issue
   // time since 29 October 2026, so the name is the first thing read).
   const official = typeof eaTodayOfficial === 'function' ? eaTodayOfficial(d) : '';
-  return h + `<section class="answer" id="risk-hero" aria-labelledby="risk-headline"><h1 class="spot-name" tabindex="-1">${esc(d.name)}</h1>`
-    + `${official}<div id="answer-words">${answerWords(d)}</div><p class="kind">${tags.join(' · ')}</p></section>`;
+  // The place's photo first, where its guide has one (guide.js, guideHero; 11 Nov 2026): inside the answer, so the
+  // build's copy keeps its element when the script draws (overBuilt) and the picture is painted once.
+  return h + `<section class="answer" id="risk-hero" aria-labelledby="risk-headline">${hero}<h1 class="spot-name" tabindex="-1">${esc(d.name)}</h1>`
+    + `${official}<div id="answer-words">${answerWords(d)}</div><p class="kind">${tags.join(' · ')}</p>${hero ? saveMsg : ''}</section>`;
 }
 // The forecast's tiles for the open day (iso), or today, under a heading that names the day, so that
 // the page has one date; showDay draws them again. Then the readings, which no day changes, under a
@@ -6001,6 +6092,8 @@ function render(d) {
 // below two maps. PHONE_EARLY goes there; PHONE_ORDER after the nearby spots, as before.
 // The EA's rating with today's advice at its foot (#water-top) follows the day's forecast: the answer's link to the advice
 // jumped about 4,000 px (5 Nov 2026).
+// A spot whose answer today is low risk, or the plain "no monitored overflow found upstream": the conditions lead its page.
+const lowNow = d => { const l = level(d); return l === 'low' || plainLevel(l); };
 const PHONE_EARLY = ['#day-tiles', '#water-top', '#scores-host, #scores', '#limits'];
 const PHONE_ORDER = ['.spot-map-tile', '#overflows', '#plume-host', '#now-tiles', '#lt-past', '#ls-past', '#seasonal'];
 const PHONE_EVIDENCE = ['#evidence', '#timeline', '#day-table', '.lab-tile'];   // under "Evidence and history" (phoneFolds)
@@ -6022,6 +6115,17 @@ function phoneFolds() {
   if (lim) lim.append(...parts);
   let early = src && days ? src : days ? days.closest('section') : null;
   if (early) for (const q of PHONE_EARLY) { const e = stack.querySelector(q); if (e) { early.after(e); early = e; } }
+  // The conditions. Today at low risk, or with no monitored overflow found upstream: first, over the five days, with
+  // the way to log a swim under them (11 Nov 2026: the answer is short on such a day, and the water is the question).
+  // Any other day, or a day picked: after why the level is what it is, as before.
+  const cond = stack.querySelector('.cond'), calm = current && !DAY && lowNow(current), log = document.getElementById('log-here');
+  if (cond && days) { if (calm) days.closest('section').before(cond); else if (early) early.after(cond); }
+  if (log && !calm) log.remove();
+  if (cond && calm && !log && document.getElementById('swam')) {
+    cond.insertAdjacentHTML('afterend', '<p class="log-here" id="log-here"><button type="button" class="btn">Log a swim here</button></p>');
+    document.querySelector('#log-here button').addEventListener('click', () => { document.getElementById('swam').click();
+      const box = document.getElementById('jn-box'); if (box) box.scrollIntoView({ block: 'start', ...(STILL ? {} : { behavior: 'smooth' }) }); });
+  }
   let at = at0;
   for (const q of PHONE_ORDER) { const e = stack.querySelector(q); if (e) { at.after(e); at = e; } }
   // The spots nearby stay high only where one is lower risk ("Lower risk nearby"); otherwise, the same level nearby,
