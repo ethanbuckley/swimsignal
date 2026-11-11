@@ -2311,9 +2311,13 @@ fells as every other spot's.
   white buttons with the map controls' lift, 16 px in from its top and sides (`.top-row:has(+ [data-notices]:empty +
   .answer > .hero)`). With a notice to read first (stale, offline) they stay above it, on the paper, and the photo
   follows the notice.
-- A phone: **the words start at the left edge**, as the photo's line does: the name, the level, when, the issue time,
-  the place. Centred under a photo with a left-hand caption, they read as two layouts.
-- What Save did, and the line on saving for alerts, end the answer, under its words, where the spot has a photo
+- **The words start at the left edge at every width**, as the photo's line does. Centred under a photo with a
+  left-hand caption, they read as two layouts. Their order, drawn with `order` on the answer (a flex column; the wide
+  desktop's grid takes it too): the name; what kind of water it is, straight under the name at the meta size (it sat
+  under the issue time, the third grey line in a row); the level; when; the issue time. The page's own order, and a
+  screen reader's, is unchanged: the kind still follows the words, as at a spot without a photo.
+- The photo's box is the sky's colour until the picture arrives.
+- What Save did, and the line on saving for alerts, end the answer at the meta size, under its words, where the spot has a photo
   (`spotTop`): above the photo they were a strip of paper between the header and the picture. Without a photo they
   stay under Save, as before.
 - From 801 px: 240 px tall with the one radius, the back link and Save above it. From 1,100 px: beside the answer's
