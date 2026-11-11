@@ -562,6 +562,48 @@ def test_the_privacy_notice_describes_alerts_only_when_they_are_on(tmp_path):
         assert ("up to 10 pairs of a spot and a date" in advised) is dates
 
 
+def test_back_to_low_risk_is_in_the_privacy_notice_only_once_the_build_turns_it_on(tmp_path, monkeypatch):
+    # DIPCAST_PUSH_CLEARS (push/README.md, "Back to low risk"): the notice says what the request stores and sends, beside
+    # the date and advice alerts or not. Each swap's words are in the notice before and after the swaps that run first.
+    bs = _build_site()
+    for before, _ in bs.PUSH_CLEARS_SWAPS:
+        text = bs.PUSH_PRIVACY
+        assert text.count(before) == 1, before
+        for a, b in bs.PUSH_ADVICE_SWAPS + bs.PUSH_DATES_SWAPS:
+            text = text.replace(a, b)
+        assert text.count(before) == 1, before
+    for dates in (False, True):
+        bs.write_pages(tmp_path, SPOTS[:1], root="https://example.org/", push=True, push_dates=dates, push_advice=dates)
+        off = (tmp_path / "privacy.html").read_text()
+        bs.write_pages(tmp_path, SPOTS[:1], root="https://example.org/", push=True, push_dates=dates, push_advice=dates, push_clears=True)
+        on = (tmp_path / "privacy.html").read_text()
+        for _, after in bs.PUSH_CLEARS_SWAPS:
+            assert after in on and after not in off, after
+        assert "back to low risk" not in off
+        assert "that spot's identifier and the day the request lapses, and nothing else: no name, email address or location." in on
+        assert "It gives the forecast's level, not a test of the water." in on
+        assert ("up to 10 pairs of a spot and a date" in on) is dates
+    # The switch: 1 turns it on in spots.json's push settings; anything else leaves it off.
+    monkeypatch.setenv(bs.PUSH_URL_ENV, "https://push.example/")
+    monkeypatch.setenv(bs.PUSH_KEY_ENV, "B" * 87)
+    for value, want in (("1", True), ("true", True), ("", None), ("0", None), ("yes", None)):
+        monkeypatch.setenv(bs.PUSH_CLEARS_ENV, value)
+        assert bs.push_config().get("clears") is want, value
+    assert bs.PUSH_CLEARS_ENV == "DIPCAST_PUSH_CLEARS"
+    assert "DIPCAST_PUSH_CLEARS: ${{ vars.DIPCAST_PUSH_CLEARS }}" in (ROOT / ".github" / "workflows" / "site.yml").read_text()
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="needs Node")
+def test_the_alerts_file_lets_the_worker_send_back_to_low_risk_only_when_the_build_says(tmp_path):
+    # scripts/alerts.js copies spots.json push.clears into alerts.json clear_alerts, which push/src/clears.js reads.
+    doc = {"generated_at": "2026-11-11T06:00:00+00:00", "spots": []}
+    for push, flag in ((None, None), ({"url": "https://p.example/", "key": "k"}, None), ({"url": "https://p.example/", "key": "k", "clears": True}, True)):
+        src = tmp_path / "spots.json"
+        src.write_text(json.dumps({**doc, **({"push": push} if push else {})}))
+        subprocess.run(["node", str(ROOT / "scripts" / "alerts.js"), str(src), str(tmp_path / "alerts.json"), "https://example.org/"], check=True, timeout=60)
+        assert json.loads((tmp_path / "alerts.json").read_text()).get("clear_alerts") is flag, push
+
+
 @pytest.mark.skipif(shutil.which("node") is None, reason="needs Node")
 def test_the_alerts_file_lets_the_worker_send_advice_alerts_only_when_the_build_says(tmp_path):
     # scripts/alerts.js copies spots.json push.advice into alerts.json advice_alerts, which push/src/index.js reads:
