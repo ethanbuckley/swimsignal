@@ -37,3 +37,11 @@ The register distinguishes historical test verdicts from current development dec
   observation; a satellite index is not a toxin measurement or swimming clearance.
 - Update the register when work changes stage, ships, or encounters a concrete blocker. Link the PR and next
   check so promising work cannot disappear into a closed chat.
+
+# Reviews, design and wording
+
+- Read [the design reference](docs/DESIGN.md) before reviewing the site or proposing a layout, UX or wording
+  change. Mark each recommendation as new, already decided (cite where), or reversing a decision (say why).
+  A review written from the rendered site alone has contradicted decisions recorded there.
+- Wait for the PR's checks to finish before merging. `main` may have no required check, so
+  `gh pr merge --auto` can merge at once, before the tests have run.
