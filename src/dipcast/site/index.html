@@ -560,6 +560,15 @@
   .sketch .rw b { display:block; font-weight:600; }
   .sketch .rw span { color:var(--muted); }
   .sketch .on .rw span { color:var(--k-veryhigh); }
+  /* Alerts for the day a raised spot is forecast low (clearAlert), under the five days, over "Plan a swim here". */
+  .clear-line { margin:12px 0 0; padding:12px 0 0; border-top:1px solid var(--hair); }
+  .clear-line:empty { display:none; }
+  .clear-line .btn { width:100%; display:inline-flex; align-items:center; justify-content:center; gap:8px; }
+  .clear-line .btn .ic { width:18px; height:18px; }
+  .clear-line p { margin:8px 0 0; }
+  .clear-line .clear-on { margin:0 0 8px; font-size:var(--fs-note); }
+  .clear-msg { margin:6px 0 0; } .clear-msg:empty { display:none; }
+  .low-ctl .map-days { display:none; }
   .log-here { margin:0; }
   .log-here .btn { width:100%; }
   .answer .kind { margin:8px 0 0; font-size:var(--fs-meta); line-height:1.35; color:var(--muted); }
@@ -1387,6 +1396,9 @@
        back to the spot it was opened from, where it reads "Back". */
     #savedbtn, #planbtn, body:not(.map-mode) #mapbtn, body:not(.view-spot) #mapbtn { display:none; }
     html.has-saved body.view-list:not(.map-mode) #searchbtn { display:inline-flex; }
+    /* The full map over the list: the five days as a strip beside the zoom buttons, in place of the select. */
+    body.view-list.map-mode .low-ctl .map-days { display:grid; width:calc(100vw - 84px); max-width:420px; margin:0 0 6px; box-shadow:var(--lift); }
+    body.view-list.map-mode .low-ctl #mapday { display:none; }
     html.has-saved body.view-list:not(.search-open) .lead .search, html.has-saved body.view-list:not(.search-open) #geo-cta { display:none; }
     #panel { padding:16px calc(16px + env(safe-area-inset-right)) calc(32px + var(--nav-h)) calc(16px + env(safe-area-inset-left)); }
     /* The thumb's reach: Explore, Map, Plan, Saved and More on every page, home on the left and yours on the right,
@@ -3641,7 +3653,7 @@ function styleMarkers() {
 function setMapDay(iso) {
   VIEW.day = iso || null;
   document.querySelectorAll('#mapday').forEach(el => { el.value = VIEW.day || ''; });
-  document.querySelectorAll('input[name="list-day"]').forEach(r => { r.checked = r.value === VIEW.day; });
+  document.querySelectorAll('input[name="list-day"], input[name="map-day"]').forEach(r => { r.checked = r.value === VIEW.day; });
   styleMarkers(); syncBestDay();
   if (document.getElementById('spots')) drawSpots();
 }
@@ -3651,16 +3663,23 @@ function fillMapDays() {
   sel.innerHTML = `<option value="">Today and tomorrow</option>` + fiveDays()
     .map(iso => `<option value="${iso}">${dateLabel(iso)}</option>`).join('');
   sel.value = VIEW.day || '';
+  const strip = document.getElementById('mapdays');
+  if (strip) strip.innerHTML = '<legend class="sr">Day shown on the map</legend>' + fiveDays().map(iso => `<label><input type="radio" name="map-day" value="${iso}"${VIEW.day === iso ? ' checked' : ''}>`
+    + `<span>${shortDay(iso)} <span class="dd"><b>${lowOn(iso)}</b> <span class="nw">low</span></span></span></label>`).join('');
 }
 function setLowOnly(on) { VIEW.lowOnly = on; styleMarkers(); if (document.getElementById('spots')) drawSpots(); }
 const lowCtl = L.control({ position: 'topright' });
 lowCtl.onAdd = () => { const el = L.DomUtil.create('div', 'low-ctl');
-  el.innerHTML = `<label class="sr" for="mapday">Day shown on the map</label><select id="mapday"><option value="">Today and tomorrow</option></select>`
+  // A phone's full map over the list: the five days as the list's own strip, each with its count (fillMapDays); the
+  // select stays for the maps of Saved and Plan a swim, which can show today and tomorrow together.
+  el.innerHTML = `<fieldset class="day-strip list-days map-days" id="mapdays"><legend class="sr">Day shown on the map</legend></fieldset>`
+    + `<label class="sr" for="mapday">Day shown on the map</label><select id="mapday"><option value="">Today and tomorrow</option></select>`
     + `<button type="button" id="lowbtn" aria-pressed="false" aria-describedby="low-note"><span class="dot" style="background:${colour('low')}"></span>Low risk only <span class="n"></span></button>`
     + `<p class="low-note" id="low-note">Low risk today and tomorrow from pollution. Not a safety check: currents, cold water and the Environment Agency's short-term warnings are not included.</p>`;
   L.DomEvent.disableClickPropagation(el);
   el.querySelector('button').addEventListener('click', () => setLowOnly(!VIEW.lowOnly));
   el.querySelector('select').addEventListener('change', e => setMapDay(e.target.value));
+  el.querySelector('#mapdays').addEventListener('change', e => setMapDay(e.target.value));
   return el; };
 lowCtl.addTo(map);
 
@@ -5483,6 +5502,60 @@ function planHere(d) {
   document.querySelectorAll('[data-plan-here]').forEach(a => a.addEventListener('click', e => {
     if (!plainClick(e)) return; e.preventDefault(); PLAN_NEW = true; openPlan(planHereHash(d, a.dataset.finish || null)); }));
 }
+// The day a raised spot is forecast low (11 Nov 2026; docs/DESIGN.md, "The day it is forecast low"): the first of the
+// five days at low risk after a raised one, as the five days' sentence finds it (levels.js, backToLow), and never today.
+function clearDay(d) {
+  if (!daily(d)) return null;
+  const ls = d.days.slice(0, 5).filter(x => x.date >= today()).map(x => ({ x, l: hasData(x) ? risk(d, x).level : null }));
+  const up = ls.findIndex(o => rank(o.l) >= 1), back = up < 0 ? null : ls.slice(up + 1).find(o => o.l === 'low');
+  return back && back.x.date > today() ? back.x.date : null;
+}
+// The way to hear about that day, under the five days: alerts for a date (spotdate.js; the Worker's dates.js), which
+// the organisers' page and a plan's outing already ask for. A message goes each time that day's level here changes,
+// up or down, in the page's own words for the day. It is not a message that the water is clear, and the Worker sends
+// none: a spot falling back from high sends nothing (push/src/index.js, newAdvice). With alerts not yet on in this
+// browser it points to the Saved page, where what turning them on sends is said; where this browser cannot have
+// notifications it says nothing, as a saved card does (the Alerts tile says why, once).
+const BELL = '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 16v-5a6 6 0 0 1 12 0v5l1.5 2h-15Z"/><path d="M10 20.5h4"/></svg>';
+function clearAlert({ state, date, on, saved }) {
+  if (!date || (state !== 'on' && state !== 'off')) return '';
+  const at = new Date(date + 'T12:00:00'), day = at.toLocaleDateString('en-GB', { weekday: 'long' }), full = at.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+  if (state === 'off') return `<p class="small muted">To hear if ${day}'s forecast here changes, first turn on alerts in this browser, from the Saved page. <a href="${esc(saved)}" id="clear-to-alerts">Go to alerts</a></p>`;
+  return on ? `<p class="clear-on">Alerts are on for ${full} here: a message each time that day's level changes.</p><button type="button" class="btn quiet" data-clear="stop">Stop alerts for ${day}</button>`
+    : `<button type="button" class="btn" data-clear="add">${BELL}Alert me if ${day}'s forecast changes</button>`
+      + `<p class="small muted">Forecast low risk ${dayWord(date)}. A message each time that day's level here changes, up or down.</p>`;
+}
+// Drawn once the push state is known (outing.js, outingPushState: no permission is asked). Nothing is sent until a
+// button is pressed; then the whole list of dates goes, as on the organisers' page, and is kept in this browser.
+async function mountClear(d) {
+  const sec = (document.getElementById('days-h') || { closest: () => null }).closest('section');
+  const date = PAGE_ID.test(d.id) && rank(level(d)) >= 1 ? clearDay(d) : null;
+  if (!sec || !date || typeof outingPushState !== 'function' || typeof SpotDate !== 'object') return;
+  const st = await outingPushState();
+  if (current !== d || !sec.isConnected || document.getElementById('clear-line')) return;   // the page moved on meanwhile
+  const D = SpotDate, endpoint = st.sub && st.sub.endpoint;
+  let mem = null;   // the list as last sent, where this browser cannot keep it
+  const read = () => { if (mem) return mem; try { return D.keptDates(localStorage.getItem(D.DATES_KEY), endpoint, today()); } catch (e) { return []; } };
+  const html = () => clearAlert({ state: st.state, date, on: D.hasDate(read(), d.id, date), saved: savedPath() });
+  if (!html()) return;
+  const host = '<div class="clear-line" id="clear-line"></div><p class="small muted clear-msg" id="clear-msg" aria-live="polite"></p>', plan = sec.querySelector('.plan-here-line');
+  if (plan) plan.insertAdjacentHTML('beforebegin', host); else sec.insertAdjacentHTML('beforeend', host);
+  const el = document.getElementById('clear-line'), msg = document.getElementById('clear-msg'), day = new Date(date + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'long' });
+  const paint = () => {
+    el.innerHTML = html();
+    const go = document.getElementById('clear-to-alerts');
+    if (go) go.addEventListener('click', e => { if (!plainClick(e)) return; e.preventDefault(); openSaved();
+      const h = document.getElementById('alerts-h'); if (h) { h.tabIndex = -1; h.scrollIntoView({ block: 'start' }); h.focus({ preventScroll: true }); } });
+    el.querySelectorAll('[data-clear]').forEach(b => b.addEventListener('click', async () => {
+      const turnOn = b.dataset.clear === 'add', next = D.withDate(read(), d.id, date, turnOn);
+      b.disabled = true; msg.textContent = '';
+      try { await D.sendDates(DATA.push.url, st.sub, next); mem = next; D.storeDates(st.sub, next); paint();
+        msg.textContent = turnOn ? `Alerts are on for ${day}.` : `Alerts are off for ${day}.`;
+      } catch (e) { b.disabled = false; msg.textContent = `Could not change alerts for this date: ${e.message}.`; }
+    }));
+  };
+  paint();
+}
 function actions(d) {
   const fb = `${esc(FEEDBACK)}&amp;spot=${encodeURIComponent(d.name)}`;
   const here = canPlanHere(d) ? `<a class="btn primary" id="plan-here" href="${esc(planPath() + planHereHash(d))}" data-plan-here>Plan a swim here</a>` : '';
@@ -6047,6 +6120,7 @@ function render(d) {
   if (moreBtn) moreBtn.addEventListener('click', () => { const t = document.getElementById('contrib'), all = t.classList.toggle('all');
     moreBtn.setAttribute('aria-expanded', String(all)); moreBtn.textContent = all ? `Show the top 3` : `Show all ${d.contributors.length}`; });
   placeMap(); drawTrace();   // render cleared contribLayer, and the line with it
+  mountClear(d);   // alerts for the day a raised spot is forecast low, once the push state is known
   if (REPLAY) mountReplay(d);
   mountPlume(d);
   if (lastOn) mountLast(d, DATA.generated_at, document.getElementById('since-last-host'));
