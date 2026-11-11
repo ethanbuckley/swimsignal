@@ -94,9 +94,54 @@ The questions. Open, about what happened, not about what they would do.
 Only if they ask what SwimSignal does: show `demo.html`, then ask "Which part of this, if any, would you use, and
 for what?" Record which step they point at.
 
+### 3a. The sessions sketch, after the demonstration
+
+Added 11 November 2026. The sessions sketch is a private Claude canvas, linked from Claude's memory ("Product
+redesign mockups"). It shows four screens of a paid service that does not exist:
+- set up sites, sessions and people;
+- the week board for four sites;
+- the briefing on a session leader's phone, with read, decide and three checks at the water;
+- the record kept for each session.
+
+Its sample is the four Windermere bathing waters on the forecast issued Sunday 25 October 2026, 17:48. Only
+the forecast, the overflows and the rain on it are real. The centre, the sessions and the staff are invented.
+
+When to show it:
+- Only after `demo.html`, and only if the interviewee wants to see what a paid service might look like.
+- Never before they have described their own routine. The sketch would then shape their answers.
+- Not at all in a short call. The demonstration is enough there.
+
+How to show it:
+1. From Ethan's own screen, signed in to claude.ai. The canvas is private. Do not send the link.
+2. Open the "Sessions product" page in Play. Click through in order: Set up, This week, the briefing, Records.
+3. Say two things before the first screen: "This is a sketch. None of it is built." and "The levels are from
+   25 October, not today."
+4. Show the overview page's pricing screen only if they ask for a price. Section 3's price rule applies.
+5. Optional, the day before: re-point the sketch to the interviewee's own sites with the private script
+   (`canvas/repoint.py` in swimsignal-internal). Use the latest issue, and say its date.
+
+The most likely mistake is leaving the 25 October levels unexplained. They show a wet week, with two sites at
+Moderate risk. Someone who sees them without the date may take them for current conditions on Windermere
+[inferred].
+
+Questions after showing it. Ask them in this order. Record the answers in their words, and note which screen
+they point at.
+
+1. Which of these screens, if any, would replace something you do now? What do you do instead today?
+2. Who would read the briefing, and when? On a phone, the evening before or at 07:00?
+3. Would the week board change who decides, or only how they decide?
+4. Would your insurer, your governing body or a parent accept the record as evidence of what you knew when
+   you decided? Has anyone asked you for something like it?
+5. What is missing that would stop you using it? What would you take out?
+6. Who would approve paying for something like this, and from which budget?
+
+Interest in a sketch is not a commitment (section 4). A "yes, we'd use that" is recorded with the rest of the
+note. It unlocks nothing.
+
 After each interview, the same day: a one-page note in `swimsignal-private/interviews/` (personal data stays out of
 this public repository), with the date, the organisation type (never its name in anything public), the answers, the
-current spend named in question 5, any reaction to the demonstration and to a price, and the next step they agreed to.
+current spend named in question 5, any reaction to the demonstration, to the sketch (which screen) and to a price,
+and the next step they agreed to.
 
 ## 4. What counts as a written commitment
 
@@ -174,6 +219,8 @@ The one hard gate in this pillar is section 4: no spending without a written com
 ## 7. What is Ethan's
 
 - Approving the demonstration's wording, especially the "Free today" box.
+- Showing the sessions sketch (section 3a) from his own screen, and deciding whether to re-point it to an
+  interviewee's sites.
 - Choosing whom to contact, and sending anything. Nothing here is sent.
 - The employer confirmation (pivot plan phase 0), before any interview that could lead to a sale.
 - Asking Open-Meteo the two questions in section 5, when a commitment is close.
