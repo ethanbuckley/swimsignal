@@ -2550,11 +2550,11 @@ MORE_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" 
 
 
 def phone_nav(r: str = "") -> str:
-    """The phone's bar at the foot of a page: Explore, Map, Plan, Saved and More."""
+    """The phone's bar at the foot of a page: Today, Map, Plan, Saved and More."""
     more = "".join(f'<li><a href="{r}{href}">{label}</a></li>' for href, label in MORE_LINKS)
     return (
         '<nav class="phone-nav" aria-label="Main">'
-        f'<a href="{r}index.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/></svg>Explore</a>'
+        f'<a href="{r}index.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6 6 6M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"/></svg>Today</a>'
         f'<a href="{r}index.html?map=1"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 5 6-2 6 2 6-2v16l-6 2-6-2-6 2Zm6-2v16m6-14v16"/></svg>Map</a>'
         f'<a href="{r}plan/" aria-label="Plan a swim"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4m6-4v4"/></svg>Plan</a>'
         f'<a href="{r}saved/" aria-label="Saved spots"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4Z"/></svg>Saved</a>'

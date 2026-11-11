@@ -219,7 +219,8 @@ those sizes; they were taken off to keep the rule simple.)
   at the water before you swim", every Environment Agency advice sentence, the issue time, the
   data credits in the foot, and every sentence of the terms and the privacy notice. Consent text
   (the alerts) folds under what it is about, before the button, and keeps every sentence.
-- Names agree everywhere: the home page is **Explore**, the verification page is **Accuracy**.
+- Names agree everywhere: the home page is **Today** (**Explore** until 11 November 2026: "Today: the home page"), the
+  verification page is **Accuracy**.
   Page titles are "Page · SwimSignal", where the page's name leaves out the brand its heading may
   carry: "About SwimSignal" is "About · SwimSignal", "Testing SwimSignal this winter" is "Testing
   this winter · SwimSignal". A spot's page is "Name: pollution risk forecast · SwimSignal". One
@@ -2239,3 +2240,53 @@ answer: that would push the five days down, against "A tighter opening".
 A spot that had no guide now has one holding only the photo. Its tile's first line says "No facts checked here yet:
 only a photo of the place, below.", and "Not in this guide yet" names every topic, so the picture is never read as
 a checked guide. The choices and the rejected candidates are in `guides/photo-candidates/decisions.tsv`.
+
+## Today: the home page (11 November 2026)
+
+Ethan approved a set of mock-ups for the swimmer's site ("build it all") after the organisation pilots were drafted.
+This is the first part: the home page. Measured on the live site that day, a phone's first screen showed no forecast
+for any place: a title, the search, the five days and thirteen area folds, two taps from one answer. And nothing on
+the page was the visitor's own unless they scrolled to it.
+
+**The name.** The phone's first tab is **Today**, with the sun for its icon (the magnifier went with "Explore"). The
+prose pages' bar says the same (`build_site.phone_nav`). Back links still say "All spots".
+
+**With spots saved** the page opens on what they say (`homeHead`, `homeYours` in `index.html`):
+- The title counts the saved spots whose card reads moderate risk or higher on the day shown: "Raised risk today at
+  3 of your 4 saved spots". The line under it, in ink, names those levels ("1 at very high risk, 2 at moderate risk."),
+  then the first of the five days on which every raised spot is forecast low ("All 3 are forecast low risk by
+  Saturday."), then when the forecast was issued. A day picked on the strip changes all three.
+- With none raised it says "Low risk today at both of your saved spots" only when every saved spot has that level and
+  none is under official advice restricting swimming. A spot with no monitored overflow found upstream is not at low
+  risk, so the title is then "No raised risk today at your 2 saved spots". A notice is said in the line: "1 has an
+  official notice: follow it first."
+- The title and the line are the built page's own two elements (`overBuilt` patches them), so the sky is not painted
+  again. A script in the head reads only whether `dipcast.saved` holds an id and sets `has-saved` on the page before
+  its first paint; the build's copy of the first visit's title and line is then not shown while the forecast loads.
+- **On a phone the search field opens from a button in the header** (`searchbtn`, `openSearch`), so Your places starts
+  one row higher: 325 px down a 375 x 812 screen on 11 November. A search in progress keeps the field open, and the
+  full map's "Search an area" opens it. The five days stay: they change the cards. A desktop keeps the field.
+- **Upstream of your saved spots, last 48 hours** (`upstreamFeed`, `homeFeed`, `mountHomeFeed`), under Your places:
+  each overflow, among the ten that count most at a saved spot, whose latest reported spill began in that time or that
+  is discharging now. One row each: when it began, its plain name and how long it spilled ("spilled for 22 minutes",
+  "is spilling now"), and where it is from the nearest saved spot it is above (`overflowWhere`'s words). A row opens
+  that spot. The record is the water companies' own, so the tile says "reported" and, in its last line, that a monitor
+  that is off reports nothing. With nothing reported: "No spill reported in the last 48 hours by the overflows that
+  count most upstream." It reads the saved spots' own files (the first eight), which the page already fetches for a
+  spot's page; nothing new is stored.
+
+**A first visit** keeps the built opening word for word, so nothing moves when the script draws. Before the areas it
+gains two tiles, which go while the list is searched or filtered:
+- **Today across the 133 spots** (`homeNow`): one bar in the level colours and four figures, the counts `overview()`
+  gives at the foot of the list. Low is the day strip's count; a spot at low risk under advice restricting swimming is
+  said in a line under the figures. The heading names the day picked.
+- **Very high risk today** (`homeWorst`): the spots at very high risk on the day shown, two at most, as the list's own
+  rows, with how many more. None at very high risk: no tile. This turns round part of "Near you first" (14 October),
+  which opened the list A to Z so that a first look was not a stack of red rows: two rows, under a count that is
+  mostly green, say what the forecast is doing today.
+
+**Not changed:** a level, a count, any card's words, the order of the saved cards, the list, the Saved page.
+
+**Checked:** headless Chrome on the day's live data at 320, 375 and 1,440 px, a first visit and four saved spots
+(three raised); the node tests (`tests/site_today_home.test.cjs`). Not checked: the built page's first paint with
+spots saved (the preview serves the page unbuilt), Safari, a screen reader.
