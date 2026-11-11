@@ -543,6 +543,9 @@
   .answer .hero { margin:0 0 16px; }
   .hero img { display:block; width:100%; height:240px; object-fit:cover; border-radius:var(--radius); }
   .hero figcaption { margin:6px 0 0; font-size:var(--fs-meta); line-height:1.35; color:var(--muted); text-align:left; }
+  .hero figcaption a { color:inherit; }
+  .hero figcaption > span { white-space:nowrap; }
+  .answer .save-msg:not(:empty) { margin:10px 0 0; }   /* with the photo, what Save did and its hint end the answer */
   .answer:has(.hero)::before { display:none; }
   .answer:has(.hero) { margin-bottom:16px; }
   body.view-spot #result:has(.hero) .tile { background:var(--card); -webkit-backdrop-filter:none; backdrop-filter:none; box-shadow:inset 0 0 0 1px var(--line); }
@@ -1373,11 +1376,22 @@
     dialog.sheet { margin:auto auto 0; border-radius:var(--radius) var(--radius) 0 0; padding-bottom:calc(20px + env(safe-area-inset-bottom)); }
     .answer::before, .lead::before { left:calc(-16px - env(safe-area-inset-left)); right:calc(-16px - env(safe-area-inset-right)); }
     .answer { margin-bottom:48px; }   /* the fells' band, 128 px on a wider screen (the sky and the glass) */
-    .answer:has(.hero) { margin-bottom:8px; }
-    /* A phone: the photo from edge to edge, square, 176 px tall, so the level is still on the first screen. */
-    .answer .hero { margin:0 calc(-16px - env(safe-area-inset-right)) 14px calc(-16px - env(safe-area-inset-left)); }
-    .hero img { height:176px; border-radius:0; }
-    .hero figcaption { margin:6px calc(16px + env(safe-area-inset-right)) 0 calc(16px + env(safe-area-inset-left)); }
+    .answer:has(.hero) { margin-bottom:8px; padding-top:0; text-align:left; }
+    /* A phone: the photo from the header down, edge to edge, square, 212 px tall. The back link and Save sit on it, as
+       white buttons with the map controls' lift, where no notice comes between them and the photo. Under it the words
+       start at the left edge, as its line does: the name, the level, when, the issue time. */
+    .answer .hero { margin:0 calc(-16px - env(safe-area-inset-right)) 16px calc(-16px - env(safe-area-inset-left)); }
+    #panel:has(.answer > .hero) { padding-top:0; }   /* the photo meets the header; a notice above it keeps its own space (below) */
+    #panel:has(.answer > .hero) .top-row { margin-top:16px; }
+    .hero img { height:212px; border-radius:0; }
+    .hero figcaption { margin:8px calc(16px + env(safe-area-inset-right)) 0 calc(16px + env(safe-area-inset-left)); }
+    .top-row:has(+ [data-notices]:empty + .answer > .hero) { position:relative; z-index:1; height:44px; margin:16px 0 -60px; }
+    .top-row:has(+ [data-notices]:empty + .answer > .hero) .back { padding:0 14px 0 10px; border-radius:var(--radius); background:var(--card); color:var(--ink); box-shadow:var(--lift); }
+    .top-row:has(+ [data-notices]:empty + .answer > .hero) .save { border-color:transparent; box-shadow:var(--lift); }
+    .answer:has(.hero) .spot-name { margin:0; max-width:none; text-wrap:pretty; }
+    .answer:has(.hero) .big, .answer:has(.hero) .big-head { text-wrap:pretty; }
+    .answer:has(.hero) > :not(.hero), .answer:has(.hero) #answer-words > * { margin-left:0; margin-right:0; }
+
     .lead { margin-bottom:28px; }     /* the list's band is shorter, so its first spots reach the first screen */
     .desk-only { display:none !important; }
     #map-wrap { display:none; }
@@ -5859,8 +5873,11 @@ function spotTop(d) {
   // marker was tapped on (bindBack goes back to any of them), or all the spots. Save sits opposite it.
   const back = backTo(history.state);
   let h = `<div class="top-row"><a href="${esc(back.href)}" class="back" id="back">${back.named ? `<span class="bn">${esc(back.label)}</span>` : esc(back.label)}</a>${saveButton(d)}</div>`;
-  // What Save did, under the button that was pressed (bindSave). Empty, it takes no room.
-  h += '<p class="small muted save-msg" id="save-msg" aria-live="polite"></p>';
+  // What Save did, under the button that was pressed (bindSave). Empty, it takes no room. With the place's photo
+  // (hero, below) it ends the answer instead, under its words: on a phone the back link and Save then sit on the photo, which
+  // must come straight after them, with no notice between (.top-row:has(+ [data-notices]:empty + .answer > .hero)).
+  const hero = typeof guideHero === 'function' ? guideHero(d) : '', saveMsg = '<p class="small muted save-msg" id="save-msg" aria-live="polite"></p>';
+  if (!hero) h += saveMsg;
   h += notices(d);
   // The answer, under the sky: its name, then any official advice (eatoday.js, eaTodayOfficial), above the
   // level and apart from it, then its words (answerWords), then the place (kind, water, size; under the issue
@@ -5868,9 +5885,8 @@ function spotTop(d) {
   const official = typeof eaTodayOfficial === 'function' ? eaTodayOfficial(d) : '';
   // The place's photo first, where its guide has one (guide.js, guideHero; 11 Nov 2026): inside the answer, so the
   // build's copy keeps its element when the script draws (overBuilt) and the picture is painted once.
-  const hero = typeof guideHero === 'function' ? guideHero(d) : '';
   return h + `<section class="answer" id="risk-hero" aria-labelledby="risk-headline">${hero}<h1 class="spot-name" tabindex="-1">${esc(d.name)}</h1>`
-    + `${official}<div id="answer-words">${answerWords(d)}</div><p class="kind">${tags.join(' · ')}</p></section>`;
+    + `${official}<div id="answer-words">${answerWords(d)}</div><p class="kind">${tags.join(' · ')}</p>${hero ? saveMsg : ''}</section>`;
 }
 // The forecast's tiles for the open day (iso), or today, under a heading that names the day, so that
 // the page has one date; showDay draws them again. Then the readings, which no day changes, under a
