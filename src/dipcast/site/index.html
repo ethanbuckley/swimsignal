@@ -541,13 +541,23 @@
      place, the tiles sit on the paper as cards with a hairline, as the working screens' do, and the band under the
      answer is the tiles' own gap. Its line is the meta size, at the left edge, under the picture. */
   .answer .hero { margin:0 0 16px; }
-  .hero img { display:block; width:100%; height:240px; object-fit:cover; border-radius:var(--radius); }
+  .hero img { display:block; width:100%; height:240px; object-fit:cover; border-radius:var(--radius); background:var(--sky); }   /* the sky's colour until the photo arrives */
   .hero figcaption { margin:6px 0 0; font-size:var(--fs-meta); line-height:1.35; color:var(--muted); text-align:left; }
   .hero figcaption a { color:inherit; }
   .hero figcaption > span { white-space:nowrap; }
   .answer .save-msg:not(:empty) { margin:10px 0 0; }   /* with the photo, what Save did and its hint end the answer */
   .answer:has(.hero)::before { display:none; }
-  .answer:has(.hero) { margin-bottom:16px; }
+  /* With the photo the opening reads down the left edge, at every width: the photo and its line, the name, what
+     kind of water it is straight under the name (it sat under the issue time, the third grey line in a row), then
+     the level, when, and the issue time; what Save did, and its line on alerts, close it at the meta size. The order
+     is drawn, not moved: the page's order, and a screen reader's, is the one without a photo. */
+  .answer:has(.hero) { display:flex; flex-direction:column; margin-bottom:16px; text-align:left; }
+  .answer:has(.hero) > .hero { order:-3; }
+  .answer:has(.hero) > .spot-name { order:-2; margin:0; max-width:none; text-wrap:pretty; }
+  .answer:has(.hero) > .kind { order:-1; margin:6px 0 0; }
+  .answer:has(.hero) > :not(.hero), .answer:has(.hero) #answer-words > * { margin-left:0; margin-right:0; }
+  .answer:has(.hero) .big, .answer:has(.hero) .big-head { margin-top:16px; text-wrap:pretty; }
+  .answer:has(.hero) .save-msg { font-size:var(--fs-meta); }
   body.view-spot #result:has(.hero) .tile { background:var(--card); -webkit-backdrop-filter:none; backdrop-filter:none; box-shadow:inset 0 0 0 1px var(--line); }
   /* The river as a sketch (riverSketch): the water as one line, the overflows on it in order, the spot ringed at its foot. */
   .sketch { position:relative; list-style:none; margin:14px 0 0; padding:0; }
@@ -1385,10 +1395,9 @@
     dialog.sheet { margin:auto auto 0; border-radius:var(--radius) var(--radius) 0 0; padding-bottom:calc(20px + env(safe-area-inset-bottom)); }
     .answer::before, .lead::before { left:calc(-16px - env(safe-area-inset-left)); right:calc(-16px - env(safe-area-inset-right)); }
     .answer { margin-bottom:48px; }   /* the fells' band, 128 px on a wider screen (the sky and the glass) */
-    .answer:has(.hero) { margin-bottom:8px; padding-top:0; text-align:left; }
+    .answer:has(.hero) { margin-bottom:8px; padding-top:0; }
     /* A phone: the photo from the header down, edge to edge, square, 212 px tall. The back link and Save sit on it, as
-       white buttons with the map controls' lift, where no notice comes between them and the photo. Under it the words
-       start at the left edge, as its line does: the name, the level, when, the issue time. */
+       white buttons with the map controls' lift, where no notice comes between them and the photo. */
     .answer .hero { margin:0 calc(-16px - env(safe-area-inset-right)) 16px calc(-16px - env(safe-area-inset-left)); }
     #panel:has(.answer > .hero) { padding-top:0; }   /* the photo meets the header; a notice above it keeps its own space (below) */
     #panel:has(.answer > .hero) .top-row { margin-top:16px; }
@@ -1397,9 +1406,7 @@
     .top-row:has(+ [data-notices]:empty + .answer > .hero) { position:relative; z-index:1; height:44px; margin:16px 0 -60px; }
     .top-row:has(+ [data-notices]:empty + .answer > .hero) .back { padding:0 14px 0 10px; border-radius:var(--radius); background:var(--card); color:var(--ink); box-shadow:var(--lift); }
     .top-row:has(+ [data-notices]:empty + .answer > .hero) .save { border-color:transparent; box-shadow:var(--lift); }
-    .answer:has(.hero) .spot-name { margin:0; max-width:none; text-wrap:pretty; }
-    .answer:has(.hero) .big, .answer:has(.hero) .big-head { text-wrap:pretty; }
-    .answer:has(.hero) > :not(.hero), .answer:has(.hero) #answer-words > * { margin-left:0; margin-right:0; }
+    .answer:has(.hero) > .spot-name { margin-top:4px; }
 
     .lead { margin-bottom:28px; }     /* the list's band is shorter, so its first spots reach the first screen */
     .desk-only { display:none !important; }

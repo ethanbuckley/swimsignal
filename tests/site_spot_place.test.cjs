@@ -87,7 +87,12 @@ test("the photo is first inside the answer, in the build's copy of the page too,
   assert.match(out.dart, /<\/p><p class="small muted save-msg" id="save-msg" aria-live="polite"><\/p><\/section><div class="stack">/);
   assert.match(out.plain, /^<div class="top-row">.*?<\/div><p class="small muted save-msg" id="save-msg" aria-live="polite"><\/p>/);
   assert.match(PAGE, /\.top-row:has\(\+ \[data-notices\]:empty \+ \.answer > \.hero\) \{ position:relative; z-index:1; height:44px; margin:16px 0 -60px; \}/);
-  assert.match(PAGE, /\.answer:has\(\.hero\) \{ margin-bottom:8px; padding-top:0; text-align:left; \}/);
+  // One hierarchy at every width: the words down the left edge, the kind of water drawn straight under the name.
+  // Drawn, not moved: the page's own order (and a screen reader's) is the one a spot without a photo has.
+  assert.match(PAGE, /\.answer:has\(\.hero\) \{ display:flex; flex-direction:column; margin-bottom:16px; text-align:left; \}/);
+  assert.match(PAGE, /\.answer:has\(\.hero\) > \.hero \{ order:-3; \}\n\s+\.answer:has\(\.hero\) > \.spot-name \{ order:-2;[^}]*\}\n\s+\.answer:has\(\.hero\) > \.kind \{ order:-1; margin:6px 0 0; \}/);
+  assert.match(out.dart, /<div id="answer-words">.*<\/div><p class="kind">[^<]*<\/p><p class="small muted save-msg" id="save-msg"/, 'the kind still follows the words in the page');
+  assert.match(PAGE, /\.hero img \{[^}]*background:var\(--sky\); \}/, 'the sky colour until the photo arrives');
   assert.match(out.plain, /<section class="answer" id="risk-hero" aria-labelledby="risk-headline"><h1 class="spot-name"/, 'no photo: the answer as before');
   assert.match(fs.readFileSync(path.join(ROOT, 'scripts/prerender_spots.js'), 'utf8'), /const SCRIPTS = \['eatoday\.js', 'experience\.js', 'levels\.js', 'lists\.js', 'guide\.js'\];/);
   assert.match(PAGE, /const hero = typeof guideHero === 'function' \? guideHero\(d\) : '', saveMsg = /);
