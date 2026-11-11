@@ -151,6 +151,19 @@ function guideHistorical(p) {
     + 'Not taken by SwimSignal. It shows that day only, not today\'s access, permission, water level or conditions.';
 }
 
+// The place's photo over its answer (11 Nov 2026; docs/DESIGN.md, "A spot's page: the place first"): the guide's
+// overview photo, where it is a historical one with no labels. Under it one line: whose it is, the day it was taken,
+// its licence where the page knows it, that it shows that day only, and the way to the full line in the guide
+// (guideHistorical), which the photo keeps there. index.html's spotTop writes it, so the build's copy of a spot's
+// page has it too (scripts/prerender_spots.js) and nothing moves when the script draws.
+function guideHero(d) {
+  const p = (((d || {}).guide || {}).photos || []).find(x => x.topic === 'overview' && x.status === 'historical' && guideFile(x.file) && !(x.labels || []).length && x.credit && x.taken);
+  if (!p) return '';
+  const w = guideNum(p.w, 1, 4000) || 4, h = guideNum(p.h, 1, 4000) || 3, lic = GUIDE_LICENCES[p.licence];
+  return `<figure class="hero"><img src="guides/photos/${p.file}" width="${w}" height="${h}" decoding="async" fetchpriority="high" alt="${guideEsc(String(p.caption || '').replace(/[.\s]+$/, ''))}.">`
+    + `<figcaption>Historical photo by ${guideEsc(p.credit)}, ${guideDay(p.taken)}${lic ? `, <a href="${guideEsc(p.licence)}">${lic}</a>` : ''}. It shows that day only. <a href="#guide">About this photo</a></figcaption></figure>`;
+}
+
 // A photo at the tile's width, its numbered labels placed on it, and the key beneath: a number on the
 // picture, the same number in the list. The box holds the photo's shape while it loads.
 function guidePhoto(p, i, g) {
@@ -250,5 +263,5 @@ function knowOpen(kind, sec) {
 }
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { placeTile, GUIDE_TOPICS, GUIDE_PADDLE, GUIDE_OPTIONAL, GUIDE_STALE_DAYS, GUIDE_SHOW, guideTile, knowTile, KNOW, guideChecked, guideSource, guideRuns, guideFacts, guideGaps, guidePhoto, guideHistorical, GUIDE_LICENCES, guideDays, guideClick, showRest };
+  module.exports = { guideHero, placeTile, GUIDE_TOPICS, GUIDE_PADDLE, GUIDE_OPTIONAL, GUIDE_STALE_DAYS, GUIDE_SHOW, guideTile, knowTile, KNOW, guideChecked, guideSource, guideRuns, guideFacts, guideGaps, guidePhoto, guideHistorical, GUIDE_LICENCES, guideDays, guideClick, showRest };
 }

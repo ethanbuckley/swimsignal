@@ -15,7 +15,7 @@ const vm = require('vm');
 const SITE = path.join(__dirname, '..', 'src', 'dipcast', 'site');
 // The page's scripts the two functions use, run whole, in the page's order. lists.js gives Save its
 // label; eatoday.js decides whether the answer points at "Today's EA advice".
-const SCRIPTS = ['eatoday.js', 'experience.js', 'levels.js', 'lists.js'];
+const SCRIPTS = ['eatoday.js', 'experience.js', 'levels.js', 'lists.js', 'guide.js'];   // guide.js: the place's photo over the answer (guideHero)
 const ROOTS = ['spotTop', 'daysTile', 'ageReadings'];
 // Definitions that need a browser as they run, which the prerender gives itself instead (context):
 // where the site is, and the map (an object key "map" reaches it; nothing here draws one).
