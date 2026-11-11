@@ -61,12 +61,14 @@ test("the place's photo: the guide's overview photo, with whose it is, its day, 
   const h = G.guideHero(DART);
   assert.equal(h, '<figure class="hero"><img src="guides/photos/geograph-6482389.jpg" width="640" height="413" decoding="async" fetchpriority="high" '
     + 'alt="River Dart at The Weir, looking north-west.">'
-    + '<figcaption>Historical photo by Derek Harper, 20 May 2020, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC BY-SA 2.0</a>. '
-    + 'It shows that day only. <a href="#guide">About this photo</a></figcaption></figure>');
+    + '<figcaption><span>Photo from 20 May 2020 ·</span> <span>Derek Harper ·</span> <span><a href="https://creativecommons.org/licenses/by-sa/2.0/">CC BY-SA 2.0</a> ·</span> '
+    + '<span><a href="#guide">About<span class="sr"> this photo</span></a></span></figcaption></figure>');
+  // One line on a phone: the day first, since the photo is of that day and not today; the guide's line says the rest.
+  assert.equal(h.replace(/<span class="sr">[^<]*<\/span>/g, '').replace(/<[^>]+>/g, ''), 'Photo from 20 May 2020 · Derek Harper · CC BY-SA 2.0 · About');
   assert.doesNotMatch(h, /loading="lazy"/, 'it is the first picture on the page');
   const withPhoto = p => ({guide: {photos: [p]}});
   // A licence the page does not know is not named; the line still says whose and when.
-  assert.match(G.guideHero(withPhoto({...PHOTO, licence: 'https://example.org/terms'})), /by Derek Harper, 20 May 2020\. It shows that day only\./);
+  assert.match(G.guideHero(withPhoto({...PHOTO, licence: 'https://example.org/terms'})), /<span>Derek Harper ·<\/span> <span><a href="#guide">About/);
   for (const p of [{...PHOTO, topic: 'rules'}, {...PHOTO, status: 'confirmed'}, {...PHOTO, status: 'suggested'}, {...PHOTO, labels: [{x: 10, y: 10, text: 'The steps'}]},
     {...PHOTO, file: '../x.jpg'}, {...PHOTO, credit: ''}, {...PHOTO, taken: ''}])
     assert.equal(G.guideHero(withPhoto(p)), '', JSON.stringify(p).slice(0, 80));
@@ -79,9 +81,17 @@ test("the photo is first inside the answer, in the build's copy of the page too,
   const out = spots.prerender({generated_at: GEN, spots: [DART, spot('plain', 'River Barle, Tarr Steps', five('low'))]}, 'https://example.org/swim/');
   assert.match(out.dart, /<section class="answer" id="risk-hero" aria-labelledby="risk-headline"><figure class="hero"><img src="guides\/photos\/geograph-6482389\.jpg" /);
   assert.match(out.dart, /<\/figcaption><\/figure><h1 class="spot-name" tabindex="-1">River Dart, Dartington Pontoon<\/h1>/);
+  // With the photo, what Save did ends the answer, so the back link and Save come straight before the photo
+  // and sit on it on a phone; without one it stays under them, as before.
+  assert.match(out.dart, /^<div class="top-row">.*?<\/div><div data-notices[^>]*><\/div><section class="answer" id="risk-hero"/);
+  assert.match(out.dart, /<\/p><p class="small muted save-msg" id="save-msg" aria-live="polite"><\/p><\/section><div class="stack">/);
+  assert.match(out.plain, /^<div class="top-row">.*?<\/div><p class="small muted save-msg" id="save-msg" aria-live="polite"><\/p>/);
+  assert.match(PAGE, /\.top-row:has\(\+ \[data-notices\]:empty \+ \.answer > \.hero\) \{ position:relative; z-index:1; height:44px; margin:16px 0 -60px; \}/);
+  assert.match(PAGE, /\.answer:has\(\.hero\) \{ margin-bottom:8px; padding-top:0; text-align:left; \}/);
   assert.match(out.plain, /<section class="answer" id="risk-hero" aria-labelledby="risk-headline"><h1 class="spot-name"/, 'no photo: the answer as before');
   assert.match(fs.readFileSync(path.join(ROOT, 'scripts/prerender_spots.js'), 'utf8'), /const SCRIPTS = \['eatoday\.js', 'experience\.js', 'levels\.js', 'lists\.js', 'guide\.js'\];/);
-  assert.match(PAGE, /const hero = typeof guideHero === 'function' \? guideHero\(d\) : '';\n\s+return h \+ `<section class="answer" id="risk-hero" aria-labelledby="risk-headline">\$\{hero\}<h1 class="spot-name"/);
+  assert.match(PAGE, /const hero = typeof guideHero === 'function' \? guideHero\(d\) : '', saveMsg = /);
+  assert.match(PAGE, /return h \+ `<section class="answer" id="risk-hero" aria-labelledby="risk-headline">\$\{hero\}<h1 class="spot-name"/);
   // With the photo the page has no sky: the tiles are cards on the paper.
   assert.match(PAGE, /\.answer:has\(\.hero\)::before \{ display:none; \}/);
   assert.match(PAGE, /body\.view-spot #result:has\(\.hero\) \.tile \{ background:var\(--card\);/);
