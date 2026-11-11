@@ -2355,3 +2355,39 @@ the foot of the page (`phoneFolds`, `lowNow`). Any other day keeps the order of 
 **Checked:** headless Chrome on the day's live data: Dartington (very high) at 375, 900 and 1,440 px, Windermere at
 Millerground (low) at 375 px; `tests/site_spot_place.test.cjs`. Not checked: the built page (the preview serves the
 page unbuilt), the largest paint's time with the photo, Safari, a screen reader.
+
+## The day it is forecast low, and the map's five days (11 November 2026)
+
+The third part of the swimmer's redesign. The mock-ups had a button on a raised spot, "Tell me when it is back to low
+risk". It is not built as drawn, on purpose.
+
+**Why not "back to low risk".** The alert service sends warnings only. Its own rule (`push/src/index.js`, `newAdvice`)
+is that a spot falling back from high sends nothing, because a message saying so "would read as an all-clear, which
+neither SwimSignal's level nor a lifted notice is". A "back to low risk" message is that all-clear, pushed to a phone.
+Turning the rule round is Ethan's decision, not a design pass's.
+
+**What is built instead** uses alerts for a date, which the Worker already sends (on since 31 October) for the
+organisers' page and a plan's outing (`clearDay`, `clearAlert`, `mountClear` in `index.html`):
+- At a spot whose level is moderate or higher, where one of the five days ahead is at low risk: under the five days,
+  over "Plan a swim here", a button, "Alert me if Saturday's forecast changes", and under it "Forecast low risk on
+  Saturday. A message each time that day's level here changes, up or down."
+- The message is the Worker's own for a date: the spot and the day, that day's headline and what to do, and what the
+  level was. It says a change, in either direction. It never says the water is clear.
+- On: "Alerts are on for Saturday 14 November here: a message each time that day's level changes." and "Stop alerts
+  for Saturday".
+- Alerts not yet on in this browser: one line, "To hear if Saturday's forecast here changes, first turn on alerts in
+  this browser, from the Saved page. Go to alerts". Nothing is turned on from a spot: the Saved page's tile says what
+  turning alerts on sends.
+- Where this browser cannot have notifications (blocked, an iPhone outside the Home Screen app, Facebook's browser),
+  nothing is said, as on a saved card. The Alerts tile says why, once.
+- Nothing new is stored or sent: the list of dates is the one the organisers' page and the outing keep
+  (`dipcast.pushdates`), sent whole, at most ten.
+- Not built: email for this. Email alerts are built in the Worker but off, and cover rises only.
+
+**The full map on a phone, over the list:** the five days as the list's own strip, each with its count of spots at
+low risk, beside the zoom buttons, in place of the select (`#mapdays`, `fillMapDays`). The select stays for the maps
+of Saved and Plan a swim, which can show today and tomorrow together.
+
+**Checked:** headless Chrome at 375 px on the day's live data (the map; Dartington with alerts off);
+`tests/site_day_alert.test.cjs`. Not checked: the button with alerts on (no subscription is made in testing), a
+real notification, Safari.
