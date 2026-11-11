@@ -38,7 +38,10 @@
 <link rel="preload" href="icons/fells-wide.webp" as="image" fetchpriority="high" media="(min-width: 1100px)">
 <script>window.FORECAST = fetch('data/spots-lite.json', { cache: 'no-cache' }); FORECAST.catch(() => {});
   { const m = location.pathname.match(/\/spot\/([A-Za-z0-9_-]+)\/?$/);
-    if (m) { window.DETAIL = { id: m[1], res: fetch(`data/spot/${m[1]}.json`, { cache: 'no-cache' }) }; DETAIL.res.catch(() => {}); } }</script>
+    if (m) { window.DETAIL = { id: m[1], res: fetch(`data/spot/${m[1]}.json`, { cache: 'no-cache' }) }; DETAIL.res.catch(() => {}); } }
+  // Spots saved in this browser (dipcast.saved): the home page then opens on them (renderList, homeHead), so the
+  // built title and its line, which are a first visit's, stay unseen until the script writes the visitor's own.
+  try { if (/"/.test(localStorage.getItem('dipcast.saved') || '')) document.documentElement.classList.add('has-saved'); } catch (e) {}</script>
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="icon" href="icons/icon-192.png" sizes="192x192" type="image/png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -260,6 +263,37 @@
   /* The list's answer: how many spots are at low risk on the weekend's better day,
      or the week's best, in the display face at the heading size, the count in the low colour. */
   .save-hint { display:flex; align-items:flex-start; gap:8px; margin:20px 0 0; font-size:var(--fs-note); color:var(--muted); }
+  /* Today (11 Nov 2026; docs/DESIGN.md, "Today: the home page"). With spots saved the title and the line under it are
+     the visitor's own (homeHead), in ink; the build's copy of them is a first visit's and is not shown meanwhile. */
+  .intro .lede.yours { color:var(--ink); }
+  html.has-saved #result[data-built] .intro h1, html.has-saved #result[data-built] .intro .lede { visibility:hidden; }
+  /* A first visit: the day's count of the listed spots as one bar and its figures (homeNow), then the spots at very
+     high risk (homeWorst). The bar's parts are steps in the level colours, square, as every bar here. */
+  #home-first[hidden] { display:none; }
+  .home-now { padding-bottom:14px; }
+  .nowbar { display:flex; gap:2px; height:12px; margin:10px 0 0; }
+  .nowbar i { display:block; min-width:2px; }
+  .nowbar .low { background:var(--low); } .nowbar .moderate { background:var(--moderate); } .nowbar .high { background:var(--high); }
+  .nowbar .veryhigh { background:var(--veryhigh); } .nowbar .clear { background:var(--clear); } .nowbar .na { background:var(--unknown); }
+  .nowfig { list-style:none; margin:10px 0 0; padding:0; display:grid; gap:2px; font-size:var(--fs-note); }
+  .nowfig li { display:grid; grid-template-columns:2.4em minmax(0, 1fr); gap:0 10px; align-items:baseline; }
+  .nowfig b { text-align:right; font-size:var(--fs-head); font-weight:600; font-variant-numeric:tabular-nums; }
+  .nowfig .low b { color:var(--k-low); } .nowfig .moderate b { color:var(--k-moderate); } .nowfig .high b { color:var(--k-high); } .nowfig .clear b { color:var(--k-clear); }
+  .home-worst .spots { margin-top:8px; }
+  /* Upstream of the saved spots, the last 48 hours (homeFeed): when, what spilled and for how long, and where. */
+  #home-feed[hidden] { display:none; }
+  .home-feed { padding-bottom:12px; }
+  .feed { list-style:none; margin:8px 0 0; padding:0; }
+  .feed li { border-top:1px solid var(--hair); }
+  .feed a { display:grid; grid-template-columns:76px minmax(0, 1fr); gap:0 10px; padding:9px 0; color:inherit; text-decoration:none; }
+  .feed .ft { padding-top:2px; font-size:var(--fs-meta); color:var(--muted); font-variant-numeric:tabular-nums; }
+  .feed .fw { font-size:var(--fs-note); line-height:1.4; }
+  .feed .fp { display:block; font-size:var(--fs-meta); color:var(--muted); }
+  .feed .on { font-weight:600; color:var(--k-veryhigh); }
+  /* A phone with spots saved: the search field opens from the header's button (searchbtn), so the saved spots start
+     one row higher; a search in progress keeps the field in view. Wider, the field is always there. */
+  #searchbtn { display:none; }
+  #searchbtn svg { width:20px; height:20px; }
   /* Near me, the way most people come in: one full-width button under the search. */
   /* Near me as a pin at the end of the search field; the list's five days as Plan's strip, with a count. */
   .search input { padding-right:52px; }
@@ -1317,6 +1351,8 @@
     /* Plan, Saved and Map are in the bar at the bottom. The header keeps Map only as the full map's way
        back to the spot it was opened from, where it reads "Back". */
     #savedbtn, #planbtn, body:not(.map-mode) #mapbtn, body:not(.view-spot) #mapbtn { display:none; }
+    html.has-saved body.view-list:not(.map-mode) #searchbtn { display:inline-flex; }
+    html.has-saved body.view-list:not(.search-open) .lead .search, html.has-saved body.view-list:not(.search-open) #geo-cta { display:none; }
     #panel { padding:16px calc(16px + env(safe-area-inset-right)) calc(32px + var(--nav-h)) calc(16px + env(safe-area-inset-left)); }
     /* The thumb's reach: Explore, Map, Plan, Saved and More on every page, home on the left and yours on the right,
        each icon over its label, as phone apps have them (29 October 2026; Plan was the header's one link). More
@@ -1573,6 +1609,7 @@
     <a href="plan/" class="hbtn" id="planbtn">Plan a swim</a>
     <a href="saved/" class="hbtn" id="savedbtn" aria-label="Saved spots">Saved<span class="n" id="saved-n" hidden></span></a>
     <button type="button" class="hbtn phone-only" id="mapbtn">Map</button>
+    <button type="button" class="hbtn phone-only" id="searchbtn" aria-label="Find a spot" aria-expanded="false" aria-controls="q"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg></button>
     <a href="verification.html" class="desk-only">Accuracy</a>
     <a href="about.html" class="desk-only">About</a>
     <a href="clubs.html" class="desk-only">For organisations</a>
@@ -1640,7 +1677,7 @@
   </main>
 </div>
 <nav class="bottom-nav" aria-label="Main">
-  <a href="./" id="nav-list"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/></svg>Explore</a>
+  <a href="./" id="nav-list"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6 6 6M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"/></svg>Today</a>
   <button type="button" id="nav-map" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 5 6-2 6 2 6-2v16l-6 2-6-2-6 2Zm6-2v16m6-14v16"/></svg>Map</button>
   <a href="plan/" id="nav-plan" aria-label="Plan a swim"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4m6-4v4"/></svg>Plan</a>
   <a href="saved/" id="nav-saved" aria-label="Saved spots"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4Z"/></svg>Saved<span class="n" id="nav-saved-n" hidden></span></a>
@@ -1868,6 +1905,10 @@ function openList() {
 }
 document.getElementById('nav-map').addEventListener('click', () => setMapMode(!mapMode()));
 document.getElementById('nav-list').addEventListener('click', e => { if (!DATA || !plainClick(e)) return; e.preventDefault(); openList(); });
+// The header's search button (a phone with spots saved): opens the field and puts the focus in it; pressed again it
+// closes the field and ends any search, so the saved spots come back.
+document.getElementById('searchbtn').addEventListener('click', () => { const on = !SEARCH_OPEN; openSearch(on);
+  if (!on && VIEW.q) { VIEW.q = ''; const q = document.getElementById('q'); if (q) q.value = ''; drawSpots(); } });
 document.getElementById('nav-saved').addEventListener('click', e => { if (!DATA || !plainClick(e)) return; e.preventDefault(); openSaved(); });
 // A phone's spot page opens with a small map of where the spot is, under its name: the page's own
 // map is further down, fitted to the overflows upstream. A second map, still (one finger scrolls
@@ -3428,7 +3469,7 @@ legend.onAdd = () => { const el = L.DomUtil.create('details', 'map-legend'); el.
     // floats over the map's foot, with the key and the first-visit line.
     + '<div class="map-help"><button type="button" id="map-help-water">Forecast for any water</button><button type="button" id="map-help-search">Search an area</button></div>';
   el.querySelector('#map-help-water').addEventListener('click', () => mapSay(`${TAP()} the river or lake. If the map is zoomed out, it will zoom in first: then ${TAP().toLowerCase()} the water again. Coverage and missing data are explained in the result.`, true));
-  el.querySelector('#map-help-search').addEventListener('click', () => { openList(); const q = document.getElementById('q'); if (q) q.focus(); });
+  el.querySelector('#map-help-search').addEventListener('click', () => { SEARCH_OPEN = true; openList(); const q = document.getElementById('q'); if (q) q.focus(); });
   L.DomEvent.disableClickPropagation(el); return el; };
 legend.addTo(map);
 // A line over the map saying what to do next, after the search or "where you are" has moved it, or after a
@@ -3818,12 +3859,24 @@ function renderList() {
       ? ' Open a spot to see why. Save the ones you use to keep them at the top.' : ''}</p>`
     + `<p class="planner-note" id="low-note-list"${VIEW.lowOnly ? '' : ' hidden'}>${lowListNote()}</p>`;
   h += notices(null, true) + '</div>';
+  // With spots saved, the title and the line under it are the visitor's own (homeYours); the same two elements, so
+  // the build's copy is patched in place (overBuilt). The field opens from the header's button on a phone.
+  const yours = saved.length ? homeYours(saved) : null;
+  if (yours) h = h.replace(/<h1>[^<]*<\/h1><p class="lede">.*?<\/p>/, `<h1>${esc(yours.head)}</h1><p class="lede yours">${esc(yours.lede)}</p>`);
+  document.documentElement.classList.toggle('has-saved', saved.length > 0);
+  if (VIEW.q.trim()) SEARCH_OPEN = true;
+  document.body.classList.toggle('search-open', SEARCH_OPEN);
+  { const sb = document.getElementById('searchbtn'); if (sb) sb.setAttribute('aria-expanded', String(SEARCH_OPEN)); }
   // Your places (29-30 Oct 2026): the next outing and the saved spots in one tile, so a returning visitor sees their
   // water and their plans together. Before anything is saved or planned, the hint. What you do on the water is
   // chosen on Plan a swim (planActRow), where it changes what is shown; on the cards it changed nothing you could see.
   const places = outingResume() + (saved.length ? `<div class="places-part" id="saved-group"><h3 class="places-sub" id="saved-h">Saved spots</h3><ul class="places" id="saved-list">${saved.map(s => savedCard(s, false, VIEW.day)).join('')}</ul></div>` : '');
   let v = places ? `<section class="group tile" id="places-group" aria-labelledby="places-h"><h2 class="group-head" id="places-h">Your places</h2>${places}</section>`
     : OPENED ? `<p class="save-hint tile">${BOOKMARK}<span>Open a spot and press Save to keep it here.</span></p>` : '';   // not on a first look
+  // Upstream of the saved spots, the last 48 hours (mountHomeFeed fills it once their files are in), and, with nothing
+  // saved, the day's count and the spots at very high risk (drawSpots fills it, so a day picked changes it).
+  if (saved.length) v += '<section class="group tile home-feed" id="home-feed" aria-labelledby="feed-h" hidden></section>';
+  else v += '<div id="home-first"></div>';
   v += `<section class="group tile" id="near-group" aria-labelledby="near-h" hidden><h2 class="group-head" id="near-h">Near you</h2><ul class="places" id="near-list"></ul></section>`;
   // The kinds of water are a second row under the heading: they narrow this list, not the day.
   // The list's choices behind one Filter button, in a sheet (29 October 2026): the sorts, the kinds of water and
@@ -3846,6 +3899,7 @@ function renderList() {
     + `<p class="small muted after">For swimming and water sports. Forecasts, not water tests. <a href="clubs.html">For organisations: clubs, centres and events</a>.</p>`;
   setPanel(h + cols(v));
   if (saved.length) bindItems(document.getElementById('saved-list'));
+  if (saved.length) mountHomeFeed(saved);
   document.getElementById('listday').addEventListener('change', e => setMapDay(e.target.value));
   bindBestDay();
   // Only the list redraws as you type; redrawing the box itself dropped the focus after one letter.
@@ -3877,6 +3931,106 @@ function renderList() {
   drawSpots(); placeMap();
 }
 const setSort = k => { VIEW.sort = k; document.querySelectorAll('[data-sort]').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.sort === k))); };
+// Today (11 Nov 2026; docs/DESIGN.md, "Today: the home page"). With spots saved, the home opens on what they say. The
+// title counts the saved spots whose card reads moderate risk or higher on the day shown ("raised risk"); the line
+// under it names those levels, then the first of the five days on which every raised spot is forecast low. A spot
+// under official advice restricting swimming is never counted as low: the line says to follow the notice first. With
+// none raised it says "low risk" only when every saved spot has that level: a spot with no monitored overflow found
+// upstream, or with no level, is not at low risk, so the title then says only that none is raised.
+function homeHead(spots, iso) {
+  const day = dayWord(iso || today()), n = spots.length;
+  const levels = spots.map(s => { const m = answerParts(s, iso); return m.word ? m.word.toLowerCase() : null; });
+  const raised = spots.filter((s, i) => levels[i] && rank(levels[i]) > 0), r = raised.length;
+  const barred = spots.filter(s => typeof eaTodayRestricts === 'function' && eaTodayRestricts(s)).length;
+  const at = k => n === 1 ? 'your saved spot' : k < n ? `${k} of your ${n} saved spots` : n === 2 ? 'both of your saved spots' : `all ${n} of your saved spots`;
+  const head = r ? `Raised risk ${day} at ${at(r)}` : !barred && levels.every(l => l === 'low') ? `Low risk ${day} at ${at(n)}`
+    : `No raised risk ${day} at ${n === 1 ? 'your saved spot' : `your ${n} saved spots`}`;
+  const said = n > 1 && r ? cap(['very high', 'high', 'moderate'].map(l => [l, levels.filter(x => x === l).length]).filter(([, k]) => k)
+    .map(([l, k]) => `${k} at ${l} risk`).join(', ')) + '.' : '';
+  const later = fiveDays().filter(d => d > (iso || today()));
+  const back = r && raised.every(daily) ? later.find(d => raised.every(s => dayLevel(s, d) === 'low')) : null;
+  const backSaid = back ? `${r === 1 ? 'It is' : r === 2 ? 'Both are' : `All ${r} are`} forecast low risk ${back === addDays(today(), 1) ? 'tomorrow' : 'by ' + dayName(back)}.` : '';
+  const notice = barred ? `${n === 1 ? 'It has an official notice' : barred === 1 ? '1 has an official notice' : `${barred} have official notices`}: follow ${barred > 1 ? 'them' : 'it'} first.` : '';
+  return { head, sub: [said, backSaid, notice].filter(Boolean).join(' ') };
+}
+// The title and its line as the page shows them, on the day the list shows: the line ends with when the forecast was issued.
+const homeYours = saved => { const y = homeHead(saved, VIEW.day); return { head: y.head, lede: `${y.sub ? y.sub + ' ' : ''}Updated\u00a0${issued().replace(/ /g, '\u00a0')}.` }; };   // the time stays on one line
+// The search field's place on a phone with spots saved: closed until the header's button opens it (searchbtn), or
+// a search is in progress, or the full map's "Search an area" sends the visitor to it.
+let SEARCH_OPEN = false;
+function openSearch(on = true) {
+  SEARCH_OPEN = on; document.body.classList.toggle('search-open', on);
+  const sb = document.getElementById('searchbtn'), q = document.getElementById('q');
+  if (sb) sb.setAttribute('aria-expanded', String(on));
+  if (on && q) q.focus();
+}
+// A first visit's answer: the listed spots on the day shown, counted by level as overview() counts them, in one bar
+// and its figures. Low is the day strip's count (lowToChoose): a spot at low risk under official advice restricting
+// swimming is said apart, under the figures, with the spots that have no level.
+function homeNow(spots) {
+  const lv = spots.map(mapLevel), rated = lv.filter(l => ORDER[l] !== undefined).length, low = lowToChoose(spots);
+  const lowAll = lv.filter(l => l === 'low').length, vhigh = lv.filter(l => l === 'very high').length, high = lv.filter(l => l === 'high').length;
+  const mod = rated - lowAll - high - vhigh, clear = lv.filter(plainLevel).length, barred = lowAll - low, none = spots.length - rated - clear;
+  const parts = [['low', low], ['moderate', mod], ['high', high], ['veryhigh', vhigh], ['clear', clear], ['na', barred + none]].filter(([, k]) => k > 0);
+  const rows = [['low', low, 'at low risk'], ['moderate', mod, 'at moderate risk'], ['high', high + vhigh, 'at high or very high risk'],
+    ['clear', clear, 'with no monitored overflow found upstream']].filter(([, k]) => k > 0);
+  const rest = [barred ? `${barred} more at low risk ${barred === 1 ? 'is' : 'are'} under official advice restricting swimming` : '', none ? `${none} ${none === 1 ? 'has' : 'have'} no level` : ''].filter(Boolean);
+  return `<section class="group tile home-now" id="home-now" aria-labelledby="now-h"><h2 class="t-lab" id="now-h">${ICON.days}<span>${cap(dayName(VIEW.day || today()))} across the ${spots.length} spots</span></h2>`
+    + `<div class="nowbar" aria-hidden="true">${parts.map(([c, k]) => `<i class="${c}" style="flex:${k} 1 0"></i>`).join('')}</div>`
+    + `<ul class="nowfig">${rows.map(([c, k, t]) => `<li class="${c}"><b>${k}</b>${t}</li>`).join('')}</ul>`
+    + (rest.length ? `<p class="t-key">${cap(rest.join('; '))}.</p>` : '') + '</section>';
+}
+// The spots at very high risk on the day shown, two at most, as the list's own rows: what the forecast is saying
+// now, where a first visit had only a list of areas. None at very high risk: no tile.
+const WORST_ROWS = 2;
+function homeWorst(spots) {
+  const xs = spots.filter(s => mapLevel(s) === 'very high').sort(riskOrder), more = xs.length - WORST_ROWS;
+  if (!xs.length) return '';
+  return `<section class="group tile home-worst" id="home-worst" aria-labelledby="worst-h"><h2 class="t-lab" id="worst-h">${ICON.spills}<span>Very high risk ${dayWord(VIEW.day || today())}</span></h2>`
+    + `<ul class="spots">${xs.slice(0, WORST_ROWS).map(spotItem).join('')}</ul>${more > 0 ? `<p class="t-key">And ${more} more at very high risk ${dayWord(VIEW.day || today())}.</p>` : ''}</section>`;
+}
+// Upstream of the saved spots, the last 48 hours: each overflow among the ten that count most at a saved spot whose
+// latest reported spill began in that time, or that is discharging now, the ones discharging first, then the newest.
+// The record is the water company's own (latest_event_start and _end in data/spot/<id>.json), so a monitor that is
+// off reports nothing: the tile says "reported", never that nothing spilled. An overflow above several saved spots is
+// one row, at the nearest of them.
+const FEED_HOURS = 48, FEED_ROWS = 5, FEED_SPOTS = 8;
+function upstreamFeed(spots, nowMs) {
+  const seen = new Map();
+  for (const s of spots) for (const c of s.contributors || []) {
+    const start = Date.parse(c.latest_event_start), on = c.status === 1;
+    if (!on && !(start >= nowMs - FEED_HOURS * 3600000 && start <= nowMs)) continue;
+    const far = (Number(c.distance_km) || 0) + (Number(c.lake_distance_km) || 0), was = seen.get(c.site_id);
+    if (!was) seen.set(c.site_id, { c, s, far, start, on, more: 0 });
+    else { was.more++; if (far < was.far) Object.assign(was, { c, s, far }); }
+  }
+  return [...seen.values()].sort((a, b) => (b.on - a.on) || (b.start || 0) - (a.start || 0));
+}
+const feedSpan = min => min < 1.5 ? 'a minute' : min < 59.5 ? `${Math.round(min)} minutes` : min < 90 ? 'about an hour' : min < 47.5 * 60 ? `about ${Math.round(min / 60)} hours` : `about ${Math.round(min / 1440)} days`;
+const feedWhere = (c, s) => { const w = overflowWhere(c).split(/[,:]/)[0];
+  return w === 'at the spot' ? `At ${s.name}` : `${w} ${/across the lake$/.test(w) ? 'from' : 'of'} ${s.name}`; };
+function feedRow(x) {
+  const end = Date.parse(x.c.latest_event_end), mins = (end - x.start) / 60000, name = esc(overflowNames(x.c).plain);
+  const when = Number.isFinite(x.start) ? new Date(x.start).toLocaleString('en-GB', { weekday: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' }) : 'Now';
+  const what = x.on ? `${name} <span class="on">is spilling now.</span>` : mins >= 0 ? `${name} spilled for ${feedSpan(mins)}.` : `${name} spilled.`;
+  return `<li><a href="${esc(spotPath(x.s.id))}" data-id="${esc(x.s.id)}"><span class="ft">${when}</span><span class="fw">${what}`
+    + `<span class="fp">${esc(feedWhere(x.c, x.s))}${x.more ? ` and ${x.more} more of your saved spots` : ''}</span></span></a></li>`;
+}
+function homeFeed(spots, nowMs) {
+  const rows = upstreamFeed(spots, nowMs), more = rows.length - FEED_ROWS;
+  return `<h2 class="t-lab" id="feed-h">${ICON.spills}<span>Upstream of your saved spot${spots.length === 1 ? '' : 's'}, last ${FEED_HOURS} hours</span></h2>`
+    + (rows.length ? `<ul class="feed">${rows.slice(0, FEED_ROWS).map(feedRow).join('')}</ul>${more > 0 ? `<p class="t-key">And ${more} more.</p>` : ''}`
+      : `<p class="t-say">No spill reported in the last ${FEED_HOURS} hours by the overflows that count most upstream.</p>`)
+    + `<p class="t-key">The water companies' own reports, for the ten overflows that count most at each saved spot. A monitor that is off reports nothing.</p>`;
+}
+// The saved spots' own files hold their overflows (spotDetail); the first eight saved, so a long list asks for no more.
+async function mountHomeFeed(saved) {
+  const some = saved.filter(s => s.detail_file).slice(0, FEED_SPOTS);
+  await Promise.all(some.map(s => spotDetail(s)));
+  const host = document.getElementById('home-feed'), have = some.filter(s => s.detail_loaded && (s.contributors || []).length);
+  if (!host || shown !== 'list' || !have.length) return;
+  host.innerHTML = homeFeed(have, Date.parse(DATA.generated_at)); host.hidden = Boolean(VIEW.q.trim() || VIEW.filter !== 'all' || VIEW.lowOnly); bindItems(host);
+}
 // The position stays in this page: it only orders the list, and is not sent anywhere.
 function locate(at = 'sort') {
   const before = VIEW.sort === 'near' ? 'low' : VIEW.sort, order = before === 'risk' ? 'sorted by risk' : before === 'low' ? 'lowest risk first' : 'in A–Z order';
@@ -3990,6 +4144,16 @@ function drawSpots() {
     bindItems(savedList);
     if (!savedGroup.hidden && (!VIEW.day || VIEW.day === today()) && typeof lookedAt === 'function') lookedAt(DATA.spots, DATA.generated_at, SAVED);
   }
+  // The visitor's own title follows the day picked; a first visit's count and its very high spots too, and they go
+  // while the list is narrowed, as Your places does.
+  if (SAVED.size) { const y = homeYours(DATA.spots.filter(s => SAVED.has(s.id))), hh = document.querySelector('.lead .intro h1'), hl = document.querySelector('.lead .intro .lede.yours');
+    if (hh && hl && hh.textContent !== y.head) hh.textContent = y.head;
+    if (hl && hl.textContent !== y.lede) hl.textContent = y.lede; }
+  const first = document.getElementById('home-first');
+  if (first) { first.hidden = Boolean(VIEW.q.trim() || VIEW.filter !== 'all' || VIEW.lowOnly);
+    first.innerHTML = first.hidden ? '' : homeNow(DATA.spots) + homeWorst(DATA.spots); bindItems(first); }
+  const feed = document.getElementById('home-feed');
+  if (feed) feed.hidden = !feed.innerHTML || Boolean(VIEW.q.trim() || VIEW.filter !== 'all' || VIEW.lowOnly);
   const placesGroup = document.getElementById('places-group');   // Your places: hidden with both its parts
   if (placesGroup) placesGroup.hidden = [outingGroup, savedGroup].every(g => !g || g.hidden);
   const nearGroup = document.getElementById('near-group');
