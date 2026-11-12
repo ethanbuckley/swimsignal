@@ -144,7 +144,7 @@ test('a phone\'s full map over the list has the five days as a strip, each with 
   const ctl = PAGE.slice(PAGE.indexOf('lowCtl.onAdd = () => {'), PAGE.indexOf('lowCtl.addTo(map);'));
   assert.match(ctl, /<fieldset class="day-strip list-days map-days" id="mapdays"><legend class="sr">Day shown on the map<\/legend><\/fieldset>/);
   assert.match(ctl, /<select id="mapday"><option value="">Today and tomorrow<\/option><\/select>/, 'Saved and Plan a swim keep today and tomorrow together');
-  assert.match(ctl, /el\.querySelector\('#mapdays'\)\.addEventListener\('change', e => setMapDay\(e\.target\.value\)\);/);
+  assert.match(ctl, /el\.querySelector\('#mapdays'\)\.addEventListener\('change', e => \{ setMapDay\(e\.target\.value\);/);   // and counted: site_action_counts
   const fill = PAGE.slice(PAGE.indexOf('function fillMapDays() {'), PAGE.indexOf('function setLowOnly('));
   assert.match(fill, /<input type="radio" name="map-day" value="\$\{iso\}"\$\{VIEW\.day === iso \? ' checked' : ''\}>/);
   assert.match(fill, /<b>\$\{lowOn\(iso\)\}<\/b> <span class="nw">low<\/span>/, "the list strip's own count");

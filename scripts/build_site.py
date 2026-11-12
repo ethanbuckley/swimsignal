@@ -401,9 +401,11 @@ def ask_config() -> dict | None:
 ACTIONS_URL_ENV = "DIPCAST_ACTIONS_URL"
 ACTIONS_META = '<meta name="swimsignal-actions" content="{url}">'
 ACTIONS_PRIVACY = (
-    '<h2 id="action-counts">Action counts</h2>\n<p>To learn whether the site is useful, SwimSignal counts how often five '
+    '<h2 id="action-counts">Action counts</h2>\n<p>To learn whether the site is useful, SwimSignal counts how often eleven '
     "things are done on it: a spot's page opened, a day picked on a spot's page, a spot saved, a plan made on Plan a "
-    "swim, and alerts turned on. When you do one, your browser sends SwimSignal's counting service, which runs on "
+    "swim, alerts turned on, an alert asked for on a spot's page for a date, an alert asked for on a spot's page for "
+    "when it is back to low risk, \"Log a swim here\" pressed, a row of the spill feed on the home page opened, search "
+    "opened on a phone, and a day picked on a phone's map. When you do one, your browser sends SwimSignal's counting service, which runs on "
     "Cloudflare Workers, the name of the action and, for the first three, which spot. The service adds one to that "
     "day's total and keeps nothing else: not your IP address, not your browser's details, no cookie and no identifier, "
     "so it cannot tell whether two actions came from the same person or the same device. Nothing is stored on your "
@@ -414,9 +416,9 @@ ACTIONS_PRIVACY = (
     "bottom of the home page, or if your browser sends Global Privacy Control or Do Not Track.</p>\n")
 # The short version's sentence about analytics, with the page-view counter off and on (NO_COUNTER, WITH_COUNTER).
 ACTIONS_SWAPS = [
-    (NO_COUNTER[1], "There is no third-party tracking. Five actions, such as saving a spot, are counted as daily totals "
+    (NO_COUNTER[1], "There is no third-party tracking. Eleven actions, such as saving a spot, are counted as daily totals "
                     "that hold nothing about who did them (see Action counts)."),
-    ("There is no other analytics or tracking.", "Five actions, such as saving a spot, are also counted as daily totals "
+    ("There is no other analytics or tracking.", "Eleven actions, such as saving a spot, are also counted as daily totals "
      "that hold nothing about who did them (see Action counts). There is no other analytics or tracking."),
 ]
 
