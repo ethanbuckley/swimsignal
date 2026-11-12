@@ -2464,3 +2464,37 @@ river and lake spot has shown an estimate since 31 October. It now says what the
 **Checked:** headless Chrome at 375 x 812 and 1,440 x 900 on the live data of 12 November 10:35, a first visit and
 one saved spot; the node tests (1,113 pass) and the Python site tests. A spot with a photo (Wharfe at Cromwheel) was looked at on a phone and is unchanged. Not checked: 320 px,
 Safari, a screen reader, and the live network (the shifts were measured on a local server).
+
+## After the review: near me, the record, the research, a shorter phone page (12 November 2026)
+
+Ethan asked for the review's open items to be built ("do all those fixes"). No level, count or forecast changes.
+
+- **Spots near me, in words.** A first visit has one full-width button over the day's count (`homeNear`). It does what
+  the search field's pin does (`locate`), and goes once a place is given, when the cards of the lowest-risk spots
+  within 30 miles take its place. It is drawn by the script, in the list's column, so the built opening is unchanged.
+  The pin stays. This brings back the button of 14 October ("Near you first"), which became the pin on 29 October to
+  save a row; the row the hint used is the one it takes.
+- **The record, at the five days.** Under the five days a line gives how the High risk line has done at the overflows
+  upstream (`scoresLine` in `spotscores.js`): "Record here since 29 Sept: 23 of the 76 forecasts at the High risk
+  line upstream (30%) were followed by a spill." It links the tile below, whose counts it uses. It is shown only from
+  ten spill days, the tile's own rule for a share, and only where a forecast reached the line: 64 of 98 scored spots
+  on 12 November. It arrives with the scores' file, after the tile's caveat, below a phone's first screen.
+- **The research, one line on the home page.** After the list: how many candidates are being scored beside the live
+  forecast and the date the next test is read (`researchNow`, from the scorecard's own file), with links to the
+  scorecard and the Lab. Without the file it reads "Research: a model is tested before it changes a forecast." The
+  bar is unchanged ("One product in the bar", 6 November). The Accuracy page's opening links the scorecard.
+- **A phone's spot page, shorter** (`phoneShort`, from `phoneFolds`). A sentence over the five days longer than five
+  lines shows three and a "Read the rest" button; the words stay in the page for a screen reader. The guide's photos
+  wait behind one button ("Show 3 photos of the place"), since the place's photo opens the page. At 375 px Cromwheel
+  went from 9,943 to 8,807 px, and at Shrewsbury the day rows start 672 px down (about 800 before). A desktop is
+  unchanged. The review suggested halving the page; this is 11%. The rest of the length is the forecast's own
+  sections, each moved up on purpose on 5 November, and the guide's text. Folding those was tried on 29 October and
+  undone on 31 October, so it is not repeated here.
+- **Method page.** It said the winter temperature's error "has not been measured yet" and that "Lakes have no
+  estimate". The winter test of 6 November is now cited, and the lake sentence says the summer lake estimate stays
+  provisional because it failed twice.
+
+**Checked:** the in-app browser at 375 x 812 and 1,440 x 900 on the data of 12 November 10:35: the button, both
+lines, the clamp and its button, the photos button; layout shift on the home page still 0. Node tests 1,117 pass.
+Not checked: pressing "Spots near me" with a real location (the preview cannot grant one; it calls the pin's own
+function), 320 px, Safari, a screen reader.

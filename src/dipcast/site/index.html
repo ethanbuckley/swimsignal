@@ -274,6 +274,8 @@
   /* A first visit: the day's count of the listed spots as one bar and its figures (homeNow), then the spots at very
      high risk (homeWorst). The bar's parts are steps in the level colours, square, as every bar here. */
   #home-first[hidden] { display:none; }
+  .near-first { margin:0 0 8px; } .near-first .btn { width:100%; } .near-first svg { width:18px; height:18px; color:var(--link); }
+  .rec { margin:8px 0 0; }
   .home-now { padding-bottom:14px; }
   .nowbar { display:flex; gap:2px; height:12px; margin:10px 0 0; }
   .nowbar i { display:block; min-width:2px; }
@@ -668,6 +670,8 @@
   /* A fold at a tile's foot under a name of its own (explain): the E. coli estimate's "Experimental
      estimate" out of season. Its text at the sentence's size, in ink: it holds the figures. */
   .tile > details.more > p { margin:0 0 2px; font-size:var(--fs-note); line-height:1.45; }
+  .t-sent.clamp { display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:var(--keep, 3); line-clamp:var(--keep, 3); overflow:hidden; padding-bottom:0; border-bottom:0; }
+  .sent-more { margin:0 0 2px; padding-bottom:6px; border-bottom:1px solid var(--hair); }
   .t-sent { margin:8px 0 2px; padding-bottom:10px; border-bottom:1px solid var(--hair); line-height:1.4; }
   details.t-more > summary { position:absolute; top:0; right:0; width:44px; height:44px; display:flex; align-items:center; justify-content:center; list-style:none; cursor:pointer; }
   details.t-more > summary::-webkit-details-marker { display:none; }
@@ -3977,8 +3981,12 @@ function renderList() {
   v += `<p class="small muted after">Updated several times a day. <a href="#levels">What the levels mean</a>.</p>`
     // Who it is for, at the foot: the same forecast serves anyone who gets in the water
     // (clubs.html says how wet each activity gets), and groups and events have their own tools.
-    + `<p class="small muted after">For swimming and water sports. Forecasts, not water tests. <a href="clubs.html">For organisations: clubs, centres and events</a>.</p>`;
+    + `<p class="small muted after">For swimming and water sports. Forecasts, not water tests. <a href="clubs.html">For organisations: clubs, centres and events</a>.</p>`
+    // The research, one line (12 Nov 2026): the foot's link was the home page's only way to it. researchLine adds what
+    // is running now once the scorecard's file arrives; without it the line stands as it is.
+    + `<p class="small muted after" id="research-line"><span id="research-now">Research: a model is tested before it changes a forecast.</span> <a href="models.html">What is being tested now</a> · <a href="lab/">Research Lab</a>.</p>`;
   setPanel(h + cols(v));
+  researchLine();
   if (saved.length) bindItems(document.getElementById('saved-list'));
   if (saved.length) mountHomeFeed(saved);
   document.getElementById('listday').addEventListener('change', e => setMapDay(e.target.value));
@@ -4010,6 +4018,22 @@ function renderList() {
   document.getElementById('filter-done').addEventListener('click', () => sheet.close());
   sheet.addEventListener('click', e => { if (e.target === sheet) sheet.close(); });   // a tap on the backdrop
   drawSpots(); placeMap();
+}
+// What the research line says is running (data/research/model_scorecard.json, the scorecard page's own file): the
+// candidates in shadow whose test has not been read yet, and the first date one is read. A candidate in shadow is
+// scored beside the live forecast and changes nothing a swimmer is told. Asked for once a visit.
+let SCORECARD_ASKED = null;
+function researchNow(doc, iso) {
+  const on = ((doc || {}).models || []).filter(m => m.stage === 'shadow' && m.window && m.window.read_on >= iso);
+  if (!on.length) return '';
+  const next = on.map(m => m.window.read_on).sort()[0];
+  const day = new Date(next + 'T12:00:00Z').toLocaleDateString('en-GB', { day: 'numeric', month: 'long', timeZone: 'UTC' });
+  return `Research: ${on.length} candidate model${on.length === 1 ? ' is' : 's are'} being scored beside the live forecast, without changing it. The next test is read on ${day}.`;
+}
+function researchLine() {
+  if (typeof fetch !== 'function') return;
+  SCORECARD_ASKED = SCORECARD_ASKED || fetch('data/research/model_scorecard.json').then(r => (r.ok ? r.json() : null)).catch(() => null);
+  SCORECARD_ASKED.then(doc => { const el = document.getElementById('research-now'), t = researchNow(doc, today()); if (el && t) el.textContent = t; });
 }
 const setSort = k => { VIEW.sort = k; document.querySelectorAll('[data-sort]').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.sort === k))); };
 // Today (11 Nov 2026; docs/DESIGN.md, "Today: the home page"). With spots saved, the home opens on what they say. The
@@ -4061,6 +4085,11 @@ function homeNow(spots) {
     + `<ul class="nowfig">${rows.map(([c, k, t]) => `<li class="${c}"><b>${k}</b>${t}</li>`).join('')}</ul>`
     + (rest.length ? `<p class="t-key">${cap(rest.join('; '))}.</p>` : '') + '</section>';
 }
+// A first visit's way to a place of its own (12 Nov 2026): one button over the day's count, in words, where the
+// search field's pin is only an icon. Pressed, it does what the pin does (locate), and goes once a place is given:
+// the cards of the lowest-risk spots within 30 miles take its place (near-group).
+const homeNear = () => 'geolocation' in navigator && !VIEW.here
+  ? `<p class="near-first"><button type="button" class="btn" data-near-first>${NEAR_PIN.replace(/^<button[^>]*>|<\/button>$/g, '')}Spots near me</button></p>` : '';
 // The spots at very high risk on the day shown, two at most, as the list's own rows: what the forecast is saying
 // now, where a first visit had only a list of areas. None at very high risk: no tile.
 const WORST_ROWS = 2;
@@ -4234,7 +4263,8 @@ function drawSpots() {
     if (hl && hl.textContent !== y.lede) hl.textContent = y.lede; }
   const first = document.getElementById('home-first');
   if (first) { first.hidden = Boolean(VIEW.q.trim() || VIEW.filter !== 'all' || VIEW.lowOnly);
-    first.innerHTML = first.hidden ? '' : homeNow(DATA.spots) + homeWorst(DATA.spots); bindItems(first); }
+    first.innerHTML = first.hidden ? '' : homeNear() + homeNow(DATA.spots) + homeWorst(DATA.spots); bindItems(first);
+    const nf = first.querySelector('[data-near-first]'); if (nf) nf.addEventListener('click', () => locate('cta')); }
   const feed = document.getElementById('home-feed');
   if (feed) feed.hidden = !feed.innerHTML || Boolean(VIEW.q.trim() || VIEW.filter !== 'all' || VIEW.lowOnly);
   const placesGroup = document.getElementById('places-group');   // Your places: hidden with both its parts
@@ -6261,9 +6291,37 @@ function phoneFolds() {
     const know = stack.querySelector('section.know'); if (know) e0.after(know);
   }
   for (const q of PHONE_OPEN) { const e = stack.querySelector(q); if (e && !e.dataset.phoneOpened) { e.open = true; e.dataset.phoneOpened = '1'; } }
+  phoneShort(stack);
   // With the Upstream map shown, the small map of where the spot is says the same.
   const loc = stack.querySelector('.loc'); if (loc && stack.querySelector('.spot-map-tile:not(.desk-only)')) loc.hidden = true;
   placeMap();   // the map, drawn at its size now it is shown
+}
+// A phone's page, shorter (12 Nov 2026; docs/REVIEW-2026-11-12.md, section 3). Two things ran long without being the
+// answer. The sentence over the five days, where a classification, recent spills and a gap in the count meet (nine
+// lines at Shrewsbury, so the day rows began under the first screen): past SENT_LINES lines it shows SENT_KEEP and a
+// button for the rest. The words are all in the page, so a screen reader reads the whole sentence. And the guide's
+// photos (three at Cromwheel, 1,230 px): the place's photo already opens the page, so the rest wait behind one button,
+// which shows them and goes, as the guide's "Show all" does (showRest). Each is done once for a page; a day picked
+// draws the tile again, and the sentence is then measured again.
+const SENT_LINES = 5, SENT_KEEP = 3;
+function phoneShort(stack) {
+  const sent = stack.querySelector('.t-sent');
+  if (sent && !sent.classList.contains('clamp') && !sent.dataset.read) {
+    const line = parseFloat(getComputedStyle(sent).lineHeight) || 24;
+    if (sent.scrollHeight > line * (SENT_LINES + 0.5)) {
+      sent.classList.add('clamp'); sent.style.setProperty('--keep', SENT_KEEP);
+      sent.insertAdjacentHTML('afterend', '<p class="sent-more"><button type="button" class="linkbtn small" id="sent-more" aria-expanded="false">Read the rest</button></p>');
+      document.getElementById('sent-more').addEventListener('click', e => { sent.classList.remove('clamp'); sent.dataset.read = '1'; e.target.closest('p').remove(); });
+    }
+  }
+  const photos = [...stack.querySelectorAll('#guide .g-photo')];
+  if (photos.length && !stack.querySelector('#g-photos') && !stack.querySelector('#guide[data-photos]')) {
+    photos.forEach(x => { x.hidden = true; });
+    photos[0].insertAdjacentHTML('beforebegin', `<button type="button" class="btn quiet" id="g-photos" aria-expanded="false">Show ${photos.length === 1 ? 'the photo' : `${photos.length} photos`} of the place</button>`);
+    const btn = stack.querySelector('#g-photos');
+    btn.addEventListener('click', () => { btn.closest('#guide').dataset.photos = '1';
+      if (typeof showRest === 'function') showRest(photos, btn); else { photos.forEach(x => { x.hidden = false; }); btn.remove(); } });
+  }
 }
 PHONE.addEventListener('change', () => { if (current && document.querySelector('#result .stack')) render(current); });   // folds on, or columns back
 // The arrival guide (prototype, docs/ARRIVAL-GUIDE-2026-10.md): the practical guide as a journey, from the stop or
