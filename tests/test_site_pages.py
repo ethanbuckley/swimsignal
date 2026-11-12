@@ -199,6 +199,8 @@ def test_a_spots_page_carries_its_answer_and_five_days_as_the_script_draws_them(
            "and adds the map, the overflows upstream and the rest of the detail."
     assert f'<div id="result" data-built data-nosnippet><noscript><p class="muted">{note}</p></noscript>' in page
     assert page.index("<noscript>") < page.index('id="risk-hero"') < page.index('<span class="d" aria-hidden="true">Today</span>')
+    # A page without the place's photo keeps both skies; one with it asks for neither (below).
+    assert "url(data:image/webp;base64," in page and '<figure class="hero">' not in page
     # A spot without a forecast: its answer, no five days.
     tarn = (tmp_path / "spot" / "tarn" / "index.html").read_text().split('<div id="result"', 1)[1].split('<p class="about-line"', 1)[0]
     assert 'id="risk-headline">No monitored overflow found upstream</h2>' in tarn and 'id="days-h"' not in tarn
@@ -212,6 +214,36 @@ def test_a_spots_page_carries_its_answer_and_five_days_as_the_script_draws_them(
     page = (tmp_path / "spot" / "a" / "index.html").read_text()
     assert '<body class="view-list">' in page and '<div id="result" data-built data-nosnippet>' not in page and '<h2 class="spot-name">A river</h2>' in page
     assert '<div id="result" data-nosnippet>' in page   # a level drawn here later is not quoted in search results either
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="needs Node")
+def test_a_spot_page_that_opens_with_its_photo_asks_for_the_photo_first(tmp_path):
+    """The photo is that page's largest paint and it shows no sky (12 Nov 2026: Lighthouse on a phone put its LCP at
+    2.8 s against 1.0 s for the same page before the photo). Its head preloads the photo in place of the wide sky,
+    so the photo is asked for with the fonts, before the deferred scripts, and a desktop fetches no hidden sky."""
+    bs = _build_site()
+    (tmp_path / "data").mkdir()
+    days = [{"date": f"2026-09-{29 + i}" if i < 2 else f"2026-10-0{i - 1}", "risk": 0.01, "label": "low"} for i in range(5)]
+    photo = {"file": "geograph-6482389.jpg", "w": 640, "h": 413, "topic": "overview", "status": "historical", "caption": "The weir.",
+             "credit": "Derek Harper", "taken": "2020-05-20", "licence": "https://creativecommons.org/licenses/by-sa/2.0/",
+             "source": "https://www.geograph.org.uk/photo/6482389", "source_name": "Geograph"}
+    river = {"id": "a", "name": "A river", "kind": "river", "source": "curated", "upstream_summary": {"overflows": 3},
+             "location": {"mode": "river"}, "now": {"label": "low", "discharging_upstream": 0}, "contributors": [], "days": days,
+             "guide": {"photos": [photo]}}
+    (tmp_path / "data" / "spots.json").write_text(json.dumps({"generated_at": "2026-09-29T08:00:00+01:00", "spots": [river]}))
+    bs.write_pages(tmp_path, [river], root="https://example.org/swim/")
+    page = (tmp_path / "spot" / "a" / "index.html").read_text()
+    head = page.split("</head>", 1)[0]
+    assert '<figure class="hero"><img src="guides/photos/geograph-6482389.jpg" width="640" height="413" decoding="async" fetchpriority="high"' in page
+    assert head.count('<link rel="preload" href="guides/photos/geograph-6482389.jpg" as="image" fetchpriority="high">') == 1
+    assert head.index('<base href="../../">') < head.index("guides/photos/")   # the base first, so the address resolves
+    assert 'href="icons/fells-wide.webp"' not in head and bs.SPOT_SKY_PRELOAD not in page and bs.SKY_PRELOAD not in page
+    assert head.index('href="fonts/SourceSerif4-latin.woff2"') < head.index('href="guides/photos/') < head.index("<style>")
+    # The sky it no longer asks for is hidden wherever the photo is, so the look does not change.
+    assert ".answer:has(.hero)::before { display:none; }" in page
+    # The phone's sky stays in the style, as on every app page (its LCP gain there was nil).
+    assert "url(data:image/webp;base64," in page
+    assert bs.with_hero_first("<head>x</head>", "<section>no photo</section>") == "<head>x</head>"
 
 
 @pytest.mark.skipif(shutil.which("node") is None, reason="needs Node")
