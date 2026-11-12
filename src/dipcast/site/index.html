@@ -132,6 +132,10 @@
   /* While the forecast loads (main): the shape of the list in hairline grey, breathing slowly. */
   @keyframes breathe { 50% { opacity:.45; } }
   .skel { padding:4px 0 0; }
+  /* Until the forecast is drawn the built page is at least a screen tall (12 Nov 2026): the built page ended
+     under four grey rows, so "About these forecasts" was painted on a phone's first screen and then pushed off it,
+     a layout shift of 0.06 on a first visit and 0.12 with a spot saved. */
+  #result[data-built]:has(.skel) { min-height:100vh; }   /* on #result: a phone's columns are display:contents and take no height */
   .skel span { display:block; background:var(--line); border-radius:var(--radius); animation:breathe 1.2s ease-in-out infinite; }
   .skel .skel-h { width:70%; height:36px; margin:0 0 24px; }
   .skel .skel-r { height:60px; margin:0 0 8px; }
@@ -275,14 +279,15 @@
   .nowbar i { display:block; min-width:2px; }
   .nowbar .low { background:var(--low); } .nowbar .moderate { background:var(--moderate); } .nowbar .high { background:var(--high); }
   .nowbar .veryhigh { background:var(--veryhigh); } .nowbar .clear { background:var(--clear); } .nowbar .na { background:var(--unknown); }
-  .nowfig { list-style:none; margin:10px 0 0; padding:0; display:grid; gap:2px; font-size:var(--fs-note); }
-  .nowfig li { display:grid; grid-template-columns:2.4em minmax(0, 1fr); gap:0 10px; align-items:baseline; }
-  .nowfig b { text-align:right; font-size:var(--fs-head); font-weight:600; font-variant-numeric:tabular-nums; }
+  /* The figures as one line that wraps (12 Nov 2026; four rows, 128 px of a phone's first screen, for four numbers). */
+  .nowfig { list-style:none; margin:10px 0 0; padding:0; display:flex; flex-wrap:wrap; gap:2px 18px; font-size:var(--fs-note); line-height:1.4; }
+  .nowfig b { margin-right:5px; font-size:var(--fs-body); font-weight:600; font-variant-numeric:tabular-nums; }
   .nowfig .low b { color:var(--k-low); } .nowfig .moderate b { color:var(--k-moderate); } .nowfig .high b { color:var(--k-high); } .nowfig .clear b { color:var(--k-clear); }
   .home-worst .spots { margin-top:8px; }
   /* Upstream of the saved spots, the last 48 hours (homeFeed): when, what spilled and for how long, and where. */
   #home-feed[hidden] { display:none; }
   .home-feed { padding-bottom:12px; }
+  .home-feed.loading { min-height:150px; }   /* about two rows, so the list under it starts near where it will stay */
   .feed { list-style:none; margin:8px 0 0; padding:0; }
   .feed li { border-top:1px solid var(--hair); }
   .feed a { display:grid; grid-template-columns:76px minmax(0, 1fr); gap:0 10px; padding:9px 0; color:inherit; text-decoration:none; }
@@ -306,7 +311,6 @@
   .list-days .dd b { font-weight:600; color:var(--k-low); }
   .list-days .nw { white-space:nowrap; }   /* "low risk" whole: on a 320 px phone the count takes a line of its own */
   .list-days input:checked + span .dd b { color:var(--on-fill); }
-  .strip-note { margin:6px 2px 0; }
   /* A phone's opening, shorter: the lede without the map's clause, and the search at the height of a thumb. */
   @media (max-width: 800px) {
     .lede-map { display:none; }
@@ -536,6 +540,9 @@
   .top-row { display:flex; align-items:center; justify-content:space-between; gap:12px; }
   .top-row .save { margin-top:0; }
   .save-msg { margin:8px 0 4px; } .save-msg:empty { margin:0; }   /* what Save did, under it; empty, no room */
+  /* Without a photo the line sits under the button it is about, at the right, at the meta size (12 Nov 2026: at the
+     left under "All spots" it read as the page's first sentence, over a centred name). */
+  .top-row ~ .save-msg { text-align:right; font-size:var(--fs-meta); }
   .answer { text-align:center; padding:4px 0 0; }
   /* The place's photo, first in the answer (guideHero; 11 Nov 2026). With it the page has no sky: the photo is the
      place, the tiles sit on the paper as cards with a hairline, as the working screens' do, and the band under the
@@ -649,7 +656,7 @@
   .tile .plate #spot-map { margin:0; border-radius:0; box-shadow:0 0 0 1px var(--ink); }
   .fig-no { font:600 var(--fs-note)/1.3 var(--font-display); }
   /* Routes into the Research Lab: page.css's .routes, repeated here as the app repeats the tokens. The spot page's
-     "Explore the evidence" and the home page's invitation. */
+     "Explore the evidence". */
   .routes { list-style:none; padding:0; margin:10px 0 0; display:grid; grid-template-columns:minmax(0, 1fr); }
   .routes a { display:grid; grid-template-columns:56px minmax(0, 1fr); gap:12px; align-items:start; padding:10px 0; border-top:1px solid var(--line); color:var(--muted); text-decoration:none; font-size:var(--fs-note); line-height:1.4; }
   .routes img { display:block; width:56px; height:56px; border:1px solid var(--ink); background:var(--deep); }
@@ -1299,6 +1306,9 @@
     .answer:has(.hero) .hero img { height:280px; }
     .answer > *, .answer .spot-name, .answer .act, .answer .scope, .answer .flow, .answer .gaps, .answer .official,
       .answer .cover, .answer .ci, .big, .big-head { margin-left:0; margin-right:0; }
+    /* Left-aligned, the notes under the level keep a prose measure and break where the words do (12 Nov 2026): balanced
+       at 30 em for the phone's centred answer, they broke after "open it" with 900 px of the row empty. */
+    .answer :is(.ci, .cover, .scope, .flow, .gaps, .live, .act) { max-width:68ch; text-wrap:pretty; }
     /* A shorter opening, so the first spots and most of the map's tile are on a 1,440 x 900 screen:
        Near me is the search field's pin, and the five days one strip (29 October 2026). */
     .intro > .search input { min-height:48px; }
@@ -1308,14 +1318,15 @@
       background-image:url(icons/fells-wide.webp); background-size:max(100%, 1500px) 600px; }
     /* The home page's opening (2 Nov 2026): the title and one line, then the search and the five days on one row,
        then the count's line and the freshness, so the list and the map start higher. */
-    body.view-list .lead { display:grid; grid-template-columns:minmax(0, 1fr) minmax(480px, 560px); column-gap:16px; align-items:center; }
+    /* On the columns' own grid (12 Nov 2026): the search is the list's width and the five days the map's, so the page
+       has two left edges, not four (the search ended 200 px past the list under it, the days began 200 px into the map's tile). */
+    body.view-list .lead { display:grid; grid-template-columns:minmax(0, 5fr) minmax(0, 7fr); column-gap:24px; align-items:center; margin-bottom:28px; }
     body.view-list .lead > *, body.view-list .intro > * { grid-column:1 / -1; max-width:none; }
     body.view-list .intro { display:contents; }
     body.view-list .intro h1 { font-size:var(--fs-level); }
     body.view-list .intro .lede { margin-top:4px; max-width:72ch; text-wrap:pretty; }
     body.view-list .intro > .search { grid-column:1; margin-top:14px; }
     body.view-list .lead > .toolbar { grid-column:2; margin-top:14px; }
-    body.view-list .lead > .strip-note { margin-top:8px; }
     /* Plan a swim's controls in one bar on the paper (2 Nov 2026). On a phone they stay one under another. */
     body.view-plan .lead > * { max-width:none; }
     body.view-plan .lead > .back, body.view-plan .lead > h1 { max-width:760px; }
@@ -1632,7 +1643,7 @@
     .top { position:static; padding:0 0 8px; background:var(--card); color:var(--ink); border-bottom:1px solid var(--line); }
     .top .brand { color:var(--ink); }
     .top nav, .skip, .bottom-nav, #map-wrap, .loc, .tile:has(#spot-map), .top-row, .actions, .below,
-      .search, .toolbar, .strip-note, .linkbtn, .cmp-pick, .group-bar .sortseg, .chips-row, .low-ctl, #near-group:not(:has(li)),
+      .search, .toolbar, .linkbtn, .cmp-pick, .group-bar .sortseg, .chips-row, .low-ctl, #near-group:not(:has(li)),
       .about-line, #your-data, #home-screen, details.ea-today, details.consent, details.lists, form, .btn, .unsave,
       .pick, details > summary::after, .quiet-btn::after { display:none !important; }
     .answer::before, .lead::before { display:none; }
@@ -1718,7 +1729,7 @@
           <dt id="about-exposure">Sewage spill risk (0–100)</dt><dd>A 0–100 score for sewage from upstream reaching the spot. It is built from the chance that at least one overflow upstream spills and its discharge arrives, after travel time, die-off and dilution. The spill part is verified against what the overflows did; the die-off and dilution weights are physical estimates, not calibrated against water samples, so the score is not a probability. The colour levels (low to very high) come from it.</dd>
           <dt id="about-ecoli">E. coli estimate</dt><dd>The estimated chance that a midday water sample would show over 900 E. coli per 100 ml, from rainfall at the spot, the sewage spill risk, water-body type and season, fitted to Environment Agency samples at river and lake bathing waters and tested on years and sites it never saw. It counts bacteria from any source, so rain alone can raise it when the sewage spill risk is low. 900 is the threshold used in the inland "sufficient" classification, which is a 90th-percentile calculation over four seasons, not a pass/fail test of one sample. It is validated on rivers in the May–September sampling season only; on lakes it has no demonstrated skill and is not shown. At a lake with overflows upstream the page gives a different estimate instead: the reading a sample would most likely show, per 100 ml, and the range 8 in 10 samples would fall in, from the same inputs and the lake's own level. On 962 samples from 2012 to 2022 at Windermere and Frensham Great Pond, which it never saw, 79% fell inside that range. A lake bathing water uses its own samples' level; any other lake starts from a typical lake's, which is less certain. From May to September a lake bathing water's page also says whether the likely reading is higher than usual for the lake at that time of year (at least twice), lower (at most half) or about usual, where usual is the same estimate with the lake's typical rain and spills (the middle values on its own Environment Agency sample days, 2023 to 2026); on past samples the estimate put two days at the same lake in the right order only about 58 to 60 times in 100, so this compares two estimates and is not a measurement. At Derwent Water high summer results come with a rise that rain, spills and lake level do not track, so there it can say about usual on a day a sample reads high. Where a bathing water has no monitored overflow upstream, its page gives what its own Environment Agency samples have read instead: past samples, not a forecast. The EA takes no samples from October to April, so then nothing tests it: it does not set the level, a spot's page gives the figure only under "Experimental estimate", and the date's own effect is held at its value at the nearer end of the season (30 September or 1 May) rather than carried on with nothing to check it. A spot's page says how it has done on the samples taken since the forecast began, and, where the river runs from Wales, what a test on Welsh river samples found.</dd>
           <dt>Algae</dt><dd>Designated bathing waters only: the Environment Agency sampler's latest look at the water, an observation, not a forecast. It does not tell blue-green algae from harmless kinds.</dd>
-          <dt>Water temperature</dt><dd>Rivers only, where an Environment Agency sensor on the same river, within 15 km in a straight line and on the same side of the tidal limit, has reported in the last day: its latest reading, with how far up or down the river it is and how old the reading is. Where there is no such sensor nothing is shown; the temperature is never estimated. It is not part of the level.</dd>
+          <dt>Water temperature</dt><dd>Rivers only, where an Environment Agency sensor on the same river, within 15 km in a straight line and on the same side of the tidal limit, has reported in the last day: its latest reading, with how far up or down the river it is and how old the reading is. Where there is no such sensor, and at lakes, the tile shows an estimate worked out from the air temperature, marked "estimated" or "provisional estimate": it is not a measurement, and the tile gives its typical error. It is not part of the level.</dd>
           <dt>What it does not know</dt><dd>The treated sewage that sewage works let out every day, and anything about a specific farm, road, outfall or algal bloom: only monitored storm overflows are modelled. Nor does it use the wind, which decides where river water goes in a lake. <a href="methods.html#limits">What the forecast does not count, and what you can do</a>.</dd>
         </dl>
       </details>
@@ -3926,12 +3937,6 @@ function renderList() {
     // weekend's best day in a line under it). It opens on today (renderList).
     + `<div class="toolbar"><fieldset class="day-strip list-days" id="listday"><legend class="sr">When are you swimming?</legend>${fiveDays().map(iso => `<label><input type="radio" name="list-day" value="${iso}"${VIEW.day === iso ? ' checked' : ''}>`
       + `<span>${shortDay(iso)} <span class="dd"><b>${lowOn(iso)}</b> <span class="nw">low risk</span></span></span></label>`).join('')}</fieldset></div>`
-    // A first visit (nothing saved or planned, no spot opened yet): what to do here, one line under the strip, so the
-    // first spot moves down one line at most (30 Oct 2026). Once a spot is saved, Your places takes over. The strip's
-    // own words ("70 low risk") need no explanation under it (6 Nov 2026).
-    + `<p class="small muted strip-note"${!SAVED.size && !OPENED && !(typeof planOuting === 'function' && planOuting(stored(PLAN_KEY), planDates(), id => DATA.spots.some(x => x.id === id)))
-      ? '' : ' hidden'}>${!SAVED.size && !OPENED && !(typeof planOuting === 'function' && planOuting(stored(PLAN_KEY), planDates(), id => DATA.spots.some(x => x.id === id)))
-      ? ' Open a spot to see why. Save the ones you use to keep them at the top.' : ''}</p>`
     + `<p class="planner-note" id="low-note-list"${VIEW.lowOnly ? '' : ' hidden'}>${lowListNote()}</p>`;
   h += notices(null, true) + '</div>';
   // With spots saved, the title and the line under it are the visitor's own (homeYours); the same two elements, so
@@ -3950,7 +3955,8 @@ function renderList() {
     : OPENED ? `<p class="save-hint tile">${BOOKMARK}<span>Open a spot and press Save to keep it here.</span></p>` : '';   // not on a first look
   // Upstream of the saved spots, the last 48 hours (mountHomeFeed fills it once their files are in), and, with nothing
   // saved, the day's count and the spots at very high risk (drawSpots fills it, so a day picked changes it).
-  if (saved.length) v += '<section class="group tile home-feed" id="home-feed" aria-labelledby="feed-h" hidden></section>';
+  // Drawn at once with its heading (12 Nov 2026): hidden until its files came, it pushed the list down as it arrived.
+  if (saved.length) v += `<section class="group tile home-feed loading" id="home-feed" aria-labelledby="feed-h">${feedHead(saved.length)}<p class="t-say muted">Reading the water companies' reports…</p></section>`;
   else v += '<div id="home-first"></div>';
   v += `<section class="group tile" id="near-group" aria-labelledby="near-h" hidden><h2 class="group-head" id="near-h">Near you</h2><ul class="places" id="near-list"></ul></section>`;
   // The kinds of water are a second row under the heading: they narrow this list, not the day.
@@ -4091,9 +4097,10 @@ function feedRow(x) {
   return `<li><a href="${esc(spotPath(x.s.id))}" data-id="${esc(x.s.id)}"><span class="ft">${when}</span><span class="fw">${what}`
     + `<span class="fp">${esc(feedWhere(x.c, x.s))}${x.more ? ` and ${x.more} more of your saved spots` : ''}</span></span></a></li>`;
 }
+const feedHead = n => `<h2 class="t-lab" id="feed-h">${ICON.spills}<span>Upstream of your saved spot${n === 1 ? '' : 's'}, last ${FEED_HOURS} hours</span></h2>`;
 function homeFeed(spots, nowMs) {
   const rows = upstreamFeed(spots, nowMs), more = rows.length - FEED_ROWS;
-  return `<h2 class="t-lab" id="feed-h">${ICON.spills}<span>Upstream of your saved spot${spots.length === 1 ? '' : 's'}, last ${FEED_HOURS} hours</span></h2>`
+  return feedHead(spots.length)
     + (rows.length ? `<ul class="feed">${rows.slice(0, FEED_ROWS).map(feedRow).join('')}</ul>${more > 0 ? `<p class="t-key">And ${more} more.</p>` : ''}`
       : `<p class="t-say">No spill reported in the last ${FEED_HOURS} hours by the overflows that count most upstream.</p>`)
     + `<p class="t-key">The water companies' own reports, for the ten overflows that count most at each saved spot. A monitor that is off reports nothing.</p>`;
@@ -4103,8 +4110,9 @@ async function mountHomeFeed(saved) {
   const some = saved.filter(s => s.detail_file).slice(0, FEED_SPOTS);
   await Promise.all(some.map(s => spotDetail(s)));
   const host = document.getElementById('home-feed'), have = some.filter(s => s.detail_loaded && (s.contributors || []).length);
-  if (!host || shown !== 'list' || !have.length) return;
-  host.innerHTML = homeFeed(have, Date.parse(DATA.generated_at)); host.hidden = Boolean(VIEW.q.trim() || VIEW.filter !== 'all' || VIEW.lowOnly); bindItems(host);
+  if (!host || shown !== 'list') return;
+  if (!have.length) { host.innerHTML = ''; host.hidden = true; return; }   // no saved spot has an overflow upstream: no tile
+  host.classList.remove('loading'); host.innerHTML = homeFeed(have, Date.parse(DATA.generated_at)); host.hidden = Boolean(VIEW.q.trim() || VIEW.filter !== 'all' || VIEW.lowOnly); bindItems(host);
 }
 // The position stays in this page: it only orders the list, and is not sent anywhere.
 function locate(at = 'sort') {
@@ -4246,7 +4254,8 @@ function drawSpots() {
   if (fn) { fn.textContent = changed; fn.hidden = !changed; document.getElementById('filter-btn').setAttribute('aria-label', changed ? `Filter, ${changed} on` : 'Filter'); }
   const done = document.getElementById('filter-done'); if (done) done.textContent = `Show ${items.length} spot${items.length === 1 ? '' : 's'}`;
   // With nothing matching, no tally of zeros (5 Nov 2026: "0 low · 0 moderate · 0 high" under "No listed spot matches").
-  document.getElementById('overview-foot').textContent = items.length ? overview(items).replace(/^Updated [^·]*· /, '') : '';
+  // Not under the day's count on a first visit (homeNow), which gives the same figures above the list (12 Nov 2026).
+  document.getElementById('overview-foot').textContent = items.length && !(first && !first.hidden) ? overview(items).replace(/^Updated [^·]*· /, '') : '';
   const firstNote = VIEW.sort === 'low' || (VIEW.sort === 'near' && !VIEW.here) ? lowLastNote(items) : byRisk ? riskFirstNote(items) : '';
   // Where the notice's spots go in this order, in the line over the list that names them (29 October 2026: a
   // paragraph of its own under it, two lines about notices one after the other on a phone's first screen).

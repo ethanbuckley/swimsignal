@@ -2568,7 +2568,7 @@ PAGE_DESCRIPTION = re.compile(r'<meta name="description" content="([^"]*)">\n?')
 
 # The prose pages share the app's phone navigation. Links are relative to the built site root, or start
 # with r on a page that has no <base> at the root (404.html). More holds the header's links that a phone
-# hides (Accuracy, About, Research, Feedback): a popover, so a tap outside or Escape closes it with no
+# hides (Accuracy, About, For organisations, Feedback): a popover, so a tap outside or Escape closes it with no
 # script. A browser without popovers (iOS before 17) ignores popovertarget, so MORE_FALLBACK opens the list as a plain
 # toggle there instead of leaving a button that does nothing (found on the live site, 31 Oct 2026). index.html's bar
 # has the same.
@@ -2694,7 +2694,7 @@ def home_lead(n: int, days: list[str] | None = None, where: str = ENGLAND_ONLY_W
             '<div class="toolbar"><fieldset class="day-strip list-days" id="listday"><legend class="sr">When are you swimming?</legend>'
             + ''.join(f'<label><input type="radio" name="list-day" value="{d}"{" checked" if i == 0 else ""}><span>'
                       f'{"Today" if i == 0 else pd.Timestamp(d).strftime("%a")} <span class="dd">\u00a0</span></span></label>' for i, d in enumerate(days or []))
-            + '</fieldset></div><p class="small muted strip-note"> Open a spot to see why. Save the ones you use to keep them at the top.</p>'
+            + '</fieldset></div>'
             f'</div><div class="cols"><div class="col-list"><p class="sr" aria-busy="true">Loading forecasts…</p>{SKELETON_TILE}</div>'
             # The map's tile, as index.html's MAP_TILE frames it, empty until the script moves the map in.
             '<div class="col-map"><div class="tile map-tile"></div></div></div></div>')

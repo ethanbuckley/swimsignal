@@ -2421,3 +2421,46 @@ chose to build it: "Yes, build it". It is off until he deploys the Worker and se
 **Checked:** the Worker's tests (`push/test/clears.test.js`), the page's (`tests/site_day_alert.test.cjs`), the
 build's (`tests/test_site_pages.py`); the button, on and stop on the real page in a browser, with the alert service
 stubbed. Not checked: a real subscription or a real notification (none is made in testing), the deployed Worker.
+
+## The home page, tightened (12 November 2026)
+
+Ethan found the home page "a bit clunky as you log on" and the layout poor on it and on the page a spot opens. A
+review that day (`docs/REVIEW-2026-11-12.md`) measured what was behind that. These are the layout faults it found and
+what changed. No level, count or sentence of the forecast changed.
+
+**The page moved as it loaded.** The built page ended under four grey rows, so on a phone "About these forecasts" was
+painted on the first screen and then pushed off it when the list was drawn. With a spot saved, the feed's tile was
+hidden until its files came and then pushed the list down. Measured in Chrome at 375 x 812 on the day's data, the
+layout shift was 0.06 on a first visit and 0.22 with one spot saved (0.1 is the limit of "good").
+- The built page is at least a screen tall until the forecast is drawn (`#result[data-built]:has(.skel)`).
+- The feed's tile is drawn at once with its heading and a line saying it is reading the reports (`feedHead`,
+  `.home-feed.loading`), about two rows tall. It goes only when no saved spot has an overflow upstream.
+- After both: 0 on a first visit and 0 with a spot saved, same screen and data.
+
+**The same count three times.** A first visit read the day's count on the strip ("67 low risk"), in the count tile,
+and again in a sentence at the foot of the list. The foot's tally is no longer written while the count tile shows
+(`drawSpots`); a search or a filter, which hide the tile, bring it back.
+
+**The count tile, shorter.** Its four figures are one line that wraps (`.nowfig`), not four rows: 257 px to 187 px
+at 375 px. The bar, the words and the line about official advice are unchanged.
+
+**The hint under the day strip went** ("Open a spot to see why. Save the ones you use to keep them at the top.",
+30 October). The count and the very high rows now say what the page is, the spot page says what Save is for, and the
+built page showed the line to everyone until the script hid it. With these three, the list starts about 125 px
+higher on a phone (878 to 755 px) and the whole "Very high risk today" row is on the first screen.
+
+**A desktop: the opening on the columns' grid.** From 1,100 px the search and the five days were on a grid of their
+own (the search ended 200 px past the list under it, and the days began 200 px into the map's tile). They now use the
+columns' grid, 5 to 7 with the same gap: the search is the list's width and the days the map's.
+
+**A spot with no photo.** "Save this spot to have alerts for it." sat at the left under "All spots", over the name.
+It is now at the right under the Save button, at the meta size. From 1,100 px the notes under the level keep a prose
+measure (68 characters) and break where the words do: balanced at 30 em for the phone's centred answer, they broke
+after "open it" with most of the row empty. A phone's centred answer and a spot with a photo are unchanged.
+
+**Copy corrected.** "What each part of a spot's page means" said the water temperature "is never estimated". Every
+river and lake spot has shown an estimate since 31 October. It now says what the tile shows.
+
+**Checked:** headless Chrome at 375 x 812 and 1,440 x 900 on the live data of 12 November 10:35, a first visit and
+one saved spot; the node tests (1,113 pass) and the Python site tests. A spot with a photo (Wharfe at Cromwheel) was looked at on a phone and is unchanged. Not checked: 320 px,
+Safari, a screen reader, and the live network (the shifts were measured on a local server).
