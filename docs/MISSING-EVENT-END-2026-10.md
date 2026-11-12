@@ -232,3 +232,32 @@ Ethan adopted the recommendation ("Adopt all the recommendations as my decisions
   fresh state, because United Utilities' count of such records rose on 25-26 October.
 - **Fix if,** in that run, rule B changes the right-now level at more than 1% of spot-builds in its primary window.
 - **Whenever it is fixed,** `scripts/build_any_point.py` (`ended_h`, map clicks) is fixed in the same PR.
+
+## Re-measure, 12 November 2026
+
+The measure of 26 October was to be repeated on or after 9 November. Run on 12 November with the same script,
+unchanged, on main `0fae076a`, on the `state` release as updated that day at 10:39 UTC (`dipcast.duckdb`,
+`live_history.parquet`, `live_latest.parquet`), in a scratch copy with its own state folder. The river network file
+was read through a link and its hash was the same before and after. The October results above are kept as they were.
+The full figures are in `MISSING-EVENT-END-2026-11-remeasure-summary.json`.
+
+Primary window: the script's own, from 17 October 09:35 UTC, now to 12 November 10:33 UTC. 251 builds, 89 spots,
+23,145 spot-builds (7,255 in October).
+
+- **Check first.** Today's rule on the replayed state matched the level production gave at 98.6% of spot-builds
+  (99.3% in October). The bar was 97%, so the measure went ahead.
+- **Rule B** (evidence of a spill): the right-now level changed at 5 spot-builds, 0.02%, all at Bassenthwaite, each
+  from moderate to high. No headline level changed. 99.9% of spot-builds moved by under 0.01. Every record that
+  added risk was United Utilities'.
+- **Rule A** (any status-0 start): 47 spot-builds changed level (0.20%) at five spots, and 39 headlines rose from
+  Low. Thames Water's records added the most (301 spot-builds), then United Utilities' (111) and Severn Trent's (72).
+  As in October, rule A counts monitors coming back from offline as spills, so it is not the rule to act on.
+- **Records.** United Utilities still averages 3.8 no-end records a build that stopped within 48 hours under rule B
+  (4.0 in October). The rise of 25 to 26 October did not grow.
+
+**Against the decision of 26 October** ("fix if rule B changes the right-now level at more than 1% of spot-builds in
+its primary window"): 0.02% is under 1%. **No fix.** The measure is closed. It would be worth running again if
+United Utilities' count of such records rises, or if map clicks, which this still does not measure, are to be checked.
+
+Limits: as above. The window now includes 26 days, but the replay still covers listed spots only, and the history
+keeps an end that was filled in later.

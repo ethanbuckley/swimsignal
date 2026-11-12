@@ -2498,3 +2498,25 @@ Ethan asked for the review's open items to be built ("do all those fixes"). No l
 lines, the clamp and its button, the photos button; layout shift on the home page still 0. Node tests 1,117 pass.
 Not checked: pressing "Spots near me" with a real location (the preview cannot grant one; it calls the pin's own
 function), 320 px, Safari, a screen reader.
+
+## One foot, one opening (12 November 2026)
+
+The last open items of the review of 12 November (`docs/REVIEW-2026-11-12.md`), built at Ethan's request.
+
+- **One foot.** The app's foot had 12 links, the prose pages 7 and the Research Lab 4. Every page now has the same
+  links in the same order (`build_site.FOOT_LINKS`, `foot_links`): About SwimSignal, How accurate is it?, Method,
+  Every spot, Research and data, Coasts, Wales, Scotland, Ireland and algae, For organisations, Feedback, Request a
+  spot, Terms of use, Privacy, Data credits, Source code. The app's foot leaves out only Data credits, which the
+  credit line under its links gives. The pages write the line by hand, as before; `tests/test_one_footer.py` holds
+  them to the list. The Lab's foot keeps its two lines about covers and exploratory work above the links.
+- **One opening for a spot.** A spot with a photo read down the left edge. One without (25 of 133, and every point
+  clicked on the map) was centred on a phone. Both now read down the left edge at every width, the way Ethan chose
+  last for the photo ("This is it", 11 November). This turns round "Phones keep the centred answer" (29 October). The
+  sky stays behind a spot with no photo. No words or order changed.
+- **Pages with one way in.** `quality.html` was linked from About only and `data-feed.html` from For organisations
+  only. The data page's "In short" now links both, Research and data lists the overflow records to check, and the
+  sampling partners' page links the sampling planner.
+
+**Checked:** headless Chrome at 375 x 812 on the data of 12 November 10:35: Shrewsbury's opening (no photo), the
+About page's foot; the Lab's foot at 1,440 px was built and its links resolve. Not checked by eye: a point clicked
+on the map, 320 px, Safari.

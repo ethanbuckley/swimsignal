@@ -93,7 +93,7 @@ REWRITES = [('href="/feedback"', 'href="feedback.html"'), ('href="/feedback?type
             ('href="/methods"', 'href="methods.html"'), ('href="/methods#', 'href="methods.html#'),
             ('href="/verification#', 'href="verification.html#'), ('href="/coverage"', 'href="coverage.html"'),
             ('href="/plan/"', 'href="plan/"'), ('href="/saved/"', 'href="saved/"'),   # the header's links, as the app's (29 Oct 2026)
-            ('href="/research"', 'href="research.html"'), ('href="/lakes"', 'href="lakes.html"'),   # Research and its lake viewer (31 Oct 2026)
+            ('href="/research"', 'href="research.html"'), ('href="/spots"', 'href="spots.html"'), ('href="/lakes"', 'href="lakes.html"'),   # Research and its lake viewer (31 Oct 2026)
             ('href="/lab/', 'href="lab/')]   # the Research Lab and its exhibits (1 Nov 2026)
 BRAND = "SwimSignal"
 # The home page leads with the name, for search; every other page is "Page · SwimSignal" (docs/DESIGN.md, Words).
@@ -2957,6 +2957,21 @@ def with_warning_words(html: str, verification: Path) -> str:
     return WARN_FIGURES.sub(lambda m: m.group(1) + said + m.group(2), html, count=1)
 
 
+# The foot's links, the same on every page (12 Nov 2026: the app had 12, the prose pages 7 and the Lab 4). The prose
+# pages, the templates in site/ and the Lab write them by hand, word for word (tests/test_one_footer.py); the app's foot
+# has the same but for Data credits, which its own credit line under them links.
+FOOT_LINKS = (("about.html", "About SwimSignal"), ("verification.html", "How accurate is it?"), ("methods.html", "Method"), ("spots.html", "Every spot"),
+              ("research.html", "Research and data"), ("coverage.html", "Coasts, Wales, Scotland, Ireland and algae"), ("clubs.html", "For organisations"),
+              ("feedback.html", "Feedback"), ("feedback.html?type=spot", "Request a spot"), ("terms.html", "Terms of use"), ("privacy.html", "Privacy"),
+              ("terms.html#data", "Data credits"))
+SOURCE_LINK = '<a href="https://github.com/ethanbuckley/swimsignal">Source code</a> (MIT)'
+
+
+def foot_links(r: str = "") -> str:
+    """The foot's line of links, each under r."""
+    return " · ".join(f'<a href="{r}{h}">{t}</a>' for h, t in FOOT_LINKS) + " · " + SOURCE_LINK
+
+
 def site_header(r: str, current: str = "") -> str:
     """The header every page shares (page.css .top): the mark and the main links, `current` (a link's href, such as
     "lab/") marked as the page you are on. The prose pages and the app write the same links by hand."""
@@ -2984,7 +2999,7 @@ def not_found_page(root: str) -> str:
         f'<ul><li><a href="{r}">All spots</a>, each with its five-day forecast</li><li><a href="{r}saved/">Your saved spots</a></li>'
         f'<li><a href="{r}feedback.html?type=spot">Ask for a spot to be added</a></li></ul></main>\n'
         f'<footer class="site-foot"><div class="rule"><p>{BRAND} is a free, non-commercial pollution risk forecast for river and lake swim spots in England, run by Ethan Buckley. A forecast, not a water test.</p>'
-        f'<p><a href="{r}terms.html">Terms of use</a> · <a href="{r}privacy.html">Privacy</a> · <a href="{r}feedback.html">Feedback</a> · <a href="{r}research.html">Research and data</a></p></div></footer></body></html>\n')
+        f'<p>{foot_links(r)}</p></div></footer></body></html>\n')
 
 
 def robots(root: str) -> str:
