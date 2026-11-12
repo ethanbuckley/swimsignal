@@ -1784,12 +1784,10 @@
     "spills",
     "live data"
    ],
-   "verdict": "Measured, no change made: with the alternative rule no spot's right-now level or headline changed in the nine-day window.",
+   "verdict": "Measured, no change made: with the alternative rule no spot's right-now level or headline changed in the nine-day window. Re-measured 12 November 2026 over 17 October to 12 November: rule B changed 5 of 23,145 spot-builds (0.02%), all at one spot, and no headline.",
    "scope": "Listed spots, not map clicks; the window held only 1.5 days of a large United Utilities rise.",
-   "stage": "scheduled",
-   "stage_note": "Measure again with the same script. Due since 9 November 2026; not re-measured by 12 November 2026.",
-   "next": "Re-measure on or after 9 November 2026.",
-   "read_on": "2026-11-09",
+   "stage": "archived",
+   "stage_note": "Re-measured on 12 November 2026 with the same script: rule B changed the right-now level at 5 of 23,145 spot-builds (0.02%), under the 1% set on 26 October. No fix; the measure is closed.",
    "records": [
     {
      "doc": "docs/MISSING-EVENT-END-2026-10.md",
@@ -1799,7 +1797,8 @@
    "prs": [
     384
    ],
-   "register_note": "The doc's threshold for acting at the re-measure (more than 1% of spot-builds) is looser than its original pre-run threshold (0.5% or 3 headline raises); the register does not mention this."
+   "register_note": "The doc's threshold for acting at the re-measure (more than 1% of spot-builds) is looser than its original pre-run threshold (0.5% or 3 headline raises); the register does not mention this.",
+   "reopen_when": "United Utilities' count of status-0 records with no end rises again, or map clicks, which the replay does not cover, are to be measured."
   },
   {
    "id": "primary-2027",

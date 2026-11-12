@@ -633,6 +633,13 @@
      so a row or card never leads with a clean level at an advised water. */
   .o-tag { display:block; margin:3px 0 4px; padding-left:7px; border-left:3px solid var(--notice-line); font-size:var(--fs-meta); line-height:1.35; color:var(--ink); }
   .answer .cover { margin:10px auto 0; max-width:30em; font-size:var(--fs-note); line-height:1.4; color:var(--ink); text-wrap:balance; }
+  /* One opening at every width (12 Nov 2026). A spot with a photo read down the left edge and one without (25 of 133,
+     and every point clicked on the map) was centred on a phone: two pages for one kind of thing. The photo's way won,
+     the one Ethan chose last ("This is it", 11 Nov). The sky stays behind a spot with no photo. */
+  .answer { text-align:left; }
+  .answer > *, .answer .spot-name, .answer .act, .answer .scope, .answer .flow, .answer .gaps, .answer .official,
+    .answer .cover, .answer .ci, .answer .live, .big, .big-head { margin-left:0; margin-right:0; }
+  .answer :is(.spot-name, .big, .big-head, .ci, .cover, .scope, .flow, .gaps, .live, .act) { text-wrap:pretty; }
   /* Under the five days (answerAfter): what to do, at the sentence's size, after a hairline; then what the
      level counts, at the notes' size. Left, as the tile's sentence is. */
   .after .act { margin:10px 0 0; padding-top:10px; border-top:1px solid var(--hair); line-height:1.4; }
