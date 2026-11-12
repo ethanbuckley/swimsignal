@@ -70,3 +70,10 @@ When Tim answers, the export changes its `open_questions` and `seasons[].how`. T
 
 These seasons were seen before any SwimSignal test of Waterhead was designed. A comparison on them is exploratory.
 A fair test needs samples taken after a forecast or candidate is fixed: the 2027 season at the earliest.
+
+## The site's index of links (12 November 2026)
+
+`data/research/local-samples.json` is written by the build, not by the export. Besides the export's `spots`, it lists
+the other listed lake spots on the same Environment Agency water body as one of them, each marked `elsewhere: true`
+with `km`, the straight-line distance to the linked spot, and with no `data` field. A page shows such a link as
+samples from another part of the lake and does not put them in that spot's evidence timeline.

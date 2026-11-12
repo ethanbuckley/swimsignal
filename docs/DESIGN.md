@@ -2520,3 +2520,22 @@ The last open items of the review of 12 November (`docs/REVIEW-2026-11-12.md`), 
 **Checked:** headless Chrome at 375 x 812 on the data of 12 November 10:35: Shrewsbury's opening (no photo), the
 About page's foot; the Lab's foot at 1,440 px was built and its links resolve. Not checked by eye: a point clicked
 on the map, 320 px, Safari.
+
+## The strip counts your spots, and Waterhead from its neighbours (12 November 2026)
+
+The review's last two items (`docs/REVIEW-2026-11-12.md`, section 9).
+
+- **The list's day strip.** With spots saved it counts them: "1 of 3 low risk" under each day (`stripCount`), below a
+  title that is already about them. The count of all 133 spots meant little to someone who swims in one river. A
+  first visit keeps the count of every spot, which its opening line numbers. The rule is the same either way: a spot
+  under official advice restricting swimming is never counted as low (`lowEligible`). The map's own strip still counts
+  every spot, as the map shows every spot. At 320 px the figure and "low risk" take a line each.
+- **Waterhead's samples, from the same water body.** The samples were linked from the Waterhead spot only. The other
+  listed lake spots on the same Environment Agency water body now link them too (`build_site.wet_elsewhere`):
+  Millerground Landing and Rayrigg Meadow, both in Windermere's north basin, about 5 km away. Their line says so:
+  "Local water samples elsewhere on this lake ... about 5.0 km from here ... Past samples from another part of the
+  lake, not this spot's water." Their evidence timelines do not show the samples, which are not theirs. Lakeside and
+  Fellfoot are in the south basin, another water body, and get no link.
+
+**Checked:** headless Chrome at 375 and 320 px with three spots saved; Millerground's page (the line, its link, no
+samples in its timeline) and Fellfoot's (no line) in the in-app browser. Node tests 1,119 pass.
