@@ -179,7 +179,8 @@ test('the page: the tab is Today, the saved state is known before the first pain
   const list = PAGE.slice(PAGE.indexOf('function renderList() {'), PAGE.indexOf('\nconst setSort = '));
   assert.ok(list.indexOf('<h1>Check the water before you go</h1>') < list.indexOf('const yours = saved.length ? homeYours(saved) : null;'));
   assert.match(list, /h = h\.replace\(\/<h1>\[\^<\]\*<\\\/h1><p class="lede">\.\*\?<\\\/p>\/, `<h1>\$\{esc\(yours\.head\)\}<\/h1><p class="lede yours">\$\{esc\(yours\.lede\)\}<\/p>`\);/);
-  assert.match(list, /if \(saved\.length\) v \+= '<section class="group tile home-feed" id="home-feed" aria-labelledby="feed-h" hidden><\/section>';\n\s+else v \+= '<div id="home-first"><\/div>';/);
+  // The feed's tile is drawn with its heading at once (12 Nov 2026), so the list under it does not move when its files come.
+  assert.match(list, /if \(saved\.length\) v \+= `<section class="group tile home-feed loading" id="home-feed" aria-labelledby="feed-h">\$\{feedHead\(saved\.length\)\}<p class="t-say muted">[^<]*<\/p><\/section>`;\n\s+else v \+= '<div id="home-first"><\/div>';/);
   // On a phone the field opens from the header's button; a search in progress keeps it open.
   assert.match(PAGE, /html\.has-saved body\.view-list:not\(\.search-open\) \.lead \.search, html\.has-saved body\.view-list:not\(\.search-open\) #geo-cta \{ display:none; \}/);
   assert.match(PAGE, /<button type="button" class="hbtn phone-only" id="searchbtn" aria-label="Find a spot" aria-expanded="false" aria-controls="q">/);
