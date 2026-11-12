@@ -3345,7 +3345,7 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     write_lakes(site, token, root)   # the satellite lake observations (Research): before the data page, which lists data/research/
     write_lab(site, token)   # the Research Lab's exhibits at lab/, with their own frozen copy of what they read
     write_samples(site, token, root, results)   # every EA E. coli sample at a bathing water, from the research export: before the data page lists data/research/
-    write_waterhead(site, token, root)   # Ambleside Action for a Future's Waterhead samples: before the data page lists data/research/
+    write_waterhead(site, token, root, results=results)   # Ambleside Action for a Future's Waterhead samples: before the data page lists data/research/
     write_research_catalogue(site, token, root)   # every research record, its verdict and stage: before the data page lists data/research/
     write_sampling_planner(site, token, root)   # where samples are thin, and the sampling simulation's results (Research)
     write_model_scorecard(site, token, root)   # each model's test record and stage: before the data page lists data/research/
@@ -4416,9 +4416,30 @@ def wet_link(doc: dict) -> dict:
             "data": "data/research/waterhead_wet.json"}   # every sample, for the spot's evidence timeline (timeline.js)
 
 
-def write_waterhead(site: Path, token: str | None = None, root: str | None = None, path: Path | None = None) -> dict:
+def wet_elsewhere(doc: dict, results: list[dict] | None) -> dict[str, dict]:
+    """The other listed lake spots on the same water body as a spot the export links (the Environment Agency's own
+    water body, attach_water_body: Windermere's north basin holds Waterhead, Millerground and Rayrigg), each with the
+    samples' link marked `elsewhere` and how far the linked spot is in a straight line. No `data`: their evidence
+    timelines do not show another place's samples as their own. Windermere's south basin is another water body, so its
+    spots get no link (12 Nov 2026)."""
+    by = {r["id"]: r for r in results or []}
+    own = [by[i] for i in doc.get("spots", []) if i in by and (by[i].get("water_body") or {}).get("id")]
+    out = {}
+    for r in results or []:
+        if r["id"] in doc.get("spots", []) or r.get("kind") != "lake" or not SPOT_ID.fullmatch(str(r["id"])):
+            continue
+        near = [o for o in own if o["water_body"]["id"] == (r.get("water_body") or {}).get("id")]
+        if near:
+            km = min(_km(r["lat"], r["lon"], o["lat"], o["lon"]) for o in near)
+            out[r["id"]] = {k: v for k, v in wet_link(doc).items() if k != "data"} | {"elsewhere": True, "km": round(km, 1)}
+    return out
+
+
+def write_waterhead(site: Path, token: str | None = None, root: str | None = None, path: Path | None = None,
+                    results: list[dict] | None = None) -> dict:
     """waterhead.html, and data/research/waterhead_wet.json, from the export (WET unless path), or the page saying
-    none are shown. Returns the build's health entry."""
+    none are shown. Returns the build's health entry. results: this build's spots, for the links from the other spots
+    on the samples' water body (wet_elsewhere)."""
     path = path or WET
     out, local = site / "data" / "research" / "waterhead_wet.json", site / "data" / "research" / "local-samples.json"
     out.unlink(missing_ok=True)
@@ -4439,7 +4460,7 @@ def write_waterhead(site: Path, token: str | None = None, root: str | None = Non
         out.write_text(json.dumps(doc, ensure_ascii=False, separators=(",", ":")))
         body = wet_body(doc)
         attrib = escape(doc["attribution"])
-        local.write_text(json.dumps({"available": True, "spots": {i: wet_link(doc) for i in doc.get("spots", []) if SPOT_ID.fullmatch(i)}},
+        local.write_text(json.dumps({"available": True, "spots": wet_elsewhere(doc, results) | {i: wet_link(doc) for i in doc.get("spots", []) if SPOT_ID.fullmatch(i)}},
                                     separators=(",", ":")))
     for marker, text in (("<!-- WET -->", body), ("<!-- WET-ATTRIB -->", attrib)):
         if marker not in page:
