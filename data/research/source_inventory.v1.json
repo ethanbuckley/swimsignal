@@ -1,6 +1,6 @@
 {
   "schema": "swimsignal.source-inventory",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "generated_at": "2026-10-31",
   "issue": "https://github.com/ethanbuckley/swimsignal/issues/486",
   "contract": "docs/SOURCE-INVENTORY-CONTRACT-v1.md",
@@ -87,16 +87,16 @@
       "measures": ["E. coli", "intestinal enterococci", "ammonia", "dissolved oxygen", "other determinands"],
       "measurement_kind": "measurement",
       "measurement_note": "Lab-analysed river samples. A sample is the water at that point and time only.",
-      "coverage": "99 river positions with E. coli (4,123 results); Warleigh Weir 322, near Farleigh Hungerford 174, Tellisford Weir 98",
+      "coverage": "99 river positions with E. coli (4,123 results); Warleigh Weir 322 (50 m), Farleigh Hungerford 174 (2.3 km upstream along the river), Tellisford Weir 98 (210 m)",
       "date_range": "11 Sep 2019 to 15 Dec 2025",
-      "latency": "Archive; item modified 6 Jun 2026; no 2026 samples seen",
+      "latency": "Archive; item and layer data last edited 5 Jun 2026; no 2026 samples; E. coli count 4,123 rechecked 13 Nov 2026",
       "licence": {"name": "CC BY 4.0", "url": "https://creativecommons.org/licenses/by/4.0/", "permits": "Commercial and non-commercial use, publishing and adaptation with attribution"},
       "access": {"route": "ArcGIS REST Wessex_Water_Environmental_Water_Quality_view", "cost": "Free, no key", "account": false},
-      "local_cache": {"path": "data/cache/wessex_wq/", "bytes": 804099, "files": 3, "newest": "2026-10-25", "note": "E. coli rows only (4,123), with provenance.json"},
-      "status": "ready_to_integrate",
-      "enables": "Dated sample observations on the Warleigh Weir, Farleigh Hungerford and Tellisford Weir pages, like /samples.html; a held-out check of the E. coli estimate at non-bathing river sites.",
-      "recheck": {"result": "unchanged", "urls": ["https://www.arcgis.com/sharing/rest/content/items/4659ab28caa640c58e725b41ecbba79f?f=json"], "note": "CC BY 4.0 wording unchanged; title says 2019-2025."},
-      "docs": ["docs/OVERFLOW-DATA-SOURCES-2026-10.md#25-wessex-waters-river-samples-e-coli"]
+      "local_cache": {"path": "data/cache/wessex_wq/", "bytes": 804099, "files": 3, "newest": "2026-10-25", "note": "E. coli rows only (4,123), with provenance.json; complete against the layer's count on 13 Nov 2026"},
+      "status": "already_used",
+      "enables": "Used 13 Nov 2026: the three spots' samples on /wessex-river-samples.html and a line on each spot's page (docs/WESSEX-RIVER-SAMPLES-CONTRACT-v1.md). Still unused: the other 96 positions, enterococci, ammonia and oxygen, and a held-out check of issued estimates against samples taken after them (the layer has no 2026 rows yet).",
+      "recheck": {"result": "changed", "urls": ["https://www.arcgis.com/sharing/rest/content/items/4659ab28caa640c58e725b41ecbba79f?f=json", "https://services.arcgis.com/3SZ6e0uCvPROr4mS/arcgis/rest/services/Wessex_Water_Environmental_Water_Quality_view/FeatureServer/0?f=json"], "note": "13 Nov 2026: CC BY 4.0 wording unchanged; item and layer data last edited 5 Jun 2026; E. coli count 4,123, as cached.", "changes": [{"claim": "three listed spots that have no other samples", "was": "Warleigh Weir, Farleigh Hungerford and Tellisford Weir have no EA samples", "now": "Farleigh Hungerford is a designated bathing water with 60 EA samples, May 2024 to Sep 2026, on /samples.html; the other two have none", "doc": "docs/WESSEX-RIVER-SAMPLES-CONTRACT-v1.md"}]},
+      "docs": ["docs/OVERFLOW-DATA-SOURCES-2026-10.md#25-wessex-waters-river-samples-e-coli", "docs/WESSEX-RIVER-SAMPLES-CONTRACT-v1.md", "docs/WESSEX-RIVER-SAMPLES-CHECK-2026-11.md"]
     },
     {
       "id": "ea-hydrology-sondes",

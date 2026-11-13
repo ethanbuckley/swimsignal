@@ -39,7 +39,7 @@ in the JSON, measured read-only on 31 Oct).
 |---|---|---|---|---|---|---|---|---|
 | 1 | `ea-annual-returns-improvement` | EDM annual returns: improvement, investigation and monitor-action columns | England | metadata | Open Government Licence v3 | ready | yes | Open, covers every English overflow, and the build already reads the layer; only three columns are dropped. |
 | 2 | `ea-winep-pr24` | PR24 Water Industry National Environment Programme (WINEP) | England | metadata | Open Government Licence (catalogue field); attribution line says 'All rights reserved' | ready | no | One open file gives a dated regulatory deadline for 92% of improvement actions; small fetch, clear use, one licence wording to settle. |
-| 3 | `wessex-river-samples` | Wessex Water Environmental Water Quality 2019-2025 | England (Wessex) | measurement | CC BY 4.0 | ready | yes | Real E. coli lab counts at three listed spots that have no other samples; open licence; already cached. |
+| 3 | `wessex-river-samples` | Wessex Water Environmental Water Quality 2019-2025 | England (Wessex) | measurement | CC BY 4.0 | already used (13 Nov) | yes | Real E. coli lab counts at three listed spots, two with no other samples; open licence; already cached. Shown on `/wessex-river-samples.html` (13 Nov). |
 | 4 | `ea-hydrology-sondes` | EA Hydrology API water-quality sondes | England | proxy | Open Government Licence v3 | ready | yes | Only live in-river water-quality feed found; open; but proxies, thin and moving coverage. |
 | 5 | `ea-coastal-bathing-samples` | EA statutory E. coli samples at coastal and estuary bathing waters (Water Quality Archive) | England (coast) | measurement | Open Government Licence v3 | ready | yes | Fifteen times the inland sample count, open, and the register's named next coastal step; a few hundred small requests, off CI. |
 | 6 | `scottish-water-event-files` | Scottish Water published overflow event data (reported to SEPA 2021-25; non-reported 2022-25) | Scotland | measurement | Open Government Licence v3 | ready | yes | New-region observations under OGL v3, already downloaded and parsed; the first Scottish step that needs nobody's permission. |
@@ -94,8 +94,11 @@ in the JSON, measured read-only on 31 Oct).
    read. The catalogue says OGL and the attribution line says "All rights reserved" [checked 31 Oct]; the same
    mismatch on the EA event files was settled as OGL [doc].
 3. **Wessex Water river E. coli.** 4,123 lab results at 99 river points, 2019-2025, CC BY 4.0, already cached
-   (`data/cache/wessex_wq/`). Warleigh Weir, Farleigh Hungerford and Tellisford Weir are listed spots with no EA
-   samples. A dated sample view like `/samples.html` is the deliverable; a held-out check is secondary.
+   (`data/cache/wessex_wq/`). Warleigh Weir and Tellisford Weir are listed spots with no EA samples. Farleigh
+   Hungerford has 60 EA samples since May 2024 (corrected 13 Nov; it was listed as having none). **Built 13 Nov 2026:**
+   the dated view `/wessex-river-samples.html`, linked from all three spots
+   ([contract](WESSEX-RIVER-SAMPLES-CONTRACT-v1.md)), and an exploratory check of the estimate's level
+   ([record](WESSEX-RIVER-SAMPLES-CHECK-2026-11.md)).
 4. **EA sondes.** 15-minute ammonium, oxygen and turbidity, OGL. Twelve live ammonium stations within 5 km of a
    listed spot on 25 Oct, eight on Windermere becks [doc; live count not rechecked]. A sensor reading of a sewage
    marker, not a bacteria count. #403's test gate stays as written.

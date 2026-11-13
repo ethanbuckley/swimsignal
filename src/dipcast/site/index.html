@@ -2706,24 +2706,32 @@ function lakeTempFor(d) {
     const el = document.getElementById('lt-past'), html = current && current.id === d.id && ltIndex.available ? lakeTempLine((ltIndex.spots || {})[d.id]) : '';
     if (el && html) { el.innerHTML = html; el.hidden = false; } });
 }
-// A local group's past water samples near a lake spot (waterhead.html; build_site.write_waterhead writes
+// A local group's past water samples near a spot (waterhead.html; build_site.write_waterhead writes
 // data/research/local-samples.json, docs/WATERHEAD-WET-CONTRACT-v1.md): one link after the lake's past temperatures,
 // with who took them, how many and the latest date. Never a count here, and never in the level: it says they are past
-// samples, not today's water. Asked for only on a lake spot's page, once, like the temperatures' index.
+// samples, not today's water. Asked for once, like the temperatures' index. Since 13 Nov 2026 river spots too: a
+// water company's own samples (build_site.write_wessex_samples, `company`) say whose they are, that they are not the
+// Environment Agency's, and how far along the river the point is from the spot.
 const LS_INDEX = 'data/research/local-samples.json';
 let lsIndex = null, lsAsked = null;
 function localSamplesLine(link) {
-  if (!link || !/^[a-z0-9-]+\.html$/.test(link.href || '') || !link.first || !link.last || !(link.samples > 0)) return '';
+  if (!link || !/^[a-z0-9-]+\.html(#[a-z0-9-]+)?$/.test(link.href || '') || !link.first || !link.last || !(link.samples > 0)) return '';
   const a = String(link.first).slice(0, 4), b = String(link.last).slice(0, 4);
   const latest = new Date(String(link.last).slice(0, 10) + 'T12:00:00Z').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
+  if (link.company) {
+    const m = Number(link.along_m), dir = link.direction === 'upstream' || link.direction === 'downstream' ? link.direction : '';
+    if (!(m >= 0) || !dir) return '';
+    const far = m < 1000 ? `about ${Math.max(10, Math.round(m / 10) * 10)}&nbsp;m` : `about ${(m / 1000).toFixed(1)}&nbsp;km`;
+    return `<a href="${link.href}">${esc(link.by)}'s own river samples, ${a === b ? a : `${a} to ${b}`}</a>: ${link.samples} E.&nbsp;coli results from a point ${far} ${dir} on ${esc(link.place)}, the latest on ${latest}. The company's own lab results, not Environment Agency samples. Past samples, not today's water.`;
+  }
   // A spot elsewhere on the same water body as the samples' own (build_site.write_waterhead, `elsewhere`): said, with how far.
   if (link.elsewhere) return Number(link.km) > 0 ? `<a href="${link.href}">Local water samples elsewhere on this lake, ${a === b ? a : `${a} to ${b}`}</a>: ${link.samples} samples taken at ${esc(link.place)}, about ${Number(link.km).toFixed(1)}&nbsp;km from here, by ${esc(link.by)}, the latest on ${latest}. Past samples from another part of the lake, not this spot's water.` : '';
   return `<a href="${link.href}">Local water samples, ${a === b ? a : `${a} to ${b}`}</a>: ${link.samples} samples taken at ${esc(link.place)} by ${esc(link.by)}, the latest on ${latest}. Past samples, not today's water.`;
 }
-const localSamplesHost = d => { const html = d.kind === 'lake' && lsIndex && lsIndex.available ? localSamplesLine((lsIndex.spots || {})[d.id]) : '';
+const localSamplesHost = d => { const html = lsIndex && lsIndex.available ? localSamplesLine((lsIndex.spots || {})[d.id]) : '';
   return `<p class="lt-past" id="ls-past"${html ? '' : ' hidden'}>${html}</p>`; };
 function localSamplesFor(d) {
-  if (d.kind !== 'lake' || d.unlisted || lsIndex) return;
+  if (d.unlisted || lsIndex) return;
   lsAsked = lsAsked || fetch(LS_INDEX).then(r => r.ok ? r.json() : null).catch(() => null);
   lsAsked.then(x => { lsIndex = x || { available: false };
     const el = document.getElementById('ls-past'), html = current && current.id === d.id && lsIndex.available ? localSamplesLine((lsIndex.spots || {})[d.id]) : '';
