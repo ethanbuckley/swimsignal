@@ -48,8 +48,8 @@ every session scratch folder for start/stop zips and event parquets.
 | Thames alert stream | main checkout `api_events_thames_water.parquet` | `51910905ff23…` | Apr 2022 to 19 Oct 2026 |
 | The four company layers of rank 11 | nowhere | | |
 
-The `/tmp` scratch folder is not a durable store. To keep the 2026 zip and the new raw reads, copy them into the main
-checkout (section 7). This session did not, because the shared caches are read-only to it.
+The `/tmp` scratch folder is not a durable store. The 2026 zip and the new raw reads were copied on 13 Nov to
+`swimsignal-private/event-layers-2026/` (section 7), not into the main checkout's shared caches.
 
 ## 2. Licences, rechecked 13 November 2026
 
@@ -217,13 +217,13 @@ other than these three.
   importer finds a renamed or newer zip by itself (`scripts/import_ea_events.py --years 2026 --refresh`).
 - **A duration refit or calibration check on 2026** can use the EA file now (seen data, development).
 - **Not usable as labels yet:** Anglian's monthly layers (section 4).
-- **Kept durable:** not yet. To copy the held files into the main checkout, Ethan or a session allowed to write
-  there runs:
-
-      cp -p "<this session's scratchpad>/root/data/raw/ea_events/2026 year to August Detailed EDM Start-Stop Data.zip" data/raw/ea_events/
-      mkdir -p data/cache/company_events && cp -p "<this session's scratchpad>/root/data/cache/company_events/"* data/cache/company_events/
-
-  then checks the zip's SHA-256 against the manifest. The scratchpad path is in the PR description.
+- **Kept durable, 13 Nov 2026 17:13 UTC:** `/Users/ethanbuckley/Documents/GitHub/swimsignal-private/event-layers-2026/`
+  (42 MB, a new folder; nothing there was overwritten). It holds `ea_events/` (the 2026 zip), `company_events/` (the
+  13 raw layer reads and the fetch ledger), `discovery_ledger.jsonl` (the 77 finding and recheck requests) and a copy
+  of the manifest. Every file was checked against this PR's manifest after copying: the zip's and all 13 raw reads'
+  SHA-256 match, and the ledger has the stated 371 requests and bytes. Nothing was refetched. To use them from a
+  checkout, copy `ea_events/*.zip` into `data/raw/ea_events/` and `company_events/*` into
+  `data/cache/company_events/`; `scripts/import_company_events.py` then reads the cache and sends no request.
 
 ## 8. Reproduce
 
