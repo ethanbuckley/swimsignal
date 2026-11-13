@@ -46,8 +46,8 @@ in the JSON, measured read-only on 31 Oct).
 | 7 | `epa-ireland-bathing` | EPA Bathing Water Open Data API | Republic of Ireland | measurement | CC BY 4.0 | already used | no | The directory shows the latest result; the full 25,978-sample history since 2014 is open and unused, the cheapest new Irish observation. |
 | 8 | `nrw-water-quality-archive` | NRW Water Quality Archive | Wales | measurement | Open Government Licence v3 | already used | yes | Open Welsh river, lake and coast samples back to 2000; partly cached; W10 used only 213 river rows. |
 | 9 | `met-office-radar` | Met Office UK Radar Observations (AWS Open Data) | UK | measurement | CC BY-SA 4.0 | already used | yes | Already cached; ranked for its deadline: the bucket keeps two years, so November 2024 goes from about 21 Nov 2026. |
-| 10 | `ea-edm-start-stop` | EDM Storm Overflow Start/Stop Detailed Data | England (ten companies, including Dŵr Cymru's English overflows) | measurement | Open Government Licence | already used | yes | Already the training labels; the 2026-to-August file adds months of labels for live checks and is not in the main checkout's cache. |
-| 11 | `stream-company-layers-unfetched` | Company event layers on Stream not yet fetched (Anglian monthly from Apr 2025, Severn Trent 2025, Wessex 2025-26, Yorkshire EDM History Jan-Aug 2026) | England | measurement | CC BY 4.0 (as listed on 19 Oct) | ready | no | Open CC BY 4.0 event layers left unread; they fill 2026 months the EA files lack, at small cost. |
+| 10 | `ea-edm-start-stop` | EDM Storm Overflow Start/Stop Detailed Data | England (ten companies, including Dŵr Cymru's English overflows) | measurement | Open Government Licence | already used | yes | Already the training labels. The 2026-to-August zip (still the latest on 13 Nov) is held in `swimsignal-private/event-layers-2026/` and imported: 983,409 events, nine companies (`docs/EVENT-RECORDS-2026-11.md`). Next: the EA's September-December 2026 file. |
+| 11 | `stream-company-layers-2025-26` | Company event layers on Stream and Wessex's ArcGIS (Anglian monthly Apr 2025 to Jul 2026, Severn Trent 2025, Wessex 2025 and 2026 to Sep, Yorkshire EDM History Jan-Sep 2026) | England | measurement | CC BY 4.0 (rechecked 13 Nov) | already used | yes | Fetched 13 Nov (#689). Adds September 2026 at Wessex and Yorkshire; Anglian's layers disagree with the EA file and are not labels. |
 | 12 | `sepa-river-levels` | SEPA river levels (KiWIS time series API) | Scotland | measurement | Open Government Licence | ready | no | Open Scottish river levels; useful context for a Scottish observation page; registration advised for web use. |
 | 13 | `opw-water-levels` | OPW waterlevel.ie | Republic of Ireland | measurement | CC BY 4.0 | needs permission | no | Open Irish levels and probable water temperature; a courtesy email to OPW comes first, which is Ethan's. |
 | 14 | `hafren-dyfrdwy-2025` | Hafren Dyfrdwy Event Duration Monitoring 2025 | Wales | measurement | CC BY 4.0 | already used | yes | Small, open Welsh event file already used in the Wales hindcast; little left to gain until 2026 is published. |
@@ -117,6 +117,8 @@ in the JSON, measured read-only on 31 Oct).
    pass before about 21 Nov keeps November 2024.
 10. **EA start/stop files, 2026 to August.** The labels the model trains on. The EA now packages them as yearly zips,
     updated 22 Oct [checked 31 Oct]. No English 2026 file was found in the main checkout's `data/raw/ea_events/`.
+    **Update 13 Nov:** the zip was held in a session scratch folder, is still the EA's latest, and is now kept in
+    `swimsignal-private/event-layers-2026/` with the rank 11 layers (`docs/EVENT-RECORDS-2026-11.md`, #689).
 
 ## 3. Recheck against primary sources, 31 October 2026
 
@@ -190,7 +192,7 @@ The lead session decides which to open. Each names the JSON rows it acts on (`fo
 6. Scottish spill-history observation page from Scottish Water's OGL event files.
 7. Irish bathing-water sample history from the EPA API.
 8. Second Met Office radar backfill before November 2024 is deleted (about 21 Nov 2026).
-9. Fetch the EA 2026-to-August start/stop files and the unfetched Stream company layers for 2026 labels.
+9. Fetch the EA 2026-to-August start/stop files and the unfetched Stream company layers for 2026 labels. Done 13 Nov (#689).
 10. Permission requests for Ethan to send: Southern and Yorkshire event files, Dŵr Cymru live and history, Scottish
     Water API licence name, SEPA results and PFI file, NI Water. Drafts already exist in the Wales, Scotland and
     Ireland plans and in `docs/OVERFLOW-DATA-SOURCES-2026-10.md`.

@@ -9,7 +9,9 @@ spill-day in it, how many overflow ids are in both, and the spill-days shared, o
 B, first over all ids and then over the ids in both (so an overflow one file lacks does not count as
 disagreement on days). --months limits both
 to the months one file covers; --id-a reads A's overflow id from another column (rows where it is empty
-are dropped), as for the Thames alerts' grid-only ids. No model is run.
+are dropped), as for the Thames alerts' grid-only ids. --offsets also prints, for A's events at ids in both, how far
+the nearest B start at the same overflow lies (within two hours): the share at 0, at +1 hour and at -1 hour shows
+whether one record is in local time. No model is run.
 """
 
 from __future__ import annotations
@@ -40,6 +42,18 @@ def compare(a: pd.DataFrame, b: pd.DataFrame) -> dict:
             "only_b": int(n.get("right_only", 0))}
 
 
+def start_offsets(a: pd.DataFrame, b: pd.DataFrame) -> pd.Series:
+    """For each event of `a`, minutes from its start to the nearest start of `b` at the same overflow (B minus A,
+    rounded to the minute), or NaN when none is within two hours."""
+    ns = "datetime64[ns, UTC]"   # the files differ in time resolution, which merge_asof refuses
+    a = a[["site_id", "event_start"]].astype({"event_start": ns}).sort_values("event_start").reset_index(drop=True)
+    b = (b[["site_id", "event_start"]].astype({"event_start": ns}).rename(columns={"event_start": "b_start"})
+         .sort_values("b_start"))
+    m = pd.merge_asof(a, b, left_on="event_start", right_on="b_start", by="site_id", direction="nearest",
+                      tolerance=pd.Timedelta(hours=2))
+    return ((m["b_start"] - m["event_start"]).dt.total_seconds() / 60).round()
+
+
 def main() -> None:
     p = argparse.ArgumentParser()
     p.add_argument("a")
@@ -47,6 +61,7 @@ def main() -> None:
     p.add_argument("--year", type=int, required=True)
     p.add_argument("--months", default="1-12", help="first-last month, e.g. 1-11")
     p.add_argument("--id-a", default="site_id", help="column of A holding the overflow id")
+    p.add_argument("--offsets", action="store_true", help="also print where B's nearest start lies")
     args = p.parse_args()
     months = tuple(int(x) for x in args.months.split("-"))
     ev_a, a = days_of(args.a, args.year, months, args.id_a)
@@ -58,6 +73,12 @@ def main() -> None:
     print(f"overflow ids: {len(both):,} in both, {len(ids_a - ids_b):,} only in A, {len(ids_b - ids_a):,} only in B")
     print("spill-days, all ids:  ", compare(a, b))
     print("spill-days, ids in both:", compare(a[a["site_id"].isin(both)], b[b["site_id"].isin(both)]))
+    if args.offsets:
+        o = start_offsets(ev_a[ev_a["site_id"].isin(both)], ev_b[ev_b["site_id"].isin(both)])
+        n = len(o)
+        print(f"A events at ids in both: {n:,}; nearest B start within 2 h: {o.notna().mean():.3f}; "
+              f"at 0 min: {(o.abs() <= 1).mean():.3f}; at +60: {((o - 60).abs() <= 1).mean():.3f}; "
+              f"at -60: {((o + 60).abs() <= 1).mean():.3f}")
 
 
 if __name__ == "__main__":
