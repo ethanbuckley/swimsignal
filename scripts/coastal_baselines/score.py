@@ -152,7 +152,7 @@ def held_out(d: dict, split: str) -> tuple[pd.DataFrame, dict]:
 def auc_parts(score: np.ndarray):
     """What a weighted AUC needs, sorted once: each row's tie group in ascending score order."""
     _, group = np.unique(score, return_inverse=True)
-    return group, int(group.max()) + 1
+    return group, (int(group.max()) + 1 if len(group) else 0)
 
 
 def auc_weighted(group: np.ndarray, n_groups: int, y: np.ndarray, w: np.ndarray) -> float:
