@@ -247,7 +247,7 @@ logged or read. Neither changes the candidate, the rows, the window or the bar.
    `scripts/combined_shadow_check.py` counts and prints such rows, and fails only on rain fetched more than two
    minutes after the stamp.
 
-Time, measured on this Mac while eleven other sessions were running: 0.3 seconds a spot with 160 upstream
+Time, measured on a laptop that was busy with other work: 0.3 seconds a spot with 160 upstream
 overflows, so about half a minute on a logged build of about 100 spots. The runner's figure is inferred from that,
 not measured.
 
