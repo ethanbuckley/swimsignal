@@ -107,6 +107,71 @@ def detect(g0: int, x: np.ndarray, t0: float, h_h: float, rule: str = "main") ->
             "peak": float(np.nanmax(pk))}
 
 
+CADENCES = (15, 30, 60)                       # amendment 2: the reading intervals a sonde may have, minutes
+D_MIN_BY_CADENCE = {15: 500.0, 30: 1000.0, 60: 2000.0}   # the model's travel time is at least 3 readings
+
+
+def valid_readings(minutes, values, quality=None) -> tuple[np.ndarray, np.ndarray]:
+    """(minutes, values) of the valid readings in time order, a duplicate stamp keeping the last. Valid as in
+    to_grid. Amendment 2 works on these, not on 15-minute slots."""
+    minutes = np.asarray(minutes, dtype=np.int64)
+    values = np.asarray(values, dtype=float)
+    order = np.argsort(minutes, kind="stable")
+    minutes, values = minutes[order], values[order]
+    ok = np.isfinite(values) & (values >= 0) & (values <= VALUE_MAX)
+    if quality is not None:
+        q = np.array([str(v).strip().lower() for v in np.asarray(quality)[order]])
+        ok &= ~np.isin(q, BAD_QUALITY)
+    last = np.r_[minutes[1:] != minutes[:-1], True] if len(minutes) else np.array([], dtype=bool)
+    keep = last & ok
+    return minutes[keep].astype(float), values[keep]
+
+
+def detect_c(tm: np.ndarray, v: np.ndarray, t0: float, h_h: float, rule: str = "main") -> dict:
+    """Amendment 2: detect's rules counted in the sonde's own reading interval c (15, 30 or 60 minutes, the median
+    gap between valid readings in the baseline window). `tm`, `v`: valid_readings. Adds c to the answer."""
+    if len(tm) == 0 or t0 - BASE_FROM_H * 60 < tm[0] or t0 + h_h * 60 > tm[-1]:
+        return {"status": "outside"}
+    a, b_ = np.searchsorted(tm, [t0 - BASE_FROM_H * 60, t0 - BASE_TO_H * 60], side="left")
+    base = v[a:b_]
+    if len(base) < 3:
+        return {"status": "no baseline"}
+    gap = float(np.median(np.diff(tm[a:b_])))
+    c = next((k for k in CADENCES if abs(gap - k) <= 0.2 * k), None)
+    if c is None or len(base) < 0.5 * 24 * 60 / c:
+        return {"status": "no baseline"}
+    b = float(np.median(base))
+    s = 1.4826 * float(np.median(np.abs(base - b)))
+    floor, rel, k = RULES[rule]
+    theta = b + max(floor, rel * b, k * s)
+    out = {"b": b, "s": s, "theta": theta, "c": c}
+    lo, hi = t0 - PRE_H * 60, t0 + h_h * 60
+    a = int(np.searchsorted(tm, lo, side="left"))
+    b_ = int(np.searchsorted(tm, hi, side="right"))
+    wt, wv = tm[a:b_], v[a:b_]
+    span = max(45, c)
+    expected = span // c + 1                      # 4 readings in 45 min at 15 min; 2 at 30 or 60 min
+    need = 3 if expected == 4 else expected
+    onset = None
+    for i in np.flatnonzero(wv > theta):
+        j = int(np.searchsorted(tm, wt[i] + span + 1, side="left"))
+        if int((v[a + i:j] > theta).sum()) >= need:
+            onset = int(i)
+            break
+    pts = np.r_[lo - c, wt[:onset + 1]] if onset is not None else np.r_[lo - c, wt, hi + c]
+    if (np.diff(pts) >= 60 + c).any():
+        return {**out, "status": "gap"}
+    if onset is None:
+        return {**out, "status": "no rise"}
+    tau = wt[onset]
+    if tau < t0:
+        return {**out, "status": "raised before", "lag_h": (tau - t0) / 60.0}
+    j = int(np.searchsorted(tm, tau + 24 * 60, side="right"))
+    k_pk = int(np.argmax(v[a + onset:j]))
+    return {**out, "status": "rise", "lag_h": (tau - t0) / 60.0, "peak_lag_h": (tm[a + onset + k_pk] - t0) / 60.0,
+            "peak": float(v[a + onset + k_pk])}
+
+
 def find_events(spills: pd.DataFrame, quiet_h: float = QUIET_H) -> pd.DataFrame:
     """The quiet-rule events above one sonde. `spills`: site_id, start, end (minutes), d_m, for every monitored
     overflow upstream. A start at t0 is an event when no spill upstream overlaps [t0 - quiet, t0). The anchor is the

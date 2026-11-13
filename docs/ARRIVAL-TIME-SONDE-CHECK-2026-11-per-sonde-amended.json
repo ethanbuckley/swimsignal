@@ -1,0 +1,5832 @@
+[
+ {
+  "station_id": "E00385A",
+  "site": "E00385",
+  "label": "FOWEY_RESTORMEL_E_202002",
+  "watercourse": "River Fowey",
+  "artificial_channel": false,
+  "readings": 70584,
+  "valid_readings": 70138,
+  "first": "2023-12-30T00:01Z",
+  "last": "2026-01-04T23:46Z",
+  "monitored_upstream": 4,
+  "timing_overflows": 4,
+  "events": 44,
+  "reading_interval_min": 15,
+  "tier_a": 11,
+  "a_rise": 0,
+  "a_no_rise": 11,
+  "a_raised_before": 0,
+  "a_gap": 0,
+  "a_no_baseline": 0,
+  "tier_b": 33,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 0
+  },
+  "model_travel_h": {
+   "n": 0
+  },
+  "lag_h": {
+   "n": 0
+  },
+  "lag_over_model": {
+   "n": 0
+  },
+  "v_ms": {
+   "n": 0
+  },
+  "peak_lag_h": {
+   "n": 0
+  },
+  "window": {
+   "before": 0,
+   "inside": 0,
+   "after": 0
+  },
+  "lag_h_looser": {
+   "n": 1,
+   "values": [
+    67.47
+   ]
+  },
+  "lag_h_stricter": {
+   "n": 0
+  },
+  "tier_b_rises": 6,
+  "tier_b_v_ms": {
+   "n": 6,
+   "median": 0.353,
+   "lo": 0.159,
+   "hi": 2.057,
+   "q1": 0.216,
+   "q3": 1.214
+  },
+  "quiet24_tier_a": 19,
+  "quiet24_lag_h": {
+   "n": 0
+  },
+  "dry": {
+   "n": 11,
+   "rise_share": 0.0,
+   "background_share": 0.038,
+   "diff": -0.038,
+   "lo": -0.094,
+   "hi": 0.0,
+   "pseudo_starts": 575,
+   "signal": false
+  }
+ },
+ {
+  "station_id": "E01336A",
+  "site": "E01336",
+  "label": "LEE_SPRINGFIELD PARK_K_201906",
+  "watercourse": "River Lee",
+  "artificial_channel": false,
+  "readings": 17716,
+  "valid_readings": 17713,
+  "first": "2023-12-30T00:05Z",
+  "last": "2026-01-04T23:05Z",
+  "monitored_upstream": 29,
+  "timing_overflows": 7,
+  "events": 4,
+  "reading_interval_min": 60,
+  "tier_a": 0,
+  "a_rise": 0,
+  "a_no_rise": 0,
+  "a_raised_before": 0,
+  "a_gap": 0,
+  "a_no_baseline": 0,
+  "tier_b": 0,
+  "tier_b_lake": 4,
+  "d_km": {
+   "n": 0
+  },
+  "model_travel_h": {
+   "n": 0
+  },
+  "lag_h": {
+   "n": 0
+  },
+  "lag_over_model": {
+   "n": 0
+  },
+  "v_ms": {
+   "n": 0
+  },
+  "peak_lag_h": {
+   "n": 0
+  },
+  "window": {
+   "before": 0,
+   "inside": 0,
+   "after": 0
+  },
+  "lag_h_looser": {
+   "n": 0
+  },
+  "lag_h_stricter": {
+   "n": 0
+  },
+  "tier_b_rises": 0,
+  "tier_b_v_ms": {
+   "n": 0
+  },
+  "quiet24_tier_a": 0,
+  "quiet24_lag_h": {
+   "n": 0
+  },
+  "dry": {
+   "n": 0,
+   "rise_share": null,
+   "background_share": null,
+   "diff": null,
+   "lo": null,
+   "hi": null,
+   "pseudo_starts": 0,
+   "signal": false
+  }
+ },
+ {
+  "station_id": "E01429A",
+  "site": "E01429",
+  "label": "AXE_US FORTON BROOK_E_202409",
+  "watercourse": "River Axe",
+  "artificial_channel": false,
+  "readings": 0,
+  "valid_readings": 0,
+  "first": "",
+  "last": "",
+  "note": "no readings in 2024-25"
+ },
+ {
+  "station_id": "E01587A",
+  "site": "E01587",
+  "label": "WHARFE_DS GRASSINGTON_E_202205",
+  "watercourse": "River Wharfe",
+  "artificial_channel": false,
+  "readings": 14047,
+  "valid_readings": 14033,
+  "first": "2023-12-30T00:01Z",
+  "last": "2024-12-13T10:01Z",
+  "monitored_upstream": 2,
+  "timing_overflows": 2,
+  "events": 37,
+  "reading_interval_min": 30,
+  "tier_a": 26,
+  "a_rise": 1,
+  "a_no_rise": 25,
+  "a_raised_before": 0,
+  "a_gap": 0,
+  "a_no_baseline": 0,
+  "tier_b": 11,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 1,
+   "values": [
+    10.35
+   ]
+  },
+  "model_travel_h": {
+   "n": 1,
+   "values": [
+    14.37
+   ]
+  },
+  "lag_h": {
+   "n": 1,
+   "values": [
+    9.02
+   ]
+  },
+  "lag_over_model": {
+   "n": 1,
+   "values": [
+    0.63
+   ]
+  },
+  "v_ms": {
+   "n": 1,
+   "values": [
+    0.32
+   ]
+  },
+  "peak_lag_h": {
+   "n": 1,
+   "values": [
+    11.02
+   ]
+  },
+  "window": {
+   "before": 1,
+   "inside": 0,
+   "after": 0
+  },
+  "lag_h_looser": {
+   "n": 1,
+   "values": [
+    9.02
+   ]
+  },
+  "lag_h_stricter": {
+   "n": 1,
+   "values": [
+    9.02
+   ]
+  },
+  "tier_b_rises": 1,
+  "tier_b_v_ms": {
+   "n": 1,
+   "values": [
+    1.63
+   ]
+  },
+  "quiet24_tier_a": 35,
+  "quiet24_lag_h": {
+   "n": 1,
+   "values": [
+    9.02
+   ]
+  },
+  "dry": {
+   "n": 26,
+   "rise_share": 0.038,
+   "background_share": 0.02,
+   "diff": 0.018,
+   "lo": -0.037,
+   "hi": 0.117,
+   "pseudo_starts": 491,
+   "signal": false
+  }
+ },
+ {
+  "station_id": "E01594A",
+  "site": "E01594",
+  "label": "NORTH LEVEL MAIN DRAIN_TYDD ST GILES_E_202204",
+  "watercourse": "North Level Main Drain",
+  "artificial_channel": true,
+  "readings": 17397,
+  "valid_readings": 17353,
+  "first": "2023-12-30T00:01Z",
+  "last": "2026-01-04T23:01Z",
+  "monitored_upstream": 1,
+  "timing_overflows": 1,
+  "events": 36,
+  "reading_interval_min": 60,
+  "tier_a": 36,
+  "a_rise": 1,
+  "a_no_rise": 28,
+  "a_raised_before": 2,
+  "a_gap": 3,
+  "a_no_baseline": 2,
+  "tier_b": 0,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 1,
+   "values": [
+    23.47
+   ]
+  },
+  "model_travel_h": {
+   "n": 1,
+   "values": [
+    32.6
+   ]
+  },
+  "lag_h": {
+   "n": 1,
+   "values": [
+    19.77
+   ]
+  },
+  "lag_over_model": {
+   "n": 1,
+   "values": [
+    0.61
+   ]
+  },
+  "v_ms": {
+   "n": 1,
+   "values": [
+    0.33
+   ]
+  },
+  "peak_lag_h": {
+   "n": 1,
+   "values": [
+    21.77
+   ]
+  },
+  "window": {
+   "before": 1,
+   "inside": 0,
+   "after": 0
+  },
+  "lag_h_looser": {
+   "n": 4,
+   "values": [
+    16.27,
+    19.77,
+    23.52,
+    62.27
+   ]
+  },
+  "lag_h_stricter": {
+   "n": 1,
+   "values": [
+    19.77
+   ]
+  },
+  "tier_b_rises": 0,
+  "tier_b_v_ms": {
+   "n": 0
+  },
+  "quiet24_tier_a": 40,
+  "quiet24_lag_h": {
+   "n": 1,
+   "values": [
+    19.77
+   ]
+  },
+  "dry": {
+   "n": 29,
+   "rise_share": 0.034,
+   "background_share": 0.022,
+   "diff": 0.012,
+   "lo": -0.036,
+   "hi": 0.084,
+   "pseudo_starts": 2018,
+   "signal": false
+  }
+ },
+ {
+  "station_id": "E01621A",
+  "site": "E01621",
+  "label": "AXE_US YARTY_E_202409",
+  "watercourse": "River Axe",
+  "artificial_channel": false,
+  "readings": 0,
+  "valid_readings": 0,
+  "first": "",
+  "last": "",
+  "note": "no readings in 2024-25"
+ },
+ {
+  "station_id": "E01707A",
+  "site": "E01707",
+  "label": "AXE_DS FORTON BROOK_E_202409",
+  "watercourse": "River Axe",
+  "artificial_channel": false,
+  "readings": 0,
+  "valid_readings": 0,
+  "first": "",
+  "last": "",
+  "note": "no readings in 2024-25"
+ },
+ {
+  "station_id": "E01709A",
+  "site": "E01709",
+  "label": "EREWASH_US MILNHAY STW_E_202410",
+  "watercourse": "River Erewash",
+  "artificial_channel": false,
+  "readings": 0,
+  "valid_readings": 0,
+  "first": "",
+  "last": "",
+  "note": "no readings in 2024-25"
+ },
+ {
+  "station_id": "E01723A",
+  "site": "E01723",
+  "label": "BRETT_SHELLEY BRIDGE_E_202304",
+  "watercourse": "River Brett",
+  "artificial_channel": false,
+  "readings": 0,
+  "valid_readings": 0,
+  "first": "",
+  "last": "",
+  "note": "no readings in 2024-25"
+ },
+ {
+  "station_id": "E01774A",
+  "site": "E01774",
+  "label": "WEAVER_ASH TREE FARM_E_202510",
+  "watercourse": "River Weaver",
+  "artificial_channel": false,
+  "readings": 3170,
+  "valid_readings": 3048,
+  "first": "2025-10-22T11:56Z",
+  "last": "2026-01-02T06:00Z",
+  "monitored_upstream": 10,
+  "timing_overflows": 8,
+  "events": 9,
+  "reading_interval_min": 30,
+  "tier_a": 0,
+  "a_rise": 0,
+  "a_no_rise": 0,
+  "a_raised_before": 0,
+  "a_gap": 0,
+  "a_no_baseline": 0,
+  "tier_b": 9,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 0
+  },
+  "model_travel_h": {
+   "n": 0
+  },
+  "lag_h": {
+   "n": 0
+  },
+  "lag_over_model": {
+   "n": 0
+  },
+  "v_ms": {
+   "n": 0
+  },
+  "peak_lag_h": {
+   "n": 0
+  },
+  "window": {
+   "before": 0,
+   "inside": 0,
+   "after": 0
+  },
+  "lag_h_looser": {
+   "n": 0
+  },
+  "lag_h_stricter": {
+   "n": 0
+  },
+  "tier_b_rises": 2,
+  "tier_b_v_ms": {
+   "n": 2,
+   "values": [
+    0.24,
+    0.45
+   ]
+  },
+  "quiet24_tier_a": 1,
+  "quiet24_lag_h": {
+   "n": 0
+  },
+  "dry": {
+   "n": 0,
+   "rise_share": null,
+   "background_share": null,
+   "diff": null,
+   "lo": null,
+   "hi": null,
+   "pseudo_starts": 0,
+   "signal": false
+  }
+ },
+ {
+  "station_id": "E01776A",
+  "site": "E01776",
+  "label": "RODING_DS SHONKS MILL_E_202402",
+  "watercourse": "River Roding",
+  "artificial_channel": false,
+  "readings": 8026,
+  "valid_readings": 8025,
+  "first": "2024-02-28T12:51Z",
+  "last": "2025-02-26T13:01Z",
+  "monitored_upstream": 10,
+  "timing_overflows": 7,
+  "events": 8,
+  "reading_interval_min": 60,
+  "tier_a": 0,
+  "a_rise": 0,
+  "a_no_rise": 0,
+  "a_raised_before": 0,
+  "a_gap": 0,
+  "a_no_baseline": 0,
+  "tier_b": 8,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 0
+  },
+  "model_travel_h": {
+   "n": 0
+  },
+  "lag_h": {
+   "n": 0
+  },
+  "lag_over_model": {
+   "n": 0
+  },
+  "v_ms": {
+   "n": 0
+  },
+  "peak_lag_h": {
+   "n": 0
+  },
+  "window": {
+   "before": 0,
+   "inside": 0,
+   "after": 0
+  },
+  "lag_h_looser": {
+   "n": 0
+  },
+  "lag_h_stricter": {
+   "n": 0
+  },
+  "tier_b_rises": 0,
+  "tier_b_v_ms": {
+   "n": 0
+  },
+  "quiet24_tier_a": 1,
+  "quiet24_lag_h": {
+   "n": 0
+  },
+  "dry": {
+   "n": 0,
+   "rise_share": null,
+   "background_share": null,
+   "diff": null,
+   "lo": null,
+   "hi": null,
+   "pseudo_starts": 0,
+   "signal": false
+  }
+ },
+ {
+  "station_id": "E01780A",
+  "site": "E01780",
+  "label": "SWILL BROOK_HOLWELLS MERE_E_202411",
+  "watercourse": "Swill Brook",
+  "artificial_channel": false,
+  "readings": 0,
+  "valid_readings": 0,
+  "first": "",
+  "last": "",
+  "note": "no readings in 2024-25"
+ },
+ {
+  "station_id": "E01798A",
+  "site": "E01798",
+  "label": "DELPH_WELNEY BRIDGE_SURFACE_E_202404",
+  "watercourse": "River Delph",
+  "artificial_channel": true,
+  "readings": 13445,
+  "valid_readings": 13432,
+  "first": "2024-05-15T15:00Z",
+  "last": "2025-12-03T11:06Z",
+  "monitored_upstream": 1,
+  "timing_overflows": 1,
+  "events": 10,
+  "reading_interval_min": 60,
+  "tier_a": 10,
+  "a_rise": 0,
+  "a_no_rise": 5,
+  "a_raised_before": 0,
+  "a_gap": 0,
+  "a_no_baseline": 5,
+  "tier_b": 0,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 0
+  },
+  "model_travel_h": {
+   "n": 0
+  },
+  "lag_h": {
+   "n": 0
+  },
+  "lag_over_model": {
+   "n": 0
+  },
+  "v_ms": {
+   "n": 0
+  },
+  "peak_lag_h": {
+   "n": 0
+  },
+  "window": {
+   "before": 0,
+   "inside": 0,
+   "after": 0
+  },
+  "lag_h_looser": {
+   "n": 0
+  },
+  "lag_h_stricter": {
+   "n": 0
+  },
+  "tier_b_rises": 0,
+  "tier_b_v_ms": {
+   "n": 0
+  },
+  "quiet24_tier_a": 11,
+  "quiet24_lag_h": {
+   "n": 0
+  },
+  "dry": {
+   "n": 5,
+   "rise_share": 0.0,
+   "background_share": 0.026,
+   "diff": -0.026,
+   "lo": -0.076,
+   "hi": 0.0,
+   "pseudo_starts": 1116,
+   "signal": false
+  }
+ },
+ {
+  "station_id": "E01798B",
+  "site": "E01798",
+  "label": "DELPH_WELNEY BRIDGE_DEPTH_E_202404",
+  "watercourse": "River Delph",
+  "artificial_channel": true,
+  "readings": 13919,
+  "valid_readings": 13919,
+  "first": "2024-05-15T15:01Z",
+  "last": "2025-12-03T11:05Z",
+  "monitored_upstream": 1,
+  "timing_overflows": 1,
+  "events": 10,
+  "reading_interval_min": 60,
+  "tier_a": 10,
+  "a_rise": 0,
+  "a_no_rise": 6,
+  "a_raised_before": 0,
+  "a_gap": 0,
+  "a_no_baseline": 4,
+  "tier_b": 0,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 0
+  },
+  "model_travel_h": {
+   "n": 0
+  },
+  "lag_h": {
+   "n": 0
+  },
+  "lag_over_model": {
+   "n": 0
+  },
+  "v_ms": {
+   "n": 0
+  },
+  "peak_lag_h": {
+   "n": 0
+  },
+  "window": {
+   "before": 0,
+   "inside": 0,
+   "after": 0
+  },
+  "lag_h_looser": {
+   "n": 1,
+   "values": [
+    70.25
+   ]
+  },
+  "lag_h_stricter": {
+   "n": 0
+  },
+  "tier_b_rises": 0,
+  "tier_b_v_ms": {
+   "n": 0
+  },
+  "quiet24_tier_a": 11,
+  "quiet24_lag_h": {
+   "n": 0
+  },
+  "dry": {
+   "n": 6,
+   "rise_share": 0.0,
+   "background_share": 0.049,
+   "diff": -0.049,
+   "lo": -0.109,
+   "hi": -0.009,
+   "pseudo_starts": 1184,
+   "signal": false
+  }
+ },
+ {
+  "station_id": "E01804A",
+  "site": "E01804",
+  "label": "BOLINGEY_SANDBAY_E_202604",
+  "watercourse": "",
+  "artificial_channel": false,
+  "readings": 0,
+  "valid_readings": 0,
+  "first": "",
+  "last": "",
+  "note": "no readings in 2024-25"
+ },
+ {
+  "station_id": "E01831A",
+  "site": "E01831",
+  "label": "PIX BROOK_CHURCH END_E_202308",
+  "watercourse": "Pix Brook",
+  "artificial_channel": false,
+  "readings": 27351,
+  "valid_readings": 27324,
+  "first": "2023-12-30T00:00Z",
+  "last": "2026-01-04T23:30Z",
+  "monitored_upstream": 3,
+  "timing_overflows": 3,
+  "events": 22,
+  "reading_interval_min": 30,
+  "tier_a": 11,
+  "a_rise": 0,
+  "a_no_rise": 8,
+  "a_raised_before": 1,
+  "a_gap": 0,
+  "a_no_baseline": 2,
+  "tier_b": 11,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 0
+  },
+  "model_travel_h": {
+   "n": 0
+  },
+  "lag_h": {
+   "n": 0
+  },
+  "lag_over_model": {
+   "n": 0
+  },
+  "v_ms": {
+   "n": 0
+  },
+  "peak_lag_h": {
+   "n": 0
+  },
+  "window": {
+   "before": 0,
+   "inside": 0,
+   "after": 0
+  },
+  "lag_h_looser": {
+   "n": 1,
+   "values": [
+    14.5
+   ]
+  },
+  "lag_h_stricter": {
+   "n": 1,
+   "values": [
+    3.5
+   ]
+  },
+  "tier_b_rises": 4,
+  "tier_b_v_ms": {
+   "n": 4,
+   "values": [
+    0.03,
+    0.14,
+    0.15,
+    0.26
+   ]
+  },
+  "quiet24_tier_a": 12,
+  "quiet24_lag_h": {
+   "n": 0
+  },
+  "dry": {
+   "n": 8,
+   "rise_share": 0.0,
+   "background_share": 0.141,
+   "diff": -0.141,
+   "lo": -0.186,
+   "hi": -0.097,
+   "pseudo_starts": 2163,
+   "signal": false
+  }
+ },
+ {
+  "station_id": "E02254A",
+  "site": "E02254",
+  "label": "STOUR_BURES MILL_E_201704",
+  "watercourse": "River Stour",
+  "artificial_channel": false,
+  "readings": 29709,
+  "valid_readings": 29631,
+  "first": "2023-12-30T00:00Z",
+  "last": "2026-01-04T23:01Z",
+  "monitored_upstream": 17,
+  "timing_overflows": 9,
+  "events": 29,
+  "reading_interval_min": 60,
+  "tier_a": 8,
+  "a_rise": 0,
+  "a_no_rise": 8,
+  "a_raised_before": 0,
+  "a_gap": 0,
+  "a_no_baseline": 0,
+  "tier_b": 21,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 0
+  },
+  "model_travel_h": {
+   "n": 0
+  },
+  "lag_h": {
+   "n": 0
+  },
+  "lag_over_model": {
+   "n": 0
+  },
+  "v_ms": {
+   "n": 0
+  },
+  "peak_lag_h": {
+   "n": 0
+  },
+  "window": {
+   "before": 0,
+   "inside": 0,
+   "after": 0
+  },
+  "lag_h_looser": {
+   "n": 0
+  },
+  "lag_h_stricter": {
+   "n": 0
+  },
+  "tier_b_rises": 3,
+  "tier_b_v_ms": {
+   "n": 3,
+   "values": [
+    0.05,
+    0.06,
+    0.11
+   ]
+  },
+  "quiet24_tier_a": 10,
+  "quiet24_lag_h": {
+   "n": 0
+  },
+  "dry": {
+   "n": 8,
+   "rise_share": 0.0,
+   "background_share": 0.02,
+   "diff": -0.02,
+   "lo": -0.041,
+   "hi": -0.004,
+   "pseudo_starts": 1381,
+   "signal": false
+  }
+ },
+ {
+  "station_id": "E02476A",
+  "site": "E02476",
+  "label": "FROME_BULLS RIDGE_E_202309",
+  "watercourse": "River Frome",
+  "artificial_channel": false,
+  "readings": 0,
+  "valid_readings": 0,
+  "first": "",
+  "last": "",
+  "note": "no readings in 2024-25"
+ },
+ {
+  "station_id": "E02516A",
+  "site": "E02516",
+  "label": "DOVE_DODWORTH DIKE_E_202405",
+  "watercourse": "Brough Green Brook",
+  "artificial_channel": false,
+  "readings": 0,
+  "valid_readings": 0,
+  "first": "",
+  "last": "",
+  "note": "no readings in 2024-25"
+ },
+ {
+  "station_id": "E02569A",
+  "site": "E02569",
+  "label": "TILL_US HAREHOPE_E_202205",
+  "watercourse": "River Breamish",
+  "artificial_channel": false,
+  "readings": 45147,
+  "valid_readings": 44989,
+  "first": "2023-12-30T00:01Z",
+  "last": "2026-01-04T23:46Z",
+  "monitored_upstream": 1,
+  "timing_overflows": 1,
+  "events": 28,
+  "reading_interval_min": 30,
+  "tier_a": 28,
+  "a_rise": 7,
+  "a_no_rise": 15,
+  "a_raised_before": 3,
+  "a_gap": 1,
+  "a_no_baseline": 2,
+  "tier_b": 0,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 7,
+   "median": 5.628,
+   "lo": 5.628,
+   "hi": 5.628,
+   "q1": 5.628,
+   "q3": 5.628
+  },
+  "model_travel_h": {
+   "n": 7,
+   "median": 7.82,
+   "lo": 7.82,
+   "hi": 7.82,
+   "q1": 7.82,
+   "q3": 7.82
+  },
+  "lag_h": {
+   "n": 7,
+   "median": 0.717,
+   "lo": 0.283,
+   "hi": 2.733,
+   "q1": 0.333,
+   "q3": 1.917
+  },
+  "lag_over_model": {
+   "n": 7,
+   "median": 0.092,
+   "lo": 0.036,
+   "hi": 0.35,
+   "q1": 0.043,
+   "q3": 0.245
+  },
+  "v_ms": {
+   "n": 7,
+   "median": 2.182,
+   "lo": 0.572,
+   "hi": 5.518,
+   "q1": 0.997,
+   "q3": 4.798
+  },
+  "peak_lag_h": {
+   "n": 7,
+   "median": 1.717,
+   "lo": 0.883,
+   "hi": 15.733,
+   "q1": 1.242,
+   "q3": 8.758
+  },
+  "window": {
+   "before": 6,
+   "inside": 1,
+   "after": 0
+  },
+  "lag_h_looser": {
+   "n": 5,
+   "median": 1.567,
+   "lo": 0.117,
+   "hi": 29.85,
+   "q1": 0.233,
+   "q3": 20.817
+  },
+  "lag_h_stricter": {
+   "n": 2,
+   "values": [
+    0.12,
+    0.38
+   ]
+  },
+  "tier_b_rises": 0,
+  "tier_b_v_ms": {
+   "n": 0
+  },
+  "quiet24_tier_a": 32,
+  "quiet24_lag_h": {
+   "n": 7,
+   "median": 0.717,
+   "lo": 0.283,
+   "hi": 2.733,
+   "q1": 0.333,
+   "q3": 1.917
+  },
+  "dry": {
+   "n": 22,
+   "rise_share": 0.318,
+   "background_share": 0.063,
+   "diff": 0.255,
+   "lo": 0.04,
+   "hi": 0.486,
+   "pseudo_starts": 1786,
+   "signal": true
+  }
+ },
+ {
+  "station_id": "E02570A",
+  "site": "E02570",
+  "label": "WYKE BECK_DS KNOSTROPP FE_E_202212",
+  "watercourse": "Wyke Beck",
+  "artificial_channel": false,
+  "readings": 3596,
+  "valid_readings": 3596,
+  "first": "2023-12-30T00:01Z",
+  "last": "2024-06-05T09:01Z",
+  "monitored_upstream": 19,
+  "timing_overflows": 15,
+  "events": 3,
+  "reading_interval_min": 60,
+  "tier_a": 0,
+  "a_rise": 0,
+  "a_no_rise": 0,
+  "a_raised_before": 0,
+  "a_gap": 0,
+  "a_no_baseline": 0,
+  "tier_b": 3,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 0
+  },
+  "model_travel_h": {
+   "n": 0
+  },
+  "lag_h": {
+   "n": 0
+  },
+  "lag_over_model": {
+   "n": 0
+  },
+  "v_ms": {
+   "n": 0
+  },
+  "peak_lag_h": {
+   "n": 0
+  },
+  "window": {
+   "before": 0,
+   "inside": 0,
+   "after": 0
+  },
+  "lag_h_looser": {
+   "n": 0
+  },
+  "lag_h_stricter": {
+   "n": 0
+  },
+  "tier_b_rises": 1,
+  "tier_b_v_ms": {
+   "n": 1,
+   "values": [
+    0.21
+   ]
+  },
+  "quiet24_tier_a": 0,
+  "quiet24_lag_h": {
+   "n": 0
+  },
+  "dry": {
+   "n": 0,
+   "rise_share": null,
+   "background_share": null,
+   "diff": null,
+   "lo": null,
+   "hi": null,
+   "pseudo_starts": 0,
+   "signal": false
+  }
+ },
+ {
+  "station_id": "E02700A",
+  "site": "E02700",
+  "label": "WELNEY COUNTERDRAIN_E_202404",
+  "watercourse": "Old Bedford River",
+  "artificial_channel": true,
+  "readings": 13438,
+  "valid_readings": 13429,
+  "first": "2024-05-15T00:01Z",
+  "last": "2025-11-13T11:31Z",
+  "monitored_upstream": 11,
+  "timing_overflows": 3,
+  "events": 26,
+  "reading_interval_min": 30,
+  "tier_a": 14,
+  "a_rise": 1,
+  "a_no_rise": 9,
+  "a_raised_before": 0,
+  "a_gap": 1,
+  "a_no_baseline": 3,
+  "tier_b": 12,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 1,
+   "values": [
+    29.82
+   ]
+  },
+  "model_travel_h": {
+   "n": 1,
+   "values": [
+    41.41
+   ]
+  },
+  "lag_h": {
+   "n": 1,
+   "values": [
+    38.07
+   ]
+  },
+  "lag_over_model": {
+   "n": 1,
+   "values": [
+    0.92
+   ]
+  },
+  "v_ms": {
+   "n": 1,
+   "values": [
+    0.22
+   ]
+  },
+  "peak_lag_h": {
+   "n": 1,
+   "values": [
+    43.57
+   ]
+  },
+  "window": {
+   "before": 1,
+   "inside": 0,
+   "after": 0
+  },
+  "lag_h_looser": {
+   "n": 2,
+   "values": [
+    34.57,
+    43.52
+   ]
+  },
+  "lag_h_stricter": {
+   "n": 0
+  },
+  "tier_b_rises": 0,
+  "tier_b_v_ms": {
+   "n": 0
+  },
+  "quiet24_tier_a": 20,
+  "quiet24_lag_h": {
+   "n": 1,
+   "values": [
+    38.07
+   ]
+  },
+  "dry": {
+   "n": 10,
+   "rise_share": 0.1,
+   "background_share": 0.104,
+   "diff": -0.004,
+   "lo": -0.154,
+   "hi": 0.251,
+   "pseudo_starts": 575,
+   "signal": false
+  }
+ },
+ {
+  "station_id": "E02710A",
+  "site": "E02710",
+  "label": "EYE_DS BRENTINGBY DAM_E_202511",
+  "watercourse": "River Eye",
+  "artificial_channel": false,
+  "readings": 666,
+  "valid_readings": 666,
+  "first": "2025-11-12T13:01Z",
+  "last": "2025-12-15T00:01Z",
+  "monitored_upstream": 10,
+  "timing_overflows": 10,
+  "events": 3,
+  "reading_interval_min": 60,
+  "tier_a": 1,
+  "a_rise": 0,
+  "a_no_rise": 1,
+  "a_raised_before": 0,
+  "a_gap": 0,
+  "a_no_baseline": 0,
+  "tier_b": 2,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 0
+  },
+  "model_travel_h": {
+   "n": 0
+  },
+  "lag_h": {
+   "n": 0
+  },
+  "lag_over_model": {
+   "n": 0
+  },
+  "v_ms": {
+   "n": 0
+  },
+  "peak_lag_h": {
+   "n": 0
+  },
+  "window": {
+   "before": 0,
+   "inside": 0,
+   "after": 0
+  },
+  "lag_h_looser": {
+   "n": 0
+  },
+  "lag_h_stricter": {
+   "n": 0
+  },
+  "tier_b_rises": 0,
+  "tier_b_v_ms": {
+   "n": 0
+  },
+  "quiet24_tier_a": 2,
+  "quiet24_lag_h": {
+   "n": 0
+  },
+  "dry": {
+   "n": 1,
+   "rise_share": null,
+   "background_share": null,
+   "diff": null,
+   "lo": null,
+   "hi": null,
+   "pseudo_starts": 0,
+   "signal": false
+  }
+ },
+ {
+  "station_id": "E02763A",
+  "site": "E02763",
+  "label": "SCALBY_WHITBY RD BRIDGE_K_202405",
+  "watercourse": "Sea Cut",
+  "artificial_channel": false,
+  "readings": 4658,
+  "valid_readings": 4658,
+  "first": "2024-05-02T14:31Z",
+  "last": "2024-11-13T10:09Z",
+  "monitored_upstream": 5,
+  "timing_overflows": 5,
+  "events": 2,
+  "reading_interval_min": 60,
+  "tier_a": 1,
+  "a_rise": 1,
+  "a_no_rise": 0,
+  "a_raised_before": 0,
+  "a_gap": 0,
+  "a_no_baseline": 0,
+  "tier_b": 1,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 1,
+   "values": [
+    3.5
+   ]
+  },
+  "model_travel_h": {
+   "n": 1,
+   "values": [
+    4.86
+   ]
+  },
+  "lag_h": {
+   "n": 1,
+   "values": [
+    11.15
+   ]
+  },
+  "lag_over_model": {
+   "n": 1,
+   "values": [
+    2.29
+   ]
+  },
+  "v_ms": {
+   "n": 1,
+   "values": [
+    0.09
+   ]
+  },
+  "peak_lag_h": {
+   "n": 1,
+   "values": [
+    13.15
+   ]
+  },
+  "window": {
+   "before": 0,
+   "inside": 0,
+   "after": 1
+  },
+  "lag_h_looser": {
+   "n": 1,
+   "values": [
+    10.15
+   ]
+  },
+  "lag_h_stricter": {
+   "n": 0
+  },
+  "tier_b_rises": 0,
+  "tier_b_v_ms": {
+   "n": 0
+  },
+  "quiet24_tier_a": 1,
+  "quiet24_lag_h": {
+   "n": 1,
+   "values": [
+    11.15
+   ]
+  },
+  "dry": {
+   "n": 1,
+   "rise_share": 1.0,
+   "background_share": 0.007,
+   "diff": 0.993,
+   "lo": 0.977,
+   "hi": 1.0,
+   "pseudo_starts": 442,
+   "signal": true
+  }
+ },
+ {
+  "station_id": "E02764A",
+  "site": "E02764",
+  "label": "AXE_US YARTY CONF_E_202509",
+  "watercourse": "River Axe",
+  "artificial_channel": false,
+  "readings": 0,
+  "valid_readings": 0,
+  "first": "",
+  "last": "",
+  "note": "no readings in 2024-25"
+ },
+ {
+  "station_id": "E02780A",
+  "site": "E02780",
+  "label": "SWILL BROOK_HOLWELLS MERE_E_202412",
+  "watercourse": "Swill Brook",
+  "artificial_channel": false,
+  "readings": 5188,
+  "valid_readings": 5188,
+  "first": "2024-12-13T11:46Z",
+  "last": "2025-07-17T10:01Z",
+  "monitored_upstream": 2,
+  "timing_overflows": 2,
+  "events": 4,
+  "reading_interval_min": 60,
+  "tier_a": 0,
+  "a_rise": 0,
+  "a_no_rise": 0,
+  "a_raised_before": 0,
+  "a_gap": 0,
+  "a_no_baseline": 0,
+  "tier_b": 4,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 0
+  },
+  "model_travel_h": {
+   "n": 0
+  },
+  "lag_h": {
+   "n": 0
+  },
+  "lag_over_model": {
+   "n": 0
+  },
+  "v_ms": {
+   "n": 0
+  },
+  "peak_lag_h": {
+   "n": 0
+  },
+  "window": {
+   "before": 0,
+   "inside": 0,
+   "after": 0
+  },
+  "lag_h_looser": {
+   "n": 0
+  },
+  "lag_h_stricter": {
+   "n": 0
+  },
+  "tier_b_rises": 2,
+  "tier_b_v_ms": {
+   "n": 2,
+   "values": [
+    0.09,
+    0.75
+   ]
+  },
+  "quiet24_tier_a": 1,
+  "quiet24_lag_h": {
+   "n": 0
+  },
+  "dry": {
+   "n": 0,
+   "rise_share": null,
+   "background_share": null,
+   "diff": null,
+   "lo": null,
+   "hi": null,
+   "pseudo_starts": 0,
+   "signal": false
+  }
+ },
+ {
+  "station_id": "E02789A",
+  "site": "E02789",
+  "label": "EYE_US HAM BRIDGE_E_202511",
+  "watercourse": "River Eye",
+  "artificial_channel": false,
+  "readings": 1255,
+  "valid_readings": 1255,
+  "first": "2025-11-12T11:01Z",
+  "last": "2026-01-02T13:01Z",
+  "monitored_upstream": 9,
+  "timing_overflows": 9,
+  "events": 4,
+  "reading_interval_min": 60,
+  "tier_a": 1,
+  "a_rise": 0,
+  "a_no_rise": 1,
+  "a_raised_before": 0,
+  "a_gap": 0,
+  "a_no_baseline": 0,
+  "tier_b": 3,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 0
+  },
+  "model_travel_h": {
+   "n": 0
+  },
+  "lag_h": {
+   "n": 0
+  },
+  "lag_over_model": {
+   "n": 0
+  },
+  "v_ms": {
+   "n": 0
+  },
+  "peak_lag_h": {
+   "n": 0
+  },
+  "window": {
+   "before": 0,
+   "inside": 0,
+   "after": 0
+  },
+  "lag_h_looser": {
+   "n": 0
+  },
+  "lag_h_stricter": {
+   "n": 0
+  },
+  "tier_b_rises": 0,
+  "tier_b_v_ms": {
+   "n": 0
+  },
+  "quiet24_tier_a": 2,
+  "quiet24_lag_h": {
+   "n": 0
+  },
+  "dry": {
+   "n": 1,
+   "rise_share": 0.0,
+   "background_share": 0.0,
+   "diff": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "pseudo_starts": 16,
+   "signal": false
+  }
+ },
+ {
+  "station_id": "E03255A",
+  "site": "E03255",
+  "label": "MEASE_DS A42_E_202401",
+  "watercourse": "River Mease",
+  "artificial_channel": false,
+  "readings": 14583,
+  "valid_readings": 14182,
+  "first": "2024-01-22T14:00Z",
+  "last": "2025-09-19T13:01Z",
+  "monitored_upstream": 9,
+  "timing_overflows": 7,
+  "events": 17,
+  "reading_interval_min": 60,
+  "tier_a": 5,
+  "a_rise": 0,
+  "a_no_rise": 5,
+  "a_raised_before": 0,
+  "a_gap": 0,
+  "a_no_baseline": 0,
+  "tier_b": 12,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 0
+  },
+  "model_travel_h": {
+   "n": 0
+  },
+  "lag_h": {
+   "n": 0
+  },
+  "lag_over_model": {
+   "n": 0
+  },
+  "v_ms": {
+   "n": 0
+  },
+  "peak_lag_h": {
+   "n": 0
+  },
+  "window": {
+   "before": 0,
+   "inside": 0,
+   "after": 0
+  },
+  "lag_h_looser": {
+   "n": 0
+  },
+  "lag_h_stricter": {
+   "n": 0
+  },
+  "tier_b_rises": 6,
+  "tier_b_v_ms": {
+   "n": 6,
+   "median": 0.08,
+   "lo": 0.019,
+   "hi": 0.149,
+   "q1": 0.026,
+   "q3": 0.133
+  },
+  "quiet24_tier_a": 8,
+  "quiet24_lag_h": {
+   "n": 0
+  },
+  "dry": {
+   "n": 5,
+   "rise_share": 0.0,
+   "background_share": 0.025,
+   "diff": -0.025,
+   "lo": -0.057,
+   "hi": -0.003,
+   "pseudo_starts": 1004,
+   "signal": false
+  }
+ },
+ {
+  "station_id": "E03360A",
+  "site": "E03360",
+  "label": "WITHAM_US GRANGE FARM_K_202109",
+  "watercourse": "River Witham",
+  "artificial_channel": false,
+  "readings": 15505,
+  "valid_readings": 15500,
+  "first": "2023-12-30T00:04Z",
+  "last": "2026-01-04T22:01Z",
+  "monitored_upstream": 2,
+  "timing_overflows": 2,
+  "events": 22,
+  "reading_interval_min": 60,
+  "tier_a": 19,
+  "a_rise": 4,
+  "a_no_rise": 11,
+  "a_raised_before": 1,
+  "a_gap": 0,
+  "a_no_baseline": 3,
+  "tier_b": 3,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 4,
+   "values": [
+    4.8,
+    4.8,
+    4.8,
+    9.63
+   ]
+  },
+  "model_travel_h": {
+   "n": 4,
+   "values": [
+    6.67,
+    6.67,
+    6.67,
+    13.38
+   ]
+  },
+  "lag_h": {
+   "n": 4,
+   "values": [
+    2.63,
+    2.82,
+    21.73,
+    25.35
+   ]
+  },
+  "lag_over_model": {
+   "n": 4,
+   "values": [
+    0.21,
+    0.39,
+    3.26,
+    3.8
+   ]
+  },
+  "v_ms": {
+   "n": 4,
+   "values": [
+    0.05,
+    0.06,
+    0.51,
+    0.95
+   ]
+  },
+  "peak_lag_h": {
+   "n": 4,
+   "values": [
+    2.82,
+    13.63,
+    21.73,
+    26.35
+   ]
+  },
+  "window": {
+   "before": 2,
+   "inside": 0,
+   "after": 2
+  },
+  "lag_h_looser": {
+   "n": 6,
+   "median": 2.908,
+   "lo": 2.125,
+   "hi": 14.042,
+   "q1": 2.483,
+   "q3": 8.558
+  },
+  "lag_h_stricter": {
+   "n": 2,
+   "values": [
+    2.63,
+    21.73
+   ]
+  },
+  "tier_b_rises": 1,
+  "tier_b_v_ms": {
+   "n": 1,
+   "values": [
+    0.07
+   ]
+  },
+  "quiet24_tier_a": 23,
+  "quiet24_lag_h": {
+   "n": 5,
+   "median": 2.817,
+   "lo": 1.9,
+   "hi": 25.35,
+   "q1": 2.633,
+   "q3": 21.733
+  },
+  "dry": {
+   "n": 15,
+   "rise_share": 0.267,
+   "background_share": 0.051,
+   "diff": 0.215,
+   "lo": 0.012,
+   "hi": 0.467,
+   "pseudo_starts": 2008,
+   "signal": true
+  }
+ },
+ {
+  "station_id": "E03430A",
+  "site": "E03430",
+  "label": "WITHAM_DS GRANGE FARM_K_202109",
+  "watercourse": "River Witham",
+  "artificial_channel": false,
+  "readings": 15712,
+  "valid_readings": 15692,
+  "first": "2023-12-30T00:04Z",
+  "last": "2026-01-04T23:01Z",
+  "monitored_upstream": 2,
+  "timing_overflows": 2,
+  "events": 22,
+  "reading_interval_min": 60,
+  "tier_a": 19,
+  "a_rise": 5,
+  "a_no_rise": 11,
+  "a_raised_before": 0,
+  "a_gap": 0,
+  "a_no_baseline": 3,
+  "tier_b": 3,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 5,
+   "median": 5.998,
+   "lo": 5.998,
+   "hi": 10.83,
+   "q1": 5.998,
+   "q3": 5.998
+  },
+  "model_travel_h": {
+   "n": 5,
+   "median": 8.33,
+   "lo": 8.33,
+   "hi": 15.04,
+   "q1": 8.33,
+   "q3": 8.33
+  },
+  "lag_h": {
+   "n": 5,
+   "median": 6.633,
+   "lo": 3.8,
+   "hi": 27.35,
+   "q1": 5.183,
+   "q3": 22.733
+  },
+  "lag_over_model": {
+   "n": 5,
+   "median": 0.796,
+   "lo": 0.253,
+   "hi": 3.283,
+   "q1": 0.622,
+   "q3": 2.729
+  },
+  "v_ms": {
+   "n": 5,
+   "median": 0.251,
+   "lo": 0.061,
+   "hi": 0.792,
+   "q1": 0.073,
+   "q3": 0.321
+  },
+  "peak_lag_h": {
+   "n": 5,
+   "median": 15.633,
+   "lo": 3.8,
+   "hi": 29.733,
+   "q1": 5.183,
+   "q3": 27.35
+  },
+  "window": {
+   "before": 3,
+   "inside": 0,
+   "after": 2
+  },
+  "lag_h_looser": {
+   "n": 7,
+   "median": 19.733,
+   "lo": 5.183,
+   "hi": 25.35,
+   "q1": 5.908,
+   "q3": 23.992
+  },
+  "lag_h_stricter": {
+   "n": 2,
+   "values": [
+    12.63,
+    22.73
+   ]
+  },
+  "tier_b_rises": 0,
+  "tier_b_v_ms": {
+   "n": 0
+  },
+  "quiet24_tier_a": 23,
+  "quiet24_lag_h": {
+   "n": 5,
+   "median": 6.633,
+   "lo": 3.8,
+   "hi": 27.35,
+   "q1": 5.183,
+   "q3": 22.733
+  },
+  "dry": {
+   "n": 16,
+   "rise_share": 0.312,
+   "background_share": 0.065,
+   "diff": 0.247,
+   "lo": 0.029,
+   "hi": 0.491,
+   "pseudo_starts": 2046,
+   "signal": true
+  }
+ },
+ {
+  "station_id": "E03459A",
+  "site": "E03459",
+  "label": "EA BECK_US SOUTH ELMSALL STW_E_202506",
+  "watercourse": "Frickley Beck",
+  "artificial_channel": false,
+  "readings": 9230,
+  "valid_readings": 9225,
+  "first": "2025-06-16T12:42Z",
+  "last": "2025-12-30T20:01Z",
+  "monitored_upstream": 3,
+  "timing_overflows": 2,
+  "events": 18,
+  "reading_interval_min": 30,
+  "tier_a": 16,
+  "a_rise": 4,
+  "a_no_rise": 11,
+  "a_raised_before": 0,
+  "a_gap": 1,
+  "a_no_baseline": 0,
+  "tier_b": 2,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 4,
+   "values": [
+    3.95,
+    3.95,
+    3.95,
+    3.95
+   ]
+  },
+  "model_travel_h": {
+   "n": 4,
+   "values": [
+    5.49,
+    5.49,
+    5.49,
+    5.49
+   ]
+  },
+  "lag_h": {
+   "n": 4,
+   "values": [
+    0.25,
+    1.5,
+    2.5,
+    12.52
+   ]
+  },
+  "lag_over_model": {
+   "n": 4,
+   "values": [
+    0.05,
+    0.27,
+    0.46,
+    2.28
+   ]
+  },
+  "v_ms": {
+   "n": 4,
+   "values": [
+    0.09,
+    0.44,
+    0.73,
+    4.39
+   ]
+  },
+  "peak_lag_h": {
+   "n": 4,
+   "values": [
+    0.75,
+    2.0,
+    4.0,
+    13.02
+   ]
+  },
+  "window": {
+   "before": 3,
+   "inside": 0,
+   "after": 1
+  },
+  "lag_h_looser": {
+   "n": 4,
+   "values": [
+    0.25,
+    1.5,
+    2.5,
+    12.52
+   ]
+  },
+  "lag_h_stricter": {
+   "n": 3,
+   "values": [
+    0.25,
+    1.5,
+    2.5
+   ]
+  },
+  "tier_b_rises": 0,
+  "tier_b_v_ms": {
+   "n": 0
+  },
+  "quiet24_tier_a": 18,
+  "quiet24_lag_h": {
+   "n": 4,
+   "values": [
+    0.25,
+    1.5,
+    2.5,
+    12.52
+   ]
+  },
+  "dry": {
+   "n": 15,
+   "rise_share": 0.267,
+   "background_share": 0.032,
+   "diff": 0.235,
+   "lo": -0.032,
+   "hi": 0.506,
+   "pseudo_starts": 412,
+   "signal": false
+  }
+ },
+ {
+  "station_id": "E03624A",
+  "site": "E03624",
+  "label": "CUNSEY BECK_EEL HOUSE BRIDGE_E_202303",
+  "watercourse": "Cunsey Beck",
+  "artificial_channel": false,
+  "readings": 31455,
+  "valid_readings": 31445,
+  "first": "2023-12-30T00:00Z",
+  "last": "2026-01-04T23:01Z",
+  "monitored_upstream": 2,
+  "timing_overflows": 1,
+  "events": 4,
+  "reading_interval_min": 30,
+  "tier_a": 3,
+  "a_rise": 0,
+  "a_no_rise": 3,
+  "a_raised_before": 0,
+  "a_gap": 0,
+  "a_no_baseline": 0,
+  "tier_b": 0,
+  "tier_b_lake": 1,
+  "d_km": {
+   "n": 0
+  },
+  "model_travel_h": {
+   "n": 0
+  },
+  "lag_h": {
+   "n": 0
+  },
+  "lag_over_model": {
+   "n": 0
+  },
+  "v_ms": {
+   "n": 0
+  },
+  "peak_lag_h": {
+   "n": 0
+  },
+  "window": {
+   "before": 0,
+   "inside": 0,
+   "after": 0
+  },
+  "lag_h_looser": {
+   "n": 0
+  },
+  "lag_h_stricter": {
+   "n": 0
+  },
+  "tier_b_rises": 0,
+  "tier_b_v_ms": {
+   "n": 0
+  },
+  "quiet24_tier_a": 3,
+  "quiet24_lag_h": {
+   "n": 0
+  },
+  "dry": {
+   "n": 3,
+   "rise_share": 0.0,
+   "background_share": 0.002,
+   "diff": -0.002,
+   "lo": -0.005,
+   "hi": 0.0,
+   "pseudo_starts": 983,
+   "signal": false
+  }
+ },
+ {
+  "station_id": "E03650A",
+  "site": "E03650",
+  "label": "WEY_DS BORDON STW_E_202510",
+  "watercourse": "River Wey (South Branch)",
+  "artificial_channel": false,
+  "readings": 3320,
+  "valid_readings": 3320,
+  "first": "2025-10-03T13:24Z",
+  "last": "2025-12-11T11:31Z",
+  "monitored_upstream": 3,
+  "timing_overflows": 3,
+  "events": 3,
+  "reading_interval_min": 30,
+  "tier_a": 2,
+  "a_rise": 1,
+  "a_no_rise": 1,
+  "a_raised_before": 0,
+  "a_gap": 0,
+  "a_no_baseline": 0,
+  "tier_b": 1,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 1,
+   "values": [
+    12.78
+   ]
+  },
+  "model_travel_h": {
+   "n": 1,
+   "values": [
+    17.75
+   ]
+  },
+  "lag_h": {
+   "n": 1,
+   "values": [
+    2.02
+   ]
+  },
+  "lag_over_model": {
+   "n": 1,
+   "values": [
+    0.11
+   ]
+  },
+  "v_ms": {
+   "n": 1,
+   "values": [
+    1.76
+   ]
+  },
+  "peak_lag_h": {
+   "n": 1,
+   "values": [
+    4.02
+   ]
+  },
+  "window": {
+   "before": 1,
+   "inside": 0,
+   "after": 0
+  },
+  "lag_h_looser": {
+   "n": 2,
+   "values": [
+    1.02,
+    59.52
+   ]
+  },
+  "lag_h_stricter": {
+   "n": 1,
+   "values": [
+    3.02
+   ]
+  },
+  "tier_b_rises": 0,
+  "tier_b_v_ms": {
+   "n": 0
+  },
+  "quiet24_tier_a": 5,
+  "quiet24_lag_h": {
+   "n": 3,
+   "values": [
+    0.02,
+    2.02,
+    3.27
+   ]
+  },
+  "dry": {
+   "n": 2,
+   "rise_share": 0.5,
+   "background_share": 0.536,
+   "diff": -0.036,
+   "lo": -0.579,
+   "hi": 0.518,
+   "pseudo_starts": 151,
+   "signal": false
+  }
+ },
+ {
+  "station_id": "E03659A",
+  "site": "E03659",
+  "label": "SINCIL DRAIN_SANDHILL BECK_E_202308",
+  "watercourse": "River Witham",
+  "artificial_channel": true,
+  "readings": 14300,
+  "valid_readings": 14300,
+  "first": "2024-03-07T09:58Z",
+  "last": "2026-01-04T23:01Z",
+  "monitored_upstream": 22,
+  "timing_overflows": 11,
+  "events": 16,
+  "reading_interval_min": 60,
+  "tier_a": 4,
+  "a_rise": 1,
+  "a_no_rise": 3,
+  "a_raised_before": 0,
+  "a_gap": 0,
+  "a_no_baseline": 0,
+  "tier_b": 12,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 1,
+   "values": [
+    13.4
+   ]
+  },
+  "model_travel_h": {
+   "n": 1,
+   "values": [
+    18.62
+   ]
+  },
+  "lag_h": {
+   "n": 1,
+   "values": [
+    40.52
+   ]
+  },
+  "lag_over_model": {
+   "n": 1,
+   "values": [
+    2.18
+   ]
+  },
+  "v_ms": {
+   "n": 1,
+   "values": [
+    0.09
+   ]
+  },
+  "peak_lag_h": {
+   "n": 1,
+   "values": [
+    49.52
+   ]
+  },
+  "window": {
+   "before": 0,
+   "inside": 0,
+   "after": 1
+  },
+  "lag_h_looser": {
+   "n": 2,
+   "values": [
+    18.77,
+    38.52
+   ]
+  },
+  "lag_h_stricter": {
+   "n": 0
+  },
+  "tier_b_rises": 5,
+  "tier_b_v_ms": {
+   "n": 5,
+   "median": 0.181,
+   "lo": 0.091,
+   "hi": 3.566,
+   "q1": 0.111,
+   "q3": 0.388
+  },
+  "quiet24_tier_a": 9,
+  "quiet24_lag_h": {
+   "n": 3,
+   "values": [
+    40.52,
+    43.42,
+    48.27
+   ]
+  },
+  "dry": {
+   "n": 4,
+   "rise_share": 0.25,
+   "background_share": 0.196,
+   "diff": 0.054,
+   "lo": -0.268,
+   "hi": 0.78,
+   "pseudo_starts": 690,
+   "signal": false
+  }
+ },
+ {
+  "station_id": "E03667A",
+  "site": "E03667",
+  "label": "YARTY_DS CONFLUENCE CORRY BROOK_E_202409",
+  "watercourse": "River Yarty",
+  "artificial_channel": false,
+  "readings": 0,
+  "valid_readings": 0,
+  "first": "",
+  "last": "",
+  "note": "no readings in 2024-25"
+ },
+ {
+  "station_id": "E03684A",
+  "site": "E03684",
+  "label": "COUNTER DRAIN_FLAG FEN_E_202403",
+  "watercourse": "River Nene",
+  "artificial_channel": true,
+  "readings": 31113,
+  "valid_readings": 31103,
+  "first": "2024-03-26T10:23Z",
+  "last": "2026-01-04T23:31Z",
+  "monitored_upstream": 37,
+  "timing_overflows": 14,
+  "events": 19,
+  "reading_interval_min": 30,
+  "tier_a": 13,
+  "a_rise": 1,
+  "a_no_rise": 12,
+  "a_raised_before": 0,
+  "a_gap": 0,
+  "a_no_baseline": 0,
+  "tier_b": 6,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 1,
+   "values": [
+    4.12
+   ]
+  },
+  "model_travel_h": {
+   "n": 1,
+   "values": [
+    5.73
+   ]
+  },
+  "lag_h": {
+   "n": 1,
+   "values": [
+    0.25
+   ]
+  },
+  "lag_over_model": {
+   "n": 1,
+   "values": [
+    0.04
+   ]
+  },
+  "v_ms": {
+   "n": 1,
+   "values": [
+    4.58
+   ]
+  },
+  "peak_lag_h": {
+   "n": 1,
+   "values": [
+    3.25
+   ]
+  },
+  "window": {
+   "before": 1,
+   "inside": 0,
+   "after": 0
+  },
+  "lag_h_looser": {
+   "n": 2,
+   "values": [
+    10.72,
+    22.72
+   ]
+  },
+  "lag_h_stricter": {
+   "n": 1,
+   "values": [
+    3.25
+   ]
+  },
+  "tier_b_rises": 2,
+  "tier_b_v_ms": {
+   "n": 2,
+   "values": [
+    0.09,
+    0.22
+   ]
+  },
+  "quiet24_tier_a": 17,
+  "quiet24_lag_h": {
+   "n": 2,
+   "values": [
+    0.25,
+    1.62
+   ]
+  },
+  "dry": {
+   "n": 13,
+   "rise_share": 0.077,
+   "background_share": 0.073,
+   "diff": 0.003,
+   "lo": -0.12,
+   "hi": 0.185,
+   "pseudo_starts": 604,
+   "signal": false
+  }
+ },
+ {
+  "station_id": "E03700A",
+  "site": "E03700",
+  "label": "NIDD_KNARESBOROUGH LIDO_E_202501",
+  "watercourse": "River Nidd",
+  "artificial_channel": false,
+  "readings": 14779,
+  "valid_readings": 14556,
+  "first": "2025-01-28T12:00Z",
+  "last": "2025-12-04T14:01Z",
+  "monitored_upstream": 51,
+  "timing_overflows": 35,
+  "events": 14,
+  "reading_interval_min": 30,
+  "tier_a": 5,
+  "a_rise": 0,
+  "a_no_rise": 5,
+  "a_raised_before": 0,
+  "a_gap": 0,
+  "a_no_baseline": 0,
+  "tier_b": 9,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 0
+  },
+  "model_travel_h": {
+   "n": 0
+  },
+  "lag_h": {
+   "n": 0
+  },
+  "lag_over_model": {
+   "n": 0
+  },
+  "v_ms": {
+   "n": 0
+  },
+  "peak_lag_h": {
+   "n": 0
+  },
+  "window": {
+   "before": 0,
+   "inside": 0,
+   "after": 0
+  },
+  "lag_h_looser": {
+   "n": 1,
+   "values": [
+    31.52
+   ]
+  },
+  "lag_h_stricter": {
+   "n": 0
+  },
+  "tier_b_rises": 3,
+  "tier_b_v_ms": {
+   "n": 3,
+   "values": [
+    0.02,
+    0.03,
+    0.46
+   ]
+  },
+  "quiet24_tier_a": 7,
+  "quiet24_lag_h": {
+   "n": 1,
+   "values": [
+    14.5
+   ]
+  },
+  "dry": {
+   "n": 5,
+   "rise_share": 0.0,
+   "background_share": 0.056,
+   "diff": -0.056,
+   "lo": -0.118,
+   "hi": -0.009,
+   "pseudo_starts": 531,
+   "signal": false
+  }
+ },
+ {
+  "station_id": "E03731A",
+  "site": "E03731",
+  "label": "ESK_US LEALHOLM STW_E_202309",
+  "watercourse": "River Esk",
+  "artificial_channel": false,
+  "readings": 2412,
+  "valid_readings": 2405,
+  "first": "2023-12-30T00:01Z",
+  "last": "2024-04-24T11:00Z",
+  "monitored_upstream": 6,
+  "timing_overflows": 6,
+  "events": 15,
+  "reading_interval_min": 60,
+  "tier_a": 4,
+  "a_rise": 0,
+  "a_no_rise": 4,
+  "a_raised_before": 0,
+  "a_gap": 0,
+  "a_no_baseline": 0,
+  "tier_b": 11,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 0
+  },
+  "model_travel_h": {
+   "n": 0
+  },
+  "lag_h": {
+   "n": 0
+  },
+  "lag_over_model": {
+   "n": 0
+  },
+  "v_ms": {
+   "n": 0
+  },
+  "peak_lag_h": {
+   "n": 0
+  },
+  "window": {
+   "before": 0,
+   "inside": 0,
+   "after": 0
+  },
+  "lag_h_looser": {
+   "n": 2,
+   "values": [
+    28.25,
+    70.25
+   ]
+  },
+  "lag_h_stricter": {
+   "n": 0
+  },
+  "tier_b_rises": 7,
+  "tier_b_v_ms": {
+   "n": 7,
+   "median": 0.559,
+   "lo": 0.18,
+   "hi": 0.692,
+   "q1": 0.37,
+   "q3": 0.692
+  },
+  "quiet24_tier_a": 5,
+  "quiet24_lag_h": {
+   "n": 0
+  },
+  "dry": {
+   "n": 4,
+   "rise_share": 0.0,
+   "background_share": 0.303,
+   "diff": -0.303,
+   "lo": -0.596,
+   "hi": -0.026,
+   "pseudo_starts": 66,
+   "signal": false
+  }
+ },
+ {
+  "station_id": "E03733A",
+  "site": "E03733",
+  "label": "DELPH_WELCHES DAM_SURFACE_E_202404",
+  "watercourse": "Old Bedford River",
+  "artificial_channel": true,
+  "readings": 12779,
+  "valid_readings": 12769,
+  "first": "2024-05-15T13:59Z",
+  "last": "2025-11-12T14:56Z",
+  "monitored_upstream": 1,
+  "timing_overflows": 1,
+  "events": 9,
+  "reading_interval_min": 60,
+  "tier_a": 9,
+  "a_rise": 0,
+  "a_no_rise": 4,
+  "a_raised_before": 0,
+  "a_gap": 0,
+  "a_no_baseline": 5,
+  "tier_b": 0,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 0
+  },
+  "model_travel_h": {
+   "n": 0
+  },
+  "lag_h": {
+   "n": 0
+  },
+  "lag_over_model": {
+   "n": 0
+  },
+  "v_ms": {
+   "n": 0
+  },
+  "peak_lag_h": {
+   "n": 0
+  },
+  "window": {
+   "before": 0,
+   "inside": 0,
+   "after": 0
+  },
+  "lag_h_looser": {
+   "n": 1,
+   "values": [
+    28.13
+   ]
+  },
+  "lag_h_stricter": {
+   "n": 0
+  },
+  "tier_b_rises": 0,
+  "tier_b_v_ms": {
+   "n": 0
+  },
+  "quiet24_tier_a": 10,
+  "quiet24_lag_h": {
+   "n": 0
+  },
+  "dry": {
+   "n": 4,
+   "rise_share": 0.0,
+   "background_share": 0.016,
+   "diff": -0.016,
+   "lo": -0.04,
+   "hi": 0.0,
+   "pseudo_starts": 949,
+   "signal": false
+  }
+ },
+ {
+  "station_id": "E03733B",
+  "site": "E03733",
+  "label": "DELPH_WELCHES DAM_DEPTH_E_202404",
+  "watercourse": "Old Bedford River",
+  "artificial_channel": true,
+  "readings": 11354,
+  "valid_readings": 11353,
+  "first": "2024-05-15T13:57Z",
+  "last": "2025-11-04T19:30Z",
+  "monitored_upstream": 1,
+  "timing_overflows": 1,
+  "events": 9,
+  "reading_interval_min": 60,
+  "tier_a": 9,
+  "a_rise": 1,
+  "a_no_rise": 3,
+  "a_raised_before": 0,
+  "a_gap": 0,
+  "a_no_baseline": 5,
+  "tier_b": 0,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 1,
+   "values": [
+    18.4
+   ]
+  },
+  "model_travel_h": {
+   "n": 1,
+   "values": [
+    25.56
+   ]
+  },
+  "lag_h": {
+   "n": 1,
+   "values": [
+    44.98
+   ]
+  },
+  "lag_over_model": {
+   "n": 1,
+   "values": [
+    1.76
+   ]
+  },
+  "v_ms": {
+   "n": 1,
+   "values": [
+    0.11
+   ]
+  },
+  "peak_lag_h": {
+   "n": 1,
+   "values": [
+    68.98
+   ]
+  },
+  "window": {
+   "before": 0,
+   "inside": 0,
+   "after": 1
+  },
+  "lag_h_looser": {
+   "n": 2,
+   "values": [
+    22.98,
+    29.12
+   ]
+  },
+  "lag_h_stricter": {
+   "n": 0
+  },
+  "tier_b_rises": 0,
+  "tier_b_v_ms": {
+   "n": 0
+  },
+  "quiet24_tier_a": 10,
+  "quiet24_lag_h": {
+   "n": 1,
+   "values": [
+    44.98
+   ]
+  },
+  "dry": {
+   "n": 4,
+   "rise_share": 0.25,
+   "background_share": 0.013,
+   "diff": 0.237,
+   "lo": -0.032,
+   "hi": 0.977,
+   "pseudo_starts": 902,
+   "signal": false
+  }
+ },
+ {
+  "station_id": "E03763A",
+  "site": "E03763",
+  "label": "DEARNE_HAIGH ROUNDABOUT_E_202504",
+  "watercourse": "River Dearne",
+  "artificial_channel": false,
+  "readings": 6811,
+  "valid_readings": 6802,
+  "first": "2025-05-15T11:15Z",
+  "last": "2025-10-07T10:01Z",
+  "monitored_upstream": 16,
+  "timing_overflows": 8,
+  "events": 12,
+  "reading_interval_min": 30,
+  "tier_a": 5,
+  "a_rise": 2,
+  "a_no_rise": 3,
+  "a_raised_before": 0,
+  "a_gap": 0,
+  "a_no_baseline": 0,
+  "tier_b": 7,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 2,
+   "values": [
+    1.35,
+    9.21
+   ]
+  },
+  "model_travel_h": {
+   "n": 2,
+   "values": [
+    1.87,
+    12.78
+   ]
+  },
+  "lag_h": {
+   "n": 2,
+   "values": [
+    6.27,
+    46.02
+   ]
+  },
+  "lag_over_model": {
+   "n": 2,
+   "values": [
+    3.35,
+    3.6
+   ]
+  },
+  "v_ms": {
+   "n": 2,
+   "values": [
+    0.06,
+    0.06
+   ]
+  },
+  "peak_lag_h": {
+   "n": 2,
+   "values": [
+    6.77,
+    48.02
+   ]
+  },
+  "window": {
+   "before": 0,
+   "inside": 0,
+   "after": 2
+  },
+  "lag_h_looser": {
+   "n": 3,
+   "values": [
+    0.77,
+    12.52,
+    25.52
+   ]
+  },
+  "lag_h_stricter": {
+   "n": 0
+  },
+  "tier_b_rises": 4,
+  "tier_b_v_ms": {
+   "n": 4,
+   "values": [
+    0.15,
+    0.19,
+    0.19,
+    0.37
+   ]
+  },
+  "quiet24_tier_a": 5,
+  "quiet24_lag_h": {
+   "n": 2,
+   "values": [
+    6.27,
+    46.02
+   ]
+  },
+  "dry": {
+   "n": 5,
+   "rise_share": 0.4,
+   "background_share": 0.209,
+   "diff": 0.191,
+   "lo": -0.25,
+   "hi": 0.579,
+   "pseudo_starts": 279,
+   "signal": false
+  }
+ },
+ {
+  "station_id": "E04386A",
+  "site": "E04386",
+  "label": "KEMP_PURSLOW NEW BRIDGE_E_202311",
+  "watercourse": "River Kemp",
+  "artificial_channel": false,
+  "readings": 0,
+  "valid_readings": 0,
+  "first": "",
+  "last": "",
+  "note": "no readings in 2024-25"
+ },
+ {
+  "station_id": "E04441A",
+  "site": "E04441",
+  "label": "WEY_US BORDON STW_E_202510",
+  "watercourse": "River Wey (South Branch)",
+  "artificial_channel": false,
+  "readings": 2503,
+  "valid_readings": 2503,
+  "first": "2025-10-03T10:48Z",
+  "last": "2025-12-11T11:01Z",
+  "monitored_upstream": 2,
+  "timing_overflows": 2,
+  "events": 3,
+  "reading_interval_min": 30,
+  "tier_a": 2,
+  "a_rise": 0,
+  "a_no_rise": 2,
+  "a_raised_before": 0,
+  "a_gap": 0,
+  "a_no_baseline": 0,
+  "tier_b": 1,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 0
+  },
+  "model_travel_h": {
+   "n": 0
+  },
+  "lag_h": {
+   "n": 0
+  },
+  "lag_over_model": {
+   "n": 0
+  },
+  "v_ms": {
+   "n": 0
+  },
+  "peak_lag_h": {
+   "n": 0
+  },
+  "window": {
+   "before": 0,
+   "inside": 0,
+   "after": 0
+  },
+  "lag_h_looser": {
+   "n": 2,
+   "values": [
+    1.02,
+    50.02
+   ]
+  },
+  "lag_h_stricter": {
+   "n": 0
+  },
+  "tier_b_rises": 0,
+  "tier_b_v_ms": {
+   "n": 0
+  },
+  "quiet24_tier_a": 5,
+  "quiet24_lag_h": {
+   "n": 0
+  },
+  "dry": {
+   "n": 2,
+   "rise_share": 0.0,
+   "background_share": 0.0,
+   "diff": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "pseudo_starts": 163,
+   "signal": false
+  }
+ },
+ {
+  "station_id": "E04471A",
+  "site": "E04471",
+  "label": "ESK_DS LEALHOLM STW_E_202309",
+  "watercourse": "River Esk",
+  "artificial_channel": false,
+  "readings": 2802,
+  "valid_readings": 2802,
+  "first": "2023-12-30T00:01Z",
+  "last": "2024-04-24T11:01Z",
+  "monitored_upstream": 7,
+  "timing_overflows": 6,
+  "events": 15,
+  "reading_interval_min": 60,
+  "tier_a": 4,
+  "a_rise": 0,
+  "a_no_rise": 4,
+  "a_raised_before": 0,
+  "a_gap": 0,
+  "a_no_baseline": 0,
+  "tier_b": 11,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 0
+  },
+  "model_travel_h": {
+   "n": 0
+  },
+  "lag_h": {
+   "n": 0
+  },
+  "lag_over_model": {
+   "n": 0
+  },
+  "v_ms": {
+   "n": 0
+  },
+  "peak_lag_h": {
+   "n": 0
+  },
+  "window": {
+   "before": 0,
+   "inside": 0,
+   "after": 0
+  },
+  "lag_h_looser": {
+   "n": 2,
+   "values": [
+    30.27,
+    71.27
+   ]
+  },
+  "lag_h_stricter": {
+   "n": 0
+  },
+  "tier_b_rises": 7,
+  "tier_b_v_ms": {
+   "n": 7,
+   "median": 0.134,
+   "lo": 0.005,
+   "hi": 0.694,
+   "q1": 0.007,
+   "q3": 0.627
+  },
+  "quiet24_tier_a": 4,
+  "quiet24_lag_h": {
+   "n": 0
+  },
+  "dry": {
+   "n": 4,
+   "rise_share": 0.0,
+   "background_share": 0.362,
+   "diff": -0.362,
+   "lo": -0.616,
+   "hi": -0.143,
+   "pseudo_starts": 105,
+   "signal": false
+  }
+ },
+ {
+  "station_id": "E04612A",
+  "site": "E04612",
+  "label": "RYE_US COSTA BECK_E_202405",
+  "watercourse": "River Rye",
+  "artificial_channel": false,
+  "readings": 0,
+  "valid_readings": 0,
+  "first": "",
+  "last": "",
+  "note": "no readings in 2024-25"
+ },
+ {
+  "station_id": "E04623A",
+  "site": "E04623",
+  "label": "MERSEY_FLIXTON_E_202405",
+  "watercourse": "River Mersey",
+  "artificial_channel": false,
+  "readings": 6706,
+  "valid_readings": 6703,
+  "first": "2024-05-09T12:30Z",
+  "last": "2024-10-06T12:01Z",
+  "monitored_upstream": 175,
+  "timing_overflows": 74,
+  "events": 4,
+  "reading_interval_min": 30,
+  "tier_a": 1,
+  "a_rise": 0,
+  "a_no_rise": 1,
+  "a_raised_before": 0,
+  "a_gap": 0,
+  "a_no_baseline": 0,
+  "tier_b": 3,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 0
+  },
+  "model_travel_h": {
+   "n": 0
+  },
+  "lag_h": {
+   "n": 0
+  },
+  "lag_over_model": {
+   "n": 0
+  },
+  "v_ms": {
+   "n": 0
+  },
+  "peak_lag_h": {
+   "n": 0
+  },
+  "window": {
+   "before": 0,
+   "inside": 0,
+   "after": 0
+  },
+  "lag_h_looser": {
+   "n": 0
+  },
+  "lag_h_stricter": {
+   "n": 0
+  },
+  "tier_b_rises": 2,
+  "tier_b_v_ms": {
+   "n": 2,
+   "values": [
+    0.0,
+    0.01
+   ]
+  },
+  "quiet24_tier_a": 2,
+  "quiet24_lag_h": {
+   "n": 0
+  },
+  "dry": {
+   "n": 1,
+   "rise_share": 0.0,
+   "background_share": 0.0,
+   "diff": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "pseudo_starts": 29,
+   "signal": false
+  }
+ },
+ {
+  "station_id": "E04666A",
+  "site": "E04666",
+  "label": "WEAVER_MOSS HALL FARM (DS AUDLEM STW)_E_202510",
+  "watercourse": "River Weaver",
+  "artificial_channel": false,
+  "readings": 2465,
+  "valid_readings": 2460,
+  "first": "2025-10-20T11:01Z",
+  "last": "2026-01-04T23:30Z",
+  "monitored_upstream": 5,
+  "timing_overflows": 4,
+  "events": 6,
+  "reading_interval_min": 30,
+  "tier_a": 3,
+  "a_rise": 0,
+  "a_no_rise": 0,
+  "a_raised_before": 0,
+  "a_gap": 0,
+  "a_no_baseline": 3,
+  "tier_b": 3,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 0
+  },
+  "model_travel_h": {
+   "n": 0
+  },
+  "lag_h": {
+   "n": 0
+  },
+  "lag_over_model": {
+   "n": 0
+  },
+  "v_ms": {
+   "n": 0
+  },
+  "peak_lag_h": {
+   "n": 0
+  },
+  "window": {
+   "before": 0,
+   "inside": 0,
+   "after": 0
+  },
+  "lag_h_looser": {
+   "n": 0
+  },
+  "lag_h_stricter": {
+   "n": 0
+  },
+  "tier_b_rises": 1,
+  "tier_b_v_ms": {
+   "n": 1,
+   "values": [
+    0.09
+   ]
+  },
+  "quiet24_tier_a": 5,
+  "quiet24_lag_h": {
+   "n": 0
+  },
+  "dry": {
+   "n": 0,
+   "rise_share": null,
+   "background_share": null,
+   "diff": null,
+   "lo": null,
+   "hi": null,
+   "pseudo_starts": 0,
+   "signal": false
+  }
+ },
+ {
+  "station_id": "E04705A",
+  "site": "E04705",
+  "label": "FROME_KNIGHTS MALTINGS_E_202409",
+  "watercourse": "River Frome",
+  "artificial_channel": false,
+  "readings": 3332,
+  "valid_readings": 3332,
+  "first": "2024-10-04T12:01Z",
+  "last": "2024-12-12T14:01Z",
+  "monitored_upstream": 2,
+  "timing_overflows": 2,
+  "events": 5,
+  "reading_interval_min": 30,
+  "tier_a": 1,
+  "a_rise": 1,
+  "a_no_rise": 0,
+  "a_raised_before": 0,
+  "a_gap": 0,
+  "a_no_baseline": 0,
+  "tier_b": 4,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 1,
+   "values": [
+    7.42
+   ]
+  },
+  "model_travel_h": {
+   "n": 1,
+   "values": [
+    10.3
+   ]
+  },
+  "lag_h": {
+   "n": 1,
+   "values": [
+    7.0
+   ]
+  },
+  "lag_over_model": {
+   "n": 1,
+   "values": [
+    0.68
+   ]
+  },
+  "v_ms": {
+   "n": 1,
+   "values": [
+    0.29
+   ]
+  },
+  "peak_lag_h": {
+   "n": 1,
+   "values": [
+    7.0
+   ]
+  },
+  "window": {
+   "before": 1,
+   "inside": 0,
+   "after": 0
+  },
+  "lag_h_looser": {
+   "n": 1,
+   "values": [
+    2.0
+   ]
+  },
+  "lag_h_stricter": {
+   "n": 0
+  },
+  "tier_b_rises": 2,
+  "tier_b_v_ms": {
+   "n": 2,
+   "values": [
+    0.24,
+    0.79
+   ]
+  },
+  "quiet24_tier_a": 2,
+  "quiet24_lag_h": {
+   "n": 1,
+   "values": [
+    7.0
+   ]
+  },
+  "dry": {
+   "n": 1,
+   "rise_share": 1.0,
+   "background_share": 0.266,
+   "diff": 0.734,
+   "lo": 0.382,
+   "hi": 0.917,
+   "pseudo_starts": 79,
+   "signal": true
+  }
+ },
+ {
+  "station_id": "E04798A",
+  "site": "E04798",
+  "label": "CALDER_STONES LANE_E_202502",
+  "watercourse": "River Calder",
+  "artificial_channel": false,
+  "readings": 7596,
+  "valid_readings": 7307,
+  "first": "2025-03-06T23:01Z",
+  "last": "2026-01-04T23:01Z",
+  "monitored_upstream": 1,
+  "timing_overflows": 1,
+  "events": 20,
+  "reading_interval_min": 60,
+  "tier_a": 20,
+  "a_rise": 7,
+  "a_no_rise": 12,
+  "a_raised_before": 1,
+  "a_gap": 0,
+  "a_no_baseline": 0,
+  "tier_b": 0,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 7,
+   "median": 4.625,
+   "lo": 4.625,
+   "hi": 4.625,
+   "q1": 4.625,
+   "q3": 4.625
+  },
+  "model_travel_h": {
+   "n": 7,
+   "median": 6.42,
+   "lo": 6.42,
+   "hi": 6.42,
+   "q1": 6.42,
+   "q3": 6.42
+  },
+  "lag_h": {
+   "n": 7,
+   "median": 5.017,
+   "lo": 2.05,
+   "hi": 9.05,
+   "q1": 2.317,
+   "q3": 7.5
+  },
+  "lag_over_model": {
+   "n": 7,
+   "median": 0.781,
+   "lo": 0.319,
+   "hi": 1.41,
+   "q1": 0.361,
+   "q3": 1.168
+  },
+  "v_ms": {
+   "n": 7,
+   "median": 0.256,
+   "lo": 0.142,
+   "hi": 0.627,
+   "q1": 0.179,
+   "q3": 0.562
+  },
+  "peak_lag_h": {
+   "n": 7,
+   "median": 6.017,
+   "lo": 3.05,
+   "hi": 24.717,
+   "q1": 4.317,
+   "q3": 19.833
+  },
+  "window": {
+   "before": 5,
+   "inside": 1,
+   "after": 1
+  },
+  "lag_h_looser": {
+   "n": 10,
+   "median": 2.5,
+   "lo": 0.95,
+   "hi": 20.717,
+   "q1": 0.975,
+   "q3": 16.479
+  },
+  "lag_h_stricter": {
+   "n": 3,
+   "values": [
+    2.05,
+    5.02,
+    15.05
+   ]
+  },
+  "tier_b_rises": 0,
+  "tier_b_v_ms": {
+   "n": 0
+  },
+  "quiet24_tier_a": 23,
+  "quiet24_lag_h": {
+   "n": 8,
+   "median": 5.483,
+   "lo": 2.283,
+   "hi": 15.927,
+   "q1": 2.45,
+   "q3": 11.2
+  },
+  "dry": {
+   "n": 19,
+   "rise_share": 0.368,
+   "background_share": 0.05,
+   "diff": 0.318,
+   "lo": 0.097,
+   "hi": 0.543,
+   "pseudo_starts": 777,
+   "signal": true
+  }
+ },
+ {
+  "station_id": "E05360A",
+  "site": "E05360",
+  "label": "TEST_HOUGHTON_E_202504",
+  "watercourse": "River Test",
+  "artificial_channel": false,
+  "readings": 6618,
+  "valid_readings": 6597,
+  "first": "2025-04-04T14:54Z",
+  "last": "2026-01-04T23:04Z",
+  "monitored_upstream": 7,
+  "timing_overflows": 6,
+  "events": 3,
+  "reading_interval_min": 60,
+  "tier_a": 1,
+  "a_rise": 0,
+  "a_no_rise": 1,
+  "a_raised_before": 0,
+  "a_gap": 0,
+  "a_no_baseline": 0,
+  "tier_b": 2,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 0
+  },
+  "model_travel_h": {
+   "n": 0
+  },
+  "lag_h": {
+   "n": 0
+  },
+  "lag_over_model": {
+   "n": 0
+  },
+  "v_ms": {
+   "n": 0
+  },
+  "peak_lag_h": {
+   "n": 0
+  },
+  "window": {
+   "before": 0,
+   "inside": 0,
+   "after": 0
+  },
+  "lag_h_looser": {
+   "n": 0
+  },
+  "lag_h_stricter": {
+   "n": 0
+  },
+  "tier_b_rises": 1,
+  "tier_b_v_ms": {
+   "n": 1,
+   "values": [
+    0.47
+   ]
+  },
+  "quiet24_tier_a": 1,
+  "quiet24_lag_h": {
+   "n": 0
+  },
+  "dry": {
+   "n": 1,
+   "rise_share": 0.0,
+   "background_share": 0.01,
+   "diff": -0.01,
+   "lo": -0.021,
+   "hi": -0.002,
+   "pseudo_starts": 1009,
+   "signal": false
+  }
+ },
+ {
+  "station_id": "E05439A",
+  "site": "E05439",
+  "label": "FROME_US BULLS BRIDGE_E_202409",
+  "watercourse": "River Frome",
+  "artificial_channel": false,
+  "readings": 2862,
+  "valid_readings": 2812,
+  "first": "2024-10-04T13:16Z",
+  "last": "2024-12-04T07:31Z",
+  "monitored_upstream": 2,
+  "timing_overflows": 2,
+  "events": 4,
+  "reading_interval_min": 30,
+  "tier_a": 2,
+  "a_rise": 2,
+  "a_no_rise": 0,
+  "a_raised_before": 0,
+  "a_gap": 0,
+  "a_no_baseline": 0,
+  "tier_b": 2,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 2,
+   "values": [
+    3.15,
+    3.15
+   ]
+  },
+  "model_travel_h": {
+   "n": 2,
+   "values": [
+    4.37,
+    4.37
+   ]
+  },
+  "lag_h": {
+   "n": 2,
+   "values": [
+    3.13,
+    4.0
+   ]
+  },
+  "lag_over_model": {
+   "n": 2,
+   "values": [
+    0.72,
+    0.92
+   ]
+  },
+  "v_ms": {
+   "n": 2,
+   "values": [
+    0.22,
+    0.28
+   ]
+  },
+  "peak_lag_h": {
+   "n": 2,
+   "values": [
+    4.0,
+    19.13
+   ]
+  },
+  "window": {
+   "before": 2,
+   "inside": 0,
+   "after": 0
+  },
+  "lag_h_looser": {
+   "n": 2,
+   "values": [
+    1.13,
+    4.0
+   ]
+  },
+  "lag_h_stricter": {
+   "n": 1,
+   "values": [
+    3.63
+   ]
+  },
+  "tier_b_rises": 0,
+  "tier_b_v_ms": {
+   "n": 0
+  },
+  "quiet24_tier_a": 3,
+  "quiet24_lag_h": {
+   "n": 2,
+   "values": [
+    3.13,
+    4.0
+   ]
+  },
+  "dry": {
+   "n": 2,
+   "rise_share": 1.0,
+   "background_share": 0.078,
+   "diff": 0.922,
+   "lo": 0.786,
+   "hi": 0.99,
+   "pseudo_starts": 77,
+   "signal": true
+  }
+ },
+ {
+  "station_id": "E05564A",
+  "site": "E05564",
+  "label": "EYE_US BRENTINGBY DAM_E_202511",
+  "watercourse": "River Eye",
+  "artificial_channel": false,
+  "readings": 1247,
+  "valid_readings": 1247,
+  "first": "2025-11-12T13:24Z",
+  "last": "2026-01-02T12:01Z",
+  "monitored_upstream": 10,
+  "timing_overflows": 10,
+  "events": 4,
+  "reading_interval_min": 60,
+  "tier_a": 1,
+  "a_rise": 0,
+  "a_no_rise": 1,
+  "a_raised_before": 0,
+  "a_gap": 0,
+  "a_no_baseline": 0,
+  "tier_b": 3,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 0
+  },
+  "model_travel_h": {
+   "n": 0
+  },
+  "lag_h": {
+   "n": 0
+  },
+  "lag_over_model": {
+   "n": 0
+  },
+  "v_ms": {
+   "n": 0
+  },
+  "peak_lag_h": {
+   "n": 0
+  },
+  "window": {
+   "before": 0,
+   "inside": 0,
+   "after": 0
+  },
+  "lag_h_looser": {
+   "n": 0
+  },
+  "lag_h_stricter": {
+   "n": 0
+  },
+  "tier_b_rises": 0,
+  "tier_b_v_ms": {
+   "n": 0
+  },
+  "quiet24_tier_a": 2,
+  "quiet24_lag_h": {
+   "n": 0
+  },
+  "dry": {
+   "n": 1,
+   "rise_share": 0.0,
+   "background_share": 0.0,
+   "diff": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "pseudo_starts": 15,
+   "signal": false
+  }
+ },
+ {
+  "station_id": "E05588A",
+  "site": "E05588",
+  "label": "YARE_BAWBURGH_E_202410",
+  "watercourse": "River Yare",
+  "artificial_channel": false,
+  "readings": 0,
+  "valid_readings": 0,
+  "first": "",
+  "last": "",
+  "note": "no readings in 2024-25"
+ },
+ {
+  "station_id": "E05603A",
+  "site": "E05603",
+  "label": "NIDD_SCOTTON_E_202506",
+  "watercourse": "River Nidd",
+  "artificial_channel": false,
+  "readings": 0,
+  "valid_readings": 0,
+  "first": "",
+  "last": "",
+  "note": "no readings in 2024-25"
+ },
+ {
+  "station_id": "E05614A",
+  "site": "E05614",
+  "label": "EYE_HAM BRIDGE SSSI_E_202511",
+  "watercourse": "River Eye",
+  "artificial_channel": false,
+  "readings": 1258,
+  "valid_readings": 1258,
+  "first": "2025-11-12T10:31Z",
+  "last": "2026-01-02T13:01Z",
+  "monitored_upstream": 9,
+  "timing_overflows": 9,
+  "events": 4,
+  "reading_interval_min": 60,
+  "tier_a": 1,
+  "a_rise": 0,
+  "a_no_rise": 1,
+  "a_raised_before": 0,
+  "a_gap": 0,
+  "a_no_baseline": 0,
+  "tier_b": 3,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 0
+  },
+  "model_travel_h": {
+   "n": 0
+  },
+  "lag_h": {
+   "n": 0
+  },
+  "lag_over_model": {
+   "n": 0
+  },
+  "v_ms": {
+   "n": 0
+  },
+  "peak_lag_h": {
+   "n": 0
+  },
+  "window": {
+   "before": 0,
+   "inside": 0,
+   "after": 0
+  },
+  "lag_h_looser": {
+   "n": 0
+  },
+  "lag_h_stricter": {
+   "n": 0
+  },
+  "tier_b_rises": 0,
+  "tier_b_v_ms": {
+   "n": 0
+  },
+  "quiet24_tier_a": 2,
+  "quiet24_lag_h": {
+   "n": 0
+  },
+  "dry": {
+   "n": 1,
+   "rise_share": 0.0,
+   "background_share": 0.0,
+   "diff": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "pseudo_starts": 16,
+   "signal": false
+  }
+ },
+ {
+  "station_id": "E05667A",
+  "site": "E05667",
+  "label": "YARTY_DS CORRY BROOK CONF_E_202509",
+  "watercourse": "River Yarty",
+  "artificial_channel": false,
+  "readings": 0,
+  "valid_readings": 0,
+  "first": "",
+  "last": "",
+  "note": "no readings in 2024-25"
+ },
+ {
+  "station_id": "E05687A",
+  "site": "E05687",
+  "label": "DEARNE_DARTON BRIDGE_E_202504",
+  "watercourse": "River Dearne",
+  "artificial_channel": false,
+  "readings": 7054,
+  "valid_readings": 7053,
+  "first": "2025-05-15T11:01Z",
+  "last": "2025-10-09T09:30Z",
+  "monitored_upstream": 16,
+  "timing_overflows": 9,
+  "events": 12,
+  "reading_interval_min": 30,
+  "tier_a": 5,
+  "a_rise": 0,
+  "a_no_rise": 5,
+  "a_raised_before": 0,
+  "a_gap": 0,
+  "a_no_baseline": 0,
+  "tier_b": 7,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 0
+  },
+  "model_travel_h": {
+   "n": 0
+  },
+  "lag_h": {
+   "n": 0
+  },
+  "lag_over_model": {
+   "n": 0
+  },
+  "v_ms": {
+   "n": 0
+  },
+  "peak_lag_h": {
+   "n": 0
+  },
+  "window": {
+   "before": 0,
+   "inside": 0,
+   "after": 0
+  },
+  "lag_h_looser": {
+   "n": 0
+  },
+  "lag_h_stricter": {
+   "n": 0
+  },
+  "tier_b_rises": 2,
+  "tier_b_v_ms": {
+   "n": 2,
+   "values": [
+    0.1,
+    0.13
+   ]
+  },
+  "quiet24_tier_a": 5,
+  "quiet24_lag_h": {
+   "n": 0
+  },
+  "dry": {
+   "n": 5,
+   "rise_share": 0.0,
+   "background_share": 0.008,
+   "diff": -0.008,
+   "lo": -0.023,
+   "hi": 0.0,
+   "pseudo_starts": 305,
+   "signal": false
+  }
+ },
+ {
+  "station_id": "E05705A",
+  "site": "E05705",
+  "label": "NIDD_HAMPSTHWAITE_E_202501",
+  "watercourse": "River Nidd",
+  "artificial_channel": false,
+  "readings": 14187,
+  "valid_readings": 14181,
+  "first": "2025-02-03T13:00Z",
+  "last": "2025-12-04T11:01Z",
+  "monitored_upstream": 13,
+  "timing_overflows": 12,
+  "events": 17,
+  "reading_interval_min": 30,
+  "tier_a": 7,
+  "a_rise": 0,
+  "a_no_rise": 6,
+  "a_raised_before": 0,
+  "a_gap": 1,
+  "a_no_baseline": 0,
+  "tier_b": 10,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 0
+  },
+  "model_travel_h": {
+   "n": 0
+  },
+  "lag_h": {
+   "n": 0
+  },
+  "lag_over_model": {
+   "n": 0
+  },
+  "v_ms": {
+   "n": 0
+  },
+  "peak_lag_h": {
+   "n": 0
+  },
+  "window": {
+   "before": 0,
+   "inside": 0,
+   "after": 0
+  },
+  "lag_h_looser": {
+   "n": 1,
+   "values": [
+    15.77
+   ]
+  },
+  "lag_h_stricter": {
+   "n": 0
+  },
+  "tier_b_rises": 7,
+  "tier_b_v_ms": {
+   "n": 7,
+   "median": 0.002,
+   "lo": 0.001,
+   "hi": 0.205,
+   "q1": 0.001,
+   "q3": 0.125
+  },
+  "quiet24_tier_a": 7,
+  "quiet24_lag_h": {
+   "n": 0
+  },
+  "dry": {
+   "n": 6,
+   "rise_share": 0.0,
+   "background_share": 0.033,
+   "diff": -0.033,
+   "lo": -0.073,
+   "hi": -0.002,
+   "pseudo_starts": 691,
+   "signal": false
+  }
+ },
+ {
+  "station_id": "E05773A",
+  "site": "E05773",
+  "label": "WEAVER_COOLE HALL FARM_E_202510",
+  "watercourse": "River Weaver",
+  "artificial_channel": false,
+  "readings": 3317,
+  "valid_readings": 3317,
+  "first": "2025-10-22T10:00Z",
+  "last": "2026-01-04T23:31Z",
+  "monitored_upstream": 5,
+  "timing_overflows": 4,
+  "events": 6,
+  "reading_interval_min": 30,
+  "tier_a": 2,
+  "a_rise": 0,
+  "a_no_rise": 2,
+  "a_raised_before": 0,
+  "a_gap": 0,
+  "a_no_baseline": 0,
+  "tier_b": 4,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 0
+  },
+  "model_travel_h": {
+   "n": 0
+  },
+  "lag_h": {
+   "n": 0
+  },
+  "lag_over_model": {
+   "n": 0
+  },
+  "v_ms": {
+   "n": 0
+  },
+  "peak_lag_h": {
+   "n": 0
+  },
+  "window": {
+   "before": 0,
+   "inside": 0,
+   "after": 0
+  },
+  "lag_h_looser": {
+   "n": 2,
+   "values": [
+    9.77,
+    16.37
+   ]
+  },
+  "lag_h_stricter": {
+   "n": 0
+  },
+  "tier_b_rises": 1,
+  "tier_b_v_ms": {
+   "n": 1,
+   "values": [
+    0.32
+   ]
+  },
+  "quiet24_tier_a": 4,
+  "quiet24_lag_h": {
+   "n": 0
+  },
+  "dry": {
+   "n": 2,
+   "rise_share": 0.0,
+   "background_share": 0.037,
+   "diff": -0.037,
+   "lo": -0.106,
+   "hi": 0.0,
+   "pseudo_starts": 135,
+   "signal": false
+  }
+ },
+ {
+  "station_id": "E06141A",
+  "site": "E06141",
+  "label": "TAME_LEA MARSTON_E_201906",
+  "watercourse": "River Tame",
+  "artificial_channel": false,
+  "readings": 17645,
+  "valid_readings": 17625,
+  "first": "2023-12-30T00:01Z",
+  "last": "2026-01-04T23:00Z",
+  "monitored_upstream": 118,
+  "timing_overflows": 86,
+  "events": 55,
+  "reading_interval_min": 60,
+  "tier_a": 12,
+  "a_rise": 1,
+  "a_no_rise": 11,
+  "a_raised_before": 0,
+  "a_gap": 0,
+  "a_no_baseline": 0,
+  "tier_b": 37,
+  "tier_b_lake": 6,
+  "d_km": {
+   "n": 1,
+   "values": [
+    16.12
+   ]
+  },
+  "model_travel_h": {
+   "n": 1,
+   "values": [
+    22.39
+   ]
+  },
+  "lag_h": {
+   "n": 1,
+   "values": [
+    27.38
+   ]
+  },
+  "lag_over_model": {
+   "n": 1,
+   "values": [
+    1.22
+   ]
+  },
+  "v_ms": {
+   "n": 1,
+   "values": [
+    0.16
+   ]
+  },
+  "peak_lag_h": {
+   "n": 1,
+   "values": [
+    27.55
+   ]
+  },
+  "window": {
+   "before": 0,
+   "inside": 1,
+   "after": 0
+  },
+  "lag_h_looser": {
+   "n": 5,
+   "median": 27.383,
+   "lo": 11.233,
+   "hi": 39.35,
+   "q1": 13.3,
+   "q3": 27.517
+  },
+  "lag_h_stricter": {
+   "n": 1,
+   "values": [
+    61.38
+   ]
+  },
+  "tier_b_rises": 17,
+  "tier_b_v_ms": {
+   "n": 17,
+   "median": 0.249,
+   "lo": 0.139,
+   "hi": 0.414,
+   "q1": 0.139,
+   "q3": 0.414
+  },
+  "quiet24_tier_a": 17,
+  "quiet24_lag_h": {
+   "n": 1,
+   "values": [
+    27.38
+   ]
+  },
+  "dry": {
+   "n": 12,
+   "rise_share": 0.083,
+   "background_share": 0.084,
+   "diff": -0.001,
+   "lo": -0.123,
+   "hi": 0.198,
+   "pseudo_starts": 557,
+   "signal": false
+  }
+ },
+ {
+  "station_id": "E06313A",
+  "site": "E06313",
+  "label": "ROCKLEY DIKE_US WARREN DIKE_E_202501",
+  "watercourse": "Rockley Dike",
+  "artificial_channel": false,
+  "readings": 9128,
+  "valid_readings": 9128,
+  "first": "2025-01-28T10:43Z",
+  "last": "2025-12-11T14:01Z",
+  "monitored_upstream": 3,
+  "timing_overflows": 2,
+  "events": 12,
+  "reading_interval_min": 60,
+  "tier_a": 4,
+  "a_rise": 0,
+  "a_no_rise": 3,
+  "a_raised_before": 0,
+  "a_gap": 1,
+  "a_no_baseline": 0,
+  "tier_b": 8,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 0
+  },
+  "model_travel_h": {
+   "n": 0
+  },
+  "lag_h": {
+   "n": 0
+  },
+  "lag_over_model": {
+   "n": 0
+  },
+  "v_ms": {
+   "n": 0
+  },
+  "peak_lag_h": {
+   "n": 0
+  },
+  "window": {
+   "before": 0,
+   "inside": 0,
+   "after": 0
+  },
+  "lag_h_looser": {
+   "n": 0
+  },
+  "lag_h_stricter": {
+   "n": 0
+  },
+  "tier_b_rises": 4,
+  "tier_b_v_ms": {
+   "n": 4,
+   "values": [
+    0.0,
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  "quiet24_tier_a": 4,
+  "quiet24_lag_h": {
+   "n": 0
+  },
+  "dry": {
+   "n": 3,
+   "rise_share": 0.0,
+   "background_share": 0.007,
+   "diff": -0.007,
+   "lo": -0.021,
+   "hi": 0.0,
+   "pseudo_starts": 687,
+   "signal": false
+  }
+ },
+ {
+  "station_id": "E06349A",
+  "site": "E06349",
+  "label": "COLNE_EAST MILLS_E_202508",
+  "watercourse": "River Colne",
+  "artificial_channel": false,
+  "readings": 3006,
+  "valid_readings": 2998,
+  "first": "2025-08-22T10:05Z",
+  "last": "2025-12-18T14:00Z",
+  "monitored_upstream": 28,
+  "timing_overflows": 21,
+  "events": 3,
+  "reading_interval_min": 60,
+  "tier_a": 0,
+  "a_rise": 0,
+  "a_no_rise": 0,
+  "a_raised_before": 0,
+  "a_gap": 0,
+  "a_no_baseline": 0,
+  "tier_b": 3,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 0
+  },
+  "model_travel_h": {
+   "n": 0
+  },
+  "lag_h": {
+   "n": 0
+  },
+  "lag_over_model": {
+   "n": 0
+  },
+  "v_ms": {
+   "n": 0
+  },
+  "peak_lag_h": {
+   "n": 0
+  },
+  "window": {
+   "before": 0,
+   "inside": 0,
+   "after": 0
+  },
+  "lag_h_looser": {
+   "n": 0
+  },
+  "lag_h_stricter": {
+   "n": 0
+  },
+  "tier_b_rises": 0,
+  "tier_b_v_ms": {
+   "n": 0
+  },
+  "quiet24_tier_a": 0,
+  "quiet24_lag_h": {
+   "n": 0
+  },
+  "dry": {
+   "n": 0,
+   "rise_share": null,
+   "background_share": null,
+   "diff": null,
+   "lo": null,
+   "hi": null,
+   "pseudo_starts": 0,
+   "signal": false
+  }
+ },
+ {
+  "station_id": "E06355A",
+  "site": "E06355",
+  "label": "AXE_DS TEMPLE BROOK_E_202409",
+  "watercourse": "River Axe",
+  "artificial_channel": false,
+  "readings": 0,
+  "valid_readings": 0,
+  "first": "",
+  "last": "",
+  "note": "no readings in 2024-25"
+ },
+ {
+  "station_id": "E06470A",
+  "site": "E06470",
+  "label": "CREEDY_WESTACOTT_E_202509",
+  "watercourse": "River Creedy",
+  "artificial_channel": false,
+  "readings": 0,
+  "valid_readings": 0,
+  "first": "",
+  "last": "",
+  "note": "no readings in 2024-25"
+ },
+ {
+  "station_id": "E06527A",
+  "site": "E06527",
+  "label": "EA BECK_DS HAZEL LANE_E_202506",
+  "watercourse": "Frickley Beck",
+  "artificial_channel": false,
+  "readings": 9212,
+  "valid_readings": 9208,
+  "first": "2025-06-16T14:16Z",
+  "last": "2025-12-31T00:01Z",
+  "monitored_upstream": 5,
+  "timing_overflows": 4,
+  "events": 19,
+  "reading_interval_min": 30,
+  "tier_a": 9,
+  "a_rise": 5,
+  "a_no_rise": 4,
+  "a_raised_before": 0,
+  "a_gap": 0,
+  "a_no_baseline": 0,
+  "tier_b": 10,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 5,
+   "median": 2.219,
+   "lo": 2.17,
+   "hi": 2.219,
+   "q1": 2.17,
+   "q3": 2.219
+  },
+  "model_travel_h": {
+   "n": 5,
+   "median": 3.08,
+   "lo": 3.01,
+   "hi": 3.08,
+   "q1": 3.01,
+   "q3": 3.08
+  },
+  "lag_h": {
+   "n": 5,
+   "median": 5.517,
+   "lo": 2.517,
+   "hi": 7.017,
+   "q1": 4.017,
+   "q3": 6.767
+  },
+  "lag_over_model": {
+   "n": 5,
+   "median": 1.791,
+   "lo": 0.836,
+   "hi": 2.278,
+   "q1": 1.304,
+   "q3": 2.248
+  },
+  "v_ms": {
+   "n": 5,
+   "median": 0.112,
+   "lo": 0.088,
+   "hi": 0.239,
+   "q1": 0.089,
+   "q3": 0.153
+  },
+  "peak_lag_h": {
+   "n": 5,
+   "median": 7.517,
+   "lo": 4.517,
+   "hi": 27.767,
+   "q1": 6.017,
+   "q3": 27.517
+  },
+  "window": {
+   "before": 1,
+   "inside": 0,
+   "after": 4
+  },
+  "lag_h_looser": {
+   "n": 6,
+   "median": 5.517,
+   "lo": 2.517,
+   "hi": 19.267,
+   "q1": 4.267,
+   "q3": 6.579
+  },
+  "lag_h_stricter": {
+   "n": 3,
+   "values": [
+    4.02,
+    5.52,
+    8.27
+   ]
+  },
+  "tier_b_rises": 7,
+  "tier_b_v_ms": {
+   "n": 7,
+   "median": 0.163,
+   "lo": 0.114,
+   "hi": 0.189,
+   "q1": 0.122,
+   "q3": 0.182
+  },
+  "quiet24_tier_a": 9,
+  "quiet24_lag_h": {
+   "n": 5,
+   "median": 5.517,
+   "lo": 2.517,
+   "hi": 7.017,
+   "q1": 4.017,
+   "q3": 6.767
+  },
+  "dry": {
+   "n": 9,
+   "rise_share": 0.556,
+   "background_share": 0.051,
+   "diff": 0.504,
+   "lo": 0.143,
+   "hi": 0.829,
+   "pseudo_starts": 273,
+   "signal": true
+  }
+ },
+ {
+  "station_id": "E06567A",
+  "site": "E06567",
+  "label": "TEME_LUDLOW_FLUIDION_K_202502",
+  "watercourse": "Afon Tefeidiad",
+  "artificial_channel": false,
+  "readings": 8106,
+  "valid_readings": 8106,
+  "first": "2025-02-03T13:04Z",
+  "last": "2026-01-04T23:09Z",
+  "monitored_upstream": 9,
+  "timing_overflows": 7,
+  "events": 21,
+  "reading_interval_min": 60,
+  "tier_a": 7,
+  "a_rise": 0,
+  "a_no_rise": 7,
+  "a_raised_before": 0,
+  "a_gap": 0,
+  "a_no_baseline": 0,
+  "tier_b": 14,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 0
+  },
+  "model_travel_h": {
+   "n": 0
+  },
+  "lag_h": {
+   "n": 0
+  },
+  "lag_over_model": {
+   "n": 0
+  },
+  "v_ms": {
+   "n": 0
+  },
+  "peak_lag_h": {
+   "n": 0
+  },
+  "window": {
+   "before": 0,
+   "inside": 0,
+   "after": 0
+  },
+  "lag_h_looser": {
+   "n": 0
+  },
+  "lag_h_stricter": {
+   "n": 0
+  },
+  "tier_b_rises": 2,
+  "tier_b_v_ms": {
+   "n": 2,
+   "values": [
+    0.14,
+    0.29
+   ]
+  },
+  "quiet24_tier_a": 10,
+  "quiet24_lag_h": {
+   "n": 0
+  },
+  "dry": {
+   "n": 7,
+   "rise_share": 0.0,
+   "background_share": 0.0,
+   "diff": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "pseudo_starts": 546,
+   "signal": false
+  }
+ },
+ {
+  "station_id": "E06616A",
+  "site": "E06616",
+  "label": "GOWY_MILL PARK LANE_E_202511",
+  "watercourse": "River Gowy",
+  "artificial_channel": false,
+  "readings": 1650,
+  "valid_readings": 1650,
+  "first": "2025-11-18T15:00Z",
+  "last": "2025-12-27T12:31Z",
+  "monitored_upstream": 1,
+  "timing_overflows": 1,
+  "events": 6,
+  "reading_interval_min": 30,
+  "tier_a": 6,
+  "a_rise": 1,
+  "a_no_rise": 3,
+  "a_raised_before": 1,
+  "a_gap": 1,
+  "a_no_baseline": 0,
+  "tier_b": 0,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 1,
+   "values": [
+    13.66
+   ]
+  },
+  "model_travel_h": {
+   "n": 1,
+   "values": [
+    18.97
+   ]
+  },
+  "lag_h": {
+   "n": 1,
+   "values": [
+    30.95
+   ]
+  },
+  "lag_over_model": {
+   "n": 1,
+   "values": [
+    1.63
+   ]
+  },
+  "v_ms": {
+   "n": 1,
+   "values": [
+    0.12
+   ]
+  },
+  "peak_lag_h": {
+   "n": 1,
+   "values": [
+    31.45
+   ]
+  },
+  "window": {
+   "before": 0,
+   "inside": 0,
+   "after": 1
+  },
+  "lag_h_looser": {
+   "n": 3,
+   "values": [
+    7.28,
+    7.95,
+    21.95
+   ]
+  },
+  "lag_h_stricter": {
+   "n": 1,
+   "values": [
+    30.95
+   ]
+  },
+  "tier_b_rises": 0,
+  "tier_b_v_ms": {
+   "n": 0
+  },
+  "quiet24_tier_a": 8,
+  "quiet24_lag_h": {
+   "n": 1,
+   "values": [
+    30.95
+   ]
+  },
+  "dry": {
+   "n": 4,
+   "rise_share": 0.25,
+   "background_share": 0.0,
+   "diff": 0.25,
+   "lo": 0.25,
+   "hi": 0.75,
+   "pseudo_starts": 2,
+   "signal": true
+  }
+ },
+ {
+  "station_id": "E07480A",
+  "site": "E07480",
+  "label": "SEVERN_UPPER LODE_E_202508",
+  "watercourse": "River Severn",
+  "artificial_channel": false,
+  "readings": 0,
+  "valid_readings": 0,
+  "first": "",
+  "last": "",
+  "note": "no readings in 2024-25"
+ },
+ {
+  "station_id": "E07602A",
+  "site": "E07602",
+  "label": "DERWENT_US RYE CONFLUENCE_E_202406",
+  "watercourse": "River Derwent",
+  "artificial_channel": false,
+  "readings": 0,
+  "valid_readings": 0,
+  "first": "",
+  "last": "",
+  "note": "no readings in 2024-25"
+ },
+ {
+  "station_id": "E07691A",
+  "site": "E07691",
+  "label": "GIPPING_HORSESHOE WEIR_E_202508",
+  "watercourse": "River Gipping",
+  "artificial_channel": false,
+  "readings": 2867,
+  "valid_readings": 2861,
+  "first": "2025-08-22T14:14Z",
+  "last": "2025-12-18T13:00Z",
+  "monitored_upstream": 17,
+  "timing_overflows": 15,
+  "events": 1,
+  "reading_interval_min": 60,
+  "tier_a": 0,
+  "a_rise": 0,
+  "a_no_rise": 0,
+  "a_raised_before": 0,
+  "a_gap": 0,
+  "a_no_baseline": 0,
+  "tier_b": 1,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 0
+  },
+  "model_travel_h": {
+   "n": 0
+  },
+  "lag_h": {
+   "n": 0
+  },
+  "lag_over_model": {
+   "n": 0
+  },
+  "v_ms": {
+   "n": 0
+  },
+  "peak_lag_h": {
+   "n": 0
+  },
+  "window": {
+   "before": 0,
+   "inside": 0,
+   "after": 0
+  },
+  "lag_h_looser": {
+   "n": 0
+  },
+  "lag_h_stricter": {
+   "n": 0
+  },
+  "tier_b_rises": 0,
+  "tier_b_v_ms": {
+   "n": 0
+  },
+  "quiet24_tier_a": 1,
+  "quiet24_lag_h": {
+   "n": 0
+  },
+  "dry": {
+   "n": 0,
+   "rise_share": null,
+   "background_share": null,
+   "diff": null,
+   "lo": null,
+   "hi": null,
+   "pseudo_starts": 0,
+   "signal": false
+  }
+ },
+ {
+  "station_id": "E08302A",
+  "site": "E08302",
+  "label": "TOFT NEWTON_E_202308",
+  "watercourse": "River Ancholme",
+  "artificial_channel": false,
+  "readings": 15206,
+  "valid_readings": 15194,
+  "first": "2024-03-20T10:30Z",
+  "last": "2026-01-04T23:01Z",
+  "monitored_upstream": 1,
+  "timing_overflows": 1,
+  "events": 5,
+  "reading_interval_min": 60,
+  "tier_a": 5,
+  "a_rise": 0,
+  "a_no_rise": 5,
+  "a_raised_before": 0,
+  "a_gap": 0,
+  "a_no_baseline": 0,
+  "tier_b": 0,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 0
+  },
+  "model_travel_h": {
+   "n": 0
+  },
+  "lag_h": {
+   "n": 0
+  },
+  "lag_over_model": {
+   "n": 0
+  },
+  "v_ms": {
+   "n": 0
+  },
+  "peak_lag_h": {
+   "n": 0
+  },
+  "window": {
+   "before": 0,
+   "inside": 0,
+   "after": 0
+  },
+  "lag_h_looser": {
+   "n": 0
+  },
+  "lag_h_stricter": {
+   "n": 0
+  },
+  "tier_b_rises": 0,
+  "tier_b_v_ms": {
+   "n": 0
+  },
+  "quiet24_tier_a": 5,
+  "quiet24_lag_h": {
+   "n": 0
+  },
+  "dry": {
+   "n": 5,
+   "rise_share": 0.0,
+   "background_share": 0.003,
+   "diff": -0.003,
+   "lo": -0.006,
+   "hi": 0.0,
+   "pseudo_starts": 2383,
+   "signal": false
+  }
+ },
+ {
+  "station_id": "E08368A",
+  "site": "E08368",
+  "label": "NIDD_KILLINGHALL_E_202503",
+  "watercourse": "River Nidd",
+  "artificial_channel": false,
+  "readings": 0,
+  "valid_readings": 0,
+  "first": "",
+  "last": "",
+  "note": "no readings in 2024-25"
+ },
+ {
+  "station_id": "E08380A",
+  "site": "E08380",
+  "label": "BRENT_EALING GOLF COURSE_E_202412",
+  "watercourse": "River Brent",
+  "artificial_channel": false,
+  "readings": 7164,
+  "valid_readings": 7164,
+  "first": "2025-01-10T10:28Z",
+  "last": "2026-01-04T23:00Z",
+  "monitored_upstream": 27,
+  "timing_overflows": 5,
+  "events": 3,
+  "reading_interval_min": 60,
+  "tier_a": 1,
+  "a_rise": 0,
+  "a_no_rise": 0,
+  "a_raised_before": 1,
+  "a_gap": 0,
+  "a_no_baseline": 0,
+  "tier_b": 0,
+  "tier_b_lake": 2,
+  "d_km": {
+   "n": 0
+  },
+  "model_travel_h": {
+   "n": 0
+  },
+  "lag_h": {
+   "n": 0
+  },
+  "lag_over_model": {
+   "n": 0
+  },
+  "v_ms": {
+   "n": 0
+  },
+  "peak_lag_h": {
+   "n": 0
+  },
+  "window": {
+   "before": 0,
+   "inside": 0,
+   "after": 0
+  },
+  "lag_h_looser": {
+   "n": 0
+  },
+  "lag_h_stricter": {
+   "n": 0
+  },
+  "tier_b_rises": 0,
+  "tier_b_v_ms": {
+   "n": 0
+  },
+  "quiet24_tier_a": 1,
+  "quiet24_lag_h": {
+   "n": 0
+  },
+  "dry": {
+   "n": 0,
+   "rise_share": null,
+   "background_share": null,
+   "diff": null,
+   "lo": null,
+   "hi": null,
+   "pseudo_starts": 0,
+   "signal": false
+  }
+ },
+ {
+  "station_id": "E08559A",
+  "site": "E08559",
+  "label": "NIDD_US HARROGATE WWTW_E_202501",
+  "watercourse": "River Nidd",
+  "artificial_channel": false,
+  "readings": 12969,
+  "valid_readings": 12928,
+  "first": "2025-01-28T10:01Z",
+  "last": "2025-12-04T13:01Z",
+  "monitored_upstream": 18,
+  "timing_overflows": 18,
+  "events": 21,
+  "reading_interval_min": 30,
+  "tier_a": 6,
+  "a_rise": 0,
+  "a_no_rise": 6,
+  "a_raised_before": 0,
+  "a_gap": 0,
+  "a_no_baseline": 0,
+  "tier_b": 15,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 0
+  },
+  "model_travel_h": {
+   "n": 0
+  },
+  "lag_h": {
+   "n": 0
+  },
+  "lag_over_model": {
+   "n": 0
+  },
+  "v_ms": {
+   "n": 0
+  },
+  "peak_lag_h": {
+   "n": 0
+  },
+  "window": {
+   "before": 0,
+   "inside": 0,
+   "after": 0
+  },
+  "lag_h_looser": {
+   "n": 1,
+   "values": [
+    13.52
+   ]
+  },
+  "lag_h_stricter": {
+   "n": 0
+  },
+  "tier_b_rises": 9,
+  "tier_b_v_ms": {
+   "n": 9,
+   "median": 0.223,
+   "lo": 0.097,
+   "hi": 0.516,
+   "q1": 0.114,
+   "q3": 0.286
+  },
+  "quiet24_tier_a": 7,
+  "quiet24_lag_h": {
+   "n": 0
+  },
+  "dry": {
+   "n": 6,
+   "rise_share": 0.0,
+   "background_share": 0.019,
+   "diff": -0.019,
+   "lo": -0.053,
+   "hi": -0.001,
+   "pseudo_starts": 698,
+   "signal": false
+  }
+ },
+ {
+  "station_id": "E08602A",
+  "site": "E08602",
+  "label": "STOUR_BOXTED MILL_E_202505",
+  "watercourse": "River Stour",
+  "artificial_channel": false,
+  "readings": 0,
+  "valid_readings": 0,
+  "first": "",
+  "last": "",
+  "note": "no readings in 2024-25"
+ },
+ {
+  "station_id": "E08665A",
+  "site": "E08665",
+  "label": "RHEE_HASLINGFIELD_E_202507",
+  "watercourse": "River Cam",
+  "artificial_channel": false,
+  "readings": 17128,
+  "valid_readings": 17126,
+  "first": "2025-07-10T15:00Z",
+  "last": "2026-01-04T23:45Z",
+  "monitored_upstream": 9,
+  "timing_overflows": 7,
+  "events": 17,
+  "reading_interval_min": 15,
+  "tier_a": 13,
+  "a_rise": 1,
+  "a_no_rise": 12,
+  "a_raised_before": 0,
+  "a_gap": 0,
+  "a_no_baseline": 0,
+  "tier_b": 4,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 1,
+   "values": [
+    9.74
+   ]
+  },
+  "model_travel_h": {
+   "n": 1,
+   "values": [
+    13.52
+   ]
+  },
+  "lag_h": {
+   "n": 1,
+   "values": [
+    23.75
+   ]
+  },
+  "lag_over_model": {
+   "n": 1,
+   "values": [
+    1.76
+   ]
+  },
+  "v_ms": {
+   "n": 1,
+   "values": [
+    0.11
+   ]
+  },
+  "peak_lag_h": {
+   "n": 1,
+   "values": [
+    26.5
+   ]
+  },
+  "window": {
+   "before": 0,
+   "inside": 0,
+   "after": 1
+  },
+  "lag_h_looser": {
+   "n": 7,
+   "median": 18.25,
+   "lo": 9.233,
+   "hi": 60.783,
+   "q1": 9.95,
+   "q3": 46.125
+  },
+  "lag_h_stricter": {
+   "n": 0
+  },
+  "tier_b_rises": 2,
+  "tier_b_v_ms": {
+   "n": 2,
+   "values": [
+    0.25,
+    0.56
+   ]
+  },
+  "quiet24_tier_a": 15,
+  "quiet24_lag_h": {
+   "n": 1,
+   "values": [
+    23.75
+   ]
+  },
+  "dry": {
+   "n": 13,
+   "rise_share": 0.077,
+   "background_share": 0.071,
+   "diff": 0.006,
+   "lo": -0.144,
+   "hi": 0.174,
+   "pseudo_starts": 324,
+   "signal": false
+  }
+ },
+ {
+  "station_id": "E09333A",
+  "site": "E09333",
+  "label": "BRETT_SHELLEY BRIDGE_E_202505",
+  "watercourse": "River Brett",
+  "artificial_channel": false,
+  "readings": 11028,
+  "valid_readings": 11028,
+  "first": "2025-05-20T10:31Z",
+  "last": "2026-01-04T23:31Z",
+  "monitored_upstream": 6,
+  "timing_overflows": 6,
+  "events": 8,
+  "reading_interval_min": 30,
+  "tier_a": 5,
+  "a_rise": 0,
+  "a_no_rise": 5,
+  "a_raised_before": 0,
+  "a_gap": 0,
+  "a_no_baseline": 0,
+  "tier_b": 3,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 0
+  },
+  "model_travel_h": {
+   "n": 0
+  },
+  "lag_h": {
+   "n": 0
+  },
+  "lag_over_model": {
+   "n": 0
+  },
+  "v_ms": {
+   "n": 0
+  },
+  "peak_lag_h": {
+   "n": 0
+  },
+  "window": {
+   "before": 0,
+   "inside": 0,
+   "after": 0
+  },
+  "lag_h_looser": {
+   "n": 1,
+   "values": [
+    19.48
+   ]
+  },
+  "lag_h_stricter": {
+   "n": 0
+  },
+  "tier_b_rises": 0,
+  "tier_b_v_ms": {
+   "n": 0
+  },
+  "quiet24_tier_a": 6,
+  "quiet24_lag_h": {
+   "n": 0
+  },
+  "dry": {
+   "n": 5,
+   "rise_share": 0.0,
+   "background_share": 0.049,
+   "diff": -0.049,
+   "lo": -0.099,
+   "hi": -0.012,
+   "pseudo_starts": 741,
+   "signal": false
+  }
+ },
+ {
+  "station_id": "E10053A",
+  "site": "E10053",
+  "label": "GAYWOOD_BAWSEY RUINS_E_202012",
+  "watercourse": "Gaywood River",
+  "artificial_channel": false,
+  "readings": 17927,
+  "valid_readings": 17654,
+  "first": "2023-12-30T00:01Z",
+  "last": "2026-01-04T23:01Z",
+  "monitored_upstream": 1,
+  "timing_overflows": 1,
+  "events": 10,
+  "reading_interval_min": 60,
+  "tier_a": 10,
+  "a_rise": 3,
+  "a_no_rise": 3,
+  "a_raised_before": 2,
+  "a_gap": 1,
+  "a_no_baseline": 1,
+  "tier_b": 0,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 3,
+   "values": [
+    6.13,
+    6.13,
+    6.13
+   ]
+  },
+  "model_travel_h": {
+   "n": 3,
+   "values": [
+    8.51,
+    8.51,
+    8.51
+   ]
+  },
+  "lag_h": {
+   "n": 3,
+   "values": [
+    4.15,
+    24.52,
+    30.25
+   ]
+  },
+  "lag_over_model": {
+   "n": 3,
+   "values": [
+    0.49,
+    2.88,
+    3.55
+   ]
+  },
+  "v_ms": {
+   "n": 3,
+   "values": [
+    0.06,
+    0.07,
+    0.41
+   ]
+  },
+  "peak_lag_h": {
+   "n": 3,
+   "values": [
+    6.15,
+    30.25,
+    39.52
+   ]
+  },
+  "window": {
+   "before": 1,
+   "inside": 0,
+   "after": 2
+  },
+  "lag_h_looser": {
+   "n": 3,
+   "values": [
+    0.15,
+    24.02,
+    30.25
+   ]
+  },
+  "lag_h_stricter": {
+   "n": 2,
+   "values": [
+    5.15,
+    25.02
+   ]
+  },
+  "tier_b_rises": 0,
+  "tier_b_v_ms": {
+   "n": 0
+  },
+  "quiet24_tier_a": 12,
+  "quiet24_lag_h": {
+   "n": 3,
+   "values": [
+    4.15,
+    24.52,
+    30.25
+   ]
+  },
+  "dry": {
+   "n": 6,
+   "rise_share": 0.5,
+   "background_share": 0.07,
+   "diff": 0.43,
+   "lo": -0.069,
+   "hi": 0.932,
+   "pseudo_starts": 2214,
+   "signal": false
+  }
+ },
+ {
+  "station_id": "E10618A",
+  "site": "E10618",
+  "label": "RHEE_MALTON FARM_E_202507",
+  "watercourse": "River Cam",
+  "artificial_channel": false,
+  "readings": 16950,
+  "valid_readings": 16949,
+  "first": "2025-07-10T12:29Z",
+  "last": "2026-01-04T23:45Z",
+  "monitored_upstream": 3,
+  "timing_overflows": 2,
+  "events": 3,
+  "reading_interval_min": 15,
+  "tier_a": 3,
+  "a_rise": 1,
+  "a_no_rise": 2,
+  "a_raised_before": 0,
+  "a_gap": 0,
+  "a_no_baseline": 0,
+  "tier_b": 0,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 1,
+   "values": [
+    14.71
+   ]
+  },
+  "model_travel_h": {
+   "n": 1,
+   "values": [
+    20.43
+   ]
+  },
+  "lag_h": {
+   "n": 1,
+   "values": [
+    9.3
+   ]
+  },
+  "lag_over_model": {
+   "n": 1,
+   "values": [
+    0.46
+   ]
+  },
+  "v_ms": {
+   "n": 1,
+   "values": [
+    0.44
+   ]
+  },
+  "peak_lag_h": {
+   "n": 1,
+   "values": [
+    9.8
+   ]
+  },
+  "window": {
+   "before": 1,
+   "inside": 0,
+   "after": 0
+  },
+  "lag_h_looser": {
+   "n": 3,
+   "values": [
+    6.57,
+    8.43,
+    8.55
+   ]
+  },
+  "lag_h_stricter": {
+   "n": 1,
+   "values": [
+    42.3
+   ]
+  },
+  "tier_b_rises": 0,
+  "tier_b_v_ms": {
+   "n": 0
+  },
+  "quiet24_tier_a": 3,
+  "quiet24_lag_h": {
+   "n": 1,
+   "values": [
+    9.3
+   ]
+  },
+  "dry": {
+   "n": 3,
+   "rise_share": 0.333,
+   "background_share": 0.226,
+   "diff": 0.107,
+   "lo": -0.297,
+   "hi": 0.779,
+   "pseudo_starts": 561,
+   "signal": false
+  }
+ },
+ {
+  "station_id": "E11145A",
+  "site": "E11145",
+  "label": "AVON_LUCYS MILL_E_201904",
+  "watercourse": "River Avon",
+  "artificial_channel": false,
+  "readings": 20717,
+  "valid_readings": 20579,
+  "first": "2023-12-31T13:01Z",
+  "last": "2026-01-04T23:01Z",
+  "monitored_upstream": 52,
+  "timing_overflows": 22,
+  "events": 20,
+  "reading_interval_min": 60,
+  "tier_a": 4,
+  "a_rise": 0,
+  "a_no_rise": 4,
+  "a_raised_before": 0,
+  "a_gap": 0,
+  "a_no_baseline": 0,
+  "tier_b": 16,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 0
+  },
+  "model_travel_h": {
+   "n": 0
+  },
+  "lag_h": {
+   "n": 0
+  },
+  "lag_over_model": {
+   "n": 0
+  },
+  "v_ms": {
+   "n": 0
+  },
+  "peak_lag_h": {
+   "n": 0
+  },
+  "window": {
+   "before": 0,
+   "inside": 0,
+   "after": 0
+  },
+  "lag_h_looser": {
+   "n": 0
+  },
+  "lag_h_stricter": {
+   "n": 0
+  },
+  "tier_b_rises": 1,
+  "tier_b_v_ms": {
+   "n": 1,
+   "values": [
+    0.9
+   ]
+  },
+  "quiet24_tier_a": 8,
+  "quiet24_lag_h": {
+   "n": 1,
+   "values": [
+    43.08
+   ]
+  },
+  "dry": {
+   "n": 4,
+   "rise_share": 0.0,
+   "background_share": 0.0,
+   "diff": 0.0,
+   "lo": 0.0,
+   "hi": 0.0,
+   "pseudo_starts": 463,
+   "signal": false
+  }
+ },
+ {
+  "station_id": "E12363A",
+  "site": "E12363",
+  "label": "AXE_US TEMPLE BROOK_E_202409",
+  "watercourse": "River Axe",
+  "artificial_channel": false,
+  "readings": 0,
+  "valid_readings": 0,
+  "first": "",
+  "last": "",
+  "note": "no readings in 2024-25"
+ },
+ {
+  "station_id": "E13054A",
+  "site": "E13054",
+  "label": "HORSEPOOL_WEST FLEET_E_202510",
+  "watercourse": "",
+  "artificial_channel": false,
+  "readings": 3233,
+  "valid_readings": 3233,
+  "first": "2025-10-28T14:15Z",
+  "last": "2026-01-04T23:31Z",
+  "monitored_upstream": 1,
+  "timing_overflows": 1,
+  "events": 3,
+  "reading_interval_min": 30,
+  "tier_a": 3,
+  "a_rise": 1,
+  "a_no_rise": 2,
+  "a_raised_before": 0,
+  "a_gap": 0,
+  "a_no_baseline": 0,
+  "tier_b": 0,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 1,
+   "values": [
+    1.27
+   ]
+  },
+  "model_travel_h": {
+   "n": 1,
+   "values": [
+    1.76
+   ]
+  },
+  "lag_h": {
+   "n": 1,
+   "values": [
+    0.32
+   ]
+  },
+  "lag_over_model": {
+   "n": 1,
+   "values": [
+    0.18
+   ]
+  },
+  "v_ms": {
+   "n": 1,
+   "values": [
+    1.11
+   ]
+  },
+  "peak_lag_h": {
+   "n": 1,
+   "values": [
+    1.32
+   ]
+  },
+  "window": {
+   "before": 1,
+   "inside": 0,
+   "after": 0
+  },
+  "lag_h_looser": {
+   "n": 1,
+   "values": [
+    3.37
+   ]
+  },
+  "lag_h_stricter": {
+   "n": 0
+  },
+  "tier_b_rises": 0,
+  "tier_b_v_ms": {
+   "n": 0
+  },
+  "quiet24_tier_a": 3,
+  "quiet24_lag_h": {
+   "n": 1,
+   "values": [
+    0.32
+   ]
+  },
+  "dry": {
+   "n": 3,
+   "rise_share": 0.333,
+   "background_share": 0.016,
+   "diff": 0.317,
+   "lo": -0.034,
+   "hi": 0.987,
+   "pseudo_starts": 125,
+   "signal": false
+  }
+ },
+ {
+  "station_id": "E14390A",
+  "site": "E14390",
+  "label": "WEAVER_DUCKOW SWANBACH FARM_E_202510",
+  "watercourse": "River Weaver",
+  "artificial_channel": false,
+  "readings": 1973,
+  "valid_readings": 1692,
+  "first": "2025-10-20T09:30Z",
+  "last": "2026-01-02T12:00Z",
+  "monitored_upstream": 4,
+  "timing_overflows": 3,
+  "events": 3,
+  "reading_interval_min": 30,
+  "tier_a": 2,
+  "a_rise": 0,
+  "a_no_rise": 0,
+  "a_raised_before": 0,
+  "a_gap": 0,
+  "a_no_baseline": 2,
+  "tier_b": 1,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 0
+  },
+  "model_travel_h": {
+   "n": 0
+  },
+  "lag_h": {
+   "n": 0
+  },
+  "lag_over_model": {
+   "n": 0
+  },
+  "v_ms": {
+   "n": 0
+  },
+  "peak_lag_h": {
+   "n": 0
+  },
+  "window": {
+   "before": 0,
+   "inside": 0,
+   "after": 0
+  },
+  "lag_h_looser": {
+   "n": 0
+  },
+  "lag_h_stricter": {
+   "n": 0
+  },
+  "tier_b_rises": 0,
+  "tier_b_v_ms": {
+   "n": 0
+  },
+  "quiet24_tier_a": 2,
+  "quiet24_lag_h": {
+   "n": 0
+  },
+  "dry": {
+   "n": 0,
+   "rise_share": null,
+   "background_share": null,
+   "diff": null,
+   "lo": null,
+   "hi": null,
+   "pseudo_starts": 0,
+   "signal": false
+  }
+ },
+ {
+  "station_id": "E17107A",
+  "site": "E17107",
+  "label": "TAMAR_GUNNISLAKE TRAP_E_202404",
+  "watercourse": "River Tamar",
+  "artificial_channel": false,
+  "readings": 16692,
+  "valid_readings": 16390,
+  "first": "2024-04-30T14:31Z",
+  "last": "2026-01-04T23:01Z",
+  "monitored_upstream": 50,
+  "timing_overflows": 19,
+  "events": 9,
+  "reading_interval_min": 60,
+  "tier_a": 5,
+  "a_rise": 0,
+  "a_no_rise": 4,
+  "a_raised_before": 0,
+  "a_gap": 0,
+  "a_no_baseline": 1,
+  "tier_b": 4,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 0
+  },
+  "model_travel_h": {
+   "n": 0
+  },
+  "lag_h": {
+   "n": 0
+  },
+  "lag_over_model": {
+   "n": 0
+  },
+  "v_ms": {
+   "n": 0
+  },
+  "peak_lag_h": {
+   "n": 0
+  },
+  "window": {
+   "before": 0,
+   "inside": 0,
+   "after": 0
+  },
+  "lag_h_looser": {
+   "n": 0
+  },
+  "lag_h_stricter": {
+   "n": 0
+  },
+  "tier_b_rises": 0,
+  "tier_b_v_ms": {
+   "n": 0
+  },
+  "quiet24_tier_a": 8,
+  "quiet24_lag_h": {
+   "n": 0
+  },
+  "dry": {
+   "n": 4,
+   "rise_share": 0.0,
+   "background_share": 0.004,
+   "diff": -0.004,
+   "lo": -0.021,
+   "hi": 0.0,
+   "pseudo_starts": 303,
+   "signal": false
+  }
+ },
+ {
+  "station_id": "E26020A",
+  "site": "E26020",
+  "label": "LEE_LEA BRIDGE WEIR_K_202010",
+  "watercourse": "River Lee",
+  "artificial_channel": false,
+  "readings": 16849,
+  "valid_readings": 16841,
+  "first": "2023-12-30T00:05Z",
+  "last": "2026-01-04T23:00Z",
+  "monitored_upstream": 28,
+  "timing_overflows": 7,
+  "events": 4,
+  "reading_interval_min": 60,
+  "tier_a": 0,
+  "a_rise": 0,
+  "a_no_rise": 0,
+  "a_raised_before": 0,
+  "a_gap": 0,
+  "a_no_baseline": 0,
+  "tier_b": 0,
+  "tier_b_lake": 4,
+  "d_km": {
+   "n": 0
+  },
+  "model_travel_h": {
+   "n": 0
+  },
+  "lag_h": {
+   "n": 0
+  },
+  "lag_over_model": {
+   "n": 0
+  },
+  "v_ms": {
+   "n": 0
+  },
+  "peak_lag_h": {
+   "n": 0
+  },
+  "window": {
+   "before": 0,
+   "inside": 0,
+   "after": 0
+  },
+  "lag_h_looser": {
+   "n": 0
+  },
+  "lag_h_stricter": {
+   "n": 0
+  },
+  "tier_b_rises": 0,
+  "tier_b_v_ms": {
+   "n": 0
+  },
+  "quiet24_tier_a": 0,
+  "quiet24_lag_h": {
+   "n": 0
+  },
+  "dry": {
+   "n": 0,
+   "rise_share": null,
+   "background_share": null,
+   "diff": null,
+   "lo": null,
+   "hi": null,
+   "pseudo_starts": 0,
+   "signal": false
+  }
+ },
+ {
+  "station_id": "E29998A",
+  "site": "E29998",
+  "label": "DEBEN_SANCTUARY BRIDGE_E_202506",
+  "watercourse": "River Deben",
+  "artificial_channel": false,
+  "readings": 8643,
+  "valid_readings": 8634,
+  "first": "2025-07-09T08:44Z",
+  "last": "2026-01-04T23:30Z",
+  "monitored_upstream": 1,
+  "timing_overflows": 1,
+  "events": 3,
+  "reading_interval_min": 30,
+  "tier_a": 3,
+  "a_rise": 0,
+  "a_no_rise": 3,
+  "a_raised_before": 0,
+  "a_gap": 0,
+  "a_no_baseline": 0,
+  "tier_b": 0,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 0
+  },
+  "model_travel_h": {
+   "n": 0
+  },
+  "lag_h": {
+   "n": 0
+  },
+  "lag_over_model": {
+   "n": 0
+  },
+  "v_ms": {
+   "n": 0
+  },
+  "peak_lag_h": {
+   "n": 0
+  },
+  "window": {
+   "before": 0,
+   "inside": 0,
+   "after": 0
+  },
+  "lag_h_looser": {
+   "n": 0
+  },
+  "lag_h_stricter": {
+   "n": 0
+  },
+  "tier_b_rises": 0,
+  "tier_b_v_ms": {
+   "n": 0
+  },
+  "quiet24_tier_a": 3,
+  "quiet24_lag_h": {
+   "n": 0
+  },
+  "dry": {
+   "n": 3,
+   "rise_share": 0.0,
+   "background_share": 0.039,
+   "diff": -0.039,
+   "lo": -0.083,
+   "hi": -0.003,
+   "pseudo_starts": 623,
+   "signal": false
+  }
+ },
+ {
+  "station_id": "E35998A",
+  "site": "E35998",
+  "label": "THAMES_TAPLOW 2_K_202506",
+  "watercourse": "River Thames",
+  "artificial_channel": false,
+  "readings": 3157,
+  "valid_readings": 3157,
+  "first": "2025-06-25T00:05Z",
+  "last": "2025-11-03T10:06Z",
+  "monitored_upstream": 20,
+  "timing_overflows": 5,
+  "events": 3,
+  "reading_interval_min": 60,
+  "tier_a": 3,
+  "a_rise": 0,
+  "a_no_rise": 3,
+  "a_raised_before": 0,
+  "a_gap": 0,
+  "a_no_baseline": 0,
+  "tier_b": 0,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 0
+  },
+  "model_travel_h": {
+   "n": 0
+  },
+  "lag_h": {
+   "n": 0
+  },
+  "lag_over_model": {
+   "n": 0
+  },
+  "v_ms": {
+   "n": 0
+  },
+  "peak_lag_h": {
+   "n": 0
+  },
+  "window": {
+   "before": 0,
+   "inside": 0,
+   "after": 0
+  },
+  "lag_h_looser": {
+   "n": 0
+  },
+  "lag_h_stricter": {
+   "n": 0
+  },
+  "tier_b_rises": 0,
+  "tier_b_v_ms": {
+   "n": 0
+  },
+  "quiet24_tier_a": 3,
+  "quiet24_lag_h": {
+   "n": 0
+  },
+  "dry": {
+   "n": 3,
+   "rise_share": 0.0,
+   "background_share": 0.029,
+   "diff": -0.029,
+   "lo": -0.082,
+   "hi": 0.0,
+   "pseudo_starts": 411,
+   "signal": false
+  }
+ },
+ {
+  "station_id": "E64999A",
+  "site": "E64999",
+  "label": "HIPPER_PARK ROAD BRIDGE_E_202312",
+  "watercourse": "River Hipper",
+  "artificial_channel": false,
+  "readings": 15042,
+  "valid_readings": 15041,
+  "first": "2023-12-30T00:01Z",
+  "last": "2026-01-04T23:01Z",
+  "monitored_upstream": 14,
+  "timing_overflows": 11,
+  "events": 26,
+  "reading_interval_min": 60,
+  "tier_a": 5,
+  "a_rise": 1,
+  "a_no_rise": 1,
+  "a_raised_before": 0,
+  "a_gap": 1,
+  "a_no_baseline": 2,
+  "tier_b": 21,
+  "tier_b_lake": 0,
+  "d_km": {
+   "n": 1,
+   "values": [
+    2.21
+   ]
+  },
+  "model_travel_h": {
+   "n": 1,
+   "values": [
+    3.08
+   ]
+  },
+  "lag_h": {
+   "n": 1,
+   "values": [
+    0.52
+   ]
+  },
+  "lag_over_model": {
+   "n": 1,
+   "values": [
+    0.17
+   ]
+  },
+  "v_ms": {
+   "n": 1,
+   "values": [
+    1.19
+   ]
+  },
+  "peak_lag_h": {
+   "n": 1,
+   "values": [
+    1.52
+   ]
+  },
+  "window": {
+   "before": 1,
+   "inside": 0,
+   "after": 0
+  },
+  "lag_h_looser": {
+   "n": 1,
+   "values": [
+    0.52
+   ]
+  },
+  "lag_h_stricter": {
+   "n": 1,
+   "values": [
+    0.52
+   ]
+  },
+  "tier_b_rises": 2,
+  "tier_b_v_ms": {
+   "n": 2,
+   "values": [
+    0.01,
+    0.09
+   ]
+  },
+  "quiet24_tier_a": 8,
+  "quiet24_lag_h": {
+   "n": 1,
+   "values": [
+    0.52
+   ]
+  },
+  "dry": {
+   "n": 2,
+   "rise_share": 0.5,
+   "background_share": 0.004,
+   "diff": 0.496,
+   "lo": -0.011,
+   "hi": 1.0,
+   "pseudo_starts": 813,
+   "signal": false
+  }
+ },
+ {
+  "station_id": "E81999A",
+  "site": "E81999",
+  "label": "EREWASH_SHIPLEY GATE_E_202410",
+  "watercourse": "River Erewash",
+  "artificial_channel": false,
+  "readings": 0,
+  "valid_readings": 0,
+  "first": "",
+  "last": "",
+  "note": "no readings in 2024-25"
+ },
+ {
+  "station_id": "P01018A",
+  "site": "P01018",
+  "label": "RED RIVER_DOLCOATH ADIT_PS_201705",
+  "watercourse": "Red River",
+  "artificial_channel": false,
+  "readings": 14778,
+  "valid_readings": 14776,
+  "first": "2023-12-30T00:01Z",
+  "last": "2025-09-05T07:01Z",
+  "monitored_upstream": 3,
+  "timing_overflows": 2,
+  "events": 0,
+  "note": "no event inside the readings"
+ }
+]

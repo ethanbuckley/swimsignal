@@ -1,6 +1,9 @@
 """docs/ARRIVAL-TIME-SONDE-CHECK-2026-11.md, sections 4 to 7: join the EA spill starts to the sonde readings.
 
-    analyse.py <stations.csv> <readings dir> <out dir>
+    analyse.py <stations.csv> <readings dir> <out dir> [stated|amended]
+
+"stated" (the default) is sections 4 to 6 as written. "amended" is amendment 2 (section 12): the same rules counted
+in each sonde's own reading interval.
 
 Offline. For each fetched sonde: the quiet-rule events (core.find_events), their tier, the rise outcome under the
 three rules (core.detect), the implied speed, the dry reference and the per-sonde summary. Writes events.csv (one
@@ -23,8 +26,8 @@ assert os.environ.get("DIPCAST_ROOT") and os.environ.get("DIPCAST_STATE"), "set 
 
 import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
-from core import (MODEL_MS, QUIET_H, detect, find_events, horizon_h, implied_speed, median_ci,  # noqa: E402
-                  model_window, others_in_window, to_grid)
+from core import (D_MIN_BY_CADENCE, MODEL_MS, QUIET_H, detect, detect_c, find_events, horizon_h,  # noqa: E402
+                  implied_speed, median_ci, model_window, others_in_window, to_grid, valid_readings)
 from relate import load_events, upstream_tables  # noqa: E402
 
 from dipcast import config  # noqa: E402
@@ -37,14 +40,23 @@ MIN_RISES = 5                  # a median and its interval need this many rises
 POOL_MIN_SONDES, POOL_MIN_RIVERS = 3, 2
 
 
-def read_series(path: Path) -> tuple[int, np.ndarray, int]:
-    """(g0, x, rows) from a readings CSV. An empty file is a sonde with no readings in the period."""
+def read_series(path: Path, mode: str = "stated"):
+    """(det, first, last, rows, valid) from a readings CSV: det(t0, h_h, rule) is the outcome at a reference minute
+    under the stated rules (15-minute slots) or the amended ones (the sonde's own interval); first and last are the
+    series' ends in minutes. An empty file is a sonde with no readings in the period: det is None."""
     if not path.exists() or path.stat().st_size == 0:
-        return 0, np.array([]), 0
+        return None, 0, 0, 0, 0
     d = pd.read_csv(path, usecols=["dateTime", "value", "quality"])
     minutes = (pd.to_datetime(d["dateTime"], utc=True).astype("datetime64[s, UTC]").astype("int64") // 60).to_numpy()
-    g0, x = to_grid(minutes, pd.to_numeric(d["value"], errors="coerce").to_numpy(), d["quality"].to_numpy())
-    return g0, x, len(d)
+    values = pd.to_numeric(d["value"], errors="coerce").to_numpy()
+    if mode == "amended":
+        tm, v = valid_readings(minutes, values, d["quality"].to_numpy())
+        if len(tm) == 0:
+            return None, 0, 0, len(d), 0
+        return (lambda t0, h, rule="main": detect_c(tm, v, t0, h, rule)), tm[0], tm[-1], len(d), len(tm)
+    g0, x = to_grid(minutes, values, d["quality"].to_numpy())
+    return ((lambda t0, h, rule="main": detect(g0, x, t0, h, rule)), g0, g0 + (len(x) - 1) * 15, len(d),
+            int(np.isfinite(x).sum()))
 
 
 def iso(minute: float) -> str:
@@ -66,36 +78,38 @@ def spill_free(sp: pd.DataFrame, lo: np.ndarray, hi: np.ndarray) -> np.ndarray:
     return latest_end < lo
 
 
-def events_for(sp: pd.DataFrame, timing: pd.DataFrame, lake_sites: set, g0: int, x: np.ndarray,
-               quiet_h: float) -> list[dict]:
+def events_for(sp: pd.DataFrame, timing: pd.DataFrame, lake_sites: set, det, quiet_h: float,
+               amended: bool = False) -> list[dict]:
     travel = dict(zip(timing["site_id"], timing["travel_h"], strict=True))
     out = []
     for e in find_events(sp, quiet_h).itertuples():
         if e.site_id not in travel:
             continue
         h = horizon_h(e.d_m)
-        det = detect(g0, x, e.t0, h, "main")
-        if det["status"] == "outside":
+        res = det(e.t0, h, "main")
+        if res["status"] == "outside":
             continue
+        if amended and "c" in res and e.d_m < D_MIN_BY_CADENCE[res["c"]]:
+            continue          # amendment 2: too near for this sonde's reading interval
         oth = others_in_window(sp, e.t0, h, e.site_id)
         tier = "A" if oth.empty else ("B" if not (set(oth["site_id"]) & lake_sites) else "B-lake")
         row = {"t0": iso(e.t0), "week": week(e.t0), "site_id": e.site_id, "d_m": round(e.d_m),
                "travel_h": round(travel[e.site_id], 2), "spill_h": round((e.end - e.t0) / 60.0, 2), "h_h": round(h, 1),
-               "tier": tier, "others": int(oth["site_id"].nunique()), "status": det["status"],
-               "b": det.get("b"), "theta": det.get("theta"), "lag_h": None, "peak_lag_h": None, "v_ms": None,
+               "tier": tier, "others": int(oth["site_id"].nunique()), "status": res["status"],
+               "b": res.get("b"), "theta": res.get("theta"), "c": res.get("c", 15 if "b" in res else None), "lag_h": None, "peak_lag_h": None, "v_ms": None,
                "window": None}
         for rule in ("looser", "stricter"):
-            d2 = detect(g0, x, e.t0, h, rule)
+            d2 = det(e.t0, h, rule)
             row[f"status_{rule}"], row[f"lag_h_{rule}"] = d2["status"], d2.get("lag_h") if d2["status"] == "rise" else None
-        if det["status"] in ("rise", "raised before"):
-            row["lag_h"] = det["lag_h"]
-        if det["status"] == "rise":
-            row["peak_lag_h"] = det["peak_lag_h"]
-            onset = e.t0 + det["lag_h"] * 60
+        if res["status"] in ("rise", "raised before"):
+            row["lag_h"] = res["lag_h"]
+        if res["status"] == "rise":
+            row["peak_lag_h"] = res["peak_lag_h"]
+            onset = e.t0 + res["lag_h"] * 60
             if tier == "A":
                 # A rise in the same slot as the start has no measurable lag: speed is not defined.
-                row["v_ms"] = e.d_m / (det["lag_h"] * 3600) if det["lag_h"] > 0 else None
-                row["window"] = model_window(det["lag_h"], travel[e.site_id], (e.end - e.t0) / 60.0)
+                row["v_ms"] = e.d_m / (res["lag_h"] * 3600) if res["lag_h"] > 0 else None
+                row["window"] = model_window(res["lag_h"], travel[e.site_id], (e.end - e.t0) / 60.0)
             elif tier == "B":
                 v = implied_speed(np.r_[e.t0, oth["start"].to_numpy(dtype=float)],
                                   np.r_[e.d_m, oth["d_m"].to_numpy(dtype=float)], onset)
@@ -104,22 +118,21 @@ def events_for(sp: pd.DataFrame, timing: pd.DataFrame, lake_sites: set, g0: int,
     return out
 
 
-def dry_reference(sp: pd.DataFrame, g0: int, x: np.ndarray, horizons: list[float]) -> pd.DataFrame:
+def dry_reference(sp: pd.DataFrame, det, first: float, last: float, horizons: list[float]) -> pd.DataFrame:
     """One row per pseudo-start and horizon: week, h_h, rise (True, False; other outcomes are dropped)."""
-    if len(x) == 0:
-        return pd.DataFrame(columns=["week", "h_h", "rise"])
-    first = -(-(g0 + 30 * 60) // PSEUDO_STEP_MIN) * PSEUDO_STEP_MIN
-    t = np.arange(first, g0 + (len(x) - 1) * 15 - PSEUDO_AFTER_H * 60 + 1, PSEUDO_STEP_MIN, dtype=float)
-    if len(t) == 0:
-        return pd.DataFrame(columns=["week", "h_h", "rise"])
+    cols = ["week", "h_h", "rise"]
+    start = -(-(int(first) + 30 * 60) // PSEUDO_STEP_MIN) * PSEUDO_STEP_MIN
+    t = np.arange(start, last - PSEUDO_AFTER_H * 60 + 1, PSEUDO_STEP_MIN, dtype=float)
+    if len(t) == 0 or not horizons:
+        return pd.DataFrame(columns=cols)
     t = t[spill_free(sp, t - QUIET_H * 60, t + PSEUDO_AFTER_H * 60)]
     rows = []
     for ti in t:
         for h in horizons:
-            st = detect(g0, x, ti, h, "main")["status"]
+            st = det(ti, h, "main")["status"]
             if st in ("rise", "no rise"):
                 rows.append({"week": week(ti), "h_h": h, "rise": st == "rise"})
-    return pd.DataFrame(rows, columns=["week", "h_h", "rise"])
+    return pd.DataFrame(rows, columns=cols)
 
 
 def signal(ev_a: pd.DataFrame, dry: pd.DataFrame) -> dict:
@@ -203,7 +216,36 @@ def pooled(ev: pd.DataFrame, keys: list[str]) -> dict:
             "intercept_ci": q(icpt), "model_slope_h_per_km": round(1000 / MODEL_MS / 3600, 4)}
 
 
-def main(stations_csv: str, readings_dir: str, out_dir: str) -> None:
+SPILL_BANDS = ((0.0, 1.0, "under 1 h"), (1.0, 6.0, "1 to 6 h"), (6.0, np.inf, "6 h or more"))
+
+
+def by_spill_length(a: pd.DataFrame) -> list[dict]:
+    """Amendment 2, description only: the Tier A rise share by the length of the anchor's spill, beside the
+    background share at the same sondes and horizons, with a 95% interval for the difference (bootstrap over
+    sondes)."""
+    a = a[a["status"].isin(["rise", "no rise"]) & a["p0"].notna()]
+    out = []
+    for lo, hi, name in SPILL_BANDS:
+        g = a[(a["spill_h"] >= lo) & (a["spill_h"] < hi)]
+        row = {"band": name, "events": len(g), "sondes": int(g["station_id"].nunique()) if len(g) else 0}
+        if len(g):
+            rise = (g["status"] == "rise").to_numpy(dtype=float)
+            row.update(rises=int(rise.sum()), rise_share=round(float(rise.mean()), 3),
+                       background_share=round(float(g["p0"].mean()), 3))
+            groups = [x for _, x in g.groupby("station_id")]
+            rng = np.random.default_rng(SEED)
+            diffs = []
+            for _ in range(DRAWS):
+                b = pd.concat([groups[i] for i in rng.integers(0, len(groups), len(groups))])
+                diffs.append((b["status"] == "rise").mean() - b["p0"].mean())
+            row["diff_ci"] = [round(float(z), 3) for z in np.quantile(diffs, [0.025, 0.975])]
+        out.append(row)
+    return out
+
+
+def main(stations_csv: str, readings_dir: str, out_dir: str, mode: str = "stated") -> None:
+    assert mode in ("stated", "amended"), mode
+    amended = mode == "amended"
     out = Path(out_dir); out.mkdir(parents=True, exist_ok=True)
     stations = [r for r in csv.DictReader(open(stations_csv)) if r["fetch"] == "True"]
     net = RiverNetwork.load()
@@ -216,20 +258,19 @@ def main(stations_csv: str, readings_dir: str, out_dir: str) -> None:
     all_ev, per = [], []
     for s in stations:
         sid = s["station_id"]
-        g0, x, n_rows = read_series(Path(readings_dir) / f"{s['measure']}.csv")
+        det, first, last, n_rows, n_valid = read_series(Path(readings_dir) / f"{s['measure']}.csv", mode)
         row = {"station_id": sid, "site": site_key(sid), "label": s["label"], "watercourse": s["watercourse"],
                "artificial_channel": s["artificial_channel"] == "True", "readings": n_rows,
-               "valid_readings": int(np.isfinite(x).sum()),
-               "first": iso(g0) if len(x) else "", "last": iso(g0 + (len(x) - 1) * 15) if len(x) else ""}
-        if len(x) == 0:
+               "valid_readings": n_valid, "first": iso(first) if det else "", "last": iso(last) if det else ""}
+        if det is None:
             per.append({**row, "note": "no readings in 2024-25"}); continue
         up, timing, why, _ = upstream_tables(net, overflows, monitored, float(s["lon"]), float(s["lat"]), s["river"] or None)
         assert why is None, (sid, why)
         sp = pd.concat([by_site[k] for k in up["site_id"] if k in by_site], ignore_index=True)
         sp = sp.merge(up[["site_id", "d_m"]], on="site_id")
         lake_sites = set(up.loc[up["lake_distance_m"] > 0, "site_id"])
-        ev = pd.DataFrame(events_for(sp, timing, lake_sites, g0, x, QUIET_H))
-        ev24 = pd.DataFrame(events_for(sp, timing, lake_sites, g0, x, 24.0))
+        ev = pd.DataFrame(events_for(sp, timing, lake_sites, det, QUIET_H, amended))
+        ev24 = pd.DataFrame(events_for(sp, timing, lake_sites, det, 24.0, amended))
         for frame in (ev, ev24):     # all-None columns come out as object; the sums below need numbers
             for c in ("lag_h", "peak_lag_h", "v_ms", "lag_h_looser", "lag_h_stricter"):
                 if c in frame:
@@ -240,8 +281,12 @@ def main(stations_csv: str, readings_dir: str, out_dir: str) -> None:
         ev.insert(0, "station_id", sid); ev.insert(1, "site", site_key(sid))
         a = ev[ev["tier"] == "A"]
         counts = {k: int((a["status"] == k).sum()) for k in ("rise", "no rise", "raised before", "gap", "no baseline")}
-        dry = dry_reference(sp, g0, x, sorted(set(a.loc[a["status"].isin(["rise", "no rise"]), "h_h"])))
+        dry = dry_reference(sp, det, first, last, sorted(set(a.loc[a["status"].isin(["rise", "no rise"]), "h_h"])))
         sig = signal(a, dry)
+        p0 = dry.groupby("h_h")["rise"].mean().to_dict() if len(dry) else {}
+        ev["p0"] = [p0.get(h) if tr == "A" else None for h, tr in zip(ev["h_h"], ev["tier"], strict=True)]
+        cad = ev["c"].dropna()
+        row["reading_interval_min"] = int(cad.median()) if len(cad) else None
         rises = a[a["status"] == "rise"]
         ratio = (rises["lag_h"] / rises["travel_h"]).tolist()
         win = rises["window"].value_counts().to_dict() if len(rises) else {}
@@ -278,7 +323,7 @@ def main(stations_csv: str, readings_dir: str, out_dir: str) -> None:
     a_nat = a_all[a_all["station_id"].isin(nat_ids)] if len(ev) else ev
     rise_nat = a_nat[a_nat["status"] == "rise"] if len(ev) else ev
     summary = {
-        "fetched": fetched, "with_readings": len(with_data), "with_an_event": len([p for p in per if "tier_a" in p]),
+        "mode": mode, "fetched": fetched, "with_readings": len(with_data), "with_an_event": len([p for p in per if "tier_a" in p]),
         "sondes_natural_one_per_place": len(sites),
         "artificial_channel_stations": len([p for p in per if "tier_a" in p and p["artificial_channel"]]),
         "tier_a_events_natural": {k: int((a_nat["status"] == k).sum()) for k in
@@ -304,6 +349,10 @@ def main(stations_csv: str, readings_dir: str, out_dir: str) -> None:
                                       else "under 3 sondes on 2 rivers with 10 rises and a signal")
     else:
         summary["pooled"] = "not computed: under 3 sondes on 2 rivers with a signal and 5 Tier A rises"
+    if amended and len(ev):
+        summary["tier_a_by_spill_length_natural"] = by_spill_length(a_nat)
+        summary["tier_a_events_by_reading_interval_natural"] = {
+            str(int(c)): g["status"].value_counts().to_dict() for c, g in a_nat.dropna(subset=["c"]).groupby("c")}
     (out / "summary.json").write_text(json.dumps(summary, indent=1))
     (out / "per_sonde.json").write_text(json.dumps(per, indent=1))
     print(json.dumps(summary, indent=1))

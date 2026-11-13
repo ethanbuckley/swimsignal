@@ -265,7 +265,7 @@ starts. 43 sondes have 5 or more Tier A starts and 21 have 10 or more. Tier A pa
 
 ---
 
-## 12. Amendment 2, written after the first join (13 November, about 15:40 UTC)
+## 12. Amendment 2, written after the first join (13 November, 15:29 UTC)
 
 The join ran once, as stated in sections 1 to 11 (code at `3e6c28a4` plus a fix for a crash on a sonde with no rise;
 no rule changed). Its result is in "Results, as stated" below and stands. This amendment was written after seeing
@@ -304,3 +304,67 @@ spills of 16 minutes or less, and a spill that short may not be measurable kilom
 chosen after seeing that, so it can point to a next test and nothing more.
 
 ---
+
+# Results
+
+Run 13 November 2026. 92 EA requests of 100, all answered 200
+([ledger](ARRIVAL-TIME-SONDE-CHECK-2026-11-ledger.jsonl)). No Open-Meteo call. The 15 shared input files have the
+same SHA-256 hashes after the run as before. Exploratory, on 2024-25 records.
+
+## Results, as stated (sections 1 to 11)
+
+- 66 of the 90 sondes fetched had ammonium readings in 2024-25. 24 returned nothing.
+- Tier A events at natural-channel sondes: **4 rises**, 148 no rise, 1 raised before, 3 gaps, 198 no baseline.
+- No sonde shows a signal. No sonde has 5 rises. Nothing is pooled.
+- By section 9 this is the third outcome. The rule that removed the events is the 15-minute slot count (section 12):
+  it is a fault in the protocol, so this result says nothing about travel times.
+- Files: [events](ARRIVAL-TIME-SONDE-CHECK-2026-11-events-as-stated.csv),
+  [summary](ARRIVAL-TIME-SONDE-CHECK-2026-11-summary-as-stated.json).
+
+## Results, amended (section 12, written after the first join)
+
+- **Check on the amendment.** At events on a 15-minute sonde, 76 of 77 have the same outcome under both sets of
+  rules. One differs (Fowey at Restormel, 4 August 2025: "gap" as stated, "no rise" amended). Not explained yet.
+- Tier A events at natural-channel sondes (57 places): **49 rises**, 236 no rise, 10 raised before, 7 gaps, 19 no
+  baseline.
+- 9 sondes show a signal by section 6's rule. 4 of them have 5 or more rises, on 4 rivers. **None has 10.**
+
+| Sonde | Interval | Distance | Tier A rises / with a verdict | Background | Model travel | Measured lag, median (95%) | Implied speed, median (95%) |
+|---|---|---:|---:|---:|---:|---|---|
+| Calder, Stones Lane (E04798A) | 60 min | 4.6 km | 7 / 19 | 0.05 | 6.4 h | 5.0 h (2.1 to 9.1) | 0.26 m/s (0.14 to 0.63) |
+| Witham, below Grange Farm (E03430A) | 60 min | 6.0 km | 5 / 16 | 0.07 | 8.3 h | 6.6 h (3.8 to 27.4) | 0.25 m/s (0.06 to 0.79) |
+| Ea Beck, below Hazel Lane (E06527A) | 30 min | 2.2 km | 5 / 9 | 0.05 | 3.1 h | 5.5 h (2.5 to 7.0) | 0.11 m/s (0.09 to 0.24) |
+| Till, above Harehope (E02569A) | 30 min | 5.6 km | 7 / 22 | 0.06 | 7.8 h | 0.7 h (0.3 to 2.7) | 2.2 m/s (0.57 to 5.5) |
+
+- **Pooled over those 4 sondes (24 rises): median implied speed 0.25 m/s, 95% interval 0.13 to 1.42.** The interval
+  includes the model's 0.2 m/s.
+- Lag against distance (Theil-Sen): −0.09 h per km (−2.5 to +13.7). The model's line is 1.39 h per km. The data
+  cannot tell a travel time from a response that ignores distance.
+- Of all 49 rises, 29 begin before the model's window, 3 inside it and 17 after it.
+- The Till's rises come 7 to 66 minutes after the start, from an overflow 5.6 km upstream. Water does not travel
+  that fast. Those rises are something else: rain on nearer ground, or a start recorded late [inferred].
+- The Witham sonde above Grange Farm (E03360A, 4 rises) sits 1.2 km from the one in the table and saw the same
+  spills. The two are not independent.
+- By spill length (description, chosen after the first join): spills of 6 h or more, 12 rises in 28 events (0.43
+  against a background of 0.08, difference interval 0.16 to 0.47); under 1 h, 30 in 203 (0.15 against 0.06).
+- Files: [events](ARRIVAL-TIME-SONDE-CHECK-2026-11-events-amended.csv),
+  [summary](ARRIVAL-TIME-SONDE-CHECK-2026-11-summary-amended.json),
+  [per sonde](ARRIVAL-TIME-SONDE-CHECK-2026-11-per-sonde-amended.json), including the secondary figures (peak lag,
+  looser and stricter rules, 24 h quiet rule, Tier B).
+
+## What this establishes, and what it does not
+
+- **Established:** the API's "15min" ammonium series mostly report every 30 or 60 minutes. Clean single-source spill
+  starts are few (at most 22 with a verdict at any sonde in two years) and half are spills of 16 minutes or less.
+- **Established, under rules amended after a first look:** at three sondes with a rise rate above background, the
+  median lag implies 0.11 to 0.26 m/s. That is the same range as the model's 0.2 m/s. Each interval is wide.
+- **Not established:** a measured speed. Section 9's first outcome needs 3 sondes with 10 rises each; the most any
+  has is 7. No candidate speed is supported, so no speed test is proposed.
+- **Outcome under section 9: "consistent with, not measured".** The transport settings stay as they are.
+
+## Next step
+
+Rerun the amended rules, unchanged, when the EA's 2026 start/stop files are imported (the register notes they are
+published to August and not imported). Calder at Stones Lane and Ea Beck opened in 2025, so a full 2026 should
+roughly double their events [inferred from their rates]. The check to make first: why the Till's rises are too fast
+to be travel, since one such sonde widens the pooled interval to 1.42 m/s.

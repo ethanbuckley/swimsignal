@@ -143,3 +143,59 @@ def test_ledger_writes_every_request_stops_at_the_cap_and_counts_a_retry_twice(t
     with pytest.raises(SystemExit):
         led.request("u3", {})
     assert Ledger(tmp_path / "ledger.jsonl", cap=3).left() == 0
+
+
+# Amendment 2: the same rules counted in the sonde's own reading interval.
+
+def readings(step, hours=200, base=0.10, seed=0):
+    tm = np.arange(0, hours * H, step, dtype=float)
+    rng = np.random.default_rng(seed)
+    return tm, base + rng.normal(0, 0.004, len(tm))
+
+
+def test_valid_readings_keeps_the_last_duplicate_in_time_order_and_drops_bad_ones():
+    tm, v = core.valid_readings([30, 0, 30, 60, 90], [0.3, 0.1, 0.4, 500.0, 0.6], ["Good", "Good", "Unchecked", "Good", "Suspect"])
+    assert list(tm) == [0, 30] and list(v) == [0.1, 0.4]
+
+
+@pytest.mark.parametrize("step", [15, 30, 60])
+def test_amended_rise_is_found_at_each_reading_interval(step):
+    tm, v = readings(step)
+    v[(tm >= 103 * H) & (tm < 108 * H)] += 0.2
+    d = core.detect_c(tm, v, 100 * H, 24.0)
+    assert d["status"] == "rise" and d["c"] == step and d["lag_h"] == 3.0
+
+
+@pytest.mark.parametrize("step", [30, 60])
+def test_amended_one_high_reading_is_not_a_rise_and_two_in_a_row_are(step):
+    tm, v = readings(step)
+    one = v.copy(); one[tm == 103 * H] += 0.5
+    assert core.detect_c(tm, one, 100 * H, 24.0)["status"] == "no rise"
+    two = one.copy(); two[tm == 103 * H + step] += 0.5
+    assert core.detect_c(tm, two, 100 * H, 24.0)["status"] == "rise"
+
+
+def test_amended_rules_equal_the_stated_rules_at_a_15_minute_sonde():
+    rng = np.random.default_rng(1)
+    for trial in range(60):
+        x = series(seed=trial)
+        start = int(rng.integers(90 * 4, 125 * 4))
+        x[start:start + int(rng.integers(1, 30))] += float(rng.uniform(0.02, 0.3))
+        if trial % 3 == 0:
+            k = int(rng.integers(60 * 4, 130 * 4)); x[k:k + int(rng.integers(1, 8))] = np.nan
+        tm = np.arange(len(x), dtype=float) * 15
+        ok = np.isfinite(x)
+        a, b = core.detect(0, x, 100 * H, 24.0), core.detect_c(tm[ok], x[ok], 100 * H, 24.0)
+        assert a["status"] == b["status"], trial
+        assert a.get("lag_h") == b.get("lag_h") and a.get("peak_lag_h") == b.get("peak_lag_h"), trial
+
+
+def test_amended_gap_and_baseline_scale_with_the_interval():
+    tm, v = readings(60)
+    v[(tm >= 104 * H) & (tm < 109 * H)] += 0.2
+    drop = tm == 102 * H                                   # one hourly reading missing: two hours between readings
+    assert core.detect_c(tm[~drop], v[~drop], 100 * H, 24.0)["status"] == "gap"
+    keep = ~((tm >= 70 * H) & (tm < 83 * H))               # 11 of the 24 baseline readings left
+    assert core.detect_c(tm[keep], v[keep], 100 * H, 24.0)["status"] == "no baseline"
+    odd = np.arange(0, 200 * H, 120, dtype=float)          # a two-hourly sonde has no interval the rules know
+    assert core.detect_c(odd, np.full(len(odd), 0.1), 100 * H, 24.0)["status"] == "no baseline"
