@@ -60,3 +60,25 @@ def test_another_schema_is_not_published(tmp_path):
     assert "No samples are published in this build." in (tmp_path / "waterhead.html").read_text()
     assert not (tmp_path / "data" / "research" / "waterhead_wet.json").exists()
     assert json.loads((tmp_path / "data" / "research" / "local-samples.json").read_text())["available"] is False
+
+
+def test_other_spots_on_the_samples_water_body_link_them_as_elsewhere(tmp_path):
+    """12 Nov 2026: Waterhead's samples were linked from Waterhead only. Millerground and Rayrigg are on the same
+    Environment Agency water body (Windermere, north basin); the south basin's spots are on another and get no link."""
+    bs = _mod("build_site")
+    wb = lambda i, n: {"id": i, "name": n}
+    north, south = wb("GB31247007", "Windermere (N Basin)"), wb("GB31247008", "Windermere (S Basin)")
+    results = [
+        {"id": "osm-windermere-waterhead", "kind": "lake", "lat": 54.419, "lon": -2.962, "water_body": north},
+        {"id": "bw-ukd1203-45650", "kind": "lake", "lat": 54.381, "lon": -2.923, "water_body": north},
+        {"id": "bw-ukd1203-45700", "kind": "lake", "lat": 54.275, "lon": -2.954, "water_body": south},
+        {"id": "rothay-ambleside", "kind": "river", "lat": 54.42, "lon": -2.97, "water_body": north},
+        {"id": "tarn", "kind": "lake", "lat": 54.4, "lon": -3.0},
+    ]
+    bs.write_waterhead(tmp_path, results=results)
+    spots = json.loads((tmp_path / "data" / "research" / "local-samples.json").read_text())["spots"]
+    assert set(spots) == {"osm-windermere-waterhead", "bw-ukd1203-45650"}
+    far = spots["bw-ukd1203-45650"]
+    assert far["elsewhere"] is True and 4 < far["km"] < 6 and "data" not in far   # its timeline shows no samples as its own
+    assert "elsewhere" not in spots["osm-windermere-waterhead"] and spots["osm-windermere-waterhead"]["data"]
+    assert far["samples"] == spots["osm-windermere-waterhead"]["samples"] == 59

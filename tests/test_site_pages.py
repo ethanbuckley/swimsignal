@@ -44,7 +44,7 @@ def test_every_spot_gets_its_own_page_and_preview(tmp_path):
     assert '<base href="../../">' in head   # relative: the site works at any address
     assert '<link rel="canonical" href="https://example.org/swim/spot/wharfe-ilkley/">' in head
     assert '<meta property="og:image" content="https://example.org/swim/icons/og.png">' in head
-    assert "<title>Wharfe at &quot;Cromwheel&quot; &amp; Ilkley: pollution risk forecast · SwimSignal</title>" in head
+    assert "<title>Wharfe at &quot;Cromwheel&quot; &amp; Ilkley: sewage spill risk for swimming · SwimSignal</title>" in head   # the words people search with
     assert "from the 15 monitored storm overflows upstream" in head
     assert "very high" not in head.lower().replace("veryhigh", "")
     assert head.count("<title>") == 1 and "page-meta" not in page
@@ -63,8 +63,9 @@ def test_every_spot_gets_its_own_page_and_preview(tmp_path):
     assert 'class="top"' in lost and 'href="https://example.org/swim/about.html">About</a>' in lost   # the shared header, absolute
     assert 'href="https://example.org/swim/icons/apple-touch-icon.png"' in lost
     assert (tmp_path / "robots.txt").read_text() == "User-agent: *\nAllow: /\nSitemap: https://example.org/swim/sitemap.xml\n"
+    assert (tmp_path / "google9a051ccd2b65d2d2.html").read_text() == "google-site-verification: google9a051ccd2b65d2d2.html"   # Search Console fetches it to prove ownership
     sm = (tmp_path / "sitemap.xml").read_text()
-    assert sm.count("<url>") == 30 + len(_build_site().lab_pages()) and "<loc>https://example.org/swim/spot/tarn/</loc>" in sm   # the Research Lab's pages, and sites.html, record.html, demo.html, clubs.html, quality.html, spots.html, research.html, lakes.html, lake-temperatures.html, durations.html (spill durations), samples.html, waterhead.html, research-catalogue.html, sampling-planner.html, partners.html, models.html, data-feed.html and two profiles
+    assert sm.count("<url>") == 31 + len(_build_site().lab_pages()) and "<loc>https://example.org/swim/spot/tarn/</loc>" in sm   # the Research Lab's pages, and sites.html, record.html, demo.html, clubs.html, quality.html, spots.html, research.html, lakes.html, lake-temperatures.html, durations.html (spill durations), samples.html, waterhead.html, wessex-river-samples.html, research-catalogue.html, sampling-planner.html, partners.html, models.html, data-feed.html and two profiles
     assert (tmp_path / "quality.html").exists()   # without an overflow table its lists say so (tests/test_quality.py)
     assert "<loc>https://example.org/swim/methods.html</loc>" in sm
     assert "<loc>https://example.org/swim/coverage.html</loc>" in sm
@@ -199,6 +200,8 @@ def test_a_spots_page_carries_its_answer_and_five_days_as_the_script_draws_them(
            "and adds the map, the overflows upstream and the rest of the detail."
     assert f'<div id="result" data-built data-nosnippet><noscript><p class="muted">{note}</p></noscript>' in page
     assert page.index("<noscript>") < page.index('id="risk-hero"') < page.index('<span class="d" aria-hidden="true">Today</span>')
+    # A page without the place's photo keeps both skies; one with it asks for neither (below).
+    assert "url(data:image/webp;base64," in page and '<figure class="hero">' not in page
     # A spot without a forecast: its answer, no five days.
     tarn = (tmp_path / "spot" / "tarn" / "index.html").read_text().split('<div id="result"', 1)[1].split('<p class="about-line"', 1)[0]
     assert 'id="risk-headline">No monitored overflow found upstream</h2>' in tarn and 'id="days-h"' not in tarn
@@ -212,6 +215,36 @@ def test_a_spots_page_carries_its_answer_and_five_days_as_the_script_draws_them(
     page = (tmp_path / "spot" / "a" / "index.html").read_text()
     assert '<body class="view-list">' in page and '<div id="result" data-built data-nosnippet>' not in page and '<h2 class="spot-name">A river</h2>' in page
     assert '<div id="result" data-nosnippet>' in page   # a level drawn here later is not quoted in search results either
+
+
+@pytest.mark.skipif(shutil.which("node") is None, reason="needs Node")
+def test_a_spot_page_that_opens_with_its_photo_asks_for_the_photo_first(tmp_path):
+    """The photo is that page's largest paint and it shows no sky (12 Nov 2026: Lighthouse on a phone put its LCP at
+    2.8 s against 1.0 s for the same page before the photo). Its head preloads the photo in place of the wide sky,
+    so the photo is asked for with the fonts, before the deferred scripts, and a desktop fetches no hidden sky."""
+    bs = _build_site()
+    (tmp_path / "data").mkdir()
+    days = [{"date": f"2026-09-{29 + i}" if i < 2 else f"2026-10-0{i - 1}", "risk": 0.01, "label": "low"} for i in range(5)]
+    photo = {"file": "geograph-6482389.jpg", "w": 640, "h": 413, "topic": "overview", "status": "historical", "caption": "The weir.",
+             "credit": "Derek Harper", "taken": "2020-05-20", "licence": "https://creativecommons.org/licenses/by-sa/2.0/",
+             "source": "https://www.geograph.org.uk/photo/6482389", "source_name": "Geograph"}
+    river = {"id": "a", "name": "A river", "kind": "river", "source": "curated", "upstream_summary": {"overflows": 3},
+             "location": {"mode": "river"}, "now": {"label": "low", "discharging_upstream": 0}, "contributors": [], "days": days,
+             "guide": {"photos": [photo]}}
+    (tmp_path / "data" / "spots.json").write_text(json.dumps({"generated_at": "2026-09-29T08:00:00+01:00", "spots": [river]}))
+    bs.write_pages(tmp_path, [river], root="https://example.org/swim/")
+    page = (tmp_path / "spot" / "a" / "index.html").read_text()
+    head = page.split("</head>", 1)[0]
+    assert '<figure class="hero"><img src="guides/photos/geograph-6482389.jpg" width="640" height="413" decoding="async" fetchpriority="high"' in page
+    assert head.count('<link rel="preload" href="guides/photos/geograph-6482389.jpg" as="image" fetchpriority="high">') == 1
+    assert head.index('<base href="../../">') < head.index("guides/photos/")   # the base first, so the address resolves
+    assert 'href="icons/fells-wide.webp"' not in head and bs.SPOT_SKY_PRELOAD not in page and bs.SKY_PRELOAD not in page
+    assert head.index('href="fonts/SourceSerif4-latin.woff2"') < head.index('href="guides/photos/') < head.index("<style>")
+    # The sky it no longer asks for is hidden wherever the photo is, so the look does not change.
+    assert ".answer:has(.hero)::before { display:none; }" in page
+    # The phone's sky stays in the style, as on every app page (its LCP gain there was nil).
+    assert "url(data:image/webp;base64," in page
+    assert bs.with_hero_first("<head>x</head>", "<section>no photo</section>") == "<head>x</head>"
 
 
 @pytest.mark.skipif(shutil.which("node") is None, reason="needs Node")
@@ -816,7 +849,7 @@ def test_the_data_page_lists_every_file_in_data_with_its_size(tmp_path):
     # An empty data/ (write_pages over a fresh folder): every described row says so, and nothing breaks.
     empty = tmp_path / "empty"
     empty.mkdir()
-    assert bs.write_data_page(empty) == [] and (empty / "data.html").read_text().count("Not in this build") == 20   # spot_scores.json makes 16, overflows/ 17, waters.json 18, verification_spots_live.csv 19, research/ (satellite lakes, spill durations and E. coli samples) 20
+    assert bs.write_data_page(empty) == [] and (empty / "data.html").read_text().count("Not in this build") == 21   # spot_scores.json makes 16, overflows/ 17, waters.json 18, verification_spots_live.csv 19, research/ (satellite lakes, spill durations and E. coli samples) 20, sonde-readings.json 21
 
 
 def test_the_data_pages_sections_follow_its_table_and_fold_their_fields():
@@ -1347,7 +1380,7 @@ def test_a_spots_page_describes_the_place_and_its_forecast_as_structured_data(tm
     assert place["url"] == "https://example.org/swim/spot/wharfe-ilkley/" and place["@id"].endswith("#place")
     assert place["geo"] == {"@type": "GeoCoordinates", "latitude": 53.93189, "longitude": -1.81618}
     assert place["containedInPlace"] == {"@type": "RiverBodyOfWater", "name": "River Wharfe"}
-    assert place["description"] == bs.spot_blurb(spots[0])   # the page's own description, word for word
+    assert place["description"] == bs.spot_description(spots[0])   # the page's own description, word for word
     img = place["image"]   # the overview, not the first photo
     assert img["contentUrl"] == "https://example.org/swim/guides/photos/the-river.jpg" and img["creator"]["name"] == "Oliver Dixon"
     assert img["license"] == "https://creativecommons.org/licenses/by-sa/2.0/" and img["acquireLicensePage"].endswith("/7486475")
@@ -1359,3 +1392,28 @@ def test_a_spots_page_describes_the_place_and_its_forecast_as_structured_data(tm
     tarn = _ld((tmp_path / "spot" / "tarn" / "index.html").read_text())
     assert [g["@type"] for g in tarn["@graph"]] == ["Place"]   # no forecast here, so no dataset
     assert tarn["@graph"][0]["containedInPlace"]["@type"] == "LakeBodyOfWater" and "image" not in tarn["@graph"][0]
+
+
+def test_a_spot_page_describes_itself_in_the_words_people_search_with():
+    bs = _build_site()
+    river = {"id": "a", "name": "River A, Low Force", "upstream_summary": {"overflows": 1}}
+    assert bs.spot_title(river) == "River A, Low Force: sewage spill risk for swimming · SwimSignal"
+    assert bs.spot_description(river).startswith("Five-day sewage spill risk forecast for swimming at River A, Low Force, from the 1 monitored storm overflow upstream,")
+    # Nobody tests an undesignated water for bathing: the page says so, and so does its search result.
+    assert bs.spot_description(river).endswith("Not a designated bathing water, so the Environment Agency does not test its water quality for bathing.")
+    assert "SEPA does not test" in bs.spot_description({**river, "trial": "scotland"})
+    for tested in ({"source": "designated"}, {"source": "sepa", "trial": "scotland"}, {"source": "unlisted"}):   # the EA or SEPA tests it, or nobody checked
+        assert "designated bathing water" not in bs.spot_description({**river, **tested})
+    # With an opening: what the page is for, who tests the water, then the place.
+    opened = bs.spot_description({**river, "opening": {"text": "Low Force is a waterfall on the River A."}})
+    assert opened == ("Sewage spill risk for swimming at River A, Low Force, today and the next four days. Not a designated bathing water, so the "
+                      "Environment Agency does not test its water quality for bathing. Low Force is a waterfall on the River A.")
+    # No overflow found upstream: there is no spill forecast, so neither the title nor the description names one.
+    none = {**river, "upstream_summary": {"overflows": 0}}
+    assert bs.spot_title(none) == "River A, Low Force: swimming and sewage overflows · SwimSignal"
+    assert "spill risk forecast" not in bs.spot_description(none) and "no monitored storm overflow" in bs.spot_description(none)
+    assert bs.spot_title({**river, "error": "no route"}).endswith("swimming and sewage overflows · SwimSignal")
+    assert bs.spot_title({**river, "error": "forecast failed: x"}).endswith("sewage spill risk for swimming · SwimSignal")
+    # The page's script writes the same title when it opens a spot.
+    page = (bs.TEMPLATE).read_text()
+    assert "'swimming and sewage overflows' : 'sewage spill risk for swimming'" in page and "document.title = spotTitle(d)" in page

@@ -633,6 +633,13 @@
      so a row or card never leads with a clean level at an advised water. */
   .o-tag { display:block; margin:3px 0 4px; padding-left:7px; border-left:3px solid var(--notice-line); font-size:var(--fs-meta); line-height:1.35; color:var(--ink); }
   .answer .cover { margin:10px auto 0; max-width:30em; font-size:var(--fs-note); line-height:1.4; color:var(--ink); text-wrap:balance; }
+  /* One opening at every width (12 Nov 2026). A spot with a photo read down the left edge and one without (25 of 133,
+     and every point clicked on the map) was centred on a phone: two pages for one kind of thing. The photo's way won,
+     the one Ethan chose last ("This is it", 11 Nov). The sky stays behind a spot with no photo. */
+  .answer { text-align:left; }
+  .answer > *, .answer .spot-name, .answer .act, .answer .scope, .answer .flow, .answer .gaps, .answer .official,
+    .answer .cover, .answer .ci, .answer .live, .big, .big-head { margin-left:0; margin-right:0; }
+  .answer :is(.spot-name, .big, .big-head, .ci, .cover, .scope, .flow, .gaps, .live, .act) { text-wrap:pretty; }
   /* Under the five days (answerAfter): what to do, at the sentence's size, after a hairline; then what the
      level counts, at the notes' size. Left, as the tile's sentence is. */
   .after .act { margin:10px 0 0; padding-top:10px; border-top:1px solid var(--hair); line-height:1.4; }
@@ -724,6 +731,11 @@
   .sun .lit { fill:none; stroke:var(--ink); stroke-width:1.75; stroke-linecap:round; }
   .sun line { stroke:var(--line); stroke-width:1; }
   .sun circle { fill:var(--ink); stroke:var(--card); stroke-width:2; }
+  /* A sonde's ammonium over its last day (sondeLine): ink on a hairline from zero, no band and no colour, since no level is drawn from it. */
+  .sline { display:block; width:100%; height:48px; margin:12px 0 0; overflow:visible; }
+  .sline path { fill:none; stroke:var(--ink); stroke-width:1.75; stroke-linejoin:round; stroke-linecap:round; vector-effect:non-scaling-stroke; }
+  .sline line { stroke:var(--line); stroke-width:1; vector-effect:non-scaling-stroke; }
+  .sline-k { display:flex; justify-content:space-between; margin:4px 0 0; font-size:var(--fs-meta); color:var(--faint); }
   .sun circle.down { fill:var(--card); stroke:var(--muted); stroke-width:1.75; }
   .seasons { display:flex; gap:16px; margin:12px 0 0; }
   .seasons span { display:flex; flex-direction:column; gap:3px; min-width:56px; font-size:var(--fs-meta); line-height:1.2; color:var(--muted); }
@@ -2678,6 +2690,55 @@ function waterTile(w, e = null, kind = null, miss = null) {
     say: `Measured ${esc(w.where)}${w.river ? ` on the ${esc(w.river)}` : ''}, ${fmt(w.river_km, 1)}&nbsp;km ${w.direction}, ${agoSpan(t)} ago.${est ? ` At the spot: ${waterEstSay(est).replace(/^About/, 'about')}` : ''}`,
     more: `The Environment Agency's water-quality sensor nearest the spot on this river, within 15&nbsp;km in a straight line, that has reported in the last day: upstream if there is one, since the water here comes from upstream.${w.quality === 'Unchecked' ? ' The EA has not yet checked the reading.' : ''} The water where you swim can be warmer or colder. Not part of the pollution level.${/^https:\/\/environment\.data\.gov\.uk\//.test(w.url || '') ? ` <a href="${esc(w.url)}">The Environment Agency's page for this sensor</a> has its record.` : ''}${est ? ` ${waterEstMore(est)}` : ''}` };
 }
+// The water-quality sensor tile (build_site.attach_sondes, docs/SONDE-READINGS-CONTRACT-v1.md), or null: the latest
+// readings of an Environment Agency sonde on the spot's own river, upstream of it along the river (20 km at most) or at
+// it. Ammonium is the figure; the same sonde's dissolved oxygen and turbidity follow in a line. Every reading says when
+// it was taken and the EA's own word for it ("Unchecked"), counted from now, not from the build: one over a day old says
+// how old it is and shows no figure. No level, colour or advice is drawn from any of it, and no reading is never clean
+// water. Rivers only; a spot without such a sonde has no tile.
+const SONDE_SAID = 'Ammonium is a marker that can come from sewage. It is not a count of bacteria and not a sign that the water is fit to swim in.';
+const SONDE_NONE = 'No reading does not mean clean water.';
+const SONDE_NAMES = { 'dissolved-oxygen': 'dissolved oxygen', turbidity: 'turbidity' };
+const sondeNum = v => v >= 100 ? Math.round(v).toString() : v >= 10 ? v.toFixed(1) : v >= 1 ? v.toFixed(2) : v.toFixed(3).replace(/0$/, '');
+const sondeVal = r => r.unit === '% saturation' ? `${Math.round(r.value)}% of saturation` : `${sondeNum(r.value)}&nbsp;${esc(r.unit)}`;
+const sondeAgeH = r => { const t = r ? Date.parse(r.observed_at) : NaN; return isNaN(t) ? null : (Date.now() - t) / 36e5; };
+const sondeFresh = r => { const h = sondeAgeH(r); return !!r && typeof r.value === 'number' && h !== null && h > -1 && h <= 24; };
+const sondeQual = r => r.quality ? esc(r.quality) : 'no quality word';
+// The ammonium readings of the day before the last one, as a line from zero: aria-hidden, the sentence gives the range.
+function sondeLine(series) {
+  const pts = (series || []).map(([t, v]) => [Date.parse(t), v]).filter(([t, v]) => !isNaN(t) && typeof v === 'number');
+  if (pts.length < 8) return '';
+  const t1 = pts[pts.length - 1][0], t0 = t1 - 864e5, day = pts.filter(([t]) => t >= t0);
+  if (day.length < 8) return '';
+  const W = 200, H = 44, top = Math.max(0.1, ...day.map(([, v]) => v)) * 1.1;
+  const x = t => ((t - t0) / 864e5 * W).toFixed(1), y = v => (H - v / top * H).toFixed(1);
+  const d = day.map(([t, v], i) => `${i && t - day[i - 1][0] <= 3 * 36e5 ? 'L' : 'M'}${x(t)} ${y(v)}`).join('');   // most send hourly; a gap over 3 h is left a gap
+  const when = t => new Date(t).toLocaleString('en-GB', { weekday: 'short', hour: '2-digit', minute: '2-digit' });
+  return `<svg class="sline" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true"><line x1="0" x2="${W}" y1="${H}" y2="${H}"/><path d="${d}"/></svg>`
+    + `<p class="sline-k" aria-hidden="true"><span>${when(t0)}</span><span>${when(t1)}</span></p>`;
+}
+function sondeTile(s) {
+  if (!s || !s.station || nil(s.river_km) || !['upstream', 'at'].includes(s.direction)) return null;
+  const where = `${esc(s.where)}${s.river ? ` on the ${esc(s.river)}` : ''}, ${s.direction === 'at' ? 'at the spot' : `${fmt(s.river_km, 1)}&nbsp;km upstream`}`;
+  const rd = s.readings || {}, a = rd.ammonium, url = /^https:\/\/environment\.data\.gov\.uk\//.test(s.url || '') ? s.url : '';
+  const more = 'An Environment Agency sonde: a sensor left in the river that measures the water every 15 minutes and publishes it before anyone has checked it. '
+    + `${SONDE_SAID} It rises where sewage, treated or not, reaches the river, and also with farm runoff and other sources. ${SONDE_NONE} `
+    + 'Each reading carries the EA\'s own word for it: Unchecked means raw data the EA has not inspected yet. A reading the EA marks as suspect is not shown. '
+    + 'The sensor is on this spot\'s river, joined to it along the river, upstream of it (20&nbsp;km at most) or at it, the nearest; the water where you swim can differ. '
+    + 'Not part of the pollution level: nothing on this page is worked out from it.'
+    + (url ? ` <a href="${esc(url)}">The Environment Agency's page for this sensor</a> has its record.` : '')
+    + ' Contains Environment Agency data licensed under the Open Government Licence v3.0.';
+  const base = { live: true, wide: true, icon: ICON.sonde, label: 'Ammonium sensor', more };
+  if (!a) return { ...base, fig: '–', unit: 'no reading', say: `No ammonium reading in the last day from the sensor ${where}. ${SONDE_NONE}` };
+  const t = Date.parse(a.observed_at);
+  if (!sondeFresh(a)) return { ...base, fig: '–', unit: 'no current reading', say: `Last reading ${where}, ${agoSpan(t)} ago: too old to use. ${SONDE_NONE}` };
+  const day = (s.series || []).filter(([u]) => Date.parse(u) >= t - 864e5).map(([, v]) => v).filter(v => typeof v === 'number');
+  const range = day.length >= 8 ? ` Over the day before it: ${sondeNum(Math.min(...day))} to ${sondeNum(Math.max(...day))}&nbsp;mg/L.` : '';
+  const others = Object.keys(SONDE_NAMES).filter(k => sondeFresh(rd[k])).map(k => `${SONDE_NAMES[k]} ${sondeVal(rd[k])} (${sondeQual(rd[k])}, ${agoSpan(Date.parse(rd[k].observed_at))} ago)`);
+  return { ...base, fig: sondeNum(a.value), unit: 'mg/L, measured', vis: sondeLine(s.series),
+    say: `Measured ${where}, ${agoSpan(t)} ago. The Environment Agency labels it ${sondeQual(a)}.${range} ${SONDE_SAID}`,
+    note: others.length ? `The same sensor: ${others.join('; ')}.` : '' };
+}
 // Past measured temperatures for a lake spot (lake-temperatures.html; build_site.write_lake_temperatures, from the
 // research export, docs/LAKE-TEMPERATURE-OBS-CONTRACT-v1.md): one link, after the latest readings, to its lake's
 // readings by month. Never a figure here, so nothing on the spot's page reads as the water's temperature now: it says
@@ -2700,22 +2761,32 @@ function lakeTempFor(d) {
     const el = document.getElementById('lt-past'), html = current && current.id === d.id && ltIndex.available ? lakeTempLine((ltIndex.spots || {})[d.id]) : '';
     if (el && html) { el.innerHTML = html; el.hidden = false; } });
 }
-// A local group's past water samples near a lake spot (waterhead.html; build_site.write_waterhead writes
+// A local group's past water samples near a spot (waterhead.html; build_site.write_waterhead writes
 // data/research/local-samples.json, docs/WATERHEAD-WET-CONTRACT-v1.md): one link after the lake's past temperatures,
 // with who took them, how many and the latest date. Never a count here, and never in the level: it says they are past
-// samples, not today's water. Asked for only on a lake spot's page, once, like the temperatures' index.
+// samples, not today's water. Asked for once, like the temperatures' index. Since 13 Nov 2026 river spots too: a
+// water company's own samples (build_site.write_wessex_samples, `company`) say whose they are, that they are not the
+// Environment Agency's, and how far along the river the point is from the spot.
 const LS_INDEX = 'data/research/local-samples.json';
 let lsIndex = null, lsAsked = null;
 function localSamplesLine(link) {
-  if (!link || !/^[a-z0-9-]+\.html$/.test(link.href || '') || !link.first || !link.last || !(link.samples > 0)) return '';
+  if (!link || !/^[a-z0-9-]+\.html(#[a-z0-9-]+)?$/.test(link.href || '') || !link.first || !link.last || !(link.samples > 0)) return '';
   const a = String(link.first).slice(0, 4), b = String(link.last).slice(0, 4);
   const latest = new Date(String(link.last).slice(0, 10) + 'T12:00:00Z').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
+  if (link.company) {
+    const m = Number(link.along_m), dir = link.direction === 'upstream' || link.direction === 'downstream' ? link.direction : '';
+    if (!(m >= 0) || !dir) return '';
+    const far = m < 1000 ? `about ${Math.max(10, Math.round(m / 10) * 10)}&nbsp;m` : `about ${(m / 1000).toFixed(1)}&nbsp;km`;
+    return `<a href="${link.href}">${esc(link.by)}'s own river samples, ${a === b ? a : `${a} to ${b}`}</a>: ${link.samples} E.&nbsp;coli results from a point ${far} ${dir} on ${esc(link.place)}, the latest on ${latest}. The company's own lab results, not Environment Agency samples. Past samples, not today's water.`;
+  }
+  // A spot elsewhere on the same water body as the samples' own (build_site.write_waterhead, `elsewhere`): said, with how far.
+  if (link.elsewhere) return Number(link.km) > 0 ? `<a href="${link.href}">Local water samples elsewhere on this lake, ${a === b ? a : `${a} to ${b}`}</a>: ${link.samples} samples taken at ${esc(link.place)}, about ${Number(link.km).toFixed(1)}&nbsp;km from here, by ${esc(link.by)}, the latest on ${latest}. Past samples from another part of the lake, not this spot's water.` : '';
   return `<a href="${link.href}">Local water samples, ${a === b ? a : `${a} to ${b}`}</a>: ${link.samples} samples taken at ${esc(link.place)} by ${esc(link.by)}, the latest on ${latest}. Past samples, not today's water.`;
 }
-const localSamplesHost = d => { const html = d.kind === 'lake' && lsIndex && lsIndex.available ? localSamplesLine((lsIndex.spots || {})[d.id]) : '';
+const localSamplesHost = d => { const html = lsIndex && lsIndex.available ? localSamplesLine((lsIndex.spots || {})[d.id]) : '';
   return `<p class="lt-past" id="ls-past"${html ? '' : ' hidden'}>${html}</p>`; };
 function localSamplesFor(d) {
-  if (d.kind !== 'lake' || d.unlisted || lsIndex) return;
+  if (d.unlisted || lsIndex) return;
   lsAsked = lsAsked || fetch(LS_INDEX).then(r => r.ok ? r.json() : null).catch(() => null);
   lsAsked.then(x => { lsIndex = x || { available: false };
     const el = document.getElementById('ls-past'), html = current && current.id === d.id && lsIndex.available ? localSamplesLine((lsIndex.spots || {})[d.id]) : '';
@@ -2742,6 +2813,7 @@ const ICON = {   // the one stroke set, as the search, map, bookmark and check
   table: glyph('<path d="M4 5h16v14H4ZM4 10h16M4 14.5h16M10 5v14"/>'),
   route: glyph('<path d="M12 21V3"/><path d="M5.5 5.5h10l3 2.5-3 2.5h-10ZM18.5 13.5h-10l-3 2.5 3 2.5h10Z"/>'),   // a signpost: the practical guide
   evidence: glyph('<path d="M6 3h8.5L19 7.5V21H6Z"/><path d="M14 3v5h5M9 12.5h7M9 16.5h7"/>'),   // a page of records: what the level rests on
+  sonde: glyph('<path d="M10 3h4v9.5a2 2 0 0 1-4 0Z"/><path d="M10 7.5h4"/><path d="M3 18.5c1.5-1.2 3-1.2 4.5 0s3 1.2 4.5 0 3-1.2 4.5 0 3 1.2 4.5 0"/>'),   // a probe in the water: a sonde's readings
   unknown: glyph('<circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.6a2.5 2.5 0 0 1 4.85.85c0 1.7-2.45 2.3-2.45 3.6"/><path d="M12 16.9v.1"/>'),   // a question: not known here
 };
 // Overflow names: levels.js's nameCase (capitals in normal case) and plainName ("Addingham sewage works
@@ -3086,6 +3158,7 @@ function facts(d, iso = null) {
     out.push({ icon: ICON.rain, label: 'Rain here', fig: Math.round(x0.rain_48h_mm), unit: 'mm', vis: rainCols(d, x0.date),
       say: `In the 48&nbsp;h to midday ${first ? 'today' : dayName(x0.date)}.${first && wet !== x0 && wet.rain_48h_mm >= 1 ? ` The most ahead: ${Math.round(wet.rain_48h_mm)}&nbsp;mm in the 48&nbsp;h to midday ${dayName(wet.date)}.` : ''}` }); }
   const wt = waterTile(d.water_temp, d.water_temp_est, d.kind, d.water_temp_est_missing); if (wt) out.push(wt);
+  const sn = d.kind === 'river' && d.sonde ? sondeTile(d.sonde) : null; if (sn) out.push(sn);   // measured, under Latest readings
   const wx = weatherOn(d, first || !x0 ? today() : x0.date);
   if (wx) out.push({ icon: ICON.sun, label: 'Weather', fig: nil(wx.tmax) ? '–' : `${wx.tmax}°`, unit: nil(wx.tmax) ? '' : 'C high', vis: sunPath(wx, first),
     say: `Sunrise ${esc(wx.sunrise)}, sunset ${esc(wx.sunset)}.`, credit: true });
@@ -3290,6 +3363,12 @@ const lowOn = iso => DATA.spots.filter(s => dayLevel(s, iso) === 'low' && lowEli
 // map's "Low risk only" and the plan's areas already did: low on the day shown, and no official advice restricting
 // swimming. On 31 Oct 2026 the strip said 54 and the areas and the summary 55: Frensham Great Pond, low for sewage but
 // under the EA's advice against bathing (harmful algae), was counted in one and not the other.
+// The list's day strip (12 Nov 2026): with spots saved it counts them, "2 of 4", under a title that is about them
+// (homeHead); the count of every listed spot meant little to someone who swims in one river. A first visit keeps
+// the count of all the spots, which its opening line numbers. The same rule either way (lowEligible). The map's own
+// strip counts every spot, as the map shows every spot.
+const stripCount = iso => { const mine = DATA.spots.filter(s => SAVED.has(s.id));
+  return mine.length ? `${mine.filter(s => dayLevel(s, iso) === 'low' && lowEligible(s)).length} of ${mine.length}` : String(lowOn(iso)); };
 const lowToChoose = xs => xs.filter(s => mapLevel(s) === 'low' && lowEligible(s)).length;
 // The button, with the dot before it, shows while another day is picked: setMapDay keeps it in step.
 const syncBestDay = () => document.querySelectorAll('[data-pick-day]').forEach(b => { b.parentElement.hidden = b.dataset.pickDay === VIEW.day; });
@@ -3941,7 +4020,7 @@ function renderList() {
     // choice and its answer in one place (29 October 2026: a select, "Today and tomorrow" first, and the
     // weekend's best day in a line under it). It opens on today (renderList).
     + `<div class="toolbar"><fieldset class="day-strip list-days" id="listday"><legend class="sr">When are you swimming?</legend>${fiveDays().map(iso => `<label><input type="radio" name="list-day" value="${iso}"${VIEW.day === iso ? ' checked' : ''}>`
-      + `<span>${shortDay(iso)} <span class="dd"><b>${lowOn(iso)}</b> <span class="nw">low risk</span></span></span></label>`).join('')}</fieldset></div>`
+      + `<span>${shortDay(iso)} <span class="dd"><b>${stripCount(iso)}</b> <span class="nw">low risk</span></span></span></label>`).join('')}</fieldset></div>`
     + `<p class="planner-note" id="low-note-list"${VIEW.lowOnly ? '' : ' hidden'}>${lowListNote()}</p>`;
   h += notices(null, true) + '</div>';
   // With spots saved, the title and the line under it are the visitor's own (homeYours); the same two elements, so
@@ -6155,12 +6234,18 @@ function labTile(d) {
 }
 const daysTile = d => `<section class="tile" aria-labelledby="days-h"><h2 class="t-lab" id="days-h">${ICON.days}<span>Pollution risk, next five days</span></h2>`
   + `<p class="t-sent">${daysSentence(d)}</p>${dayRows(d)}${liveRow(d)}<div class="after" id="answer-after">${answerAfter(d)}</div><div id="day-view"></div>${check(d)}</section>`;
+// A spot page's title, word for word as the build writes it (build_site.spot_title): "sewage" and "swimming"
+// are the words people search with.
+function spotTitle(d) {
+  const none = (d.error && !String(d.error).startsWith('forecast failed')) || (d.upstream_summary || {}).overflows === 0;
+  return `${d.name}: ${none ? 'swimming and sewage overflows' : 'sewage spill risk for swimming'} · ${BRAND}`;
+}
 function render(d) {
   setDays(d);
   contribLayer.clearLayers();
   setView('spot');
   if (!DAY && typeof lookedAt === 'function') lookedAt([d], DATA.generated_at, SAVED);   // since.js: its level is the answer
-  document.title = `${d.name}: pollution risk forecast · ${BRAND}`;   // as on the spot's own page
+  document.title = spotTitle(d);   // as on the spot's own page
   const loc = d.location || {}, total = overflows(d);
   let h = spotTop(d);
   // Then the tiles, the five days first. A phone's small map of where the spot is comes after them:

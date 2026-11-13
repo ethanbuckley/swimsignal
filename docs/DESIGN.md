@@ -2498,3 +2498,69 @@ Ethan asked for the review's open items to be built ("do all those fixes"). No l
 lines, the clamp and its button, the photos button; layout shift on the home page still 0. Node tests 1,117 pass.
 Not checked: pressing "Spots near me" with a real location (the preview cannot grant one; it calls the pin's own
 function), 320 px, Safari, a screen reader.
+
+## One foot, one opening (12 November 2026)
+
+The last open items of the review of 12 November (`docs/REVIEW-2026-11-12.md`), built at Ethan's request.
+
+- **One foot.** The app's foot had 12 links, the prose pages 7 and the Research Lab 4. Every page now has the same
+  links in the same order (`build_site.FOOT_LINKS`, `foot_links`): About SwimSignal, How accurate is it?, Method,
+  Every spot, Research and data, Coasts, Wales, Scotland, Ireland and algae, For organisations, Feedback, Request a
+  spot, Terms of use, Privacy, Data credits, Source code. The app's foot leaves out only Data credits, which the
+  credit line under its links gives. The pages write the line by hand, as before; `tests/test_one_footer.py` holds
+  them to the list. The Lab's foot keeps its two lines about covers and exploratory work above the links.
+- **One opening for a spot.** A spot with a photo read down the left edge. One without (25 of 133, and every point
+  clicked on the map) was centred on a phone. Both now read down the left edge at every width, the way Ethan chose
+  last for the photo ("This is it", 11 November). This turns round "Phones keep the centred answer" (29 October). The
+  sky stays behind a spot with no photo. No words or order changed.
+- **Pages with one way in.** `quality.html` was linked from About only and `data-feed.html` from For organisations
+  only. The data page's "In short" now links both, Research and data lists the overflow records to check, and the
+  sampling partners' page links the sampling planner.
+
+**Checked:** headless Chrome at 375 x 812 on the data of 12 November 10:35: Shrewsbury's opening (no photo), the
+About page's foot; the Lab's foot at 1,440 px was built and its links resolve. Not checked by eye: a point clicked
+on the map, 320 px, Safari.
+
+## The strip counts your spots, and Waterhead from its neighbours (12 November 2026)
+
+The review's last two items (`docs/REVIEW-2026-11-12.md`, section 9).
+
+- **The list's day strip.** With spots saved it counts them: "1 of 3 low risk" under each day (`stripCount`), below a
+  title that is already about them. The count of all 133 spots meant little to someone who swims in one river. A
+  first visit keeps the count of every spot, which its opening line numbers. The rule is the same either way: a spot
+  under official advice restricting swimming is never counted as low (`lowEligible`). The map's own strip still counts
+  every spot, as the map shows every spot. At 320 px the figure and "low risk" take a line each.
+- **Waterhead's samples, from the same water body.** The samples were linked from the Waterhead spot only. The other
+  listed lake spots on the same Environment Agency water body now link them too (`build_site.wet_elsewhere`):
+  Millerground Landing and Rayrigg Meadow, both in Windermere's north basin, about 5 km away. Their line says so:
+  "Local water samples elsewhere on this lake ... about 5.0 km from here ... Past samples from another part of the
+  lake, not this spot's water." Their evidence timelines do not show the samples, which are not theirs. Lakeside and
+  Fellfoot are in the south basin, another water body, and get no link.
+
+**Checked:** headless Chrome at 375 and 320 px with three spots saved; Millerground's page (the line, its link, no
+samples in its timeline) and Fellfoot's (no line) in the in-app browser. Node tests 1,119 pass.
+
+## Ammonium sensor (13 November 2026, draft)
+
+A measured tile under "Latest readings" (`sondeTile` in `index.html`; the data is `build_site.attach_sondes`,
+`docs/SONDE-READINGS-CONTRACT-v1.md`). Draft PR #687: the public wording is Ethan's to approve.
+
+- **Where.** Only a river spot whose own river has a live Environment Agency sonde upstream of it along the river (20 km
+  at most) or at it. On 13 November that is 2 of 85 river spots. No tile anywhere else: no sonde is not a gap to report.
+- **Anatomy.** The tiles' own: a probe in the water from the stroke set, "Ammonium sensor", the reading as the figure
+  in ink ("1.89" with "mg/L, measured"), a line of the last day's readings, one sentence, a quiet line, the fold. Full
+  width (`wide`): half width beside Right now it ran to about twenty lines on a 375 px phone.
+- **The sentence** says where and how old, as the water temperature does, counted when the page is read: "Measured at
+  Boxtedmill on the Stour, 7.4 km upstream, 21 min ago. The Environment Agency labels it Unchecked." Then the day's
+  range, then, every time a figure shows: "Ammonium is a marker that can come from sewage. It is not a count of
+  bacteria and not a sign that the water is fit to swim in."
+- **The quiet line** gives the same sonde's dissolved oxygen and turbidity, each with the EA's label and its age.
+- **No level.** No colour, band, word or advice comes from any reading. The line is ink on a hairline from zero
+  (`.sline`), so a small change is not drawn as a large one, with the first and last times under it.
+- **Old or missing.** Over a day old: no figure, "Last reading … 26 h ago: too old to use." No reading: "No ammonium
+  reading in the last day from the sensor …". Both end "No reading does not mean clean water."
+- **The fold** says what a sonde is, what ammonium is and is not, what "Unchecked" means, how the sensor was chosen,
+  that it is not part of the pollution level, links the EA's page for the sensor and gives the OGL credit.
+
+**Checked:** headless Chrome at 375 and 1,440 px on the live data of 13 November with the run's readings (Dedham,
+Dosthill); `tests/site_sonde.test.cjs`. Not checked: 320 px, Safari, a screen reader.
