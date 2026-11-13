@@ -40,6 +40,18 @@ def test_every_entry_holds_the_contract():
         assert not re.search(r"\b(impossible|proves?|proved|cannot help)\b", x["verdict"] + x["scope"], re.I), x["id"]
 
 
+def test_no_stage_note_waits_on_a_pr_the_catalogue_says_is_merged():
+    """12 Nov 2026: three entries said "once merged" or "not live until" for PRs merged a week before, and 19 PR rows
+    said open. A note that waits on a merge, on an entry whose PRs are all merged, is out of date."""
+    doc = _doc()
+    waits = re.compile(r"once merged|once Ethan merges|not live until|\(open[;)]|merging is Ethan's", re.I)
+    for x in doc["entries"]:
+        if all(doc["prs"][str(n)]["state"] == "merged" for n in x["prs"]):
+            assert not waits.search(x["stage_note"]), x["id"]
+        if x["stage"] == "live":
+            assert not waits.search(x["stage_note"]), x["id"]
+
+
 def test_every_quote_is_word_for_word_in_its_record():
     for x in _doc()["entries"]:
         for r in x["records"]:

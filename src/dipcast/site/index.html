@@ -132,6 +132,10 @@
   /* While the forecast loads (main): the shape of the list in hairline grey, breathing slowly. */
   @keyframes breathe { 50% { opacity:.45; } }
   .skel { padding:4px 0 0; }
+  /* Until the forecast is drawn the built page is at least a screen tall (12 Nov 2026): the built page ended
+     under four grey rows, so "About these forecasts" was painted on a phone's first screen and then pushed off it,
+     a layout shift of 0.06 on a first visit and 0.12 with a spot saved. */
+  #result[data-built]:has(.skel) { min-height:100vh; }   /* on #result: a phone's columns are display:contents and take no height */
   .skel span { display:block; background:var(--line); border-radius:var(--radius); animation:breathe 1.2s ease-in-out infinite; }
   .skel .skel-h { width:70%; height:36px; margin:0 0 24px; }
   .skel .skel-r { height:60px; margin:0 0 8px; }
@@ -270,19 +274,22 @@
   /* A first visit: the day's count of the listed spots as one bar and its figures (homeNow), then the spots at very
      high risk (homeWorst). The bar's parts are steps in the level colours, square, as every bar here. */
   #home-first[hidden] { display:none; }
+  .near-first { margin:0 0 8px; } .near-first .btn { width:100%; } .near-first svg { width:18px; height:18px; color:var(--link); }
+  .rec { margin:8px 0 0; }
   .home-now { padding-bottom:14px; }
   .nowbar { display:flex; gap:2px; height:12px; margin:10px 0 0; }
   .nowbar i { display:block; min-width:2px; }
   .nowbar .low { background:var(--low); } .nowbar .moderate { background:var(--moderate); } .nowbar .high { background:var(--high); }
   .nowbar .veryhigh { background:var(--veryhigh); } .nowbar .clear { background:var(--clear); } .nowbar .na { background:var(--unknown); }
-  .nowfig { list-style:none; margin:10px 0 0; padding:0; display:grid; gap:2px; font-size:var(--fs-note); }
-  .nowfig li { display:grid; grid-template-columns:2.4em minmax(0, 1fr); gap:0 10px; align-items:baseline; }
-  .nowfig b { text-align:right; font-size:var(--fs-head); font-weight:600; font-variant-numeric:tabular-nums; }
+  /* The figures as one line that wraps (12 Nov 2026; four rows, 128 px of a phone's first screen, for four numbers). */
+  .nowfig { list-style:none; margin:10px 0 0; padding:0; display:flex; flex-wrap:wrap; gap:2px 18px; font-size:var(--fs-note); line-height:1.4; }
+  .nowfig b { margin-right:5px; font-size:var(--fs-body); font-weight:600; font-variant-numeric:tabular-nums; }
   .nowfig .low b { color:var(--k-low); } .nowfig .moderate b { color:var(--k-moderate); } .nowfig .high b { color:var(--k-high); } .nowfig .clear b { color:var(--k-clear); }
   .home-worst .spots { margin-top:8px; }
   /* Upstream of the saved spots, the last 48 hours (homeFeed): when, what spilled and for how long, and where. */
   #home-feed[hidden] { display:none; }
   .home-feed { padding-bottom:12px; }
+  .home-feed.loading { min-height:150px; }   /* about two rows, so the list under it starts near where it will stay */
   .feed { list-style:none; margin:8px 0 0; padding:0; }
   .feed li { border-top:1px solid var(--hair); }
   .feed a { display:grid; grid-template-columns:76px minmax(0, 1fr); gap:0 10px; padding:9px 0; color:inherit; text-decoration:none; }
@@ -306,7 +313,6 @@
   .list-days .dd b { font-weight:600; color:var(--k-low); }
   .list-days .nw { white-space:nowrap; }   /* "low risk" whole: on a 320 px phone the count takes a line of its own */
   .list-days input:checked + span .dd b { color:var(--on-fill); }
-  .strip-note { margin:6px 2px 0; }
   /* A phone's opening, shorter: the lede without the map's clause, and the search at the height of a thumb. */
   @media (max-width: 800px) {
     .lede-map { display:none; }
@@ -536,6 +542,9 @@
   .top-row { display:flex; align-items:center; justify-content:space-between; gap:12px; }
   .top-row .save { margin-top:0; }
   .save-msg { margin:8px 0 4px; } .save-msg:empty { margin:0; }   /* what Save did, under it; empty, no room */
+  /* Without a photo the line sits under the button it is about, at the right, at the meta size (12 Nov 2026: at the
+     left under "All spots" it read as the page's first sentence, over a centred name). */
+  .top-row ~ .save-msg { text-align:right; font-size:var(--fs-meta); }
   .answer { text-align:center; padding:4px 0 0; }
   /* The place's photo, first in the answer (guideHero; 11 Nov 2026). With it the page has no sky: the photo is the
      place, the tiles sit on the paper as cards with a hairline, as the working screens' do, and the band under the
@@ -624,6 +633,13 @@
      so a row or card never leads with a clean level at an advised water. */
   .o-tag { display:block; margin:3px 0 4px; padding-left:7px; border-left:3px solid var(--notice-line); font-size:var(--fs-meta); line-height:1.35; color:var(--ink); }
   .answer .cover { margin:10px auto 0; max-width:30em; font-size:var(--fs-note); line-height:1.4; color:var(--ink); text-wrap:balance; }
+  /* One opening at every width (12 Nov 2026). A spot with a photo read down the left edge and one without (25 of 133,
+     and every point clicked on the map) was centred on a phone: two pages for one kind of thing. The photo's way won,
+     the one Ethan chose last ("This is it", 11 Nov). The sky stays behind a spot with no photo. */
+  .answer { text-align:left; }
+  .answer > *, .answer .spot-name, .answer .act, .answer .scope, .answer .flow, .answer .gaps, .answer .official,
+    .answer .cover, .answer .ci, .answer .live, .big, .big-head { margin-left:0; margin-right:0; }
+  .answer :is(.spot-name, .big, .big-head, .ci, .cover, .scope, .flow, .gaps, .live, .act) { text-wrap:pretty; }
   /* Under the five days (answerAfter): what to do, at the sentence's size, after a hairline; then what the
      level counts, at the notes' size. Left, as the tile's sentence is. */
   .after .act { margin:10px 0 0; padding-top:10px; border-top:1px solid var(--hair); line-height:1.4; }
@@ -649,7 +665,7 @@
   .tile .plate #spot-map { margin:0; border-radius:0; box-shadow:0 0 0 1px var(--ink); }
   .fig-no { font:600 var(--fs-note)/1.3 var(--font-display); }
   /* Routes into the Research Lab: page.css's .routes, repeated here as the app repeats the tokens. The spot page's
-     "Explore the evidence" and the home page's invitation. */
+     "Explore the evidence". */
   .routes { list-style:none; padding:0; margin:10px 0 0; display:grid; grid-template-columns:minmax(0, 1fr); }
   .routes a { display:grid; grid-template-columns:56px minmax(0, 1fr); gap:12px; align-items:start; padding:10px 0; border-top:1px solid var(--line); color:var(--muted); text-decoration:none; font-size:var(--fs-note); line-height:1.4; }
   .routes img { display:block; width:56px; height:56px; border:1px solid var(--ink); background:var(--deep); }
@@ -661,6 +677,8 @@
   /* A fold at a tile's foot under a name of its own (explain): the E. coli estimate's "Experimental
      estimate" out of season. Its text at the sentence's size, in ink: it holds the figures. */
   .tile > details.more > p { margin:0 0 2px; font-size:var(--fs-note); line-height:1.45; }
+  .t-sent.clamp { display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:var(--keep, 3); line-clamp:var(--keep, 3); overflow:hidden; padding-bottom:0; border-bottom:0; }
+  .sent-more { margin:0 0 2px; padding-bottom:6px; border-bottom:1px solid var(--hair); }
   .t-sent { margin:8px 0 2px; padding-bottom:10px; border-bottom:1px solid var(--hair); line-height:1.4; }
   details.t-more > summary { position:absolute; top:0; right:0; width:44px; height:44px; display:flex; align-items:center; justify-content:center; list-style:none; cursor:pointer; }
   details.t-more > summary::-webkit-details-marker { display:none; }
@@ -713,6 +731,11 @@
   .sun .lit { fill:none; stroke:var(--ink); stroke-width:1.75; stroke-linecap:round; }
   .sun line { stroke:var(--line); stroke-width:1; }
   .sun circle { fill:var(--ink); stroke:var(--card); stroke-width:2; }
+  /* A sonde's ammonium over its last day (sondeLine): ink on a hairline from zero, no band and no colour, since no level is drawn from it. */
+  .sline { display:block; width:100%; height:48px; margin:12px 0 0; overflow:visible; }
+  .sline path { fill:none; stroke:var(--ink); stroke-width:1.75; stroke-linejoin:round; stroke-linecap:round; vector-effect:non-scaling-stroke; }
+  .sline line { stroke:var(--line); stroke-width:1; vector-effect:non-scaling-stroke; }
+  .sline-k { display:flex; justify-content:space-between; margin:4px 0 0; font-size:var(--fs-meta); color:var(--faint); }
   .sun circle.down { fill:var(--card); stroke:var(--muted); stroke-width:1.75; }
   .seasons { display:flex; gap:16px; margin:12px 0 0; }
   .seasons span { display:flex; flex-direction:column; gap:3px; min-width:56px; font-size:var(--fs-meta); line-height:1.2; color:var(--muted); }
@@ -1299,6 +1322,9 @@
     .answer:has(.hero) .hero img { height:280px; }
     .answer > *, .answer .spot-name, .answer .act, .answer .scope, .answer .flow, .answer .gaps, .answer .official,
       .answer .cover, .answer .ci, .big, .big-head { margin-left:0; margin-right:0; }
+    /* Left-aligned, the notes under the level keep a prose measure and break where the words do (12 Nov 2026): balanced
+       at 30 em for the phone's centred answer, they broke after "open it" with 900 px of the row empty. */
+    .answer :is(.ci, .cover, .scope, .flow, .gaps, .live, .act) { max-width:68ch; text-wrap:pretty; }
     /* A shorter opening, so the first spots and most of the map's tile are on a 1,440 x 900 screen:
        Near me is the search field's pin, and the five days one strip (29 October 2026). */
     .intro > .search input { min-height:48px; }
@@ -1308,14 +1334,15 @@
       background-image:url(icons/fells-wide.webp); background-size:max(100%, 1500px) 600px; }
     /* The home page's opening (2 Nov 2026): the title and one line, then the search and the five days on one row,
        then the count's line and the freshness, so the list and the map start higher. */
-    body.view-list .lead { display:grid; grid-template-columns:minmax(0, 1fr) minmax(480px, 560px); column-gap:16px; align-items:center; }
+    /* On the columns' own grid (12 Nov 2026): the search is the list's width and the five days the map's, so the page
+       has two left edges, not four (the search ended 200 px past the list under it, the days began 200 px into the map's tile). */
+    body.view-list .lead { display:grid; grid-template-columns:minmax(0, 5fr) minmax(0, 7fr); column-gap:24px; align-items:center; margin-bottom:28px; }
     body.view-list .lead > *, body.view-list .intro > * { grid-column:1 / -1; max-width:none; }
     body.view-list .intro { display:contents; }
     body.view-list .intro h1 { font-size:var(--fs-level); }
     body.view-list .intro .lede { margin-top:4px; max-width:72ch; text-wrap:pretty; }
     body.view-list .intro > .search { grid-column:1; margin-top:14px; }
     body.view-list .lead > .toolbar { grid-column:2; margin-top:14px; }
-    body.view-list .lead > .strip-note { margin-top:8px; }
     /* Plan a swim's controls in one bar on the paper (2 Nov 2026). On a phone they stay one under another. */
     body.view-plan .lead > * { max-width:none; }
     body.view-plan .lead > .back, body.view-plan .lead > h1 { max-width:760px; }
@@ -1632,7 +1659,7 @@
     .top { position:static; padding:0 0 8px; background:var(--card); color:var(--ink); border-bottom:1px solid var(--line); }
     .top .brand { color:var(--ink); }
     .top nav, .skip, .bottom-nav, #map-wrap, .loc, .tile:has(#spot-map), .top-row, .actions, .below,
-      .search, .toolbar, .strip-note, .linkbtn, .cmp-pick, .group-bar .sortseg, .chips-row, .low-ctl, #near-group:not(:has(li)),
+      .search, .toolbar, .linkbtn, .cmp-pick, .group-bar .sortseg, .chips-row, .low-ctl, #near-group:not(:has(li)),
       .about-line, #your-data, #home-screen, details.ea-today, details.consent, details.lists, form, .btn, .unsave,
       .pick, details > summary::after, .quiet-btn::after { display:none !important; }
     .answer::before, .lead::before { display:none; }
@@ -1718,7 +1745,7 @@
           <dt id="about-exposure">Sewage spill risk (0–100)</dt><dd>A 0–100 score for sewage from upstream reaching the spot. It is built from the chance that at least one overflow upstream spills and its discharge arrives, after travel time, die-off and dilution. The spill part is verified against what the overflows did; the die-off and dilution weights are physical estimates, not calibrated against water samples, so the score is not a probability. The colour levels (low to very high) come from it.</dd>
           <dt id="about-ecoli">E. coli estimate</dt><dd>The estimated chance that a midday water sample would show over 900 E. coli per 100 ml, from rainfall at the spot, the sewage spill risk, water-body type and season, fitted to Environment Agency samples at river and lake bathing waters and tested on years and sites it never saw. It counts bacteria from any source, so rain alone can raise it when the sewage spill risk is low. 900 is the threshold used in the inland "sufficient" classification, which is a 90th-percentile calculation over four seasons, not a pass/fail test of one sample. It is validated on rivers in the May–September sampling season only; on lakes it has no demonstrated skill and is not shown. At a lake with overflows upstream the page gives a different estimate instead: the reading a sample would most likely show, per 100 ml, and the range 8 in 10 samples would fall in, from the same inputs and the lake's own level. On 962 samples from 2012 to 2022 at Windermere and Frensham Great Pond, which it never saw, 79% fell inside that range. A lake bathing water uses its own samples' level; any other lake starts from a typical lake's, which is less certain. From May to September a lake bathing water's page also says whether the likely reading is higher than usual for the lake at that time of year (at least twice), lower (at most half) or about usual, where usual is the same estimate with the lake's typical rain and spills (the middle values on its own Environment Agency sample days, 2023 to 2026); on past samples the estimate put two days at the same lake in the right order only about 58 to 60 times in 100, so this compares two estimates and is not a measurement. At Derwent Water high summer results come with a rise that rain, spills and lake level do not track, so there it can say about usual on a day a sample reads high. Where a bathing water has no monitored overflow upstream, its page gives what its own Environment Agency samples have read instead: past samples, not a forecast. The EA takes no samples from October to April, so then nothing tests it: it does not set the level, a spot's page gives the figure only under "Experimental estimate", and the date's own effect is held at its value at the nearer end of the season (30 September or 1 May) rather than carried on with nothing to check it. A spot's page says how it has done on the samples taken since the forecast began, and, where the river runs from Wales, what a test on Welsh river samples found.</dd>
           <dt>Algae</dt><dd>Designated bathing waters only: the Environment Agency sampler's latest look at the water, an observation, not a forecast. It does not tell blue-green algae from harmless kinds.</dd>
-          <dt>Water temperature</dt><dd>Rivers only, where an Environment Agency sensor on the same river, within 15 km in a straight line and on the same side of the tidal limit, has reported in the last day: its latest reading, with how far up or down the river it is and how old the reading is. Where there is no such sensor nothing is shown; the temperature is never estimated. It is not part of the level.</dd>
+          <dt>Water temperature</dt><dd>Rivers only, where an Environment Agency sensor on the same river, within 15 km in a straight line and on the same side of the tidal limit, has reported in the last day: its latest reading, with how far up or down the river it is and how old the reading is. Where there is no such sensor, and at lakes, the tile shows an estimate worked out from the air temperature, marked "estimated" or "provisional estimate": it is not a measurement, and the tile gives its typical error. It is not part of the level.</dd>
           <dt>What it does not know</dt><dd>The treated sewage that sewage works let out every day, and anything about a specific farm, road, outfall or algal bloom: only monitored storm overflows are modelled. Nor does it use the wind, which decides where river water goes in a lake. <a href="methods.html#limits">What the forecast does not count, and what you can do</a>.</dd>
         </dl>
       </details>
@@ -2662,6 +2689,55 @@ function waterTile(w, e = null, kind = null, miss = null) {
     say: `Measured ${esc(w.where)}${w.river ? ` on the ${esc(w.river)}` : ''}, ${fmt(w.river_km, 1)}&nbsp;km ${w.direction}, ${agoSpan(t)} ago.${est ? ` At the spot: ${waterEstSay(est).replace(/^About/, 'about')}` : ''}`,
     more: `The Environment Agency's water-quality sensor nearest the spot on this river, within 15&nbsp;km in a straight line, that has reported in the last day: upstream if there is one, since the water here comes from upstream.${w.quality === 'Unchecked' ? ' The EA has not yet checked the reading.' : ''} The water where you swim can be warmer or colder. Not part of the pollution level.${/^https:\/\/environment\.data\.gov\.uk\//.test(w.url || '') ? ` <a href="${esc(w.url)}">The Environment Agency's page for this sensor</a> has its record.` : ''}${est ? ` ${waterEstMore(est)}` : ''}` };
 }
+// The water-quality sensor tile (build_site.attach_sondes, docs/SONDE-READINGS-CONTRACT-v1.md), or null: the latest
+// readings of an Environment Agency sonde on the spot's own river, upstream of it along the river (20 km at most) or at
+// it. Ammonium is the figure; the same sonde's dissolved oxygen and turbidity follow in a line. Every reading says when
+// it was taken and the EA's own word for it ("Unchecked"), counted from now, not from the build: one over a day old says
+// how old it is and shows no figure. No level, colour or advice is drawn from any of it, and no reading is never clean
+// water. Rivers only; a spot without such a sonde has no tile.
+const SONDE_SAID = 'Ammonium is a marker that can come from sewage. It is not a count of bacteria and not a sign that the water is fit to swim in.';
+const SONDE_NONE = 'No reading does not mean clean water.';
+const SONDE_NAMES = { 'dissolved-oxygen': 'dissolved oxygen', turbidity: 'turbidity' };
+const sondeNum = v => v >= 100 ? Math.round(v).toString() : v >= 10 ? v.toFixed(1) : v >= 1 ? v.toFixed(2) : v.toFixed(3).replace(/0$/, '');
+const sondeVal = r => r.unit === '% saturation' ? `${Math.round(r.value)}% of saturation` : `${sondeNum(r.value)}&nbsp;${esc(r.unit)}`;
+const sondeAgeH = r => { const t = r ? Date.parse(r.observed_at) : NaN; return isNaN(t) ? null : (Date.now() - t) / 36e5; };
+const sondeFresh = r => { const h = sondeAgeH(r); return !!r && typeof r.value === 'number' && h !== null && h > -1 && h <= 24; };
+const sondeQual = r => r.quality ? esc(r.quality) : 'no quality word';
+// The ammonium readings of the day before the last one, as a line from zero: aria-hidden, the sentence gives the range.
+function sondeLine(series) {
+  const pts = (series || []).map(([t, v]) => [Date.parse(t), v]).filter(([t, v]) => !isNaN(t) && typeof v === 'number');
+  if (pts.length < 8) return '';
+  const t1 = pts[pts.length - 1][0], t0 = t1 - 864e5, day = pts.filter(([t]) => t >= t0);
+  if (day.length < 8) return '';
+  const W = 200, H = 44, top = Math.max(0.1, ...day.map(([, v]) => v)) * 1.1;
+  const x = t => ((t - t0) / 864e5 * W).toFixed(1), y = v => (H - v / top * H).toFixed(1);
+  const d = day.map(([t, v], i) => `${i && t - day[i - 1][0] <= 3 * 36e5 ? 'L' : 'M'}${x(t)} ${y(v)}`).join('');   // most send hourly; a gap over 3 h is left a gap
+  const when = t => new Date(t).toLocaleString('en-GB', { weekday: 'short', hour: '2-digit', minute: '2-digit' });
+  return `<svg class="sline" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true"><line x1="0" x2="${W}" y1="${H}" y2="${H}"/><path d="${d}"/></svg>`
+    + `<p class="sline-k" aria-hidden="true"><span>${when(t0)}</span><span>${when(t1)}</span></p>`;
+}
+function sondeTile(s) {
+  if (!s || !s.station || nil(s.river_km) || !['upstream', 'at'].includes(s.direction)) return null;
+  const where = `${esc(s.where)}${s.river ? ` on the ${esc(s.river)}` : ''}, ${s.direction === 'at' ? 'at the spot' : `${fmt(s.river_km, 1)}&nbsp;km upstream`}`;
+  const rd = s.readings || {}, a = rd.ammonium, url = /^https:\/\/environment\.data\.gov\.uk\//.test(s.url || '') ? s.url : '';
+  const more = 'An Environment Agency sonde: a sensor left in the river that measures the water every 15 minutes and publishes it before anyone has checked it. '
+    + `${SONDE_SAID} It rises where sewage, treated or not, reaches the river, and also with farm runoff and other sources. ${SONDE_NONE} `
+    + 'Each reading carries the EA\'s own word for it: Unchecked means raw data the EA has not inspected yet. A reading the EA marks as suspect is not shown. '
+    + 'The sensor is on this spot\'s river, joined to it along the river, upstream of it (20&nbsp;km at most) or at it, the nearest; the water where you swim can differ. '
+    + 'Not part of the pollution level: nothing on this page is worked out from it.'
+    + (url ? ` <a href="${esc(url)}">The Environment Agency's page for this sensor</a> has its record.` : '')
+    + ' Contains Environment Agency data licensed under the Open Government Licence v3.0.';
+  const base = { live: true, wide: true, icon: ICON.sonde, label: 'Ammonium sensor', more };
+  if (!a) return { ...base, fig: '–', unit: 'no reading', say: `No ammonium reading in the last day from the sensor ${where}. ${SONDE_NONE}` };
+  const t = Date.parse(a.observed_at);
+  if (!sondeFresh(a)) return { ...base, fig: '–', unit: 'no current reading', say: `Last reading ${where}, ${agoSpan(t)} ago: too old to use. ${SONDE_NONE}` };
+  const day = (s.series || []).filter(([u]) => Date.parse(u) >= t - 864e5).map(([, v]) => v).filter(v => typeof v === 'number');
+  const range = day.length >= 8 ? ` Over the day before it: ${sondeNum(Math.min(...day))} to ${sondeNum(Math.max(...day))}&nbsp;mg/L.` : '';
+  const others = Object.keys(SONDE_NAMES).filter(k => sondeFresh(rd[k])).map(k => `${SONDE_NAMES[k]} ${sondeVal(rd[k])} (${sondeQual(rd[k])}, ${agoSpan(Date.parse(rd[k].observed_at))} ago)`);
+  return { ...base, fig: sondeNum(a.value), unit: 'mg/L, measured', vis: sondeLine(s.series),
+    say: `Measured ${where}, ${agoSpan(t)} ago. The Environment Agency labels it ${sondeQual(a)}.${range} ${SONDE_SAID}`,
+    note: others.length ? `The same sensor: ${others.join('; ')}.` : '' };
+}
 // Past measured temperatures for a lake spot (lake-temperatures.html; build_site.write_lake_temperatures, from the
 // research export, docs/LAKE-TEMPERATURE-OBS-CONTRACT-v1.md): one link, after the latest readings, to its lake's
 // readings by month. Never a figure here, so nothing on the spot's page reads as the water's temperature now: it says
@@ -2684,22 +2760,32 @@ function lakeTempFor(d) {
     const el = document.getElementById('lt-past'), html = current && current.id === d.id && ltIndex.available ? lakeTempLine((ltIndex.spots || {})[d.id]) : '';
     if (el && html) { el.innerHTML = html; el.hidden = false; } });
 }
-// A local group's past water samples near a lake spot (waterhead.html; build_site.write_waterhead writes
+// A local group's past water samples near a spot (waterhead.html; build_site.write_waterhead writes
 // data/research/local-samples.json, docs/WATERHEAD-WET-CONTRACT-v1.md): one link after the lake's past temperatures,
 // with who took them, how many and the latest date. Never a count here, and never in the level: it says they are past
-// samples, not today's water. Asked for only on a lake spot's page, once, like the temperatures' index.
+// samples, not today's water. Asked for once, like the temperatures' index. Since 13 Nov 2026 river spots too: a
+// water company's own samples (build_site.write_wessex_samples, `company`) say whose they are, that they are not the
+// Environment Agency's, and how far along the river the point is from the spot.
 const LS_INDEX = 'data/research/local-samples.json';
 let lsIndex = null, lsAsked = null;
 function localSamplesLine(link) {
-  if (!link || !/^[a-z0-9-]+\.html$/.test(link.href || '') || !link.first || !link.last || !(link.samples > 0)) return '';
+  if (!link || !/^[a-z0-9-]+\.html(#[a-z0-9-]+)?$/.test(link.href || '') || !link.first || !link.last || !(link.samples > 0)) return '';
   const a = String(link.first).slice(0, 4), b = String(link.last).slice(0, 4);
   const latest = new Date(String(link.last).slice(0, 10) + 'T12:00:00Z').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
+  if (link.company) {
+    const m = Number(link.along_m), dir = link.direction === 'upstream' || link.direction === 'downstream' ? link.direction : '';
+    if (!(m >= 0) || !dir) return '';
+    const far = m < 1000 ? `about ${Math.max(10, Math.round(m / 10) * 10)}&nbsp;m` : `about ${(m / 1000).toFixed(1)}&nbsp;km`;
+    return `<a href="${link.href}">${esc(link.by)}'s own river samples, ${a === b ? a : `${a} to ${b}`}</a>: ${link.samples} E.&nbsp;coli results from a point ${far} ${dir} on ${esc(link.place)}, the latest on ${latest}. The company's own lab results, not Environment Agency samples. Past samples, not today's water.`;
+  }
+  // A spot elsewhere on the same water body as the samples' own (build_site.write_waterhead, `elsewhere`): said, with how far.
+  if (link.elsewhere) return Number(link.km) > 0 ? `<a href="${link.href}">Local water samples elsewhere on this lake, ${a === b ? a : `${a} to ${b}`}</a>: ${link.samples} samples taken at ${esc(link.place)}, about ${Number(link.km).toFixed(1)}&nbsp;km from here, by ${esc(link.by)}, the latest on ${latest}. Past samples from another part of the lake, not this spot's water.` : '';
   return `<a href="${link.href}">Local water samples, ${a === b ? a : `${a} to ${b}`}</a>: ${link.samples} samples taken at ${esc(link.place)} by ${esc(link.by)}, the latest on ${latest}. Past samples, not today's water.`;
 }
-const localSamplesHost = d => { const html = d.kind === 'lake' && lsIndex && lsIndex.available ? localSamplesLine((lsIndex.spots || {})[d.id]) : '';
+const localSamplesHost = d => { const html = lsIndex && lsIndex.available ? localSamplesLine((lsIndex.spots || {})[d.id]) : '';
   return `<p class="lt-past" id="ls-past"${html ? '' : ' hidden'}>${html}</p>`; };
 function localSamplesFor(d) {
-  if (d.kind !== 'lake' || d.unlisted || lsIndex) return;
+  if (d.unlisted || lsIndex) return;
   lsAsked = lsAsked || fetch(LS_INDEX).then(r => r.ok ? r.json() : null).catch(() => null);
   lsAsked.then(x => { lsIndex = x || { available: false };
     const el = document.getElementById('ls-past'), html = current && current.id === d.id && lsIndex.available ? localSamplesLine((lsIndex.spots || {})[d.id]) : '';
@@ -2726,6 +2812,7 @@ const ICON = {   // the one stroke set, as the search, map, bookmark and check
   table: glyph('<path d="M4 5h16v14H4ZM4 10h16M4 14.5h16M10 5v14"/>'),
   route: glyph('<path d="M12 21V3"/><path d="M5.5 5.5h10l3 2.5-3 2.5h-10ZM18.5 13.5h-10l-3 2.5 3 2.5h10Z"/>'),   // a signpost: the practical guide
   evidence: glyph('<path d="M6 3h8.5L19 7.5V21H6Z"/><path d="M14 3v5h5M9 12.5h7M9 16.5h7"/>'),   // a page of records: what the level rests on
+  sonde: glyph('<path d="M10 3h4v9.5a2 2 0 0 1-4 0Z"/><path d="M10 7.5h4"/><path d="M3 18.5c1.5-1.2 3-1.2 4.5 0s3 1.2 4.5 0 3-1.2 4.5 0 3 1.2 4.5 0"/>'),   // a probe in the water: a sonde's readings
   unknown: glyph('<circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.6a2.5 2.5 0 0 1 4.85.85c0 1.7-2.45 2.3-2.45 3.6"/><path d="M12 16.9v.1"/>'),   // a question: not known here
 };
 // Overflow names: levels.js's nameCase (capitals in normal case) and plainName ("Addingham sewage works
@@ -3070,6 +3157,7 @@ function facts(d, iso = null) {
     out.push({ icon: ICON.rain, label: 'Rain here', fig: Math.round(x0.rain_48h_mm), unit: 'mm', vis: rainCols(d, x0.date),
       say: `In the 48&nbsp;h to midday ${first ? 'today' : dayName(x0.date)}.${first && wet !== x0 && wet.rain_48h_mm >= 1 ? ` The most ahead: ${Math.round(wet.rain_48h_mm)}&nbsp;mm in the 48&nbsp;h to midday ${dayName(wet.date)}.` : ''}` }); }
   const wt = waterTile(d.water_temp, d.water_temp_est, d.kind, d.water_temp_est_missing); if (wt) out.push(wt);
+  const sn = d.kind === 'river' && d.sonde ? sondeTile(d.sonde) : null; if (sn) out.push(sn);   // measured, under Latest readings
   const wx = weatherOn(d, first || !x0 ? today() : x0.date);
   if (wx) out.push({ icon: ICON.sun, label: 'Weather', fig: nil(wx.tmax) ? '–' : `${wx.tmax}°`, unit: nil(wx.tmax) ? '' : 'C high', vis: sunPath(wx, first),
     say: `Sunrise ${esc(wx.sunrise)}, sunset ${esc(wx.sunset)}.`, credit: true });
@@ -3274,6 +3362,12 @@ const lowOn = iso => DATA.spots.filter(s => dayLevel(s, iso) === 'low' && lowEli
 // map's "Low risk only" and the plan's areas already did: low on the day shown, and no official advice restricting
 // swimming. On 31 Oct 2026 the strip said 54 and the areas and the summary 55: Frensham Great Pond, low for sewage but
 // under the EA's advice against bathing (harmful algae), was counted in one and not the other.
+// The list's day strip (12 Nov 2026): with spots saved it counts them, "2 of 4", under a title that is about them
+// (homeHead); the count of every listed spot meant little to someone who swims in one river. A first visit keeps
+// the count of all the spots, which its opening line numbers. The same rule either way (lowEligible). The map's own
+// strip counts every spot, as the map shows every spot.
+const stripCount = iso => { const mine = DATA.spots.filter(s => SAVED.has(s.id));
+  return mine.length ? `${mine.filter(s => dayLevel(s, iso) === 'low' && lowEligible(s)).length} of ${mine.length}` : String(lowOn(iso)); };
 const lowToChoose = xs => xs.filter(s => mapLevel(s) === 'low' && lowEligible(s)).length;
 // The button, with the dot before it, shows while another day is picked: setMapDay keeps it in step.
 const syncBestDay = () => document.querySelectorAll('[data-pick-day]').forEach(b => { b.parentElement.hidden = b.dataset.pickDay === VIEW.day; });
@@ -3925,13 +4019,7 @@ function renderList() {
     // choice and its answer in one place (29 October 2026: a select, "Today and tomorrow" first, and the
     // weekend's best day in a line under it). It opens on today (renderList).
     + `<div class="toolbar"><fieldset class="day-strip list-days" id="listday"><legend class="sr">When are you swimming?</legend>${fiveDays().map(iso => `<label><input type="radio" name="list-day" value="${iso}"${VIEW.day === iso ? ' checked' : ''}>`
-      + `<span>${shortDay(iso)} <span class="dd"><b>${lowOn(iso)}</b> <span class="nw">low risk</span></span></span></label>`).join('')}</fieldset></div>`
-    // A first visit (nothing saved or planned, no spot opened yet): what to do here, one line under the strip, so the
-    // first spot moves down one line at most (30 Oct 2026). Once a spot is saved, Your places takes over. The strip's
-    // own words ("70 low risk") need no explanation under it (6 Nov 2026).
-    + `<p class="small muted strip-note"${!SAVED.size && !OPENED && !(typeof planOuting === 'function' && planOuting(stored(PLAN_KEY), planDates(), id => DATA.spots.some(x => x.id === id)))
-      ? '' : ' hidden'}>${!SAVED.size && !OPENED && !(typeof planOuting === 'function' && planOuting(stored(PLAN_KEY), planDates(), id => DATA.spots.some(x => x.id === id)))
-      ? ' Open a spot to see why. Save the ones you use to keep them at the top.' : ''}</p>`
+      + `<span>${shortDay(iso)} <span class="dd"><b>${stripCount(iso)}</b> <span class="nw">low risk</span></span></span></label>`).join('')}</fieldset></div>`
     + `<p class="planner-note" id="low-note-list"${VIEW.lowOnly ? '' : ' hidden'}>${lowListNote()}</p>`;
   h += notices(null, true) + '</div>';
   // With spots saved, the title and the line under it are the visitor's own (homeYours); the same two elements, so
@@ -3950,7 +4038,8 @@ function renderList() {
     : OPENED ? `<p class="save-hint tile">${BOOKMARK}<span>Open a spot and press Save to keep it here.</span></p>` : '';   // not on a first look
   // Upstream of the saved spots, the last 48 hours (mountHomeFeed fills it once their files are in), and, with nothing
   // saved, the day's count and the spots at very high risk (drawSpots fills it, so a day picked changes it).
-  if (saved.length) v += '<section class="group tile home-feed" id="home-feed" aria-labelledby="feed-h" hidden></section>';
+  // Drawn at once with its heading (12 Nov 2026): hidden until its files came, it pushed the list down as it arrived.
+  if (saved.length) v += `<section class="group tile home-feed loading" id="home-feed" aria-labelledby="feed-h">${feedHead(saved.length)}<p class="t-say muted">Reading the water companies' reports…</p></section>`;
   else v += '<div id="home-first"></div>';
   v += `<section class="group tile" id="near-group" aria-labelledby="near-h" hidden><h2 class="group-head" id="near-h">Near you</h2><ul class="places" id="near-list"></ul></section>`;
   // The kinds of water are a second row under the heading: they narrow this list, not the day.
@@ -3971,8 +4060,12 @@ function renderList() {
   v += `<p class="small muted after">Updated several times a day. <a href="#levels">What the levels mean</a>.</p>`
     // Who it is for, at the foot: the same forecast serves anyone who gets in the water
     // (clubs.html says how wet each activity gets), and groups and events have their own tools.
-    + `<p class="small muted after">For swimming and water sports. Forecasts, not water tests. <a href="clubs.html">For organisations: clubs, centres and events</a>.</p>`;
+    + `<p class="small muted after">For swimming and water sports. Forecasts, not water tests. <a href="clubs.html">For organisations: clubs, centres and events</a>.</p>`
+    // The research, one line (12 Nov 2026): the foot's link was the home page's only way to it. researchLine adds what
+    // is running now once the scorecard's file arrives; without it the line stands as it is.
+    + `<p class="small muted after" id="research-line"><span id="research-now">Research: a model is tested before it changes a forecast.</span> <a href="models.html">What is being tested now</a> · <a href="lab/">Research Lab</a>.</p>`;
   setPanel(h + cols(v));
+  researchLine();
   if (saved.length) bindItems(document.getElementById('saved-list'));
   if (saved.length) mountHomeFeed(saved);
   document.getElementById('listday').addEventListener('change', e => setMapDay(e.target.value));
@@ -4004,6 +4097,22 @@ function renderList() {
   document.getElementById('filter-done').addEventListener('click', () => sheet.close());
   sheet.addEventListener('click', e => { if (e.target === sheet) sheet.close(); });   // a tap on the backdrop
   drawSpots(); placeMap();
+}
+// What the research line says is running (data/research/model_scorecard.json, the scorecard page's own file): the
+// candidates in shadow whose test has not been read yet, and the first date one is read. A candidate in shadow is
+// scored beside the live forecast and changes nothing a swimmer is told. Asked for once a visit.
+let SCORECARD_ASKED = null;
+function researchNow(doc, iso) {
+  const on = ((doc || {}).models || []).filter(m => m.stage === 'shadow' && m.window && m.window.read_on >= iso);
+  if (!on.length) return '';
+  const next = on.map(m => m.window.read_on).sort()[0];
+  const day = new Date(next + 'T12:00:00Z').toLocaleDateString('en-GB', { day: 'numeric', month: 'long', timeZone: 'UTC' });
+  return `Research: ${on.length} candidate model${on.length === 1 ? ' is' : 's are'} being scored beside the live forecast, without changing it. The next test is read on ${day}.`;
+}
+function researchLine() {
+  if (typeof fetch !== 'function') return;
+  SCORECARD_ASKED = SCORECARD_ASKED || fetch('data/research/model_scorecard.json').then(r => (r.ok ? r.json() : null)).catch(() => null);
+  SCORECARD_ASKED.then(doc => { const el = document.getElementById('research-now'), t = researchNow(doc, today()); if (el && t) el.textContent = t; });
 }
 const setSort = k => { VIEW.sort = k; document.querySelectorAll('[data-sort]').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.sort === k))); };
 // Today (11 Nov 2026; docs/DESIGN.md, "Today: the home page"). With spots saved, the home opens on what they say. The
@@ -4055,6 +4164,11 @@ function homeNow(spots) {
     + `<ul class="nowfig">${rows.map(([c, k, t]) => `<li class="${c}"><b>${k}</b>${t}</li>`).join('')}</ul>`
     + (rest.length ? `<p class="t-key">${cap(rest.join('; '))}.</p>` : '') + '</section>';
 }
+// A first visit's way to a place of its own (12 Nov 2026): one button over the day's count, in words, where the
+// search field's pin is only an icon. Pressed, it does what the pin does (locate), and goes once a place is given:
+// the cards of the lowest-risk spots within 30 miles take its place (near-group).
+const homeNear = () => 'geolocation' in navigator && !VIEW.here
+  ? `<p class="near-first"><button type="button" class="btn" data-near-first>${NEAR_PIN.replace(/^<button[^>]*>|<\/button>$/g, '')}Spots near me</button></p>` : '';
 // The spots at very high risk on the day shown, two at most, as the list's own rows: what the forecast is saying
 // now, where a first visit had only a list of areas. None at very high risk: no tile.
 const WORST_ROWS = 2;
@@ -4091,9 +4205,10 @@ function feedRow(x) {
   return `<li><a href="${esc(spotPath(x.s.id))}" data-id="${esc(x.s.id)}"><span class="ft">${when}</span><span class="fw">${what}`
     + `<span class="fp">${esc(feedWhere(x.c, x.s))}${x.more ? ` and ${x.more} more of your saved spots` : ''}</span></span></a></li>`;
 }
+const feedHead = n => `<h2 class="t-lab" id="feed-h">${ICON.spills}<span>Upstream of your saved spot${n === 1 ? '' : 's'}, last ${FEED_HOURS} hours</span></h2>`;
 function homeFeed(spots, nowMs) {
   const rows = upstreamFeed(spots, nowMs), more = rows.length - FEED_ROWS;
-  return `<h2 class="t-lab" id="feed-h">${ICON.spills}<span>Upstream of your saved spot${spots.length === 1 ? '' : 's'}, last ${FEED_HOURS} hours</span></h2>`
+  return feedHead(spots.length)
     + (rows.length ? `<ul class="feed">${rows.slice(0, FEED_ROWS).map(feedRow).join('')}</ul>${more > 0 ? `<p class="t-key">And ${more} more.</p>` : ''}`
       : `<p class="t-say">No spill reported in the last ${FEED_HOURS} hours by the overflows that count most upstream.</p>`)
     + `<p class="t-key">The water companies' own reports, for the ten overflows that count most at each saved spot. A monitor that is off reports nothing.</p>`;
@@ -4103,8 +4218,9 @@ async function mountHomeFeed(saved) {
   const some = saved.filter(s => s.detail_file).slice(0, FEED_SPOTS);
   await Promise.all(some.map(s => spotDetail(s)));
   const host = document.getElementById('home-feed'), have = some.filter(s => s.detail_loaded && (s.contributors || []).length);
-  if (!host || shown !== 'list' || !have.length) return;
-  host.innerHTML = homeFeed(have, Date.parse(DATA.generated_at)); host.hidden = Boolean(VIEW.q.trim() || VIEW.filter !== 'all' || VIEW.lowOnly); bindItems(host);
+  if (!host || shown !== 'list') return;
+  if (!have.length) { host.innerHTML = ''; host.hidden = true; return; }   // no saved spot has an overflow upstream: no tile
+  host.classList.remove('loading'); host.innerHTML = homeFeed(have, Date.parse(DATA.generated_at)); host.hidden = Boolean(VIEW.q.trim() || VIEW.filter !== 'all' || VIEW.lowOnly); bindItems(host);
 }
 // The position stays in this page: it only orders the list, and is not sent anywhere.
 function locate(at = 'sort') {
@@ -4226,7 +4342,8 @@ function drawSpots() {
     if (hl && hl.textContent !== y.lede) hl.textContent = y.lede; }
   const first = document.getElementById('home-first');
   if (first) { first.hidden = Boolean(VIEW.q.trim() || VIEW.filter !== 'all' || VIEW.lowOnly);
-    first.innerHTML = first.hidden ? '' : homeNow(DATA.spots) + homeWorst(DATA.spots); bindItems(first); }
+    first.innerHTML = first.hidden ? '' : homeNear() + homeNow(DATA.spots) + homeWorst(DATA.spots); bindItems(first);
+    const nf = first.querySelector('[data-near-first]'); if (nf) nf.addEventListener('click', () => locate('cta')); }
   const feed = document.getElementById('home-feed');
   if (feed) feed.hidden = !feed.innerHTML || Boolean(VIEW.q.trim() || VIEW.filter !== 'all' || VIEW.lowOnly);
   const placesGroup = document.getElementById('places-group');   // Your places: hidden with both its parts
@@ -4246,7 +4363,8 @@ function drawSpots() {
   if (fn) { fn.textContent = changed; fn.hidden = !changed; document.getElementById('filter-btn').setAttribute('aria-label', changed ? `Filter, ${changed} on` : 'Filter'); }
   const done = document.getElementById('filter-done'); if (done) done.textContent = `Show ${items.length} spot${items.length === 1 ? '' : 's'}`;
   // With nothing matching, no tally of zeros (5 Nov 2026: "0 low · 0 moderate · 0 high" under "No listed spot matches").
-  document.getElementById('overview-foot').textContent = items.length ? overview(items).replace(/^Updated [^·]*· /, '') : '';
+  // Not under the day's count on a first visit (homeNow), which gives the same figures above the list (12 Nov 2026).
+  document.getElementById('overview-foot').textContent = items.length && !(first && !first.hidden) ? overview(items).replace(/^Updated [^·]*· /, '') : '';
   const firstNote = VIEW.sort === 'low' || (VIEW.sort === 'near' && !VIEW.here) ? lowLastNote(items) : byRisk ? riskFirstNote(items) : '';
   // Where the notice's spots go in this order, in the line over the list that names them (29 October 2026: a
   // paragraph of its own under it, two lines about notices one after the other on a phone's first screen).
@@ -6110,12 +6228,18 @@ function labTile(d) {
 }
 const daysTile = d => `<section class="tile" aria-labelledby="days-h"><h2 class="t-lab" id="days-h">${ICON.days}<span>Pollution risk, next five days</span></h2>`
   + `<p class="t-sent">${daysSentence(d)}</p>${dayRows(d)}${liveRow(d)}<div class="after" id="answer-after">${answerAfter(d)}</div><div id="day-view"></div>${check(d)}</section>`;
+// A spot page's title, word for word as the build writes it (build_site.spot_title): "sewage" and "swimming"
+// are the words people search with.
+function spotTitle(d) {
+  const none = (d.error && !String(d.error).startsWith('forecast failed')) || (d.upstream_summary || {}).overflows === 0;
+  return `${d.name}: ${none ? 'swimming and sewage overflows' : 'sewage spill risk for swimming'} · ${BRAND}`;
+}
 function render(d) {
   setDays(d);
   contribLayer.clearLayers();
   setView('spot');
   if (!DAY && typeof lookedAt === 'function') lookedAt([d], DATA.generated_at, SAVED);   // since.js: its level is the answer
-  document.title = `${d.name}: pollution risk forecast · ${BRAND}`;   // as on the spot's own page
+  document.title = spotTitle(d);   // as on the spot's own page
   const loc = d.location || {}, total = overflows(d);
   let h = spotTop(d);
   // Then the tiles, the five days first. A phone's small map of where the spot is comes after them:
@@ -6252,9 +6376,37 @@ function phoneFolds() {
     const know = stack.querySelector('section.know'); if (know) e0.after(know);
   }
   for (const q of PHONE_OPEN) { const e = stack.querySelector(q); if (e && !e.dataset.phoneOpened) { e.open = true; e.dataset.phoneOpened = '1'; } }
+  phoneShort(stack);
   // With the Upstream map shown, the small map of where the spot is says the same.
   const loc = stack.querySelector('.loc'); if (loc && stack.querySelector('.spot-map-tile:not(.desk-only)')) loc.hidden = true;
   placeMap();   // the map, drawn at its size now it is shown
+}
+// A phone's page, shorter (12 Nov 2026; docs/REVIEW-2026-11-12.md, section 3). Two things ran long without being the
+// answer. The sentence over the five days, where a classification, recent spills and a gap in the count meet (nine
+// lines at Shrewsbury, so the day rows began under the first screen): past SENT_LINES lines it shows SENT_KEEP and a
+// button for the rest. The words are all in the page, so a screen reader reads the whole sentence. And the guide's
+// photos (three at Cromwheel, 1,230 px): the place's photo already opens the page, so the rest wait behind one button,
+// which shows them and goes, as the guide's "Show all" does (showRest). Each is done once for a page; a day picked
+// draws the tile again, and the sentence is then measured again.
+const SENT_LINES = 5, SENT_KEEP = 3;
+function phoneShort(stack) {
+  const sent = stack.querySelector('.t-sent');
+  if (sent && !sent.classList.contains('clamp') && !sent.dataset.read) {
+    const line = parseFloat(getComputedStyle(sent).lineHeight) || 24;
+    if (sent.scrollHeight > line * (SENT_LINES + 0.5)) {
+      sent.classList.add('clamp'); sent.style.setProperty('--keep', SENT_KEEP);
+      sent.insertAdjacentHTML('afterend', '<p class="sent-more"><button type="button" class="linkbtn small" id="sent-more" aria-expanded="false">Read the rest</button></p>');
+      document.getElementById('sent-more').addEventListener('click', e => { sent.classList.remove('clamp'); sent.dataset.read = '1'; e.target.closest('p').remove(); });
+    }
+  }
+  const photos = [...stack.querySelectorAll('#guide .g-photo')];
+  if (photos.length && !stack.querySelector('#g-photos') && !stack.querySelector('#guide[data-photos]')) {
+    photos.forEach(x => { x.hidden = true; });
+    photos[0].insertAdjacentHTML('beforebegin', `<button type="button" class="btn quiet" id="g-photos" aria-expanded="false">Show ${photos.length === 1 ? 'the photo' : `${photos.length} photos`} of the place</button>`);
+    const btn = stack.querySelector('#g-photos');
+    btn.addEventListener('click', () => { btn.closest('#guide').dataset.photos = '1';
+      if (typeof showRest === 'function') showRest(photos, btn); else { photos.forEach(x => { x.hidden = false; }); btn.remove(); } });
+  }
 }
 PHONE.addEventListener('change', () => { if (current && document.querySelector('#result .stack')) render(current); });   // folds on, or columns back
 // The arrival guide (prototype, docs/ARRIVAL-GUIDE-2026-10.md): the practical guide as a journey, from the stop or

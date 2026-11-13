@@ -162,7 +162,7 @@ const Embed = (() => {
     try { data = await load(); } catch (e) { el.innerHTML = failed(); return; }
     const s = (data.spots || []).find(x => x.id === id);
     if (!s) { el.innerHTML = missing(id); return; }
-    document.title = `${s.name}: pollution risk forecast · SwimSignal`;
+    document.title = `${s.name}: sewage spill risk for swimming · SwimSignal`;
     el.innerHTML = card(s, data);
   }
 

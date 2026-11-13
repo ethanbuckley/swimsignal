@@ -166,3 +166,93 @@ test("a bathing water's page links its latest lab sample to every sample, once, 
   assert.equal(E.evidenceHistory({ ...d, id: 'a"b' }), '');
   assert.equal(E.evidenceHistory({ ...d, sample_history: { first: 'May' } }), '');
 });
+
+// ------------------------------------------------------------------ the Republic of Ireland and Wales
+// The sample histories (docs/SAMPLE-HISTORY-CONTRACT-v1.md) as the build splits them (build_site.write_sample_histories),
+// cut from the committed exports: tests/fixtures/sample_history_split_sample.json holds Ireland's index and four waters
+// (Merrion Strand: 159 out-of-season samples and ">" limits; Cahore: plain counts under 10 and a 0, not designated;
+// Bundoran: "<1" limits; Lough Muckno: a lake, line 900) and Wales's index and both waters.
+const HIST = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'sample_history_split_sample.json'), 'utf8'));
+const IE = HIST.ireland, WA = HIST.wales;
+const hmeta = (set, id) => set.index.sites.find(x => x.id === id);
+const hpage = (set, id) => plain(K.samplesHistorySite(set.sites[id], hmeta(set, id), set.index, 320));
+
+test('the address picks the set and the water; England keeps #spot=', () => {
+  assert.deepEqual(K.samplesWhere('#spot=bw-ukd1101-45800'), ['england', 'bw-ukd1101-45800']);
+  assert.deepEqual(K.samplesWhere('#ireland=BPNBF070000020002'), ['ireland', 'BPNBF070000020002']);
+  assert.deepEqual(K.samplesWhere('#wales'), ['wales', '']);
+  assert.deepEqual(K.samplesWhere(''), ['england', '']);
+  assert.deepEqual(K.samplesWhere('#ireland=a"b'), ['england', '']);
+  assert.equal(K.samplesHash('ireland', 'BPNBF070000020002'), 'ireland=BPNBF070000020002');
+  assert.equal(K.samplesHash('england', 'bw-x'), 'spot=bw-x');
+  assert.equal(K.samplesHash('wales', ''), 'wales');
+  assert.match(K.samplesSetPicker('wales'), /<option value="wales" selected>Wales: Hay-on-Wye and Llandeilo<\/option>/);
+});
+
+test('the official body and its page come first; no SwimSignal spot page, estimate or forecast beside the samples', () => {
+  for (const [set, id, first] of [[IE, 'IENWBWC020_0000_0100', 'EPA rating: Excellent'], [IE, 'BPNBF330000180001', 'Not a designated bathing water'],
+    [WA, 'ukl2400-38620', 'Natural Resources Wales rating: Sufficient (2025).'], [WA, 'ukl1401-37650', 'No Natural Resources Wales rating yet']]) {
+    const t = hpage(set, id), at = t.indexOf(first);
+    assert.ok(at >= 0 && at < t.indexOf(' samples, '), `${id}: ${t.slice(0, 200)}`);
+    const body = t.split(set.index.claim.public_wording).join('').replace(/makes no forecast/g, '');
+    assert.doesNotMatch(body, /hindsight|estimate|model|\d+%|forecast/i, id);
+    assert.doesNotMatch(t, /\b(safe|unsafe|clean|polluted|overflow|sewage|caused?)\b/i, id);
+    const html = K.samplesHistorySite(set.sites[id], hmeta(set, id), set.index, 320);
+    assert.doesNotMatch(html, /href="spot\//);
+    assert.ok(t.includes(set.index.claim.public_wording));
+  }
+  assert.match(K.samplesHistorySite(IE.sites.IENWBWC020_0000_0100, hmeta(IE, 'IENWBWC020_0000_0100'), IE.index, 320),
+    /<a href="https:\/\/www\.beaches\.ie\/find-a-beach\/#\/beach\/IENWBWC020_0000_0100">this water's page on beaches\.ie<\/a>/);
+  assert.match(K.samplesHistorySite(WA.sites['ukl2400-38620'], hmeta(WA, 'ukl2400-38620'), WA.index, 320),
+    /<a href="https:\/\/environment\.data\.gov\.uk\/wales\/bathing-waters\/profiles\/profile\.html\?site=ukl2400-38620">Natural Resources Wales's page/);
+});
+
+test("Irish limits stay limits: '<1' is below 1, '>2419' is above, a plain 1 is 1, and the scale reaches down to 1", () => {
+  const bundoran = IE.sites.IENWBWC020_0000_0100, lt1 = bundoran.samples.find(s => s.q === '<' && s.ecoli === 1);
+  assert.ok(lt1);
+  assert.ok(plain(K.samplesHistoryTable(bundoran, hmeta(IE, 'IENWBWC020_0000_0100'), IE.index)).includes(`${K.samplesDate(lt1.t).replace(/ \d{4}$/, '')}below 1`));
+  const merrion = IE.sites.BPNBF070000020002, gt = merrion.samples.find(s => s.q === '>');
+  assert.ok(gt && gt.over === (gt.ecoli >= 500));
+  assert.match(plain(K.samplesHistoryTable(merrion, hmeta(IE, 'BPNBF070000020002'), IE.index)), new RegExp(`above ${K.samplesCount(gt.ecoli, null)}`));
+  const cahore = IE.sites.BPNBF330000180001, svg = K.samplesChart(cahore.samples, 600, 500, false);
+  assert.match(svg, /class="sm-ax">10<\/text>/);                    // a 10 tick: the scale starts at 1
+  assert.match(plain(svg), /The scale runs from 1 to 10,000 E\. coli per 100 ml/);
+  assert.match(plain(svg), /A count of 0 is drawn at the foot of the scale\./);
+  // Bundoran's labs gave "<1" and "<10": the band says both.
+  assert.match(K.samplesChart(bundoran.samples, 600, 500, false), /class="sm-ax">below 1 or 10<\/text>/);
+  assert.doesNotMatch(plain(svg), /hindsight/);
+  // England's charts still start at 10.
+  assert.match(plain(K.samplesChart(RUTLAND.samples, 600)), /The scale runs from 10 to/);
+});
+
+test("the counts say the EPA's own word, out-of-season samples and the water's own line", () => {
+  const t = hpage(IE, 'BPNBF070000020002'), s = hmeta(IE, 'BPNBF070000020002').summary;
+  assert.ok(t.includes(`402 samples, 4 Jan 2016 to 4 Nov 2026. ${s.over_line} were over 500 E. coli per 100 ml.`), t.slice(0, 400));
+  assert.ok(t.includes(`The EPA assessed ${s.poor} as Poor. 159 were taken out of season: voluntary, and not counted towards a rating.`));
+  assert.match(t, /500 per 100 ml is the line of the coastal "sufficient" standard/);
+  assert.match(t, /Poor, out of season/);
+  assert.match(hpage(IE, 'BPNBF240000030001'), /over 900 E\. coli per 100 ml\.[^]*900 per 100 ml is the line of the inland "sufficient" standard/);
+  // How the samples were measured, from the export, with what "below" and "above" mean.
+  assert.match(t, /How these samples were measured"Below": Below the lab's lower limit/);
+  assert.match(t, /The EPA's data does not name a lab method for each sample\./);
+});
+
+test('Wales: the two sources joined, why each sample was taken, and the membrane-filtration method said', () => {
+  const t = hpage(WA, 'ukl2400-38620');
+  assert.match(t, /^The Warren, Hay-on-WyeRiver, bathing water on the Wye/);
+  assert.match(t, /37 samples, 18 Aug 2023 to 7 Sept 2026\. 2 were over 900 E\. coli per 100 ml\. 1 was given only as below the lab's lower limit\. 13 were planned investigation samples, not statutory monitoring\./);
+  assert.match(t, /Planned investigation/);
+  assert.match(t, /Statutory monitoring/);
+  assert.match(t, /counted by membrane filtration/);
+  assert.match(hpage(WA, 'ukl1401-37650'), /24 samples, 12 Aug 2023 to 18 Sept 2026\./);
+});
+
+test("the list says the file's dates first, and Ireland's picker is by county", () => {
+  assert.equal(plain(K.samplesHistorySummary(WA.index)), "12 Aug 2023 to 18 Sept 2026: 61 samples at 2 bathing waters. A historical record: nothing after 18 Sept 2026 is in it. Copied from Natural Resources Wales's published data on 13 Nov 2026, its Water Quality Archive part as published on 4 Oct 2026.");
+  assert.equal(plain(K.samplesHistorySummary(IE.index)), "27 May 2014 to 4 Nov 2026: 768 samples at 4 waters. A historical record: nothing after 4 Nov 2026 is in it. Copied from the Environmental Protection Agency's published data on 13 Nov 2026.");
+  assert.match(plain(K.samplesHistorySummary({ available: false, why: 'no export in this build' })), /\(no export in this build\)\.$/);
+  const html = K.samplesHistoryPicker(IE.index, 'BPNBF070000020002');
+  assert.match(html, /^<label class="sm-pick">Water<select/);
+  assert.ok(html.indexOf('label="County Donegal"') < html.indexOf('label="County Dublin"') && html.indexOf('label="County Dublin"') < html.indexOf('label="County Wexford"'));
+  assert.match(html, /value="BPNBF070000020002" selected>Merrion Strand/);
+});

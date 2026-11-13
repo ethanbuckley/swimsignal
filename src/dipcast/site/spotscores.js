@@ -72,6 +72,17 @@ function scoresTile(d, data) {
     + `<details class="t-more"><summary><span class="sr">How the forecast has done here: what this means</span></summary><p>${w.more}</p></details></section>`;
 }
 
+// One line for the five days' tile (12 Nov 2026; docs/REVIEW-2026-11-12.md, section 5): a swimmer at the level saw
+// no hit rate, which was two screens down in the tile above. Given only from min_spills spill days, as the tile's
+// shares are, and only where a forecast reached the line: the share of the forecasts at the High risk line, at the
+// overflows upstream, that were followed by a spill. The counts are the tile's own (hits and false alarms).
+function scoresLine(s, g) {
+  if (!s || !s.scored_overflows || (s.spill_days || 0) < ((g || {}).min_spills || 10)) return '';
+  const at = s.hits + s.false_alarms; if (!at) return '';
+  return `<p class="small muted rec" id="rec-line">Record here since ${scoresDate(s.first_day || g.first_day)}: ${scoresN(s.hits)} of the ${scoresN(at)} forecasts at the High risk line upstream `
+    + `(${scoresPct(s.hits / at)}) were followed by a spill. <a href="#scores">How the forecast has done here</a></p>`;
+}
+
 // The page asks for the file once a visit, when it first draws a spot that can have the tile.
 let SCORES_LOADING = null;
 const scoresLoad = () => SCORES_LOADING || (SCORES_LOADING = fetch(SCORES_FILE, { cache: 'no-cache' })
@@ -83,11 +94,16 @@ function scoresHost(d) {
   if (!scoresWanted(d) || typeof fetch !== 'function') return '';
   scoresLoad().then(data => {
     const el = document.getElementById('scores-host');
-    if (el && el.dataset.id === d.id) el.outerHTML = scoresTile(d, data);
+    if (!el || el.dataset.id !== d.id) return;
+    el.outerHTML = scoresTile(d, data);
+    // The line under the five days, once: after the caveat that ends their tile, or after the advice above it.
+    const line = data && data.spots && document.getElementById('scores') && !document.getElementById('rec-line') ? scoresLine(data.spots[d.id], data) : '';
+    const tile = document.getElementById('days-h'), after = tile && (tile.parentNode.querySelector('.check') || document.getElementById('answer-after'));
+    if (line && after) after.insertAdjacentHTML('afterend', line);
   });
   return `<div id="scores-host" data-id="${String(d.id).replace(/[&<>"']/g, '')}"></div>`;
 }
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { scoresTile, scoresWords, scoresWanted, scoresHost };
+  module.exports = { scoresTile, scoresWords, scoresWanted, scoresHost, scoresLine };
 }

@@ -1,0 +1,78 @@
+{
+ "places": [
+  {
+   "id": "cromwheel",
+   "name": "Wharfe at Cromwheel, Ilkley",
+   "short": "Cromwheel",
+   "lat": 53.93189,
+   "lon": -1.81618
+  },
+  {
+   "id": "waterhead",
+   "name": "Windermere, Waterhead, Ambleside",
+   "short": "Waterhead",
+   "lat": 54.41897,
+   "lon": -2.96235
+  }
+ ],
+ "made": "2026-11-13T15:32:14+00:00",
+ "commit": "6fd1805e",
+ "code_sha256": "c66a14a304e08ce0ebe36b547408380b8b36c23a9cd19ded33105d26396cc5fa",
+ "cell_max_daily_mm_2023_25": 68.3,
+ "monotonicity": {
+  "overflows": 20,
+  "non_monotone": 0,
+  "share_monotone": 1.0,
+  "stop_share": 0.1,
+  "fall_tolerance": 1e-06,
+  "rain_allowed": true
+ },
+ "inputs": {
+  "shared_sha256": {
+   "data/cache/rain/archive_53.900_-1.900_2023.parquet": "5508547a60788f56d69c70d7a890cc19e00eee6e314ab282835d7b9f95da9285",
+   "data/cache/rain/archive_53.900_-1.900_2024.parquet": "7e45bb3b8fcfd778ddcbbf5bf557d580e2d8569ddde5abcdf1f9bccf92004f9e",
+   "data/cache/rain/archive_53.900_-1.900_2025.parquet": "33c2b3871235e962af1462ffa05547a0e731acdef2dc951aed628dc53ac18334",
+   "data/cache/rain/archive_53.900_-1.800_2023.parquet": "e713f42651df3f6e0aa0728de5a3f54e4934b957496ed12d8562ad5018ed8df5",
+   "data/cache/rain/archive_53.900_-1.800_2024.parquet": "1f5f15d3e041fc5819691b5a870b058d5711ea9f3a3a27561add92b456f3dc78",
+   "data/cache/rain/archive_53.900_-1.800_2025.parquet": "64b1cf064eccabf7e18d31e44af468dedce16d7f960b22503b06a7d95281b881",
+   "data/cache/rain/archive_54.000_-2.000_2023.parquet": "ead1e66363a8dd641784b821ac23eefd68f4c6157d80d504678081c3465b4792",
+   "data/cache/rain/archive_54.000_-2.000_2024.parquet": "1f2226d2c2af484154a91e093e4ac0f0f8cf26c34fc0214972937fa99fb33325",
+   "data/cache/rain/archive_54.000_-2.000_2025.parquet": "514211cb84c2ece40caa692e7fb67109fdea61998e38694ac4b6ada37380548f",
+   "data/cache/rain/archive_54.000_-1.900_2023.parquet": "cfb98e455760f8e83018a0fa9c78e32d90abf798d692d5ae470882e3a233d2ba",
+   "data/cache/rain/archive_54.000_-1.900_2024.parquet": "68d725cfcf3b6524e956d45eaa01171a0aace4419164e0e9488709f511bf07df",
+   "data/cache/rain/archive_54.000_-1.900_2025.parquet": "776cced4577357091135bc8c7d77498cdf0933c1bc19d3094b3b07254b13ef83",
+   "data/cache/rain/archive_54.100_-2.000_2023.parquet": "8551fc3b612febe0fa34af11b60898661f2b85fb8514f5d7afd8d8bca85eca0d",
+   "data/cache/rain/archive_54.100_-2.000_2024.parquet": "74c952e7e94a2fad85ab9edec445bbd252f9ddcac7cb71fc8515cdaf7636eeae",
+   "data/cache/rain/archive_54.100_-2.000_2025.parquet": "3f66ac3ddf2e5ca0582c000e038de9005d13aac2104047a8fecf66806014b807",
+   "data/processed/ea_events_yorkshire_water.parquet": "dca57cf63abca6781224c608b85f509b715b150b57b5aa5f0e901da1c8cbbe78",
+   "data/cache/rain/archive_54.400_-3.000_2023.parquet": "28d55f39b6484e927f95817079870e6de74a5cf7e8e93ac089adafa313e84c98",
+   "data/cache/rain/archive_54.400_-3.000_2024.parquet": "3a836474f0a99a98004f298b1a4c54753d064373c4ea3aca869aaf9e11b70869",
+   "data/cache/rain/archive_54.400_-3.000_2025.parquet": "a456228175d98f86558986172ead5aa03e7a4f5fdfd3ce13dbd152e70de6bba5",
+   "data/cache/rain/archive_54.400_-2.900_2023.parquet": "6e169a615b4f877dcd789845fefb02de7a95839dd0681870fd5ce9cbf9ef3bfc",
+   "data/cache/rain/archive_54.400_-2.900_2024.parquet": "ca97b890175c5114733158deb6ef16efb3d89fb0bc3831594220c5538f9b7516",
+   "data/cache/rain/archive_54.400_-2.900_2025.parquet": "6d29c104d0054eec9e9998dbe507306335e9c9f98bb288a5008971b68132ae74",
+   "data/cache/rain/archive_54.500_-3.000_2023.parquet": "9d0c0d38d97120448f6d386dfa990aeb91035c942ddd9e151c106b3477a3289d",
+   "data/cache/rain/archive_54.500_-3.000_2024.parquet": "0b1fa57068671c5b6c1aeeea438a024864d62ad26d343d9ad4c0257acfdc7ecb",
+   "data/cache/rain/archive_54.500_-3.000_2025.parquet": "d9a825405d7d73befed9a6b484d75fc3fc59f98eb6d40d3a66e1013570af58a6",
+   "data/processed/ea_events_united_utilities.parquet": "c245fb7cd382d3f42c4603f7d8b7f98ce6cf119422f13b4ba6b09f56c5809d9c",
+   ".claude/worktrees/agent-aee01b2f5516143ac/data/cache/replay-carry/state/dipcast.duckdb": "3d8e70c9026f8ed85cba308b24dc5d4088bfb5850ae73e6f26afcd4fe5b8be86"
+  },
+  "committed": {
+   "spill_model.pkl": {
+    "sha256": "faa7917e2be725a9441b277fc111091c5bdffe45c80ab4fd042682aa9de4210e",
+    "md5": "808da63d84f2622e8dc4e4d7fc2fef79"
+   },
+   "lead_calibration.json": {
+    "sha256": "734202bc7f22af38fd72d65c4038bb51828b11f5436ed1de40ffa0f381ad0f09",
+    "md5": "9b3cc24c090c4ad452f7560f34a7ebb4"
+   },
+   "annual_returns.parquet": {
+    "sha256": "9f8604f9bbea29b993deadaf70ca92ae9a08050aaa717a731c58e8269db45065",
+    "md5": "47aa4fb88daea3e2ae6eb6fd930091bc"
+   }
+  },
+  "unchanged_after_run": true,
+  "fetches": 0
+ },
+ "label": "The model's answer to a what-if, on days already past. Not a prediction of a real upgrade."
+}

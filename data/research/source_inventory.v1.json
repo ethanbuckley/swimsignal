@@ -1,6 +1,6 @@
 {
   "schema": "swimsignal.source-inventory",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "generated_at": "2026-10-31",
   "issue": "https://github.com/ethanbuckley/swimsignal/issues/486",
   "contract": "docs/SOURCE-INVENTORY-CONTRACT-v1.md",
@@ -87,16 +87,16 @@
       "measures": ["E. coli", "intestinal enterococci", "ammonia", "dissolved oxygen", "other determinands"],
       "measurement_kind": "measurement",
       "measurement_note": "Lab-analysed river samples. A sample is the water at that point and time only.",
-      "coverage": "99 river positions with E. coli (4,123 results); Warleigh Weir 322, near Farleigh Hungerford 174, Tellisford Weir 98",
+      "coverage": "99 river positions with E. coli (4,123 results); Warleigh Weir 322 (50 m), Farleigh Hungerford 174 (2.3 km upstream along the river), Tellisford Weir 98 (210 m)",
       "date_range": "11 Sep 2019 to 15 Dec 2025",
-      "latency": "Archive; item modified 6 Jun 2026; no 2026 samples seen",
+      "latency": "Archive; item and layer data last edited 5 Jun 2026; no 2026 samples; E. coli count 4,123 rechecked 13 Nov 2026",
       "licence": {"name": "CC BY 4.0", "url": "https://creativecommons.org/licenses/by/4.0/", "permits": "Commercial and non-commercial use, publishing and adaptation with attribution"},
       "access": {"route": "ArcGIS REST Wessex_Water_Environmental_Water_Quality_view", "cost": "Free, no key", "account": false},
-      "local_cache": {"path": "data/cache/wessex_wq/", "bytes": 804099, "files": 3, "newest": "2026-10-25", "note": "E. coli rows only (4,123), with provenance.json"},
-      "status": "ready_to_integrate",
-      "enables": "Dated sample observations on the Warleigh Weir, Farleigh Hungerford and Tellisford Weir pages, like /samples.html; a held-out check of the E. coli estimate at non-bathing river sites.",
-      "recheck": {"result": "unchanged", "urls": ["https://www.arcgis.com/sharing/rest/content/items/4659ab28caa640c58e725b41ecbba79f?f=json"], "note": "CC BY 4.0 wording unchanged; title says 2019-2025."},
-      "docs": ["docs/OVERFLOW-DATA-SOURCES-2026-10.md#25-wessex-waters-river-samples-e-coli"]
+      "local_cache": {"path": "data/cache/wessex_wq/", "bytes": 804099, "files": 3, "newest": "2026-10-25", "note": "E. coli rows only (4,123), with provenance.json; complete against the layer's count on 13 Nov 2026"},
+      "status": "already_used",
+      "enables": "Used 13 Nov 2026: the three spots' samples on /wessex-river-samples.html and a line on each spot's page (docs/WESSEX-RIVER-SAMPLES-CONTRACT-v1.md). Still unused: the other 96 positions, enterococci, ammonia and oxygen, and a held-out check of issued estimates against samples taken after them (the layer has no 2026 rows yet).",
+      "recheck": {"result": "changed", "urls": ["https://www.arcgis.com/sharing/rest/content/items/4659ab28caa640c58e725b41ecbba79f?f=json", "https://services.arcgis.com/3SZ6e0uCvPROr4mS/arcgis/rest/services/Wessex_Water_Environmental_Water_Quality_view/FeatureServer/0?f=json"], "note": "13 Nov 2026: CC BY 4.0 wording unchanged; item and layer data last edited 5 Jun 2026; E. coli count 4,123, as cached.", "changes": [{"claim": "three listed spots that have no other samples", "was": "Warleigh Weir, Farleigh Hungerford and Tellisford Weir have no EA samples", "now": "Farleigh Hungerford is a designated bathing water with 60 EA samples, May 2024 to Sep 2026, on /samples.html; the other two have none", "doc": "docs/WESSEX-RIVER-SAMPLES-CONTRACT-v1.md"}]},
+      "docs": ["docs/OVERFLOW-DATA-SOURCES-2026-10.md#25-wessex-waters-river-samples-e-coli", "docs/WESSEX-RIVER-SAMPLES-CONTRACT-v1.md", "docs/WESSEX-RIVER-SAMPLES-CHECK-2026-11.md"]
     },
     {
       "id": "ea-hydrology-sondes",
@@ -109,16 +109,16 @@
       "measures": ["ammonium", "dissolved oxygen", "turbidity", "conductivity", "pH", "temperature", "chlorophyll", "fDOM"],
       "measurement_kind": "proxy",
       "measurement_note": "Sensor readings of the water. Ammonium is a sewage marker and turbidity tracks runoff; neither is a bacteria count.",
-      "coverage": "78 live ammonium and 191 live DO series on 25 Oct 2026; 12 live ammonium stations within 5 km of a listed spot, 8 on becks around Windermere",
+      "coverage": "78 live ammonium and 191 live DO series on 25 Oct 2026. Rechecked 13 Nov 2026: 73 of 134 active ammonium stations read in the last day; 12 within 5 km of a listed spot, 7 on becks or the Leven around Windermere; 2 river spots have one upstream on their own river (draft #687)",
       "date_range": "Live, 15-minute; many deployments are short and renamed by start month",
       "latency": "Minutes to hours; telemetry stations faster",
       "licence": {"name": "Open Government Licence v3", "url": "https://environment.data.gov.uk/hydrology/doc/reference", "permits": "Commercial and non-commercial use, publishing and adaptation with attribution"},
       "access": {"route": "REST API environment.data.gov.uk/hydrology", "cost": "Free, no key; one request in flight per client asked", "account": false},
       "local_cache": {"path": "docs/SONDE-SIGNAL-TEST-2026-10-candidates.csv", "bytes": null, "files": 1, "newest": "2026-10-27", "note": "Station metadata only, committed; no readings cached"},
       "status": "ready_to_integrate",
-      "enables": "A dated sensor line on spot pages near a live sonde ('ammonium at Trout Beck, 15 minutes ago'), worded as a sensor reading, not a bacteria result; later a stated test (#403's gate stays as written).",
+      "enables": "A dated sensor line on spot pages near a live sonde ('ammonium at Trout Beck, 15 minutes ago'), worded as a sensor reading, not a bacteria result; later a stated test (#403's gate stays as written). Drafted as the spot page's Ammonium sensor tile in #687.",
       "recheck": {"result": "unchanged", "urls": ["https://environment.data.gov.uk/hydrology/doc/reference"], "note": "OGL v3 statement unchanged; ammonium, DO and turbidity listed as 15-minute series. The live station count was not rechecked: it needs API calls to a host the builds poll."},
-      "docs": ["docs/OVERFLOW-DATA-SOURCES-2026-10.md#24-ea-hydrology-api-water-quality-sondes", "docs/SONDE-SIGNAL-TEST-2026-10.md"]
+      "docs": ["docs/OVERFLOW-DATA-SOURCES-2026-10.md#24-ea-hydrology-api-water-quality-sondes", "docs/SONDE-SIGNAL-TEST-2026-10.md", "docs/SONDE-READINGS-CONTRACT-v1.md"]
     },
     {
       "id": "ea-coastal-bathing-samples",
@@ -182,7 +182,7 @@
       "access": {"route": "REST, page and per_page only, no site or date filter", "cost": "Free, no key, no stated rate limit", "account": false},
       "local_cache": null,
       "status": "already_used",
-      "enables": "Now: Ireland directory (src/dipcast/ireland.py). Unused: a sample-history explorer for Irish lakes and beaches; no forecast.",
+      "enables": "Now: Ireland directory (src/dipcast/ireland.py) and, from 13 Nov 2026, every sample since 2014 by water (data/research/sample_history_ireland.v1.json, 26,929 samples at 240 waters, docs/SAMPLE-HISTORY-CONTRACT-v1.md) on samples.html. No forecast.",
       "recheck": {"result": "unchanged", "urls": ["https://data.epa.ie/api-list/bathing-water-open-data/"], "note": "CC BY 4.0; no rate limit stated."},
       "docs": ["docs/IRELAND-PLAN-2026-10.md#25-republic-of-ireland-epa-bathing-waters"]
     },
@@ -204,7 +204,7 @@
       "access": {"route": "Zip per catchment and decade from DataMapWales", "cost": "Free", "account": false},
       "local_cache": {"path": "data/cache/nrw_wqa/Files/", "bytes": 8851994, "files": 5, "newest": "2026-10-04", "note": "Carmarthen Bay and Gower 2000-2029 and Wye 2020-2029 only"},
       "status": "already_used",
-      "enables": "Now: W10 E. coli check (213 rows, 10 Oct). Unused: dated Welsh river sample observations at Hay-on-Wye and Llandeilo, like /samples.html.",
+      "enables": "Now: W10 E. coli check (213 rows, 10 Oct) and, from 13 Nov 2026, dated samples at Hay-on-Wye and Llandeilo (data/research/sample_history_wales.v1.json, 61 samples, docs/SAMPLE-HISTORY-CONTRACT-v1.md) on samples.html. Unused: the other Welsh bathing waters.",
       "recheck": {"result": "unchanged", "urls": ["https://datamap.gov.wales/layers/geonode:nrw_water_quality_archive_stations/metadata_detail"], "note": "OGL v3, monthly, 2000 onwards."},
       "docs": ["docs/WALES-PLAN-2026-10.md#26-nrw-bathing-waters-samples-and-forecasts"]
     },
@@ -233,7 +233,7 @@
     {
       "id": "ea-edm-start-stop",
       "rank": 10,
-      "rank_reason": "Already the training labels; the 2026-to-August file adds months of labels for live checks and is not in the main checkout's cache.",
+      "rank_reason": "Already the training labels; the 2026-to-August file is now held and imported, and the September-December file is the next unseen year.",
       "name": "EDM Storm Overflow Start/Stop Detailed Data",
       "publisher": "Environment Agency",
       "region": "England (ten companies, including Dŵr Cymru's English overflows)",
@@ -246,17 +246,17 @@
       "latency": "Yearly files; the 2026 file runs to August",
       "licence": {"name": "Open Government Licence", "url": "https://www.data.gov.uk/dataset/39ba1e24-69ca-4031-badf-e02649b74a7b/event-duration-monitoring-storm-overflow-start-stop-detailed-data", "permits": "Commercial and non-commercial use, publishing and adaptation with attribution"},
       "access": {"route": "Zip per year from the Defra Data Services Platform", "cost": "Free, no key", "account": false},
-      "local_cache": {"path": "data/raw/ea_events/", "bytes": 191418955, "files": 18, "newest": "2026-10-16", "note": "2024 and 2025 for nine companies; no English 2026 file found in the main checkout. Welsh Water 2024-26 in data/raw/ea_welsh_water/"},
+      "local_cache": {"path": "swimsignal-private/event-layers-2026/ea_events/", "bytes": 29672650, "files": 1, "newest": "2026-11-13", "note": "The 2026 year-to-August zip (SHA-256 d0dbf32f..., still the EA's latest on 13 Nov). 2024 and 2025 stay in the main checkout's data/raw/ea_events/. Welsh Water 2024-26 in data/raw/ea_welsh_water/"},
       "status": "already_used",
-      "enables": "Now: spill-model labels, /durations.html. Unused: the 2026 to August files as labels for live-vs-EDM and calibration checks.",
+      "enables": "Now: spill-model labels, /durations.html, and January-August 2026 labels (983,409 events) for development checks. Next: the EA's September-December 2026 file, for an unseen backtest of combined-v1.",
       "recheck": {"result": "changed", "urls": ["https://www.data.gov.uk/dataset/39ba1e24-69ca-4031-badf-e02649b74a7b/event-duration-monitoring-storm-overflow-start-stop-detailed-data"], "note": "Licence unchanged (OGL).", "changes": [{"claim": "Last update and file packaging", "was": "Updated 24 Sep 2026; files listed one per company-year, including 'Welsh Water Detailed Data 2026.xlsx'", "now": "Updated 22 Oct 2026; files are yearly zips ('2024 Detailed EDM Start-Stop Data.zip', '2025 ...', '2026 year to August ...') plus 'Technical Detail DSP October 2026 .docx'", "doc": "docs/WALES-PLAN-2026-10.md#22-annual-returns-edm-for-wales"}]},
-      "docs": ["docs/WALES-PLAN-2026-10.md#22-annual-returns-edm-for-wales", "docs/NINE-COMPANY-MODEL-TEST-2026-10.md"]
+      "docs": ["docs/WALES-PLAN-2026-10.md#22-annual-returns-edm-for-wales", "docs/NINE-COMPANY-MODEL-TEST-2026-10.md", "docs/EVENT-RECORDS-2026-11.md"]
     },
     {
-      "id": "stream-company-layers-unfetched",
+      "id": "stream-company-layers-2025-26",
       "rank": 11,
-      "rank_reason": "Open CC BY 4.0 event layers left unread; they fill 2026 months the EA files lack, at small cost.",
-      "name": "Company event layers on Stream not yet fetched (Anglian monthly from Apr 2025, Severn Trent 2025, Wessex 2025-26, Yorkshire EDM History Jan-Aug 2026)",
+      "rank_reason": "Fetched 13 Nov: September 2026 at Wessex and Yorkshire is the only month they add past the EA file.",
+      "name": "Company event layers on Stream and Wessex's ArcGIS (Anglian monthly Apr 2025 to Jul 2026, Severn Trent 2025, Wessex 2025 and 2026 to Sep, Yorkshire EDM History Jan-Sep 2026)",
       "publisher": "Anglian, Severn Trent, Wessex and Yorkshire Water via Stream",
       "region": "England",
       "theme": "spill_history",
@@ -264,15 +264,15 @@
       "measurement_kind": "measurement",
       "measurement_note": "Company records of monitor events; definitions differ by company.",
       "coverage": "Four companies",
-      "date_range": "2025 to 2026, by company",
+      "date_range": "April 2025 to 30 September 2026, by company",
       "latency": "Monthly to yearly",
-      "licence": {"name": "CC BY 4.0 (as listed on 19 Oct)", "url": "https://creativecommons.org/licenses/by/4.0/", "permits": "Commercial and non-commercial use, publishing and adaptation with attribution"},
+      "licence": {"name": "CC BY 4.0 (rechecked 13 Nov)", "url": "https://creativecommons.org/licenses/by/4.0/", "permits": "Commercial and non-commercial use, publishing and adaptation with attribution"},
       "access": {"route": "ArcGIS REST on Stream or the company's ArcGIS", "cost": "Free, no key", "account": false},
-      "local_cache": null,
-      "status": "ready_to_integrate",
-      "enables": "Event labels for 2026 at four more companies, for live-vs-record checks and duration refits.",
-      "recheck": {"result": "not_rechecked", "urls": [], "note": "Listed and counted on 19 Oct; not reopened."},
-      "docs": ["docs/EARLIER-SPILL-HISTORY-2026-10.md#company-by-year"]
+      "local_cache": {"path": "swimsignal-private/event-layers-2026/company_events/", "bytes": 14806877, "files": 14, "newest": "2026-11-13", "note": "13 raw layer reads and the fetch ledger; hashes in docs/EVENT-RECORDS-2026-11-manifest.json"},
+      "status": "already_used",
+      "enables": "September 2026 labels at Wessex and Yorkshire; a same-spill duration comparison with the live feed. Anglian's layers disagree with the EA file and are not labels.",
+      "recheck": {"result": "unchanged", "urls": ["https://www.arcgis.com/sharing/rest/content/items/10f23bbd5086440891be031405185133", "https://www.arcgis.com/sharing/rest/content/items/aefd77a821124897afc69362d5676236", "https://www.arcgis.com/sharing/rest/content/items/5ab094ee53ba421fa99ebd4843cb27e7", "https://www.arcgis.com/sharing/rest/content/items/a5455681629943aeac94d58664874a14"], "note": "Licence text read from each item on 13 Nov: all CC BY 4.0. Anglian's is a note to the publisher naming CC-BY 4.0."},
+      "docs": ["docs/EARLIER-SPILL-HISTORY-2026-10.md#company-by-year", "docs/EVENT-RECORDS-2026-11.md"]
     },
     {
       "id": "sepa-river-levels",
@@ -1054,7 +1054,7 @@
     {"title": "Scottish spill-history observation page from Scottish Water's OGL event files", "sources": ["scottish-water-event-files"], "next": "Reuse the cached files; observations before any Scottish forecast"},
     {"title": "Irish bathing-water sample history from the EPA API", "sources": ["epa-ireland-bathing"], "next": "Sample-history view in the Ireland directory, no forecast"},
     {"title": "Second Met Office radar backfill before November 2024 is deleted (about 21 Nov 2026)", "sources": ["met-office-radar"], "next": "Owner of RADAR row; time-critical"},
-    {"title": "Fetch the EA 2026-to-August start/stop files and the unfetched Stream company layers for 2026 labels", "sources": ["ea-edm-start-stop", "stream-company-layers-unfetched"], "next": "Labels for live-vs-EDM and duration checks"},
+    {"title": "Fetch the EA 2026-to-August start/stop files and the unfetched Stream company layers for 2026 labels", "sources": ["ea-edm-start-stop", "stream-company-layers-2025-26"], "next": "Done 13 Nov 2026 (#689, docs/EVENT-RECORDS-2026-11.md). Next: the EA's September-December 2026 file"},
     {"title": "Permission requests (Ethan to send): Southern and Yorkshire event files, Dŵr Cymru live and history, Scottish Water API licence name, SEPA results and PFI file, NI Water", "sources": ["southern-water-event-history", "yorkshire-water-event-history", "dwr-cymru-live-layer", "dwr-cymru-history", "scottish-water-live-api", "sepa-bathing-waters", "sepa-overflow-events", "ni-water-edm"], "next": "Drafts exist in the Wales, Scotland and Ireland plans and the overflow-sources doc; none sent by this work"},
     {"title": "Record the EA consents register's one-year permitted-use term and check the age of any offline copy", "sources": ["ea-consents-register"], "next": "Housekeeping in the PE and consents notes"}
   ]
