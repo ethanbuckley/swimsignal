@@ -893,6 +893,13 @@
    "branch": "claude/scotland-2021-backtest",
    "branch_exists": true,
    "date": "2026-11-10"
+  },
+  "690": {
+   "n": 690,
+   "state": "open",
+   "branch": "claude/sonde-arrival-check-311284",
+   "branch_exists": true,
+   "date": "2026-11-13"
   }
  },
  "entries": [
@@ -1852,6 +1859,30 @@
     403
    ],
    "register_note": "The register says \"71 matched river rows\"; the doc's 71 is an upper bound from metadata, with nothing matched."
+  },
+  {
+   "id": "sonde-arrival-time",
+   "title": "Spill arrival times against EA ammonium sondes",
+   "section": "data",
+   "topics": [
+    "sensors",
+    "transport",
+    "rivers"
+   ],
+   "verdict": "Exploratory, on 2024-25 records, under rules amended after a first look. 49 Tier A rises at natural-channel sondes; 4 sondes on 4 rivers have a signal and 5 or more rises, none has 10. Pooled median implied speed 0.25 m/s (95% interval 0.13 to 1.42), which includes the model's 0.2 m/s. Consistent with 0.2 m/s, not a measurement of it. Under the rules as first stated, 4 rises and no signal, a fault in the slot-count rule.",
+   "scope": "Travel time from overflow to sonde only. Ammonium is a proxy, not E. coli. Lag against distance cannot tell a travel time from a response that ignores distance. Changes no transport setting or forecast. Separate from the sonde signal test (#403), which stays unrun with its gate unchanged.",
+   "stage": "development",
+   "stage_note": "The extension to January-August 2026 (section 13) was stated before any 2026 reading was fetched; its 7 requests are in the ledger (99 of 100 used), and its results are not yet in the record.",
+   "next": "Report section 13 under the amended rules, unchanged. Check first why the Till's rises are too fast to be travel.",
+   "records": [
+    {
+     "doc": "docs/ARRIVAL-TIME-SONDE-CHECK-2026-11.md",
+     "quote": "**Outcome under section 9: \"consistent with, not measured\".**"
+    }
+   ],
+   "prs": [
+    690
+   ]
   },
   {
    "id": "radar-rain",

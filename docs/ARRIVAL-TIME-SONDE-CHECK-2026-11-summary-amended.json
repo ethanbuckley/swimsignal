@@ -1,0 +1,143 @@
+{
+ "mode": "amended",
+ "fetched": 90,
+ "with_readings": 66,
+ "with_an_event": 65,
+ "sondes_natural_one_per_place": 57,
+ "artificial_channel_stations": 8,
+ "tier_a_events_natural": {
+  "rise": 49,
+  "no rise": 236,
+  "raised before": 10,
+  "gap": 7,
+  "no baseline": 19
+ },
+ "sondes_with_5_rises": 4,
+ "sondes_with_10_rises": 0,
+ "sondes_with_signal": 9,
+ "sondes_with_signal_and_5_rises": [
+  "E02569A",
+  "E03430A",
+  "E04798A",
+  "E06527A"
+ ],
+ "sondes_with_signal_and_10_rises": [],
+ "rivers_with_signal_and_5_rises": [
+  "Frickley Beck",
+  "River Breamish",
+  "River Calder",
+  "River Witham"
+ ],
+ "descriptive_all_tier_a_rises_natural": {
+  "note": "every Tier A rise at natural-channel sondes, signal or not: a description, not a travel time",
+  "lag_h": {
+   "n": 49,
+   "median": 5.183,
+   "lo": 2.817,
+   "hi": 7.017,
+   "q1": 2.5,
+   "q3": 12.517
+  },
+  "lag_over_model": {
+   "n": 49,
+   "median": 0.781,
+   "lo": 0.455,
+   "hi": 1.41,
+   "q1": 0.309,
+   "q3": 2.248
+  },
+  "v_ms": {
+   "n": 49,
+   "median": 0.256,
+   "lo": 0.142,
+   "hi": 0.439,
+   "q1": 0.089,
+   "q3": 0.648
+  },
+  "window": {
+   "before": 29,
+   "after": 17,
+   "inside": 3
+  },
+  "same_slot_as_start": 0
+ },
+ "pooled": {
+  "sondes": 4,
+  "rises": 24,
+  "median_v_ms": 0.2536,
+  "v_ci": [
+   0.1326,
+   1.4213
+  ],
+  "excludes_model_speed": false,
+  "slope_h_per_km": -0.0948,
+  "slope_ci": [
+   -2.4593,
+   13.6937
+  ],
+  "intercept_h": 5.003,
+  "intercept_ci": [
+   -73.8014,
+   14.9242
+  ],
+  "model_slope_h_per_km": 1.3889
+ },
+ "pooled_10_rises": "under 3 sondes on 2 rivers with 10 rises and a signal",
+ "tier_a_by_spill_length_natural": [
+  {
+   "band": "under 1 h",
+   "events": 203,
+   "sondes": 40,
+   "rises": 30,
+   "rise_share": 0.148,
+   "background_share": 0.057,
+   "diff_ci": [
+    0.022,
+    0.163
+   ]
+  },
+  {
+   "band": "1 to 6 h",
+   "events": 53,
+   "sondes": 21,
+   "rises": 7,
+   "rise_share": 0.132,
+   "background_share": 0.058,
+   "diff_ci": [
+    -0.027,
+    0.176
+   ]
+  },
+  {
+   "band": "6 h or more",
+   "events": 28,
+   "sondes": 14,
+   "rises": 12,
+   "rise_share": 0.429,
+   "background_share": 0.083,
+   "diff_ci": [
+    0.163,
+    0.474
+   ]
+  }
+ ],
+ "tier_a_events_by_reading_interval_natural": {
+  "15": {
+   "no rise": 32,
+   "rise": 3,
+   "raised before": 1
+  },
+  "30": {
+   "no rise": 97,
+   "rise": 24,
+   "raised before": 4,
+   "gap": 4
+  },
+  "60": {
+   "no rise": 107,
+   "rise": 22,
+   "raised before": 5,
+   "gap": 3
+  }
+ }
+}
