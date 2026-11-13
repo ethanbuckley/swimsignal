@@ -3002,6 +3002,11 @@ def not_found_page(root: str) -> str:
         f'<p>{foot_links(r)}</p></div></footer></body></html>\n')
 
 
+# Google Search Console proves who owns the site by fetching this file from the root. It must stay for as long as
+# the property is verified. The token is public: it only says which Google account may see the search figures.
+GOOGLE_VERIFY = "google9a051ccd2b65d2d2.html"
+
+
 def robots(root: str) -> str:
     return f"User-agent: *\nAllow: /\nSitemap: {root}sitemap.xml\n"
 
@@ -3341,6 +3346,7 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
                                               extra=(["support.html"] if support else []) + lab_pages(), overflow_ids=overflow_ids))
     (site / "404.html").write_text(with_counter(with_phone_nav(not_found_page(root), root), token))
     (site / "robots.txt").write_text(robots(root))
+    (site / GOOGLE_VERIFY).write_text(f"google-site-verification: {GOOGLE_VERIFY}")
     (site / ".nojekyll").write_text("")
     write_lakes(site, token, root)   # the satellite lake observations (Research): before the data page, which lists data/research/
     write_lab(site, token)   # the Research Lab's exhibits at lab/, with their own frozen copy of what they read
