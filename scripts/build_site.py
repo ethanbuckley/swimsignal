@@ -3929,6 +3929,9 @@ def lab_pages(lab: Path = LAB) -> list[str]:
     return ["lab/"] + sorted(f"lab/{d.name}/" for d in lab.iterdir() if (d / "index.html").is_file())
 
 
+LAB_UNPUBLISHED = ("whatif",)   # Lab folders the build leaves out: prototypes not to be published
+
+
 def write_lab(site: Path, token: str | None = None, lab: Path = LAB, research: Path = ROOT / "data" / "research") -> int:
     """lab/: the Research Lab's pages, scripts and exported data, and lab/data/, the research files they read.
     Returns the number of pages, 0 when there is no Lab."""
@@ -3936,7 +3939,9 @@ def write_lab(site: Path, token: str | None = None, lab: Path = LAB, research: P
     shutil.rmtree(out, ignore_errors=True)
     if not (lab / "index.html").is_file():
         return 0
-    shutil.copytree(lab, out, ignore=shutil.ignore_patterns("shots", "*.md"))
+    # whatif/: the catchment workspace's what-if mode (CATCH-SIM, docs/CATCH-SIM-2026-12.md), a prototype kept off the site
+    # until Ethan decides whether a scenario view is shown at all.
+    shutil.copytree(lab, out, ignore=shutil.ignore_patterns("shots", "*.md", *LAB_UNPUBLISHED))
     for name in LAB_DATA:
         src, dst = research / name, out / "data" / name
         dst.parent.mkdir(parents=True, exist_ok=True)
