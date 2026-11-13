@@ -1,0 +1,280 @@
+{
+ "protocol": "docs/WESSEX-RIVER-SAMPLES-CHECK-2026-11.md at 434ce288",
+ "exploratory": true,
+ "inputs_sha256": {
+  "docs/SOIL-MOISTURE-RIVERS-TEST-2026-11.json": "90411e7350ca26052227170c80b877592577c57c83cb77f5f53f4013dc057340",
+  "data/research/wessex_river_samples.v1.json": "ff93ef2ffd4a54f2816bd19868f13d29f53f22617e5e2c487525748e9fe88e9f",
+  "data/research/ecoli_evidence.v1.json": "4b706230bb532d61e60d791f8d08b6e4b4ecf0883ffa55026f49ca855b5e302f"
+ },
+ "a_level_and_order": {
+  "avon-warleigh-weir": {
+   "samples": 173,
+   "over_900": 54,
+   "observed_share": 0.312,
+   "observed_ci95": [
+    0.248,
+    0.385
+   ],
+   "mean_reference": 0.4076,
+   "mean_candidate": 0.3678,
+   "gap_observed_minus_candidate": -0.056,
+   "level": "within",
+   "rho": [
+    {
+     "station": "wsx 51.37705,-2.30064",
+     "n": 153,
+     "reference": 0.707,
+     "candidate": 0.756,
+     "candidate_ci95": [
+      0.679,
+      0.817
+     ]
+    },
+    {
+     "station": "wsx 51.37705,-2.30063",
+     "n": 20,
+     "reference": 0.653,
+     "candidate": 0.684,
+     "candidate_ci95": [
+      0.347,
+      0.865
+     ]
+    }
+   ]
+  },
+  "bw-ukk2301-36051": {
+   "samples": 91,
+   "over_900": 38,
+   "observed_share": 0.418,
+   "observed_ci95": [
+    0.322,
+    0.52
+   ],
+   "mean_reference": 0.2991,
+   "mean_candidate": 0.2984,
+   "gap_observed_minus_candidate": 0.12,
+   "level": "reads low",
+   "rho": [
+    {
+     "station": "wsx 51.30928,-2.28610",
+     "n": 91,
+     "reference": 0.611,
+     "candidate": 0.64,
+     "candidate_ci95": [
+      0.5,
+      0.748
+     ]
+    }
+   ]
+  },
+  "frome-tellisford-weir": {
+   "samples": 60,
+   "over_900": 30,
+   "observed_share": 0.5,
+   "observed_ci95": [
+    0.377,
+    0.623
+   ],
+   "mean_reference": 0.3004,
+   "mean_candidate": 0.2617,
+   "gap_observed_minus_candidate": 0.238,
+   "level": "reads low",
+   "rho": [
+    {
+     "station": "wsx 51.29962,-2.27946",
+     "n": 60,
+     "reference": 0.544,
+     "candidate": 0.549,
+     "candidate_ci95": [
+      0.343,
+      0.705
+     ]
+    }
+   ]
+  }
+ },
+ "b_descriptive": {
+  "avon-warleigh-weir": {
+   "may_sep": {
+    "samples": 173,
+    "over_900": 54,
+    "share": 0.312,
+    "ci95": [
+     0.248,
+     0.385
+    ]
+   },
+   "oct_apr": {
+    "samples": 149,
+    "over_900": 91,
+    "share": 0.611,
+    "ci95": [
+     0.531,
+     0.685
+    ]
+   }
+  },
+  "bw-ukk2301-36051": {
+   "may_sep": {
+    "samples": 90,
+    "over_900": 38,
+    "share": 0.422,
+    "ci95": [
+     0.325,
+     0.525
+    ]
+   },
+   "oct_apr": {
+    "samples": 83,
+    "over_900": 55,
+    "share": 0.663,
+    "ci95": [
+     0.556,
+     0.755
+    ]
+   }
+  },
+  "frome-tellisford-weir": {
+   "may_sep": {
+    "samples": 60,
+    "over_900": 30,
+    "share": 0.5,
+    "ci95": [
+     0.377,
+     0.623
+    ]
+   },
+   "oct_apr": {
+    "samples": 38,
+    "over_900": 19,
+    "share": 0.5,
+    "ci95": [
+     0.348,
+     0.652
+    ]
+   }
+  },
+  "farleigh_side_by_side": {
+   "2024": {
+    "wessex_point": {
+     "samples": 18,
+     "over_900": 9
+    },
+    "ea_bathing_water": {
+     "samples": 20,
+     "over_900": 6
+    }
+   },
+   "2025": {
+    "wessex_point": {
+     "samples": 7,
+     "over_900": 1
+    },
+    "ea_bathing_water": {
+     "samples": 20,
+     "over_900": 3
+    }
+   }
+  }
+ },
+ "c_post_hoc": {
+  "post_hoc": true,
+  "farleigh_bathing_water_ea": {
+   "2024": {
+    "samples": 20,
+    "over_900": 6,
+    "observed_share": 0.3,
+    "observed_ci95": [
+     0.145,
+     0.519
+    ],
+    "mean_hindsight": 0.348
+   },
+   "2025": {
+    "samples": 20,
+    "over_900": 3,
+    "observed_share": 0.15,
+    "observed_ci95": [
+     0.052,
+     0.36
+    ],
+    "mean_hindsight": 0.151
+   },
+   "2026": {
+    "samples": 16,
+    "over_900": 2,
+    "observed_share": 0.125,
+    "observed_ci95": [
+     0.035,
+     0.36
+    ],
+    "mean_hindsight": 0.081
+   },
+   "all": {
+    "samples": 56,
+    "over_900": 11,
+    "observed_share": 0.196,
+    "observed_ci95": [
+     0.113,
+     0.318
+    ],
+    "mean_hindsight": 0.202
+   }
+  },
+  "farleigh_same_day": {
+   "pairs": [
+    {
+     "day": "2024-05-29",
+     "wessex": 2700,
+     "wessex_time": "11:50",
+     "ea": 2700,
+     "ea_t": "2024-05-29T09:08+01:00",
+     "log10_ratio": 0.0
+    },
+    {
+     "day": "2024-07-03",
+     "wessex": 800,
+     "wessex_time": "10:00",
+     "ea": 350,
+     "ea_t": "2024-07-03T19:28+01:00",
+     "log10_ratio": 0.359
+    },
+    {
+     "day": "2024-08-08",
+     "wessex": 700,
+     "wessex_time": "10:40",
+     "ea": 280,
+     "ea_t": "2024-08-08T13:12+01:00",
+     "log10_ratio": 0.398
+    },
+    {
+     "day": "2024-08-22",
+     "wessex": 700,
+     "wessex_time": "10:55",
+     "ea": 500,
+     "ea_t": "2024-08-22T12:45+01:00",
+     "log10_ratio": 0.146
+    },
+    {
+     "day": "2025-05-19",
+     "wessex": 290,
+     "wessex_time": "09:40",
+     "ea": 160,
+     "ea_t": "2025-05-19T11:16+01:00",
+     "log10_ratio": 0.258
+    },
+    {
+     "day": "2025-06-10",
+     "wessex": 380,
+     "wessex_time": "10:40",
+     "ea": 250,
+     "ea_t": "2025-06-10T13:15+01:00",
+     "log10_ratio": 0.182
+    }
+   ],
+   "wessex_higher": 5,
+   "equal": 1,
+   "median_log10_ratio": 0.22
+  }
+ }
+}

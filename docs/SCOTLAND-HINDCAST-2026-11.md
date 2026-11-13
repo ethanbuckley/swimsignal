@@ -129,3 +129,11 @@ are flagged small. This is a description, not a finding about those places.
 | Owner | Claude for 1 and 2; Ethan for the reviewer invitation (Stirling, drafted, unsent) |
 | Milestone | Proposed here: Gate B read in February 2027, after the plan's window; review before the 2027 pre-registration deadline, 30 April 2027 |
 | Release route | Nothing Scottish is published until Gates A and B pass and a reviewer agrees. A Scottish page would also need the level fixed or stated (section 4) |
+
+## 7. Note added 13 November 2026: the bathing-season-only flag
+
+Nothing above was changed. Scottish Water's summary flags four overflows as reporting only in the bathing season
+in 2019 to 2022 or 2021 to 2022. The loader does not read the flag, so their days outside the season count as no
+spill. That touches 774 of set G's 253,140 overflow-days as labels, and at most 14 of its 693 overflow-years in any
+way. No score was recomputed. What it touches, which way it pushes and the one sensitivity to run are in
+[the flag note](SCOTLAND-GATE-A-SEASON-FLAG-2026-11.md).
