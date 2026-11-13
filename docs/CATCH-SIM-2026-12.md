@@ -165,3 +165,69 @@ upgrade".
 ## Budget
 
 Offline. At most 2 CPU-hours and 4 cores. Zero Open-Meteo calls, zero EA requests, zero other fetches.
+
+---
+
+## Results (run 13 Nov 2026, after the protocol was pushed in 6fd1805e)
+
+Development evidence on seen data (2024-25 rain, spills and the model's own fit). `scripts/lab_catch_sim.py`, 24 s on
+4 cores. 27 shared inputs copied to scratch and hashed before and after: unchanged. Nothing fetched. Tables:
+`docs/CATCH-SIM-2026-12-{summary,removal,expected,storms,issued}.csv`.
+
+### Checks
+
+- **Monotonicity: 0 of 20 overflows non-monotone** (share monotone 1.0). No overflow-day chance fell when rain rose
+  one step (116,960 steps at Cromwheel, 29,240 at Waterhead), and no spot-day risk fell (7,310 steps at each). The stop
+  rule is not met, so **both experiments stay in the mode**. This shows the model moves the physical way. It does not
+  show the size of the move is right.
+- **Reproduction: passed at both spots.** 562 of 562 issued levels at leads 3-4 rebuilt exactly from the log (largest
+  risk difference 3e-16 Cromwheel, 1e-16 Waterhead), issues 12 Oct to 5 Nov 2026. **Deviation from the protocol:**
+  the log has no travel times before 12 Oct 2026 14:10, so 285 earlier Cromwheel issues and 110 Waterhead issues could
+  not be rebuilt and are left out, not filled.
+- **Calibration error at x1** (observed ÷ expected spill days): Cromwheel 1.25 (2024), 1.22 (2025): the model expects
+  fewer spills than the EA recorded. Waterhead 0.81, 0.72: more than recorded, although these United Utilities years are
+  in the model's training data. Why Waterhead's in-sample ratio is below 1 is not checked (inferred candidates: UTC vs
+  local days, the EA file against the training labels). Bridge Lane CSO has no event in the EA file.
+- **Outside the fitted rain:** against all 8 cells (the stated proxy) 0% at Cromwheel even at x1.5, 1.1% at Waterhead.
+  Added after the protocol, against each place's own cells: Cromwheel 0.05% at x1.5. A weak proxy at Cromwheel.
+
+### Experiment 1: scaled rain, days at moderate risk or above (2024 / 2025)
+
+| Rain | Cromwheel | Waterhead |
+|---|---|---|
+| x0.5 | 115 / 108 | 9 / 16 |
+| x1.0 (as fitted) | 234 / 175 | 49 / 52 |
+| x1.5 | 285 / 197 | 80 / 85 |
+
+Cromwheel's very high days: 5 / 8 at x0.5, 54 / 37 at x1, 108 / 80 at x1.5. Waterhead never reaches high in either
+year at any scale. The response is less than proportional above x1 at Cromwheel (half the rain halves moderate-or-above
+days; 1.5 times the rain adds about a fifth). Storms: at Cromwheel the storm day itself stays very high at every scale
+on 22 May 2024 and 20 Sep 2025; the days after move by one or two levels.
+
+### Experiment 2: take one overflow away (x1, days a level lower, 2024 / 2025)
+
+- **Cromwheel** (234 / 175 days moderate or above): Addingham 3xDWF 56 / 26, Addingham 6xDWF 30 / 24, Rivadale View
+  28 / 25, Middleton 20 / 20, Grassington STW 22 / 14; the other eleven 0 to 14. No single removal changes the level on
+  any storm day. On issued forecasts (leads 3-4), Middleton or Rivadale View would each lower 65 of 562 levels.
+  This agrees with PR #298: one overflow alone moves Cromwheel little, because nearby overflows spill on the same days.
+- **Waterhead** (49 / 52 days moderate): Ambleside WwTW 49 / 52, that is every moderate day; Glebe Road PS 20 / 17;
+  Elterwater 19 / 20; Grasmere 0 (weight 0.0004). Issued forecasts: Ambleside 55 of 562 lowered. In the model,
+  Waterhead's moderate days come from Ambleside WwTW.
+
+Removal never raised a level (checked on every day, scale and overflow).
+
+### Limits
+
+- A model sensitivity on past days. Taking an overflow away means "had it never spilled", not an upgrade.
+- Scaled rain is not a climate scenario. Two years is the only spread shown; it is not an interval.
+- Weights and travel times are the 5 Nov 2026 build's, used for both years.
+
+### Next (register row)
+
+| Field | Content |
+|---|---|
+| Identity | CATCH-SIM; Claude session for Ethan; this PR; `scripts/lab_catch_sim.py`, `prototypes/research-lab/workspace/whatif/` |
+| Evidence | Monotonicity 0 of 20 (stop rule not met); reproduction 562/562 at leads 3-4. Seen data, development |
+| Stage and claim | Exploration, Lab prototype, not published. Claim: the model's answer to two what-ifs |
+| Next deliverable | Ethan's two decisions. Then storms from before 2024 (cached rain), or a third catchment |
+| Release route | Ethan decides public or Lab-only, and naming overflows. Rollback: delete `whatif/` and the build's ignore entry |

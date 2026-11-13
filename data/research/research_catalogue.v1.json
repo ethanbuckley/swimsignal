@@ -2768,22 +2768,26 @@
   },
   {
    "id": "catch-sim",
-   "title": "Catchment experiment simulator",
-   "section": "data",
+   "title": "Catchment experiment simulator: the forecast model's answer if the rain changed or an overflow went",
+   "section": "promising",
    "topics": [
     "model",
     "overflows",
     "rain"
    ],
-   "verdict": "Not yet run. A scoping record from an outside review of 1 November 2026: no data fetched, nothing fitted or scored. An upgrade scenario made by lowering lta_spills would be an artefact: #298 found the model's response to it is not monotone.",
-   "scope": "A sensitivity of the production model at two spots; not a prediction of any real scheme, and no mechanism for wetlands or restoration.",
+   "verdict": "First record, 13 Nov 2026, a model sensitivity and not a test: 0 of 20 overflows at Cromwheel and Waterhead respond non-monotonically to scaled rain, so the stop rule is not met and both experiments are kept. The published level was rebuilt exactly for 562 of 562 issued forecasts at leads 3-4.",
+   "scope": "Cromwheel (16 Yorkshire Water overflows) and Waterhead (4 United Utilities overflows), 2024-25 archive rain, the production spill model. Seen data: development evidence. Not a prediction of any real upgrade or scheme; no mechanism for wetlands or restoration.",
    "stage": "development",
-   "stage_note": "Bounded exploration: offline rain and \"remove an overflow\" scenarios at Cromwheel and Waterhead, as a mode of the catchment workspace.",
-   "next": "Record by 15 December 2026.",
+   "stage_note": "A what-if mode of the catchment workspace (prototypes/research-lab/workspace/whatif/), left out of the site build. Not published.",
+   "next": "Ethan decides whether a scenario view is public and whether it names overflows; then storms from before 2024 or a third catchment, from cached files.",
    "records": [
     {
      "doc": "docs/AMBITIOUS-RESEARCH-SCOPING-2026-11.md",
      "quote": "**Stop or narrow if.** More than 10% of overflows at the two spots respond non-monotonically to scaled rain. Then rain"
+    },
+    {
+     "doc": "docs/CATCH-SIM-2026-12.md",
+     "quote": "**Monotonicity: 0 of 20 overflows non-monotone**"
     }
    ],
    "prs": [
