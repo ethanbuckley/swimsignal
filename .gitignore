@@ -24,6 +24,8 @@ data/processed/*
 !data/processed/regional/
 # The combined-v1 shadow's frozen D2 model (shadow_combined.py, docs/COMBINED-SHADOW-2026-11.md)
 !data/processed/combined/
+# The radar shadow's 18 frozen 2025 fits from #694 and #697 (shadow_radar.py, docs/RADAR-SHADOW-2026-11.md)
+!data/processed/radar_shadow/
 !data/processed/lead_calibration.json
 !data/processed/spill_day_ratio.json
 !data/processed/ecoli_model.json
