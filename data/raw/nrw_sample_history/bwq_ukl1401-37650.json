@@ -1,0 +1,195 @@
+{ "format" : "linked-data-api", "version" : "0.2", "result" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/doc/bathing-water-quality/in-season/sample.json?_pageSize=200&bwq_bathingWater.eubwidNotation=ukl1401-37650", "definition" : "http://environment.data.gov.uk/wales/bathing-waters/meta/doc/bathing-water-quality/in-season/sample.json?bwq_bathingWater.eubwidNotation=ukl1401-37650", "extendedMetadataVersion" : "http://environment.data.gov.uk/wales/bathing-waters/doc/bathing-water-quality/in-season/sample.json?_pageSize=200&bwq_bathingWater.eubwidNotation=ukl1401-37650&_metadata=all", "first" : "http://environment.data.gov.uk/wales/bathing-waters/doc/bathing-water-quality/in-season/sample.json?_pageSize=200&_page=0&bwq_bathingWater.eubwidNotation=ukl1401-37650", "isPartOf" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/doc/bathing-water-quality/in-season/sample.json?bwq_bathingWater.eubwidNotation=ukl1401-37650", "definition" : "http://environment.data.gov.uk/wales/bathing-waters/meta/doc/bathing-water-quality/in-season/sample.json?bwq_bathingWater.eubwidNotation=ukl1401-37650", "hasPart" : "http://environment.data.gov.uk/wales/bathing-waters/doc/bathing-water-quality/in-season/sample.json?_pageSize=200&bwq_bathingWater.eubwidNotation=ukl1401-37650", "type" : ["http://purl.org/linked-data/api/vocab#ListEndpoint"]}
+    , "items" : [{"_about" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/in-season/sample/point/37650/date/20260918/time/103600/recordDate/20260918", "bwq_bathingWater" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/id/bathing-water/ukl1401-37650", "eubwidNotation" : "ukl1401-37650", "name" : {"_value" : "Llandeilo Swing Bridge", "_datatype" : "langString", "_lang" : "en"}
+      }
+      , "bwq_samplingPoint" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/so/SamplingPoint/37650", "name" : {"_value" : "Sampling point at Llandeilo Swing Bridge", "_datatype" : "langString", "_lang" : "en"}
+        , "samplePointNotation" : "37650"}
+      , "dataset" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/nrw/in-season", "escherichiaColiCount" : 220, "escherichiaColiQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "intestinalEnterococciCount" : 75, "intestinalEnterococciQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "label" : [{"_value" : "Llandeilo Swing Bridge sample assessment for 2026-W38", "_datatype" : "langString", "_lang" : "en"}
+      ], "sampleDateTime" : {"_about" : "http://reference.data.gov.uk/id/gregorian-instant/2026-09-18T10:36:00", "inXSDDateTime" : {"_value" : "2026-09-18T10:36:00", "_datatype" : "dateTime"}
+      }
+      , "sampleWeek" : {"_about" : "http://reference.data.gov.uk/id/week/2026-W38", "label" : [{"_value" : "British Week:2026-W38", "_datatype" : "langString", "_lang" : "en"}
+        ]}
+      , "source" : "http://environment.data.gov.uk/wales/bathing-waters/sources/input/wiski_20261006_all-2026-10-06_13-00-30_536-0662.csv#row=001121", "type" : ["http://environment.data.gov.uk/def/bathing-water-quality/SampleAssessment", "http://purl.org/linked-data/cube#Observation"]}
+    , {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/in-season/sample/point/37650/date/20260505/time/123000/recordDate/20260505", "bwq_bathingWater" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/id/bathing-water/ukl1401-37650", "eubwidNotation" : "ukl1401-37650", "name" : {"_value" : "Llandeilo Swing Bridge", "_datatype" : "langString", "_lang" : "en"}
+      }
+      , "bwq_samplingPoint" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/so/SamplingPoint/37650", "name" : {"_value" : "Sampling point at Llandeilo Swing Bridge", "_datatype" : "langString", "_lang" : "en"}
+        , "samplePointNotation" : "37650"}
+      , "dataset" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/nrw/in-season", "escherichiaColiCount" : 640, "escherichiaColiQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "intestinalEnterococciCount" : 18, "intestinalEnterococciQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "label" : [{"_value" : "Llandeilo Swing Bridge sample assessment for 2026-W19", "_datatype" : "langString", "_lang" : "en"}
+      ], "sampleDateTime" : {"_about" : "http://reference.data.gov.uk/id/gregorian-instant/2026-05-05T12:30:00", "inXSDDateTime" : {"_value" : "2026-05-05T12:30:00", "_datatype" : "dateTime"}
+      }
+      , "sampleWeek" : {"_about" : "http://reference.data.gov.uk/id/week/2026-W19", "label" : [{"_value" : "British Week:2026-W19", "_datatype" : "langString", "_lang" : "en"}
+        ]}
+      , "source" : "http://environment.data.gov.uk/wales/bathing-waters/sources/input/wiski_20261006_all-2026-10-06_13-00-30_536-0662.csv#row=000009", "type" : ["http://environment.data.gov.uk/def/bathing-water-quality/SampleAssessment", "http://purl.org/linked-data/cube#Observation"]}
+    , {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/in-season/sample/point/37650/date/20260511/time/102031/recordDate/20260511", "bwq_bathingWater" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/id/bathing-water/ukl1401-37650", "eubwidNotation" : "ukl1401-37650", "name" : {"_value" : "Llandeilo Swing Bridge", "_datatype" : "langString", "_lang" : "en"}
+      }
+      , "bwq_samplingPoint" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/so/SamplingPoint/37650", "name" : {"_value" : "Sampling point at Llandeilo Swing Bridge", "_datatype" : "langString", "_lang" : "en"}
+        , "samplePointNotation" : "37650"}
+      , "dataset" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/nrw/in-season", "escherichiaColiCount" : 54, "escherichiaColiQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "intestinalEnterococciCount" : 10, "intestinalEnterococciQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/lessThan", "countQualifierNotation" : "<"}
+      , "label" : [{"_value" : "Llandeilo Swing Bridge sample assessment for 2026-W20", "_datatype" : "langString", "_lang" : "en"}
+      ], "sampleDateTime" : {"_about" : "http://reference.data.gov.uk/id/gregorian-instant/2026-05-11T10:20:31", "inXSDDateTime" : {"_value" : "2026-05-11T10:20:31", "_datatype" : "dateTime"}
+      }
+      , "sampleWeek" : {"_about" : "http://reference.data.gov.uk/id/week/2026-W20", "label" : [{"_value" : "British Week:2026-W20", "_datatype" : "langString", "_lang" : "en"}
+        ]}
+      , "source" : "http://environment.data.gov.uk/wales/bathing-waters/sources/input/wiski_20261006_all-2026-10-06_13-00-30_536-0662.csv#row=000050", "type" : ["http://environment.data.gov.uk/def/bathing-water-quality/SampleAssessment", "http://purl.org/linked-data/cube#Observation"]}
+    , {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/in-season/sample/point/37650/date/20260518/time/113924/recordDate/20260518", "bwq_bathingWater" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/id/bathing-water/ukl1401-37650", "eubwidNotation" : "ukl1401-37650", "name" : {"_value" : "Llandeilo Swing Bridge", "_datatype" : "langString", "_lang" : "en"}
+      }
+      , "bwq_samplingPoint" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/so/SamplingPoint/37650", "name" : {"_value" : "Sampling point at Llandeilo Swing Bridge", "_datatype" : "langString", "_lang" : "en"}
+        , "samplePointNotation" : "37650"}
+      , "dataset" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/nrw/in-season", "escherichiaColiCount" : 2300, "escherichiaColiQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "intestinalEnterococciCount" : 740, "intestinalEnterococciQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "label" : [{"_value" : "Llandeilo Swing Bridge sample assessment for 2026-W21", "_datatype" : "langString", "_lang" : "en"}
+      ], "sampleDateTime" : {"_about" : "http://reference.data.gov.uk/id/gregorian-instant/2026-05-18T11:39:24", "inXSDDateTime" : {"_value" : "2026-05-18T11:39:24", "_datatype" : "dateTime"}
+      }
+      , "sampleWeek" : {"_about" : "http://reference.data.gov.uk/id/week/2026-W21", "label" : [{"_value" : "British Week:2026-W21", "_datatype" : "langString", "_lang" : "en"}
+        ]}
+      , "source" : "http://environment.data.gov.uk/wales/bathing-waters/sources/input/wiski_20261006_all-2026-10-06_13-00-30_536-0662.csv#row=000121", "type" : ["http://environment.data.gov.uk/def/bathing-water-quality/SampleAssessment", "http://purl.org/linked-data/cube#Observation"]}
+    , {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/in-season/sample/point/37650/date/20260528/time/103400/recordDate/20260528", "bwq_bathingWater" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/id/bathing-water/ukl1401-37650", "eubwidNotation" : "ukl1401-37650", "name" : {"_value" : "Llandeilo Swing Bridge", "_datatype" : "langString", "_lang" : "en"}
+      }
+      , "bwq_samplingPoint" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/so/SamplingPoint/37650", "name" : {"_value" : "Sampling point at Llandeilo Swing Bridge", "_datatype" : "langString", "_lang" : "en"}
+        , "samplePointNotation" : "37650"}
+      , "dataset" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/nrw/in-season", "escherichiaColiCount" : 710, "escherichiaColiQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "intestinalEnterococciCount" : 54, "intestinalEnterococciQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "label" : [{"_value" : "Llandeilo Swing Bridge sample assessment for 2026-W22", "_datatype" : "langString", "_lang" : "en"}
+      ], "sampleDateTime" : {"_about" : "http://reference.data.gov.uk/id/gregorian-instant/2026-05-28T10:34:00", "inXSDDateTime" : {"_value" : "2026-05-28T10:34:00", "_datatype" : "dateTime"}
+      }
+      , "sampleWeek" : {"_about" : "http://reference.data.gov.uk/id/week/2026-W22", "label" : [{"_value" : "British Week:2026-W22", "_datatype" : "langString", "_lang" : "en"}
+        ]}
+      , "source" : "http://environment.data.gov.uk/wales/bathing-waters/sources/input/wiski_20261006_all-2026-10-06_13-00-30_536-0662.csv#row=000194", "type" : ["http://environment.data.gov.uk/def/bathing-water-quality/SampleAssessment", "http://purl.org/linked-data/cube#Observation"]}
+    , {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/in-season/sample/point/37650/date/20260603/time/105012/recordDate/20260603", "bwq_bathingWater" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/id/bathing-water/ukl1401-37650", "eubwidNotation" : "ukl1401-37650", "name" : {"_value" : "Llandeilo Swing Bridge", "_datatype" : "langString", "_lang" : "en"}
+      }
+      , "bwq_samplingPoint" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/so/SamplingPoint/37650", "name" : {"_value" : "Sampling point at Llandeilo Swing Bridge", "_datatype" : "langString", "_lang" : "en"}
+        , "samplePointNotation" : "37650"}
+      , "dataset" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/nrw/in-season", "escherichiaColiCount" : 1360, "escherichiaColiQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "intestinalEnterococciCount" : 256, "intestinalEnterococciQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "label" : [{"_value" : "Llandeilo Swing Bridge sample assessment for 2026-W23", "_datatype" : "langString", "_lang" : "en"}
+      ], "sampleDateTime" : {"_about" : "http://reference.data.gov.uk/id/gregorian-instant/2026-06-03T10:50:12", "inXSDDateTime" : {"_value" : "2026-06-03T10:50:12", "_datatype" : "dateTime"}
+      }
+      , "sampleWeek" : {"_about" : "http://reference.data.gov.uk/id/week/2026-W23", "label" : [{"_value" : "British Week:2026-W23", "_datatype" : "langString", "_lang" : "en"}
+        ]}
+      , "source" : "http://environment.data.gov.uk/wales/bathing-waters/sources/input/wiski_20261006_all-2026-10-06_13-00-30_536-0662.csv#row=000250", "type" : ["http://environment.data.gov.uk/def/bathing-water-quality/SampleAssessment", "http://purl.org/linked-data/cube#Observation"]}
+    , {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/in-season/sample/point/37650/date/20260612/time/103701/recordDate/20260612", "bwq_bathingWater" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/id/bathing-water/ukl1401-37650", "eubwidNotation" : "ukl1401-37650", "name" : {"_value" : "Llandeilo Swing Bridge", "_datatype" : "langString", "_lang" : "en"}
+      }
+      , "bwq_samplingPoint" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/so/SamplingPoint/37650", "name" : {"_value" : "Sampling point at Llandeilo Swing Bridge", "_datatype" : "langString", "_lang" : "en"}
+        , "samplePointNotation" : "37650"}
+      , "dataset" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/nrw/in-season", "escherichiaColiCount" : 520, "escherichiaColiQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "intestinalEnterococciCount" : 198, "intestinalEnterococciQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "label" : [{"_value" : "Llandeilo Swing Bridge sample assessment for 2026-W24", "_datatype" : "langString", "_lang" : "en"}
+      ], "sampleDateTime" : {"_about" : "http://reference.data.gov.uk/id/gregorian-instant/2026-06-12T10:37:01", "inXSDDateTime" : {"_value" : "2026-06-12T10:37:01", "_datatype" : "dateTime"}
+      }
+      , "sampleWeek" : {"_about" : "http://reference.data.gov.uk/id/week/2026-W24", "label" : [{"_value" : "British Week:2026-W24", "_datatype" : "langString", "_lang" : "en"}
+        ]}
+      , "source" : "http://environment.data.gov.uk/wales/bathing-waters/sources/input/wiski_20261006_all-2026-10-06_13-00-30_536-0662.csv#row=000337", "type" : ["http://environment.data.gov.uk/def/bathing-water-quality/SampleAssessment", "http://purl.org/linked-data/cube#Observation"]}
+    , {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/in-season/sample/point/37650/date/20260617/time/115153/recordDate/20260617", "bwq_bathingWater" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/id/bathing-water/ukl1401-37650", "eubwidNotation" : "ukl1401-37650", "name" : {"_value" : "Llandeilo Swing Bridge", "_datatype" : "langString", "_lang" : "en"}
+      }
+      , "bwq_samplingPoint" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/so/SamplingPoint/37650", "name" : {"_value" : "Sampling point at Llandeilo Swing Bridge", "_datatype" : "langString", "_lang" : "en"}
+        , "samplePointNotation" : "37650"}
+      , "dataset" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/nrw/in-season", "escherichiaColiCount" : 910, "escherichiaColiQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "intestinalEnterococciCount" : 680, "intestinalEnterococciQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "label" : [{"_value" : "Llandeilo Swing Bridge sample assessment for 2026-W25", "_datatype" : "langString", "_lang" : "en"}
+      ], "sampleDateTime" : {"_about" : "http://reference.data.gov.uk/id/gregorian-instant/2026-06-17T11:51:53", "inXSDDateTime" : {"_value" : "2026-06-17T11:51:53", "_datatype" : "dateTime"}
+      }
+      , "sampleWeek" : {"_about" : "http://reference.data.gov.uk/id/week/2026-W25", "label" : [{"_value" : "British Week:2026-W25", "_datatype" : "langString", "_lang" : "en"}
+        ]}
+      , "source" : "http://environment.data.gov.uk/wales/bathing-waters/sources/input/wiski_20261006_all-2026-10-06_13-00-30_536-0662.csv#row=000361", "type" : ["http://environment.data.gov.uk/def/bathing-water-quality/SampleAssessment", "http://purl.org/linked-data/cube#Observation"]}
+    , {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/in-season/sample/point/37650/date/20260625/time/104558/recordDate/20260625", "bwq_bathingWater" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/id/bathing-water/ukl1401-37650", "eubwidNotation" : "ukl1401-37650", "name" : {"_value" : "Llandeilo Swing Bridge", "_datatype" : "langString", "_lang" : "en"}
+      }
+      , "bwq_samplingPoint" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/so/SamplingPoint/37650", "name" : {"_value" : "Sampling point at Llandeilo Swing Bridge", "_datatype" : "langString", "_lang" : "en"}
+        , "samplePointNotation" : "37650"}
+      , "dataset" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/nrw/in-season", "escherichiaColiCount" : 480, "escherichiaColiQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "intestinalEnterococciCount" : 36, "intestinalEnterococciQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "label" : [{"_value" : "Llandeilo Swing Bridge sample assessment for 2026-W26", "_datatype" : "langString", "_lang" : "en"}
+      ], "sampleDateTime" : {"_about" : "http://reference.data.gov.uk/id/gregorian-instant/2026-06-25T10:45:58", "inXSDDateTime" : {"_value" : "2026-06-25T10:45:58", "_datatype" : "dateTime"}
+      }
+      , "sampleWeek" : {"_about" : "http://reference.data.gov.uk/id/week/2026-W26", "label" : [{"_value" : "British Week:2026-W26", "_datatype" : "langString", "_lang" : "en"}
+        ]}
+      , "source" : "http://environment.data.gov.uk/wales/bathing-waters/sources/input/wiski_20261006_all-2026-10-06_13-00-30_536-0662.csv#row=000434", "type" : ["http://environment.data.gov.uk/def/bathing-water-quality/SampleAssessment", "http://purl.org/linked-data/cube#Observation"]}
+    , {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/in-season/sample/point/37650/date/20260629/time/110450/recordDate/20260629", "bwq_bathingWater" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/id/bathing-water/ukl1401-37650", "eubwidNotation" : "ukl1401-37650", "name" : {"_value" : "Llandeilo Swing Bridge", "_datatype" : "langString", "_lang" : "en"}
+      }
+      , "bwq_samplingPoint" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/so/SamplingPoint/37650", "name" : {"_value" : "Sampling point at Llandeilo Swing Bridge", "_datatype" : "langString", "_lang" : "en"}
+        , "samplePointNotation" : "37650"}
+      , "dataset" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/nrw/in-season", "escherichiaColiCount" : 210, "escherichiaColiQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "intestinalEnterococciCount" : 27, "intestinalEnterococciQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "label" : [{"_value" : "Llandeilo Swing Bridge sample assessment for 2026-W27", "_datatype" : "langString", "_lang" : "en"}
+      ], "sampleDateTime" : {"_about" : "http://reference.data.gov.uk/id/gregorian-instant/2026-06-29T11:04:50", "inXSDDateTime" : {"_value" : "2026-06-29T11:04:50", "_datatype" : "dateTime"}
+      }
+      , "sampleWeek" : {"_about" : "http://reference.data.gov.uk/id/week/2026-W27", "label" : [{"_value" : "British Week:2026-W27", "_datatype" : "langString", "_lang" : "en"}
+        ]}
+      , "source" : "http://environment.data.gov.uk/wales/bathing-waters/sources/input/wiski_20261006_all-2026-10-06_13-00-30_536-0662.csv#row=000463", "type" : ["http://environment.data.gov.uk/def/bathing-water-quality/SampleAssessment", "http://purl.org/linked-data/cube#Observation"]}
+    , {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/in-season/sample/point/37650/date/20260710/time/115000/recordDate/20260710", "bwq_bathingWater" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/id/bathing-water/ukl1401-37650", "eubwidNotation" : "ukl1401-37650", "name" : {"_value" : "Llandeilo Swing Bridge", "_datatype" : "langString", "_lang" : "en"}
+      }
+      , "bwq_samplingPoint" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/so/SamplingPoint/37650", "name" : {"_value" : "Sampling point at Llandeilo Swing Bridge", "_datatype" : "langString", "_lang" : "en"}
+        , "samplePointNotation" : "37650"}
+      , "dataset" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/nrw/in-season", "escherichiaColiCount" : 290, "escherichiaColiQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "intestinalEnterococciCount" : 45, "intestinalEnterococciQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "label" : [{"_value" : "Llandeilo Swing Bridge sample assessment for 2026-W28", "_datatype" : "langString", "_lang" : "en"}
+      ], "sampleDateTime" : {"_about" : "http://reference.data.gov.uk/id/gregorian-instant/2026-07-10T11:50:00", "inXSDDateTime" : {"_value" : "2026-07-10T11:50:00", "_datatype" : "dateTime"}
+      }
+      , "sampleWeek" : {"_about" : "http://reference.data.gov.uk/id/week/2026-W28", "label" : [{"_value" : "British Week:2026-W28", "_datatype" : "langString", "_lang" : "en"}
+        ]}
+      , "source" : "http://environment.data.gov.uk/wales/bathing-waters/sources/input/wiski_20261006_all-2026-10-06_13-00-30_536-0662.csv#row=000560", "type" : ["http://environment.data.gov.uk/def/bathing-water-quality/SampleAssessment", "http://purl.org/linked-data/cube#Observation"]}
+    , {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/in-season/sample/point/37650/date/20260714/time/114006/recordDate/20260714", "bwq_bathingWater" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/id/bathing-water/ukl1401-37650", "eubwidNotation" : "ukl1401-37650", "name" : {"_value" : "Llandeilo Swing Bridge", "_datatype" : "langString", "_lang" : "en"}
+      }
+      , "bwq_samplingPoint" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/so/SamplingPoint/37650", "name" : {"_value" : "Sampling point at Llandeilo Swing Bridge", "_datatype" : "langString", "_lang" : "en"}
+        , "samplePointNotation" : "37650"}
+      , "dataset" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/nrw/in-season", "escherichiaColiCount" : 45, "escherichiaColiQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "intestinalEnterococciCount" : 36, "intestinalEnterococciQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "label" : [{"_value" : "Llandeilo Swing Bridge sample assessment for 2026-W29", "_datatype" : "langString", "_lang" : "en"}
+      ], "sampleDateTime" : {"_about" : "http://reference.data.gov.uk/id/gregorian-instant/2026-07-14T11:40:06", "inXSDDateTime" : {"_value" : "2026-07-14T11:40:06", "_datatype" : "dateTime"}
+      }
+      , "sampleWeek" : {"_about" : "http://reference.data.gov.uk/id/week/2026-W29", "label" : [{"_value" : "British Week:2026-W29", "_datatype" : "langString", "_lang" : "en"}
+        ]}
+      , "source" : "http://environment.data.gov.uk/wales/bathing-waters/sources/input/wiski_20261006_all-2026-10-06_13-00-30_536-0662.csv#row=000585", "type" : ["http://environment.data.gov.uk/def/bathing-water-quality/SampleAssessment", "http://purl.org/linked-data/cube#Observation"]}
+    , {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/in-season/sample/point/37650/date/20260731/time/115606/recordDate/20260731", "bwq_bathingWater" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/id/bathing-water/ukl1401-37650", "eubwidNotation" : "ukl1401-37650", "name" : {"_value" : "Llandeilo Swing Bridge", "_datatype" : "langString", "_lang" : "en"}
+      }
+      , "bwq_samplingPoint" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/so/SamplingPoint/37650", "name" : {"_value" : "Sampling point at Llandeilo Swing Bridge", "_datatype" : "langString", "_lang" : "en"}
+        , "samplePointNotation" : "37650"}
+      , "dataset" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/nrw/in-season", "escherichiaColiCount" : 590, "escherichiaColiQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "intestinalEnterococciCount" : 10, "intestinalEnterococciQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/lessThan", "countQualifierNotation" : "<"}
+      , "label" : [{"_value" : "Llandeilo Swing Bridge sample assessment for 2026-W31", "_datatype" : "langString", "_lang" : "en"}
+      ], "sampleDateTime" : {"_about" : "http://reference.data.gov.uk/id/gregorian-instant/2026-07-31T11:56:06", "inXSDDateTime" : {"_value" : "2026-07-31T11:56:06", "_datatype" : "dateTime"}
+      }
+      , "sampleWeek" : {"_about" : "http://reference.data.gov.uk/id/week/2026-W31", "label" : [{"_value" : "British Week:2026-W31", "_datatype" : "langString", "_lang" : "en"}
+        ]}
+      , "source" : "http://environment.data.gov.uk/wales/bathing-waters/sources/input/wiski_20261006_all-2026-10-06_13-00-30_536-0662.csv#row=000713", "type" : ["http://environment.data.gov.uk/def/bathing-water-quality/SampleAssessment", "http://purl.org/linked-data/cube#Observation"]}
+    , {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/in-season/sample/point/37650/date/20260813/time/110000/recordDate/20260813", "bwq_bathingWater" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/id/bathing-water/ukl1401-37650", "eubwidNotation" : "ukl1401-37650", "name" : {"_value" : "Llandeilo Swing Bridge", "_datatype" : "langString", "_lang" : "en"}
+      }
+      , "bwq_samplingPoint" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/so/SamplingPoint/37650", "name" : {"_value" : "Sampling point at Llandeilo Swing Bridge", "_datatype" : "langString", "_lang" : "en"}
+        , "samplePointNotation" : "37650"}
+      , "dataset" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/nrw/in-season", "escherichiaColiCount" : 3600, "escherichiaColiQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "intestinalEnterococciCount" : 50, "intestinalEnterococciQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "label" : [{"_value" : "Llandeilo Swing Bridge sample assessment for 2026-W33", "_datatype" : "langString", "_lang" : "en"}
+      ], "sampleDateTime" : {"_about" : "http://reference.data.gov.uk/id/gregorian-instant/2026-08-13T11:00:00", "inXSDDateTime" : {"_value" : "2026-08-13T11:00:00", "_datatype" : "dateTime"}
+      }
+      , "sampleWeek" : {"_about" : "http://reference.data.gov.uk/id/week/2026-W33", "label" : [{"_value" : "British Week:2026-W33", "_datatype" : "langString", "_lang" : "en"}
+        ]}
+      , "source" : "http://environment.data.gov.uk/wales/bathing-waters/sources/input/wiski_20261006_all-2026-10-06_13-00-30_536-0662.csv#row=000819", "type" : ["http://environment.data.gov.uk/def/bathing-water-quality/SampleAssessment", "http://purl.org/linked-data/cube#Observation"]}
+    , {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/in-season/sample/point/37650/date/20260826/time/120031/recordDate/20260826", "bwq_bathingWater" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/id/bathing-water/ukl1401-37650", "eubwidNotation" : "ukl1401-37650", "name" : {"_value" : "Llandeilo Swing Bridge", "_datatype" : "langString", "_lang" : "en"}
+      }
+      , "bwq_samplingPoint" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/so/SamplingPoint/37650", "name" : {"_value" : "Sampling point at Llandeilo Swing Bridge", "_datatype" : "langString", "_lang" : "en"}
+        , "samplePointNotation" : "37650"}
+      , "dataset" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/nrw/in-season", "escherichiaColiCount" : 126, "escherichiaColiQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "intestinalEnterococciCount" : 54, "intestinalEnterococciQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "label" : [{"_value" : "Llandeilo Swing Bridge sample assessment for 2026-W35", "_datatype" : "langString", "_lang" : "en"}
+      ], "sampleDateTime" : {"_about" : "http://reference.data.gov.uk/id/gregorian-instant/2026-08-26T12:00:31", "inXSDDateTime" : {"_value" : "2026-08-26T12:00:31", "_datatype" : "dateTime"}
+      }
+      , "sampleWeek" : {"_about" : "http://reference.data.gov.uk/id/week/2026-W35", "label" : [{"_value" : "British Week:2026-W35", "_datatype" : "langString", "_lang" : "en"}
+        ]}
+      , "source" : "http://environment.data.gov.uk/wales/bathing-waters/sources/input/wiski_20261006_all-2026-10-06_13-00-30_536-0662.csv#row=000925", "type" : ["http://environment.data.gov.uk/def/bathing-water-quality/SampleAssessment", "http://purl.org/linked-data/cube#Observation"]}
+    , {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/in-season/sample/point/37650/date/20260909/time/114559/recordDate/20260909", "bwq_bathingWater" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/id/bathing-water/ukl1401-37650", "eubwidNotation" : "ukl1401-37650", "name" : {"_value" : "Llandeilo Swing Bridge", "_datatype" : "langString", "_lang" : "en"}
+      }
+      , "bwq_samplingPoint" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/so/SamplingPoint/37650", "name" : {"_value" : "Sampling point at Llandeilo Swing Bridge", "_datatype" : "langString", "_lang" : "en"}
+        , "samplePointNotation" : "37650"}
+      , "dataset" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/nrw/in-season", "escherichiaColiCount" : 200, "escherichiaColiQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "intestinalEnterococciCount" : 124, "intestinalEnterococciQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "label" : [{"_value" : "Llandeilo Swing Bridge sample assessment for 2026-W37", "_datatype" : "langString", "_lang" : "en"}
+      ], "sampleDateTime" : {"_about" : "http://reference.data.gov.uk/id/gregorian-instant/2026-09-09T11:45:59", "inXSDDateTime" : {"_value" : "2026-09-09T11:45:59", "_datatype" : "dateTime"}
+      }
+      , "sampleWeek" : {"_about" : "http://reference.data.gov.uk/id/week/2026-W37", "label" : [{"_value" : "British Week:2026-W37", "_datatype" : "langString", "_lang" : "en"}
+        ]}
+      , "source" : "http://environment.data.gov.uk/wales/bathing-waters/sources/input/wiski_20261006_all-2026-10-06_13-00-30_536-0662.csv#row=001045", "type" : ["http://environment.data.gov.uk/def/bathing-water-quality/SampleAssessment", "http://purl.org/linked-data/cube#Observation"]}
+    ], "itemsPerPage" : 200, "page" : 0, "startIndex" : 1, "type" : ["http://purl.org/linked-data/api/vocab#Page"]}
+}

@@ -31,6 +31,13 @@ function seasonalWords(s, counted = null) {
     + (Number.isInteger(counted) && counted > 0 && counted < M ? ` (the forecast counts ${seasonalN(counted)})` : '');
   const lead = `History, not a forecast. The share of days in each month, ${yrs}, when ${which} reported a spill.`;
   const rows = SEASONAL_MONTHS.map((m, i) => [m, s.days[i] ? s.spill[i] / s.days[i] : null, s.spill[i], s.days[i]]);
+  // This month in those years, as a count, and the month with the smallest share (11 Nov 2026): the chart's two
+  // readings in words, for the month the reader is in. month: 0 to 11, the page's own (seasonalTile).
+  const now = month => { const r = rows[month], held = rows.filter(x => x[1] !== null);
+    if (!r || r[1] === null || !held.length) return '';
+    const least = held.reduce((a, b) => b[1] < a[1] ? b : a);
+    return `${r[0]} in those years: a spill reported on ${seasonalN(r[2])} of ${seasonalN(r[3])} days`
+      + (least === r ? ', the smallest share of any month.' : `. The smallest share: ${least[0]}, ${seasonalN(least[2])} of ${seasonalN(least[3])}.`); };
   const notes = [];
   notes.push(s.covered_min === M ? (M === 1 ? 'Its monitor worked through each year counted.' : `All ${seasonalN(M)} had a working monitor and a held record in each year counted.`)
     : `In each year counted, at least ${seasonalN(s.covered_min)} of the ${seasonalN(M)} had a working monitor (90% of the year or more) and a held record. The rest are left out, so the shares may be a little low.`);
@@ -39,7 +46,7 @@ function seasonalWords(s, counted = null) {
   if (M > 1) notes.push('Every overflow counts the same, from one beside the spot to one 60 km upstream, so a spot with many overflows upstream shows high shares.');
   notes.push('A spill day is any day (UTC) a spill was recorded at the overflow, however short. These are the monitors’ records only, not measurements of the water.');
   notes.push('From the Environment Agency’s event files for 2024 and 2025 and the companies’ own records before that, where held. <a href="terms.html#data">Credits and licences</a>.');
-  return { lead, rows, notes };
+  return { lead, rows, notes, now };
 }
 
 const seasonalPct = x => x === null ? '–' : (x > 0 && x < 0.005 ? '<1%' : Math.round(100 * x) + '%');
@@ -53,6 +60,7 @@ function seasonalTile(d) {
   // The twelve months as columns, this month in ink, so the year's shape is seen at once (31 Oct 2026); the table,
   // the figures and the notes under it, one tap down. The columns are hidden from a screen reader, which reads the table.
   const thisMonth = new Date().getMonth();
+  if (w.rows.length && w.now && w.now(thisMonth)) h += `<p class="t-say s-now">${w.now(thisMonth)}</p>`;
   if (w.rows.length) h += `<div class="mchart" aria-hidden="true">${w.rows.map(([m, x], i) => `<span${i === thisMonth ? ' class="on"' : ''}>`
     + `<em><i style="height:${x === null ? 0 : Math.max(2, Math.round(100 * x))}%"></i></em><b>${m[0]}</b></span>`).join('')}</div>`;
   h += `<details class="s-more"><summary>Month by month, with notes</summary>`;

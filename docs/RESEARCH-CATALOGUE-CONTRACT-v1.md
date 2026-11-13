@@ -17,7 +17,7 @@ record files, PRs and branches, so a negative result or an adopted change can be
 |---|---|
 | `stages` | The current-stage names: `adopted`, `live`, `scheduled`, `development`, `waiting`, `archived`, `reference` |
 | `sections` | The register's sections, in its order |
-| `prs` | Every PR an entry names, by number: `state` (merged, closed, open), `branch`, `branch_exists` and the merge or close date, as `gh pr list --state all` and `git ls-remote --heads origin` gave them on 31 October 2026 |
+| `prs` | Every PR an entry names, by number: `state` (merged, closed, open), `branch`, `branch_exists` and the merge or close date, as `gh pr list --state all` and `git ls-remote --heads origin` gave them on the date in `checked.prs` (first 31 October 2026) |
 | `entries` | One per register record, below |
 
 Each entry:

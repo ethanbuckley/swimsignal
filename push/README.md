@@ -220,6 +220,66 @@ With the variable set, the privacy notice's Alerts section also says that the re
 
 To turn it off, delete the variable: the next build hides the button and those sentences. Pairs already asked for still get their notices until their dates pass, unless the Worker is rolled back too.
 
+## Back to low risk
+
+"It was very high today. Tell me when it is low again." A browser with alerts on can ask this from a raised spot's page (`src/clears.js`). It gets one message, the first time a build gives that spot the level low, and the request is then deleted.
+
+Until 11 Nov 2026 the service sent warnings only: a spot falling back from high sent nothing, because "no longer high" would read as an all-clear. Ethan chose to offer this one message, asked for spot by spot. Saved-spot alerts are unchanged: saving a spot still sends nothing when it falls back.
+
+### What it says
+
+The spot's name with "back to low risk", then the page's headline and what to do, then the page's caveat.
+
+```
+River Dart, Dartington Pontoon: back to low risk
+Low risk for the next five days. Usual care: cover cuts, try not to swallow water and wash your hands before eating. A forecast, not a water test: check the signs at the water before you swim.
+```
+
+The site's worker adds the issue time. Where an official notice that does not restrict swimming shows, its marker goes first. Several spots in one build are one message: "2 spots you asked about are back to low risk", their names, the caveat. The tag is `dipspot-<id>-low`, so it never silently replaces a high-risk alert for the spot.
+
+### How it decides
+
+Once a build, as every alert is. A request is answered when all of these hold:
+
+- **The build turned it on.** `alerts.json` has `"clear_alerts": true`, which `scripts/alerts.js` writes only when `spots.json` has `push.clears`, set by the repository variable `DIPCAST_PUSH_CLEARS`. The same build shows the button and changes the Alerts tile and the privacy notice.
+- **The spot's level is low.** `rank` is 0. That level takes right now, today and tomorrow (`levels.js`, `level`), so a spot low today and raised tomorrow is not back to low.
+- **No notice restricting swimming shows there** (`official_restricts`). The request waits, and is answered if the level is still low once the notice has lifted.
+- **The request has not lapsed.** It is kept for 14 days (`CLEAR_DAYS`), then forgotten unsent.
+
+It is checked again when sent, against the latest `alerts.json`: a spot that rose again before sending gets no message, and its request waits for the next low. After a message is sent, the spots it answered leave the record. A record with nothing else left is deleted.
+
+### The API
+
+`POST /subscribe` takes `{"subscription": {...}, "clears": ["spot-id", ...]}`: the whole list each time, at most 10, none twice. `[]` stops them all. What the request leaves out (saved spots, the weekly note, dates) is kept. A spot already asked about keeps the day it lapses.
+
+### What it stores
+
+In the subscription's record, `clears: [{spot, until}]`, and in its key's metadata `c: ["<spot> <until>"]`. Nothing else, and nothing in `state`.
+
+### Free-plan budget
+
+While it is on, each new build lists the subscriptions once, as a build with a rise does. Unlike the other alerts it writes to a record after sending, to delete the request: one KV write for one message.
+
+### Not by email
+
+Email alerts are off, and their sign-up asks consent for alerts when a spot turns high. This is push only.
+
+### Deploying it
+
+Deploy the Worker first, then set the variable. An older Worker refuses a request with `clears` alone ("spots must be an array"), so the button must not show before the new Worker is live. The new Worker sends nothing new until a build says `"clear_alerts": true`.
+
+1. Merge the pull request. Then, in a terminal: `git switch main && git pull`.
+2. `cd push`, then `ls src/clears.js`. It prints the file's name. If it says "No such file", the pull did not bring the merge: stop and pull again.
+3. `npx wrangler deploy`. It prints the Worker's address, as in [Setup](#setup) step 6.
+4. In GitHub: Settings, Secrets and variables, Actions, Variables, New repository variable. Name `DIPCAST_PUSH_CLEARS`, value `1`. (`site.yml` passes it to the build.)
+5. Wait for the next site build, or start one from the Actions tab.
+
+How you will know it worked: open a spot at moderate risk or higher in a browser where alerts are on. Under the five days there is a button, "Tell me when it is back to low risk". `https://swimsignal.co.uk/data/alerts.json` contains `"clear_alerts":true`. The privacy notice's Alerts section has the sentence that begins "If you ask to hear when a spot is back to low risk".
+
+The mistake to avoid: setting the variable before deploying the Worker. The button would show, and pressing it would say "Could not change this alert: spots must be an array".
+
+To turn it off: delete the variable. The next build removes the button and stops the Worker sending. Requests already made lapse within 14 days.
+
 ## Setup
 
 Run every command from the `push/` folder: `cd push`.

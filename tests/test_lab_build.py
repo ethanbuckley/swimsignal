@@ -36,7 +36,8 @@ def test_nothing_reaches_into_the_repository(site):
 
 # What a Lab page may link outside lab/: the site's own pages and files, which the rest of the build writes.
 SITE_FILES = {"", "index.html", "page.css", "icons/icon.svg", "icons/apple-touch-icon.png", "plan/", "saved/", "verification.html",
-              "about.html", "clubs.html", "research.html", "feedback.html", "terms.html", "privacy.html", "sampling-planner.html"}
+              "about.html", "clubs.html", "research.html", "feedback.html", "terms.html", "privacy.html", "sampling-planner.html",
+              "methods.html", "spots.html", "coverage.html"}   # the foot's links, the same on every page (12 Nov 2026)
 
 
 def test_every_read_resolves(site):
@@ -210,7 +211,8 @@ def test_sampling_never_claims_every_spot(site):
     for f in ("sampling/index.html", "sampling/sampling.js"):
         p = site / "lab" / f
         if p.is_file():
-            assert "every SwimSignal spot" not in p.read_text() and "every spot" not in p.read_text().lower().replace("every spot's", ""), f
+            said = p.read_text().replace(">Every spot</a>", "></a>")   # the foot's link to the list of spots is not a claim about the export
+            assert "every SwimSignal spot" not in said and "every spot" not in said.lower().replace("every spot's", ""), f
 
 
 def test_every_page_gives_its_published_address(site):
