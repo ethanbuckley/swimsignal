@@ -208,9 +208,9 @@ Requests as in section 1. Scoring: one process, up to 4 cores, a 30-minute cap, 
 (113 MB file). No model artifact is written to a shared folder. Outputs go to a scratch directory, then the small
 tables are committed.
 
-## 10. Clarifications made while writing the harness, before the first score
+## 10. Clarifications made while writing the scoring code, before the first score
 
-Added 13 November 2026 after the harness was written and tested on made-up data, and before any real row was
+Added 13 November 2026 after the scoring code was written and tested on made-up data, and before any real row was
 scored. They settle points the sections above left open. They change no rule.
 
 - **The deciding comparison fits both sides on the same rows.** "R plus the input" can only be fitted on history
