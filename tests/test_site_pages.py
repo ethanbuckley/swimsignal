@@ -65,7 +65,7 @@ def test_every_spot_gets_its_own_page_and_preview(tmp_path):
     assert (tmp_path / "robots.txt").read_text() == "User-agent: *\nAllow: /\nSitemap: https://example.org/swim/sitemap.xml\n"
     assert (tmp_path / "google9a051ccd2b65d2d2.html").read_text() == "google-site-verification: google9a051ccd2b65d2d2.html"   # Search Console fetches it to prove ownership
     sm = (tmp_path / "sitemap.xml").read_text()
-    assert sm.count("<url>") == 30 + len(_build_site().lab_pages()) and "<loc>https://example.org/swim/spot/tarn/</loc>" in sm   # the Research Lab's pages, and sites.html, record.html, demo.html, clubs.html, quality.html, spots.html, research.html, lakes.html, lake-temperatures.html, durations.html (spill durations), samples.html, waterhead.html, research-catalogue.html, sampling-planner.html, partners.html, models.html, data-feed.html and two profiles
+    assert sm.count("<url>") == 31 + len(_build_site().lab_pages()) and "<loc>https://example.org/swim/spot/tarn/</loc>" in sm   # the Research Lab's pages, and sites.html, record.html, demo.html, clubs.html, quality.html, spots.html, research.html, lakes.html, lake-temperatures.html, durations.html (spill durations), samples.html, waterhead.html, wessex-river-samples.html, research-catalogue.html, sampling-planner.html, partners.html, models.html, data-feed.html and two profiles
     assert (tmp_path / "quality.html").exists()   # without an overflow table its lists say so (tests/test_quality.py)
     assert "<loc>https://example.org/swim/methods.html</loc>" in sm
     assert "<loc>https://example.org/swim/coverage.html</loc>" in sm
@@ -817,7 +817,7 @@ def test_the_data_page_lists_every_file_in_data_with_its_size(tmp_path):
     # An empty data/ (write_pages over a fresh folder): every described row says so, and nothing breaks.
     empty = tmp_path / "empty"
     empty.mkdir()
-    assert bs.write_data_page(empty) == [] and (empty / "data.html").read_text().count("Not in this build") == 20   # spot_scores.json makes 16, overflows/ 17, waters.json 18, verification_spots_live.csv 19, research/ (satellite lakes, spill durations and E. coli samples) 20
+    assert bs.write_data_page(empty) == [] and (empty / "data.html").read_text().count("Not in this build") == 21   # spot_scores.json makes 16, overflows/ 17, waters.json 18, verification_spots_live.csv 19, research/ (satellite lakes, spill durations and E. coli samples) 20, sonde-readings.json 21
 
 
 def test_the_data_pages_sections_follow_its_table_and_fold_their_fields():

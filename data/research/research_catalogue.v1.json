@@ -894,6 +894,62 @@
    "branch_exists": true,
    "date": "2026-11-10"
   },
+  "686": {
+   "n": 686,
+   "state": "open",
+   "branch": "claude/combined-v1-shadow-logger-a9b35a",
+   "branch_exists": true,
+   "date": "2026-11-13"
+  },
+  "685": {
+   "n": 685,
+   "state": "open",
+   "branch": "claude/scotland-shadow-map-arm-97cd94",
+   "branch_exists": true,
+   "date": "2026-11-13"
+  },
+  "694": {
+   "n": 694,
+   "state": "open",
+   "branch": "claude/radar-issue-hour-test-36a617",
+   "branch_exists": true,
+   "date": "2026-11-13"
+  },
+  "684": {
+   "n": 684,
+   "state": "open",
+   "branch": "claude/thames-same-day-diagnosis-d85ae6",
+   "branch_exists": true,
+   "date": "2026-11-13"
+  },
+  "688": {
+   "n": 688,
+   "state": "open",
+   "branch": "research/wessex-river-samples",
+   "branch_exists": true,
+   "date": "2026-11-13"
+  },
+  "691": {
+   "n": 691,
+   "state": "open",
+   "branch": "claude/irish-welsh-sample-histories-15578f",
+   "branch_exists": true,
+   "date": "2026-11-13"
+  },
+  "695": {
+   "n": 695,
+   "state": "open",
+   "branch": "claude/uu-diagnosis-d4d5a5",
+   "branch_exists": true,
+   "date": "2026-11-13"
+  },
+  "687": {
+   "n": 687,
+   "state": "open",
+   "branch": "feat/sonde-readings-on-page",
+   "branch_exists": true,
+   "date": "2026-11-13"
+  },
   "692": {
    "n": 692,
    "state": "open",
@@ -1099,18 +1155,23 @@
     "model"
    ],
    "verdict": "Scored once on January to August 2026 as a frozen-model backtest. It passed its bar at eight companies and for all nine together: lower Brier score than today's model, same-day persistence and a 10 mm rain rule at leads 1 and 2, every interval below zero (lead 1, all nine: 0.0307 against 0.0419). It failed at United Utilities, where it was not shown better than today's model beyond lead 0. It was not shown better than the live-status input alone. Development evidence: the routing rule and the combination were chosen after 2026 had been seen.",
-   "scope": "EA start/stop records, January to August 2026, 13,426 overflows at nine English companies; status rebuilt from the complete record at 00:00 UTC; reanalysis rain decides, archived forecast rain reported. Not tested on polled status or on unseen months.",
+   "scope": "EA start/stop records, January to August 2026, 13,426 overflows at nine English companies; status rebuilt from the complete record at 00:00 UTC; reanalysis rain decides, archived forecast rain reported. Not yet tested on polled status or on unseen months: the shadow log is built for that and has no rows yet.",
    "stage": "development",
-   "stage_note": "Frozen (commit 4d66d7c7) and not adopted. Nothing on the site changes. United Utilities stays on today's model.",
-   "next": "Build a shadow logger for the combined candidate, with its window and bar stated before it opens (PR due 17 November 2026); later, rerun the backtest unchanged on the EA's September to December 2026 records.",
+   "stage_note": "Frozen (commit 4d66d7c7) and not adopted. Nothing on the site changes. United Utilities stays on today's model. A shadow logger is built (PR #686, open): it logs the candidate beside today's model in its own table, with the window, the bar and the read date stated before any row. Logging starts once Ethan merges that PR.",
+   "next": "After the merge, confirm the window's dates from the first logged rows (28 target days, opening four days after the first logged forecast; about 22 November to 19 December 2026, read on or after 21 December, if logging starts by 18 November). The read script is due one week before the window ends. Later, rerun the backtest unchanged on the EA's September to December 2026 records.",
    "records": [
     {
      "doc": "docs/COMBINED-CANDIDATE-BACKTEST-2026-11.md",
      "quote": "**combined-v1 passes the bar at eight companies and for all nine together. It fails at United Utilities**"
+    },
+    {
+     "doc": "docs/COMBINED-SHADOW-2026-11.md",
+     "quote": "Not yet run. No row has been logged."
     }
    ],
    "prs": [
-    666
+    666,
+    686
    ]
   },
   {
@@ -1848,7 +1909,7 @@
    "scope": "Metadata count only; no readings were fetched or matched.",
    "stage": "waiting",
    "stage_note": "Parked; revisit in October 2027.",
-   "next": "More paired data, with alignment and latency checked. Correctly placed, dated sensor readings may be shown on their own.",
+   "next": "More paired data, with alignment and latency checked. Dated sensor readings are drafted as a page tile in #687, an observation that is not part of this test.",
    "records": [
     {
      "doc": "docs/SONDE-SIGNAL-TEST-2026-10.md",
@@ -1871,7 +1932,7 @@
    "scope": "A model trained on United Utilities applied to other companies in 2025.",
    "stage": "waiting",
    "stage_note": "The cached radar and extraction are kept.",
-   "next": "Reuse for river-rise and event-timing questions where resolution matters. Rain at each overflow's own position was tested on 6 November 2026 (#640): no gain over the cell. That run found full-day cell radar 7.8% better than the lead-0 forecast once the model is refitted; radar up to the issue hour is the next stated test.",
+   "next": "Reuse for river-rise and event-timing questions where resolution matters. Rain at each overflow's own position was tested on 6 November 2026 (#640): no gain over the cell. That run found full-day cell radar 7.8% better than the lead-0 forecast once the model is refitted. Radar up to the issue hour was then tested on 13 November 2026 (#694, its own entry): a pooled gain of 1.9% to 3.3% on 2025, not confirmed on Thames 2026.",
    "records": [
     {
      "doc": "docs/RADAR-RAIN-CHECK-2026-10.md",
@@ -1880,7 +1941,8 @@
    ],
    "prs": [
     343,
-    640
+    640,
+    694
    ],
    "register_note": "The register's \"even perfect rain added little\" holds only against same-day forecast rain; the doc says perfect rain would recover most of the loss at leads 1 to 4."
   },
@@ -1894,7 +1956,7 @@
    "verdict": "Not shown, run 6 November 2026 (verdict N). With the spill model's form refitted on each rain source and scored out of fold on 2025 (3,778 overflows, 1,374,430 overflow-days), rain from the 3 x 3 block of 1 km radar pixels around each overflow scored Brier 0.0342 against 0.0341 for the 10 km cell's radar: a difference of +0.00012, 95% interval −0.00020 to +0.00044 (overflow × week). A gain of 1% is ruled out. The overflow's own pixel did slightly worse. Thames Water January to August 2026, with models frozen on 2025: −0.00056, interval −0.00211 to +0.00056. Refitted on full-day cell radar, the model beat the same model on the lead-0 forecast by 7.8%; with radar only for the two days before, by 0.9%, interval including zero.",
    "scope": "Nine English companies' overflows in cells with cell radar and lead-0 forecasts, 2025 (labels already scored in #343, so development evidence, not confirmation), and Thames Water in 2026. Same-day and two-day rain only; longer rain from ERA5-Land in every arm. Says nothing about river rises, event timing or a model that knows each company.",
    "stage": "archived",
-   "stage_note": "Archived as a spill-model input. The per-overflow radar stays private for river-rise and event-timing questions. The next deliverable from this run is radar for the day up to issue time at cell scale, which needs its own stated test.",
+   "stage_note": "Archived as a spill-model input. The per-overflow radar stays private for river-rise and event-timing questions. The next deliverable from this run, radar for the day up to issue time at cell scale, was tested on 13 November 2026 (#694, its own entry).",
    "reopen_when": "A model that knows each company is adopted (A8, upgraded-overflow option B or a nine-company refit), or the EA 2026 start/stop files give a second labelled year with per-overflow radar.",
    "records": [
     {
@@ -2013,6 +2075,10 @@
     {
      "doc": "docs/PE-SOURCES-2026-10.md",
      "quote": "No open source gives PE per overflow."
+    },
+    {
+     "doc": "docs/EVENT-RECORDS-2026-11.md",
+     "quote": "The company layers add one month: September 2026, at Wessex and Yorkshire only."
     }
    ],
    "prs": [
@@ -2106,7 +2172,7 @@
    "scope": "Three SEPA inland bathing waters (Dores, Loch Morlich, Luss Bay), 1,485 Scottish Water overflows, the production spill model (808da63d) only.",
    "stage": "development",
    "stage_note": "Built behind DIPCAST_SCOTLAND_TRIAL, off until the owner switches it on; labelled a trial on every page it reaches.",
-   "next": "A shadow arm with Scotland's map, so Gate B scores what the trial shows; Gate B after November to January; a 2026 backtest protocol before Scottish Water's 2026 file (March 2027); Scottish river spots, click-anywhere in Scotland, outside review.",
+   "next": "A second shadow arm logs Scotland's mapped forecast beside the first (built 13 Nov 2026); both are read on or after 3 February 2027. One sensitivity of Gate A without four overflows that reported only in the bathing season; a 2026 backtest protocol before Scottish Water's 2026 file (March 2027); Scottish river spots, click-anywhere in Scotland, outside review.",
    "records": [
     {
      "doc": "docs/SCOTLAND-TRIAL-2026-11.md",
@@ -2119,13 +2185,22 @@
     {
      "doc": "docs/SCOTLAND-2021-BACKTEST-2026-11.md",
      "quote": "**PASS. B1, B2 and B3 all hold.**"
+    },
+    {
+     "doc": "docs/SCOTLAND-MAP-SHADOW-ARM-2026-11.md",
+     "quote": "Every input exists when the build runs. No outcome is read by the logger. The log is never backfilled."
+    },
+    {
+     "doc": "docs/SCOTLAND-GATE-A-SEASON-FLAG-2026-11.md",
+     "quote": "**No Gate A score was recomputed for it.**"
     }
    ],
    "prs": [
     587,
     591,
     654,
-    658
+    658,
+    685
    ]
   },
   {
@@ -2782,22 +2857,26 @@
   },
   {
    "id": "catch-sim",
-   "title": "Catchment experiment simulator",
-   "section": "data",
+   "title": "Catchment experiment simulator: the forecast model's answer if the rain changed or an overflow went",
+   "section": "promising",
    "topics": [
     "model",
     "overflows",
     "rain"
    ],
-   "verdict": "Not yet run. A scoping record from an outside review of 1 November 2026: no data fetched, nothing fitted or scored. An upgrade scenario made by lowering lta_spills would be an artefact: #298 found the model's response to it is not monotone.",
-   "scope": "A sensitivity of the production model at two spots; not a prediction of any real scheme, and no mechanism for wetlands or restoration.",
+   "verdict": "First record, 13 Nov 2026, a model sensitivity and not a test: 0 of 20 overflows at Cromwheel and Waterhead respond non-monotonically to scaled rain, so the stop rule is not met and both experiments are kept. The published level was rebuilt exactly for 562 of 562 issued forecasts at leads 3-4.",
+   "scope": "Cromwheel (16 Yorkshire Water overflows) and Waterhead (4 United Utilities overflows), 2024-25 archive rain, the production spill model. Seen data: development evidence. Not a prediction of any real upgrade or scheme; no mechanism for wetlands or restoration.",
    "stage": "development",
-   "stage_note": "Bounded exploration: offline rain and \"remove an overflow\" scenarios at Cromwheel and Waterhead, as a mode of the catchment workspace.",
-   "next": "Record by 15 December 2026.",
+   "stage_note": "A what-if mode of the catchment workspace (prototypes/research-lab/workspace/whatif/), left out of the site build. Not published.",
+   "next": "Ethan decides whether a scenario view is public and whether it names overflows; then storms from before 2024 or a third catchment, from cached files.",
    "records": [
     {
      "doc": "docs/AMBITIOUS-RESEARCH-SCOPING-2026-11.md",
      "quote": "**Stop or narrow if.** More than 10% of overflows at the two spots respond non-monotonically to scaled rain. Then rain"
+    },
+    {
+     "doc": "docs/CATCH-SIM-2026-12.md",
+     "quote": "**Monotonicity: 0 of 20 overflows non-monotone**"
     }
    ],
    "prs": [
@@ -3139,11 +3218,11 @@
     "live data"
    ],
    "project": "SIMPLE-REFS",
-   "verdict": "Interim read (#338, 29 Sep to 23 Oct 2026, rules fitted on the rows scored): no water company passed the promise rule; in advance the forecast's skill against persistence and the rain rule was about 0.07 to 0.09 with every interval crossing 0, and on the same day persistence scored better than the forecast (skill -0.05, -0.19 to 0.17). First page figures (#662, to 8 Nov 2026, each rule fitted only on the 28 days before the issue): on the same day the forecast beats rain over 10 mm, 0.18 (0.05 to 0.23), and is not shown better or worse than persistence, 0.06 (-0.05 to 0.15); in advance it beats neither rule, 0.21 (-0.04 to 0.29) and 0.18 (-0.03 to 0.24). Thames Water same day does worse than persistence (-0.42, -1.01 to -0.13); United Utilities beats both rules at both leads.",
+   "verdict": "Interim read (#338, 29 Sep to 23 Oct 2026, rules fitted on the rows scored): no water company passed the promise rule; in advance the forecast's skill against persistence and the rain rule was about 0.07 to 0.09 with every interval crossing 0, and on the same day persistence scored better than the forecast (skill -0.05, -0.19 to 0.17). First page figures (#662, to 8 Nov 2026, each rule fitted only on the 28 days before the issue): on the same day the forecast beats rain over 10 mm, 0.18 (0.05 to 0.23), and is not shown better or worse than persistence, 0.06 (-0.05 to 0.15); in advance it beats neither rule, 0.21 (-0.04 to 0.29) and 0.18 (-0.03 to 0.24). Thames Water same day does worse than persistence (-0.42, -1.01 to -0.13); United Utilities beats both rules at both leads. Thames same-day diagnosis (#684, target days to 17 Oct 2026, stopped at lead calibration B's window): 16 Thames overflow-days with a spill, under the stated 50, so not judged; as a direction only, the Brier gap to persistence is calibration (almost all spread, not level) with no ranking advantage (AUC 0.66 against 0.65), while the other eight companies rank better than persistence (AUC 0.88 against 0.70).",
    "scope": "Live scored spill forecasts, monitored overflows in England, autumn 2026, on the 63% of scored forecasts where both rules can be applied (a day drops out when the site ran too rarely for the 8-hour status rule). Seen data: a running description of the record, not a fresh test. The status rebuild reads event times published after the issue, which flatters persistence a little. Says nothing about E. coli or a spot's level.",
    "stage": "live",
    "stage_note": "Computed on every build by forecast_log.verify_live (live.simple_refs) and shown in 'Against two simple rules' on the Accuracy page from the first build after #662 merges. Amendment 4 adds the same rules to the 2027 evaluation as secondary references; the primary outcomes and frozen files are unchanged.",
-   "next": "A diagnosis of Thames Water's same-day loss to persistence (level or ranking) by 30 Nov 2026; the 2027 secondary read after the season, with the primary.",
+   "next": "The Thames diagnosis's extension to 23 Oct 2026, run unchanged on or after 21 Nov, answer by 30 Nov 2026 (level, ranking or both); the 2027 secondary read after the season, with the primary.",
    "records": [
     {
      "doc": "docs/INTERIM-USEFULNESS-2026-10.md",
@@ -3160,17 +3239,167 @@
     {
      "doc": "docs/PREREGISTRATION-2027-AMENDMENT-4.md",
      "quote": "This amendment adds them as **secondary**"
+    },
+    {
+     "doc": "docs/THAMES-SAME-DAY-DIAGNOSIS-2026-11.md",
+     "quote": "Before 18 October, Thames Water's same-day cell holds 16 overflow-days with a"
     }
    ],
    "prs": [
     338,
-    662
+    662,
+    684
    ],
    "links": [
     {
      "label": "Against two simple rules, on the Accuracy page",
      "href": "verification.html#simple-rules"
     }
+   ]
+  },
+  {
+   "id": "radar-issue-hour",
+   "title": "Radar rain up to the issue hour",
+   "section": "promising",
+   "topics": [
+    "rain",
+    "spills",
+    "model"
+   ],
+   "verdict": "Passed its stated rule on 13 November 2026 (verdict H), as development evidence on 2025 labels that had been scored before. The spill model's form was refitted on rain as a build would have it at eight issue hours: cell radar for the hours the Met Office bucket had published by then, forecast rain for the rest of the day. Averaged over the eight hours and scored out of fold on 3,778 overflows (1,374,430 overflow-days), it beat the forecast alone by 3.3% with a fresh forecast for the rest of the day (Brier difference −0.00123, 95% interval −0.00194 to −0.00066, overflow × week) and by 1.9% with a day-old one (−0.00073, interval −0.00114 to −0.00035). The gain is small in the morning and large in the evening: 3.1% and 1.1% at 12 UTC, 5.9% and 5.3% at 18 UTC. One model fitted on whole-day radar served every hour (3.6%). Not confirmed on Thames Water, January to August 2026, with the models frozen on 2025: −0.00100 (interval −0.00225 to +0.00002) and −0.00028 (interval −0.00112 to +0.00051). The production model with no refit showed no gain (0.7%, interval including zero). The radar feed reached the bucket a median 6.6 minutes after scan time, 99 in 100 within 11.4 minutes.",
+   "scope": "Nine English companies' overflows in cells with cell radar and cached lead forecasts, 2025, and Thames Water in 2026. Same-day rain only; longer rain from ERA5-Land in every arm. The forecast a build really holds for the rest of the day lies between the two tested (lead 0 and lead 1), so the pooled gain reads as between 1.9% and 3.3%. A refit moves an arm's Brier by 0.0001 to 0.0002, which the intervals do not include; the single-hour figures before 15 UTC are inside that. Says nothing about how much of the evening gain the companies' live spill feeds already give, or about any forecast for the days ahead.",
+   "stage": "development",
+   "stage_note": "Not adopted. Nothing on the site or in production changes, and nothing is deployed. The candidate (the whole-day radar fit on 2025, SHA-256 d157a268…) and its forecast-only reference (70b0898e…) are frozen. A shadow-log plan is in the record: comparator, fallback when radar is late, resource limits and a proposed read on or after 8 April 2027.",
+   "next": "Build and test the shadow logger offline, in its own PR, with its window and bar stated before it opens. Four decisions come before it can run: where the radar step runs and keeps its 72 hours, the licence of a public log (the radar is CC BY-SA 4.0), where the two frozen models live, and Ethan's go-ahead. A pass would still need a refitted model shown no worse than production, since today's model does not gain from radar unrefitted.",
+   "records": [
+    {
+     "doc": "docs/RADAR-ISSUE-HOUR-TEST-2026-11.md",
+     "quote": "**Verdict H: radar to the issue hour helps, by the stated rule.**"
+    }
+   ],
+   "prs": [
+    694
+   ]
+  },
+  {
+   "id": "wessex-river-samples",
+   "title": "Wessex Water's river samples at three spots",
+   "section": "data",
+   "project": "WESSEX-RIVER",
+   "topics": [
+    "e. coli",
+    "rivers",
+    "samples",
+    "wessex"
+   ],
+   "verdict": "No held-out test. Exploratory readout on seen data: the live river rule orders days at all three Wessex points (rho 0.55 to 0.76); its level is close at Warleigh Weir (31% of samples over 900 against a mean estimate of 37%) and at Farleigh Hungerford's own EA samples (19.6% against 20.2%), but low at Wessex's two Frome points (42% against 30%, 50% against 26%). The in-season samples had already been scored in the soil-moisture rivers test, which helped adopt the live river rule.",
+   "scope": "594 company lab samples, 2021-25, at three points beside Warleigh Weir (51 m downstream), Farleigh Hungerford (2.3 km upstream) and Tellisford Weir (212 m downstream). Not Environment Agency samples. Three points chosen because they are swim spots, after their values were seen.",
+   "stage": "development",
+   "stage_note": "Observation page and spot-page lines built in #688, with the check's record; nothing on the forecast changes.",
+   "next": "Join issued E. coli estimates (forecast_points, since late September 2026) to Wessex samples taken after them, when the company's layer gains 2026 rows; first check of the layer on 1 July 2027.",
+   "read_on": "2027-07-01",
+   "records": [
+    {
+     "doc": "docs/WESSEX-RIVER-SAMPLES-CHECK-2026-11.md",
+     "quote": "the live river rule orders days at all three Wessex points"
+    },
+    {
+     "doc": "docs/WESSEX-RIVER-SAMPLES-CONTRACT-v1.md",
+     "quote": "The point is linked only if all five checks hold"
+    }
+   ],
+   "prs": [
+    688
+   ],
+   "links": [
+    {
+     "label": "Wessex Water's river samples",
+     "href": "wessex-river-samples.html"
+    }
+   ]
+  },
+  {
+   "id": "sample-histories-ireland-wales",
+   "title": "Past lab samples in the Republic of Ireland and at Hay-on-Wye and Llandeilo",
+   "section": "data",
+   "topics": [
+    "nations",
+    "samples",
+    "observations",
+    "E. coli"
+   ],
+   "verdict": "Not a test: a dated copy of the official samples. 26,929 EPA samples at 240 Irish waters, 22 May 2014 to 4 Nov 2026, every value parsed and the counts matching the EPA's totals; 61 NRW samples at the two Welsh river bathing waters, 12 Aug 2023 to 18 Sep 2026, where the Water Quality Archive and NRW's bathing-water service agree sample for sample.",
+   "scope": "Observations only: no forecast, no estimate, nothing about today's water or where bacteria came from. Wales covers two waters of 114. The EPA drops investigative samples from past seasons before its December report, so a later copy can hold fewer samples.",
+   "stage": "development",
+   "stage_note": "Built and tested in PR #691. Shown on samples.html, and linked from each Irish card and both Welsh cards on the coverage page, from the first build that includes it.",
+   "next": "By 31 Dec 2026: the other 112 Welsh bathing waters from NRW's service, a fresh Water Quality Archive download after NRW's December update, and a new dated Irish copy after the EPA's December report.",
+   "records": [
+    {
+     "doc": "docs/SAMPLE-HISTORY-CONTRACT-v1.md",
+     "quote": "Every sample in both the archive and the service has the same E. coli and enterococci counts and qualifiers."
+    }
+   ],
+   "prs": [
+    691
+   ],
+   "links": [
+    {
+     "label": "Irish samples since 2014",
+     "href": "samples.html#ireland"
+    },
+    {
+     "label": "Hay-on-Wye and Llandeilo samples",
+     "href": "samples.html#wales"
+    }
+   ]
+  },
+  {
+   "id": "uu-diagnosis",
+   "title": "Why spill-model candidates fail at United Utilities",
+   "section": "promising",
+   "project": "REGIONAL",
+   "topics": [
+    "spills",
+    "companies",
+    "model"
+   ],
+   "verdict": "A diagnosis on seen rows, not an adoption test. v2 arm (b) minus production at United Utilities: +0.00132 (+0.00011 to +0.00257), 3.5% of production's Brier. The nine-company pooled layer forecasts the company too high and the offsets remove about half of that; swapping the layer accounts for +0.00121 (-0.000003 to +0.00245), 92% of the gap, not shown by a hair. The live-status uplift there lands only on rows already spilling at issue. The lead-4 forecast-rain loss comes from production's lead map. Labels, rain resolution, the offsets and the stale-feed fallback are ruled out as the main cause.",
+   "scope": "United Utilities rows only, 2024-25 and January-August 2026, all scored before. Ranks and sizes explanations; confirms no model. Why the pooled layer runs high is inferred, not tested. Forecast-rain results rest on 53 overflows in 16 cells.",
+   "stage": "development",
+   "stage_note": "Production stays at United Utilities. No verdict, frozen file or live forecast changes; #357, #639 and #666 stand.",
+   "next": "Test the narrow candidate uu-spilling-v1 (production plus combined-v1's status uplift only where the overflow is spilling at issue, leads 1 to 4) with the addendum script, unchanged, on the EA's September-December 2026 records, under a statement pushed before that file is imported. Archive it if there is no gain. The file's date is not known.",
+   "records": [
+    {
+     "doc": "docs/UU-DIAGNOSIS-2026-11.md",
+     "quote": "**Production stays at United Utilities.**"
+    }
+   ],
+   "prs": [
+    695
+   ]
+  },
+  {
+   "id": "sonde-readings",
+   "title": "Live EA sonde readings on a river spot's page",
+   "section": "data",
+   "topics": [
+    "sensors",
+    "ammonium",
+    "rivers"
+   ],
+   "verdict": "An observation feature, not a test: 2 of 85 river spots have a live EA ammonium sonde on their own river, upstream within 20 km or at the spot, on 13 November 2026. Nothing was scored.",
+   "scope": "Shows the latest readings with their time and the EA's quality label. No level, colour or advice is drawn from them. Lake spots, turbidity-only stations and downstream sondes are not shown.",
+   "stage": "development",
+   "stage_note": "Draft PR; the public wording is Ethan's decision.",
+   "next": "Ethan reads the tile's wording and decides whether lake spots get an inflow-beck rule; then merge.",
+   "records": [
+    {
+     "doc": "docs/SONDE-READINGS-CONTRACT-v1.md",
+     "quote": "**Under the rule above, 2 of 85 river spots get the tile:**"
+    }
+   ],
+   "prs": [
+    687
    ]
   }
  ]
