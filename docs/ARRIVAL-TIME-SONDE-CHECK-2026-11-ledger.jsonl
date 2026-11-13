@@ -1,1 +1,2 @@
 {"n": 1, "url": "https://environment.data.gov.uk/hydrology/id/stations.json", "params": {"observedProperty": "ammonium", "_limit": 10000}, "status": 200, "bytes": 5005275, "start": "2026-11-13T15:18:18Z", "end": "2026-11-13T15:18:21Z"}
+{"n": 2, "url": "https://environment.data.gov.uk/hydrology/id/measures/E02034A-amm-i-subdaily-mgL/readings.csv", "params": {"mineq-date": "2023-12-30", "maxeq-date": "2026-01-04", "_limit": 100000}, "status": 200, "bytes": 0, "start": "2026-11-13T15:22:17Z", "end": "2026-11-13T15:22:17Z"}

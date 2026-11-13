@@ -1,8 +1,9 @@
 {
  "listing_date": "2026-11-13",
  "with_ammonium_measure": 1818,
- "open_no_date_closed": 149,
- "open_within_5km_of_a_spot": 20,
+ "closed_with_unusable_dates": 15,
+ "open_status_active": 134,
+ "open_within_5km_of_a_spot": 19,
  "open_within_5km_labels": [
   "BLELHAM BECK_FOOTBRIDGE_E_202303",
   "CHERWELL_DS A34_E_202512",
@@ -22,23 +23,22 @@
   "TEME_LUDLOW_FLUIDION_K_202502",
   "THAMES_CADOGAN PIER_E_200707",
   "THAMES_HAMMERSMITH_E_200707",
-  "TROUT BECK_CALGARTH GAUGING STATION_E_201704",
-  "WSX_AVON_HAMPS_E_202605"
+  "TROUT BECK_CALGARTH GAUGING STATION_E_201704"
  ],
- "deployed_30_days_in_2024_25": 253,
+ "deployed_30_days_in_2024_25": 243,
  "placement": {
   "tidal": 14,
-  "eligible": 136,
-  "no timing overflow upstream": 74,
-  "over 250 m from the link": 23,
-  "not on a river": 6
+  "eligible": 132,
+  "no timing overflow upstream": 70,
+  "over 250 m from the link": 22,
+  "not on a river": 5
  },
- "eligible_with_a_quiet_start": 121,
- "eligible_with_a_tier_a_start": 94,
- "eligible_open_now": 45,
+ "eligible_with_a_quiet_start": 117,
+ "eligible_with_a_tier_a_start": 90,
+ "eligible_open_now": 41,
  "planned_requests": 90,
- "planned_station_days": 30841,
- "planned_tier_a_starts": 664,
- "planned_quiet_starts": 1294,
+ "planned_station_days": 29030,
+ "planned_tier_a_starts": 562,
+ "planned_quiet_starts": 1193,
  "planned_artificial_channel": 8
 }

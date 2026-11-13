@@ -17,6 +17,7 @@ from ledger import BASE, Ledger
 
 READINGS_MAX = 90    # section 2: at most 90 readings requests
 LIMIT = 100_000      # rows a request may return; two years at 15 minutes is about 70,000
+BYTES_MAX = 1_200_000_000   # section 10: the fetch stops once the saved readings pass this
 
 
 def main(mode: str, *args: str) -> None:
@@ -32,6 +33,8 @@ def main(mode: str, *args: str) -> None:
         if len(plan) > READINGS_MAX or len(todo) > led.left():
             raise SystemExit(f"{len(plan)} planned, {len(todo)} to fetch, {led.left()} requests left: nothing fetched")
         for p in todo:
+            if sum(f.stat().st_size for f in out.glob("*.csv")) > BYTES_MAX:
+                raise SystemExit("saved readings passed the byte cap; stopped")
             r = led.request(f"{BASE}/id/measures/{p['measure']}/readings.csv",
                             {"mineq-date": p["date_from"], "maxeq-date": p["date_to"], "_limit": LIMIT})
             (out / f"{p['measure']}.csv").write_bytes(r.content)

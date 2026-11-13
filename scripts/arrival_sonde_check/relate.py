@@ -55,12 +55,21 @@ def _minute(d: date) -> int:
 
 def main(stations_json: str, out_dir: str) -> None:
     out = Path(out_dir); out.mkdir(parents=True, exist_ok=True)
-    sondes = [s for s in parse_stations(json.loads(Path(stations_json).read_text())["items"]) if "ammonium" in s.measures]
+    items = json.loads(Path(stations_json).read_text())["items"]
+    sondes = [s for s in parse_stations(items) if "ammonium" in s.measures]
+    # Amendment 1: parse_stations treats a closing date before the opening date as "still open". That holds only for
+    # a station whose status is Active. A Closed one with such dates (E02034A: opened 29 May 2013, closed 21 May
+    # 2013) has no usable deployment dates and is left out.
+    active = {str(s.get("notation")) for s in items
+              if any(str(x.get("label")) == "Active" for x in (s.get("status") or []) if isinstance(x, dict))}
+    unusable = [s for s in sondes if s.closed is None and s.station_id not in active]
+    sondes = [s for s in sondes if s.closed is not None or s.station_id in active]
     spots = list(csv.DictReader(open(REPO / "spots.csv")))
     near = lambda s: min(km_between(s.lat, s.lon, float(p["lat"]), float(p["lon"])) for p in spots)  # noqa: E731
     today = date(2026, 11, 13)
-    recount = {"listing_date": str(today), "with_ammonium_measure": len(sondes),
-               "open_no_date_closed": sum(s.closed is None for s in sondes)}
+    recount = {"listing_date": str(today), "with_ammonium_measure": len(sondes) + len(unusable),
+               "closed_with_unusable_dates": len(unusable),
+               "open_status_active": sum(s.closed is None for s in sondes)}
     open_near = [s for s in sondes if s.closed is None and near(s) <= SPOT_KM]
     recount["open_within_5km_of_a_spot"] = len(open_near)
     recount["open_within_5km_labels"] = sorted(s.label for s in open_near)

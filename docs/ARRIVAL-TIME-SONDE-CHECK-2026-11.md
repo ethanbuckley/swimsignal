@@ -228,3 +228,39 @@ distance and the model's travel time.
 Anglian Water (44). No reading, no rise, no lag.
 
 ---
+
+## 11. Amendment 1, before any reading was read (13 November, 15:30 UTC)
+
+Section 10 was pushed at 15:22 UTC (commit `6ce94454`). Request 2, the first readings request, was for the
+top-ranked sonde, E02034A (Lipgate Farm). It returned 200 with an empty body: no readings in 2024-25.
+
+**Cause, from the station listing.** E02034A's status is "Closed", with a closing date (21 May 2013) before its
+opening date (29 May 2013). The sonde signal test's parser treats such dates as "still open", which is right only for
+a station whose status is Active. 15 closed stations have dates like this. Section 10 counted them as open and as
+deployed through 2024-25, which put some at the top of the ranking.
+
+**The rule, added now:** a station with status Closed and a closing date before its opening date has no usable
+deployment dates and is left out. Nothing else in sections 1 to 10 changes. No reading had been seen: the one file
+fetched is empty.
+
+**Section 10's figures, corrected** (the tables in `docs/` are the corrected ones):
+
+| | Section 10 | Corrected |
+|---|---:|---:|
+| Open on 13 November (status Active) | 149 | 134 |
+| Open and within 5 km of a listed spot | 20 | 19 |
+| Deployed for 30 days or more in 2024-25 | 253 | 243 |
+| on a tidal link | 14 | 14 |
+| more than 250 m from the link | 23 | 22 |
+| not placed on a river | 6 | 5 |
+| no timing overflow upstream | 74 | 70 |
+| **Usable** | **136** | **132** |
+| Usable with at least one quiet start | 121 | 117 |
+| Usable with at least one Tier A start | 94 | 90 |
+| Usable and still open | 45 | 41 |
+
+The plan is rebuilt by the same ranking: 90 requests, about 29,000 station-days, 562 Tier A starts and 1,193 quiet
+starts. 43 sondes have 5 or more Tier A starts and 21 have 10 or more. Tier A pairs: 168, from 0.5 to 29.8 km (median
+9.6 km). Requests made so far: 2. The plan's 90 bring the total to 92 of 100.
+
+---
