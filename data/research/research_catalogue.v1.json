@@ -893,6 +893,13 @@
    "branch": "claude/scotland-2021-backtest",
    "branch_exists": true,
    "date": "2026-11-10"
+  },
+  "692": {
+   "n": 692,
+   "state": "open",
+   "branch": "claude/coastal-explorer-baselines-d3beaf",
+   "branch_exists": true,
+   "date": "2026-11-13"
   }
  },
  "entries": [
@@ -1953,13 +1960,16 @@
    "section": "data",
    "topics": [
     "coast",
-    "currents"
+    "currents",
+    "evaluation",
+    "rain",
+    "spills"
    ],
-   "verdict": "Scoping only: no test can be run yet, because there is no coastal model to add currents to. 32,874 coastal samples at 404 sites are on record. The 8 km current grid does not resolve many near-shore plumes.",
-   "scope": "Scoping record and an unsent data order.",
-   "stage": "waiting",
-   "stage_note": "Account creation and outside orders are Ethan's.",
-   "next": "An auditable coastal sample and coverage explorer, then a staged coastal model.",
+   "verdict": "Scoping (#331): no currents test could run without a coastal model. Baselines (#692, development evidence on seen 2022–26 data): for E. coli over 500 at 404 coastal and estuary sites, rain is the only input supported on top of site and month (Brier difference −0.00014, −0.00028 to −0.00001, whole years held out; AUC 0.73 to 0.81). Recorded spills, the last sample and the EA's forecast improve ranking, but their Brier interval includes zero when whole years are held out.",
+   "scope": "32,875 statutory samples, 2022–26, English coastal and estuary bathing waters. Rain from radar (2025–26 only), spills from EA files (2024–25 only). Brier skills are small (at best 3.4%). Spill positions are often not the outlet, and direction, dilution, tides and currents were not modelled, so this does not rule out spills or currents.",
+   "stage": "development",
+   "stage_note": "Sample table, coverage explorer and baseline scores are committed in data/research/coastal/. Nothing coastal is shown as a forecast. Account creation and outside orders are Ethan's.",
+   "next": "Candidate C1 (site, month, last sample, archive rain), protocol pushed before any new rain call, frozen, then backtested on the unread 2012–21 samples.",
    "records": [
     {
      "doc": "docs/SEA-CURRENTS-SCOPING-2026-10.md",
@@ -1968,12 +1978,16 @@
     {
      "doc": "docs/UKMCAS-ORDER-DRAFT-2026-10.md",
      "quote": "Drafted 24 October 2026. Nothing has been sent."
+    },
+    {
+     "doc": "docs/COASTAL-BASELINES-2026-11.md",
+     "quote": "**Rain is supported as a candidate input**, by the rule in section 6, for E. coli over 500."
     }
    ],
    "prs": [
-    331
-   ],
-   "register_note": "The register refers to a \"weak spill-only association\"; no spill-only association was computed. The doc's staged plan says the currents test should not run if nearby spills do not rank samples."
+    331,
+    692
+   ]
   },
   {
    "id": "overflow-sources",

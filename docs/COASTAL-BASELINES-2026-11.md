@@ -229,3 +229,154 @@ scored. They settle points the sections above left open. They change no rule.
 ---
 
 *Results go below this line.*
+
+## Results, 13 November 2026
+
+Run from code at `0cbf932a`, after the protocol (`ee9dc62f`) and the scoring code (`56907fdc`) were pushed. Every
+figure is **development evidence on seen data** (2022 to 2026). None is a confirmation, and nothing here is shown on
+the site.
+
+### In short
+
+- **Rain is supported as a candidate input**, by the rule in section 6, for E. coli over 500. Added to the site and
+  month reference, it lowers the Brier score in whole-year and year-and-site held-out splits, and raises the AUC
+  from 0.73 to 0.81 (whole years). The gain is small in absolute terms: the best Brier skill against the pooled rate
+  is 3.4%.
+- **Recorded spills, the last sample and the EA's forecast are not supported** by that rule. Each improves ranking
+  (AUC) in every split, but the Brier interval includes zero in the whole-year split.
+- **Rain and the EA's forecast are level on Brier score.** Rain ranks samples better (AUC about 0.70 against 0.54 on
+  the same rows).
+- **This does not show that tides, currents or spills add nothing.** Spill positions are often not where water
+  enters the sea, and direction and dilution were not modelled.
+
+### Fetch
+
+- 1,029 requests: 331 to the Water Quality Archive, 698 to the bathing-water service. Both stayed under their caps
+  (430 and 730). **No refusal.** One 502 and two dropped connections were retried.
+- All 1,026 saved responses hash to the value the ledger recorded for them. Every paged request group added up to
+  the archive's own `totalItems`.
+- The EA's daily risk predictions are open back to 2022: 301,362 rows over 695 season days. The field that says
+  whether a site has its own pollution risk forecast (`prfOriginType`) is filled from 2024 only.
+- Shared inputs were unchanged by the build (fingerprints before and after are identical).
+- Manifest: `data/research/coastal/manifest.json`. Committed tables: `data/research/coastal/`. Raw responses,
+  per-sample rain and held-out predictions are not committed; the manifest hashes them.
+
+### Explorer
+
+Tables: `sites.csv` (426 sites), `site_year.csv` (2,003 site-seasons), `year_summary.csv`.
+
+| Year | Samples | Sites | Over 250 | Over 500 | Enterococci samples | Enterococci over 185 | With rain | With spill hours | EA prediction in force |
+|---|---|---|---|---|---|---|---|---|---|
+| 2022 | 6,758 | 400 | 225 | 105 | 6,754 | 314 | 0 | 0 | 6,274 |
+| 2023 | 6,735 | 401 | 268 | 106 | 6,733 | 291 | 0 | 0 | 6,295 |
+| 2024 | 6,464 | 400 | 271 | 132 | 6,464 | 285 | 0 | 6,464 | 6,032 |
+| 2025 | 6,579 | 399 | 188 | 84 | 6,579 | 201 | 6,534 | 6,579 | 6,164 |
+| 2026 | 6,339 | 403 | 180 | 72 | 6,282 | 204 | 6,303 | 0 | 6,270 |
+
+- **Coverage.** 404 of 426 sites have samples. 19 have no mapped archive point and 3 mapped points (Ingoldmells,
+  Clevedon Beach, Dunster Beach) have no statutory E. coli result in 2022 to 2026. 398 sites have all five seasons.
+- **Gaps.** The median site-season has 19 samples, a longest gap of 14 to 15.5 days and 5 to 7 calendar weeks
+  with no sample. 31 to 56 site-seasons a year have a gap over 21 days.
+- **Where exceedances are.** 195 sites had at least one sample over 500; 209 had none. The 20 worst sites hold 32%
+  of all exceedances, the 40 worst 48%. North West sites run at 5.7% over 500, against 0.8% in the South West and
+  Anglian regions.
+- **After rain.** In 2025, 34.8% of samples had at least 1 mm in the 24 hours before, against 33.7% of season days
+  at noon. In 2026, 29.0% against 25.4%. Sampling days were not drier than the season.
+- **Overflows.** 351 sampled sites have an overflow within 2 km, 401 within 5 km, and 139 have river-connected
+  overflows further away. The nearest overflow is 0.69 km away at the median site.
+
+### Baselines, E. coli over 500, whole-year split (Y)
+
+Brier skill and AUC with 95% site-bootstrap intervals. Rain covers 2025–26, spills 2024–25.
+
+| Baseline | Rows | Exceedances | Brier | Brier skill against B0 (95%) | AUC (95%) |
+|---|---|---|---|---|---|
+| B0 pooled rate | 32,868 | 499 | 0.01496 | 0 | 0.444 (0.417 to 0.470) |
+| B1 site rate | 32,868 | 499 | 0.01478 | 0.012 (0.005 to 0.020) | 0.678 (0.634 to 0.717) |
+| B2 month | 32,868 | 499 | 0.01494 | 0.001 (−0.000 to 0.002) | 0.576 (0.549 to 0.602) |
+| R site and month | 32,868 | 499 | 0.01472 | 0.016 (0.007 to 0.026) | 0.702 (0.664 to 0.739) |
+| B3 last sample | 32,868 | 499 | 0.01485 | 0.007 (0.003 to 0.011) | 0.623 (0.589 to 0.655) |
+| R + last sample | 32,868 | 499 | 0.01470 | 0.017 (0.009 to 0.026) | 0.715 (0.679 to 0.750) |
+| B4 rain | 12,837 | 156 | 0.01185 | 0.014 (0.008 to 0.020) | 0.707 (0.661 to 0.754) |
+| R, rain rows | 12,837 | 156 | 0.01176 | 0.021 (0.011 to 0.031) | 0.728 (0.679 to 0.771) |
+| R + rain | 12,837 | 156 | 0.01163 | 0.033 (0.018 to 0.049) | 0.808 (0.770 to 0.842) |
+| B5 spills | 13,042 | 216 | 0.01620 | 0.006 (−0.002 to 0.015) | 0.608 (0.563 to 0.656) |
+| R, spill rows | 13,042 | 216 | 0.01621 | 0.006 (−0.003 to 0.015) | 0.622 (0.569 to 0.674) |
+| R + spills | 13,042 | 216 | 0.01621 | 0.005 (−0.004 to 0.016) | 0.707 (0.666 to 0.747) |
+| B6 EA forecast | 31,035 | 481 | 0.01512 | 0.009 (0.004 to 0.014) | 0.494 (0.466 to 0.522) |
+| R, EA forecast rows | 31,035 | 481 | 0.01502 | 0.016 (0.007 to 0.026) | 0.706 (0.667 to 0.742) |
+| R + EA forecast | 31,035 | 481 | 0.01497 | 0.019 (0.009 to 0.030) | 0.724 (0.687 to 0.757) |
+| B7 R + last + rain | 12,837 | 156 | 0.01161 | 0.034 (0.018 to 0.051) | 0.811 (0.770 to 0.846) |
+
+The other splits are in `data/research/coastal/scores.md`. In the splits that hold out whole sites (G and YG), B1
+equals B0 by design: a beach with no history gets the pooled rate. There R is the month alone.
+
+### The deciding comparison: R plus the input against R fitted on the same rows
+
+Brier difference below zero favours the input.
+
+| Input | Split | Rows | Exceedances | Brier difference (95%) | AUC, R alone | AUC with the input |
+|---|---|---|---|---|---|---|
+| Last sample | Y | 32,868 | 499 | −0.00002 (−0.00008 to 0.00004) | 0.702 | 0.715 |
+| Last sample | YG | 32,868 | 499 | −0.00008 (−0.00012 to −0.00004) | 0.575 | 0.641 |
+| **Rain** | **Y** | 12,837 | 156 | **−0.00014 (−0.00028 to −0.00001)** | 0.728 | 0.808 |
+| **Rain** | **YG** | 12,837 | 156 | **−0.00010 (−0.00020 to −0.00002)** | 0.607 | 0.743 |
+| Spills | Y | 13,042 | 216 | 0.00000 (−0.00013 to 0.00013) | 0.622 | 0.707 |
+| Spills | YG | 13,042 | 216 | −0.00010 (−0.00018 to −0.00001) | 0.483 | 0.602 |
+| EA forecast | Y | 31,035 | 481 | −0.00005 (−0.00014 to 0.00004) | 0.706 | 0.724 |
+| EA forecast | YG | 31,035 | 481 | −0.00011 (−0.00016 to −0.00006) | 0.572 | 0.601 |
+
+- **Supported as a candidate input: rain only.** Its upper bounds (−0.00001 and −0.00002) are close to zero. No
+  correction for several inputs was made, as the protocol said. Forward (train on earlier years only), rain's
+  difference on 2026 is −0.00010 (−0.00027 to 0.00007), with AUC 0.75 to 0.82.
+- **Spills** help ranking in every split (AUC +0.06 to +0.12) and lower the Brier score when whole sites are held
+  out, but not in the whole-year split, where the two seasons with spill files are 2024 and 2025 alone.
+- **For information, over 250:** no input is supported. Every input's Brier interval excludes zero in YG and
+  includes it in Y.
+
+### The EA's forecast
+
+- An "increased" prediction was in force at 660 of 31,035 scored samples. 66 of them exceeded 500 (10.0%),
+  against 1.4% under "normal". So it caught 14% of exceedances (66 of 481).
+- At the site-seasons where the EA runs its own pollution risk forecast (2024–26 only), it caught 26% (45 of 170).
+  "Increased" there is followed by an exceedance 10.1% of the time.
+- **Rain against the EA's forecast**, on the same 12,357 rows: Brier difference 0.00001 (−0.00015 to 0.00018) in
+  split Y, so level. AUC 0.705 against 0.544. At the EA's own forecast sites (5,801 rows), level again on Brier,
+  0.00015 (−0.00014 to 0.00050), with rain's AUC higher by 0.095 (0.004 to 0.187).
+- So section 7's outcome "the EA forecast beats the rest where it runs" did not occur. It stays the comparator a
+  coastal candidate must also beat, because it is what a swimmer is shown today.
+
+## What follows
+
+Section 7 said: rain supported leads to a coastal exposure candidate built on rain, frozen, then backtested on the
+unread 2012–21 samples. That is the next deliverable.
+
+1. **Candidate C1, rain at the beach.** Site and month (R), the last sample, and rain over 24 and 72 hours, with the
+   window lengths and the distance rule chosen by nested held-out fitting on 2022–26. It must use **archive rain**,
+   not radar: radar starts in November 2024 and the backtest years need the same source. Cached archive rain
+   (`data/cache/rain_nine`) covers 158 of the 183 coastal 0.1° cells for December 2023 to 2025 and 169 cells for
+   January to August 2026. 2022, 2023 and 2012–21 would be new Open-Meteo archive calls: about 183 cells × 12
+   seasons at weight about 1.1, roughly 2,400 weighted calls, which is 8 days at 300 a day from spare budget. A
+   protocol must state that before any call.
+2. **Frozen-model backtest on 2012–21.** Fetch the 2012–21 statutory samples (about 350 archive requests) only after
+   C1 is frozen and its hash committed. Compare with R, B0 and the EA's forecast on the same rows.
+3. **Spills and currents stay open.** Spills ranked samples in every split. The useful next step there is outlet
+   position (the EA profiles' outfall points, `docs/OVERFLOW-SEA-OUTFALLS-2026-10.md`) and spill direction, which
+   needs currents (a Copernicus Marine account, Ethan's step). A weak spill-only Brier result does not close it.
+4. **The explorer** can become a Research page observation after a design pass (`docs/DESIGN.md`). It would show
+   past samples and coverage only. No coastal forecast is shown.
+
+Owner: the research sessions. Milestone: C1's protocol, pushed before any new rain call.
+
+## Limits of these results
+
+- Seen data. These outcomes were summarised before (scoping note, typical readings), and this work chose its
+  baselines knowing the shape of the data, though not these scores.
+- The Brier skills are small (at best 3.4% against the pooled rate). None of these models is a usable public
+  probability, and none is shown.
+- Rain here is radar observed up to the sample time: a same-day input, not a forecast. Inferred, not checked: a live
+  feed arrives with some delay, so the last hour or so before a sample would not be known at issue time.
+- The last-sample baseline assumes the previous result was known by the next sampling day, which flatters it a
+  little.
+- Two to five years per input: the intervals describe site-to-site sampling, not year-to-year spread.
+- Spill hours count overflows with no event as zero, and use overflow positions that are often not the outlet.
