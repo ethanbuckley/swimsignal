@@ -22,6 +22,8 @@ data/processed/*
 !data/processed/live_status/
 # The regional routing shadow's frozen v2 model (shadow_regional.py, docs/REGIONAL-ROUTING-2026-11.md)
 !data/processed/regional/
+# The combined-v1 shadow's frozen D2 model (shadow_combined.py, docs/COMBINED-SHADOW-2026-11.md)
+!data/processed/combined/
 !data/processed/lead_calibration.json
 !data/processed/spill_day_ratio.json
 !data/processed/ecoli_model.json
@@ -89,6 +91,9 @@ data/raw/*
 # Each spot's spill days upstream by month, 2021-2025 (EA start/stop records, OGL v3.0; Northumbrian, Wessex and United Utilities
 # layers, CC BY 4.0): read by the page's history fold only, never the model (scripts/make_seasonal_spills.py).
 !data/raw/seasonal_spills.json
+# NRW's samples at Hay-on-Wye and Llandeilo, dated snapshot of 13 Nov 2026 (OGL v3.0): the service's answers, the
+# Water Quality Archive's rows at the two stations and the fetch ledger (scripts/export_sample_histories.py).
+!data/raw/nrw_sample_history/
 /site/
 .claude/
 /state/
