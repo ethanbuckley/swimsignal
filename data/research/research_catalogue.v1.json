@@ -894,6 +894,20 @@
    "branch_exists": true,
    "date": "2026-11-10"
   },
+  "686": {
+   "n": 686,
+   "state": "open",
+   "branch": "claude/combined-v1-shadow-logger-a9b35a",
+   "branch_exists": true,
+   "date": "2026-11-13"
+  },
+  "685": {
+   "n": 685,
+   "state": "open",
+   "branch": "claude/scotland-shadow-map-arm-97cd94",
+   "branch_exists": true,
+   "date": "2026-11-13"
+  },
   "694": {
    "n": 694,
    "state": "open",
@@ -1099,42 +1113,23 @@
     "model"
    ],
    "verdict": "Scored once on January to August 2026 as a frozen-model backtest. It passed its bar at eight companies and for all nine together: lower Brier score than today's model, same-day persistence and a 10 mm rain rule at leads 1 and 2, every interval below zero (lead 1, all nine: 0.0307 against 0.0419). It failed at United Utilities, where it was not shown better than today's model beyond lead 0. It was not shown better than the live-status input alone. Development evidence: the routing rule and the combination were chosen after 2026 had been seen.",
-   "scope": "EA start/stop records, January to August 2026, 13,426 overflows at nine English companies; status rebuilt from the complete record at 00:00 UTC; reanalysis rain decides, archived forecast rain reported. Not tested on polled status or on unseen months.",
+   "scope": "EA start/stop records, January to August 2026, 13,426 overflows at nine English companies; status rebuilt from the complete record at 00:00 UTC; reanalysis rain decides, archived forecast rain reported. Not yet tested on polled status or on unseen months: the shadow log is built for that and has no rows yet.",
    "stage": "development",
-   "stage_note": "Frozen (commit 4d66d7c7) and not adopted. Nothing on the site changes. United Utilities stays on today's model.",
-   "next": "Build a shadow logger for the combined candidate, with its window and bar stated before it opens (PR due 17 November 2026); later, rerun the backtest unchanged on the EA's September to December 2026 records.",
+   "stage_note": "Frozen (commit 4d66d7c7) and not adopted. Nothing on the site changes. United Utilities stays on today's model. A shadow logger is built (PR #686, open): it logs the candidate beside today's model in its own table, with the window, the bar and the read date stated before any row. Logging starts once Ethan merges that PR.",
+   "next": "After the merge, confirm the window's dates from the first logged rows (28 target days, opening four days after the first logged forecast; about 22 November to 19 December 2026, read on or after 21 December, if logging starts by 18 November). The read script is due one week before the window ends. Later, rerun the backtest unchanged on the EA's September to December 2026 records.",
    "records": [
     {
      "doc": "docs/COMBINED-CANDIDATE-BACKTEST-2026-11.md",
      "quote": "**combined-v1 passes the bar at eight companies and for all nine together. It fails at United Utilities**"
-    }
-   ],
-   "prs": [
-    666
-   ]
-  },
-  {
-   "id": "radar-issue-hour",
-   "title": "Radar rain up to the issue hour",
-   "section": "promising",
-   "topics": [
-    "rain",
-    "spills",
-    "model"
-   ],
-   "verdict": "Passed its stated rule on 13 November 2026 (verdict H), as development evidence on 2025 labels that had been scored before. The spill model's form was refitted on rain as a build would have it at eight issue hours: cell radar for the hours the Met Office bucket had published by then, forecast rain for the rest of the day. Averaged over the eight hours and scored out of fold on 3,778 overflows (1,374,430 overflow-days), it beat the forecast alone by 3.3% with a fresh forecast for the rest of the day (Brier difference −0.00123, 95% interval −0.00194 to −0.00066, overflow × week) and by 1.9% with a day-old one (−0.00073, interval −0.00114 to −0.00035). The gain is small in the morning and large in the evening: 3.1% and 1.1% at 12 UTC, 5.9% and 5.3% at 18 UTC. One model fitted on whole-day radar served every hour (3.6%). Not confirmed on Thames Water, January to August 2026, with the models frozen on 2025: −0.00100 (interval −0.00225 to +0.00002) and −0.00028 (interval −0.00112 to +0.00051). The production model with no refit showed no gain (0.7%, interval including zero). The radar feed reached the bucket a median 6.6 minutes after scan time, 99 in 100 within 11.4 minutes.",
-   "scope": "Nine English companies' overflows in cells with cell radar and cached lead forecasts, 2025, and Thames Water in 2026. Same-day rain only; longer rain from ERA5-Land in every arm. The forecast a build really holds for the rest of the day lies between the two tested (lead 0 and lead 1), so the pooled gain reads as between 1.9% and 3.3%. A refit moves an arm's Brier by 0.0001 to 0.0002, which the intervals do not include; the single-hour figures before 15 UTC are inside that. Says nothing about how much of the evening gain the companies' live spill feeds already give, or about any forecast for the days ahead.",
-   "stage": "development",
-   "stage_note": "Not adopted. Nothing on the site or in production changes, and nothing is deployed. The candidate (the whole-day radar fit on 2025, SHA-256 d157a268…) and its forecast-only reference (70b0898e…) are frozen. A shadow-log plan is in the record: comparator, fallback when radar is late, resource limits and a proposed read on or after 8 April 2027.",
-   "next": "Build and test the shadow logger offline, in its own PR, with its window and bar stated before it opens. Four decisions come before it can run: where the radar step runs and keeps its 72 hours, the licence of a public log (the radar is CC BY-SA 4.0), where the two frozen models live, and Ethan's go-ahead. A pass would still need a refitted model shown no worse than production, since today's model does not gain from radar unrefitted.",
-   "records": [
+    },
     {
-     "doc": "docs/RADAR-ISSUE-HOUR-TEST-2026-11.md",
-     "quote": "**Verdict H: radar to the issue hour helps, by the stated rule.**"
+     "doc": "docs/COMBINED-SHADOW-2026-11.md",
+     "quote": "Not yet run. No row has been logged."
     }
    ],
    "prs": [
-    694
+    666,
+    686
    ]
   },
   {
@@ -2124,7 +2119,7 @@
    "scope": "Three SEPA inland bathing waters (Dores, Loch Morlich, Luss Bay), 1,485 Scottish Water overflows, the production spill model (808da63d) only.",
    "stage": "development",
    "stage_note": "Built behind DIPCAST_SCOTLAND_TRIAL, off until the owner switches it on; labelled a trial on every page it reaches.",
-   "next": "A shadow arm with Scotland's map, so Gate B scores what the trial shows; Gate B after November to January; a 2026 backtest protocol before Scottish Water's 2026 file (March 2027); Scottish river spots, click-anywhere in Scotland, outside review.",
+   "next": "A second shadow arm logs Scotland's mapped forecast beside the first (built 13 Nov 2026); both are read on or after 3 February 2027. One sensitivity of Gate A without four overflows that reported only in the bathing season; a 2026 backtest protocol before Scottish Water's 2026 file (March 2027); Scottish river spots, click-anywhere in Scotland, outside review.",
    "records": [
     {
      "doc": "docs/SCOTLAND-TRIAL-2026-11.md",
@@ -2137,13 +2132,22 @@
     {
      "doc": "docs/SCOTLAND-2021-BACKTEST-2026-11.md",
      "quote": "**PASS. B1, B2 and B3 all hold.**"
+    },
+    {
+     "doc": "docs/SCOTLAND-MAP-SHADOW-ARM-2026-11.md",
+     "quote": "Every input exists when the build runs. No outcome is read by the logger. The log is never backfilled."
+    },
+    {
+     "doc": "docs/SCOTLAND-GATE-A-SEASON-FLAG-2026-11.md",
+     "quote": "**No Gate A score was recomputed for it.**"
     }
    ],
    "prs": [
     587,
     591,
     654,
-    658
+    658,
+    685
    ]
   },
   {
@@ -3189,6 +3193,30 @@
      "label": "Against two simple rules, on the Accuracy page",
      "href": "verification.html#simple-rules"
     }
+   ]
+  },
+  {
+   "id": "radar-issue-hour",
+   "title": "Radar rain up to the issue hour",
+   "section": "promising",
+   "topics": [
+    "rain",
+    "spills",
+    "model"
+   ],
+   "verdict": "Passed its stated rule on 13 November 2026 (verdict H), as development evidence on 2025 labels that had been scored before. The spill model's form was refitted on rain as a build would have it at eight issue hours: cell radar for the hours the Met Office bucket had published by then, forecast rain for the rest of the day. Averaged over the eight hours and scored out of fold on 3,778 overflows (1,374,430 overflow-days), it beat the forecast alone by 3.3% with a fresh forecast for the rest of the day (Brier difference −0.00123, 95% interval −0.00194 to −0.00066, overflow × week) and by 1.9% with a day-old one (−0.00073, interval −0.00114 to −0.00035). The gain is small in the morning and large in the evening: 3.1% and 1.1% at 12 UTC, 5.9% and 5.3% at 18 UTC. One model fitted on whole-day radar served every hour (3.6%). Not confirmed on Thames Water, January to August 2026, with the models frozen on 2025: −0.00100 (interval −0.00225 to +0.00002) and −0.00028 (interval −0.00112 to +0.00051). The production model with no refit showed no gain (0.7%, interval including zero). The radar feed reached the bucket a median 6.6 minutes after scan time, 99 in 100 within 11.4 minutes.",
+   "scope": "Nine English companies' overflows in cells with cell radar and cached lead forecasts, 2025, and Thames Water in 2026. Same-day rain only; longer rain from ERA5-Land in every arm. The forecast a build really holds for the rest of the day lies between the two tested (lead 0 and lead 1), so the pooled gain reads as between 1.9% and 3.3%. A refit moves an arm's Brier by 0.0001 to 0.0002, which the intervals do not include; the single-hour figures before 15 UTC are inside that. Says nothing about how much of the evening gain the companies' live spill feeds already give, or about any forecast for the days ahead.",
+   "stage": "development",
+   "stage_note": "Not adopted. Nothing on the site or in production changes, and nothing is deployed. The candidate (the whole-day radar fit on 2025, SHA-256 d157a268…) and its forecast-only reference (70b0898e…) are frozen. A shadow-log plan is in the record: comparator, fallback when radar is late, resource limits and a proposed read on or after 8 April 2027.",
+   "next": "Build and test the shadow logger offline, in its own PR, with its window and bar stated before it opens. Four decisions come before it can run: where the radar step runs and keeps its 72 hours, the licence of a public log (the radar is CC BY-SA 4.0), where the two frozen models live, and Ethan's go-ahead. A pass would still need a refitted model shown no worse than production, since today's model does not gain from radar unrefitted.",
+   "records": [
+    {
+     "doc": "docs/RADAR-ISSUE-HOUR-TEST-2026-11.md",
+     "quote": "**Verdict H: radar to the issue hour helps, by the stated rule.**"
+    }
+   ],
+   "prs": [
+    694
    ]
   }
  ]
