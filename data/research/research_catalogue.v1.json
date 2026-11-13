@@ -3158,6 +3158,41 @@
      "href": "verification.html#simple-rules"
     }
    ]
+  },
+  {
+   "id": "sample-histories-ireland-wales",
+   "title": "Past lab samples in the Republic of Ireland and at Hay-on-Wye and Llandeilo",
+   "section": "data",
+   "topics": [
+    "nations",
+    "samples",
+    "observations",
+    "E. coli"
+   ],
+   "verdict": "Not a test: a dated copy of the official samples. 26,929 EPA samples at 240 Irish waters, 22 May 2014 to 4 Nov 2026, every value parsed and the counts matching the EPA's totals; 61 NRW samples at the two Welsh river bathing waters, 12 Aug 2023 to 18 Sep 2026, where the Water Quality Archive and NRW's bathing-water service agree sample for sample.",
+   "scope": "Observations only: no forecast, no estimate, nothing about today's water or where bacteria came from. Wales covers two waters of 114. The EPA drops investigative samples from past seasons before its December report, so a later copy can hold fewer samples.",
+   "stage": "development",
+   "stage_note": "Built and tested in PR __PR__, not merged; shown on samples.html and linked from each Irish card and both Welsh cards on the coverage page once Ethan merges it.",
+   "next": "By 31 Dec 2026: the other 112 Welsh bathing waters from NRW's service, a fresh Water Quality Archive download after NRW's December update, and a new dated Irish copy after the EPA's December report.",
+   "records": [
+    {
+     "doc": "docs/SAMPLE-HISTORY-CONTRACT-v1.md",
+     "quote": "Every sample in both the archive and the service has the same E. coli and enterococci counts and qualifiers."
+    }
+   ],
+   "prs": [
+    "__PRN__"
+   ],
+   "links": [
+    {
+     "label": "Irish samples since 2014",
+     "href": "samples.html#ireland"
+    },
+    {
+     "label": "Hay-on-Wye and Llandeilo samples",
+     "href": "samples.html#wales"
+    }
+   ]
   }
  ]
 }
