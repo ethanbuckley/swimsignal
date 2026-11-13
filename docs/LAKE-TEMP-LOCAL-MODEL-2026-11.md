@@ -260,6 +260,33 @@ Statement committed in `af8555a3` and pushed; harness and synthetic tests in `c1
   before any model is fitted. Test inputs (no temperature) `b5bb6cf0a6dc4397d9aa1247ccd6a7f8cada7bc33630140f8f721c49b4075f58`;
   development rows `6c0d45867ac0ed455b325db4dbbdd293b04cdce05b98ccc0775a0fbefe246275`.
 
+**Freeze** (`llm_run.py freeze`, 13 November 23:57 UTC, commit `7403565c`, 26 s). The truth file was not opened.
+Shared inputs (#414 features, the live model file, `water_temp.py`) had the same SHA-256 before and after.
+
+- Forms chosen inside training rows: **K1 in folds 0, 1, 2 and 4; K0 in fold 3** (K1 beat K0 by 0.017 there, under the
+  0.02 margin). τ: 5 days pooled in every fold; by class, deep 10 days in folds 0 and 2 and 5 in folds 1 and 4; every
+  other class 5 days. K2 never beat K1.
+- #419's recipe chose `e5` in every fold. The live refit trained on about 300,000 river, lake and sea rows a fold.
+- **Frozen parameters `frozen.json`: `f2bd4d5dc15012026d382a0eee090e9fc576fb9f89f262ce09b9562eec4c37f5`** (it records the
+  SHA-256 of the fitted scikit-learn models, `models.pkl`: `e9ccccf6375329b7ca1bbe87e651ccd096f5a11b520e71108de03732e365314a`).
+- **Test predictions `predictions_test.parquet`: `c3db84b09077cb15b4356c4e7d2c30f8a8f31fc32c2716f9fcfbca34b352ff8f`.**
+- **Development cross-validation** (development years 2012-2025, each fold's waters held out; seen data, development
+  evidence only; the deployed live route is in-sample for 2012-2022). RMSE °C (bias):
+
+  | rows | candidate | live (deployed) | live (refit) | 7-day air | #419 recipe |
+  |---|---|---|---|---|---|
+  | all, 7,336 | 1.65 | 1.61 | 1.63 | 1.85 | **1.55** |
+  | deep, 15 waters | 1.52 (+0.04) | 1.61 (−0.11) | 1.60 (+0.05) | 1.60 | **1.34** (−0.20) |
+  | mid, 57 | 1.68 | **1.65** | 1.66 | 1.81 | 1.66 |
+  | shallow, 32 | 1.33 | 1.32 | 1.34 | 1.66 | **1.27** |
+  | no depth, 352 | 1.79 | 1.70 | 1.74 | 2.00 | **1.67** |
+  | WFD 1 km² and over | 1.52 | 1.62 | 1.61 | 1.62 | **1.37** |
+
+  So before any test-year outcome: the candidate beats both live versions at deep and large lakes, loses at small lakes
+  with no depth figure, and #419's recipe is best in every development class. This is stated before scoring so it
+  cannot be read as hindsight. Nothing in the test was changed because of it: the protocol's class answers already ask
+  whether a deep-lakes-only route is supported.
+
 ---
 
 ## Results
