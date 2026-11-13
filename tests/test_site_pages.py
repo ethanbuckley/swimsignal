@@ -817,7 +817,7 @@ def test_the_data_page_lists_every_file_in_data_with_its_size(tmp_path):
     # An empty data/ (write_pages over a fresh folder): every described row says so, and nothing breaks.
     empty = tmp_path / "empty"
     empty.mkdir()
-    assert bs.write_data_page(empty) == [] and (empty / "data.html").read_text().count("Not in this build") == 20   # spot_scores.json makes 16, overflows/ 17, waters.json 18, verification_spots_live.csv 19, research/ (satellite lakes, spill durations and E. coli samples) 20
+    assert bs.write_data_page(empty) == [] and (empty / "data.html").read_text().count("Not in this build") == 21   # spot_scores.json makes 16, overflows/ 17, waters.json 18, verification_spots_live.csv 19, research/ (satellite lakes, spill durations and E. coli samples) 20, sonde-readings.json 21
 
 
 def test_the_data_pages_sections_follow_its_table_and_fold_their_fields():
