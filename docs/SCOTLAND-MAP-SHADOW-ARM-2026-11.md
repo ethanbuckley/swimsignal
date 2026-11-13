@@ -196,3 +196,20 @@ read. Not changed here.
 | Next deliverable | The read, on or after 3 February 2027, with Gate B. Before it: a counts-only readiness check one week after logging starts |
 | Budget | No Open-Meteo calls. State file size in section 12 |
 | Release route | None from this arm alone. It informs Ethan's decision on the trial's switch and wording |
+
+## 12. Added after the arm was built, 13 November 2026
+
+Sections 1 to 11 are as pushed in b9128bb2, before any arm code. Nothing in them was changed. This section holds
+what was measured afterwards. No real forecast or outcome was used: the rows were made up, in the shape of a real
+build (1,485 overflows, five days).
+
+- **Tests.** 14 in `tests/test_scottish_shadow_map.py`. One runs the same build with and without the new arm and
+  finds the existing shadow's rows and stamp identical.
+- **Build time.** 0.05 s for a build's insert (median of 160; the first, which makes the file, 1.5 s).
+- **Size.** 39 MB for 1,188,000 rows: 80 days at two logged builds a day, 0.24 MB a build. The made-up chances were
+  random, which compresses worst. *Inferred:* builds run about every 2.9 hours and the existing shadow logs those
+  issued by 08:00, so two or three a day, 40 to 60 MB by 31 January. The state directory is saved to the Actions
+  cache on every run.
+- **Open-Meteo.** No call. The module does not import the rain code, and a test checks that.
+- **To start logging.** Merge the PR. `DIPCAST_SCOTTISH_WATER` has been `1` since 11 October, and the arm rides on
+  that shadow's run. The first build after the merge that the existing shadow logs is the arm's first issue.
