@@ -106,9 +106,11 @@ in the JSON, measured read-only on 31 Oct).
    (`data/raw/scottish_water/`, `sw_events.parquet`). A Scottish spill-history observation page needs no one's
    permission. The Scotland plan's hindcast has not run.
 7. **EPA Ireland samples.** 25,978 results since 2014 under CC BY 4.0. The directory shows only the latest. A
-   sample-history view, no forecast.
+   sample-history view, no forecast. *Done 13 Nov 2026* ([contract](SAMPLE-HISTORY-CONTRACT-v1.md)): 26,929 samples at
+   240 waters, on `samples.html` and linked from each card; licence rechecked unchanged.
 8. **NRW Water Quality Archive.** OGL, monthly, 2000 onwards. Two catchments cached. W10 scored 213 river rows; a
-   dated Welsh sample view at Hay-on-Wye and Llandeilo is unused.
+   dated Welsh sample view at Hay-on-Wye and Llandeilo is unused. *Done 13 Nov 2026* (same contract): 61 samples at the
+   two waters, the archive joined to NRW's bathing-water service, which agree sample for sample.
 9. **Met Office radar.** Already cached (971 MB across two places). Ranked for its deadline: the bucket is a "2-year
    rolling archive" and its oldest day, 21 Nov 2024, was still listed on 31 Oct [checked 31 Oct]. A second backfill
    pass before about 21 Nov keeps November 2024.

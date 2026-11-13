@@ -53,6 +53,7 @@ from dipcast.overflows import duplicate_site_ids
 from dipcast.spot_links import attach as attach_spot_links
 from dipcast.stretches import attach as attach_stretches
 from dipcast.trace import SIMPLIFY_M, spot_trace_parts
+from dipcast.sample_history import attach as attach_history
 from dipcast.typical import attach as attach_typical
 from dipcast.typical import typical_readings
 
@@ -4402,7 +4403,43 @@ def attach_typical_readings(results: list[dict], path: Path = ECOLI_EVIDENCE) ->
 def write_samples(site: Path, token: str | None = None, root: str | None = None, results: list[dict] | None = None) -> str:
     """samples.html and samples.js beside the app, and the samples they read. Returns the script's version."""
     write_ecoli_evidence(site, results=results)
+    write_sample_histories(site)
     return write_scripted_page(site, "samples.html", ("samples.js",), ("samples.js",), token, root)
+
+
+# Past-sample histories outside England (docs/SAMPLE-HISTORY-CONTRACT-v1.md, src/dipcast/sample_history.py): every EPA
+# sample at the Republic of Ireland's bathing waters and NRW's at Hay-on-Wye and Llandeilo, from the committed files
+# data/research/sample_history_<nation>.v1.json. The same viewer reads them (samples.html, samples.js): an index,
+# data/research/history/<nation>.json, every water without its samples, and data/research/history/<nation>/<id>.json,
+# one water whole. Observations only: no estimate beside them. A file of another schema or major version is not
+# published, and the index says why. Only data/research/history/ is cleared.
+HISTORY_NATIONS = ("ireland", "wales")
+HISTORY_ID = re.compile(r"[A-Za-z0-9_-]{4,40}")
+
+
+def write_sample_histories(site: Path, paths: dict[str, Path] | None = None) -> dict:
+    """The index and per-water files for each nation. Returns the build's health entry for each."""
+    from dipcast import sample_history as sh
+    out = site / "data" / "research" / "history"
+    shutil.rmtree(out, ignore_errors=True)
+    health = {}
+    for nation in HISTORY_NATIONS:
+        (out / nation).mkdir(parents=True)
+        doc, why = sh.read(nation, (paths or {}).get(nation))
+        if why:
+            (out / f"{nation}.json").write_text(json.dumps({"schema": sh.SCHEMA, "nation": nation, "available": False, "why": why}))
+            health[nation] = {"available": False, "why": why}
+            continue
+        sites = [x for x in doc["sites"] if HISTORY_ID.fullmatch(str(x.get("id", ""))) and x["summary"]["samples"]]
+        for x in sites:
+            one = {k: v for k, v in x.items() if k not in ("in", "out", "samples")} | {"samples": sh.site_samples(nation, x)}
+            (out / nation / f"{x['id']}.json").write_text(json.dumps(one, ensure_ascii=False, separators=(",", ":")))
+        index = {**{k: v for k, v in doc.items() if k not in ("sites", "requests")}, "available": True,
+                 "sites": [{k: v for k, v in x.items() if k not in ("in", "out", "samples")} for x in sites]}
+        (out / f"{nation}.json").write_text(json.dumps(index, ensure_ascii=False, separators=(",", ":")))
+        health[nation] = {"available": True, "waters": len(sites), "samples": sum(x["summary"]["samples"] for x in sites),
+                          "last": doc["period"]["last"], "version": doc["version"]}
+    return health
 
 
 # Waterhead bacteria samples (docs/WATERHEAD-WET-CONTRACT-v1.md): Ambleside Action for a Future's weekly E. coli and
@@ -5274,6 +5311,7 @@ def build(refresh: bool = True) -> dict:
     from dipcast.wales import fetch as fetch_wales
     wales = fetch_wales()
     attach_typical(wales, "wales")   # committed past samples (scripts/export_typical_readings.py): no request
+    attach_history(wales, "wales")   # the link to every sample at Hay-on-Wye and Llandeilo (sample_history.py): no request
     health["wales"] = {"state": wales["state"], "sites": len(wales["sites"]), "fetched_at": wales["fetched_at"],
                        **({"error": wales["error"]} if wales.get("error") else {})}
     # Scottish bathing waters: SEPA's points layer, names, ratings and links (scotland.py).
@@ -5286,6 +5324,7 @@ def build(refresh: bool = True) -> dict:
     from dipcast.ireland import fetch as fetch_ireland
     ireland = fetch_ireland()
     attach_typical(ireland, "ireland")
+    attach_history(ireland, "ireland")
     health["ireland"] = {"state": ireland["state"], "sites": len(ireland["sites"]),
                          "restrictions": sum(len(s["alerts"] or []) for s in ireland["sites"]),
                          **({"error": ireland["error"]} if ireland.get("error") else {})}
