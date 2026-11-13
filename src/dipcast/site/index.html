@@ -2003,6 +2003,7 @@ document.getElementById('nav-list').addEventListener('click', e => { if (!DATA |
 // The header's search button (a phone with spots saved): opens the field and puts the focus in it; pressed again it
 // closes the field and ends any search, so the saved spots come back.
 document.getElementById('searchbtn').addEventListener('click', () => { const on = !SEARCH_OPEN; openSearch(on);
+  if (on) countAction('search');   // opened, not closed
   if (!on && VIEW.q) { VIEW.q = ''; const q = document.getElementById('q'); if (q) q.value = ''; drawSpots(); } });
 document.getElementById('nav-saved').addEventListener('click', e => { if (!DATA || !plainClick(e)) return; e.preventDefault(); openSaved(); });
 // A phone's spot page opens with a small map of where the spot is, under its name: the page's own
@@ -3794,7 +3795,7 @@ lowCtl.onAdd = () => { const el = L.DomUtil.create('div', 'low-ctl');
   L.DomEvent.disableClickPropagation(el);
   el.querySelector('button').addEventListener('click', () => setLowOnly(!VIEW.lowOnly));
   el.querySelector('select').addEventListener('change', e => setMapDay(e.target.value));
-  el.querySelector('#mapdays').addEventListener('change', e => setMapDay(e.target.value));
+  el.querySelector('#mapdays').addEventListener('change', e => { setMapDay(e.target.value); if (e.target.value) countAction('mapday'); });
   return el; };
 lowCtl.addTo(map);
 
@@ -4221,6 +4222,7 @@ async function mountHomeFeed(saved) {
   if (!host || shown !== 'list') return;
   if (!have.length) { host.innerHTML = ''; host.hidden = true; return; }   // no saved spot has an overflow upstream: no tile
   host.classList.remove('loading'); host.innerHTML = homeFeed(have, Date.parse(DATA.generated_at)); host.hidden = Boolean(VIEW.q.trim() || VIEW.filter !== 'all' || VIEW.lowOnly); bindItems(host);
+  host.querySelectorAll('a[data-id]').forEach(a => a.addEventListener('click', () => countAction('feed')));   // the spot itself counts as 'spot'
 }
 // The position stays in this page: it only orders the list, and is not sent anywhere.
 function locate(at = 'sort') {
@@ -5461,9 +5463,12 @@ for (const id of ['planbtn', 'nav-plan'])
   document.getElementById(id).addEventListener('click', e => { if (!DATA || !plainClick(e)) return; e.preventDefault(); openPlan(); });
 
 // Action counts (actions/, the Worker, and its README): on only when the build put the Worker's address in
-// <meta name="swimsignal-actions"> (DIPCAST_ACTIONS_URL). Five actions each add one to that day's total: a spot opened,
-// a day picked on a spot's page, a spot saved, a plan made, alerts turned on. The request holds the action's name and,
-// for the first three, the spot's id: nothing about the visitor, and nothing is stored on the device for it. Not sent
+// <meta name="swimsignal-actions"> (DIPCAST_ACTIONS_URL). Eleven actions each add one to that day's total: a spot opened,
+// a day picked on a spot's page, a spot saved, a plan made, alerts turned on; and, from the redesign of 11 Nov 2026, an
+// alert for a date or for back to low risk taken by the alert service, "Log a swim here" pressed, a row of the home
+// spill feed opened, the phone's search opened, a day picked on the phone map's strip. The request holds the action's
+// name and, for the first three, the spot's id: nothing about the visitor, and nothing is stored on the device for it.
+// The Worker answers an action it does not know with 400; a beacon's answer is never read, so that changes nothing. Not sent
 // where the browser has objected: "Don't count my visits" (dipcast.count, as counter.js), Global Privacy Control or Do
 // Not Track. It never throws and never waits, so with the switch off or the Worker down the page is the same.
 const ACTIONS_URL = (document.querySelector('meta[name="swimsignal-actions"]') || {}).content || '';
@@ -5727,6 +5732,7 @@ async function mountClear(d) {
           try { localStorage.setItem(CLEARS_KEY, JSON.stringify({ endpoint, clears: next })); } catch (e) { /* kept in memory for the page */ } }
         else { await D.sendDates(DATA.push.url, st.sub, next); mem = next; D.storeDates(st.sub, next); }
         paint();
+        if (turnOn) countAction(kind === 'low' ? 'lowalert' : 'dayalert');   // once the alert service took it, not on the press
         msg.textContent = kind === 'low' ? (turnOn ? 'You will be told when this spot is back to low risk.' : 'This alert is off.') : turnOn ? `Alerts are on for ${day}.` : `Alerts are off for ${day}.`;
       } catch (e) { b.disabled = false; msg.textContent = `Could not change ${kind === 'low' ? 'this alert' : 'alerts for this date'}: ${e.message}.`; }
     }));
@@ -6359,7 +6365,7 @@ function phoneFolds() {
   if (log && !calm) log.remove();
   if (cond && calm && !log && document.getElementById('swam')) {
     cond.insertAdjacentHTML('afterend', '<p class="log-here" id="log-here"><button type="button" class="btn">Log a swim here</button></p>');
-    document.querySelector('#log-here button').addEventListener('click', () => { document.getElementById('swam').click();
+    document.querySelector('#log-here button').addEventListener('click', () => { document.getElementById('swam').click(); countAction('logswim');
       const box = document.getElementById('jn-box'); if (box) box.scrollIntoView({ block: 'start', ...(STILL ? {} : { behavior: 'smooth' }) }); });
   }
   let at = at0;
