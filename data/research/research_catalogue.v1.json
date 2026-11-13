@@ -957,6 +957,13 @@
    "branch_exists": true,
    "date": "2026-11-13"
   },
+  "696": {
+   "n": 696,
+   "state": "open",
+   "branch": "claude/coastal-c1-protocol-de717d",
+   "branch_exists": true,
+   "date": "2026-11-13"
+  },
   "697": {
    "n": 697,
    "state": "open",
@@ -2038,7 +2045,7 @@
    "scope": "32,875 statutory samples, 2022–26, English coastal and estuary bathing waters. Rain from radar (2025–26 only), spills from EA files (2024–25 only). Brier skills are small (at best 3.4%). Spill positions are often not the outlet, and direction, dilution, tides and currents were not modelled, so this does not rule out spills or currents.",
    "stage": "development",
    "stage_note": "Sample table, coverage explorer and baseline scores are committed in data/research/coastal/. Nothing coastal is shown as a forecast. Account creation and outside orders are Ethan's.",
-   "next": "Candidate C1 (site, month, last sample, archive rain), protocol pushed before any new rain call, frozen, then backtested on the unread 2012–21 samples.",
+   "next": "Candidate C1 (site, month, last sample, ERA5-Land archive rain): protocol and capped fetch script in #696, no call made. Rain fetch 22 to 25 Nov 2026 (6 Dec if the D4 test extends), then fit and freeze, then backtest on the unread 2012–21 samples.",
    "records": [
     {
      "doc": "docs/SEA-CURRENTS-SCOPING-2026-10.md",
@@ -2051,11 +2058,16 @@
     {
      "doc": "docs/COASTAL-BASELINES-2026-11.md",
      "quote": "**Rain is supported as a candidate input**, by the rule in section 6, for E. coli over 500."
+    },
+    {
+     "doc": "docs/COASTAL-C1-PROTOCOL-2026-11.md",
+     "quote": "**Nothing coastal goes on the site, whatever the result.**"
     }
    ],
    "prs": [
     331,
-    692
+    692,
+    696
    ]
   },
   {
