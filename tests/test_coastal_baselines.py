@@ -1,6 +1,7 @@
 """The coastal explorer's rules and the baseline scorer's arithmetic (docs/COASTAL-BASELINES-2026-11.md), on made-up
 data: no sample result is read here."""
 
+import importlib.util
 import sys
 from datetime import date
 from pathlib import Path
@@ -9,9 +10,20 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import roc_auc_score
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts" / "coastal_baselines"))
-import build
-import score
+HERE = Path(__file__).resolve().parents[1] / "scripts" / "coastal_baselines"
+
+
+def _load(name):
+    """Load by path under a unique name: other tests import modules called `score` and `build`."""
+    spec = importlib.util.spec_from_file_location(f"coastal_baselines_{name}", HERE / f"{name}.py")
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = mod
+    spec.loader.exec_module(mod)
+    return mod
+
+
+build = _load("build")
+score = _load("score")
 
 
 def made_up(n_sites=60, seed=1) -> pd.DataFrame:
