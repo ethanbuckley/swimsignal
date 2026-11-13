@@ -935,6 +935,13 @@
    "branch": "claude/irish-welsh-sample-histories-15578f",
    "branch_exists": true,
    "date": "2026-11-13"
+  },
+  "695": {
+   "n": 695,
+   "state": "open",
+   "branch": "claude/uu-diagnosis-d4d5a5",
+   "branch_exists": true,
+   "date": "2026-11-13"
   }
  },
  "entries": [
@@ -3323,6 +3330,31 @@
      "label": "Hay-on-Wye and Llandeilo samples",
      "href": "samples.html#wales"
     }
+   ]
+  },
+  {
+   "id": "uu-diagnosis",
+   "title": "Why spill-model candidates fail at United Utilities",
+   "section": "promising",
+   "project": "REGIONAL",
+   "topics": [
+    "spills",
+    "companies",
+    "model"
+   ],
+   "verdict": "A diagnosis on seen rows, not an adoption test. v2 arm (b) minus production at United Utilities: +0.00132 (+0.00011 to +0.00257), 3.5% of production's Brier. The nine-company pooled layer forecasts the company too high and the offsets remove about half of that; swapping the layer accounts for +0.00121 (-0.000003 to +0.00245), 92% of the gap, not shown by a hair. The live-status uplift there lands only on rows already spilling at issue. The lead-4 forecast-rain loss comes from production's lead map. Labels, rain resolution, the offsets and the stale-feed fallback are ruled out as the main cause.",
+   "scope": "United Utilities rows only, 2024-25 and January-August 2026, all scored before. Ranks and sizes explanations; confirms no model. Why the pooled layer runs high is inferred, not tested. Forecast-rain results rest on 53 overflows in 16 cells.",
+   "stage": "development",
+   "stage_note": "Production stays at United Utilities. No verdict, frozen file or live forecast changes; #357, #639 and #666 stand.",
+   "next": "Test the narrow candidate uu-spilling-v1 (production plus combined-v1's status uplift only where the overflow is spilling at issue, leads 1 to 4) with the addendum script, unchanged, on the EA's September-December 2026 records, under a statement pushed before that file is imported. Archive it if there is no gain. The file's date is not known.",
+   "records": [
+    {
+     "doc": "docs/UU-DIAGNOSIS-2026-11.md",
+     "quote": "**Production stays at United Utilities.**"
+    }
+   ],
+   "prs": [
+    695
    ]
   }
  ]
