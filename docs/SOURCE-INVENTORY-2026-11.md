@@ -39,15 +39,15 @@ in the JSON, measured read-only on 31 Oct).
 |---|---|---|---|---|---|---|---|---|
 | 1 | `ea-annual-returns-improvement` | EDM annual returns: improvement, investigation and monitor-action columns | England | metadata | Open Government Licence v3 | ready | yes | Open, covers every English overflow, and the build already reads the layer; only three columns are dropped. |
 | 2 | `ea-winep-pr24` | PR24 Water Industry National Environment Programme (WINEP) | England | metadata | Open Government Licence (catalogue field); attribution line says 'All rights reserved' | ready | no | One open file gives a dated regulatory deadline for 92% of improvement actions; small fetch, clear use, one licence wording to settle. |
-| 3 | `wessex-river-samples` | Wessex Water Environmental Water Quality 2019-2025 | England (Wessex) | measurement | CC BY 4.0 | ready | yes | Real E. coli lab counts at three listed spots that have no other samples; open licence; already cached. |
+| 3 | `wessex-river-samples` | Wessex Water Environmental Water Quality 2019-2025 | England (Wessex) | measurement | CC BY 4.0 | already used (13 Nov) | yes | Real E. coli lab counts at three listed spots, two with no other samples; open licence; already cached. Shown on `/wessex-river-samples.html` (13 Nov). |
 | 4 | `ea-hydrology-sondes` | EA Hydrology API water-quality sondes | England | proxy | Open Government Licence v3 | ready | yes | Only live in-river water-quality feed found; open; but proxies, thin and moving coverage. |
 | 5 | `ea-coastal-bathing-samples` | EA statutory E. coli samples at coastal and estuary bathing waters (Water Quality Archive) | England (coast) | measurement | Open Government Licence v3 | ready | yes | Fifteen times the inland sample count, open, and the register's named next coastal step; a few hundred small requests, off CI. |
 | 6 | `scottish-water-event-files` | Scottish Water published overflow event data (reported to SEPA 2021-25; non-reported 2022-25) | Scotland | measurement | Open Government Licence v3 | ready | yes | New-region observations under OGL v3, already downloaded and parsed; the first Scottish step that needs nobody's permission. |
 | 7 | `epa-ireland-bathing` | EPA Bathing Water Open Data API | Republic of Ireland | measurement | CC BY 4.0 | already used | no | The directory shows the latest result; the full 25,978-sample history since 2014 is open and unused, the cheapest new Irish observation. |
 | 8 | `nrw-water-quality-archive` | NRW Water Quality Archive | Wales | measurement | Open Government Licence v3 | already used | yes | Open Welsh river, lake and coast samples back to 2000; partly cached; W10 used only 213 river rows. |
 | 9 | `met-office-radar` | Met Office UK Radar Observations (AWS Open Data) | UK | measurement | CC BY-SA 4.0 | already used | yes | Already cached; ranked for its deadline: the bucket keeps two years, so November 2024 goes from about 21 Nov 2026. |
-| 10 | `ea-edm-start-stop` | EDM Storm Overflow Start/Stop Detailed Data | England (ten companies, including Dŵr Cymru's English overflows) | measurement | Open Government Licence | already used | yes | Already the training labels; the 2026-to-August file adds months of labels for live checks and is not in the main checkout's cache. |
-| 11 | `stream-company-layers-unfetched` | Company event layers on Stream not yet fetched (Anglian monthly from Apr 2025, Severn Trent 2025, Wessex 2025-26, Yorkshire EDM History Jan-Aug 2026) | England | measurement | CC BY 4.0 (as listed on 19 Oct) | ready | no | Open CC BY 4.0 event layers left unread; they fill 2026 months the EA files lack, at small cost. |
+| 10 | `ea-edm-start-stop` | EDM Storm Overflow Start/Stop Detailed Data | England (ten companies, including Dŵr Cymru's English overflows) | measurement | Open Government Licence | already used | yes | Already the training labels. The 2026-to-August zip (still the latest on 13 Nov) is held in `swimsignal-private/event-layers-2026/` and imported: 983,409 events, nine companies (`docs/EVENT-RECORDS-2026-11.md`). Next: the EA's September-December 2026 file. |
+| 11 | `stream-company-layers-2025-26` | Company event layers on Stream and Wessex's ArcGIS (Anglian monthly Apr 2025 to Jul 2026, Severn Trent 2025, Wessex 2025 and 2026 to Sep, Yorkshire EDM History Jan-Sep 2026) | England | measurement | CC BY 4.0 (rechecked 13 Nov) | already used | yes | Fetched 13 Nov (#689). Adds September 2026 at Wessex and Yorkshire; Anglian's layers disagree with the EA file and are not labels. |
 | 12 | `sepa-river-levels` | SEPA river levels (KiWIS time series API) | Scotland | measurement | Open Government Licence | ready | no | Open Scottish river levels; useful context for a Scottish observation page; registration advised for web use. |
 | 13 | `opw-water-levels` | OPW waterlevel.ie | Republic of Ireland | measurement | CC BY 4.0 | needs permission | no | Open Irish levels and probable water temperature; a courtesy email to OPW comes first, which is Ethan's. |
 | 14 | `hafren-dyfrdwy-2025` | Hafren Dyfrdwy Event Duration Monitoring 2025 | Wales | measurement | CC BY 4.0 | already used | yes | Small, open Welsh event file already used in the Wales hindcast; little left to gain until 2026 is published. |
@@ -94,8 +94,11 @@ in the JSON, measured read-only on 31 Oct).
    read. The catalogue says OGL and the attribution line says "All rights reserved" [checked 31 Oct]; the same
    mismatch on the EA event files was settled as OGL [doc].
 3. **Wessex Water river E. coli.** 4,123 lab results at 99 river points, 2019-2025, CC BY 4.0, already cached
-   (`data/cache/wessex_wq/`). Warleigh Weir, Farleigh Hungerford and Tellisford Weir are listed spots with no EA
-   samples. A dated sample view like `/samples.html` is the deliverable; a held-out check is secondary.
+   (`data/cache/wessex_wq/`). Warleigh Weir and Tellisford Weir are listed spots with no EA samples. Farleigh
+   Hungerford has 60 EA samples since May 2024 (corrected 13 Nov; it was listed as having none). **Built 13 Nov 2026:**
+   the dated view `/wessex-river-samples.html`, linked from all three spots
+   ([contract](WESSEX-RIVER-SAMPLES-CONTRACT-v1.md)), and an exploratory check of the estimate's level
+   ([record](WESSEX-RIVER-SAMPLES-CHECK-2026-11.md)).
 4. **EA sondes.** 15-minute ammonium, oxygen and turbidity, OGL. Twelve live ammonium stations within 5 km of a
    listed spot on 25 Oct, eight on Windermere becks [doc; live count not rechecked]. A sensor reading of a sewage
    marker, not a bacteria count. #403's test gate stays as written.
@@ -106,14 +109,18 @@ in the JSON, measured read-only on 31 Oct).
    (`data/raw/scottish_water/`, `sw_events.parquet`). A Scottish spill-history observation page needs no one's
    permission. The Scotland plan's hindcast has not run.
 7. **EPA Ireland samples.** 25,978 results since 2014 under CC BY 4.0. The directory shows only the latest. A
-   sample-history view, no forecast.
+   sample-history view, no forecast. *Done 13 Nov 2026* ([contract](SAMPLE-HISTORY-CONTRACT-v1.md)): 26,929 samples at
+   240 waters, on `samples.html` and linked from each card; licence rechecked unchanged.
 8. **NRW Water Quality Archive.** OGL, monthly, 2000 onwards. Two catchments cached. W10 scored 213 river rows; a
-   dated Welsh sample view at Hay-on-Wye and Llandeilo is unused.
+   dated Welsh sample view at Hay-on-Wye and Llandeilo is unused. *Done 13 Nov 2026* (same contract): 61 samples at the
+   two waters, the archive joined to NRW's bathing-water service, which agree sample for sample.
 9. **Met Office radar.** Already cached (971 MB across two places). Ranked for its deadline: the bucket is a "2-year
    rolling archive" and its oldest day, 21 Nov 2024, was still listed on 31 Oct [checked 31 Oct]. A second backfill
    pass before about 21 Nov keeps November 2024.
 10. **EA start/stop files, 2026 to August.** The labels the model trains on. The EA now packages them as yearly zips,
     updated 22 Oct [checked 31 Oct]. No English 2026 file was found in the main checkout's `data/raw/ea_events/`.
+    **Update 13 Nov:** the zip was held in a session scratch folder, is still the EA's latest, and is now kept in
+    `swimsignal-private/event-layers-2026/` with the rank 11 layers (`docs/EVENT-RECORDS-2026-11.md`, #689).
 
 ## 3. Recheck against primary sources, 31 October 2026
 
@@ -187,7 +194,7 @@ The lead session decides which to open. Each names the JSON rows it acts on (`fo
 6. Scottish spill-history observation page from Scottish Water's OGL event files.
 7. Irish bathing-water sample history from the EPA API.
 8. Second Met Office radar backfill before November 2024 is deleted (about 21 Nov 2026).
-9. Fetch the EA 2026-to-August start/stop files and the unfetched Stream company layers for 2026 labels.
+9. Fetch the EA 2026-to-August start/stop files and the unfetched Stream company layers for 2026 labels. Done 13 Nov (#689).
 10. Permission requests for Ethan to send: Southern and Yorkshire event files, Dŵr Cymru live and history, Scottish
     Water API licence name, SEPA results and PFI file, NI Water. Drafts already exist in the Wales, Scotland and
     Ireland plans and in `docs/OVERFLOW-DATA-SOURCES-2026-10.md`.

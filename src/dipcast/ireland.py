@@ -27,7 +27,7 @@ from pathlib import Path
 
 import httpx
 
-from dipcast import config, typical
+from dipcast import config, sample_history, typical
 from dipcast.coastal import TZ, instant, when
 
 BASE = "https://data.epa.ie/bw/api/v1/"
@@ -388,6 +388,9 @@ def render(snapshot: dict) -> str:
         lines.append(_sample_text(s["sample"], today, season))
         if s.get("typical"):
             lines.append(escape(typical.line(s["typical"])))
+        if s.get("history"):   # every sample since 2014 on the shared sample viewer (sample_history.py)
+            lines.append(f'<a href="samples.html#ireland={escape(s["id"], quote=True)}">'
+                         f'{escape(sample_history.history_line(s["history"]))}</a>')
         water = water_line(s)
         if water:
             lines.append(escape(water))
