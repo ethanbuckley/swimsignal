@@ -894,6 +894,13 @@
    "branch_exists": true,
    "date": "2026-11-10"
   },
+  "686": {
+   "n": 686,
+   "state": "open",
+   "branch": "claude/combined-v1-shadow-logger-a9b35a",
+   "branch_exists": true,
+   "date": "2026-11-13"
+  },
   "685": {
    "n": 685,
    "state": "open",
@@ -1099,18 +1106,23 @@
     "model"
    ],
    "verdict": "Scored once on January to August 2026 as a frozen-model backtest. It passed its bar at eight companies and for all nine together: lower Brier score than today's model, same-day persistence and a 10 mm rain rule at leads 1 and 2, every interval below zero (lead 1, all nine: 0.0307 against 0.0419). It failed at United Utilities, where it was not shown better than today's model beyond lead 0. It was not shown better than the live-status input alone. Development evidence: the routing rule and the combination were chosen after 2026 had been seen.",
-   "scope": "EA start/stop records, January to August 2026, 13,426 overflows at nine English companies; status rebuilt from the complete record at 00:00 UTC; reanalysis rain decides, archived forecast rain reported. Not tested on polled status or on unseen months.",
+   "scope": "EA start/stop records, January to August 2026, 13,426 overflows at nine English companies; status rebuilt from the complete record at 00:00 UTC; reanalysis rain decides, archived forecast rain reported. Not yet tested on polled status or on unseen months: the shadow log is built for that and has no rows yet.",
    "stage": "development",
-   "stage_note": "Frozen (commit 4d66d7c7) and not adopted. Nothing on the site changes. United Utilities stays on today's model.",
-   "next": "Build a shadow logger for the combined candidate, with its window and bar stated before it opens (PR due 17 November 2026); later, rerun the backtest unchanged on the EA's September to December 2026 records.",
+   "stage_note": "Frozen (commit 4d66d7c7) and not adopted. Nothing on the site changes. United Utilities stays on today's model. A shadow logger is built (PR #686, open): it logs the candidate beside today's model in its own table, with the window, the bar and the read date stated before any row. Logging starts once Ethan merges that PR.",
+   "next": "After the merge, confirm the window's dates from the first logged rows (28 target days, opening four days after the first logged forecast; about 22 November to 19 December 2026, read on or after 21 December, if logging starts by 18 November). The read script is due one week before the window ends. Later, rerun the backtest unchanged on the EA's September to December 2026 records.",
    "records": [
     {
      "doc": "docs/COMBINED-CANDIDATE-BACKTEST-2026-11.md",
      "quote": "**combined-v1 passes the bar at eight companies and for all nine together. It fails at United Utilities**"
+    },
+    {
+     "doc": "docs/COMBINED-SHADOW-2026-11.md",
+     "quote": "Not yet run. No row has been logged."
     }
    ],
    "prs": [
-    666
+    666,
+    686
    ]
   },
   {
