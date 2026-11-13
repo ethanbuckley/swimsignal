@@ -893,6 +893,13 @@
    "branch": "claude/scotland-2021-backtest",
    "branch_exists": true,
    "date": "2026-11-10"
+  },
+  "687": {
+   "n": 687,
+   "state": "open",
+   "branch": "feat/sonde-readings-on-page",
+   "branch_exists": true,
+   "date": "2026-11-13"
   }
  },
  "entries": [
@@ -1841,7 +1848,7 @@
    "scope": "Metadata count only; no readings were fetched or matched.",
    "stage": "waiting",
    "stage_note": "Parked; revisit in October 2027.",
-   "next": "More paired data, with alignment and latency checked. Correctly placed, dated sensor readings may be shown on their own.",
+   "next": "More paired data, with alignment and latency checked. Dated sensor readings are drafted as a page tile in #687, an observation that is not part of this test.",
    "records": [
     {
      "doc": "docs/SONDE-SIGNAL-TEST-2026-10.md",
@@ -1852,6 +1859,30 @@
     403
    ],
    "register_note": "The register says \"71 matched river rows\"; the doc's 71 is an upper bound from metadata, with nothing matched."
+  },
+  {
+   "id": "sonde-readings",
+   "title": "Live EA sonde readings on a river spot's page",
+   "section": "data",
+   "topics": [
+    "sensors",
+    "ammonium",
+    "rivers"
+   ],
+   "verdict": "An observation feature, not a test: 2 of 85 river spots have a live EA ammonium sonde on their own river, upstream within 20 km or at the spot, on 13 November 2026. Nothing was scored.",
+   "scope": "Shows the latest readings with their time and the EA's quality label. No level, colour or advice is drawn from them. Lake spots, turbidity-only stations and downstream sondes are not shown.",
+   "stage": "development",
+   "stage_note": "Draft PR; the public wording is Ethan's decision.",
+   "next": "Ethan reads the tile's wording and decides whether lake spots get an inflow-beck rule; then merge.",
+   "records": [
+    {
+     "doc": "docs/SONDE-READINGS-CONTRACT-v1.md",
+     "quote": "**Under the rule above, 2 of 85 river spots get the tile:**"
+    }
+   ],
+   "prs": [
+    687
+   ]
   },
   {
    "id": "radar-rain",
