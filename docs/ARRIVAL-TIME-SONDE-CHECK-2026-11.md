@@ -169,3 +169,62 @@ means the rises do not depend on distance, which points to rain and not to trave
 Whatever the outcome, the transport settings stay as they are.
 
 ---
+
+## 10. Sondes chosen, from metadata and spill records only (added before any readings request)
+
+Sections 1 to 9 were pushed at 15:17 UTC on 13 November (commit `a4735316`). The station listing was request 1, at
+15:18 UTC. No sonde reading has been fetched or read. What follows used the listing, the river network, the overflow
+table and the EA start/stop files (`scripts/arrival_sonde_check/relate.py`).
+
+**The recount** ([recount.json](ARRIVAL-TIME-SONDE-CHECK-2026-11-recount.json),
+[stations.csv](ARRIVAL-TIME-SONDE-CHECK-2026-11-stations.csv)):
+
+| | Count |
+|---|---:|
+| Stations that have ever had a 15-minute ammonium measure | 1,818 |
+| Open on 13 November (no `dateClosed`) | 149 |
+| Open and within 5 km of a listed spot, straight line | 20 |
+| Deployed for 30 days or more in 2024-25 | 253 |
+| of those: on a tidal link | 14 |
+| of those: more than 250 m from the link | 23 |
+| of those: not placed on a river | 6 |
+| of those: no timing overflow upstream | 74 |
+| **Usable: placed, with a timing overflow upstream** | **136** |
+| Usable with at least one quiet start | 121 |
+| Usable with at least one Tier A start | 94 |
+| Usable and still open | 45 |
+
+- The 20 are not the scoping record's 12 counted again. That count meant "readings since 15 October"; this one means
+  "no closing date", and the spot list has grown. All 8 Windermere becks are still listed open.
+- **The becks around Windermere mostly cannot be used here.** Of the 8, only Cunsey Beck at Eel House Bridge has a
+  timing overflow upstream (4 Tier A starts). The others have no monitored overflow 0.5 to 30 km upstream on a
+  river-only path.
+- Being near a spot is not needed for this question. The usable sondes are wherever the EA put one below an
+  overflow.
+
+**Which sondes are fetched.** Usable sondes with at least 3 quiet starts, ranked by Tier A starts, then quiet starts,
+then station id. The first 90. One request each: the sonde's deployment within 2024-25, with 2 days before and 4
+days after, as CSV. The plan: 90 requests, about 30,800 station-days (about 3.0 million readings), 664 Tier A starts
+and 1,294 quiet starts in all. At up to 60 s a request that is at most about 95 minutes. The fetch stops if the saved
+readings pass 1.2 GB. The column `fetch` in stations.csv marks the 90.
+[pairs.csv](ARRIVAL-TIME-SONDE-CHECK-2026-11-pairs.csv) lists every sonde and timing overflow with the river
+distance and the model's travel time.
+
+**Rules added now, before any reading:**
+
+- **Pumped fen channels are reported apart.** 8 of the 90 have DRAIN or DELPH in their label (North Level Main Drain,
+  Counter Drain, the Delph, Sincil Drain, Welney Counterdrain). Water there is moved by pumps and sluices, and the
+  network's direction of flow may not hold. They are fetched and tabled, but kept out of any pooled figure.
+- **Two probes at one place count once.** Station ids that differ only in their last letter (surface and depth
+  probes) are one sonde in every count of sondes and in the pooled bootstrap.
+- **Rise share** means rises ÷ (rises + no rise), for events and for the dry reference alike. Events that are raised
+  before, gapped or without a baseline are in neither.
+- **Order of outcomes** for one event: outside the readings, no baseline, gap, raised before, rise, no rise.
+- **The model's window** uses the end of the spill that started at t0 (the EA record's own end), not a merged
+  episode.
+
+**Seen before the readings:** the counts above, station labels, and the per-sonde counts of quiet and Tier A starts
+(printed by `relate.py`). Tier A pairs span 0.5 to 29.8 km (median 9.6 km), mostly Yorkshire Water (60 pairs) and
+Anglian Water (44). No reading, no rise, no lag.
+
+---
