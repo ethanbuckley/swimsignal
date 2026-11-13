@@ -53,6 +53,30 @@ def _minute(d: date) -> int:
     return int(pd.Timestamp(d, tz="UTC").timestamp() // 60)
 
 
+def upstream_tables(net, overflows, monitored, lon, lat, river):
+    """(up, timing, why_out, placed) for a sonde at lon, lat on `river`: every monitored overflow the model traces
+    upstream (with d_m, its distance along the network), the timing overflows among them (section 3), the reason
+    the sonde is out or None, and the placement columns."""
+    try:
+        pin = locate_pin(net, lon, lat, kind_hint="river", river_hint=river)
+    except Exception as e:  # noqa: BLE001 - a sonde the network cannot place is out
+        return None, None, f"not placed ({type(e).__name__})", {}
+    if pin.mode != "river" or pin.snap is None:
+        return None, None, "not on a river", {}
+    if pin.snap.form == "tidalRiver":
+        return None, None, "tidal", {}
+    if pin.snap.dist_m > SNAP_MAX_M:
+        return None, None, "over 250 m from the link", {}
+    placed = dict(snap_m=round(pin.snap.dist_m), watercourse=pin.watercourse or "", placement=pin.placement or "")
+    up = upstream_overflows(net, pin, overflows, config.RIVER_VELOCITY_MS)
+    up = up[up["site_id"].isin(monitored)].copy()
+    up["d_m"] = up["distance_m"] + up["lake_distance_m"]
+    timing = up[(up["lake_distance_m"] == 0) & (up["snap_confidence"] == "high")
+                & (up["distance_m"] >= D_MIN_M) & (up["distance_m"] <= D_MAX_M)]
+    placed.update(monitored_upstream=len(up), timing_overflows=len(timing))
+    return up, timing, (None if len(timing) else "no timing overflow upstream"), placed
+
+
 def main(stations_json: str, out_dir: str) -> None:
     out = Path(out_dir); out.mkdir(parents=True, exist_ok=True)
     items = json.loads(Path(stations_json).read_text())["items"]
@@ -95,28 +119,10 @@ def main(stations_json: str, out_dir: str) -> None:
         row = {"station_id": s.station_id, "label": s.label, "river": s.river or "", "lat": s.lat, "lon": s.lon,
                "opened": s.opened, "closed": s.closed or "", "from": a, "to": b, "measure": s.measures["ammonium"],
                "km_to_spot": round(near(s), 1)}
-        try:
-            pin = locate_pin(net, s.lon, s.lat, kind_hint="river", river_hint=s.river)
-        except Exception as e:  # noqa: BLE001 - a sonde the network cannot place is out
-            row["out"] = f"not placed ({type(e).__name__})"
-            rows.append(row); continue
-        if pin.mode != "river" or pin.snap is None:
-            row["out"] = "not on a river"
-        elif pin.snap.form == "tidalRiver":
-            row["out"] = "tidal"
-        elif pin.snap.dist_m > SNAP_MAX_M:
-            row["out"] = "over 250 m from the link"
-        if "out" in row:
-            rows.append(row); continue
-        row.update(snap_m=round(pin.snap.dist_m), watercourse=pin.watercourse or "", placement=pin.placement or "")
-        up = upstream_overflows(net, pin, overflows, config.RIVER_VELOCITY_MS)
-        up = up[up["site_id"].isin(monitored)].copy()
-        up["d_m"] = up["distance_m"] + up["lake_distance_m"]
-        timing = up[(up["lake_distance_m"] == 0) & (up["snap_confidence"] == "high")
-                    & (up["distance_m"] >= D_MIN_M) & (up["distance_m"] <= D_MAX_M)]
-        row.update(monitored_upstream=len(up), timing_overflows=len(timing))
-        if timing.empty:
-            row["out"] = "no timing overflow upstream"
+        up, timing, why_out, placed = upstream_tables(net, overflows, monitored, s.lon, s.lat, s.river)
+        row.update(placed)
+        if why_out:
+            row["out"] = why_out
             rows.append(row); continue
         lo, hi = _minute(a), _minute(b) + 1440
         sp = pd.concat([by_site[k] for k in up["site_id"] if k in by_site], ignore_index=True)

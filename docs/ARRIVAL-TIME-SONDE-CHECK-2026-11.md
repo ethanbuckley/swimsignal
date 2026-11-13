@@ -229,7 +229,7 @@ Anglian Water (44). No reading, no rise, no lag.
 
 ---
 
-## 11. Amendment 1, before any reading was read (13 November, 15:30 UTC)
+## 11. Amendment 1, before any reading was read (13 November, 15:23 UTC)
 
 Section 10 was pushed at 15:22 UTC (commit `6ce94454`). Request 2, the first readings request, was for the
 top-ranked sonde, E02034A (Lipgate Farm). It returned 200 with an empty body: no readings in 2024-25.
