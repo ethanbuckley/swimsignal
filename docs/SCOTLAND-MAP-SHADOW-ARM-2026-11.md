@@ -211,5 +211,7 @@ build (1,485 overflows, five days).
   issued by 08:00, so two or three a day, 40 to 60 MB by 31 January. The state directory is saved to the Actions
   cache on every run.
 - **Open-Meteo.** No call. The module does not import the rain code, and a test checks that.
+- **A lost cache loses the log.** The state release does not hold the Scottish files, because the feed's licence is
+  unconfirmed. If the Actions cache is lost, this log and the existing shadow's both start again. Not changed here.
 - **To start logging.** Merge the PR. `DIPCAST_SCOTTISH_WATER` has been `1` since 11 October, and the arm rides on
   that shadow's run. The first build after the merge that the existing shadow logs is the arm's first issue.
