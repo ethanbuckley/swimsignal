@@ -956,6 +956,13 @@
    "branch": "claude/coastal-explorer-baselines-d3beaf",
    "branch_exists": true,
    "date": "2026-11-13"
+  },
+  "697": {
+   "n": 697,
+   "state": "open",
+   "branch": "claude/radar-plus-status-test-b28116",
+   "branch_exists": true,
+   "date": "2026-11-13"
   }
  },
  "entries": [
@@ -3279,6 +3286,30 @@
    ],
    "prs": [
     694
+   ]
+  },
+  {
+   "id": "radar-plus-status",
+   "title": "Radar rain up to the issue hour, with live status already in",
+   "section": "promising",
+   "topics": [
+    "rain",
+    "spills",
+    "model"
+   ],
+   "verdict": "Passed its stated rule on 13 November 2026 (verdict H), as development evidence on 2025 labels that had been scored before. #694's test was repeated with the overflow's live spill status, as it stood at each issue hour, added to both the radar and the forecast-only arms. Averaged over eight issue hours and scored out of fold on 3,778 overflows (1,374,430 overflow-days), radar to the hour with status beat status with the forecast alone by 3.2% with a fresh forecast for the rest of the day (Brier difference −0.00074, 95% interval −0.00109 to −0.00041, overflow × week) and by 2.5% with a day-old one (−0.00065, interval −0.00095 to −0.00037). Status took most of radar's evening gain (at 21 UTC 0.00030 of 0.00258 is left) and, summed over 03 to 15 UTC, none of its earlier gain. All of what radar still adds is on overflows not yet spilling at the issue hour. Thames Water, January to August 2026, models frozen on 2025: −0.00051 (interval −0.00132 to −0.00004) and −0.00046 (interval −0.00121 to −0.00001).",
+   "scope": "Nine English companies' overflows in cells with cell radar and cached lead forecasts, 2025, and Thames Water in 2026. Status from the EA start/stop records (Thames 2026: the alert stream), not from SwimSignal's own polls. One fitted model per issue hour; whether a single fit would serve every hour was not tested. Says nothing about forecasts for the days ahead.",
+   "stage": "development",
+   "stage_note": "Not adopted. Nothing on the site or in production changes, and nothing is deployed. The per-hour fits are not kept as files; their hashes are in the score file and they rebuild byte-identically from the archived code.",
+   "next": "Build and test the radar shadow logger offline (#694's entry), with status in its candidate and reference if Ethan switches status on after 23 November 2026, and #694's frozen pair if not. Its PR states before any score whether a build uses the nearest issue hour's model or a single fit tested against the per-hour ones.",
+   "records": [
+    {
+     "doc": "docs/RADAR-PLUS-STATUS-TEST-2026-11.md",
+     "quote": "**The verdict is H.**"
+    }
+   ],
+   "prs": [
+    697
    ]
   },
   {
