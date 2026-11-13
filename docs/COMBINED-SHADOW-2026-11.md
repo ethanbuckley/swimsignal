@@ -227,6 +227,30 @@ Under 14 days left: it restarts with a new statement.
 - **Logging every build.** Only a forecast issued by 08:00 can be the decision forecast.
 - **A new Worker or schedule.** The site build's cadence is adequate: the read needs one forecast by 08:00 a day.
 
+## Changes after this statement
+
+Both written on 13 November 2026, after the statement was pushed (`67472e10`, 15:19 UTC) and before any row was
+logged or read. Neither changes the candidate, the rows, the window or the bar.
+
+1. **Size, measured.** The statement's size line was inferred and too high. Counted on the state release of 13 Nov
+   12:42 UTC (`forecast_overflows`: rows per build and issue hour only; no forecast value, shadow value or outcome was
+   selected): a build logs 8,900 to 11,000 rows at leads 0 to 4, all companies. Over 1 to 13 November there were one
+   to four builds by 08:00 local on each day, a mean of 24,100 such rows a day against 74,000 for all builds. So the
+   08:00 rule keeps about a third, and the 32 days from the first logged forecast to the window's end hold about
+   0.8 million rows, not 1 to 2 million. On disk: 95 bytes a row on synthetic rows with random values (the worst
+   case, measured offline); the state database itself averages 40 bytes a row over its 7.0 million rows. That gives
+   30 to 75 MB over the window and 70 to 170 MB by the stop date, beside a 280 MB file. Which end it lands is not
+   known until rows exist.
+2. **The rain-time check has a two-minute allowance.** A forecast stamps its issue time first, then waits up to
+   12 seconds for the river gauge and reads the rain. A rain cell the build's prefetch missed is fetched in that
+   call, seconds after the stamp. It is production's own input on the same row, so the comparison stays paired.
+   `scripts/combined_shadow_check.py` counts and prints such rows, and fails only on rain fetched more than two
+   minutes after the stamp.
+
+Time, measured on this Mac while eleven other sessions were running: 0.3 seconds a spot with 160 upstream
+overflows, so about half a minute on a logged build of about 100 spots. The runner's figure is inferred from that,
+not measured.
+
 ---
 
 ## Results
