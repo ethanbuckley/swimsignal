@@ -85,4 +85,74 @@ No network calls. Inputs: the committed JSONs named above and `data/research/wes
 
 ## Results
 
-(Added after the protocol above was committed and pushed.)
+Added 13 November 2026, after the protocol above was committed and pushed (434ce288). Figures in
+[WESSEX-RIVER-SAMPLES-CHECK-2026-11.json](WESSEX-RIVER-SAMPLES-CHECK-2026-11.json), from
+`scripts/wessex_river_samples_check.py`, offline, committed files only. **All exploratory: every outcome below had
+been seen before, and the in-season ones helped choose the live river rule.** Intervals treat samples as independent,
+so they are too narrow.
+
+### A. Level and order, May to September 2020-25 (the soil-moisture test's figures)
+
+| Point | Samples | Over 900 | Observed share [95%] | Mean estimate, live rule (before it) | Reading | Within-point rho, live rule [95%] |
+|---|---:|---:|---|---|---|---|
+| Warleigh Weir, 51 m downstream | 173 | 54 | 0.312 [0.248, 0.385] | 0.368 (0.408) | within | 0.756 [0.679, 0.817] (n 153); 0.684 [0.347, 0.865] (n 20) |
+| Farleigh Hungerford, 2.3 km upstream | 91 | 38 | 0.418 [0.322, 0.520] | 0.298 (0.299) | reads low | 0.640 [0.500, 0.748] |
+| Tellisford Weir, 212 m downstream | 60 | 30 | 0.500 [0.377, 0.623] | 0.262 (0.300) | reads low | 0.549 [0.343, 0.705] |
+
+- **Order:** at all three points the estimate ranks the days the right way, every interval above zero. This repeats
+  the soil-moisture test's own per-station figures; it adds intervals, not evidence.
+- **Level:** at Warleigh Weir the estimate is a little high, within the interval. At both Frome points it is low:
+  observed shares 12 and 24 points above the mean estimate.
+
+### B. Descriptive, from the Wessex samples alone (2021-25)
+
+| Point | May to Sep over 900 | Oct to Apr over 900 |
+|---|---|---|
+| Warleigh Weir | 54 of 173 (0.31) | 91 of 149 (0.61) |
+| Farleigh Hungerford | 38 of 90 (0.42) | 55 of 83 (0.66) |
+| Tellisford Weir | 30 of 60 (0.50) | 19 of 38 (0.50) |
+
+One Farleigh sample, "below 1,000", is left out: it cannot say whether it was over 900.
+
+At Farleigh Hungerford, in season, Wessex's point and the Environment Agency's bathing water: 2024, 9 of 18 against
+6 of 20; 2025, 1 of 7 against 3 of 20. Different places 2.3 km apart, on different days.
+
+### C. Post hoc: the Environment Agency's own samples at Farleigh Hungerford
+
+Defined after A and B were seen, as the protocol's named next step when the Frome points read low. At the bathing
+water, 2024-26, the EA's 56 samples with a hindsight estimate (leave-one-year-out, archived forecast rain; EA samples
+are the model's fitting population, each estimate out of its own year): **11 over 900, 0.196 [0.113, 0.318], against
+a mean hindsight estimate of 0.202.** By year: 2024 0.300 vs 0.348, 2025 0.150 vs 0.151, 2026 0.125 vs 0.081.
+
+### D. Post hoc: same-day pairs at Farleigh Hungerford
+
+Defined after C, as the step it named. Six days in 2024-25 have both a Wessex sample at the point 2.3 km upstream and
+an EA sample at the bathing water, none with a limit. Wessex's count was higher on 5 and equal on 1 (both 2,700 on
+29 May 2024); the median ratio is 1.66 (log10 0.22). Wessex sampled between 09:40 and 11:50; the EA's times are in the
+JSON. Six pairs cannot carry a claim; they point the same way as B and C.
+
+### What this shows, and what it does not
+
+- **Established:** the live river rule orders days at all three Wessex points. Its level is close at Warleigh Weir
+  and at the Farleigh bathing water's own EA samples. It is low at Wessex's two Frome points, in season.
+- **Inferred, not tested:** the gap belongs to the Frome sampling points more than to the model. The bathing water's
+  EA samples match the hindsight level, and in 2024 the Wessex point 2.3 km upstream ran higher than the bathing
+  water (9 of 18 against 6 of 20). Possible reasons, none checked: where in the channel and when in the day the company
+  samples (Farleigh's point is 27 m from a side channel, 78 m from the Frome's mapped line); sources the overflow
+  table does not hold (works effluent, farms) between the points; different rain inputs (ERA5-Land in A, archived
+  forecast rain in C). Two seen points cannot separate these.
+- **Not shown:** that the estimate is right or wrong at Tellisford Weir, the spot itself. Its point is 212 m away, and
+  it has no other samples.
+
+### What follows (as the protocol fixed it)
+
+- No site change. The view publishes the samples with no estimate beside them, and the spot pages keep their
+  estimate as it is.
+- The held-out step is the prospective join of issued `p_ecoli` (in `forecast_points` since late September 2026)
+  against Wessex samples taken after it was issued. First check of the layer for new rows on **1 July 2027**.
+- Same-day pairs at Farleigh (D) were the development step that needed no wait; done here. With six pairs, nothing
+  more can be learned from the committed files. The next useful evidence is more same-day pairs: the EA's 2027 season
+  at Farleigh, and Wessex's rows for the same days when published.
+- If the Wessex points' higher counts hold in those pairs, the observation view should say so beside Farleigh's and
+  Tellisford's samples ("this point has read higher than the bathing water on the same day"). That wording would be a
+  product decision for Ethan, not made here.
