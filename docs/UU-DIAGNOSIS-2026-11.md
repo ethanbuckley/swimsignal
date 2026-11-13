@@ -344,4 +344,245 @@ the 5% where it loses most (C4b's concentration figure took only the losing end)
 
 Nothing else is added. The addendum uses the same rows, models and seed.
 
-Not yet run.
+### The run
+
+Run on 13 November 2026, offline, from a `git archive` of script commit `ffe4d704` (main run) and `9489020d`
+(addendum), with a scratch `DIPCAST_ROOT`, `DIPCAST_STATE`, a scratch cache of links to United Utilities' 188 rain
+cells and a scratch output folder. Peak memory 1.2 GB, about nine minutes. The statement above the line was pushed
+in `b3a8413d` before any forecast was computed. Tables beside this file: `-arms.csv`, `-differences.csv` (every
+comparison with its interval), `-monthly.csv`, `-forecast-rain.csv`, `-short-events.csv`, `-addendum.csv`,
+`-results.json`.
+
+- **Face checks.** Production 0.0379333, D2 0.0419537, live status at lead 1 0.0388601 and combined-v1 at lead 1
+  0.0377208: each equals the committed figure to seven places. 539,217 rows, 2,219 overflows, 36 ISO weeks, 29,282
+  spill-days, 12,773 forecast-rain rows at each lead. v2 arm (b) scores 0.03925 on these UTC days (0.03902 on
+  #357's local days). All 2,271 of production's stored offsets are reproduced exactly from 2,404,632 Stream rows.
+- **A first attempt stopped at face check 3**, as stated, with 2,269 of 2,271 offsets exact. The two others are in
+  one cell (55.0, −3.2). Cause, confirmed: `archive_55.000_-3.200_2022.parquet` was added to the shared rain cache on
+  1 November, after production was fitted, and `train.load_rain_archive` reads every year it finds, so that cell's
+  first days of 2023 gained antecedent rain. The scratch link to that file was removed (the shared file was not
+  touched) and the run was repeated from the same commit. Before the stop, only the face-check figures had been
+  printed.
+- **Shared inputs unchanged.** The fingerprint of the shared event files, model files and the three cache listings
+  was `bab324bd…` before the first run and after the addendum. The script's own listings of the files it read
+  (rain links, radar files) and the four event and poll files also match before and after.
+
+### The answer
+
+**The candidates fail at United Utilities for one reason with two faces, and a third reason that is an artefact
+of the comparison.**
+
+1. **The base model.** The nine-company pooled layer forecasts United Utilities too high, and the per-overflow
+   offsets remove only about half of that. Production's pooled layer, fitted on United Utilities alone, does not
+   have the excess. This is nearly all of v2's loss, and it is the same deficit that the live-status candidate
+   carries in its base (D2).
+2. **The status input.** At United Utilities it helps only on rows where the overflow is already spilling at the
+   issue time. On the other 99% of rows nothing is shown at any lead. United Utilities' spills are the least
+   persistent of the nine companies.
+3. **The lead-4 loss on forecast rain is the lead map.** Production is compared after a map fitted on United
+   Utilities. The candidates have no map. Against production without the map the loss is not shown.
+
+Labels, rain resolution, the offsets' recipe and the stale-feed fallback are each ruled out as the main cause.
+
+### The ranking
+
+G1, v2 arm (b) minus production on these rows: **+0.00132 [+0.00011, +0.00257]**, 3.5% of production's Brier.
+
+| Rank | Explanation | Part of the gap, with interval | Label by the stated rule |
+|---|---|---|---|
+| 1 | H1: the pooled layer. Layer swap with the same refitted offsets | +0.00121 [−0.000003, +0.00245], 92% of G1. Pooled layers alone: +0.00236 [+0.00083, +0.00397] | **Not shown, by a hair**: 92% of G1, but the lower end is −0.000003. G1's own lower end is only +0.00011, so no part of it could clear zero by much. The largest part by far |
+| 2 | H4: a level effect. One constant fitted in hindsight | Leaves +0.00038 [−0.00042, +0.00134]: 71% of G1 closes. A constant per month leaves +0.00004 [−0.00058, +0.00065] | **Level, yes; one year, no.** The excess is in v2's own training years too (C4). 2026 widened it. No interval was computed for the closed part itself |
+| 3 | H2: production's offsets | +0.00010 [+0.00003, +0.00019], 8% of G1 | **Contributes; ruled out as the main cause** (upper end under a quarter of G1) |
+| 4 | H9: a few overflows | The 5% where v2 loses most carry 97% of G1; without them +0.00005 [−0.00098, +0.00103] | **Met by the letter, not supported.** The rule trimmed one tail. The 5% where v2 gains most give back 56% of G1, and the middle 90% carry 60% (A3) |
+| 5 | H5: rain resolution | Radar in place of ERA5-Land moves G1 by +0.00044 [−0.00030, +0.00133], the wrong way. Thirds of cells by disagreement: +0.00101, +0.00151, +0.00148 | **Ruled out as the main cause.** The gap does sit in the wettest cells (below), which is H1's shape, not a rain error |
+| 6 | H3: labels | Label source: +0.00001 [−0.00001, +0.00003]. Without short-only spill-days G1 grows to +0.00187 [+0.00064, +0.00319] | **Ruled out** |
+
+G2, the status gap:
+
+| Explanation | Evidence | Label |
+|---|---|---|
+| H6: the lead map (forecast rain, lead 4) | Live status minus mapped production +0.00806 [+0.00134, +0.01521]; minus raw production +0.00149 [−0.00340, +0.00648]; passed through the map, −0.00007 [−0.00412, +0.00353] | **Main cause of the lead-4 forecast-rain loss**: 82% of it goes against raw production |
+| The base (ERA5-Land, leads 1 to 4) | At lead 1: D2 minus production +0.00402, candidate minus D2 −0.00309, so candidate minus production +0.00093 [−0.00080, +0.00326] | Arithmetic on reproduced figures: the status gain does not cover D2's base deficit |
+| H8(b): less persistence | Persistence skill over the flat rate: 0.05 at lead 0 and −0.02 at lead 1, lowest of nine; AUC 0.72 and 0.66 | **Supported** |
+| H8(c): where the uplift lands | Lead 0: −0.435 on the 4,171 rows spilling at issue; −0.00094 [−0.00217, +0.00022] on the rest | **The lead-0 gain is all on rows whose label is settled** |
+| H8(a): level stand-in | Uplift against 2026 level error: rho 0.64 [0.61, 0.67] for D2, 0.49 [0.45, 0.52] for production | **Not supported as stated**: it tracks production's error too. The check was weak (below) |
+| H7: the fallback | 0 United Utilities rows took it at any lead | **No part** in the recorded failures |
+
+### Check by check
+
+**C1, the layer swap** (Brier; mean forecast in brackets; observed rate 0.0543):
+
+| Layer 1 | No offsets | Stored offsets | Offsets refitted on EA 2024-25 |
+|---|---|---|---|
+| Production's (United Utilities 2023-25) | 0.03901 (0.058) | **0.03793** (0.058) | 0.03803 (0.058) |
+| Hold-out's (United Utilities 2023-24) | 0.03978 (0.062) | 0.03914 (0.062) | 0.03842 (0.060) |
+| v2's (nine companies 2024-25) | 0.04137 (0.077) | 0.03925 (0.070) | 0.03925 (0.070) |
+
+- With the same refitted offsets, v2's layer is +0.00121 worse than production's and +0.00083 [−0.00048, +0.00218]
+  worse than the hold-out's.
+- v2's pooled layer alone forecasts 0.077 against an observed 0.054. Its offsets bring that to 0.070. Production's
+  pooled layer alone forecasts 0.058.
+- What 2025 adds to a United Utilities pooled layer is small: hold-out's layer with the same offsets is +0.00038
+  [−0.00009, +0.00086] behind production's. The hold-out's stored deficit (+0.00120 [+0.00056, +0.00187]) was
+  mostly its offsets, which had not seen 2025.
+- The refit rows: 1,630,829 site-days at 2,270 overflows. EA and Stream labels there: 137,494 spill-days shared,
+  1,319 only in the EA file, 839 only in Stream.
+- H2's ladder on production's layer: label source +0.00001 [−0.00001, +0.00003]; a third year and production's own
+  rows −0.00004 [−0.00022, +0.00015]; recency 0.25 against 1, +0.00014 [−0.00006, +0.00032].
+- 2,218 of the 2,219 test overflows have an offset in both production and v2.
+
+**C2, hindsight recalibration on the 2026 rows.** The constant that would have centred each model: −0.09 log-odds
+for production, −0.40 for v2. Slopes 0.98 and 0.95. G1 after one constant +0.00038, after a constant and a slope
++0.00033 [−0.00043, +0.00125], after a constant per month +0.00004. These intervals take the fitted constants as
+given. **So with the best level correction hindsight can give, month by month, v2 only ties production at United
+Utilities.**
+
+**C4, is the excess only 2026?** Mean forecast against the observed rate, at United Utilities' overflows. 2024 and
+2025 are years both models' offsets were fitted on, so this is shape, not skill.
+
+| Period | Observed | Production | v2 arm (b) | v2 pooled layer alone |
+|---|---|---|---|---|
+| 2024, whole year | 0.0959 | 0.0950 (−1%) | 0.1057 (+10%) | 0.1200 (+25%) |
+| 2025, whole year | 0.0746 | 0.0772 (+3%) | 0.0832 (+12%) | 0.0923 (+24%) |
+| 2024, January to February | 0.1506 | 0.1451 (−4%) | 0.1732 (+15%) | 0.1942 (+29%) |
+| 2025, January to February | 0.0794 | 0.0804 (+1%) | 0.1009 (+27%) | 0.1100 (+39%) |
+| 2026, January to February | 0.0731 | 0.0878 (+20%) | 0.1170 (+60%) | 0.1275 (+74%) |
+| 2024, January to August | 0.0959 | 0.0952 (−1%) | 0.1074 (+12%) | 0.1220 (+27%) |
+| 2025, January to August | 0.0446 | 0.0476 (+7%) | 0.0539 (+21%) | 0.0600 (+34%) |
+| 2026, January to August | 0.0543 | 0.0578 (+6%) | 0.0703 (+29%) | 0.0774 (+43%) |
+| 2024, September to December | 0.0959 | 0.0945 (−1%) | 0.1022 (+7%) | 0.1160 (+21%) |
+| 2025, September to December | 0.1343 | 0.1361 (+1%) | 0.1416 (+5%) | 0.1565 (+17%) |
+
+v2 runs high at United Utilities in every period, in its own training years, most from January to April and
+least in summer. In January and February 2026 production was 20% too high as well, so that year did widen the
+gap. By C4's stated rule the cause is structural, with 2026 on top.
+
+**C4b, which overflows.** By thirds of the long-term spill count: +0.00001, +0.00110, +0.00285 [+0.00030, +0.00545].
+The gap is at frequent spillers. Grouped on the outcome: the third of overflows whose spill-day rate fell most
+(0.121 in January to August 2024-25, 0.062 in 2026) carry +0.00471 [+0.00200, +0.00756]; the third that rose,
+−0.00118 [−0.00288, +0.00041]. Overflows grouped by how far they fell will show regression to the mean, so this
+says where the loss is, not why.
+
+**C5, rain.** The radar covers 472,647 rows (88%) for the day and the 30-day window the features read. ERA5-Land
+over radar, total rain per cell: median 1.03, middle half 0.93 to 1.17; daily correlation 0.78; the hourly stamps
+line up best with no shift. G1 on those rows is +0.00149 with ERA5-Land and +0.00193 with radar. By thirds of cells
+on mean rain, though: driest −0.00010 [−0.00128, +0.00096], middle +0.00107 [−0.00018, +0.00250], wettest
+**+0.00602 [+0.00214, +0.01029]**. The wettest 63 cells hold 15% of the rows and 69% of G1.
+
+**C3, labels.** 5,295 of the 29,282 spill-days come only from events under 15 minutes. Counting them as dry makes
+G1 larger. Their monthly share is seasonal in every year (10% in winter, 20% to 30% in spring and summer;
+`-short-events.csv`).
+
+**C6, forecast rain** (12,773 rows at each lead, 53 overflows in 16 cells; observed rate 0.0805). Lead 4:
+
+| Predictor | Mean forecast | Brier |
+|---|---|---|
+| Production, raw | 0.110 | 0.0699 |
+| Production, mapped (what the site shows) | 0.097 | 0.0633 |
+| Live status (#639's candidate, no map) | 0.119 | 0.0713 |
+| Live status through production's map (diagnostic) | 0.104 | 0.0632 |
+| combined-v1 (base is raw production) | 0.097 | 0.0690 |
+| combined-v1 with the base mapped (diagnostic) | 0.084 | 0.0645 |
+
+combined-v1 minus mapped production is +0.00571 [+0.00109, +0.01114], as #666 found. Minus raw production it is
+−0.00086 [−0.00482, +0.00274]. With its base mapped it is +0.00118 [−0.00173, +0.00439] against mapped production.
+At lead 0 the candidates beat production with or without the map (−0.009 to −0.012, intervals below zero).
+
+**C7, the fallback.** No United Utilities row took the fallback at any lead. On the polls of 5 to 17 October
+(counts only, the coverage file's own rule for stale): United Utilities 1.3% unknown and 0% stale. Southern is
+10% stale, Northumbrian 4%. Nothing in the inputs suggests the fallback fires more at United Utilities. The live
+answer is the shadow's, on or after 23 November.
+
+**C8, the status.** A United Utilities overflow that spilled yesterday spills today 37% of the time, against 3.7%
+after a dry day. Persistence still has the lowest skill of the nine there, because the rule's chances are fitted
+on all nine together and because the ranking is weak (AUC 0.72 at lead 0 against 0.80 to 0.93 at seven others;
+Northumbrian is 0.71). Part (a)'s check was weak: the uplift is built from recent spills and the level error from
+the same season's spills, so the two are tied for any model. The only informative part is that it tracks D2's
+error more than production's.
+
+**Addendum (A1 to A3), chosen after the main run was read.**
+
+| Lead | combined-v1 minus production, rows spilling at issue | The narrow rule minus production, all rows |
+|---|---|---|
+| 1 | −0.0364 [−0.0816, −0.0029], 4,133 rows | −0.00028 [−0.00060, −0.00002] |
+| 2 | −0.0231 [−0.0561, +0.0021], 4,094 rows | −0.00018 [−0.00042, +0.00001] |
+| 3 | −0.0132 [−0.0402, +0.0089], 4,097 rows | −0.00010 [−0.00031, +0.00006] |
+| 4 | −0.0295 [−0.0644, −0.0024], 4,050 rows | −0.00022 [−0.00051, −0.00002] |
+
+On rows spilling at issue, production forecasts 0.30 for the next day against an observed 0.46 (lead 1). The
+uplift moves that to 0.50. The rule as a whole is worth 0.3% to 0.7% of production's Brier. On forecast rain
+(about 208 spilling rows a lead) nothing is shown at any lead. A3 is in the ranking table.
+
+### What is established, what is inferred, what was not verified
+
+**Established** (measured here, on seen rows):
+- The loss at United Utilities is almost entirely in the pooled layer, and almost entirely a level: v2's pooled
+  layer forecasts the company about a quarter too high over a whole training year, and its offsets leave about a
+  tenth.
+- Labels, the offsets' data and recipe, and ERA5-Land's rain errors each account for under a tenth of the gap or
+  none.
+- No correction of v2's level or season, even fitted on the test rows, beats production there.
+- The live-status and combined candidates' lead-4 loss on forecast rain disappears against production without its
+  lead map.
+- The status uplift at United Utilities is confined to rows spilling at the issue time.
+
+**Inferred, not tested:**
+- *Why the pooled layer runs high.* The other eight companies' overflows spill more for the same rain, season and
+  annual-return covariates, most in late winter and spring and in wet cells. No other company's rows were rebuilt
+  here, so this rests on #357's company table and on the shape above.
+- *Why offsets leave half the excess.* The offset is shrunk toward no change by 15 pseudo spill-days, and it is a
+  ratio of counts applied to odds, which under-corrects on wet days. Neither part was measured.
+- *Why production is 20% high in early 2026.* Fewer overflows spilled per storm (#357's data check). Cause unknown.
+
+**Not verified:**
+- The status here is the EA's complete record. Polled status, with its missed short events, is the shadow's to
+  test.
+- The forecast-rain results rest on 53 overflows in 16 cells.
+- The run used pandas 3.1.0 where #357 used 3.0.5. The face checks reproduce the committed figures exactly.
+
+### Where the run differs from the statement
+
+- The first attempt stopped at face check 3 (above). No code changed between the attempts.
+- C5's "day and the 30 days before" was coded as the 30 days ending on the day, which is what the rain features
+  read. A cell needed 120 radar days for its disagreement measure; all 188 had them.
+- C6 also reports combined-v1, which the statement named under G2 but not under C6.
+- H9's and H8(a)'s rules were poor tests, for the reasons given beside them. Their literal results are reported.
+- The addendum (A1 to A3) was added after the main run, and pushed before it ran.
+
+### The ending
+
+**Production stays at United Utilities.** regional-v1's fallback is right, and the evidence now says why: the
+nine-company pooled layer does not hold United Utilities' level, and no level or seasonal correction of it does
+better than tie. Nothing live changes, no frozen file changes, and #357's, #639's and #666's verdicts stand.
+
+By the stated rule there is one finding that names a candidate, and it is narrow:
+
+**`uu-spilling-v1`: at United Utilities, production's chance, with combined-v1's status uplift added only where the
+overflow is spilling at the issue time, at leads 1 to 4.** Nothing is fitted; every file it uses is already
+frozen. Lead 0 is left out: there the label is all but settled and the page's "right now" level already speaks.
+- *Development evidence, on seen rows and chosen after C8(c) was read:* 0.3% to 0.7% of production's Brier, with
+  intervals below zero at leads 1 and 4 only.
+- *The test it would face:* the addendum script, unchanged, on the EA's September to December 2026 records when
+  they are published, under its own statement pushed before that file is imported. Proposed bar, to be fixed
+  there: the rule minus production on all United Utilities rows, leads 1 to 4 pooled, with the two-way interval
+  wholly below zero; and on the spilling rows a mean forecast no further from the observed rate than production's.
+- *What it is not:* a reason to build anything now. The combined-v1 shadow log can describe these rows sooner, but
+  28 days will hold too few: eight months here held about 4,100 a lead and cleared zero at two leads of four.
+- *Owner and milestone:* the REGIONAL row's owner; the read waits on the EA's file (date not known). If that file
+  shows no gain, the candidate is archived.
+
+**What would reopen the base-model question at United Utilities:** a pooled layer that can hold a company's own
+level (a company input, or a company-level calibration fitted on the training years), scored on rows nobody has
+seen; or evidence that United Utilities' spilling has drifted from production's 2023-25 fit, which the 2027
+primary evaluation will show.
+
+### Follow-ups, not done here
+
+1. **For the 23 November switch decision and the combined-v1 shadow.** On forecast rain, a candidate without a
+   lead map is compared with production after its map. At United Utilities that alone made lead 4 look "clearly
+   worse". The shadow's bar should compare like with like, or say that it does not.
+2. **`scripts/check_model_provenance.py` no longer passes against the shared cache**: 2,269 of 2,271, because of
+   the 2022 file added on 1 November. `train.load_rain_archive` should read only the years it trains on, or the
+   check should. A small fix with its own test.
+3. **The combined-v1 logger** should keep the spilling-at-issue flag on each row, so `uu-spilling-v1` can be
+   described from its log without a new logger.
