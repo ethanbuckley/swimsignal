@@ -152,7 +152,7 @@ value; a ">" value is over when its limit is at or above the line. Exactly the l
 |---|---|
 | Identity | Sample histories, Ireland and Wales. Session: irish-welsh-sample-histories (13 Nov 2026). Code: `src/dipcast/sample_history.py`, `scripts/export_sample_histories.py`, `src/dipcast/site/samples.js`. Data: the two files above, `data/raw/nrw_sample_history/` |
 | Evidence | Observations only; no test, no score. Checks: every value parsed, counts match the EPA's totals, the two NRW sources agree sample for sample |
-| Stage and claim | Public research observations, in this PR, not merged. Claim: these are the official bodies' published samples, dated |
+| Stage and claim | Public research observations, in [#691](https://github.com/ethanbuckley/swimsignal/pull/691), not merged. Claim: these are the official bodies' published samples, dated |
 | Next deliverable | (1) The other 112 Welsh bathing waters from NRW's service, all seasons, one request a water (about 112 requests, about 4 minutes at 2 s); (2) refresh the Welsh archive part when NRW's December update is out, by downloading the two zips by hand; (3) refresh Ireland after the EPA's December report, as a new dated version |
 | Milestone and budget | (1) and (2) by 31 Dec 2026, under 130 requests, from this Mac. (3) after the EPA's report, 8 requests |
 | Release route | Ethan merges; the next build publishes it. Rollback: delete the two files; the page then says no samples are published for that nation |
