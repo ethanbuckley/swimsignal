@@ -320,4 +320,28 @@ the data that would separate them.
 
 ## Results
 
+### Addendum, stated on 13 November after the main run was read and before the addendum was run
+
+The main run (script commit `ffe4d704`) finished and its tables were read. Two of its results need one more
+figure each. This is stated and pushed before the addendum script runs. It is chosen after seeing results, so it
+is weaker evidence than the checks above the line, and it is labelled so wherever it is used.
+
+**What was seen that prompts it.** C8(c) split combined-v1 minus production by status at leads 0, 1 and 4. On rows
+where the overflow was spilling at the issue time, combined-v1 was lower at lead 1 (−0.0364 [−0.0816, −0.0029],
+4,133 rows) and at lead 4 (−0.0295 [−0.0644, −0.0024], 4,050 rows). On every other row it was not shown either
+way. Leads 2 and 3 were not in the stated split.
+
+**A1.** The same split (spilling at issue, and not) at leads 2 and 3, combined-v1 minus production, with the same
+bootstrap draws.
+
+**A2.** The narrow rule as a whole: production's chance, with combined-v1's uplift added only where the overflow
+is spilling at the issue time, minus production, on all 539,217 rows at each of leads 1 to 4, with the two-way
+interval. On the spilling rows: the observed rate and each mean forecast. On the 12,773 forecast-rain rows at
+each lead: the same rule on mapped production, minus mapped production.
+
+**A3.** No new run: from the main run's saved per-overflow sums, the 5% of overflows where v2 gains most, beside
+the 5% where it loses most (C4b's concentration figure took only the losing end).
+
+Nothing else is added. The addendum uses the same rows, models and seed.
+
 Not yet run.
