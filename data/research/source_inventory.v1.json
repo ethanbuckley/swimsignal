@@ -182,7 +182,7 @@
       "access": {"route": "REST, page and per_page only, no site or date filter", "cost": "Free, no key, no stated rate limit", "account": false},
       "local_cache": null,
       "status": "already_used",
-      "enables": "Now: Ireland directory (src/dipcast/ireland.py). Unused: a sample-history explorer for Irish lakes and beaches; no forecast.",
+      "enables": "Now: Ireland directory (src/dipcast/ireland.py) and, from 13 Nov 2026, every sample since 2014 by water (data/research/sample_history_ireland.v1.json, 26,929 samples at 240 waters, docs/SAMPLE-HISTORY-CONTRACT-v1.md) on samples.html. No forecast.",
       "recheck": {"result": "unchanged", "urls": ["https://data.epa.ie/api-list/bathing-water-open-data/"], "note": "CC BY 4.0; no rate limit stated."},
       "docs": ["docs/IRELAND-PLAN-2026-10.md#25-republic-of-ireland-epa-bathing-waters"]
     },
@@ -204,7 +204,7 @@
       "access": {"route": "Zip per catchment and decade from DataMapWales", "cost": "Free", "account": false},
       "local_cache": {"path": "data/cache/nrw_wqa/Files/", "bytes": 8851994, "files": 5, "newest": "2026-10-04", "note": "Carmarthen Bay and Gower 2000-2029 and Wye 2020-2029 only"},
       "status": "already_used",
-      "enables": "Now: W10 E. coli check (213 rows, 10 Oct). Unused: dated Welsh river sample observations at Hay-on-Wye and Llandeilo, like /samples.html.",
+      "enables": "Now: W10 E. coli check (213 rows, 10 Oct) and, from 13 Nov 2026, dated samples at Hay-on-Wye and Llandeilo (data/research/sample_history_wales.v1.json, 61 samples, docs/SAMPLE-HISTORY-CONTRACT-v1.md) on samples.html. Unused: the other Welsh bathing waters.",
       "recheck": {"result": "unchanged", "urls": ["https://datamap.gov.wales/layers/geonode:nrw_water_quality_archive_stations/metadata_detail"], "note": "OGL v3, monthly, 2000 onwards."},
       "docs": ["docs/WALES-PLAN-2026-10.md#26-nrw-bathing-waters-samples-and-forecasts"]
     },

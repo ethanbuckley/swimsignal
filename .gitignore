@@ -91,6 +91,9 @@ data/raw/*
 # Each spot's spill days upstream by month, 2021-2025 (EA start/stop records, OGL v3.0; Northumbrian, Wessex and United Utilities
 # layers, CC BY 4.0): read by the page's history fold only, never the model (scripts/make_seasonal_spills.py).
 !data/raw/seasonal_spills.json
+# NRW's samples at Hay-on-Wye and Llandeilo, dated snapshot of 13 Nov 2026 (OGL v3.0): the service's answers, the
+# Water Quality Archive's rows at the two stations and the fetch ledger (scripts/export_sample_histories.py).
+!data/raw/nrw_sample_history/
 /site/
 .claude/
 /state/
