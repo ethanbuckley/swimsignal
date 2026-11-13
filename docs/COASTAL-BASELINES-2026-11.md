@@ -208,6 +208,24 @@ Requests as in section 1. Scoring: one process, up to 4 cores, a 30-minute cap, 
 (113 MB file). No model artifact is written to a shared folder. Outputs go to a scratch directory, then the small
 tables are committed.
 
+## 10. Clarifications made while writing the harness, before the first score
+
+Added 13 November 2026 after the harness was written and tested on made-up data, and before any real row was
+scored. They settle points the sections above left open. They change no rule.
+
+- **The deciding comparison fits both sides on the same rows.** "R plus the input" can only be fitted on history
+  rows that have the input. R is therefore refitted on those same rows (written `R|input`) for that comparison.
+  Otherwise the difference would mix the input's effect with a recalibration to the years the input covers. R
+  fitted on all history rows is still reported beside it.
+- **A radar hour with no value adds nothing to a rain sum.** Whether the window counts is decided by the coverage
+  rule alone (mean coverage over the 72 hours of at least 0.9).
+- **The EA forecast baseline needs at least 20 history rows under a level** to use that level's rate. With fewer it
+  uses the pooled rate.
+- **Split F needs an earlier year that has the input.** So it tests rain on 2026 only and spills on 2025 only.
+- **B7 with spills has one year (2025).** It is scored in split G only.
+- **AUC is computed on predictions pooled over a split's folds.** B0 is one number per fold, so its pooled AUC is
+  near 0.5 but not exactly 0.5. Per-year figures are given beside the pooled ones.
+
 ---
 
 *Results go below this line.*
