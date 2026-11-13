@@ -264,3 +264,43 @@ starts. 43 sondes have 5 or more Tier A starts and 21 have 10 or more. Tier A pa
 9.6 km). Requests made so far: 2. The plan's 90 bring the total to 92 of 100.
 
 ---
+
+## 12. Amendment 2, written after the first join (13 November, about 15:40 UTC)
+
+The join ran once, as stated in sections 1 to 11 (code at `3e6c28a4` plus a fix for a crash on a sonde with no rise;
+no rule changed). Its result is in "Results, as stated" below and stands. This amendment was written after seeing
+it. Everything run under it is labelled "amended" and carries less weight than a rule fixed in advance.
+
+**What was seen before writing this:** the outcome counts per sonde; the 13 rise rows (4 in Tier A, 9 in Tier B) with
+their lags; the looser and stricter counts; the dry-reference shares; and each sonde's reading interval and typical
+level.
+
+**The fault.** Section 4 took every sonde to report every 15 minutes. The API names the measure "15min
+instantaneous" and gives its period as 900 s. The readings say otherwise: of the 66 sondes with readings, 5 report
+every 15 minutes, 30 every 30 minutes and 31 every hour. Section 4 counts in 15-minute slots: a baseline needs 48 of
+96 slots, and an onset needs 3 of 4 slots above the threshold. An hourly sonde fills 24 of 96 slots, so it never has
+a baseline. A 30-minute sonde fills 2 of any 4 slots, so it can never show an onset. As stated, the check could only
+find a rise at 5 sondes. That is a fault in the protocol, not a finding about rivers.
+
+**The amended rules: the same rules, counted in the sonde's own reading interval.** For each event, c is the median
+gap between valid readings in the baseline window, taken as 15, 30 or 60 minutes when within 20% of one of them
+(anything else: no baseline).
+
+| Rule | As stated (15-minute slots) | Amended (interval c) |
+|---|---|---|
+| Baseline | at least 48 of 96 slots | at least half the readings expected in 24 h: 48, 24 or 12 |
+| Onset | 3 of the 4 slots from τ to τ + 45 min above θ | at 15 min, unchanged; at 30 or 60 min, the reading at τ and the next expected one both above θ |
+| Gap | 4 invalid slots in a row (two valid readings 75 min apart or more) | two valid readings 60 min + c apart or more |
+| Lag resolution | 15 min | c |
+| Shortest timing distance | 0.5 km (model travel under 3 readings) | 0.5 km at 15 min, 1.0 km at 30 min, 2.0 km at 60 min |
+
+The threshold θ, the search window, the horizon H, the 48 h quiet rule, the tiers, the dry reference, the rule for a
+signal, what is reported and what follows (section 9) are unchanged. At a 15-minute sonde the amended rules are the
+stated rules; the amended run must reproduce the as-stated outcomes there, and the record says whether it does.
+
+**Also reported under this amendment, as description only:** the Tier A rise share by length of the anchor's spill
+(under 1 h, 1 to 6 h, 6 h or more) beside the background share. The first join showed that half the clean starts are
+spills of 16 minutes or less, and a spill that short may not be measurable kilometres downstream. This split was
+chosen after seeing that, so it can point to a next test and nothing more.
+
+---

@@ -1,0 +1,56 @@
+{
+ "fetched": 90,
+ "with_readings": 66,
+ "with_an_event": 66,
+ "sondes_natural_one_per_place": 58,
+ "artificial_channel_stations": 8,
+ "tier_a_events_natural": {
+  "rise": 4,
+  "no rise": 148,
+  "raised before": 1,
+  "gap": 3,
+  "no baseline": 198
+ },
+ "sondes_with_5_rises": 0,
+ "sondes_with_10_rises": 0,
+ "sondes_with_signal": 0,
+ "sondes_with_signal_and_5_rises": [],
+ "sondes_with_signal_and_10_rises": [],
+ "rivers_with_signal_and_5_rises": [],
+ "descriptive_all_tier_a_rises_natural": {
+  "note": "every Tier A rise at natural-channel sondes, signal or not: a description, not a travel time",
+  "lag_h": {
+   "n": 4,
+   "values": [
+    0.05,
+    0.27,
+    9.3,
+    23.75
+   ]
+  },
+  "lag_over_model": {
+   "n": 4,
+   "values": [
+    0.01,
+    0.03,
+    0.46,
+    1.76
+   ]
+  },
+  "v_ms": {
+   "n": 4,
+   "values": [
+    0.11,
+    0.44,
+    5.86,
+    31.27
+   ]
+  },
+  "window": {
+   "before": 3,
+   "after": 1
+  },
+  "same_slot_as_start": 0
+ },
+ "pooled": "not computed: under 3 sondes on 2 rivers with a signal and 5 Tier A rises"
+}

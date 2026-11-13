@@ -82,7 +82,8 @@ def events_for(sp: pd.DataFrame, timing: pd.DataFrame, lake_sites: set, g0: int,
         row = {"t0": iso(e.t0), "week": week(e.t0), "site_id": e.site_id, "d_m": round(e.d_m),
                "travel_h": round(travel[e.site_id], 2), "spill_h": round((e.end - e.t0) / 60.0, 2), "h_h": round(h, 1),
                "tier": tier, "others": int(oth["site_id"].nunique()), "status": det["status"],
-               "b": det.get("b"), "theta": det.get("theta")}
+               "b": det.get("b"), "theta": det.get("theta"), "lag_h": None, "peak_lag_h": None, "v_ms": None,
+               "window": None}
         for rule in ("looser", "stricter"):
             d2 = detect(g0, x, e.t0, h, rule)
             row[f"status_{rule}"], row[f"lag_h_{rule}"] = d2["status"], d2.get("lag_h") if d2["status"] == "rise" else None
@@ -229,6 +230,10 @@ def main(stations_csv: str, readings_dir: str, out_dir: str) -> None:
         lake_sites = set(up.loc[up["lake_distance_m"] > 0, "site_id"])
         ev = pd.DataFrame(events_for(sp, timing, lake_sites, g0, x, QUIET_H))
         ev24 = pd.DataFrame(events_for(sp, timing, lake_sites, g0, x, 24.0))
+        for frame in (ev, ev24):     # all-None columns come out as object; the sums below need numbers
+            for c in ("lag_h", "peak_lag_h", "v_ms", "lag_h_looser", "lag_h_stricter"):
+                if c in frame:
+                    frame[c] = pd.to_numeric(frame[c], errors="coerce")
         row.update(monitored_upstream=len(up), timing_overflows=len(timing), events=len(ev))
         if ev.empty:
             per.append({**row, "note": "no event inside the readings"}); continue
