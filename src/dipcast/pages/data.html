@@ -216,6 +216,12 @@
 <dt><code>waterhead_wet.json</code></dt><dd>The whole export: what the samples may and may not say (<code>claim</code>), the site and whether its exact point is confirmed (<code>site</code>), each season's dates, counts, middle and highest values and how it was sampled (<code>seasons</code>), what is not yet confirmed (<code>open_questions</code>), the credit and permission, the source sheet's SHA-256, and every sample (<code>samples</code>: date, E. coli and intestinal enterococci per 100 ml as the sheet records them)</dd>
 </dl>
 </details>
+<p>Wessex Water's own river E. coli samples the <a href="/wessex-river-samples">Wessex Water river samples page</a> shows, as the research export holds them (<a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/WESSEX-RIVER-SAMPLES-CONTRACT-v1.md">its contract, version 1</a>). Three sampling points beside Warleigh Weir, Farleigh Hungerford and Tellisford Weir, 2021 to 2025. The company's lab results, not Environment Agency samples, and not compared with a forecast. Wessex Water Environmental Water Quality © 2026 by Wessex Water, CC BY 4.0.</p>
+<details class="fold"><summary>Fields</summary>
+<dl class="fields">
+<dt><code>wessex_river_samples.json</code></dt><dd>The whole export: what the samples may and may not say (<code>claim</code>), the credit and the changes SwimSignal made (<code>attribution</code>, <code>changes</code>), the source layer, the day its licence was read and each input's SHA-256 (<code>source</code>), and for each spot (<code>sites</code>) its sampling point, the point's distance from the spot in a straight line and along the river and which way (<code>straight_m</code>, <code>along_m</code>, <code>direction</code>), the placement checks, the counts by year, and every sample (<code>t</code> the time as published, <code>ecoli</code> per 100 ml, <code>q</code> <code>"&lt;"</code> or <code>"&gt;"</code> for the lab's limit, <code>over</code> over 900 or null where a limit leaves it unknown, <code>id</code> the layer's OBJECTID, <code>same_time</code> where two results share a time)</dd>
+</dl>
+</details>
 <p>The research records the <a href="/research-catalogue">research catalogue</a> lists (<a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/RESEARCH-CATALOGUE-CONTRACT-v1.md">its contract, version 1</a>). Edited by hand from the project's research register; not data from a measurement.</p>
 <details class="fold"><summary>Fields</summary>
 <dl class="fields">

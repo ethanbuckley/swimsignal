@@ -1,0 +1,54 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Wessex Water's river samples: a prose page with the shared head, header and foot, written by scripts/build_site.py
+     (write_wessex_samples) beside the app, with each spot's samples in place of the WESSEX marker below, from
+     data/research/wessex_river_samples.v1.json (scripts/export_wessex_river_samples.py,
+     docs/WESSEX-RIVER-SAMPLES-CONTRACT-v1.md). No script: each year is a fold. What it may say is the export's claim,
+     which write_wessex_samples puts in the lead. -->
+<title>Wessex Water's river samples · SwimSignal</title>
+<meta name="description" content="Wessex Water's own E. coli samples from the River Avon at Warleigh Weir and the River Frome at Tellisford Weir and Farleigh Hungerford, 2021 to 2025. The company's lab results, not Environment Agency samples. Past samples, not today's water.">
+<meta name="theme-color" content="#3d5b5d">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="page.css">
+<link rel="preload" href="fonts/SourceSans3-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/SourceSerif4-latin.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+  /* The tokens, tables, folds and the prose page are page.css's. */
+  main.doc .wet-sum { font-size:var(--fs-note); }
+  .wet-samples th[scope="row"] { color:var(--ink); font-weight:400; white-space:nowrap; }
+  .wet-samples tbody tr:first-child th { border-bottom-color:var(--line); }   /* page.css inks a first row's th, meant for a header row */
+  details.fold > summary { font-weight:400; }
+</style>
+</head><body>
+<header class="top"><a class="brand" href="./"><svg viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" fill="#0f5a61"/><path d="M430-20C330 110 470 230 300 290S110 380 190 540" fill="none" stroke="#5CC2B5" stroke-width="70" stroke-linecap="round"/><circle cx="318" cy="138" r="38" fill="#F08A4B"/><circle cx="165" cy="358" r="46" fill="none" stroke="#fff" stroke-width="22"/></svg>SwimSignal</a>
+<nav aria-label="Site"><a href="plan/">Plan a swim</a><a href="saved/">Saved</a><a href="verification.html">Accuracy</a><a href="about.html">About</a><a class="desk-only" href="clubs.html">For organisations</a></nav></header>
+<main class="doc">
+<h1>Wessex Water's river samples</h1>
+<!-- WESSEX -->
+
+<h2>What these samples do not tell you</h2>
+<ul>
+<li>what the water is like now</li>
+<li>what the water is like at the spot itself, where the sampling point is some way along the river from it</li>
+<li>a forecast</li>
+<li>a bathing water rating, which is worked out from many samples taken in the bathing season over four years, never from one</li>
+<li>that the water is safe to swim</li>
+<li>where the E. coli came from</li>
+<li>how well SwimSignal's forecast did: these samples are not compared with it here</li>
+</ul>
+
+<h2>How they were taken</h2>
+<p>Wessex Water takes these samples from rivers in its region and has them analysed at an accredited laboratory. It says it uses them to understand the effect of its works and overflows on the rivers. They are not the Environment Agency's statutory bathing water samples, and they follow no bathing water rules: they were taken through the year, in any weather. Each count is E. coli per 100&nbsp;ml as the company publishes it; a count given as "below" or "above" is the lab's limit, not a measurement. Times are as published, with no time zone given. The company's layer names no sampling site, so SwimSignal placed each point on the river map beside the spot it is linked from, and says how far along the river it is.</p>
+<p>Over 900 per 100&nbsp;ml is the line SwimSignal's E. coli estimate is about. It is the inland "sufficient" standard's line for a bathing water's long-run rating, not a limit on any one sample.</p>
+
+<h2>Sources</h2>
+<p><!-- WESSEX-ATTRIB --> <a href="https://creativecommons.org/licenses/by/4.0/">The licence</a>. <a href="https://www.arcgis.com/home/item.html?id=4659ab28caa640c58e725b41ecbba79f">The company's published layer</a>. SwimSignal kept only the E. coli results at these three points, joined positions a few metres apart into one point, and named each point after its spot. The counts, dates and limits are as published.</p>
+<ul>
+<li><a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/WESSEX-RIVER-SAMPLES-CONTRACT-v1.md">What this page's data holds, and what it may say</a></li>
+<li><a href="https://github.com/ethanbuckley/swimsignal/blob/main/scripts/export_wessex_river_samples.py">The script that makes the file</a></li>
+<li><a href="data/research/wessex_river_samples.json">The samples as one file</a></li>
+</ul>
+</main>
+<footer class="site-foot"><div class="rule"><p>SwimSignal is a free, non-commercial pollution risk forecast for river and lake swim spots in England, run by Ethan Buckley. A forecast, not a water test: check the signs at the water before you swim.</p>
+<p><a href="about.html">About SwimSignal</a> · <a href="verification.html">How accurate is it?</a> · <a href="methods.html">Method</a> · <a href="spots.html">Every spot</a> · <a href="research.html">Research and data</a> · <a href="coverage.html">Coasts, Wales, Scotland, Ireland and algae</a> · <a href="clubs.html">For organisations</a> · <a href="feedback.html">Feedback</a> · <a href="feedback.html?type=spot">Request a spot</a> · <a href="terms.html">Terms of use</a> · <a href="privacy.html">Privacy</a> · <a href="terms.html#data">Data credits</a> · <a href="https://github.com/ethanbuckley/swimsignal">Source code</a> (MIT)</p></div></footer>
+</body></html>
