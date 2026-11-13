@@ -100,7 +100,8 @@ in the JSON, measured read-only on 31 Oct).
    ([contract](WESSEX-RIVER-SAMPLES-CONTRACT-v1.md)), and an exploratory check of the estimate's level
    ([record](WESSEX-RIVER-SAMPLES-CHECK-2026-11.md)).
 4. **EA sondes.** 15-minute ammonium, oxygen and turbidity, OGL. Twelve live ammonium stations within 5 km of a
-   listed spot on 25 Oct, eight on Windermere becks [doc; live count not rechecked]. A sensor reading of a sewage
+   listed spot, rechecked 13 Nov (seven on becks or the Leven around Windermere; the 25 Oct note said eight). Two river
+   spots have one upstream on their own river; the spot-page tile is draft #687 (`docs/SONDE-READINGS-CONTRACT-v1.md`). A sensor reading of a sewage
    marker, not a bacteria count. #403's test gate stays as written.
 5. **EA coastal samples.** 32,874 statutory E. coli samples at 404 coastal and estuary bathing waters, 2022-26 [doc].
    No sample table is cached; only the point mapping is. About 170 small requests, off CI. The register names a

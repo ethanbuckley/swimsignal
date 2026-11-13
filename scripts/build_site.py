@@ -2102,6 +2102,66 @@ def attach_water_temperature(results: list[dict], fetch=None, relate=None, now=N
     return n
 
 
+SONDE_WORDS = ("Ammonium is a marker that can come from sewage. It is not a count of bacteria and not a sign that the "
+               "water is fit to swim in. No reading does not mean clean water. Nothing on the page is worked out from it: "
+               "no level, colour or advice.")
+
+
+def attach_sondes(results: list[dict], fetch=None, relate=None, now=None) -> dict:
+    """Beside the water temperature: the latest readings of an Environment Agency water-quality sonde on a river
+    spot's own river, upstream of it at most sondes.UP_KM along the river or at it (sondes.nearest_on_river), as
+    `sonde` (sondes.spot_block): ammonium, and the same sonde's dissolved oxygen and turbidity, each with its time and
+    the EA's quality word. Two Hydrology API requests for the whole build (sondes.fetch_sondes), at most four with
+    retries, never one per spot. Lakes get none: a beck's sonde reads the beck, not the lake. Never an input to the
+    forecast and never a level. Returns the data file (docs/SONDE-READINGS-CONTRACT-v1.md); nothing here can stop a
+    build, and an EA that does not answer leaves every spot without the tile and the file's status "unavailable"."""
+    from dipcast.ingest import sondes as sd
+    from dipcast.ingest.water_temperature import river_relation
+    now = now or pd.Timestamp.now(tz="UTC").to_pydatetime()
+    doc = {"schema": "swimsignal.sonde-readings", "version": "1.0.0",
+           "generated_at": now.strftime("%Y-%m-%dT%H:%M:%SZ"), "status": "ok",
+           "source": {"readings": sd.READINGS, "stations": sd.STATIONS, "licence": "Open Government Licence v3.0",
+                      "attribution": "Contains Environment Agency data licensed under the Open Government Licence v3.0."},
+           "rules": {"properties": [{"key": p.key, "unit": p.unit, "measure": f"<station>-{p.suffix}",
+                                     "plausible": [p.lo, p.hi]} for p in sd.PROPS],
+                     "max_age_h": sd.MAX_READING_AGE_H, "up_km": sd.UP_KM, "at_km": sd.AT_KM,
+                     "drop_quality": sorted(sd.DROP_QUALITY), "kinds": ["river"],
+                     "words": "Same river by name, joined by the river network on the same side of the tidal limit, "
+                              f"upstream at most {sd.UP_KM:g} km along the river or within {sd.AT_KM:g} km of the spot "
+                              "either way; the nearest along the river."},
+           "claim": {"public_wording": SONDE_WORDS,
+                     "not_claimed": ["a bacteria count", "a swimming clearance", "a level, colour or advice",
+                                     "that no reading means clean water", "a measurement at the spot itself"]},
+           "fetch": {"requests": 0, "readings": 0, "since": None, "dropped": {}, "error": None},
+           "coverage": {"river_spots": 0, "with_sonde": 0, "with_ammonium_reading": 0, "sondes_listed": 0,
+                        "sondes_with_ammonium_reading": 0},
+           "spots": []}
+    try:
+        got = (fetch or sd.fetch_sondes)(now)
+    except Exception as e:  # noqa: BLE001 - an observation beside the forecast must not sink the build
+        log.warning("sondes: %s", e)
+        doc["status"], doc["fetch"]["error"] = "unavailable", str(e)[:300]
+        return doc
+    doc["fetch"].update(requests=got.requests, readings=got.readings, since=got.since, dropped=got.dropped)
+    relate = relate or (lambda r, s: river_relation(_net(), r["lat"], r["lon"], r.get("river"), s))
+    rivers = [r for r in results if r.get("kind") == "river" and not str(r.get("error") or "").startswith("forecast failed")]
+    for r in rivers:
+        river = r.get("river") or (r.get("location") or {}).get("watercourse")
+        hit = sd.nearest_on_river(got.sondes, r["lat"], r["lon"], river, lambda s, r=r: relate(r, s))
+        if hit is None:
+            continue
+        r["sonde"] = sd.spot_block(*hit)
+        doc["spots"].append({"spot_id": r.get("id"), "name": r.get("name"), "sonde": r["sonde"]})
+    doc["coverage"] = {"river_spots": len(rivers), "with_sonde": len(doc["spots"]),
+                       "with_ammonium_reading": sum(1 for x in doc["spots"] if "ammonium" in x["sonde"]["readings"]),
+                       "sondes_listed": len(got.sondes),
+                       "sondes_with_ammonium_reading": sum(1 for s in got.sondes if "ammonium" in s.readings)}
+    log.info("sondes: %d of %d river spots have an EA sonde on their river, upstream or at the spot (%d requests, "
+             "%d readings, %d sondes with ammonium read in the last day)", len(doc["spots"]), len(rivers),
+             got.requests, got.readings, doc["coverage"]["sondes_with_ammonium_reading"])
+    return doc
+
+
 def attach_water_temperature_estimate(results: list[dict], forecast=None, model=None, upstream=None, now=None) -> dict:
     """Beside the sensor (attach_water_temperature): a provisional estimate of the water near the surface at every river
     and lake spot today, all year (issue #492; Ethan, 30 October 2026), from the air temperature in the spot cell's
@@ -5343,9 +5403,10 @@ def build(refresh: bool = True) -> dict:
     past = seasonal.attach(results, upstream, SEASONAL)
     official = attach_official_advice(results)   # reviewed official advice, from two files: no request, never a level
     # Network only, like the levels, and before their EA requests: one request for the national flood
-    # list, two for the water temperatures.
+    # list, two for the water temperatures, two for the sondes' readings.
     any_floods = asked_now(ask_flood_list) if refresh else None
     n_water_temp = attach_water_temperature(results) if refresh else 0
+    sonde_doc = attach_sondes(results) if refresh else None   # two more EA requests for the whole build, never one per spot
     water_est = attach_water_temperature_estimate(results) if refresh else {"estimated": 0, "routes": {}, "missing": {"no refresh": 1}}   # every river and lake spot, all year (#492); cached rain cells
     n_levels = attach_river_levels(results) if refresh else 0   # observations beside the forecast, network only
     n_flows = attach_flow_state(results, any_alerts=any_floods) if refresh else {}   # river high or rising, flood alerts: not part of the level
@@ -5414,6 +5475,10 @@ def build(refresh: bool = True) -> dict:
     health.update(n_flows)
     health["warnings"] += flood_warnings(n_flows, len(results))
     health["water_temperature"] = n_water_temp
+    if sonde_doc is not None:   # observations beside the forecast; the counts and the requests they took
+        health["sondes"] = {"status": sonde_doc["status"], **sonde_doc["coverage"], "requests": sonde_doc["fetch"]["requests"]}
+        if sonde_doc["status"] != "ok":
+            health["warnings"].append(f"EA sonde readings not read this update: {sonde_doc['fetch']['error']}")
     health["water_temperature_estimate"] = water_est   # counts by route and by gap (#492)
     if refresh:   # every estimate saved before its observations arrive, to be scored against the EA's sensors
         health["water_temperature_estimate"]["logged"] = log_water_temp_estimates(results, pd.Timestamp.now(tz="UTC"))
@@ -5426,6 +5491,8 @@ def build(refresh: bool = True) -> dict:
     for w in health["warnings"]:
         announce(w)
     (SITE / "data").mkdir(parents=True, exist_ok=True)
+    if sonde_doc is not None:   # docs/SONDE-READINGS-CONTRACT-v1.md; the spot pages read `sonde` from spots-lite.json
+        (SITE / "data" / "sonde-readings.json").write_text(json.dumps(sonde_doc, separators=(",", ":")))
     credits = data_credits(site_url())
     health["anypoint"] = write_any_point(SITE, credits, health["warnings"])   # its warning is announced there
     health["guide_photos"] = copy_photos(SITE, results)

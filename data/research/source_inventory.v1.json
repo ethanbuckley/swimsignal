@@ -109,16 +109,16 @@
       "measures": ["ammonium", "dissolved oxygen", "turbidity", "conductivity", "pH", "temperature", "chlorophyll", "fDOM"],
       "measurement_kind": "proxy",
       "measurement_note": "Sensor readings of the water. Ammonium is a sewage marker and turbidity tracks runoff; neither is a bacteria count.",
-      "coverage": "78 live ammonium and 191 live DO series on 25 Oct 2026; 12 live ammonium stations within 5 km of a listed spot, 8 on becks around Windermere",
+      "coverage": "78 live ammonium and 191 live DO series on 25 Oct 2026. Rechecked 13 Nov 2026: 73 of 134 active ammonium stations read in the last day; 12 within 5 km of a listed spot, 7 on becks or the Leven around Windermere; 2 river spots have one upstream on their own river (draft #687)",
       "date_range": "Live, 15-minute; many deployments are short and renamed by start month",
       "latency": "Minutes to hours; telemetry stations faster",
       "licence": {"name": "Open Government Licence v3", "url": "https://environment.data.gov.uk/hydrology/doc/reference", "permits": "Commercial and non-commercial use, publishing and adaptation with attribution"},
       "access": {"route": "REST API environment.data.gov.uk/hydrology", "cost": "Free, no key; one request in flight per client asked", "account": false},
       "local_cache": {"path": "docs/SONDE-SIGNAL-TEST-2026-10-candidates.csv", "bytes": null, "files": 1, "newest": "2026-10-27", "note": "Station metadata only, committed; no readings cached"},
       "status": "ready_to_integrate",
-      "enables": "A dated sensor line on spot pages near a live sonde ('ammonium at Trout Beck, 15 minutes ago'), worded as a sensor reading, not a bacteria result; later a stated test (#403's gate stays as written).",
+      "enables": "A dated sensor line on spot pages near a live sonde ('ammonium at Trout Beck, 15 minutes ago'), worded as a sensor reading, not a bacteria result; later a stated test (#403's gate stays as written). Drafted as the spot page's Ammonium sensor tile in #687.",
       "recheck": {"result": "unchanged", "urls": ["https://environment.data.gov.uk/hydrology/doc/reference"], "note": "OGL v3 statement unchanged; ammonium, DO and turbidity listed as 15-minute series. The live station count was not rechecked: it needs API calls to a host the builds poll."},
-      "docs": ["docs/OVERFLOW-DATA-SOURCES-2026-10.md#24-ea-hydrology-api-water-quality-sondes", "docs/SONDE-SIGNAL-TEST-2026-10.md"]
+      "docs": ["docs/OVERFLOW-DATA-SOURCES-2026-10.md#24-ea-hydrology-api-water-quality-sondes", "docs/SONDE-SIGNAL-TEST-2026-10.md", "docs/SONDE-READINGS-CONTRACT-v1.md"]
     },
     {
       "id": "ea-coastal-bathing-samples",
