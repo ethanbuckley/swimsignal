@@ -129,6 +129,23 @@ def with_inline_sky(html: str) -> str:
         raise ValueError(f"index.html should name {SKY_URL} once, in .answer::before and .lead::before")
     data = base64.b64encode((TEMPLATE.parent / "icons" / "fells.webp").read_bytes()).decode()
     return html.replace(SKY_URL, f"url(data:image/webp;base64,{data})", 1)
+
+
+# A spot's page that opens with its photo (guide.js, guideHero) shows no sky at any width (index.html,
+# .answer:has(.hero)::before), and the photo is its first screen's largest paint (LCP). So its head asks for
+# the photo, as soon as the head is read and before the 27 deferred scripts, in place of the wide sky,
+# which a desktop fetched (26 kB) and never showed. 12 Nov 2026, Lighthouse on a phone, 20 runs each on a
+# GitHub runner: the photo's request 0.77 s became 0.61 s and the LCP 2.79 s became 2.63 s; on a desktop
+# 0.170 s became 0.156 s. The phone's inline sky stays: taking it out of these pages gained no LCP.
+HERO_SRC = re.compile(r'<figure class="hero"><img src="(guides/photos/[a-z0-9][a-z0-9-]{0,78}\.jpe?g)"')
+
+
+def with_hero_first(page: str, top: str) -> str:
+    """A built spot page's head for its photo opening, where top (prerender_spots) has one; else as it was."""
+    hero = HERO_SRC.search(top)
+    if not hero:
+        return page
+    return page.replace(SPOT_SKY_PRELOAD, f'<link rel="preload" href="{hero.group(1)}" as="image" fetchpriority="high">', 1)
 # The brand mark, inline in every page's header (the static pages carry the same markup), so it needs no path.
 MARK = ('<svg viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" fill="#0f5a61"/>'
         '<path d="M430-20C330 110 470 230 300 290S110 380 190 540" fill="none" stroke="#5CC2B5" stroke-width="70" stroke-linecap="round"/>'
@@ -402,9 +419,11 @@ def ask_config() -> dict | None:
 ACTIONS_URL_ENV = "DIPCAST_ACTIONS_URL"
 ACTIONS_META = '<meta name="swimsignal-actions" content="{url}">'
 ACTIONS_PRIVACY = (
-    '<h2 id="action-counts">Action counts</h2>\n<p>To learn whether the site is useful, SwimSignal counts how often five '
+    '<h2 id="action-counts">Action counts</h2>\n<p>To learn whether the site is useful, SwimSignal counts how often eleven '
     "things are done on it: a spot's page opened, a day picked on a spot's page, a spot saved, a plan made on Plan a "
-    "swim, and alerts turned on. When you do one, your browser sends SwimSignal's counting service, which runs on "
+    "swim, alerts turned on, an alert asked for on a spot's page for a date, an alert asked for on a spot's page for "
+    "when it is back to low risk, \"Log a swim here\" pressed, a row of the spill feed on the home page opened, search "
+    "opened on a phone, and a day picked on a phone's map. When you do one, your browser sends SwimSignal's counting service, which runs on "
     "Cloudflare Workers, the name of the action and, for the first three, which spot. The service adds one to that "
     "day's total and keeps nothing else: not your IP address, not your browser's details, no cookie and no identifier, "
     "so it cannot tell whether two actions came from the same person or the same device. Nothing is stored on your "
@@ -415,9 +434,9 @@ ACTIONS_PRIVACY = (
     "bottom of the home page, or if your browser sends Global Privacy Control or Do Not Track.</p>\n")
 # The short version's sentence about analytics, with the page-view counter off and on (NO_COUNTER, WITH_COUNTER).
 ACTIONS_SWAPS = [
-    (NO_COUNTER[1], "There is no third-party tracking. Five actions, such as saving a spot, are counted as daily totals "
+    (NO_COUNTER[1], "There is no third-party tracking. Eleven actions, such as saving a spot, are counted as daily totals "
                     "that hold nothing about who did them (see Action counts)."),
-    ("There is no other analytics or tracking.", "Five actions, such as saving a spot, are also counted as daily totals "
+    ("There is no other analytics or tracking.", "Eleven actions, such as saving a spot, are also counted as daily totals "
      "that hold nothing about who did them (see Action counts). There is no other analytics or tracking."),
 ]
 
@@ -2857,7 +2876,7 @@ def spot_page(template: str, spot: dict, root: str, top: str | None = None, card
         page = page.replace('<body class="view-list">', '<body class="view-spot">', 1)
         # A desktop's spot page spans the screen and draws the wide sky from 801 px (index.html, "A spot
         # opens as a page"), so each screen asks early for the picture it shows, and only that one.
-        page = page.replace(SKY_PRELOAD, SPOT_SKY_PRELOAD, 1)
+        page = with_hero_first(page.replace(SKY_PRELOAD, SPOT_SKY_PRELOAD, 1), top)
         # The note goes before the answer: "Today" and "right now" in it are the issue time's, and a reader
         # without scripts meets them first. The script keeps only the answer's element (overBuilt), so the
         # note goes wherever it stands.

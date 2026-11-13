@@ -47,9 +47,11 @@ def test_on_the_app_names_the_worker_and_the_notice_says_what_is_counted(tmp_pat
     assert privacy.index('<h2 id="action-counts">Action counts</h2>') < privacy.index("<h2>The server version</h2>")
     assert "Last updated 31 October 2026 (action counts)." in privacy
     assert "There is no analytics script" not in privacy
-    assert "There is no third-party tracking. Five actions" in privacy
+    assert "There is no third-party tracking. Eleven actions" in privacy
     for words in ("not your IP address", "no cookie and no identifier", "Nothing is stored on your device",
-                  "Don't count my visits", "Global Privacy Control"):
+                  "Don't count my visits", "Global Privacy Control", "how often eleven things",
+                  "for a date", "back to low risk", '"Log a swim here" pressed', "spill feed on the home page",
+                  "search opened on a phone", "a day picked on a phone's map", "for the first three, which spot"):
         assert words in privacy, words
     assert "(action counts)" not in (tmp_path / "terms.html").read_text()
 
@@ -61,6 +63,20 @@ def test_with_the_page_view_counter_too_both_are_described(tmp_path):
     assert "Last updated 31 October 2026 (page-view counter, action counts)." in privacy
     assert "Cloudflare Web Analytics" in privacy
     assert "are also counted as daily totals that hold nothing about who did them (see Action counts). There is no other analytics or tracking." in privacy
+
+
+def test_the_notice_names_as_many_actions_as_the_worker_takes():
+    """The privacy section's count and its "for the first three, which spot" follow actions/src/index.js."""
+    import re
+    bs = _build_site()
+    worker = (ROOT / "actions" / "src" / "index.js").read_text()
+    events = re.findall(r"'(\w+)'", re.search(r"export const EVENTS = \[([^\]]*)\]", worker)[1])
+    with_spot = re.findall(r"'(\w+)'", re.search(r"const WITH_SPOT = new Set\(\[([^\]]*)\]\)", worker)[1])
+    words = {5: "five", 11: "eleven"}
+    assert len(events) in words, "say the new number in ACTIONS_PRIVACY and ACTIONS_SWAPS, then add it here"
+    assert f"how often {words[len(events)]} things" in bs.ACTIONS_PRIVACY
+    assert all(f"{words[len(events)].capitalize()} actions" in new for _, new in bs.ACTIONS_SWAPS)
+    assert with_spot == events[:3] and "for the first three, which spot" in bs.ACTIONS_PRIVACY
 
 
 def test_every_sentence_it_swaps_is_in_the_notice_or_the_counters_text():
