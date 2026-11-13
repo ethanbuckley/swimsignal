@@ -241,7 +241,24 @@ Compute: under 15 minutes on this Mac, offline. No network request of any kind.
 
 ## Run log (written before any score)
 
-*(Filled in as the stages run.)*
+Code: this branch. Outputs: a scratch folder outside the repo (`DIPCAST_ROOT` and `DIPCAST_STATE` in scratch too).
+Statement committed in `af8555a3` and pushed; harness and synthetic tests in `c1f5f99c`, both before any fit.
+
+**Prepare** (`llm_run.py prepare`, 13 November 23:56 UTC, commit `c1f5f99c`, a few seconds). Counts only.
+
+- 16,679 rows read (all with air for their span). Shared inputs' SHA-256 were the same before and after.
+- **Merges:** 8 pairs of WFD lakes within 50 m, among them Windermere North and South (GB31247007 + GB31247008) and
+  three chained basins (GB30547009 to GB30547012). 24 OS-link or own-water groups joined a WFD lake within 500 m (for
+  example a Coniston point, `NW-88021529`). 22 merged waters in all hold more than one #419 group. No water is in two
+  folds. The full list is in the scratch `prepare.json` and goes into the score file.
+- **Test, 2000-2011:** 8,007 rows at **265 waters** (282 before the merge). Deep 1,711 rows / 16 waters; mid 1,924 / 47;
+  shallow 1,608 / 30; no depth 2,764 / 180. WFD 1 km² and over: 2,359 / 26.
+- **Development, 2012-2025:** 7,336 rows at 450 waters. Deep 1,107 / 15; mid 967 / 57; shallow 1,525 / 32; no depth
+  3,737 / 352.
+- **Seen 2026:** 1,336 rows at 214 waters.
+- **Test truth file SHA-256: `1e58fc382cba5b13e3e6a865f94d0231440153a433800aec16614722222bcb73`**, committed here
+  before any model is fitted. Test inputs (no temperature) `b5bb6cf0a6dc4397d9aa1247ccd6a7f8cada7bc33630140f8f721c49b4075f58`;
+  development rows `6c0d45867ac0ed455b325db4dbbdd293b04cdce05b98ccc0775a0fbefe246275`.
 
 ---
 
