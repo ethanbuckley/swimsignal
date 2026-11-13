@@ -6164,12 +6164,18 @@ function labTile(d) {
 }
 const daysTile = d => `<section class="tile" aria-labelledby="days-h"><h2 class="t-lab" id="days-h">${ICON.days}<span>Pollution risk, next five days</span></h2>`
   + `<p class="t-sent">${daysSentence(d)}</p>${dayRows(d)}${liveRow(d)}<div class="after" id="answer-after">${answerAfter(d)}</div><div id="day-view"></div>${check(d)}</section>`;
+// A spot page's title, word for word as the build writes it (build_site.spot_title): "sewage" and "swimming"
+// are the words people search with.
+function spotTitle(d) {
+  const none = (d.error && !String(d.error).startsWith('forecast failed')) || (d.upstream_summary || {}).overflows === 0;
+  return `${d.name}: ${none ? 'swimming and sewage overflows' : 'sewage spill risk for swimming'} · ${BRAND}`;
+}
 function render(d) {
   setDays(d);
   contribLayer.clearLayers();
   setView('spot');
   if (!DAY && typeof lookedAt === 'function') lookedAt([d], DATA.generated_at, SAVED);   // since.js: its level is the answer
-  document.title = `${d.name}: pollution risk forecast · ${BRAND}`;   // as on the spot's own page
+  document.title = spotTitle(d);   // as on the spot's own page
   const loc = d.location || {}, total = overflows(d);
   let h = spotTop(d);
   // Then the tiles, the five days first. A phone's small map of where the spot is comes after them:

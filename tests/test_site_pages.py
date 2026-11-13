@@ -44,7 +44,7 @@ def test_every_spot_gets_its_own_page_and_preview(tmp_path):
     assert '<base href="../../">' in head   # relative: the site works at any address
     assert '<link rel="canonical" href="https://example.org/swim/spot/wharfe-ilkley/">' in head
     assert '<meta property="og:image" content="https://example.org/swim/icons/og.png">' in head
-    assert "<title>Wharfe at &quot;Cromwheel&quot; &amp; Ilkley: pollution risk forecast · SwimSignal</title>" in head
+    assert "<title>Wharfe at &quot;Cromwheel&quot; &amp; Ilkley: sewage spill risk for swimming · SwimSignal</title>" in head   # the words people search with
     assert "from the 15 monitored storm overflows upstream" in head
     assert "very high" not in head.lower().replace("veryhigh", "")
     assert head.count("<title>") == 1 and "page-meta" not in page
@@ -1348,7 +1348,7 @@ def test_a_spots_page_describes_the_place_and_its_forecast_as_structured_data(tm
     assert place["url"] == "https://example.org/swim/spot/wharfe-ilkley/" and place["@id"].endswith("#place")
     assert place["geo"] == {"@type": "GeoCoordinates", "latitude": 53.93189, "longitude": -1.81618}
     assert place["containedInPlace"] == {"@type": "RiverBodyOfWater", "name": "River Wharfe"}
-    assert place["description"] == bs.spot_blurb(spots[0])   # the page's own description, word for word
+    assert place["description"] == bs.spot_description(spots[0])   # the page's own description, word for word
     img = place["image"]   # the overview, not the first photo
     assert img["contentUrl"] == "https://example.org/swim/guides/photos/the-river.jpg" and img["creator"]["name"] == "Oliver Dixon"
     assert img["license"] == "https://creativecommons.org/licenses/by-sa/2.0/" and img["acquireLicensePage"].endswith("/7486475")
@@ -1360,3 +1360,28 @@ def test_a_spots_page_describes_the_place_and_its_forecast_as_structured_data(tm
     tarn = _ld((tmp_path / "spot" / "tarn" / "index.html").read_text())
     assert [g["@type"] for g in tarn["@graph"]] == ["Place"]   # no forecast here, so no dataset
     assert tarn["@graph"][0]["containedInPlace"]["@type"] == "LakeBodyOfWater" and "image" not in tarn["@graph"][0]
+
+
+def test_a_spot_page_describes_itself_in_the_words_people_search_with():
+    bs = _build_site()
+    river = {"id": "a", "name": "River A, Low Force", "upstream_summary": {"overflows": 1}}
+    assert bs.spot_title(river) == "River A, Low Force: sewage spill risk for swimming · SwimSignal"
+    assert bs.spot_description(river).startswith("Five-day sewage spill risk forecast for swimming at River A, Low Force, from the 1 monitored storm overflow upstream,")
+    # Nobody tests an undesignated water for bathing: the page says so, and so does its search result.
+    assert bs.spot_description(river).endswith("Not a designated bathing water, so the Environment Agency does not test its water quality for bathing.")
+    assert "SEPA does not test" in bs.spot_description({**river, "trial": "scotland"})
+    for tested in ({"source": "designated"}, {"source": "sepa", "trial": "scotland"}, {"source": "unlisted"}):   # the EA or SEPA tests it, or nobody checked
+        assert "designated bathing water" not in bs.spot_description({**river, **tested})
+    # With an opening: what the page is for, who tests the water, then the place.
+    opened = bs.spot_description({**river, "opening": {"text": "Low Force is a waterfall on the River A."}})
+    assert opened == ("Sewage spill risk for swimming at River A, Low Force, today and the next four days. Not a designated bathing water, so the "
+                      "Environment Agency does not test its water quality for bathing. Low Force is a waterfall on the River A.")
+    # No overflow found upstream: there is no spill forecast, so neither the title nor the description names one.
+    none = {**river, "upstream_summary": {"overflows": 0}}
+    assert bs.spot_title(none) == "River A, Low Force: swimming and sewage overflows · SwimSignal"
+    assert "spill risk forecast" not in bs.spot_description(none) and "no monitored storm overflow" in bs.spot_description(none)
+    assert bs.spot_title({**river, "error": "no route"}).endswith("swimming and sewage overflows · SwimSignal")
+    assert bs.spot_title({**river, "error": "forecast failed: x"}).endswith("sewage spill risk for swimming · SwimSignal")
+    # The page's script writes the same title when it opens a spot.
+    page = (bs.TEMPLATE).read_text()
+    assert "'swimming and sewage overflows' : 'sewage spill risk for swimming'" in page and "document.title = spotTitle(d)" in page

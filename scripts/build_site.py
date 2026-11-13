@@ -2613,11 +2613,39 @@ def with_share_meta(page: str, path: str, root: str) -> str:
     return with_phone_nav(head + sep + rest)
 
 
+def has_spill_forecast(spot: dict) -> bool:
+    """False where the trace found no monitored overflow upstream, so the page has no spill forecast to name."""
+    if spot.get("error") and not str(spot["error"]).startswith("forecast failed"):
+        return False
+    return (spot.get("upstream_summary") or {}).get("overflows") != 0
+
+
+def spot_title(spot: dict) -> str:
+    """A spot page's title, in the words people search with: "sewage" and "swimming", which "pollution risk forecast"
+    left out. index.html's spotTitle writes the same one when the script opens a spot."""
+    what = "sewage spill risk for swimming" if has_spill_forecast(spot) else "swimming and sewage overflows"
+    return f"{spot['name']}: {what} · {BRAND}"
+
+
+def bathing_test_line(spot: dict) -> str:
+    """Who tests the water here, for the description: the page's own sentence (index.html, "not a designated bathing
+    water"), said where a search for the spot's water quality will find it. "" where it is designated or unchecked."""
+    if spot.get("source") in ("designated", "sepa", "unlisted"):   # tested (the EA, or SEPA in the Scotland trial), or unchecked
+        return ""
+    who = "SEPA" if spot.get("trial") == "scotland" else "the Environment Agency"   # as index.html's check() chooses
+    return f" Not a designated bathing water, so {who} does not test its water quality for bathing."
+
+
 def spot_description(spot: dict) -> str:
-    """The page's description, its search result's words: the spot's opening where it has one (src/dipcast/openings.py,
-    two or three sentences of fact about the place, none of them today's level), else spot_blurb."""
+    """The page's description, its search result's words. It opens on what the page is for, then who tests the water
+    (bathing_test_line), then the spot's opening where it has one (src/dipcast/openings.py, two or three sentences of
+    fact about the place, none of them today's level). Without an opening, spot_blurb and the testing line."""
     text = (spot.get("opening") or {}).get("text")
-    return text if isinstance(text, str) and text.strip() else spot_blurb(spot)
+    if isinstance(text, str) and text.strip() and has_spill_forecast(spot):
+        return f"Sewage spill risk for swimming at {spot['name']}, today and the next four days.{bathing_test_line(spot)} {text.strip()}"
+    if isinstance(text, str) and text.strip():
+        return text.strip()
+    return spot_blurb(spot) + bathing_test_line(spot)
 
 
 def place_html(spot: dict) -> str:
@@ -2646,7 +2674,7 @@ def spot_blurb(spot: dict) -> str:
         return (f"{name}: no monitored storm overflow found within {config.MAX_UPSTREAM_KM:g} km upstream, so {BRAND} has no spill "
                 "forecast for it. Other risks apply: algae, wildlife, runoff and bathers.")
     upstream = f" from the {n} monitored storm overflow{'' if n == 1 else 's'} upstream," if n else ""
-    return (f"Five-day pollution risk forecast for {name},{upstream} using live overflow status, rainfall forecasts "
+    return (f"Five-day sewage spill risk forecast for swimming at {name},{upstream} using live overflow status, rainfall forecasts "
             f"and the river network. Updated several times a day.")
 
 
@@ -2758,7 +2786,7 @@ def spot_page(template: str, spot: dict, root: str, top: str | None = None, card
     (noscript_note)."""
     url = f"{root}spot/{spot['id']}/"
     blurb = spot_description(spot)
-    page = PAGE_META.sub(lambda m: page_meta(f"{spot['name']}: pollution risk forecast · {BRAND}", blurb, url, root,
+    page = PAGE_META.sub(lambda m: page_meta(spot_title(spot), blurb, url, root,
                                              base="../../", image=card,
                                              feed=(f"spot/{spot['id']}/feed.xml", f"{BRAND} · {spot['name']}") if feed else None)
                        + "\n" + spot_structured_data(spot, root, blurb),
