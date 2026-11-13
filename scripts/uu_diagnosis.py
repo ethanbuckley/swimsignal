@@ -35,7 +35,6 @@ import train as T  # noqa: E402
 
 from dipcast import config  # noqa: E402
 from dipcast.model.features import (  # noqa: E402
-    ALL_FEATURES,
     RAIN_FEATURES,
     daily_rain_features,
     spill_days,
@@ -384,8 +383,8 @@ def main() -> None:
     xr = xr[rad_ok]
     pr = {"P": np.full(N, np.nan), "V": np.full(N, np.nan)}
     pr["P"][rad_ok], pr["V"][rad_ok] = prod.predict(xr), v2.predict(xr)
-    e_gap = diff("C5 radar swap", "V minus P, ERA5-Land rain, rows the radar covers", arm["V"], arm["P"], rad_ok)
-    r_gap = diff("C5 radar swap", "V minus P, radar rain, the same rows", np.nan_to_num(pr["V"]), np.nan_to_num(pr["P"]), rad_ok)
+    diff("C5 radar swap", "V minus P, ERA5-Land rain, rows the radar covers", arm["V"], arm["P"], rad_ok)
+    diff("C5 radar swap", "V minus P, radar rain, the same rows", np.nan_to_num(pr["V"]), np.nan_to_num(pr["P"]), rad_ok)
     d_e = (arm["V"] - y) ** 2 - (arm["P"] - y) ** 2
     d_r = np.where(rad_ok, (np.nan_to_num(pr["V"]) - y) ** 2 - (np.nan_to_num(pr["P"]) - y) ** 2, 0.0)
     lo, hi = tw.interval(d_r - d_e, rad_ok)
