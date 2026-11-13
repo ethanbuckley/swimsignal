@@ -893,6 +893,13 @@
    "branch": "claude/scotland-2021-backtest",
    "branch_exists": true,
    "date": "2026-11-10"
+  },
+  "688": {
+   "n": 688,
+   "state": "open",
+   "branch": "research/wessex-river-samples",
+   "branch_exists": true,
+   "date": "2026-11-13"
   }
  },
  "entries": [
@@ -2038,6 +2045,43 @@
     {
      "label": "Waterhead bacteria samples",
      "href": "waterhead.html"
+    }
+   ]
+  },
+  {
+   "id": "wessex-river-samples",
+   "title": "Wessex Water's river samples at three spots",
+   "section": "data",
+   "project": "WESSEX-RIVER",
+   "topics": [
+    "e. coli",
+    "rivers",
+    "samples",
+    "wessex"
+   ],
+   "verdict": "No held-out test. Exploratory readout on seen data: the live river rule orders days at all three Wessex points (rho 0.55 to 0.76); its level is close at Warleigh Weir (31% of samples over 900 against a mean estimate of 37%) and at Farleigh Hungerford's own EA samples (19.6% against 20.2%), but low at Wessex's two Frome points (42% against 30%, 50% against 26%). The in-season samples had already been scored in the soil-moisture rivers test, which helped adopt the live river rule.",
+   "scope": "594 company lab samples, 2021-25, at three points beside Warleigh Weir (51 m downstream), Farleigh Hungerford (2.3 km upstream) and Tellisford Weir (212 m downstream). Not Environment Agency samples. Three points chosen because they are swim spots, after their values were seen.",
+   "stage": "development",
+   "stage_note": "Observation page and spot-page lines built in #688, with the check's record; nothing on the forecast changes.",
+   "next": "Join issued E. coli estimates (forecast_points, since late September 2026) to Wessex samples taken after them, when the company's layer gains 2026 rows; first check of the layer on 1 July 2027.",
+   "read_on": "2027-07-01",
+   "records": [
+    {
+     "doc": "docs/WESSEX-RIVER-SAMPLES-CHECK-2026-11.md",
+     "quote": "the live river rule orders days at all three Wessex points"
+    },
+    {
+     "doc": "docs/WESSEX-RIVER-SAMPLES-CONTRACT-v1.md",
+     "quote": "The point is linked only if all five checks hold"
+    }
+   ],
+   "prs": [
+    688
+   ],
+   "links": [
+    {
+     "label": "Wessex Water's river samples",
+     "href": "wessex-river-samples.html"
     }
    ]
   },
