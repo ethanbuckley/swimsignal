@@ -129,6 +129,23 @@ def with_inline_sky(html: str) -> str:
         raise ValueError(f"index.html should name {SKY_URL} once, in .answer::before and .lead::before")
     data = base64.b64encode((TEMPLATE.parent / "icons" / "fells.webp").read_bytes()).decode()
     return html.replace(SKY_URL, f"url(data:image/webp;base64,{data})", 1)
+
+
+# A spot's page that opens with its photo (guide.js, guideHero) shows no sky at any width (index.html,
+# .answer:has(.hero)::before), and the photo is its first screen's largest paint (LCP). So its head asks for
+# the photo, as soon as the head is read and before the 27 deferred scripts, in place of the wide sky,
+# which a desktop fetched (26 kB) and never showed. 12 Nov 2026, Lighthouse on a phone, 20 runs each on a
+# GitHub runner: the photo's request 0.77 s became 0.61 s and the LCP 2.79 s became 2.63 s; on a desktop
+# 0.170 s became 0.156 s. The phone's inline sky stays: taking it out of these pages gained no LCP.
+HERO_SRC = re.compile(r'<figure class="hero"><img src="(guides/photos/[a-z0-9][a-z0-9-]{0,78}\.jpe?g)"')
+
+
+def with_hero_first(page: str, top: str) -> str:
+    """A built spot page's head for its photo opening, where top (prerender_spots) has one; else as it was."""
+    hero = HERO_SRC.search(top)
+    if not hero:
+        return page
+    return page.replace(SPOT_SKY_PRELOAD, f'<link rel="preload" href="{hero.group(1)}" as="image" fetchpriority="high">', 1)
 # The brand mark, inline in every page's header (the static pages carry the same markup), so it needs no path.
 MARK = ('<svg viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" fill="#0f5a61"/>'
         '<path d="M430-20C330 110 470 230 300 290S110 380 190 540" fill="none" stroke="#5CC2B5" stroke-width="70" stroke-linecap="round"/>'
@@ -2857,7 +2874,7 @@ def spot_page(template: str, spot: dict, root: str, top: str | None = None, card
         page = page.replace('<body class="view-list">', '<body class="view-spot">', 1)
         # A desktop's spot page spans the screen and draws the wide sky from 801 px (index.html, "A spot
         # opens as a page"), so each screen asks early for the picture it shows, and only that one.
-        page = page.replace(SKY_PRELOAD, SPOT_SKY_PRELOAD, 1)
+        page = with_hero_first(page.replace(SKY_PRELOAD, SPOT_SKY_PRELOAD, 1), top)
         # The note goes before the answer: "Today" and "right now" in it are the issue time's, and a reader
         # without scripts meets them first. The script keeps only the answer's element (overBuilt), so the
         # note goes wherever it stands.
