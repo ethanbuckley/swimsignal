@@ -324,7 +324,11 @@ same SHA-256 hashes after the run as before. Exploratory, on 2024-25 records.
 ## Results, amended (section 12, written after the first join)
 
 - **Check on the amendment.** At events on a 15-minute sonde, 76 of 77 have the same outcome under both sets of
-  rules. One differs (Fowey at Restormel, 4 August 2025: "gap" as stated, "no rise" amended). Not explained yet.
+  rules. One differs (Fowey at Restormel, 4 August 2025, a Tier B event: "gap" as stated, "no rise" amended).
+  Cause, checked: that sonde stamps its readings one minute past the quarter hour. The stated rule puts each
+  reading in the slot it falls in; the amended rule uses the reading's own stamp. The window's last reading is 74
+  minutes before the window's end plus one interval, and the gap line is 75. Counted in slots, the same hole is four
+  empty slots, which is a gap. For the same reason 5 lags differ by one minute. No Tier A figure is touched.
 - Tier A events at natural-channel sondes (57 places): **49 rises**, 236 no rise, 10 raised before, 7 gaps, 19 no
   baseline.
 - 9 sondes show a signal by section 6's rule. 4 of them have 5 or more rises, on 4 rivers. **None has 10.**
@@ -368,3 +372,32 @@ Rerun the amended rules, unchanged, when the EA's 2026 start/stop files are impo
 published to August and not imported). Calder at Stones Lane and Ea Beck opened in 2025, so a full 2026 should
 roughly double their events [inferred from their rates]. The check to make first: why the Till's rises are too fast
 to be travel, since one such sonde widens the pooled interval to 1.42 m/s.
+
+---
+
+## 13. Extension to January-August 2026, stated before any 2026 reading is fetched (13 November)
+
+Section 9's second outcome names this step: "grow the events from the EA's 2026 start/stop files when they are
+imported, under this protocol unchanged". The file is on this machine already: the EA's "2026 year to August Detailed
+EDM Start-Stop Data.zip" (SHA-256 `d0dbf32f…a1a8f`), imported on 13 November by the company-event-layers session
+into its own scratch folder as nine `ea_events_<company>.parquet` files, 1 January to 31 August 2026. This run reads
+those nine files and does not change them (hashes before and after). They lie outside every active window.
+
+- **Requests:** 7 more, which makes 99 of 100. One is kept for a single retry. Each is one sonde's readings from
+  3 January to 31 August 2026, as CSV, through the same ledger.
+- **Which sondes.** Natural-channel sondes whose status is Active, ranked by: a signal in the amended run first, then
+  Tier A rises in the amended run, then station id. The first 7: Calder at Stones Lane (E04798A), Till above Harehope
+  (E02569A), Witham below Grange Farm (E03430A), Ea Beck below Hazel Lane (E06527A), Witham above Grange Farm
+  (E03360A), Gowy at Mill Park Lane (E06616A), and Ea Beck above South Elmsall works (E03459A, no signal). This choice
+  uses the amended results. The 2026 events themselves are new: nothing about them has been seen.
+- **Rules:** the amended rules of section 12, with the code as it stands at this commit. Each sonde's 2026 readings
+  are joined to its 2024-25 readings, and the spill records of all three years are used together.
+- **Seen and new are kept apart.** An event that starts before 1 January 2026 is "seen". One that starts on or after
+  it is "new". Counts, lags and speeds are reported for each and for both together.
+- **One side effect, reported:** an overflow with events only in 2026 now counts as monitored, which can change the
+  tier of a 2024-25 event. The number of 2024-25 events whose tier or outcome differs from the amended run is given.
+- **What decides** is section 9, unchanged, on all three years together: a measured speed needs 3 sondes on 2 rivers
+  with a signal and 10 or more Tier A rises each, and a pooled interval that excludes 0.2 m/s.
+- **A replication check, as description:** for each sonde with 3 or more new rises, whether the median of the new
+  lags falls inside the 95% interval from its seen lags.
+- **What I expect:** Calder and Ea Beck reach about 10 rises. The pooled interval still includes 0.2 m/s.
