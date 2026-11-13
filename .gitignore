@@ -22,6 +22,8 @@ data/processed/*
 !data/processed/live_status/
 # The regional routing shadow's frozen v2 model (shadow_regional.py, docs/REGIONAL-ROUTING-2026-11.md)
 !data/processed/regional/
+# The combined-v1 shadow's frozen D2 model (shadow_combined.py, docs/COMBINED-SHADOW-2026-11.md)
+!data/processed/combined/
 !data/processed/lead_calibration.json
 !data/processed/spill_day_ratio.json
 !data/processed/ecoli_model.json
