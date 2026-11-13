@@ -180,8 +180,235 @@ None of these changes a forecast or the page.
 
 ## Changes after this statement
 
-None yet.
+None to the method. Two facts about the run, for the record:
+
+- The script was committed (`29c8ce78`, 15:24:22 UTC) six seconds after the full run started (15:24:16 UTC). The file
+  was not edited between the run and the commit (`git diff 29c8ce78 scripts/` prints nothing).
+- Before the full run, a 20-draw trial ran once to catch errors (as the calibration check did). It printed the three
+  cells' reading-rule lines. Its figures are not used. One of its lines differs from the full run's: with 20 draws the
+  other eight companies' calibration difference read as shown; with 2,000 it does not.
 
 ## Results
 
-Not yet run.
+Run on 13 November 2026, 15:24:16 to 15:24:54 UTC, with `scripts/thames_same_day_diagnosis.py` at `29c8ce78`, after the
+statement was pushed at 15:21:32 UTC (`186a074c`). Output: `docs/THAMES-SAME-DAY-DIAGNOSIS-2026-11.json`.
+
+**Checks.** All five input hashes matched before and after, and the source files they were copied from were unchanged.
+The count check passed: the 9 November state rebuilds the interim read's rows exactly (117,324 joined at the same issue
+time, 91,444 known, 107,650 with rain, 91,391 common, 1,382 active and 19,130 quiet at lead 0, Thames 17,426 and
+17,416). The scratch `DIPCAST_ROOT` was empty after the run. 84,659 scored rows fall on 29 September to 17 October;
+49,426 of them are cell rows, from 2 October (the first days lack 100 fitting rows on the active side). Bootstrap: 1,145
+overflows, 3 blocks.
+
+### Answer
+
+**Not answerable yet by the stated rule.** Before 18 October, Thames Water's same-day cell holds 16 overflow-days with a
+spill, below the 50 the rule needs, so the rule was not applied. As a direction only, on 2 to 17 October: the forecast's
+extra Brier loss against persistence (0.0035) sits in calibration, almost all of it in the spread term (0.0029), not in
+the level term (0.0001). No ranking fault is shown, but the forecast has no ranking advantage either: its AUC is 0.66
+against persistence's 0.65, and its correlation with the outcome is 0.02. The loss falls on quiet overflows: the forecast
+gave 0.07 or more to 196 Thames overflow-days, of which 1 spilled, while 10 of the 16 spills came at forecasts under
+0.01. So in the dry part of the autumn, Thames's chances moved without tracking Thames's spills. Elsewhere, on the same
+days, the forecast orders spill days better than persistence (AUC 0.88 against 0.70, difference 0.08 to 0.31) and no
+calibration fault is shown. The whole record's answer waits for the extension to 23 October, run on or after
+21 November, which adds the wet spell that held most of the 93 Thames spills in the interim read.
+
+### How to read "spread" here
+
+When the correlation with the outcome is near 0, the spread term is close to the forecast's own variance: a forecast
+that varies without tracking the outcome pays for its variation there. So for Thames on these days, "a spread fault"
+and "no ranking advantage" describe the same rows. A recalibration could flatten Thames's chances toward a constant and
+remove most of the gap, but it would add no information: it would at best tie a near-constant persistence, which is
+what persistence is at Thames on these days (16 of 2,563 rows active). In ratio terms the forecast is about three times
+the observed rate (0.020 against 0.006), as the calibration check found, but at rates this low the squared gap of the
+level term costs little.
+
+### The figures
+
+Brier terms are shown ×1,000. Intervals are 95%, from the two-way bootstrap unless the column says "overflows only".
+P-in figures (fitted on the rows scored) are in the last column; they differ little from P-trail's. A cell with fewer
+than 50 overflow-days with a spill is described, not judged.
+
+#### Thames Water, same day
+
+2,563 rows, 194 overflows, 16 spill rows on 16 overflow-days, 16 active rows.
+
+| | Forecast | P-trail | Forecast − P-trail (overflow and week) | Same, overflows only | Forecast − P-in |
+|---|---:|---:|---|---|---|
+| Brier | 9.3 | 5.7 | 3.5 (−0.1 to 7.4) | 2.3 to 5.0 | 3.5 (−0.0 to 7.4) |
+| Level | 0.2 | 0.1 | 0.1 (−0.2 to 0.6) | 0.0 to 0.2 | 0.1 (−0.2 to 0.6) |
+| Spread | 2.9 | 0.0 | 2.9 (−0.1 to 6.0) | 1.9 to 3.5 | 2.8 (−0.1 to 6.0) |
+| Calibration (level + spread) | 3.1 | 0.1 | 3.0 (−0.4 to 6.6) | 2.0 to 3.6 | 2.9 (−0.3 to 6.6) |
+| Association | 6.2 | 5.6 | 0.6 (−0.0 to 3.0) | −0.0 to 2.3 | 0.6 (−0.0 to 3.0) |
+| Skill against persistence | | | −0.61 (−2.14 to 0.02) | −1.36 to −0.35 | −0.61 (−2.13 to 0.01) |
+
+Correlation with the outcome: forecast 0.017, P-trail 0.303. Mean forecast 0.0197, mean P-trail 0.0160, spill rate 0.0062.
+
+Bands (×1,000): forecast reliability 2.9 (0.3 to 6.7), resolution 0.0 (0.0 to 0.2), remainder 0.1; P-trail reliability 0.1 (0.1 to 1.0), resolution 0.6 (0.0 to 3.0), remainder 0.0; uncertainty 6.2.
+
+Ranking: AUC forecast 0.655 (0.483 to 0.875), active flag 0.654 (0.497 to 0.818); difference 0.001 (−0.276 to 0.374; overflows only −0.188 to 0.299). At persistence's 16 alerts: the forecast's top 16 rows hold 1 spill, the active rows 5; difference −4 (−16.7 to 0.0).
+
+| Side | Rows | Spills | Spill rate | Mean forecast | Mean P-trail | Brier forecast | Brier P-trail | Forecast AUC within |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| Active (spill ends) | 16 | 5 | 0.312 | 0.011 | 0.252 | 0.3066 | 0.2161 | 0.44 |
+| Quiet (spill starts) | 2,547 | 11 | 0.004 | 0.020 | 0.014 | 0.0074 | 0.0044 | 0.68 |
+| Active, spilling at issue | 2 | 2 | 1.000 | 0.004 | 0.251 | 0.9916 | 0.5612 | |
+| Active, stopped in the 48 h before | 14 | 3 | 0.214 | 0.013 | 0.253 | 0.2088 | 0.1668 | 0.45 |
+
+| Contribution to forecast − P-trail (×1,000) | Total | Level part | Rest |
+|---|---|---|---|
+| Quiet rows (spill starts) | 3.0 (0.2 to 6.8) | 0.1 (−0.2 to 0.7) | 2.8 (0.3 to 6.1) |
+| Active rows (spill ends) | 0.6 (−0.3 to 2.2) | 0.5 (−0.3 to 2.2) | 0.0 (−0.0 to 0.1) |
+
+Forecast bands:
+
+| Band | Rows | Spills | Mean forecast | Spill rate |
+|---|---:|---:|---:|---:|
+| under 0.01 | 2,036 | 10 | 0.003 | 0.005 |
+| 0.01–0.03 | 188 | 3 | 0.016 | 0.016 |
+| 0.03–0.07 | 143 | 2 | 0.049 | 0.014 |
+| 0.07–0.15 | 96 | 0 | 0.103 | 0.000 |
+| 0.15–0.40 | 95 | 1 | 0.245 | 0.011 |
+| 0.40–0.70 | 5 | 0 | 0.471 | 0.000 |
+| 0.70 or more | 0 | 0 | | |
+
+
+#### Other eight companies, same day
+
+10,616 rows, 946 overflows, 344 spill rows on 344 overflow-days, 659 active rows.
+
+| | Forecast | P-trail | Forecast − P-trail (overflow and week) | Same, overflows only | Forecast − P-in |
+|---|---:|---:|---|---|---|
+| Brier | 26.7 | 29.2 | −2.4 (−6.4 to 0.7) | −4.6 to −0.1 | −1.9 (−5.8 to 1.3) |
+| Level | 0.0 | 0.0 | 0.0 (−0.1 to 0.1) | −0.1 to 0.1 | 0.0 (−0.1 to 0.1) |
+| Spread | 0.6 | 0.1 | 0.5 (−0.2 to 1.6) | 0.1 to 1.3 | 0.6 (−0.2 to 1.7) |
+| Calibration (level + spread) | 0.6 | 0.1 | 0.6 (−0.2 to 1.6) | 0.0 to 1.4 | 0.6 (−0.2 to 1.7) |
+| Association | 26.1 | 29.1 | −3.0 (−6.3 to −0.4) | −4.8 to −1.3 | −2.5 (−5.8 to 0.3) |
+| Skill against persistence | | | 0.08 (−0.02 to 0.25) | 0.00 to 0.15 | 0.07 (−0.05 to 0.23) |
+
+Correlation with the outcome: forecast 0.410, P-trail 0.269. Mean forecast 0.0371, mean P-trail 0.0286, spill rate 0.0324.
+
+Bands (×1,000): forecast reliability 0.7 (0.2 to 2.2), resolution 4.9 (3.1 to 7.9), remainder −0.5; P-trail reliability 0.0 (0.0 to 0.5), resolution 2.7 (0.8 to 5.6), remainder 0.5; uncertainty 31.4.
+
+Ranking: AUC forecast 0.877 (0.808 to 0.969), active flag 0.701 (0.619 to 0.791); difference 0.176 (0.075 to 0.313; overflows only 0.141 to 0.213). At persistence's 659 alerts: the forecast's top 659 rows hold 174 spills, the active rows 155; difference 19 (−40.0 to 81.0).
+
+| Side | Rows | Spills | Spill rate | Mean forecast | Mean P-trail | Brier forecast | Brier P-trail | Forecast AUC within |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| Active (spill ends) | 659 | 155 | 0.235 | 0.140 | 0.243 | 0.1641 | 0.1858 | 0.76 |
+| Quiet (spill starts) | 9,957 | 189 | 0.019 | 0.030 | 0.014 | 0.0176 | 0.0188 | 0.87 |
+| Active, spilling at issue | 11 | 11 | 1.000 | 0.511 | 0.227 | 0.3260 | 0.5992 | |
+| Active, stopped in the 48 h before | 648 | 144 | 0.222 | 0.134 | 0.244 | 0.1613 | 0.1788 | 0.75 |
+
+| Contribution to forecast − P-trail (×1,000) | Total | Level part | Rest |
+|---|---|---|---|
+| Quiet rows (spill starts) | −1.1 (−5.4 to 2.3) | 0.1 (−0.1 to 0.4) | −1.2 (−5.3 to 1.9) |
+| Active rows (spill ends) | −1.3 (−3.2 to 0.4) | 0.6 (−0.4 to 1.5) | −1.9 (−4.2 to 0.5) |
+
+Forecast bands:
+
+| Band | Rows | Spills | Mean forecast | Spill rate |
+|---|---:|---:|---:|---:|
+| under 0.01 | 7,179 | 36 | 0.003 | 0.005 |
+| 0.01–0.03 | 1,191 | 38 | 0.017 | 0.032 |
+| 0.03–0.07 | 865 | 44 | 0.047 | 0.051 |
+| 0.07–0.15 | 612 | 41 | 0.103 | 0.067 |
+| 0.15–0.40 | 582 | 99 | 0.242 | 0.170 |
+| 0.40–0.70 | 141 | 60 | 0.523 | 0.426 |
+| 0.70 or more | 46 | 26 | 0.796 | 0.565 |
+
+
+#### Thames Water, leads 1 to 4
+
+6,995 rows, 194 overflows, 56 spill rows on 15 overflow-days, 38 active rows.
+
+| | Forecast | P-trail | Forecast − P-trail (overflow and week) | Same, overflows only | Forecast − P-in |
+|---|---:|---:|---|---|---|
+| Brier | 10.4 | 7.9 | 2.5 (1.4 to 3.6) | 1.8 to 3.5 | 2.6 (1.5 to 3.9) |
+| Level | 0.3 | 0.1 | 0.2 (−0.0 to 0.3) | 0.1 to 0.3 | 0.1 (−0.0 to 0.3) |
+| Spread | 2.2 | 0.0 | 2.2 (0.8 to 2.7) | 1.5 to 2.6 | 2.1 (0.4 to 2.7) |
+| Calibration (level + spread) | 2.4 | 0.1 | 2.3 (0.9 to 2.9) | 1.6 to 2.8 | 2.2 (0.4 to 2.9) |
+| Association | 7.9 | 7.7 | 0.2 (−0.0 to 2.4) | −0.0 to 1.4 | 0.4 (−0.0 to 3.3) |
+| Skill against persistence | | | −0.32 (−0.94 to −0.16) | −0.82 to −0.19 | −0.33 (−0.97 to −0.16) |
+
+Correlation with the outcome: forecast 0.018, P-trail 0.164. Mean forecast 0.0246, mean P-trail 0.0187, spill rate 0.0080.
+
+Bands (×1,000): forecast reliability 2.3 (1.6 to 3.0), resolution 0.0 (0.0 to 0.1), remainder 0.2; P-trail reliability 0.2 (0.1 to 2.1), resolution 0.4 (0.0 to 3.3), remainder 0.0; uncertainty 7.9.
+
+Ranking: AUC forecast 0.599 (0.456 to 0.856), active flag 0.587 (0.496 to 0.740); difference 0.011 (−0.216 to 0.359; overflows only −0.178 to 0.276). At persistence's 38 alerts: the forecast's top 38 rows hold 0 spills, the active rows 10; difference −10 (−54.0 to 0.0).
+
+| Side | Rows | Spills | Spill rate | Mean forecast | Mean P-trail | Brier forecast | Brier P-trail | Forecast AUC within |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| Active (spill ends) | 38 | 10 | 0.263 | 0.020 | 0.130 | 0.2563 | 0.2050 | 0.41 |
+| Quiet (spill starts) | 6,957 | 46 | 0.007 | 0.025 | 0.018 | 0.0090 | 0.0068 | 0.63 |
+| Active, spilling at issue | 1 | 1 | 1.000 | 0.003 | 0.167 | 0.9934 | 0.6935 | |
+| Active, stopped in the 48 h before | 37 | 9 | 0.243 | 0.020 | 0.129 | 0.2364 | 0.1918 | 0.42 |
+
+| Contribution to forecast − P-trail (×1,000) | Total | Level part | Rest |
+|---|---|---|---|
+| Quiet rows (spill starts) | 2.2 (1.3 to 3.0) | 0.2 (−0.0 to 0.4) | 2.1 (1.3 to 2.7) |
+| Active rows (spill ends) | 0.3 (−0.1 to 1.3) | 0.2 (−0.1 to 1.3) | 0.1 (−0.0 to 0.1) |
+
+Forecast bands:
+
+| Band | Rows | Spills | Mean forecast | Spill rate |
+|---|---:|---:|---:|---:|
+| under 0.01 | 4,478 | 31 | 0.004 | 0.007 |
+| 0.01–0.03 | 1,132 | 6 | 0.018 | 0.005 |
+| 0.03–0.07 | 653 | 9 | 0.046 | 0.014 |
+| 0.07–0.15 | 478 | 7 | 0.102 | 0.015 |
+| 0.15–0.40 | 251 | 3 | 0.219 | 0.012 |
+| 0.40–0.70 | 3 | 0 | 0.460 | 0.000 |
+| 0.70 or more | 0 | 0 | | |
+
+
+### Reading rule, applied as stated
+
+| Cell | Spill overflow-days | Applied | Answer |
+|---|---:|---|---|
+| Thames Water, same day (primary) | 16 | no, fewer than 50 | none yet |
+| Other eight companies, same day | 344 | yes | not shown either way; the forecast ranks better, shown (AUC difference 0.08 to 0.31, association difference −6.3 to −0.4 ×1,000) |
+| Thames Water, leads 1 to 4 | 15 | no, fewer than 50 | none yet |
+
+### What the figures suggest, inferred and not tested
+
+- Thames's chances come from the spill model's first layer alone. A8's record says per-overflow offsets exist only for
+  United Utilities. If layer 1 responds to forecast rain at Thames overflows that rarely spill in autumn, it would give
+  the pattern above: chances spread over dry days, none of it tracking the outcome. This was not checked against the
+  rain inputs.
+- In the interim read's whole record (to 23 October), Thames's same-day AUC was 0.87 against persistence's 0.67. Here,
+  before the wet spell, it is 0.66 against 0.65. So the forecast's Thames ranking may hold in wet weather and fail in
+  dry. The extension will show whether that holds on the same rule; the split by weather was not stated, so it would be
+  exploratory.
+- If the extension shows the same pattern, A8's per-overflow offsets (a level shift) are unlikely to close the gap on
+  their own, since level costs little here. A shrink of Thames's chances toward its rate (a slope) would be the
+  calibration remedy to test.
+
+### Limits
+
+- 16 events in the primary cell. The two-way intervals rest on 3 week-blocks, the last of 5 days; 27 of 2,000 draws had
+  no Thames spill and give no value. The overflows-only intervals are narrower and are a sensitivity, not the reading.
+- Days run from 2 to 17 October, the drier part of the record. Nothing here describes Thames in a wet spell.
+- Persistence's status is rebuilt from a later state release, as on the page; it reads event times published after
+  the issue (flatters persistence a little, measured at 50 of 812 active rows in the interim read).
+- The quiet side holds both the spill starts and the dry days that stayed dry; the loss there is mostly chances given
+  on rows that did not spill.
+
+### Next
+
+Per "What each outcome leads to": **too few, so the extension.** On or after 21 November 2026 (after ensemble rain's
+read) and before 30 November, run unchanged:
+
+```bash
+DIPCAST_ROOT=<scratch> DIPCAST_STATE=<scratch> DIPCAST_CACHE=<scratch> uv run python scripts/thames_same_day_diagnosis.py --scored <verification_live.csv 434f910a> --state <state folder> --to 2026-10-23 --out docs/THAMES-SAME-DAY-DIAGNOSIS-2026-11-extension.json
+```
+
+The state folder must pass the script's count check; it stops otherwise. The 9 November copies used here are in this
+run's scratch folder and in the page session's, neither of which is permanent. A later `state` release passes if the
+forecast log and poll files still hold the October rows; the count check settles it.
+
+Then apply the reading rule to its Thames same-day cell and add the answer here, beside these figures. Its outcome
+decides the note for A8's read (level), for the live-status shadow's read (ranking), or both. If the extension shows
+calibration with no ranking advantage, as here, the note names a Thames slope candidate, not A8's offsets alone. The
+live-status shadow's read is 23 November and A8's is 25 November, both before the extension can be finished with
+certainty, so those two notes may come after the reads they would accompany; in that case they are labelled as
+written after the read.
