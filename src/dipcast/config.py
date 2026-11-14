@@ -110,6 +110,10 @@ SCOTLAND_TRIAL = os.environ.get("DIPCAST_SCOTLAND_TRIAL", "") == "1"
 # and production's everywhere else. Off unless DIPCAST_LIVE_STATUS=1. Ethan decides whether to set it, after the
 # shadow read on or after 23 Nov 2026. Switching it on changes model_version, so live scores split at that date.
 LIVE_STATUS = os.environ.get("DIPCAST_LIVE_STATUS", "") == "1"
+# The radar shadow (shadow_radar.py, docs/RADAR-SHADOW-2026-11.md): with this on, a build fetches the Met Office radar
+# composites for its rain cells and logs #697's frozen candidate and reference to shadow_radar_v1. Logs only; changes
+# no forecast. Off unless DIPCAST_RADAR_SHADOW=1, which Ethan sets to start it.
+RADAR_SHADOW = os.environ.get("DIPCAST_RADAR_SHADOW", "") == "1"
 
 # ---------------------------------------------------------------------------
 # Rainfall: Open-Meteo. Archive is ERA5-Land reanalysis at ~0.1 deg. No key: the free hosts below;
