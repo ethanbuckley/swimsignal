@@ -910,7 +910,7 @@
   },
   "694": {
    "n": 694,
-   "state": "open",
+   "state": "merged",
    "branch": "claude/radar-issue-hour-test-36a617",
    "branch_exists": true,
    "date": "2026-11-13"
@@ -966,10 +966,17 @@
   },
   "697": {
    "n": 697,
-   "state": "open",
+   "state": "merged",
    "branch": "claude/radar-plus-status-test-b28116",
    "branch_exists": true,
    "date": "2026-11-13"
+  },
+  "699": {
+   "n": 699,
+   "state": "open",
+   "branch": "claude/radar-shadow-logger-a011b5",
+   "branch_exists": true,
+   "date": "2026-11-14"
   }
  },
  "entries": [
@@ -3289,7 +3296,7 @@
    "scope": "Nine English companies' overflows in cells with cell radar and cached lead forecasts, 2025, and Thames Water in 2026. Same-day rain only; longer rain from ERA5-Land in every arm. The forecast a build really holds for the rest of the day lies between the two tested (lead 0 and lead 1), so the pooled gain reads as between 1.9% and 3.3%. A refit moves an arm's Brier by 0.0001 to 0.0002, which the intervals do not include; the single-hour figures before 15 UTC are inside that. Says nothing about how much of the evening gain the companies' live spill feeds already give, or about any forecast for the days ahead.",
    "stage": "development",
    "stage_note": "Not adopted. Nothing on the site or in production changes, and nothing is deployed. The candidate (the whole-day radar fit on 2025, SHA-256 d157a268…) and its forecast-only reference (70b0898e…) are frozen. A shadow-log plan is in the record: comparator, fallback when radar is late, resource limits and a proposed read on or after 8 April 2027.",
-   "next": "Build and test the shadow logger offline, in its own PR, with its window and bar stated before it opens. Four decisions come before it can run: where the radar step runs and keeps its 72 hours, the licence of a public log (the radar is CC BY-SA 4.0), where the two frozen models live, and Ethan's go-ahead. A pass would still need a refitted model shown no worse than production, since today's model does not gain from radar unrefitted.",
+   "next": "The shadow logger is built (#699, entry radar-shadow): both frozen files are committed, the radar step runs inside the site build with caps, a private carry of composite sums, and no public radar value. It starts when Ethan sets DIPCAST_RADAR_SHADOW=1. A pass would still need a refitted model shown no worse than production.",
    "records": [
     {
      "doc": "docs/RADAR-ISSUE-HOUR-TEST-2026-11.md",
@@ -3312,8 +3319,8 @@
    "verdict": "Passed its stated rule on 13 November 2026 (verdict H), as development evidence on 2025 labels that had been scored before. #694's test was repeated with the overflow's live spill status, as it stood at each issue hour, added to both the radar and the forecast-only arms. Averaged over eight issue hours and scored out of fold on 3,778 overflows (1,374,430 overflow-days), radar to the hour with status beat status with the forecast alone by 3.2% with a fresh forecast for the rest of the day (Brier difference −0.00074, 95% interval −0.00109 to −0.00041, overflow × week) and by 2.5% with a day-old one (−0.00065, interval −0.00095 to −0.00037). Status took most of radar's evening gain (at 21 UTC 0.00030 of 0.00258 is left) and, summed over 03 to 15 UTC, none of its earlier gain. All of what radar still adds is on overflows not yet spilling at the issue hour. Thames Water, January to August 2026, models frozen on 2025: −0.00051 (interval −0.00132 to −0.00004) and −0.00046 (interval −0.00121 to −0.00001).",
    "scope": "Nine English companies' overflows in cells with cell radar and cached lead forecasts, 2025, and Thames Water in 2026. Status from the EA start/stop records (Thames 2026: the alert stream), not from SwimSignal's own polls. One fitted model per issue hour; whether a single fit would serve every hour was not tested. Says nothing about forecasts for the days ahead.",
    "stage": "development",
-   "stage_note": "Not adopted. Nothing on the site or in production changes, and nothing is deployed. The per-hour fits are not kept as files; their hashes are in the score file and they rebuild byte-identically from the archived code.",
-   "next": "Build and test the radar shadow logger offline (#694's entry), with status in its candidate and reference if Ethan switches status on after 23 November 2026, and #694's frozen pair if not. Its PR states before any score whether a build uses the nearest issue hour's model or a single fit tested against the per-hour ones.",
+   "stage_note": "Not adopted. Nothing on the site or in production changes. The sixteen per-hour fits were rebuilt byte-identically and committed for the shadow in #699.",
+   "next": "The radar shadow logger is built (#699, its own entry), with the status pair as candidate and reference and #694's pair where status is not known, the nearest issue hour's model at each build. It starts when Ethan sets DIPCAST_RADAR_SHADOW=1.",
    "records": [
     {
      "doc": "docs/RADAR-PLUS-STATUS-TEST-2026-11.md",
@@ -3322,6 +3329,33 @@
    ],
    "prs": [
     697
+   ]
+  },
+  {
+   "id": "radar-shadow",
+   "title": "Radar rain up to the issue hour, in shadow",
+   "section": "promising",
+   "topics": [
+    "rain",
+    "spills",
+    "model"
+   ],
+   "verdict": "No result yet. A logger and its statement, written before any row was logged. It logs #697's frozen candidate (cell radar up to the build's listing, forecast rain for the rest of the day, live status as at the build) beside its frozen reference (the build's forecast rain with the same status) at lead 0 on every build, for the nine English companies.",
+   "scope": "The eighteen 2025 fits of #694 and #697, unchanged; the nearest issue hour's model at each build. Status from SwimSignal's own polls, labels from the live feed. Lead 0 only. Says nothing about leads 1 to 4 or about a refitted production model.",
+   "stage": "development",
+   "stage_note": "Built and tested; not running. Off until Ethan sets the repository variable DIPCAST_RADAR_SHADOW to 1 after the PR merges. Window to issue day 31 August 2027; interim read on or after 8 April 2027, final read on or after 8 September 2027. Measured cold start on this Mac: 196 composites, 41.1 MB, 61.5 s; a following build 0.2 s. No Open-Meteo call.",
+   "records": [
+    {
+     "doc": "docs/RADAR-SHADOW-2026-11.md",
+     "quote": "**The logger uses the model of the issue\nhour nearest the build's own hour (option (a) in #697's \"What follows\").**"
+    },
+    {
+     "doc": "docs/RADAR-SHADOW-2026-11.md",
+     "quote": "**All sixteen are byte-identical to the hashes in #697's score file.**"
+    }
+   ],
+   "prs": [
+    699
    ]
   },
   {
