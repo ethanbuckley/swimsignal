@@ -970,6 +970,13 @@
    "branch": "claude/radar-plus-status-test-b28116",
    "branch_exists": true,
    "date": "2026-11-13"
+  },
+  "698": {
+   "n": 698,
+   "state": "open",
+   "branch": "claude/lake-temp-local-model-a45dfa",
+   "branch_exists": true,
+   "date": "2026-11-14"
   }
  },
  "entries": [
@@ -1477,7 +1484,7 @@
    "scope": "220 held-out English lake waters, May to September 2026, EA spot samples. The buoy check is one small lake, 2016-19, with no intervals.",
    "stage": "live",
    "stage_note": "Past EA lake temperature measurements are shown on the Measured lake temperatures page, never as today's temperature.",
-   "next": "A local or lake-type model with explicit depth and season, held out by whole water body and judged on 2027 readings.",
+   "next": "A per-lake own-history offset for the lakes linked to listed spots, developed on seen years and judged on May-September 2027. The lake-type (depth class) model was tested in #698 and is archived.",
    "records": [
     {
      "doc": "docs/LAKE-TEMPERATURE-TEST-2026-10.md",
@@ -1499,6 +1506,31 @@
      "label": "Measured lake temperatures",
      "href": "lake-temperatures.html"
     }
+   ]
+  },
+  {
+   "id": "lake-temp-local-model",
+   "title": "Summer lake temperature by lake type (depth class and season): a frozen-model backtest",
+   "section": "promising",
+   "project": "LAKE-TEMP",
+   "topics": [
+    "temperature",
+    "lakes"
+   ],
+   "verdict": "Not better than the live route, and misses the 1.5 °C limit: on 265 held-out lakes in May-September 2000-2011 the depth-class model scored 2.01 °C (interval 1.75 to 2.34) against 1.93 for the live route as deployed (in-sample on those years; gain −0.08, −0.17 to −0.01) and 2.03 for the live recipe refitted out of sample (gain +0.02, −0.04 to +0.07). Deep lakes tied (2.36 against 2.40, gain −0.15 to +0.15). Every class chose a short air memory; deep lakes read too warm in 2000-2011 and too cold in 2026.",
+   "scope": "EA spot samples (determinand 0076) at English lakes, HadUK air, waters and connected basins held out together, two-way intervals by lake and year. Modelled HydroLAKES depth; no lake-altitude input. Says nothing about a per-lake model that learns each lake's own offset.",
+   "stage": "archived",
+   "stage_note": "Nothing on the site changed. The live summer lake route stays.",
+   "next": "A per-lake own-history offset (entry lake-temperature), judged on May-September 2027.",
+   "reopen_when": "Measured depths for the large lakes, or a lake surface altitude input, with a protocol frozen before May 2027 and judged on May-September 2027.",
+   "records": [
+    {
+     "doc": "docs/LAKE-TEMP-LOCAL-MODEL-2026-11.md",
+     "quote": "**Plain answer: the lake-type model is not better than the live route, and it misses 1.5 °C.**"
+    }
+   ],
+   "prs": [
+    698
    ]
   },
   {
