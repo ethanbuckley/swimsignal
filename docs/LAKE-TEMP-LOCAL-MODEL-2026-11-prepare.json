@@ -1,0 +1,246 @@
+{
+ "rows in file": 16679,
+ "dropped: no air for its span": 0,
+ "WFD pairs within 50 m": [
+  [
+   "lake:GB30434995",
+   "lake:GB30435060"
+  ],
+  [
+   "lake:GB30536980",
+   "lake:GB30536989"
+  ],
+  [
+   "lake:GB30547009",
+   "lake:GB30547010"
+  ],
+  [
+   "lake:GB30547010",
+   "lake:GB30547011"
+  ],
+  [
+   "lake:GB30547011",
+   "lake:GB30547012"
+  ],
+  [
+   "lake:GB30642407",
+   "lake:GB30642424"
+  ],
+  [
+   "lake:GB30846138",
+   "lake:GB30846161"
+  ],
+  [
+   "lake:GB31247007",
+   "lake:GB31247008"
+  ]
+ ],
+ "other groups joined to a WFD lake": 24,
+ "merged waters (more than one #419 group)": {
+  "lake:GB30329027": [
+   "lake:GB30329027",
+   "oslake:D724894E-0E64-4A77-BEC1-09719D065B82"
+  ],
+  "lake:GB30434995": [
+   "lake:GB30434995",
+   "lake:GB30435060"
+  ],
+  "lake:GB30435554": [
+   "lake:GB30435554",
+   "pt:MD-53784850",
+   "pt:MD-53784855"
+  ],
+  "lake:GB30437497": [
+   "lake:GB30437497",
+   "pt:MD-LSN0173"
+  ],
+  "lake:GB30535655": [
+   "lake:GB30535655",
+   "pt:AN-ANT16021"
+  ],
+  "lake:GB30535959": [
+   "lake:GB30535959",
+   "pt:AN-BUR15710"
+  ],
+  "lake:GB30536980": [
+   "lake:GB30536980",
+   "lake:GB30536989"
+  ],
+  "lake:GB30547009": [
+   "lake:GB30547009",
+   "lake:GB30547010",
+   "lake:GB30547011",
+   "lake:GB30547012",
+   "pt:AN-ROL024",
+   "pt:AN-ROL026"
+  ],
+  "lake:GB30641198": [
+   "lake:GB30641198",
+   "pt:TH-LSN0406"
+  ],
+  "lake:GB30641313": [
+   "lake:GB30641313",
+   "pt:TH-LSN118"
+  ],
+  "lake:GB30641559": [
+   "lake:GB30641559",
+   "pt:TH-PGWL0148",
+   "pt:TH-PGWL0149"
+  ],
+  "lake:GB30642407": [
+   "lake:GB30642407",
+   "lake:GB30642424"
+  ],
+  "lake:GB30642430": [
+   "lake:GB30642430",
+   "pt:TH-PRTS0015",
+   "pt:TH-PRTS0016"
+  ],
+  "lake:GB30642489": [
+   "lake:GB30642489",
+   "pt:TH-LSN0153"
+  ],
+  "lake:GB30642538": [
+   "lake:GB30642538",
+   "oslake:1E5530F5-9D80-4B7D-83BF-F2C62DD8542B"
+  ],
+  "lake:GB30642753": [
+   "lake:GB30642753",
+   "pt:TH-PRTS0049",
+   "pt:TH-PRTS0053",
+   "pt:TH-PRTS0651"
+  ],
+  "lake:GB30643315": [
+   "lake:GB30643315",
+   "oslake:4FA5A227-9680-449D-839F-723E9297DB2F",
+   "pt:TH-PGWL0091"
+  ],
+  "lake:GB30644310": [
+   "lake:GB30644310",
+   "pt:SO-E0000993"
+  ],
+  "lake:GB30846138": [
+   "lake:GB30846138",
+   "lake:GB30846161"
+  ],
+  "lake:GB31229321": [
+   "lake:GB31229321",
+   "pt:NW-88021529"
+  ],
+  "lake:GB31232650": [
+   "lake:GB31232650",
+   "pt:NW-88009956"
+  ],
+  "lake:GB31247007": [
+   "lake:GB31247007",
+   "lake:GB31247008"
+  ]
+ },
+ "waters in more than one fold": 0,
+ "test 2000-11": {
+  "rows": 8007,
+  "waters": 265,
+  "by class": {
+   "deep": {
+    "rows": 1711,
+    "waters": 16
+   },
+   "mid": {
+    "rows": 1924,
+    "waters": 47
+   },
+   "shallow": {
+    "rows": 1608,
+    "waters": 30
+   },
+   "no depth": {
+    "rows": 2764,
+    "waters": 180
+   }
+  },
+  "WFD 1 km2 and over": {
+   "rows": 2359,
+   "waters": 26
+  },
+  "by fold": {
+   "0": 2636,
+   "1": 947,
+   "2": 1356,
+   "3": 1392,
+   "4": 1676
+  }
+ },
+ "development 2012-25": {
+  "rows": 7336,
+  "waters": 450,
+  "by class": {
+   "deep": {
+    "rows": 1107,
+    "waters": 15
+   },
+   "mid": {
+    "rows": 967,
+    "waters": 57
+   },
+   "shallow": {
+    "rows": 1525,
+    "waters": 32
+   },
+   "no depth": {
+    "rows": 3737,
+    "waters": 352
+   }
+  },
+  "WFD 1 km2 and over": {
+   "rows": 1443,
+   "waters": 28
+  },
+  "by fold": {
+   "0": 1783,
+   "1": 1290,
+   "2": 1437,
+   "3": 1469,
+   "4": 1357
+  }
+ },
+ "seen 2026": {
+  "rows": 1336,
+  "waters": 214,
+  "by class": {
+   "deep": {
+    "rows": 235,
+    "waters": 8
+   },
+   "mid": {
+    "rows": 86,
+    "waters": 19
+   },
+   "shallow": {
+    "rows": 121,
+    "waters": 21
+   },
+   "no depth": {
+    "rows": 894,
+    "waters": 167
+   }
+  },
+  "WFD 1 km2 and over": {
+   "rows": 251,
+   "waters": 12
+  },
+  "by fold": {
+   "0": 355,
+   "1": 221,
+   "2": 217,
+   "3": 289,
+   "4": 254
+  }
+ },
+ "sha256": {
+  "dev.parquet": "6c0d45867ac0ed455b325db4dbbdd293b04cdce05b98ccc0775a0fbefe246275",
+  "test_inputs.parquet": "b5bb6cf0a6dc4397d9aa1247ccd6a7f8cada7bc33630140f8f721c49b4075f58",
+  "test_truth.parquet": "1e58fc382cba5b13e3e6a865f94d0231440153a433800aec16614722222bcb73",
+  "seen2026_inputs.parquet": "dd08bc3b4e372dcf21dba1002f554be516157cba9ee496decc523d037313009a",
+  "seen2026_truth.parquet": "b86ce78174a28aeaf2e8b679153b2d31134342acc571a7c27a0ae73c04d2e7f0"
+ }
+}
