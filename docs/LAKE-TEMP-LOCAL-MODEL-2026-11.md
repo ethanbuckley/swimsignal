@@ -250,7 +250,7 @@ Statement committed in `af8555a3` and pushed; harness and synthetic tests in `c1
 - **Merges:** 8 pairs of WFD lakes within 50 m, among them Windermere North and South (GB31247007 + GB31247008) and
   three chained basins (GB30547009 to GB30547012). 24 OS-link or own-water groups joined a WFD lake within 500 m (for
   example a Coniston point, `NW-88021529`). 22 merged waters in all hold more than one #419 group. No water is in two
-  folds. The full list is in the scratch `prepare.json` and goes into the score file.
+  folds. The full list is in `docs/LAKE-TEMP-LOCAL-MODEL-2026-11-prepare.json` (copied from the scratch `prepare.json` after the score; counts only).
 - **Test, 2000-2011:** 8,007 rows at **265 waters** (282 before the merge). Deep 1,711 rows / 16 waters; mid 1,924 / 47;
   shallow 1,608 / 30; no depth 2,764 / 180. WFD 1 km² and over: 2,359 / 26.
 - **Development, 2012-2025:** 7,336 rows at 450 waters. Deep 1,107 / 15; mid 967 / 57; shallow 1,525 / 32; no depth
@@ -291,4 +291,144 @@ Shared inputs (#414 features, the live model file, `water_temp.py`) had the same
 
 ## Results
 
-*(Added after the one scoring run.)*
+Added 14 November 2026 after the one scoring run: 13 November 23:58 UTC, under a second, commit `2f2178c9`, offline. The
+truth, frozen-parameter and prediction SHA-256 matched the ones committed above, and so did `models.pkl`. Aggregates
+only: `docs/LAKE-TEMP-LOCAL-MODEL-2026-11-score.json`. Per-row predictions stay in the scratch folder. No deviation
+from the statement. The heavy-run lock of the earlier lake tests was not used: it lives in another session group's
+notes folder, and every stage here took under 30 seconds.
+
+**Plain answer: the lake-type model is not better than the live route, and it misses 1.5 °C.** On 265 lakes it never
+saw, in May to September 2000-2011, it read 2.01 °C typical error against 1.93 °C for the live route as deployed.
+At deep lakes, the group it was built for, it tied the live route (2.36 against 2.40, interval of the gain
+−0.15 to +0.15 °C). At small lakes and lakes with no depth figure it was worse. The live route stays.
+
+### Verdict (test years 2000-2011, held-out waters)
+
+| | candidate | live (deployed, in-sample) | live (refit) | 7-day air | #419 recipe | day of year |
+|---|---|---|---|---|---|---|
+| RMSE °C | **2.01** [1.75, 2.34] | 1.93 | 2.03 | 2.16 | 2.04 | 2.78 |
+| bias °C | +0.25 | +0.14 | +0.29 | +0.26 | +0.21 | |
+| P90 °C | 3.03 | 2.89 | 3.03 | 3.34 | 3.08 | |
+| gain of the candidate [95%, two-way] | | **−0.08** [−0.17, −0.01] | +0.02 [−0.04, +0.07] | +0.15 [+0.09, +0.21] | +0.03 [−0.02, +0.09] | |
+
+265 waters, 8,007 rows. A negative gain means the candidate is worse.
+
+| condition | result |
+|---|---|
+| 1. gate (30 waters, 300 rows) | yes |
+| 2. RMSE ≤ 1.5 °C | **no** (2.01; the interval's lower end, 1.75, is above 1.5 too) |
+| 3. P90 ≤ 2.5 °C | **no** (3.03) |
+| 4. beats live (deployed) | **no**: the deployed route is better, interval wholly below 0 |
+| 5. beats live (refit) | **no**: +0.02, interval includes 0 |
+| 6. beats 7-day air | yes |
+| 7. beats #419's recipe | **no**: +0.03, interval includes 0 |
+| **meets the lake limit** | **no** |
+| **better than the live route** | **no** |
+
+The water-only bootstrap gives the same answers (gain over the deployed route −0.15 to −0.02). Rounded to whole degrees,
+as the page shows: candidate 2.03, live 1.95.
+
+**The in-sample point.** The deployed route had seen these lakes and years. Refitted without them, the live recipe
+scored 2.03, level with the candidate. So the honest comparison of methods is a tie (+0.02 [−0.04, +0.07]); the
+deployed route's 0.08 lead is partly that it was fitted on these rows. Either way the candidate is not better.
+
+### By class and size (two-way intervals; "answer" uses both live versions, as stated)
+
+| group | waters | rows | candidate | live | live refit | #419 recipe | gain over live | gain over refit | answer |
+|---|---|---|---|---|---|---|---|---|---|
+| deep (≥ 10 m) | 16 | 1,711 | 2.36 | 2.40 | 2.42 | 2.35 | +0.04 [−0.15, +0.15] | +0.06 [−0.10, +0.18] | harm not ruled out (few waters) |
+| mid (3-10 m) | 47 | 1,924 | 1.75 | **1.61** | 1.79 | 1.81 | −0.14 [−0.35, −0.02] | +0.04 [−0.03, +0.12] | harm not ruled out |
+| shallow (< 3 m) | 30 | 1,608 | 1.71 | 1.65 | 1.74 | 1.75 | −0.06 [−0.16, +0.05] | +0.02 [−0.06, +0.13] | harm not ruled out |
+| no depth | 180 | 2,764 | 2.10 | **1.95** | 2.07 | 2.15 | −0.15 [−0.22, −0.08] | −0.03 [−0.09, +0.04] | harm not ruled out |
+| WFD 1 km² and over | 26 | 2,359 | 2.20 | 2.26 | 2.28 | 2.19 | +0.06 [−0.08, +0.16] | +0.07 [−0.05, +0.17] | not harmed |
+
+- **No group is "better".** Deep and large lakes come closest, with point gains of 0.04 to 0.07 °C and intervals
+  that include 0. The deep group's own RMSE interval runs from 1.50 to 3.27 °C: 16 waters, of which two (Windermere, both
+  basins, and Rutland Water) hold 1,270 of the 1,711 rows.
+- At mid-depth and no-depth lakes the deployed route is better. Against the refit, those groups tie.
+
+**Deep lakes one by one** (RMSE °C; candidate / live / #419 recipe; candidate bias):
+
+| lake | depth (HydroLAKES) | rows | candidate | live | #419 | bias |
+|---|---|---|---|---|---|---|
+| Windermere South Basin | 15.5 m | 566 | 2.09 | 2.24 | 2.18 | 0.00 |
+| Windermere North Basin | 15.5 m | 438 | 2.65 | 2.71 | 2.65 | +0.24 |
+| Rutland Water | 11.0 m | 266 | 3.22 | 3.09 | 3.03 | **+1.47** |
+| Bewl Water | 12.3 m | 71 | 1.24 | 1.43 | 1.40 | −0.46 |
+| Bassenthwaite Lake | 12.6 m | 63 | 1.41 | 1.44 | 1.45 | +0.45 |
+| Roadford Lake | 13.7 m | 53 | 1.38 | 1.27 | 1.46 | +0.67 |
+| Coniston Water | 12.4 m | 42 | 2.04 | 1.97 | 2.02 | +0.45 |
+| Ennerdale Water | 17.2 m | 40 | 1.26 | 1.58 | 1.36 | −0.28 |
+| Cow Green Reservoir | 14.2 m | 39 | 1.73 | 1.82 | 1.59 | +0.77 |
+| Wast Water | 15.9 m | 25 | 2.43 | 2.54 | 2.49 | **+1.84** |
+| Ullswater | 18.2 m | 24 | 1.75 | 1.86 | 1.75 | +1.11 |
+| Derwent Water | 10.7 m | 23 | 1.31 | 1.52 | 1.19 | +0.18 |
+| Haweswater Reservoir | 23.0 m | 22 | 2.64 | 2.51 | 2.72 | **+1.78** |
+| Thirlmere | 14.0 m | 17 | 1.40 | 1.37 | 1.44 | −0.27 |
+| Derwent Reservoir | 15.8 m | 16 | 1.70 | 1.70 | 1.55 | −0.77 |
+| Selset Reservoir | 14.9 m | 4 | 0.99 | 1.23 | 1.93 | +0.53 |
+| Crummock Water | 12.4 m | 2 | 3.67 | 2.80 | 3.45 | +3.00 |
+
+**Months** (candidate / live, RMSE; candidate bias): May 2.06 / 2.01 (+0.57), June 2.25 / 2.15, July 2.23 / 2.10,
+August 1.84 / 1.72, September 1.55 / 1.58. **Years:** 2000-2003 were the worst for every model (candidate 2.21 to
+3.08, bias +0.29 to +0.83; live 2.05 to 2.90); 2004-2011 ran 1.55 to 2.04. **Folds:** 1.80 to 2.22.
+
+### The development and seen-data figures, for comparison
+
+- **Development** (2012-2025, waters held out; stated in the run log before the score): candidate 1.65, live deployed
+  1.61, live refit 1.63, #419 recipe 1.55. Deep lakes there: candidate 1.52 against 1.61 and 1.60 for the two live
+  versions. **That deep-lake lead did not hold on the test years** (2.36 against 2.40 and 2.42, intervals across 0).
+- **Seen 2026** (frozen fold models, bridged Open-Meteo air; decides nothing): candidate 1.94, live deployed 1.82, live
+  refit 1.77, #419 recipe refit on development years 1.82 (#419's own published figure on 2026 was 1.97). Deep lakes in
+  2026: candidate 2.59 (bias −0.63), live 2.26 (bias −0.96).
+
+### What the scores establish
+
+1. **A depth class with its own line and season term does not fix large, deep lakes.** Inside training rows, every
+   class chose a short air memory (τ 5 days; deep lakes 5 or 10), not the long lag the design expected, and the
+   by-month form (K2) never beat sine and cosine.
+2. **The deep-lake error is lake-specific and changes sign between eras.** In 2000-2011 deep lakes read too warm
+   (candidate +0.39 °C, live +0.27); in 2026 they read too cold (candidate −0.63, live −0.96; #419's large lakes −1.24).
+   A fixed offset per class cannot follow that. Three lakes (Wast Water, Haweswater, Rutland Water) read 1.1 to 1.9 °C
+   too warm on average in 2000-2011 under both the candidate and the live route, while others (Bewl Water, Derwent
+   Reservoir) read 0.5 to 1.0 °C too cold.
+3. **Small lakes are better served by the live route's boosted model than by a straight line** in this backtest (mid:
+   1.61 against 1.75; no depth: 1.95 against 2.10). Against the same recipe refitted out of sample, they tie.
+4. **No model reaches 1.5 °C on these years.** The best, the deployed route with an in-sample advantage, scores 1.93.
+
+**Inferred, not tested:**
+- HydroLAKES depth is modelled from area and slope. Published lake surveys give Wast Water a mean depth of roughly 40 m and
+  Ullswater roughly 25 m (from memory of those surveys, not checked against a source in this PR), against 15.9 and
+  18.2 here. The deepest lakes may be put in the right class for the wrong reasons, and their
+  depth order is not trusted.
+- The early-year warm bias (2000-2003, every model) may come from how or when the EA sampled then, or from HadUK's
+  early grids. Nothing here separates the two.
+- Lake-specific offsets (point 2) may be fixed facts of a sampling point (a sheltered bay, an outflow, a sampling depth)
+  or drift with years. Only a lake's own readings over time can tell.
+
+### What this does not show
+
+- Every test row is an EA spot sample, mostly in the working day, not a reading at a swim entry.
+- The test air is HadUK analysis, not the forecast-API air the live build reads through the bridge. The live inputs
+  would add the forecast error on top.
+- Lake surface altitude, measured depth and air before 1 April were not available (listed above).
+- 16 deep lakes, with two lakes holding over half their rows: the deep-lake figures are wide.
+
+### What follows
+
+As stated for "not better": **the live route stays. Nothing on the live site changes.**
+
+- **No clean summer years are left for lakes.** 2000-2011 are now scored, 2012-2026 were seen before. Any new summer
+  lake candidate is judged on May to September 2027 (EA rows, read after 31 October 2027), with its protocol, hashes and
+  frozen fold models committed before May 2027. A buoy series not yet scored (for example Esthwaite or Windermere North
+  from EIDC) could serve as a partial check for a few lakes, if one exists for years outside those already used.
+- **Next deliverable (development, now): a per-lake "own history" candidate for the listed lake spots.** Finding 2 says
+  the large-lake error is a lake's own offset, not its class. For the 15 lakes linked to 20 listed spots in the
+  measured-observations export, a candidate can learn each lake's offset from its own earlier readings and be tested,
+  forward in time, on its later ones (development evidence on seen years), then frozen for 2027. It holds out years,
+  not lakes, so it would only ever apply at lakes with a record.
+- **Inputs that need Ethan:** the HydroLAKES points file again for lake surface altitude (78.7 MB, CC-BY, a download
+  he approved once before); measured depths for the Lake District lakes (no open source found); March HadUK files
+  (his CEDA account).
+- The class approach is archived as tested: reopen it only with measured depths or a lake-altitude input, judged on
+  2027.
