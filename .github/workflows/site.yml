@@ -70,7 +70,8 @@ jobs:
           enable-cache: true
 
       - name: Install
-        run: uv sync --frozen
+        # h5py (the `radar` group) only for the radar shadow (docs/RADAR-SHADOW-2026-11.md); unset = not installed.
+        run: uv sync --frozen ${{ vars.DIPCAST_RADAR_SHADOW == '1' && '--extra radar' || '' }}
 
       # The same tests on the same commit need not run twice. A scheduled or chained build mostly builds a commit
       # that Test Python (python-tests.yml: lint, then this same pytest) already passed when it was pushed to main,
@@ -159,6 +160,9 @@ jobs:
           # Scotland trial (src/dipcast/scotland_trial.py): 1 lists Scotland's trial spots and forecasts them with
           # Scotland's overflows and calibration; needs the setting above too; unset = off.
           DIPCAST_SCOTLAND_TRIAL: ${{ vars.DIPCAST_SCOTLAND_TRIAL }}
+          # Radar shadow (docs/RADAR-SHADOW-2026-11.md): 1 fetches the Met Office radar for the build's rain cells and logs
+          # shadow_radar_v1 in state only, publishes nothing; unset = off.
+          DIPCAST_RADAR_SHADOW: ${{ vars.DIPCAST_RADAR_SHADOW }}
           # Open-Meteo's paid plan (README, "Rainfall API"): its key; unset = the free, non-commercial API.
           # In this step only, so the tests never hold it; the code keeps it out of logs and pages.
           DIPCAST_OPEN_METEO_KEY: ${{ secrets.DIPCAST_OPEN_METEO_KEY }}

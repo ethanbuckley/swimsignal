@@ -188,7 +188,35 @@ The measured fetch and time figures are in the next section.
 
 ## Measured fetch cost
 
-To be filled from a real run on this Mac before any row is logged.
+Measured on 14 November 2026, 00:01 to 00:04 UTC, on this Mac (busy with other sessions), against the live bucket,
+with the logger's own code (`radar_live.update`), scratch `DIPCAST_ROOT`, `DIPCAST_STATE` and `DIPCAST_CACHE`, and the
+shared overflow table and river network fingerprinted before and after (unchanged). Not on a GitHub runner.
+
+**The cells.** `build_site.spot_rain_cells` on the 121 listed spots: **94 rain cells**. The main checkout's overflow
+table was built on an older river network, so it was read without that check; the count is close, not exact.
+
+| Run | Composites | MB | Listing requests | Seconds |
+|---|---|---|---|---|
+| Cold start (no carried snapshots), at 00:02 UTC | 196 | 41.1 | 4 | 61.5 |
+| The next build, a minute later | 0 | 0 | 4 | 0.2 |
+
+- At 00:02 the window is 49 hours (12 November 00:00 to 14 November 00:00), so 196 composites. The newest listed was
+  scanned at 23:45 and reached the bucket at 23:50:33, 12 minutes before the listing. Every hour the bucket had
+  published had coverage 1 in every cell; the hour ending 00:00 was not yet published and kept the forecast.
+- 0.21 MB a composite on this run (a mostly dry night). #694 measured 0.5 MB, up to 0.8 MB on wet days.
+- The carried snapshots file: 10 KB.
+- Of the 61.5 seconds, 39 are the stated 0.2-second pauses.
+
+**What a build adds, inferred from these figures (not measured on a runner):**
+- **The usual build**, about 6 hours after the last: about 24 new composites, 5 to 20 MB, **about 8 seconds**.
+- **A cold start late in the day** (72 hours, 289 composites): about 90 seconds at this pace, 60 to 230 MB. Inside
+  the 300-file and 240-second caps. It happens only when the actions cache is lost.
+- **The model passes**: 0.16 seconds for a spot with 160 overflows in 89 cells (production's own pass on the same
+  rows took 0.17 seconds on the same machine). Most spots have fewer. **Under 20 seconds a build** for the 121
+  spots.
+- **h5py**: one wheel installed in the build's install step, a few seconds.
+
+So a usual build gains under half a minute on its 14. The job's limit is 25 minutes.
 
 ## The rows, the labels and the comparator
 
@@ -291,7 +319,15 @@ The next scheduled build installs h5py, fetches the radar and logs. Unset the va
 
 ## Changes after this statement
 
-None yet.
+Written on 14 November 2026, after the statement was pushed (`3b0ed45d`, 13 November 23:56 UTC) and before any row
+was logged or read.
+
+1. **A cell with no radar hour at all is a fallback.** The statement's step 2 makes the whole build a fallback when
+   the radar cannot be used. A single cell can also have no radar hour in the window (off the radar grid, or every
+   hour under 0.9 coverage). Its rows now take `radar_state` = `fallback` and the candidate equals the reference, as
+   step 2 does for a whole build. Without this, such a row would have scored R0S on forecast rain alone, which
+   #697 never tested. It changes no model, window or bar.
+2. **The measured fetch cost** is filled in above, as the statement said it would be.
 
 ---
 

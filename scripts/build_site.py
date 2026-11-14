@@ -32,7 +32,7 @@ from dipcast.algae import by_site, refresh_algae
 from dipcast.forecast_log import describe_fetch, latest_samples, load_poll_log, load_verification, samples_status
 from dipcast.guides import attach_guides, boat_note, copy_photos
 from dipcast.openings import attach_openings
-from dipcast import official_advice
+from dipcast import official_advice, shadow_radar
 from dipcast.samples import attach_measured
 from dipcast.ingest import rainfall
 from dipcast.ingest.live import expected_rows, is_short
@@ -844,6 +844,13 @@ def prefetch_rain(spots: pd.DataFrame, ensemble: bool = True) -> None:
     st = soil.fetch(river_cells)
     log.info("soil moisture: %d river cells, %d due, %d fetched (%.0f calls), %d held by the ration, failed %s, %.0fs",
              st["cells"], st["due"], st["fetched"], st["calls"], st["held"], st["failed"] or "none", time.time() - t0)
+    # The radar shadow's radar (docs/RADAR-SHADOW-2026-11.md), once per build for the same cells, so each spot's
+    # forecast logs from it. Off unless DIPCAST_RADAR_SHADOW=1; capped, and never fails the build.
+    if shadow_radar.enabled():
+        try:
+            shadow_radar.prefetch(cells)
+        except Exception as e:  # noqa: BLE001 - a shadow must never fail the build
+            log.warning("radar shadow: prefetch failed: %s", e)
     # The ensemble's members for the same cells, after the spots' own rain and by the
     # ensemble's own floor, cap and spare-calls rule (rainfall, "ensemble"): each spot's forecast reads them
     # from the cache, and none asks again in this build.
