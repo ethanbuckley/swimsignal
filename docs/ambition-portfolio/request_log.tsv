@@ -1,0 +1,14 @@
+2026-11-15T21:44:52Z	200	63435	https://environment.data.gov.uk/water-quality/api/swagger
+2026-11-15T21:45:09Z	200	15980	https://environment.data.gov.uk/water-quality/codelist/sampling-point-type?limit=250
+2026-11-15T21:45:13Z	200	5592	https://environment.data.gov.uk/water-quality/codelist/sampling-purpose?limit=250
+2026-11-15T21:45:18Z	200	15126	https://environment.data.gov.uk/water-quality/codelist/determinand?prefLabel=coli&limit=100
+2026-11-15T21:45:35Z	405	31	https://environment.data.gov.uk/water-quality/data/observation?determinand=2348&samplingPointType=F6&dateFrom=2019-01-01&dateTo=2019-12-31&limit=2500
+2026-11-15T21:45:40Z	405	31	https://environment.data.gov.uk/water-quality/data/observation?determinand=2348&samplingPointType=F6&dateFrom=2024-01-01&dateTo=2024-12-31&limit=2500
+2026-11-15T21:45:45Z	405	31	https://environment.data.gov.uk/water-quality/data/observation?determinand=5040&limit=2500
+2026-11-15T21:46:09Z	POST	200	1064602	https://environment.data.gov.uk/water-quality/data/observation?determinand=2348&samplingPointType=F6&dateFrom=2019-01-01&dateTo=2019-12-31&limit=2500
+2026-11-15T21:46:22Z	POST	200	1054199	https://environment.data.gov.uk/water-quality/data/observation?determinand=2348&samplingPointType=F6&dateFrom=2024-01-01&dateTo=2024-12-31&limit=2500
+2026-11-15T21:46:33Z	POST	400	106	https://environment.data.gov.uk/water-quality/data/observation?determinand=5040&limit=2500
+2026-11-15T21:46:54Z	POST	204	0	https://environment.data.gov.uk/water-quality/data/observation?determinand=5040&dateFrom=2025-01-01&dateTo=2025-12-31&limit=2500
+2026-11-15T21:54:07Z	GET	200	123557	https://www.yorkshirewater.com/news-media/news-articles/2026/yorkshire-water-begins-real-time-ai-water-quality-project/
+2026-11-15T21:54:12Z	GET	200	75484	https://www.gov.uk/government/news/daily-bathing-water-testing-expands-across-shropshire
+2026-11-15T21:54:15Z	GET	200	87577	https://www.gov.uk/government/news/13-new-bathing-sites-open-across-england-helping-communities-and-waterways
