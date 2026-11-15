@@ -307,6 +307,9 @@ chosen after seeing that, so it can point to a next test and nothing more.
 
 # Results
 
+Three runs, in the order they were made: as stated, amended (section 12), and the extension to 2026 (section 13).
+**The verdict and the next step are at the end.**
+
 Run 13 November 2026. 92 EA requests of 100, all answered 200
 ([ledger](ARRIVAL-TIME-SONDE-CHECK-2026-11-ledger.jsonl)). No Open-Meteo call. The 15 shared input files have the
 same SHA-256 hashes after the run as before. Exploratory, on 2024-25 records.
@@ -356,7 +359,7 @@ same SHA-256 hashes after the run as before. Exploratory, on 2024-25 records.
   [per sonde](ARRIVAL-TIME-SONDE-CHECK-2026-11-per-sonde-amended.json), including the secondary figures (peak lag,
   looser and stricter rules, 24 h quiet rule, Tier B).
 
-## What this establishes, and what it does not
+## What the amended run establishes, and what it does not (written before the 2026 extension)
 
 - **Established:** the API's "15min" ammonium series mostly report every 30 or 60 minutes. Clean single-source spill
   starts are few (at most 22 with a verdict at any sonde in two years) and half are spills of 16 minutes or less.
@@ -366,7 +369,10 @@ same SHA-256 hashes after the run as before. Exploratory, on 2024-25 records.
   has is 7. No candidate speed is supported, so no speed test is proposed.
 - **Outcome under section 9: "consistent with, not measured".** The transport settings stay as they are.
 
-## Next step
+## Next step, as written after the amended run
+
+This was done the same day: section 13 and "Results, extension" below. The verdict and the next step that stand are
+at the end of this record.
 
 Rerun the amended rules, unchanged, when the EA's 2026 start/stop files are imported (the register notes they are
 published to August and not imported). Calder at Stones Lane and Ea Beck opened in 2025, so a full 2026 should
@@ -401,3 +407,90 @@ those nine files and does not change them (hashes before and after). They lie ou
 - **A replication check, as description:** for each sonde with 3 or more new rises, whether the median of the new
   lags falls inside the 95% interval from its seen lags.
 - **What I expect:** Calder and Ea Beck reach about 10 rises. The pooled interval still includes 0.2 m/s.
+
+## Results, extension to January-August 2026 (section 13)
+
+Run 13 November 2026, about 17:20 UTC. Requests 93 to 99, all 200: **99 of 100 used in all**. The nine 2026 spill
+tables and the 15 shared inputs have the same hashes after the run as before. Section 13 was pushed at 17:15 UTC
+(`df93eb17`) and the steps' code at `5c6427e1`, both before request 93.
+
+- **Nothing seen moved.** All 135 events before 2026 at these 7 sondes keep the tier and outcome they had in the
+  amended run.
+- **New events (from 1 January 2026), Tier A: 10 rises, 46 no rise**, 2 raised before, 8 no baseline. Before 2026
+  the same 7 sondes had 33 rises and 67 no rise. The rise share fell from 0.33 to 0.18.
+
+| Sonde | Interval | Distance | Rises / with a verdict: seen | new | all | Signal, all years | Lag, median (95%), all | Model travel | Implied speed, median (95%) |
+|---|---|---:|---:|---:|---:|---|---|---:|---|
+| Calder, Stones Lane (E04798A) | 60 min | 4.6 km | 7 / 19 | 3 / 9 | 10 / 28 | yes | 2.8 h (2.1 to 7.0) | 6.4 h | 0.47 m/s (0.20 to 0.63) |
+| Till, above Harehope (E02569A) | 30 min | 5.6 km | 7 / 22 | 1 / 3 | 8 / 25 | yes | 0.9 h (0.3 to 15.2) | 7.8 h | 1.80 m/s (0.10 to 5.5) |
+| Ea Beck, below Hazel Lane (E06527A) | 30 min | 2.2 km | 5 / 9 | 0 / 1 | 5 / 10 | yes | 5.5 h (2.5 to 7.0) | 3.1 h | 0.11 m/s (0.09 to 0.24) |
+| Ea Beck, above South Elmsall works (E03459A) | 30 min | 4.0 km | 4 / 15 | 1 / 1 | 5 / 16 | yes | 2.5 h (0.3 to 12.5) | 5.5 h | 0.44 m/s (0.09 to 4.4) |
+| Gowy, Mill Park Lane (E06616A) | 60 min | 13.7 km | 1 / 4 | 5 / 12 | 6 / 16 | no | 17.6 h (10.5 to 30.7) | 19.0 h | 0.22 m/s (0.12 to 0.38) |
+| Witham, below Grange Farm (E03430A) | 60 min | 6.0 km | 5 / 16 | 0 / 16 | 5 / 32 | **no** | 6.6 h (3.8 to 27.4) | 8.3 h | 0.25 m/s (0.06 to 0.79) |
+| Witham, above Grange Farm (E03360A) | 60 min | 4.8 km | 4 / 15 | 0 / 14 | 4 / 29 | **no** | 2.6, 2.8, 21.7, 25.4 h | 6.7 h | 0.05 to 0.95 m/s |
+
+- **The Witham signal did not repeat.** The two Witham sondes had 9 rises in 31 events before 2026 and none in 30
+  new ones. On all three years neither shows a signal.
+- **Calder repeated.** Its 3 new lags (0.9, 2.3 and 3.0 h) have a median inside the interval from its seen lags
+  (2.1 to 9.1 h). It is the only sonde with 10 rises.
+- **Gowy** gives 0.22 m/s on 6 rises, 5 of them new, but its background rate is high (0.16) and it shows no signal
+  by section 6's rule.
+- Both Ea Beck sondes stopped reporting in April 2026.
+- Sondes with a signal and 5 or more rises: 4, on 3 rivers (two are on Ea Beck). With 10 or more: 1.
+- **Pooled over those 4 (28 rises): median implied speed 0.44 m/s, 95% interval 0.13 to 1.42.** It still includes
+  0.2 m/s.
+- Lag against distance: −0.82 h per km (−1.73 to +0.69). A negative slope cannot be travel. Across these four
+  sondes the rises are not ordered by distance, so the model's 1.39 h per km is neither supported nor tested.
+- **The per-reach speed option does not explain the spread** (description, chosen after the results). The code's
+  `reach_velocity` (velocity "catchment", off by default) gives 0.15 to 0.17 m/s at six of the sondes and 0.20 at the
+  Till. The measured medians run from 0.11 to 0.47 m/s. All seven sondes sit on small rivers (about 29 to 135 km²
+  upstream by the code's estimate), so nothing here speaks for large rivers.
+- Files: [events](ARRIVAL-TIME-SONDE-CHECK-2026-11-events-extension.csv),
+  [summary, seen and new, per sonde](ARRIVAL-TIME-SONDE-CHECK-2026-11-extension.json).
+
+## Verdict
+
+**Consistent with 0.2 m/s, not measured.** By section 9 this is the second outcome, before and after the 2026
+extension. The transport settings stay as they are. No candidate speed test is proposed.
+
+**Why no candidate.** A candidate needs a speed the evidence prefers to 0.2 m/s. The pooled interval (0.13 to
+1.42 m/s) contains 0.2. One sonde has 10 rises. The sondes with a signal disagree by a factor of four (0.11 to
+0.47 m/s, leaving out the Till), and one signal vanished on new data.
+
+**Why the EA sondes cannot measure the speed yet, in numbers:**
+
+1. **Reading interval.** 61 of 66 sondes report every 30 or 60 minutes, whatever the measure is called.
+2. **Few clean events.** A sonde gets at most about 15 single-source starts a year, and 18% to 33% of them show a
+   rise. That is 3 to 7 usable rises a sonde a year.
+3. **Few sondes.** 132 are usable on paper, 9 showed a signal on 2024-25, and 4 keep one with 5 or more rises.
+4. **A rise is not always that spill's water.** The Till's rises arrive too fast for 5.6 km. Background rates run
+   from 0.02 to 0.16.
+5. **Small rivers only.**
+
+**What is established along the way:** where the lags look like travel (Calder, Ea Beck, Gowy), they sit within a
+factor of about two of the model's travel time, on both sides. That is no evidence that 0.2 m/s is badly wrong at
+these places, and no evidence that it is right in general.
+
+## Next step
+
+- **Stage: waiting on data, with a dated rerun.** The data that would answer is more clean events at the same
+  sondes. Three sondes with 10 rises is reachable: Calder has 10, the Till 8, Gowy 6 after nine months [inferred
+  from their rates: Gowy by about spring 2027, the Till later in 2027].
+- **Rerun** the amended rules, unchanged, on the EA's 2027 year-to-August start/stop file (the 2026 one was published
+  on 20 October 2026). It needs about 10 EA requests under a new cap, which is a decision outside this brief.
+  The commands are `extend.py plan`, `fetch.py readings`, `extend.py merge`, `analyse.py … amended`, `extend.py
+  split`. Read by **30 November 2027**. If three sondes on two rivers then show a signal with 10 rises and the pooled
+  interval excludes 0.2 m/s, the next record is a candidate speed test under its own protocol.
+- **Reopen sooner** if the section 82 monitors above and below overflows are published, or if a sonde reporting
+  every 15 minutes is found below a single overflow.
+- **Not proposed:** a test of longer spills only. Spills of 6 hours or more show a rise more often (0.43 against
+  0.08 on 2024-25), but there were 28 such events in two years at all sondes together.
+
+## Found on the way, not fixed here
+
+- `upstream_overflows(..., velocity_mode="catchment")` raises an Arrow type error with the current overflow table
+  and pandas (string link ids in `_link_velocity`). The option is off by default, so the site is not affected.
+- The Hydrology API returns 200 with an empty body for a measure with no readings in the range. 24 of the 90
+  planned requests came back empty.
+- A closed station can have a closing date before its opening date (amendment 1). The sonde signal test's parser
+  (`scripts/sonde_signal_eval/sondes.py`) treats these as open. That test is parked and was not changed.

@@ -3,6 +3,7 @@
     extend.py plan <stations.csv> <amended per_sonde.json> <out dir>      the 7 sondes and their fetch plan
     extend.py merge <plan.csv> <2024-25 readings dir> <2026 readings dir> <out dir>
     extend.py split <events.csv> <amended events.csv> <out.json>          seen (before 2026) and new, per sonde
+    extend.py reach <events.csv> <stations.csv> <out.json>                description: per-reach speed beside the lags
 
 The fetch itself is fetch.py readings, through the ledger. The join is analyse.py amended on the merged readings,
 with a scratch root that also links the 2026 spill tables.
@@ -97,5 +98,42 @@ def split(events_csv: str, amended_csv: str, out_json: str) -> None:
     print(json.dumps(res, indent=1))
 
 
+
+
+def reach(events_csv: str, stations_csv: str, out_json: str) -> None:
+    """Description only, chosen after the results: for each sonde's Tier A rises, the implied speed beside the
+    fixed 0.2 m/s and beside the speed the code's per-reach option (transport.reach_velocity, velocity 'catchment',
+    off by default) gives at the sonde's own reach and at the anchor overflow's reach. The path's speed lies between
+    those two. Needs a scratch DIPCAST_ROOT and DIPCAST_STATE."""
+    import os
+    assert os.environ.get("DIPCAST_ROOT") and os.environ.get("DIPCAST_STATE")
+    sys.path[:0] = [str(HERE.parents[1] / "src")]
+    from dipcast import config
+    from dipcast.model.transport import catchment_km2, locate_pin, reach_velocity
+    from dipcast.network.rivers import RiverNetwork
+    net = RiverNetwork.load()
+    ov = pd.read_parquet(config.PROCESSED / "overflows.parquet").drop_duplicates("site_id").set_index("site_id")
+    ev = pd.read_csv(events_csv)
+    ev = ev[(ev["tier"] == "A") & (ev["status"] == "rise")]
+    out = []
+    for s in csv.DictReader(open(stations_csv)):
+        g = ev[ev["station_id"] == s["station_id"]]
+        if g.empty:
+            continue
+        pin = locate_pin(net, float(s["lon"]), float(s["lat"]), kind_hint="river", river_hint=s["river"] or None)
+        up_sonde = float(net.upstream_m.get(pin.trace_node, 0.0)) + pin.trace_offset_m
+        anchor = g["site_id"].mode().iloc[0]
+        up_anchor = float(net.upstream_m.get(ov.at[anchor, "start_node"], 0.0))
+        out.append({"station_id": s["station_id"], "label": s["label"], "rises": len(g),
+                    "d_km": round(float((g["d_m"] / 1000).median()), 2),
+                    "implied_speed_ms_median": round(float(g["v_ms"].median()), 3),
+                    "catchment_km2_at_sonde": round(float(catchment_km2(up_sonde)), 1),
+                    "reach_speed_ms_at_sonde": round(float(reach_velocity(up_sonde)), 3),
+                    "reach_speed_ms_at_anchor": round(float(reach_velocity(up_anchor)), 3),
+                    "fixed_speed_ms": config.RIVER_VELOCITY_MS})
+    Path(out_json).write_text(json.dumps(out, indent=1))
+    print(json.dumps(out, indent=1))
+
+
 if __name__ == "__main__":
-    {"plan": plan, "merge": merge, "split": split}[sys.argv[1]](*sys.argv[2:])
+    {"plan": plan, "merge": merge, "split": split, "reach": reach}[sys.argv[1]](*sys.argv[2:])
