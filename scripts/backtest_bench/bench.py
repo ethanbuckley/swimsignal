@@ -217,10 +217,12 @@ def metrics(d: pd.DataFrame, f: dict) -> dict:
     return out
 
 
-def boot(d: pd.DataFrame, figs: dict[str, dict], pairs: list[tuple[str, str]]) -> dict:
-    """95% intervals from resampling water bodies (clusters) with replacement, the same draws for every figure, for
-    each metric and each paired difference a - b."""
-    clusters = d["cluster"].to_numpy()
+def boot(d: pd.DataFrame, figs: dict[str, dict], pairs: list[tuple[str, str]], by_season: bool = False) -> dict:
+    """95% intervals from resampling clusters with replacement, the same draws for every figure, for each metric and
+    each paired difference a - b. Clusters are water bodies; with by_season, a water body in one season (as
+    LAKE-LINE-2012-22-CHECK resampled site x season, but with a water body's sites together). A water body drawn twice
+    counts as two sites; a water-body season drawn twice adds its rows twice to the same site (that check's rule)."""
+    clusters = (d["cluster"] + "|" + d["season"].astype(str)).to_numpy() if by_season else d["cluster"].to_numpy()
     keys = np.unique(clusters)
     idx_of = {k: np.flatnonzero(clusters == k) for k in keys}
     rng = np.random.default_rng(SEED)
@@ -229,7 +231,9 @@ def boot(d: pd.DataFrame, figs: dict[str, dict], pairs: list[tuple[str, str]]) -
         pick = rng.choice(keys, size=len(keys), replace=True)
         ii = np.concatenate([idx_of[k] for k in pick])
         dd = d.iloc[ii].reset_index(drop=True)
-        dd["bw_id"] = dd["bw_id"] + "#" + np.repeat(np.arange(len(pick)), [len(idx_of[k]) for k in pick]).astype(str)
+        if not by_season:
+            dd["bw_id"] = dd["bw_id"] + "#" + np.repeat(np.arange(len(pick)),
+                                                        [len(idx_of[k]) for k in pick]).astype(str)
         m = {n: metrics(dd, {k: v[ii] for k, v in f.items()}) for n, f in figs.items()}
         for n, mm in m.items():
             for k, v in mm.items():
@@ -245,19 +249,26 @@ def report(d: pd.DataFrame, figs: dict[str, dict], cand: str | None) -> dict:
     pairs = [(cand, r) for r in REFERENCES] if cand else [("production_refit", "month_rate"),
                                                            ("production_deployed", "month_rate")]
     point = {n: {k: round(v, 5) for k, v in metrics(d, f).items()} for n, f in figs.items()}
-    ci = boot(d, figs, pairs)
-    diffs = {f"{a}-{b}": {k: {"mean": round(point[a][k] - point[b][k], 5), "ci95": ci.get(f"{a}-{b}.{k}")}
+    ci, cs = boot(d, figs, pairs), boot(d, figs, pairs, by_season=True)
+    diffs = {f"{a}-{b}": {k: {"mean": round(point[a][k] - point[b][k], 5), "ci95": ci.get(f"{a}-{b}.{k}"),
+                              "ci95_season": cs.get(f"{a}-{b}.{k}")}
                           for k in point[a] if k in point[b]} for a, b in pairs}
     return {"rows": int(len(d)), "sites": int(d["bw_id"].nunique()), "clusters": int(d["cluster"].nunique()),
+            "season_clusters": int((d["cluster"] + "|" + d["season"].astype(str)).nunique()),
             "over_900": int((d["ecoli"] > 900).sum()), "over_500": int((d["ecoli"] > 500).sum()),
-            "scores": {n: {k: {"value": v, "ci95": ci.get(f"{n}.{k}")} for k, v in s.items()} for n, s in point.items()},
+            "scores": {n: {k: {"value": v, "ci95": ci.get(f"{n}.{k}"), "ci95_season": cs.get(f"{n}.{k}")}
+                           for k, v in s.items()} for n, s in point.items()},
             "differences": diffs}
 
 
 def subsets(d: pd.DataFrame) -> dict[str, np.ndarray]:
-    return {"all": np.ones(len(d), bool), "lake": (d["kind"] == "lake").to_numpy(),
-            "river": (d["kind"] == "river").to_numpy(),
-            "not_read_before": d["prior_reads"].isna().to_numpy() if "prior_reads" in d else np.ones(len(d), bool)}
+    """The subsets every read reports. Seasons split at 2017 because the archive rain's source most likely changes
+    there (docs/ERA5-LAND-BULK-RAIN-2026-11.md: IFS from 2017, inferred; reanalysis before)."""
+    lake = (d["kind"] == "lake").to_numpy()
+    fresh = d["prior_reads"].isna().to_numpy() if "prior_reads" in d else np.ones(len(d), bool)
+    return {"all": np.ones(len(d), bool), "lake": lake, "river": (d["kind"] == "river").to_numpy(),
+            "not_read_before": fresh, "lake_not_read_before": lake & fresh,
+            "seasons_to_2016": (d["season"] <= 2016).to_numpy(), "seasons_from_2017": (d["season"] >= 2017).to_numpy()}
 
 
 def score_all(d: pd.DataFrame, figs: dict, cand: str | None) -> dict:
@@ -346,17 +357,22 @@ def verify() -> None:
 
 def table(res: dict) -> str:
     lines = []
-    for sub in ("all", "lake", "river", "not_read_before"):
+    def iv(v, key):
+        return f"[{v[key][0]:+.4f}, {v[key][1]:+.4f}]" if v.get(key) else "[n/a]"
+
+    for sub in ("all", "lake", "river", "not_read_before", "lake_not_read_before", "seasons_to_2016",
+                "seasons_from_2017"):
         if sub not in res:
             continue
         r = res[sub]
-        lines.append(f"\n{sub}: {r['rows']} rows, {r['sites']} sites, {r['clusters']} water bodies, "
-                     f"{r['over_900']} over 900, {r['over_500']} over 500")
+        lines.append(f"\n{sub}: {r['rows']} rows, {r['sites']} sites, {r['clusters']} water bodies "
+                     f"({r['season_clusters']} water-body seasons), {r['over_900']} over 900, {r['over_500']} over 500")
         for n, s in r["scores"].items():
             lines.append(f"  {n:20s} " + "  ".join(f"{k} {v['value']:.4f}" for k, v in s.items()))
+        lines.append("  differences: mean [water bodies] [water-body seasons]")
         for n, s in r["differences"].items():
             lines.append(f"  {n:40s} " + "  ".join(
-                f"{k} {v['mean']:+.4f} [{v['ci95'][0]:+.4f}, {v['ci95'][1]:+.4f}]" for k, v in s.items() if v["ci95"]))
+                f"{k} {v['mean']:+.4f} {iv(v, 'ci95')} {iv(v, 'ci95_season')}" for k, v in s.items()))
     return "\n".join(lines)
 
 

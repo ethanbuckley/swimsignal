@@ -119,9 +119,13 @@ rule, before the first read.
 
 **Scores.** For each figure: Brier for over 900 (and over 500 where given); the mean over sites of the within-site
 AUC for over 900; the mean over sites (15 rows or more) of the within-site Spearman correlation with the measured
-log10 count, which every row informs. Intervals are 95%, from 2,000 resamples of water bodies (seed 20261115), with
-the same draws for every figure, and for each paired difference with the references. Subsets: all, lake, river,
-not read before.
+log10 count, which every row informs. Intervals are 95%, from 2,000 resamples (seed 20261115), with the same draws
+for every figure, and for each paired difference with the references. Two resampling units are reported side by
+side: water bodies (`ci95`; a water body drawn twice counts as two sites), and water bodies within a season
+(`ci95_season`; LAKE-LINE-2012-22-CHECK's site × season unit, with a water body's sites kept together). A subset
+with few water bodies needs the second: the held-out lakes not read before are 5 water bodies. A statement names
+which one decides. Subsets: all, lake, river, not read before, lakes not read before, seasons to 2016, seasons from
+2017. (Added 15 November, after the record above was first pushed and before any final read.)
 
 **References.** `production_deployed` (the E. coli models in `data/processed` as deployed, the river model with
 `sm` where known); `production_refit` (production's form refitted on the same training rows as the candidate);
@@ -136,8 +140,14 @@ rows, shrunk toward the pooled share with m = 10, LAKE-OWN-RATE-TEST's rule).
 - **Rivers.** 60 held-out river rows at 2 sites. River candidates cannot be confirmed here; they need the 2027
   season, or another unseen source, under its own statement. Wessex Water's river samples (#688) are not unseen for
   the river model: the soil-moisture rivers test scored the live river rule on them.
-- **Rain is reanalysis, not a forecast.** The rows are lead-0 hindcasts on archive rain, as every earlier lake test
-  used. A candidate's skill at leads 1 to 4 is not measured here.
+- **Rain is archive rain, not a forecast.** The rows are lead-0 hindcasts on Open-Meteo's archive rain, as every
+  earlier lake test used. A candidate's skill at leads 1 to 4 is not measured here.
+- **The archive rain's source most likely changes at 2017.** The archive is fetched with no `models` parameter
+  (`best_match`). The ERA5-Land record (`docs/ERA5-LAND-BULK-RAIN-2026-11.md`, PR #702) measured that the cached
+  2020-26 files follow the IFS grid, so they are most likely ECMWF's IFS analysis. That record also says the 2012-16
+  rain cannot be IFS, which Open-Meteo's archive starts in 2017, so it comes from ERA5 or ERA5-Land (inferred, not
+  measured on these files). Production was fitted on
+  the IFS years. Every read reports seasons to 2016 and from 2017 apart.
 - **The spill model is not covered.** Its event-level labels start in 2024 (2020 at Northumbrian and Wessex) and
   every year has been used to choose a model. The bench does not change that.
 - **Exposure depends on the spill model and calibration map.** If either changes, rebuild the rows as a new
