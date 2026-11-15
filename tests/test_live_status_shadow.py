@@ -343,3 +343,17 @@ def test_coverage_readings_across_the_hour_the_clocks_go_back():
     assert readings == ["2026-10-25 01:30:00+01:00", "2026-10-25 01:30:00+00:00"]
     cov = _cov("A1", readings)
     assert list(cov["day"]) == [date(2026, 10, 25)] and list(cov["slots"]) == [1 << 3]
+
+
+def test_the_build_passes_the_switch_and_it_is_off_unless_set(monkeypatch):
+    """The repository variable reaches the build step (15 Nov 2026: before this, setting it did nothing), and only "1"
+    turns it on."""
+    import importlib
+    from pathlib import Path
+    site = (Path(__file__).resolve().parents[1] / ".github" / "workflows" / "site.yml").read_text()
+    assert "DIPCAST_LIVE_STATUS: ${{ vars.DIPCAST_LIVE_STATUS }}" in site
+    for value, on in (("", False), ("0", False), ("1", True)):
+        monkeypatch.setenv("DIPCAST_LIVE_STATUS", value)
+        assert importlib.reload(config).LIVE_STATUS is on
+    monkeypatch.delenv("DIPCAST_LIVE_STATUS")
+    importlib.reload(config)
