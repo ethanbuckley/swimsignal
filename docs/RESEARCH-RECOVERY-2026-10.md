@@ -175,6 +175,27 @@ checked against measured downstream signals (EA ammonium sondes). Owner of all f
 | RESTORE | Weather-adjusted observed vs expected spill days at overflows with a cited completion date; Ilkley labelled seen | Starts after option B's read (on/after **2 Dec 2026**); record **31 Jan 2027** | Under 10 overflows with a cited date, 6 months after and 90% uptime: case notes only |
 | BENCH | One frozen task (inland bathing-water E. coli 2023-26), licence manifest, three baselines, scoring script. **RC0 5 Nov 2026** ([record](BENCH-ECOLI900-2026-11.md), [#618](https://github.com/ethanbuckley/swimsignal/pull/618)): exploratory, retrospective hindcasts on seen data, not prospective performance; model forward fit (2025-26, 1,023 samples) lower Brier than the month rate (paired difference 0.017 [0.006, 0.032]) and the last sample, skill 0.184; the leave-one-year-out hindsight's 0.315 uses a different sample and fitting scheme; the last sample's edge depends on result turnaround. Hindsight columns stay out of any release until their licence questions are settled; publishes no new data. Next: Ethan's licence, DOI and submissions decisions | Release candidate **28 Feb 2027** | An input's licence unresolved: drop it; if the task fails without it, publish the manifest alone |
 
+## Ambition portfolio, 15 November 2026
+
+[AMBITION-PORTFOLIO-2026-11.md](AMBITION-PORTFOLIO-2026-11.md) ([#704](https://github.com/ethanbuckley/swimsignal/pull/704))
+ranks eight further projects, each with a first test, a kill rule and Ethan's steps. A document: nothing was run for
+release, no held-out bench row was read, no Open-Meteo call was made, nothing was sent. It builds past the five
+directions above and does not re-propose them. Development checks on the bench's seen rows are in
+`scripts/ambition_portfolio/`. Owner: Ethan, with Claude sessions doing the work.
+
+| Rank / ID | First test | Waits on | Stop if |
+|---|---|---|---|
+| 1 / RIVER-UNSEEN | A river model frozen on 2023-26, scored on 2012-22 EA archive samples at river points that are not bathing waters (at least 2,500 results a year, measured 15 Nov). Statement drafted | The Copernicus account (#702), or about 2,900 weighted Open-Meteo calls | Under 30 points pass placement and count, or over half the rows have no overflow upstream |
+| 2 / DENSE | Issued chance against Yorkshire Water's four-a-week lab samples at listed river spots, May-Sep 2027. Statement drafted | Ethan's email to Yorkshire Water (drafted, unsent) | No release or reply by **1 Mar 2027**: fall back to 20 high-low pairs with a sampling group |
+| 3 / DRY-DAY | Past samples by rain at river bathing waters (no model), then a treated-sewage index across unseen river points. Seen rows: 54 of 199 river results over 900 on dry days | Ethan's decision on the page line; RIVER-UNSEEN's rows for the frozen read | The index does not order dry-day levels at the 20 seen rivers |
+| 4 / ALERTS-BY-EMAIL | 28 days with the built email alerts on: confirmed sign-ups per 100 spot-page visits | Ethan: the ICO fee question, a mail account | Under 5 confirmed addresses in 28 days |
+| 5 / WINDERMERE-100 | lake-range-v1 across about 100 survey points on ten dates, order within a survey | Ethan's email to the Freshwater Biological Association (drafted, unsent) | No table or permission by **28 Feb 2027** |
+| 6 / SPILL-UNSEEN | Production's spill model and regional-v1 on Southern 2020-23 and Yorkshire 2021-23 | The two existing drafts, sent | No permission by **31 Jan 2027** |
+| 7 / ANYWATER | C1's frozen model scored on Irish and Welsh samples. Reverses part of the Ireland plan's "should not try yet": a rain reading needs no overflow data | C1's own 2012-21 read; ERA5-Land widened to Ireland | C1 fails its own read |
+| 8 / SHELLFISH | Count of Cefas points within 2 km of a coastal bathing water, then spill hours against results | The count; a licence conflict between two pages | Under 30 points |
+
+**Next check:** when Ethan has reviewed #704, open RIVER-UNSEEN's staging PR with its statement pushed first.
+
 ## Variants with meaningful negative evidence
 
 Keep these in the searchable register; do not spend the recovery budget rerunning them unchanged. Every record in
