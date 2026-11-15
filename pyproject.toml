@@ -23,6 +23,7 @@ dependencies = [
 bayes = ["pymc>=5.16", "arviz>=0.19"]
 nn = ["torch>=2.4"]   # scripts/train_nn.py only (docs/NEURAL-CHALLENGER-TEST-2026-10.md); the build never installs it
 radar = ["h5py>=3.10"]   # scripts/fetch_met_office_radar.py only (docs/MET-OFFICE-DATA-2026-10.md); the build never installs it
+era5 = ["h5py>=3.10"]   # scripts/era5land/ only (docs/ERA5-LAND-BULK-RAIN-2026-11.md); the build never installs it. cdsapi comes by --with until locked
 
 [dependency-groups]
 dev = ["pytest>=8", "ruff>=0.6", "openpyxl>=3.1", "feedparser>=6.0", "pytest-xdist>=3.6"]   # openpyxl: scripts/fetch_sw_history.py reads Scottish Water's xlsx; feedparser: tests/test_feeds.py; pytest-xdist: the tests on four workers (site.yml, python-tests.yml)
