@@ -896,14 +896,14 @@
   },
   "686": {
    "n": 686,
-   "state": "open",
+   "state": "merged",
    "branch": "claude/combined-v1-shadow-logger-a9b35a",
    "branch_exists": true,
    "date": "2026-11-13"
   },
   "685": {
    "n": 685,
-   "state": "open",
+   "state": "merged",
    "branch": "claude/scotland-shadow-map-arm-97cd94",
    "branch_exists": true,
    "date": "2026-11-13"
@@ -924,14 +924,14 @@
   },
   "688": {
    "n": 688,
-   "state": "open",
+   "state": "merged",
    "branch": "research/wessex-river-samples",
    "branch_exists": true,
    "date": "2026-11-13"
   },
   "691": {
    "n": 691,
-   "state": "open",
+   "state": "merged",
    "branch": "claude/irish-welsh-sample-histories-15578f",
    "branch_exists": true,
    "date": "2026-11-13"
@@ -945,7 +945,7 @@
   },
   "687": {
    "n": 687,
-   "state": "open",
+   "state": "merged",
    "branch": "feat/sonde-readings-on-page",
    "branch_exists": true,
    "date": "2026-11-13"
@@ -980,7 +980,7 @@
   },
   "699": {
    "n": 699,
-   "state": "open",
+   "state": "merged",
    "branch": "claude/radar-shadow-logger-a011b5",
    "branch_exists": true,
    "date": "2026-11-14"
@@ -1192,7 +1192,7 @@
    "verdict": "Scored once on January to August 2026 as a frozen-model backtest. It passed its bar at eight companies and for all nine together: lower Brier score than today's model, same-day persistence and a 10 mm rain rule at leads 1 and 2, every interval below zero (lead 1, all nine: 0.0307 against 0.0419). It failed at United Utilities, where it was not shown better than today's model beyond lead 0. It was not shown better than the live-status input alone. Development evidence: the routing rule and the combination were chosen after 2026 had been seen.",
    "scope": "EA start/stop records, January to August 2026, 13,426 overflows at nine English companies; status rebuilt from the complete record at 00:00 UTC; reanalysis rain decides, archived forecast rain reported. Not yet tested on polled status or on unseen months: the shadow log is built for that and has no rows yet.",
    "stage": "development",
-   "stage_note": "Frozen (commit 4d66d7c7) and not adopted. Nothing on the site changes. United Utilities stays on today's model. A shadow logger is built (PR #686, open): it logs the candidate beside today's model in its own table, with the window, the bar and the read date stated before any row. Logging starts once Ethan merges that PR.",
+   "stage_note": "Frozen (commit 4d66d7c7) and not adopted. Nothing on the site changes. United Utilities stays on today's model. A shadow logger is built (PR #686, merged 13 November 2026): it logs the candidate beside today's model in its own table, with the window, the bar and the read date stated before any row. Logging was to start with that merge; whether rows are being written was not checked in this update.",
    "next": "After the merge, confirm the window's dates from the first logged rows (28 target days, opening four days after the first logged forecast; about 22 November to 19 December 2026, read on or after 21 December, if logging starts by 18 November). The read script is due one week before the window ends. Later, rerun the backtest unchanged on the EA's September to December 2026 records.",
    "records": [
     {
@@ -3503,8 +3503,8 @@
    "verdict": "An observation feature, not a test: 2 of 85 river spots have a live EA ammonium sonde on their own river, upstream within 20 km or at the spot, on 13 November 2026. Nothing was scored.",
    "scope": "Shows the latest readings with their time and the EA's quality label. No level, colour or advice is drawn from them. Lake spots, turbidity-only stations and downstream sondes are not shown.",
    "stage": "development",
-   "stage_note": "Draft PR; the public wording is Ethan's decision.",
-   "next": "Ethan reads the tile's wording and decides whether lake spots get an inflow-beck rule; then merge.",
+   "stage_note": "PR #687 merged 13 November 2026. Whether the tile is showing on the site was not checked in this update.",
+   "next": "Ethan reads the tile's wording and decides whether lake spots get an inflow-beck rule.",
    "records": [
     {
      "doc": "docs/SONDE-READINGS-CONTRACT-v1.md",
@@ -3527,7 +3527,7 @@
    "verdict": "No result yet. A logger and its statement, written before any row was logged. It logs #697's frozen candidate (cell radar up to the build's listing, forecast rain for the rest of the day, live status as at the build) beside its frozen reference (the build's forecast rain with the same status) at lead 0 on every build, for the nine English companies.",
    "scope": "The eighteen 2025 fits of #694 and #697, unchanged; the nearest issue hour's model at each build. Status from SwimSignal's own polls, labels from the live feed. Lead 0 only. Says nothing about leads 1 to 4 or about a refitted production model.",
    "stage": "development",
-   "stage_note": "Built and tested; not running. Off until Ethan sets the repository variable DIPCAST_RADAR_SHADOW to 1 after the PR merges. Window to issue day 31 August 2027; interim read on or after 8 April 2027, final read on or after 8 September 2027. Measured cold start on this Mac: 196 composites, 41.1 MB, 61.5 s; a following build 0.2 s. No Open-Meteo call.",
+   "stage_note": "Built and tested; not running. Off until Ethan sets the repository variable DIPCAST_RADAR_SHADOW to 1 (the PR merged 14 November 2026). Window to issue day 31 August 2027; interim read on or after 8 April 2027, final read on or after 8 September 2027. Measured cold start on this Mac: 196 composites, 41.1 MB, 61.5 s; a following build 0.2 s. No Open-Meteo call.",
    "records": [
     {
      "doc": "docs/RADAR-SHADOW-2026-11.md",
