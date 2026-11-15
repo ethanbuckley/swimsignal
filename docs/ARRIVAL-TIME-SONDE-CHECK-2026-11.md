@@ -310,6 +310,10 @@ chosen after seeing that, so it can point to a next test and nothing more.
 Three runs, in the order they were made: as stated, amended (section 12), and the extension to 2026 (section 13).
 **The verdict and the next step are at the end.**
 
+**Reproducing it (note of 15 November).** The readings were kept outside git in a scratch folder, as section 2 said
+they would be. The system has since cleared that folder. The committed event tables, summaries and ledger are the
+record. Running the join again means fetching the readings again: 97 requests under a new cap.
+
 Run 13 November 2026. 92 EA requests of 100, all answered 200
 ([ledger](ARRIVAL-TIME-SONDE-CHECK-2026-11-ledger.jsonl)). No Open-Meteo call. The 15 shared input files have the
 same SHA-256 hashes after the run as before. Exploratory, on 2024-25 records.
