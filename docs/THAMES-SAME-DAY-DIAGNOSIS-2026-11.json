@@ -1,0 +1,2153 @@
+{
+ "record": "docs/THAMES-SAME-DAY-DIAGNOSIS-2026-11.md",
+ "inputs": {
+  "dipcast.duckdb": "c5ed9dd5444ff0a75278fe122ef8e7178bfda5bb0f6a9c386e6b95ae6062ebc4",
+  "live_history.parquet": "3a4847bd1b69bbac81db25fcb0d28d67391a9213de785b7fae3c0934cfa28724",
+  "live_coverage.parquet": "a5bbf9506a1f0b211364d7eb3dcd7f020d1c6bf1bd57d0e08e62a64c3c1816be",
+  "poll_log.parquet": "dcc68a129dc40e6bdec286ba543810c5fed1f8b2419de3682e912968c69c25c7",
+  "scored": "434f910aa0170ec59bba08eaf5f038b423caae0209b4c89ac75891de786eb598"
+ },
+ "inputs_unchanged": true,
+ "window": {
+  "first": "2026-09-29",
+  "last": "2026-10-17"
+ },
+ "count_check": {
+  "counts": {
+   "rows": 117324,
+   "status_known": 91444,
+   "rain_both_days": 107650,
+   "common": 91391,
+   "lead0_known_active": 1382,
+   "lead0_known_quiet": 19130,
+   "thames_status_known": 17426,
+   "thames_common": 17416
+  },
+  "expected": {
+   "rows": 117324,
+   "status_known": 91444,
+   "rain_both_days": 107650,
+   "common": 91391,
+   "lead0_known_active": 1382,
+   "lead0_known_quiet": 19130,
+   "thames_status_known": 17426,
+   "thames_common": 17416
+  },
+  "join": {
+   "rows": 117324,
+   "joined": 117324,
+   "issue_time_matches": 117324
+  },
+  "matches": true
+ },
+ "settings": {
+  "resamples": 2000,
+  "seed": 20270501,
+  "block_days": 7,
+  "cuts": [
+   0.01,
+   0.03,
+   0.07,
+   0.15,
+   0.4,
+   0.7
+  ],
+  "min_judged": 50,
+  "fit_days": 28,
+  "min_fit_rows": 100
+ },
+ "bootstrap": {
+  "overflows": 1145,
+  "blocks": [
+   0,
+   1,
+   2
+  ]
+ },
+ "analysis_rows": 84659,
+ "cell_rows": 49426,
+ "first_cell_day": "2026-10-02",
+ "p_in_fitted": {
+  "lead0_active": {
+   "rows": 794,
+   "chance": 0.23929471032745592
+  },
+  "lead0_quiet": {
+   "rows": 13474,
+   "chance": 0.015214487160457178
+  },
+  "lead1_active": {
+   "rows": 715,
+   "chance": 0.17342657342657342
+  },
+  "lead1_quiet": {
+   "rows": 12411,
+   "chance": 0.020143421158649585
+  },
+  "lead2_active": {
+   "rows": 713,
+   "chance": 0.16690042075736325
+  },
+  "lead2_quiet": {
+   "rows": 11565,
+   "chance": 0.017985300475572848
+  },
+  "lead3_active": {
+   "rows": 694,
+   "chance": 0.16138328530259366
+  },
+  "lead3_quiet": {
+   "rows": 10750,
+   "chance": 0.018046511627906978
+  },
+  "lead4_active": {
+   "rows": 566,
+   "chance": 0.1696113074204947
+  },
+  "lead4_quiet": {
+   "rows": 9645,
+   "chance": 0.020632452047693105
+  }
+ },
+ "cells": {
+  "Thames Water, same day": {
+   "P-trail": {
+    "rows": 2563,
+    "overflows": 194,
+    "spill_rows": 16,
+    "spill_overflow_days": 16,
+    "active_rows": 16,
+    "judged": false,
+    "point": {
+     "F_brier": 0.009269041861100271,
+     "F_level": 0.00018123588599824414,
+     "F_spread": 0.002885959734941834,
+     "F_association": 0.006201846240160195,
+     "F_r": 0.01734790432813285,
+     "F_mean": 0.019705072181037845,
+     "F_spill_rate": 0.006242684354272337,
+     "F_calibration": 0.003067195620940078,
+     "P_brier": 0.005749158039442669,
+     "P_level": 9.425168674346375e-05,
+     "P_spread": 2.0646154422692714e-05,
+     "P_association": 0.005634260198276513,
+     "P_r": 0.3029724251967771,
+     "P_mean": 0.01595101514506556,
+     "P_spill_rate": 0.006242684354272337,
+     "P_calibration": 0.00011489784116615646,
+     "diff_brier": 0.0035198838216576028,
+     "diff_level": 8.698419925478039e-05,
+     "diff_spread": 0.0028653135805191414,
+     "diff_association": 0.0005675860418836824,
+     "diff_calibration": 0.0029522977797739216,
+     "skill": -0.6122433576376038,
+     "F_band_brier": 0.009269041861100271,
+     "F_band_reliability": 0.002941043510000795,
+     "F_band_resolution": 1.3891396049421894e-05,
+     "F_band_uncertainty": 0.006203713246325261,
+     "F_band_remainder": 0.00013817650082363804,
+     "P_side_brier": 0.005749158039442669,
+     "P_side_reliability": 0.00012490916964667226,
+     "P_side_resolution": 0.000589201685977397,
+     "P_side_uncertainty": 0.006203713246325261,
+     "P_side_remainder": 9.737309448132163e-06,
+     "auc_F": 0.6554156851197487,
+     "auc_active": 0.6540905967805261,
+     "diff_auc": 0.0013250883392226243,
+     "alerts": 16.0,
+     "hits_active": 5.0,
+     "hits_F_same_count": 1.0,
+     "diff_hits": -4.0,
+     "ends_contribution": 0.0005650042378093082,
+     "ends_contribution_level": 0.0005431476635684411,
+     "ends_contribution_rest": 2.18565742408671e-05,
+     "starts_contribution": 0.0029548795838482953,
+     "starts_contribution_level": 0.0001345229362102053,
+     "starts_contribution_rest": 0.00282035664763809
+    },
+    "bands_F": [
+     {
+      "band": 0,
+      "rows": 2036,
+      "spills": 10,
+      "mean_F": 0.0025039783889980356,
+      "spill_rate": 0.004911591355599214
+     },
+     {
+      "band": 1,
+      "rows": 188,
+      "spills": 3,
+      "mean_F": 0.015621276595744681,
+      "spill_rate": 0.015957446808510637
+     },
+     {
+      "band": 2,
+      "rows": 143,
+      "spills": 2,
+      "mean_F": 0.048674125874125874,
+      "spill_rate": 0.013986013986013986
+     },
+     {
+      "band": 3,
+      "rows": 96,
+      "spills": 0,
+      "mean_F": 0.102665625,
+      "spill_rate": 0.0
+     },
+     {
+      "band": 4,
+      "rows": 95,
+      "spills": 1,
+      "mean_F": 0.24525684210526313,
+      "spill_rate": 0.010526315789473684
+     },
+     {
+      "band": 5,
+      "rows": 5,
+      "spills": 0,
+      "mean_F": 0.4707,
+      "spill_rate": 0.0
+     },
+     {
+      "band": 6,
+      "rows": 0,
+      "spills": 0,
+      "mean_F": null,
+      "spill_rate": null
+     }
+    ],
+    "sides": {
+     "active (ends)": {
+      "rows": 16,
+      "spills": 5,
+      "spill_rate": 0.3125,
+      "mean_F": 0.0114625,
+      "mean_P": 0.2523492722539422,
+      "brier_F": 0.30664947124999997,
+      "brier_P": 0.2161428549059214,
+      "auc_F_within": 0.43636363636363634
+     },
+     "quiet (starts)": {
+      "rows": 2547,
+      "spills": 11,
+      "spill_rate": 0.0043188064389477815,
+      "mean_F": 0.01975685119748724,
+      "mean_P": 0.01446598486876323,
+      "brier_F": 0.007400927659992146,
+      "brier_P": 0.004427485817273976,
+      "auc_F_within": 0.6830907657011758
+     },
+     "active, spilling at issue": {
+      "rows": 2,
+      "spills": 2,
+      "spill_rate": 1.0,
+      "mean_F": 0.0042,
+      "mean_P": 0.2508833377296359,
+      "brier_F": 0.99162205,
+      "brier_P": 0.5612363826910147,
+      "auc_F_within": NaN
+     },
+     "active, stopped in the 48 h before": {
+      "rows": 14,
+      "spills": 3,
+      "spill_rate": 0.21428571428571427,
+      "mean_F": 0.0125,
+      "mean_P": 0.25255869147170035,
+      "brier_F": 0.20879624571428573,
+      "brier_P": 0.16684377950805093,
+      "auc_F_within": 0.45454545454545453
+     }
+    },
+    "ci_overflow_and_block": {
+     "skill": {
+      "lo": -2.1418408840663843,
+      "hi": 0.01733054401406441,
+      "undefined_draws": 27
+     },
+     "F_brier": {
+      "lo": 0.0023802696298596275,
+      "hi": 0.016994128143177505,
+      "undefined_draws": 27
+     },
+     "P_brier": {
+      "lo": 0.001698325993079763,
+      "hi": 0.011344528755034023,
+      "undefined_draws": 27
+     },
+     "diff_brier": {
+      "lo": -0.00013041209270273972,
+      "hi": 0.007444345040922214,
+      "undefined_draws": 27
+     },
+     "F_level": {
+      "lo": 6.361885222503885e-07,
+      "hi": 0.0007115999411738237,
+      "undefined_draws": 27
+     },
+     "P_level": {
+      "lo": 1.6388944929801302e-05,
+      "hi": 0.00020993112564654943,
+      "undefined_draws": 27
+     },
+     "diff_level": {
+      "lo": -0.00016758893989218964,
+      "hi": 0.0006360129052725614,
+      "undefined_draws": 27
+     },
+     "F_spread": {
+      "lo": 0.00033833809226175004,
+      "hi": 0.0061647712054545434,
+      "undefined_draws": 27
+     },
+     "P_spread": {
+      "lo": 1.70309617328941e-07,
+      "hi": 0.0009162921029511434,
+      "undefined_draws": 27
+     },
+     "diff_spread": {
+      "lo": -0.00014348498775501622,
+      "hi": 0.006012289626845149,
+      "undefined_draws": 27
+     },
+     "F_association": {
+      "lo": 0.001363864375943694,
+      "hi": 0.013063832458742083,
+      "undefined_draws": 27
+     },
+     "P_association": {
+      "lo": 0.0013445417243127301,
+      "hi": 0.010979550581577869,
+      "undefined_draws": 27
+     },
+     "diff_association": {
+      "lo": -3.524500791000718e-05,
+      "hi": 0.0029918183531270574,
+      "undefined_draws": 27
+     },
+     "F_calibration": {
+      "lo": 0.00034580230065141076,
+      "hi": 0.006865668604407215,
+      "undefined_draws": 27
+     },
+     "P_calibration": {
+      "lo": 6.159341826494848e-05,
+      "hi": 0.0009907261738391867,
+      "undefined_draws": 27
+     },
+     "diff_calibration": {
+      "lo": -0.00035644409216691714,
+      "hi": 0.0065872442003043884,
+      "undefined_draws": 27
+     },
+     "F_band_reliability": {
+      "lo": 0.00034573181699698813,
+      "hi": 0.006690959016587386,
+      "undefined_draws": 27
+     },
+     "F_band_resolution": {
+      "lo": 1.9887765972827487e-07,
+      "hi": 0.00016219911023635156,
+      "undefined_draws": 27
+     },
+     "P_side_reliability": {
+      "lo": 5.96736126850149e-05,
+      "hi": 0.0010267240325096307,
+      "undefined_draws": 27
+     },
+     "P_side_resolution": {
+      "lo": 1.6484533982213804e-09,
+      "hi": 0.0030372174132930665,
+      "undefined_draws": 27
+     },
+     "auc_F": {
+      "lo": 0.48311574054799183,
+      "hi": 0.8753259275140078,
+      "undefined_draws": 27
+     },
+     "auc_active": {
+      "lo": 0.4973694034779792,
+      "hi": 0.8176209048361935,
+      "undefined_draws": 27
+     },
+     "diff_auc": {
+      "lo": -0.2761081242157508,
+      "hi": 0.37393720547466563,
+      "undefined_draws": 27
+     },
+     "hits_F_same_count": {
+      "lo": 0.0,
+      "hi": 2.0,
+      "undefined_draws": 27
+     },
+     "hits_active": {
+      "lo": 0.0,
+      "hi": 18.0,
+      "undefined_draws": 27
+     },
+     "diff_hits": {
+      "lo": -16.699999999999996,
+      "hi": 0.0,
+      "undefined_draws": 27
+     },
+     "ends_contribution": {
+      "lo": -0.0003387109133483923,
+      "hi": 0.0022194064587490884,
+      "undefined_draws": 60
+     },
+     "ends_contribution_level": {
+      "lo": -0.00033957346450926235,
+      "hi": 0.0021862596517455857,
+      "undefined_draws": 60
+     },
+     "ends_contribution_rest": {
+      "lo": -3.9739019102313915e-05,
+      "hi": 0.00010111946149371959,
+      "undefined_draws": 60
+     },
+     "starts_contribution": {
+      "lo": 0.00017068879956663887,
+      "hi": 0.006769154757711658,
+      "undefined_draws": 27
+     },
+     "starts_contribution_level": {
+      "lo": -0.0001581633448675148,
+      "hi": 0.0006982147412442509,
+      "undefined_draws": 27
+     },
+     "starts_contribution_rest": {
+      "lo": 0.00028543624015544373,
+      "hi": 0.0061118013359570955,
+      "undefined_draws": 27
+     }
+    },
+    "ci_overflow_only": {
+     "skill": {
+      "lo": -1.3616725655805242,
+      "hi": -0.34796977276874225,
+      "undefined_draws": 0
+     },
+     "diff_brier": {
+      "lo": 0.0022829799085962335,
+      "hi": 0.004969393017064851,
+      "undefined_draws": 0
+     },
+     "diff_level": {
+      "lo": 1.873314649881833e-05,
+      "hi": 0.00018376869443901577,
+      "undefined_draws": 0
+     },
+     "diff_spread": {
+      "lo": 0.0019121634843764764,
+      "hi": 0.003454583247147342,
+      "undefined_draws": 0
+     },
+     "diff_association": {
+      "lo": -1.5262224189558814e-05,
+      "hi": 0.0023382605583124687,
+      "undefined_draws": 0
+     },
+     "diff_calibration": {
+      "lo": 0.001973207086035614,
+      "hi": 0.00359168757330571,
+      "undefined_draws": 0
+     },
+     "diff_auc": {
+      "lo": -0.18762388234392355,
+      "hi": 0.29887776330722865,
+      "undefined_draws": 0
+     },
+     "diff_hits": {
+      "lo": -13.0,
+      "hi": 0.0,
+      "undefined_draws": 0
+     },
+     "ends_contribution": {
+      "lo": -0.0002678590400533134,
+      "hi": 0.0018095253681425696,
+      "undefined_draws": 0
+     },
+     "starts_contribution": {
+      "lo": 0.002135359151260348,
+      "hi": 0.0036557143138921445,
+      "undefined_draws": 0
+     }
+    }
+   },
+   "P-in": {
+    "rows": 2563,
+    "overflows": 194,
+    "spill_rows": 16,
+    "spill_overflow_days": 16,
+    "active_rows": 16,
+    "judged": false,
+    "point": {
+     "F_brier": 0.009269041861100271,
+     "F_level": 0.00018123588599824414,
+     "F_spread": 0.002885959734941834,
+     "F_association": 0.006201846240160195,
+     "F_r": 0.01734790432813285,
+     "F_mean": 0.019705072181037845,
+     "F_spill_rate": 0.006242684354272337,
+     "F_calibration": 0.003067195620940078,
+     "P_brier": 0.005765940948675382,
+     "P_level": 0.00010755069066412494,
+     "P_spread": 4.387869766339525e-05,
+     "P_association": 0.0056145115603478644,
+     "P_r": 0.3081811935610521,
+     "P_mean": 0.016613349263723657,
+     "P_spill_rate": 0.006242684354272337,
+     "P_calibration": 0.0001514293883275202,
+     "diff_brier": 0.0035031009124248894,
+     "diff_level": 7.36851953341192e-05,
+     "diff_spread": 0.002842081037278439,
+     "diff_association": 0.0005873346798123307,
+     "diff_calibration": 0.002915766232612558,
+     "skill": -0.607550605114966,
+     "F_band_brier": 0.009269041861100271,
+     "F_band_reliability": 0.002941043510000795,
+     "F_band_resolution": 1.3891396049421894e-05,
+     "F_band_uncertainty": 0.006203713246325261,
+     "F_band_remainder": 0.00013817650082363804,
+     "P_side_brier": 0.005765940948675382,
+     "P_side_reliability": 0.00015142938832751228,
+     "P_side_resolution": 0.000589201685977397,
+     "P_side_uncertainty": 0.006203713246325261,
+     "P_side_remainder": 5.204170427930421e-18,
+     "auc_F": 0.6554156851197487,
+     "auc_active": 0.6540905967805261,
+     "diff_auc": 0.0013250883392226243,
+     "alerts": 16.0,
+     "hits_active": 5.0,
+     "hits_F_same_count": 1.0,
+     "diff_hits": -4.0,
+     "ends_contribution": 0.0005396595041058688,
+     "ends_contribution_level": 0.0005322797469853074,
+     "ends_contribution_rest": 7.379757120561407e-06,
+     "starts_contribution": 0.002963441408319021,
+     "starts_contribution_level": 0.0001188706341124951,
+     "starts_contribution_rest": 0.002844570774206526
+    },
+    "bands_F": [
+     {
+      "band": 0,
+      "rows": 2036,
+      "spills": 10,
+      "mean_F": 0.0025039783889980356,
+      "spill_rate": 0.004911591355599214
+     },
+     {
+      "band": 1,
+      "rows": 188,
+      "spills": 3,
+      "mean_F": 0.015621276595744681,
+      "spill_rate": 0.015957446808510637
+     },
+     {
+      "band": 2,
+      "rows": 143,
+      "spills": 2,
+      "mean_F": 0.048674125874125874,
+      "spill_rate": 0.013986013986013986
+     },
+     {
+      "band": 3,
+      "rows": 96,
+      "spills": 0,
+      "mean_F": 0.102665625,
+      "spill_rate": 0.0
+     },
+     {
+      "band": 4,
+      "rows": 95,
+      "spills": 1,
+      "mean_F": 0.24525684210526313,
+      "spill_rate": 0.010526315789473684
+     },
+     {
+      "band": 5,
+      "rows": 5,
+      "spills": 0,
+      "mean_F": 0.4707,
+      "spill_rate": 0.0
+     },
+     {
+      "band": 6,
+      "rows": 0,
+      "spills": 0,
+      "mean_F": null,
+      "spill_rate": null
+     }
+    ],
+    "sides": {
+     "active (ends)": {
+      "rows": 16,
+      "spills": 5,
+      "spill_rate": 0.3125,
+      "mean_F": 0.0114625,
+      "mean_P": 0.23929471032745592,
+      "brier_F": 0.30664947124999997,
+      "brier_P": 0.22020276443604112,
+      "auc_F_within": 0.43636363636363634
+     },
+     "quiet (starts)": {
+      "rows": 2547,
+      "spills": 11,
+      "spill_rate": 0.0043188064389477815,
+      "mean_F": 0.01975685119748724,
+      "mean_P": 0.015214487160457176,
+      "brier_F": 0.007400927659992146,
+      "brier_P": 0.004418870208275756,
+      "auc_F_within": 0.6830907657011758
+     },
+     "active, spilling at issue": {
+      "rows": 2,
+      "spills": 2,
+      "spill_rate": 1.0,
+      "mean_F": 0.0042,
+      "mean_P": 0.23929471032745592,
+      "brier_F": 0.99162205,
+      "brier_P": 0.5786725377357893,
+      "auc_F_within": NaN
+     },
+     "active, stopped in the 48 h before": {
+      "rows": 14,
+      "spills": 3,
+      "spill_rate": 0.21428571428571427,
+      "mean_F": 0.0125,
+      "mean_P": 0.239294710327456,
+      "brier_F": 0.20879624571428573,
+      "brier_P": 0.16899279682179139,
+      "auc_F_within": 0.45454545454545453
+     }
+    },
+    "ci_overflow_and_block": {
+     "skill": {
+      "lo": -2.130899855868182,
+      "hi": 0.005600706212581402,
+      "undefined_draws": 27
+     },
+     "F_brier": {
+      "lo": 0.0023802696298596275,
+      "hi": 0.016994128143177505,
+      "undefined_draws": 27
+     },
+     "P_brier": {
+      "lo": 0.0016235331371483497,
+      "hi": 0.011480187195099894,
+      "undefined_draws": 27
+     },
+     "diff_brier": {
+      "lo": -4.9564760103007705e-05,
+      "hi": 0.0073507997792220175,
+      "undefined_draws": 27
+     },
+     "F_level": {
+      "lo": 6.361885222503885e-07,
+      "hi": 0.0007115999411738237,
+      "undefined_draws": 27
+     },
+     "P_level": {
+      "lo": 2.4317729693477866e-05,
+      "hi": 0.00020108842276283297,
+      "undefined_draws": 27
+     },
+     "diff_level": {
+      "lo": -0.00015965534488815403,
+      "hi": 0.0006004359742070517,
+      "undefined_draws": 27
+     },
+     "F_spread": {
+      "lo": 0.00033833809226175004,
+      "hi": 0.0061647712054545434,
+      "undefined_draws": 27
+     },
+     "P_spread": {
+      "lo": 7.071902920760173e-08,
+      "hi": 0.00102680728292129,
+      "undefined_draws": 27
+     },
+     "diff_spread": {
+      "lo": -0.00013866080992993378,
+      "hi": 0.006038387278066773,
+      "undefined_draws": 27
+     },
+     "F_association": {
+      "lo": 0.001363864375943694,
+      "hi": 0.013063832458742083,
+      "undefined_draws": 27
+     },
+     "P_association": {
+      "lo": 0.0013285479836300958,
+      "hi": 0.011081132658977484,
+      "undefined_draws": 27
+     },
+     "diff_association": {
+      "lo": -3.5369442026876886e-05,
+      "hi": 0.0030344483955893737,
+      "undefined_draws": 27
+     },
+     "F_calibration": {
+      "lo": 0.00034580230065141076,
+      "hi": 0.006865668604407215,
+      "undefined_draws": 27
+     },
+     "P_calibration": {
+      "lo": 7.705941172498137e-05,
+      "hi": 0.0011158365314662118,
+      "undefined_draws": 27
+     },
+     "diff_calibration": {
+      "lo": -0.00029321133526049816,
+      "hi": 0.006560395123127203,
+      "undefined_draws": 27
+     },
+     "F_band_reliability": {
+      "lo": 0.00034573181699698813,
+      "hi": 0.006690959016587386,
+      "undefined_draws": 27
+     },
+     "F_band_resolution": {
+      "lo": 1.9887765972827487e-07,
+      "hi": 0.00016219911023635156,
+      "undefined_draws": 27
+     },
+     "P_side_reliability": {
+      "lo": 7.705941172498163e-05,
+      "hi": 0.0011158365314662096,
+      "undefined_draws": 27
+     },
+     "P_side_resolution": {
+      "lo": 1.6484533982213804e-09,
+      "hi": 0.0030372174132930665,
+      "undefined_draws": 27
+     },
+     "auc_F": {
+      "lo": 0.48311574054799183,
+      "hi": 0.8753259275140078,
+      "undefined_draws": 27
+     },
+     "auc_active": {
+      "lo": 0.4973694034779792,
+      "hi": 0.8176209048361935,
+      "undefined_draws": 27
+     },
+     "diff_auc": {
+      "lo": -0.2761081242157508,
+      "hi": 0.37393720547466563,
+      "undefined_draws": 27
+     },
+     "hits_F_same_count": {
+      "lo": 0.0,
+      "hi": 2.0,
+      "undefined_draws": 27
+     },
+     "hits_active": {
+      "lo": 0.0,
+      "hi": 18.0,
+      "undefined_draws": 27
+     },
+     "diff_hits": {
+      "lo": -16.699999999999996,
+      "hi": 0.0,
+      "undefined_draws": 27
+     },
+     "ends_contribution": {
+      "lo": -0.0002989121670114311,
+      "hi": 0.002115104143899917,
+      "undefined_draws": 60
+     },
+     "ends_contribution_level": {
+      "lo": -0.0002992497311202537,
+      "hi": 0.0021160750668727146,
+      "undefined_draws": 60
+     },
+     "ends_contribution_rest": {
+      "lo": -4.748406549816945e-05,
+      "hi": 8.16860429443616e-05,
+      "undefined_draws": 60
+     },
+     "starts_contribution": {
+      "lo": 0.00021782472059184838,
+      "hi": 0.0067197550517199365,
+      "undefined_draws": 27
+     },
+     "starts_contribution_level": {
+      "lo": -0.00014959545332009184,
+      "hi": 0.0006657299601191067,
+      "undefined_draws": 27
+     },
+     "starts_contribution_rest": {
+      "lo": 0.000352970631685396,
+      "hi": 0.0060995597236111485,
+      "undefined_draws": 27
+     }
+    }
+   },
+   "reading": {
+    "applied": false,
+    "why": "fewer than 50 overflow-days with a spill"
+   }
+  },
+  "Other eight companies, same day": {
+   "P-trail": {
+    "rows": 10616,
+    "overflows": 946,
+    "spill_rows": 344,
+    "spill_overflow_days": 344,
+    "active_rows": 659,
+    "judged": true,
+    "point": {
+     "F_brier": 0.02672016263847023,
+     "F_level": 2.2234831570527035e-05,
+     "F_spread": 0.000613609596305249,
+     "F_association": 0.026084318210594457,
+     "F_r": 0.40996091193896955,
+     "F_mean": 0.03711930105501132,
+     "F_spill_rate": 0.03240391861341371,
+     "F_calibration": 0.000635844427875776,
+     "P_brier": 0.029158260623175,
+     "P_level": 1.4124197045351631e-05,
+     "P_spread": 6.533772637607378e-05,
+     "P_association": 0.02907879869975355,
+     "P_r": 0.26937358019173285,
+     "P_mean": 0.02864570134383607,
+     "P_spill_rate": 0.03240391861341371,
+     "P_calibration": 7.946192342142542e-05,
+     "diff_brier": -0.0024380979847047693,
+     "diff_level": 8.110634525175404e-06,
+     "diff_spread": 0.0005482718699291752,
+     "diff_association": -0.0029944804891590925,
+     "diff_calibration": 0.0005563825044543506,
+     "skill": 0.08361602964639692,
+     "F_band_brier": 0.02672016263847023,
+     "F_band_reliability": 0.0007461303446727729,
+     "F_band_resolution": 0.004926399833581281,
+     "F_band_uncertainty": 0.031353904671908975,
+     "F_band_remainder": -0.0004534725445302368,
+     "P_side_brier": 0.029158260623175,
+     "P_side_reliability": 2.340984868689319e-05,
+     "P_side_resolution": 0.0027220545418130027,
+     "P_side_uncertainty": 0.031353904671908975,
+     "P_side_remainder": 0.0005030006443921334,
+     "auc_F": 0.8769193064913424,
+     "auc_active": 0.7007579873940448,
+     "diff_auc": 0.1761613190972976,
+     "alerts": 659.0,
+     "hits_active": 155.0,
+     "hits_F_same_count": 174.0,
+     "diff_hits": 19.0,
+     "ends_contribution": -0.0013487433494003397,
+     "ends_contribution_level": 0.0005563744642854101,
+     "ends_contribution_rest": -0.0019051178136857499,
+     "starts_contribution": -0.0010893546353044157,
+     "starts_contribution_level": 0.0001007546977227182,
+     "starts_contribution_rest": -0.0011901093330271338
+    },
+    "bands_F": [
+     {
+      "band": 0,
+      "rows": 7179,
+      "spills": 36,
+      "mean_F": 0.002636787853461485,
+      "spill_rate": 0.005014625992478061
+     },
+     {
+      "band": 1,
+      "rows": 1191,
+      "spills": 38,
+      "mean_F": 0.016620570948782533,
+      "spill_rate": 0.03190596137699412
+     },
+     {
+      "band": 2,
+      "rows": 865,
+      "spills": 44,
+      "mean_F": 0.0474642774566474,
+      "spill_rate": 0.05086705202312139
+     },
+     {
+      "band": 3,
+      "rows": 612,
+      "spills": 41,
+      "mean_F": 0.1029483660130719,
+      "spill_rate": 0.06699346405228758
+     },
+     {
+      "band": 4,
+      "rows": 582,
+      "spills": 99,
+      "mean_F": 0.24218745704467354,
+      "spill_rate": 0.17010309278350516
+     },
+     {
+      "band": 5,
+      "rows": 141,
+      "spills": 60,
+      "mean_F": 0.5228588652482269,
+      "spill_rate": 0.425531914893617
+     },
+     {
+      "band": 6,
+      "rows": 46,
+      "spills": 26,
+      "mean_F": 0.7955804347826089,
+      "spill_rate": 0.5652173913043478
+     }
+    ],
+    "sides": {
+     "active (ends)": {
+      "rows": 659,
+      "spills": 155,
+      "spill_rate": 0.23520485584218512,
+      "mean_F": 0.14018816388467378,
+      "mean_P": 0.24329143877986129,
+      "brier_F": 0.16406419414264037,
+      "brier_P": 0.1857914466422367,
+      "auc_F_within": 0.7605094726062468
+     },
+     "quiet (starts)": {
+      "rows": 9957,
+      "spills": 189,
+      "spill_rate": 0.01898162097017174,
+      "mean_F": 0.030297730240032135,
+      "mean_P": 0.014439460410789898,
+      "brier_F": 0.017630103708948474,
+      "brier_P": 0.018791556838243597,
+      "auc_F_within": 0.8707888082888083
+     },
+     "active, spilling at issue": {
+      "rows": 11,
+      "spills": 11,
+      "spill_rate": 1.0,
+      "mean_F": 0.5105181818181818,
+      "mean_P": 0.2268940154659461,
+      "brier_F": 0.32598331545454545,
+      "brier_P": 0.5992125507014251,
+      "auc_F_within": NaN
+     },
+     "active, stopped in the 48 h before": {
+      "rows": 648,
+      "spills": 144,
+      "spill_rate": 0.2222222222222222,
+      "mean_F": 0.1339016975308642,
+      "mean_P": 0.24356979010154808,
+      "brier_F": 0.16131556708333333,
+      "brier_P": 0.17877349580172577,
+      "auc_F_within": 0.7503582451499118
+     }
+    },
+    "ci_overflow_and_block": {
+     "skill": {
+      "lo": -0.02355040993226138,
+      "hi": 0.252588159251092,
+      "undefined_draws": 0
+     },
+     "F_brier": {
+      "lo": 0.015747651058189812,
+      "hi": 0.035551435655940315,
+      "undefined_draws": 0
+     },
+     "P_brier": {
+      "lo": 0.020179892256939058,
+      "hi": 0.03780391270535688,
+      "undefined_draws": 0
+     },
+     "diff_brier": {
+      "lo": -0.006359972875886346,
+      "hi": 0.0007076769004288534,
+      "undefined_draws": 0
+     },
+     "F_level": {
+      "lo": 5.406198321915747e-08,
+      "hi": 0.00012261738492802567,
+      "undefined_draws": 0
+     },
+     "P_level": {
+      "lo": 5.764763099201569e-08,
+      "hi": 0.00010182595022529315,
+      "undefined_draws": 0
+     },
+     "diff_level": {
+      "lo": -9.799613121357195e-05,
+      "hi": 0.00011627298700880264,
+      "undefined_draws": 0
+     },
+     "F_spread": {
+      "lo": 3.0081859730494802e-05,
+      "hi": 0.001805776534612391,
+      "undefined_draws": 0
+     },
+     "P_spread": {
+      "lo": 1.9959668845644474e-07,
+      "hi": 0.0006635927701525458,
+      "undefined_draws": 0
+     },
+     "diff_spread": {
+      "lo": -0.00023842870279620085,
+      "hi": 0.0015555180763340288,
+      "undefined_draws": 0
+     },
+     "F_association": {
+      "lo": 0.015250818324727236,
+      "hi": 0.03440949998810739,
+      "undefined_draws": 0
+     },
+     "P_association": {
+      "lo": 0.020009425873201567,
+      "hi": 0.03753854821325491,
+      "undefined_draws": 0
+     },
+     "diff_association": {
+      "lo": -0.0062718758368171795,
+      "hi": -0.0003622236678482858,
+      "undefined_draws": 0
+     },
+     "F_calibration": {
+      "lo": 3.302444978438373e-05,
+      "hi": 0.0018864349580625342,
+      "undefined_draws": 0
+     },
+     "P_calibration": {
+      "lo": 4.51801808458685e-06,
+      "hi": 0.0006860619367102329,
+      "undefined_draws": 0
+     },
+     "diff_calibration": {
+      "lo": -0.00024310185794657047,
+      "hi": 0.0016119660479127916,
+      "undefined_draws": 0
+     },
+     "F_band_reliability": {
+      "lo": 0.00023132758799829925,
+      "hi": 0.002210462181563746,
+      "undefined_draws": 0
+     },
+     "F_band_resolution": {
+      "lo": 0.003081270564676254,
+      "hi": 0.007895628031447261,
+      "undefined_draws": 0
+     },
+     "P_side_reliability": {
+      "lo": 3.131785908973505e-06,
+      "hi": 0.0005413508249474841,
+      "undefined_draws": 0
+     },
+     "P_side_resolution": {
+      "lo": 0.0008072589373850027,
+      "hi": 0.005609456210502466,
+      "undefined_draws": 0
+     },
+     "auc_F": {
+      "lo": 0.8077363681081604,
+      "hi": 0.9686583947024965,
+      "undefined_draws": 0
+     },
+     "auc_active": {
+      "lo": 0.6191831849452298,
+      "hi": 0.7909540623208505,
+      "undefined_draws": 0
+     },
+     "diff_auc": {
+      "lo": 0.07518521435031696,
+      "hi": 0.3133377448090136,
+      "undefined_draws": 0
+     },
+     "hits_F_same_count": {
+      "lo": 117.0,
+      "hi": 242.02499999999986,
+      "undefined_draws": 0
+     },
+     "hits_active": {
+      "lo": 63.0,
+      "hi": 251.0,
+      "undefined_draws": 0
+     },
+     "diff_hits": {
+      "lo": -40.0,
+      "hi": 81.0,
+      "undefined_draws": 0
+     },
+     "ends_contribution": {
+      "lo": -0.0031991207370206842,
+      "hi": 0.0004448339906673158,
+      "undefined_draws": 0
+     },
+     "ends_contribution_level": {
+      "lo": -0.0003542674463492801,
+      "hi": 0.0015348904194799353,
+      "undefined_draws": 0
+     },
+     "ends_contribution_rest": {
+      "lo": -0.0042293334685595515,
+      "hi": 0.0004650314917040061,
+      "undefined_draws": 0
+     },
+     "starts_contribution": {
+      "lo": -0.00537591597576264,
+      "hi": 0.002252755110352761,
+      "undefined_draws": 0
+     },
+     "starts_contribution_level": {
+      "lo": -0.00010746940727282046,
+      "hi": 0.00035664328833783686,
+      "undefined_draws": 0
+     },
+     "starts_contribution_rest": {
+      "lo": -0.005349120557137139,
+      "hi": 0.0019253335846182056,
+      "undefined_draws": 0
+     }
+    },
+    "ci_overflow_only": {
+     "skill": {
+      "lo": 0.004608072917834133,
+      "hi": 0.14693709798959276,
+      "undefined_draws": 0
+     },
+     "diff_brier": {
+      "lo": -0.004617453837990989,
+      "hi": -0.0001236624490859507,
+      "undefined_draws": 0
+     },
+     "diff_level": {
+      "lo": -5.788811248681987e-05,
+      "hi": 9.15177664170094e-05,
+      "undefined_draws": 0
+     },
+     "diff_spread": {
+      "lo": 7.249825105036086e-05,
+      "hi": 0.0013497419766282863,
+      "undefined_draws": 0
+     },
+     "diff_association": {
+      "lo": -0.004763361543616979,
+      "hi": -0.0013487401544695235,
+      "undefined_draws": 0
+     },
+     "diff_calibration": {
+      "lo": 3.9956150516436834e-05,
+      "hi": 0.0014166244047612532,
+      "undefined_draws": 0
+     },
+     "diff_auc": {
+      "lo": 0.14063688806587182,
+      "hi": 0.21321760066910034,
+      "undefined_draws": 0
+     },
+     "diff_hits": {
+      "lo": -8.0,
+      "hi": 49.0,
+      "undefined_draws": 0
+     },
+     "ends_contribution": {
+      "lo": -0.002437973989261709,
+      "hi": -0.00023424190552109414,
+      "undefined_draws": 0
+     },
+     "starts_contribution": {
+      "lo": -0.002694011101396099,
+      "hi": 0.000553290151917135,
+      "undefined_draws": 0
+     }
+    }
+   },
+   "P-in": {
+    "rows": 10616,
+    "overflows": 946,
+    "spill_rows": 344,
+    "spill_overflow_days": 344,
+    "active_rows": 659,
+    "judged": true,
+    "point": {
+     "F_brier": 0.02672016263847023,
+     "F_level": 2.2234831570527035e-05,
+     "F_spread": 0.000613609596305249,
+     "F_association": 0.026084318210594457,
+     "F_r": 0.40996091193896955,
+     "F_mean": 0.03711930105501132,
+     "F_spill_rate": 0.03240391861341371,
+     "F_calibration": 0.000635844427875776,
+     "P_brier": 0.028646198828205023,
+     "P_level": 1.0754480940829886e-05,
+     "P_spread": 3.594217168180242e-06,
+     "P_association": 0.028631850130095962,
+     "P_r": 0.2946473874336421,
+     "P_mean": 0.02912451608538671,
+     "P_spill_rate": 0.03240391861341371,
+     "P_calibration": 1.4348698109010128e-05,
+     "diff_brier": -0.0019260361897347929,
+     "diff_level": 1.1480350629697149e-05,
+     "diff_spread": 0.0006100153791370687,
+     "diff_association": -0.002547531919501505,
+     "diff_calibration": 0.0006214957297667659,
+     "skill": 0.06723531457997212,
+     "F_band_brier": 0.02672016263847023,
+     "F_band_reliability": 0.0007461303446727729,
+     "F_band_resolution": 0.004926399833581281,
+     "F_band_uncertainty": 0.031353904671908975,
+     "F_band_remainder": -0.0004534725445302368,
+     "P_side_brier": 0.028646198828205023,
+     "P_side_reliability": 1.4348698109001644e-05,
+     "P_side_resolution": 0.0027220545418130027,
+     "P_side_uncertainty": 0.031353904671908975,
+     "P_side_remainder": 4.85722573273506e-17,
+     "auc_F": 0.8769193064913424,
+     "auc_active": 0.7007579873940448,
+     "diff_auc": 0.1761613190972976,
+     "alerts": 659.0,
+     "hits_active": 155.0,
+     "hits_F_same_count": 174.0,
+     "diff_hits": 19.0,
+     "ends_contribution": -0.0009830412997325422,
+     "ends_contribution_level": 0.0005593954549841924,
+     "ends_contribution_rest": -0.0015424367547167347,
+     "starts_contribution": -0.0009429948900022182,
+     "starts_contribution_level": 0.00010679485760182484,
+     "starts_contribution_rest": -0.001049789747604043
+    },
+    "bands_F": [
+     {
+      "band": 0,
+      "rows": 7179,
+      "spills": 36,
+      "mean_F": 0.002636787853461485,
+      "spill_rate": 0.005014625992478061
+     },
+     {
+      "band": 1,
+      "rows": 1191,
+      "spills": 38,
+      "mean_F": 0.016620570948782533,
+      "spill_rate": 0.03190596137699412
+     },
+     {
+      "band": 2,
+      "rows": 865,
+      "spills": 44,
+      "mean_F": 0.0474642774566474,
+      "spill_rate": 0.05086705202312139
+     },
+     {
+      "band": 3,
+      "rows": 612,
+      "spills": 41,
+      "mean_F": 0.1029483660130719,
+      "spill_rate": 0.06699346405228758
+     },
+     {
+      "band": 4,
+      "rows": 582,
+      "spills": 99,
+      "mean_F": 0.24218745704467354,
+      "spill_rate": 0.17010309278350516
+     },
+     {
+      "band": 5,
+      "rows": 141,
+      "spills": 60,
+      "mean_F": 0.5228588652482269,
+      "spill_rate": 0.425531914893617
+     },
+     {
+      "band": 6,
+      "rows": 46,
+      "spills": 26,
+      "mean_F": 0.7955804347826089,
+      "spill_rate": 0.5652173913043478
+     }
+    ],
+    "sides": {
+     "active (ends)": {
+      "rows": 659,
+      "spills": 155,
+      "spill_rate": 0.23520485584218512,
+      "mean_F": 0.14018816388467378,
+      "mean_P": 0.23929471032745595,
+      "brier_F": 0.16406419414264037,
+      "brier_P": 0.17990025854015276,
+      "auc_F_within": 0.7605094726062468
+     },
+     "quiet (starts)": {
+      "rows": 9957,
+      "spills": 189,
+      "spill_rate": 0.01898162097017174,
+      "mean_F": 0.030297730240032135,
+      "mean_P": 0.015214487160457174,
+      "brier_F": 0.017630103708948474,
+      "brier_P": 0.01863551033265677,
+      "auc_F_within": 0.8707888082888083
+     },
+     "active, spilling at issue": {
+      "rows": 11,
+      "spills": 11,
+      "spill_rate": 1.0,
+      "mean_F": 0.5105181818181818,
+      "mean_P": 0.23929471032745597,
+      "brier_F": 0.32598331545454545,
+      "brier_P": 0.5786725377357893,
+      "auc_F_within": NaN
+     },
+     "active, stopped in the 48 h before": {
+      "rows": 648,
+      "spills": 144,
+      "spill_rate": 0.2222222222222222,
+      "mean_F": 0.1339016975308642,
+      "mean_P": 0.23929471032745592,
+      "brier_F": 0.16131556708333333,
+      "brier_P": 0.17313097602294286,
+      "auc_F_within": 0.7503582451499118
+     }
+    },
+    "ci_overflow_and_block": {
+     "skill": {
+      "lo": -0.04832800953991368,
+      "hi": 0.23165795724606933,
+      "undefined_draws": 0
+     },
+     "F_brier": {
+      "lo": 0.015747651058189812,
+      "hi": 0.035551435655940315,
+      "undefined_draws": 0
+     },
+     "P_brier": {
+      "lo": 0.019655142096998666,
+      "hi": 0.03732523229418123,
+      "undefined_draws": 0
+     },
+     "diff_brier": {
+      "lo": -0.005825294952334884,
+      "hi": 0.0013284705840804713,
+      "undefined_draws": 0
+     },
+     "F_level": {
+      "lo": 5.406198321915747e-08,
+      "hi": 0.00012261738492802567,
+      "undefined_draws": 0
+     },
+     "P_level": {
+      "lo": 2.2602134301948613e-08,
+      "hi": 0.00010332264215090967,
+      "undefined_draws": 0
+     },
+     "diff_level": {
+      "lo": -9.672358591590825e-05,
+      "hi": 0.00011466989174853987,
+      "undefined_draws": 0
+     },
+     "F_spread": {
+      "lo": 3.0081859730494802e-05,
+      "hi": 0.001805776534612391,
+      "undefined_draws": 0
+     },
+     "P_spread": {
+      "lo": 1.9702866751431398e-07,
+      "hi": 0.0005282490408031137,
+      "undefined_draws": 0
+     },
+     "diff_spread": {
+      "lo": -0.00021594645251670562,
+      "hi": 0.0016696137978075708,
+      "undefined_draws": 0
+     },
+     "F_association": {
+      "lo": 0.015250818324727236,
+      "hi": 0.03440949998810739,
+      "undefined_draws": 0
+     },
+     "P_association": {
+      "lo": 0.019500180248641308,
+      "hi": 0.03713919433675219,
+      "undefined_draws": 0
+     },
+     "diff_association": {
+      "lo": -0.005795427402273184,
+      "hi": 0.0003452594171750814,
+      "undefined_draws": 0
+     },
+     "F_calibration": {
+      "lo": 3.302444978438373e-05,
+      "hi": 0.0018864349580625342,
+      "undefined_draws": 0
+     },
+     "P_calibration": {
+      "lo": 3.3486386853179195e-06,
+      "hi": 0.0005529801339609183,
+      "undefined_draws": 0
+     },
+     "diff_calibration": {
+      "lo": -0.00022192877505139663,
+      "hi": 0.0017196749845123903,
+      "undefined_draws": 0
+     },
+     "F_band_reliability": {
+      "lo": 0.00023132758799829925,
+      "hi": 0.002210462181563746,
+      "undefined_draws": 0
+     },
+     "F_band_resolution": {
+      "lo": 0.003081270564676254,
+      "hi": 0.007895628031447261,
+      "undefined_draws": 0
+     },
+     "P_side_reliability": {
+      "lo": 3.3486386853164926e-06,
+      "hi": 0.0005529801339609229,
+      "undefined_draws": 0
+     },
+     "P_side_resolution": {
+      "lo": 0.0008072589373850027,
+      "hi": 0.005609456210502466,
+      "undefined_draws": 0
+     },
+     "auc_F": {
+      "lo": 0.8077363681081604,
+      "hi": 0.9686583947024965,
+      "undefined_draws": 0
+     },
+     "auc_active": {
+      "lo": 0.6191831849452298,
+      "hi": 0.7909540623208505,
+      "undefined_draws": 0
+     },
+     "diff_auc": {
+      "lo": 0.07518521435031696,
+      "hi": 0.3133377448090136,
+      "undefined_draws": 0
+     },
+     "hits_F_same_count": {
+      "lo": 117.0,
+      "hi": 242.02499999999986,
+      "undefined_draws": 0
+     },
+     "hits_active": {
+      "lo": 63.0,
+      "hi": 251.0,
+      "undefined_draws": 0
+     },
+     "diff_hits": {
+      "lo": -40.0,
+      "hi": 81.0,
+      "undefined_draws": 0
+     },
+     "ends_contribution": {
+      "lo": -0.0026279529700451165,
+      "hi": 0.000651063192536356,
+      "undefined_draws": 0
+     },
+     "ends_contribution_level": {
+      "lo": -0.00039013348108480424,
+      "hi": 0.0015002863310681184,
+      "undefined_draws": 0
+     },
+     "ends_contribution_rest": {
+      "lo": -0.0036017110285576025,
+      "hi": 0.0006206168464877806,
+      "undefined_draws": 0
+     },
+     "starts_contribution": {
+      "lo": -0.005059877362265132,
+      "hi": 0.0022873861323127478,
+      "undefined_draws": 0
+     },
+     "starts_contribution_level": {
+      "lo": -0.00010285248707955946,
+      "hi": 0.00035691504838606335,
+      "undefined_draws": 0
+     },
+     "starts_contribution_rest": {
+      "lo": -0.005030088322770023,
+      "hi": 0.0019561488771555704,
+      "undefined_draws": 0
+     }
+    }
+   },
+   "reading": {
+    "applied": true,
+    "calibration_fault": false,
+    "ranking_fault": false,
+    "F_ranks_better": true,
+    "spread_fault": false,
+    "answer": "not shown either way",
+    "loss_sits_on": []
+   }
+  },
+  "Thames Water, leads 1-4": {
+   "P-trail": {
+    "rows": 6995,
+    "overflows": 194,
+    "spill_rows": 56,
+    "spill_overflow_days": 15,
+    "active_rows": 38,
+    "judged": false,
+    "point": {
+     "F_brier": 0.010380039262330235,
+     "F_level": 0.00027556094925028124,
+     "F_spread": 0.002165307388112888,
+     "F_association": 0.007939170924967067,
+     "F_r": 0.017585400037098135,
+     "F_mean": 0.02460574696211579,
+     "F_spill_rate": 0.008005718370264474,
+     "F_calibration": 0.002440868337363169,
+     "P_brier": 0.007855613037382268,
+     "P_level": 0.00011504986208239304,
+     "P_spread": 1.2410554435155501e-05,
+     "P_association": 0.00772815262086472,
+     "P_r": 0.16395247688918002,
+     "P_mean": 0.018731848244659666,
+     "P_spill_rate": 0.008005718370264474,
+     "P_calibration": 0.00012746041651754854,
+     "diff_brier": 0.0025244262249479663,
+     "diff_level": 0.0001605110871678882,
+     "diff_spread": 0.002152896833677733,
+     "diff_association": 0.00021101830410234692,
+     "diff_calibration": 0.0023134079208456206,
+     "skill": -0.3213531793044102,
+     "F_band_brier": 0.010380039262330235,
+     "F_band_reliability": 0.002269516228744342,
+     "F_band_resolution": 8.648540191426739e-06,
+     "F_band_uncertainty": 0.007941626843640484,
+     "F_band_remainder": 0.00017754473013683464,
+     "P_side_brier": 0.007855613037382268,
+     "P_side_reliability": 0.0002277217237073806,
+     "P_side_resolution": 0.0003555986859242264,
+     "P_side_uncertainty": 0.007941626843640484,
+     "P_side_remainder": 4.1863155958629314e-05,
+     "auc_F": 0.5986080229757272,
+     "auc_active": 0.5872681325015955,
+     "diff_auc": 0.011339890474131753,
+     "alerts": 38.0,
+     "hits_active": 10.0,
+     "hits_F_same_count": 0.0,
+     "diff_hits": -10.0,
+     "ends_contribution": 0.00027833555422567024,
+     "ends_contribution_level": 0.00022591854212343054,
+     "ends_contribution_rest": 5.24170121022397e-05,
+     "starts_contribution": 0.0022460906707222976,
+     "starts_contribution_level": 0.00019119027795854316,
+     "starts_contribution_rest": 0.0020549003927637544
+    },
+    "bands_F": [
+     {
+      "band": 0,
+      "rows": 4478,
+      "spills": 31,
+      "mean_F": 0.0038448637784725325,
+      "spill_rate": 0.006922733363108531
+     },
+     {
+      "band": 1,
+      "rows": 1132,
+      "spills": 6,
+      "mean_F": 0.017630565371024733,
+      "spill_rate": 0.00530035335689046
+     },
+     {
+      "band": 2,
+      "rows": 653,
+      "spills": 9,
+      "mean_F": 0.04614257274119449,
+      "spill_rate": 0.013782542113323124
+     },
+     {
+      "band": 3,
+      "rows": 478,
+      "spills": 7,
+      "mean_F": 0.10151401673640169,
+      "spill_rate": 0.014644351464435146
+     },
+     {
+      "band": 4,
+      "rows": 251,
+      "spills": 3,
+      "mean_F": 0.21875059760956175,
+      "spill_rate": 0.01195219123505976
+     },
+     {
+      "band": 5,
+      "rows": 3,
+      "spills": 0,
+      "mean_F": 0.4603,
+      "spill_rate": 0.0
+     },
+     {
+      "band": 6,
+      "rows": 0,
+      "spills": 0,
+      "mean_F": null,
+      "spill_rate": null
+     }
+    ],
+    "sides": {
+     "active (ends)": {
+      "rows": 38,
+      "spills": 10,
+      "spill_rate": 0.2631578947368421,
+      "mean_F": 0.019747368421052635,
+      "mean_P": 0.13026005090090828,
+      "brier_F": 0.2562814842105263,
+      "brier_P": 0.20504576837345886,
+      "auc_F_within": 0.4107142857142857
+     },
+     "quiet (starts)": {
+      "rows": 6957,
+      "spills": 46,
+      "spill_rate": 0.006612045421877246,
+      "mean_F": 0.024632284030472906,
+      "mean_P": 0.018122667318838555,
+      "brier_F": 0.009036894960471468,
+      "brier_P": 0.006778535862914695,
+      "auc_F_within": 0.626192962699666
+     },
+     "active, spilling at issue": {
+      "rows": 1,
+      "spills": 1,
+      "spill_rate": 1.0,
+      "mean_F": 0.0033,
+      "mean_P": 0.1672384219554031,
+      "brier_F": 0.99341089,
+      "brier_P": 0.6934918458673274,
+      "auc_F_within": NaN
+     },
+     "active, stopped in the 48 h before": {
+      "rows": 37,
+      "spills": 9,
+      "spill_rate": 0.24324324324324326,
+      "mean_F": 0.020191891891891894,
+      "mean_P": 0.129260635467003,
+      "brier_F": 0.23635906783783786,
+      "brier_P": 0.19184452303578675,
+      "auc_F_within": 0.42063492063492064
+     }
+    },
+    "ci_overflow_and_block": {
+     "skill": {
+      "lo": -0.9388975533539154,
+      "hi": -0.15529482071178902,
+      "undefined_draws": 79
+     },
+     "F_brier": {
+      "lo": 0.004444332007479177,
+      "hi": 0.01829902037443358,
+      "undefined_draws": 79
+     },
+     "P_brier": {
+      "lo": 0.0023324498854756454,
+      "hi": 0.015268933094453235,
+      "undefined_draws": 79
+     },
+     "diff_brier": {
+      "lo": 0.0014066133466819949,
+      "hi": 0.0036382407193171536,
+      "undefined_draws": 79
+     },
+     "F_level": {
+      "lo": 6.625205444426389e-05,
+      "hi": 0.0005381253094811264,
+      "undefined_draws": 79
+     },
+     "P_level": {
+      "lo": 8.663770092290943e-06,
+      "hi": 0.00033666329043803735,
+      "undefined_draws": 79
+     },
+     "diff_level": {
+      "lo": -4.276834776424516e-05,
+      "hi": 0.0003345831155651816,
+      "undefined_draws": 79
+     },
+     "F_spread": {
+      "lo": 0.0015169614758489523,
+      "hi": 0.0027821408997932505,
+      "undefined_draws": 79
+     },
+     "P_spread": {
+      "lo": 8.318169207769818e-07,
+      "hi": 0.0012628581771561885,
+      "undefined_draws": 79
+     },
+     "diff_spread": {
+      "lo": 0.000829797126989059,
+      "hi": 0.0026533962901648857,
+      "undefined_draws": 79
+     },
+     "F_association": {
+      "lo": 0.001901605289061894,
+      "hi": 0.01605056542120826,
+      "undefined_draws": 79
+     },
+     "P_association": {
+      "lo": 0.0019056571444122884,
+      "hi": 0.014311864808652128,
+      "undefined_draws": 79
+     },
+     "diff_association": {
+      "lo": -2.983589285280447e-05,
+      "hi": 0.0023900524850998545,
+      "undefined_draws": 79
+     },
+     "F_calibration": {
+      "lo": 0.0016978270696268109,
+      "hi": 0.003156513338557166,
+      "undefined_draws": 79
+     },
+     "P_calibration": {
+      "lo": 7.815521912236665e-05,
+      "hi": 0.0013501879328284496,
+      "undefined_draws": 79
+     },
+     "diff_calibration": {
+      "lo": 0.0008892643898226803,
+      "hi": 0.002919677717526467,
+      "undefined_draws": 79
+     },
+     "F_band_reliability": {
+      "lo": 0.001567445278120299,
+      "hi": 0.002979081153648587,
+      "undefined_draws": 79
+     },
+     "F_band_resolution": {
+      "lo": 1.7604666079917816e-06,
+      "hi": 0.00011880804489964592,
+      "undefined_draws": 79
+     },
+     "P_side_reliability": {
+      "lo": 8.309950361698098e-05,
+      "hi": 0.002061377329792448,
+      "undefined_draws": 79
+     },
+     "P_side_resolution": {
+      "lo": 4.78412017992155e-09,
+      "hi": 0.0032856842505140397,
+      "undefined_draws": 79
+     },
+     "auc_F": {
+      "lo": 0.45601549295774646,
+      "hi": 0.8561112755253033,
+      "undefined_draws": 79
+     },
+     "auc_active": {
+      "lo": 0.49567684409619023,
+      "hi": 0.7399222270678878,
+      "undefined_draws": 79
+     },
+     "diff_auc": {
+      "lo": -0.21646586090981268,
+      "hi": 0.35930692270453446,
+      "undefined_draws": 79
+     },
+     "hits_F_same_count": {
+      "lo": 0.0,
+      "hi": 0.0,
+      "undefined_draws": 79
+     },
+     "hits_active": {
+      "lo": 0.0,
+      "hi": 54.0,
+      "undefined_draws": 79
+     },
+     "diff_hits": {
+      "lo": -54.0,
+      "hi": 0.0,
+      "undefined_draws": 79
+     },
+     "ends_contribution": {
+      "lo": -9.78836517667951e-05,
+      "hi": 0.0012889565794341183,
+      "undefined_draws": 89
+     },
+     "ends_contribution_level": {
+      "lo": -0.00010341881441494425,
+      "hi": 0.0012665596340909143,
+      "undefined_draws": 89
+     },
+     "ends_contribution_rest": {
+      "lo": -1.0008955843464196e-06,
+      "hi": 0.0001051033253717127,
+      "undefined_draws": 89
+     },
+     "starts_contribution": {
+      "lo": 0.001344345770444017,
+      "hi": 0.0029934203163432763,
+      "undefined_draws": 79
+     },
+     "starts_contribution_level": {
+      "lo": -3.117457276083086e-05,
+      "hi": 0.00035933250337060916,
+      "undefined_draws": 79
+     },
+     "starts_contribution_rest": {
+      "lo": 0.0013221304064934614,
+      "hi": 0.0026960576485695878,
+      "undefined_draws": 79
+     }
+    },
+    "ci_overflow_only": {
+     "skill": {
+      "lo": -0.8159022072702657,
+      "hi": -0.18650625635302326,
+      "undefined_draws": 0
+     },
+     "diff_brier": {
+      "lo": 0.0017516436531983127,
+      "hi": 0.0034518327977656384,
+      "undefined_draws": 0
+     },
+     "diff_level": {
+      "lo": 5.145304741391901e-05,
+      "hi": 0.0003008049982113542,
+      "undefined_draws": 0
+     },
+     "diff_spread": {
+      "lo": 0.001522239380907357,
+      "hi": 0.0025658699006531195,
+      "undefined_draws": 0
+     },
+     "diff_association": {
+      "lo": -1.9014886030541916e-05,
+      "hi": 0.0014201559774866745,
+      "undefined_draws": 0
+     },
+     "diff_calibration": {
+      "lo": 0.0015994711780338347,
+      "hi": 0.0028123751716663866,
+      "undefined_draws": 0
+     },
+     "diff_auc": {
+      "lo": -0.17815211584385424,
+      "hi": 0.27614230024986663,
+      "undefined_draws": 0
+     },
+     "diff_hits": {
+      "lo": -29.025,
+      "hi": 0.0,
+      "undefined_draws": 0
+     },
+     "ends_contribution": {
+      "lo": -6.507249029896716e-05,
+      "hi": 0.0009333423887833125,
+      "undefined_draws": 2
+     },
+     "starts_contribution": {
+      "lo": 0.0016508116544577494,
+      "hi": 0.0028360235325730304,
+      "undefined_draws": 0
+     }
+    }
+   },
+   "P-in": {
+    "rows": 6995,
+    "overflows": 194,
+    "spill_rows": 56,
+    "spill_overflow_days": 15,
+    "active_rows": 38,
+    "judged": false,
+    "point": {
+     "F_brier": 0.010380039262330235,
+     "F_level": 0.00027556094925028124,
+     "F_spread": 0.002165307388112888,
+     "F_association": 0.007939170924967067,
+     "F_r": 0.017585400037098135,
+     "F_mean": 0.02460574696211579,
+     "F_spill_rate": 0.008005718370264474,
+     "F_calibration": 0.002440868337363169,
+     "P_brier": 0.007793620226960623,
+     "P_level": 0.0001448663888598676,
+     "P_spread": 6.086316589366173e-05,
+     "P_association": 0.007587890672207091,
+     "P_r": 0.21104982535054584,
+     "P_mean": 0.02004176376980778,
+     "P_spill_rate": 0.008005718370264474,
+     "P_calibration": 0.00020572955475352934,
+     "diff_brier": 0.0025864190353696113,
+     "diff_level": 0.00013069456039041364,
+     "diff_spread": 0.0021044442222192265,
+     "diff_association": 0.00035128025275997597,
+     "diff_calibration": 0.0022351387826096396,
+     "skill": -0.3318636217893145,
+     "F_band_brier": 0.010380039262330235,
+     "F_band_reliability": 0.002269516228744342,
+     "F_band_resolution": 8.648540191426739e-06,
+     "F_band_uncertainty": 0.007941626843640484,
+     "F_band_remainder": 0.00017754473013683464,
+     "P_side_brier": 0.007793620226960623,
+     "P_side_reliability": 0.00020756641036643244,
+     "P_side_resolution": 0.0003555986859242264,
+     "P_side_uncertainty": 0.007941626843640484,
+     "P_side_remainder": 2.5658877932967228e-08,
+     "auc_F": 0.5986080229757272,
+     "auc_active": 0.5872681325015955,
+     "diff_auc": 0.011339890474131753,
+     "alerts": 38.0,
+     "hits_active": 10.0,
+     "hits_F_same_count": 0.0,
+     "diff_hits": -10.0,
+     "ends_contribution": 0.00029217182972903416,
+     "ends_contribution_level": 0.00027273002628491733,
+     "ends_contribution_rest": 1.9441803444116825e-05,
+     "starts_contribution": 0.002294247205640578,
+     "starts_contribution_level": 0.00016453410713800402,
+     "starts_contribution_rest": 0.0021297130985025742
+    },
+    "bands_F": [
+     {
+      "band": 0,
+      "rows": 4478,
+      "spills": 31,
+      "mean_F": 0.0038448637784725325,
+      "spill_rate": 0.006922733363108531
+     },
+     {
+      "band": 1,
+      "rows": 1132,
+      "spills": 6,
+      "mean_F": 0.017630565371024733,
+      "spill_rate": 0.00530035335689046
+     },
+     {
+      "band": 2,
+      "rows": 653,
+      "spills": 9,
+      "mean_F": 0.04614257274119449,
+      "spill_rate": 0.013782542113323124
+     },
+     {
+      "band": 3,
+      "rows": 478,
+      "spills": 7,
+      "mean_F": 0.10151401673640169,
+      "spill_rate": 0.014644351464435146
+     },
+     {
+      "band": 4,
+      "rows": 251,
+      "spills": 3,
+      "mean_F": 0.21875059760956175,
+      "spill_rate": 0.01195219123505976
+     },
+     {
+      "band": 5,
+      "rows": 3,
+      "spills": 0,
+      "mean_F": 0.4603,
+      "spill_rate": 0.0
+     },
+     {
+      "band": 6,
+      "rows": 0,
+      "spills": 0,
+      "mean_F": null,
+      "spill_rate": null
+     }
+    ],
+    "sides": {
+     "active (ends)": {
+      "rows": 38,
+      "spills": 10,
+      "spill_rate": 0.2631578947368421,
+      "mean_F": 0.019747368421052635,
+      "mean_P": 0.1680535932198221,
+      "brier_F": 0.2562814842105263,
+      "brier_P": 0.20249880134330014,
+      "auc_F_within": 0.4107142857142857
+     },
+     "quiet (starts)": {
+      "rows": 6957,
+      "spills": 46,
+      "spill_rate": 0.006612045421877246,
+      "mean_F": 0.024632284030472906,
+      "mean_P": 0.019233304732995875,
+      "brier_F": 0.009036894960471468,
+      "brier_P": 0.006730116291008212,
+      "auc_F_within": 0.626192962699666
+     },
+     "active, spilling at issue": {
+      "rows": 1,
+      "spills": 1,
+      "spill_rate": 1.0,
+      "mean_F": 0.0033,
+      "mean_P": 0.17342657342657342,
+      "brier_F": 0.99341089,
+      "brier_P": 0.6832236295173358,
+      "auc_F_within": NaN
+     },
+     "active, stopped in the 48 h before": {
+      "rows": 37,
+      "spills": 9,
+      "spill_rate": 0.24324324324324326,
+      "mean_F": 0.020191891891891894,
+      "mean_P": 0.16790837753855856,
+      "brier_F": 0.23635906783783786,
+      "brier_P": 0.18950623841967756,
+      "auc_F_within": 0.42063492063492064
+     }
+    },
+    "ci_overflow_and_block": {
+     "skill": {
+      "lo": -0.9693100877295837,
+      "hi": -0.1637261581723899,
+      "undefined_draws": 79
+     },
+     "F_brier": {
+      "lo": 0.004444332007479177,
+      "hi": 0.01829902037443358,
+      "undefined_draws": 79
+     },
+     "P_brier": {
+      "lo": 0.00228932011237811,
+      "hi": 0.014966047630609929,
+      "undefined_draws": 79
+     },
+     "diff_brier": {
+      "lo": 0.0015019830797664106,
+      "hi": 0.003856136871031684,
+      "undefined_draws": 79
+     },
+     "F_level": {
+      "lo": 6.625205444426389e-05,
+      "hi": 0.0005381253094811264,
+      "undefined_draws": 79
+     },
+     "P_level": {
+      "lo": 2.1979458803352942e-05,
+      "hi": 0.00031790056560729687,
+      "undefined_draws": 79
+     },
+     "diff_level": {
+      "lo": -2.483285140856802e-05,
+      "hi": 0.00028806562832421547,
+      "undefined_draws": 79
+     },
+     "F_spread": {
+      "lo": 0.0015169614758489523,
+      "hi": 0.0027821408997932505,
+      "undefined_draws": 79
+     },
+     "P_spread": {
+      "lo": 1.0706683927045248e-06,
+      "hi": 0.0017067929902298865,
+      "undefined_draws": 79
+     },
+     "diff_spread": {
+      "lo": 0.00038423263496963414,
+      "hi": 0.002683331284399469,
+      "undefined_draws": 79
+     },
+     "F_association": {
+      "lo": 0.001901605289061894,
+      "hi": 0.01605056542120826,
+      "undefined_draws": 79
+     },
+     "P_association": {
+      "lo": 0.0019060937642113565,
+      "hi": 0.013871370587236387,
+      "undefined_draws": 79
+     },
+     "diff_association": {
+      "lo": -3.2230592758319705e-05,
+      "hi": 0.0032739676345335915,
+      "undefined_draws": 79
+     },
+     "F_calibration": {
+      "lo": 0.0016978270696268109,
+      "hi": 0.003156513338557166,
+      "undefined_draws": 79
+     },
+     "P_calibration": {
+      "lo": 0.00011549509916250955,
+      "hi": 0.0017440923327609083,
+      "undefined_draws": 79
+     },
+     "diff_calibration": {
+      "lo": 0.00041253383980590134,
+      "hi": 0.002885482851500761,
+      "undefined_draws": 79
+     },
+     "F_band_reliability": {
+      "lo": 0.001567445278120299,
+      "hi": 0.002979081153648587,
+      "undefined_draws": 79
+     },
+     "F_band_resolution": {
+      "lo": 1.7604666079917816e-06,
+      "hi": 0.00011880804489964592,
+      "undefined_draws": 79
+     },
+     "P_side_reliability": {
+      "lo": 0.00011604396687539146,
+      "hi": 0.0017603919765574873,
+      "undefined_draws": 79
+     },
+     "P_side_resolution": {
+      "lo": 4.78412017992155e-09,
+      "hi": 0.0032856842505140397,
+      "undefined_draws": 79
+     },
+     "auc_F": {
+      "lo": 0.45601549295774646,
+      "hi": 0.8561112755253033,
+      "undefined_draws": 79
+     },
+     "auc_active": {
+      "lo": 0.49567684409619023,
+      "hi": 0.7399222270678878,
+      "undefined_draws": 79
+     },
+     "diff_auc": {
+      "lo": -0.21646586090981268,
+      "hi": 0.35930692270453446,
+      "undefined_draws": 79
+     },
+     "hits_F_same_count": {
+      "lo": 0.0,
+      "hi": 0.0,
+      "undefined_draws": 79
+     },
+     "hits_active": {
+      "lo": 0.0,
+      "hi": 54.0,
+      "undefined_draws": 79
+     },
+     "diff_hits": {
+      "lo": -54.0,
+      "hi": 0.0,
+      "undefined_draws": 79
+     },
+     "ends_contribution": {
+      "lo": -0.00022011213982397874,
+      "hi": 0.0015176725046794606,
+      "undefined_draws": 89
+     },
+     "ends_contribution_level": {
+      "lo": -0.0002300113149775819,
+      "hi": 0.0015230151739402526,
+      "undefined_draws": 89
+     },
+     "ends_contribution_rest": {
+      "lo": -2.9739576566120484e-05,
+      "hi": 5.635837122044522e-05,
+      "undefined_draws": 89
+     },
+     "starts_contribution": {
+      "lo": 0.0015220891647558374,
+      "hi": 0.002978691861548733,
+      "undefined_draws": 79
+     },
+     "starts_contribution_level": {
+      "lo": -5.658693853964179e-06,
+      "hi": 0.00031731584456242307,
+      "undefined_draws": 79
+     },
+     "starts_contribution_rest": {
+      "lo": 0.0014572313653812986,
+      "hi": 0.0027522461807793406,
+      "undefined_draws": 79
+     }
+    }
+   },
+   "reading": {
+    "applied": false,
+    "why": "fewer than 50 overflow-days with a spill"
+   }
+  }
+ }
+}

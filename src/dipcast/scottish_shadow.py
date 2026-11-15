@@ -55,6 +55,10 @@ so a new spill model, calibration map or covariate file starts a new arm. "pass"
 GATE_MIN_SPILL_DAYS distinct overflow-days with a spill and the interval's lower end above zero; under
 that many it reads "too few spill-days". The plan asks for November 2026 to January 2027 at least;
 whether that window is met is for whoever reads it, and the summary gives the first and last day.
+
+A second arm (13 Nov 2026). Scotland's mapped forecast, what the trial would show, is logged for the same
+builds in a file of its own by scottish_shadow_map (docs/SCOTLAND-MAP-SHADOW-ARM-2026-11.md). run() hands
+it this arm's rows after they are written. It changes no row, stamp, rule or score here.
 """
 
 from __future__ import annotations
@@ -352,6 +356,18 @@ def score(as_of=None) -> dict:
 
 
 # ------------------------------------------------------------------ run
+def _map_arm(rows: pd.DataFrame, logged: int) -> dict:
+    """Scotland's mapped forecast for the same build, logged in a file of its own (scottish_shadow_map,
+    docs/SCOTLAND-MAP-SHADOW-ARM-2026-11.md). It is handed this arm's rows after they are written and
+    alters none of them. Guarded on its own: a failure there leaves this arm's log and scores as they are."""
+    try:
+        from dipcast import scottish_shadow_map
+        return scottish_shadow_map.log_rows(rows, logged)
+    except Exception as e:  # noqa: BLE001 - a second shadow must not stop the first
+        log.error("Scotland's mapped shadow arm failed: %s", e)
+        return {"rows_logged": 0, "error": str(e)}
+
+
 def run(net=None, now: pd.Timestamp | None = None, rain_fetch=None, model=None) -> dict:
     """Table, rain, forecast, log and score once (module docstring). Returns counts and costs only,
     for the build log. Never raises: the shadow must not stop the site."""
@@ -374,6 +390,7 @@ def run(net=None, now: pd.Timestamp | None = None, rain_fetch=None, model=None) 
         version = f"{fc.model_version()};cov={arm};region=scotland-shadow"
         rows = forecast_rows(table, now, rain, model, version)
         summary["rows_logged"] = log_rows(rows)
+        summary["map_arm"] = _map_arm(rows, summary["rows_logged"])
         out = score()
         summary["n_scored"] = int(out.get("n_scored", 0))
         summary["ok"] = True

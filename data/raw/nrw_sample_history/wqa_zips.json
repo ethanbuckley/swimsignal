@@ -1,0 +1,14 @@
+[
+ {
+  "file": "Carmarthen_Bay_and_the_Gower_2020_01_01_to_2029_12_31_Water_Quality_Archive.zip",
+  "bytes": 1069936,
+  "sha256": "60d0114b718be07bc232db353c87b52b8299a2d0221fe265208f911b7fc7e30c",
+  "csv_modified": "2026-10-04"
+ },
+ {
+  "file": "Wye_2020_01_01_to_2029_12_31_Water_Quality_Archive.zip",
+  "bytes": 1028028,
+  "sha256": "a7f2876e655789d72c292b35c2d2222dcd5aed0cc34961bdca35a2bca1c865d0",
+  "csv_modified": "2026-10-04"
+ }
+]

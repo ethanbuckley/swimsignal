@@ -1,12 +1,13 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <!-- Every Environment Agency E. coli sample at an inland bathing water, linked from each one's latest lab sample on
-     its spot's page (evidence.js): a prose page with the shared head, header and foot, written by
+     its spot's page (evidence.js), and the sample histories for the Republic of Ireland and Wales, linked from their
+     cards on the coverage page (docs/SAMPLE-HISTORY-CONTRACT-v1.md; blocks marked data-set show with their set): a prose page with the shared head, header and foot, written by
      scripts/build_site.py (write_samples) beside the app. samples.js fills #samples from data/research/ (the research
      export, docs/ECOLI-EVIDENCE-CONTRACT-v1.md, split by write_ecoli_evidence). What it may say is the contract's:
      the list under "What these samples do not tell you" is its not_claimed list in the site's words, and samples.js
      puts the export's own approved sentence beside each bathing water's samples. -->
 <title>E. coli samples · SwimSignal</title>
-<meta name="description" content="Every Environment Agency lab sample of E. coli at the inland bathing waters SwimSignal covers, with its date, and a model estimate worked out afterwards beside each. A historical record, not today's water.">
+<meta name="description" content="Official lab samples of E. coli at bathing waters, each with its date: the Environment Agency's at the inland waters SwimSignal covers in England, the EPA's at the Republic of Ireland's waters since 2014, and Natural Resources Wales's at Hay-on-Wye and Llandeilo. A historical record, not today's water.">
 <meta name="theme-color" content="#3d5b5d">
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -37,32 +38,50 @@
   .sm-ax, .sm-mo, .sm-ax-in { font:400 var(--fs-meta)/1 var(--font-text); fill:var(--muted); }
   .sm-ax { text-anchor:end; }
   .sm-ax-line { font-weight:600; fill:var(--ink); }
+  main.doc .sm-h3 { margin:16px 0 4px; }
+  main.doc .sm-why { font-size:var(--fs-note); }
 </style>
 </head><body>
 <header class="top"><a class="brand" href="./"><svg viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" fill="#0f5a61"/><path d="M430-20C330 110 470 230 300 290S110 380 190 540" fill="none" stroke="#5CC2B5" stroke-width="70" stroke-linecap="round"/><circle cx="318" cy="138" r="38" fill="#F08A4B"/><circle cx="165" cy="358" r="46" fill="none" stroke="#fff" stroke-width="22"/></svg>SwimSignal</a>
 <nav aria-label="Site"><a href="plan/">Plan a swim</a><a href="saved/">Saved</a><a href="verification.html">Accuracy</a><a href="about.html">About</a><a class="desk-only" href="clubs.html">For organisations</a></nav></header>
 <main class="doc">
 <h1>E. coli samples at bathing waters</h1>
-<p class="lead">Every Environment Agency lab sample of E. coli at the inland bathing waters this site covers, with the date each was taken. A historical record of the water at those times, not of the water today. For a bathing water's official rating and today's advice, the Environment Agency's own page comes first; each bathing water here links to it.</p>
+<p class="lead">Official lab samples of E. coli at bathing waters, each with its date: England's inland waters that this site covers, the Republic of Ireland's since 2014, and two Welsh rivers, at Hay-on-Wye and Llandeilo. A record of the water at those times, not today. For a water's rating and today's advice, its official page comes first; each water here links to it.</p>
 <noscript><p class="notice">This page needs JavaScript to read the samples.</p></noscript>
 <div id="samples" aria-live="polite"></div>
 
 <h2>What these samples do not tell you</h2>
 <ul id="sm-not">
 <li>One sample is the water at one place and time. It says nothing about the water on another day, or later the same day.</li>
-<li>The hindsight estimate is not the forecast the site issued that day. The site's issued forecasts are scored on the <a href="verification.html">Accuracy page</a>.</li>
-<li>A sample the model missed, or a warning with no high sample, does not point to any overflow, water company or other source.</li>
+<li>One sample sets no rating. A rating uses four seasons of scheduled samples, by the rules of each country.</li>
+<li data-set="england">The hindsight estimate is not the forecast the site issued that day. The site's issued forecasts are scored on the <a href="verification.html">Accuracy page</a>.</li>
+<li data-set="england">A sample the model missed, or a warning with no high sample, does not point to any overflow, water company or other source.</li>
+<li data-set="history">In Wales and the Republic of Ireland SwimSignal makes no forecast and puts no estimate beside the samples. A high sample does not say where the bacteria came from.</li>
 </ul>
 
+<div data-set="england">
 <h2>How the hindsight estimate was made</h2>
 <p>After the samples were taken, the site's model was refitted once for each year, each time leaving out that year's samples, and run for each sample's day on the rain forecast archived for that day and the exposure to spills upstream, replayed for it. Its inputs are the ones the forecast uses: rain, the spills upstream, the season and, for rivers, how wet the soil was. The result is the chance the model gives of the count being over 900 per 100 ml. It was never shown on the site.</p>
 <ul>
 <li><a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/ECOLI-EVIDENCE-CONTRACT-v1.md">What this page's data holds</a></li>
 <li><a href="methods.html">How the forecast works</a></li>
 </ul>
+</div>
+
+<div data-set="history">
+<h2>Wales and the Republic of Ireland</h2>
+<p>These samples were copied from each official body's published data on the date given at the top of the list, and do not update between copies. Each water's page says how its samples were measured and what "below" and "above" a limit mean. Where a sample is in both of Natural Resources Wales's sources, its Water Quality Archive and its bathing-water service, the two agree; the archive adds survey samples from 2023, and the service the last samples of 2026.</p>
+<ul>
+<li><a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/SAMPLE-HISTORY-CONTRACT-v1.md">What this page's data holds for Wales and Ireland</a></li>
+<li><a href="coverage.html">Every bathing water in Wales and Ireland, with its official page</a></li>
+</ul>
+</div>
 
 <h2>Sources</h2>
-<p><span id="sm-attrib">Environment Agency bathing water quality data, Open Government Licence v3.0.</span> Samples from the Environment Agency's bathing water quality service, and from its Water Quality Archive for samples the service's copy lacked. <a href="terms.html#data">Data credits</a>.</p>
+<p><b>England.</b> <span id="sm-attrib">Environment Agency bathing water quality data, Open Government Licence v3.0.</span> Samples from the Environment Agency's bathing water quality service, and from its Water Quality Archive for samples the service's copy lacked.</p>
+<p><b>Republic of Ireland.</b> Contains bathing water data from the Environmental Protection Agency (Ireland), Bathing Water Open Data API, licensed under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. SwimSignal reorders the EPA's samples by water and date and draws them; the values are the EPA's, unchanged. The EPA does not endorse SwimSignal. <a href="https://data.epa.ie/api-list/bathing-water-open-data/">Source</a>.</p>
+<p><b>Wales.</b> Contains Natural Resources Wales information © Natural Resources Wales and Database Right. All rights Reserved. <a href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/">Open Government Licence v3.0</a>. From NRW's <a href="https://datamap.gov.wales/layers/geonode:nrw_water_quality_archive_stations/metadata_detail">Water Quality Archive</a> and its <a href="https://environment.data.gov.uk/wales/bathing-waters/">bathing water quality service</a>. NRW does not endorse SwimSignal.</p>
+<p><a href="terms.html#data">Data credits</a>.</p>
 </main>
 <footer class="site-foot"><div class="rule"><p>SwimSignal is a free, non-commercial pollution risk forecast for river and lake swim spots in England, run by Ethan Buckley. A forecast, not a water test: check the signs at the water before you swim.</p>
 <p><a href="about.html">About SwimSignal</a> · <a href="verification.html">How accurate is it?</a> · <a href="methods.html">Method</a> · <a href="spots.html">Every spot</a> · <a href="research.html">Research and data</a> · <a href="coverage.html">Coasts, Wales, Scotland, Ireland and algae</a> · <a href="clubs.html">For organisations</a> · <a href="feedback.html">Feedback</a> · <a href="feedback.html?type=spot">Request a spot</a> · <a href="terms.html">Terms of use</a> · <a href="privacy.html">Privacy</a> · <a href="terms.html#data">Data credits</a> · <a href="https://github.com/ethanbuckley/swimsignal">Source code</a> (MIT)</p></div></footer>

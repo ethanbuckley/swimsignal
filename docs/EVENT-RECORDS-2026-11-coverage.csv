@@ -1,0 +1,131 @@
+record,company,month,events,overflows
+EA start/stop file,Anglian Water,2026-01,32265,698
+EA start/stop file,Anglian Water,2026-02,45314,680
+EA start/stop file,Anglian Water,2026-03,15303,405
+EA start/stop file,Anglian Water,2026-04,1498,82
+EA start/stop file,Anglian Water,2026-05,1336,206
+EA start/stop file,Anglian Water,2026-06,2388,263
+EA start/stop file,Anglian Water,2026-07,75,30
+EA start/stop file,Anglian Water,2026-08,3378,588
+EA start/stop file,Northumbrian Water,2026-01,22051,779
+EA start/stop file,Northumbrian Water,2026-02,32788,760
+EA start/stop file,Northumbrian Water,2026-03,8303,1003
+EA start/stop file,Northumbrian Water,2026-04,1349,454
+EA start/stop file,Northumbrian Water,2026-05,6052,858
+EA start/stop file,Northumbrian Water,2026-06,4458,942
+EA start/stop file,Northumbrian Water,2026-07,1365,332
+EA start/stop file,Northumbrian Water,2026-08,5585,931
+EA start/stop file,Severn Trent Water,2026-01,25778,1229
+EA start/stop file,Severn Trent Water,2026-02,39828,1432
+EA start/stop file,Severn Trent Water,2026-03,9186,1290
+EA start/stop file,Severn Trent Water,2026-04,1142,325
+EA start/stop file,Severn Trent Water,2026-05,2415,768
+EA start/stop file,Severn Trent Water,2026-06,3364,920
+EA start/stop file,Severn Trent Water,2026-07,60,29
+EA start/stop file,Severn Trent Water,2026-08,8316,1602
+EA start/stop file,South West Water,2026-01,72208,1022
+EA start/stop file,South West Water,2026-02,76786,877
+EA start/stop file,South West Water,2026-03,30593,485
+EA start/stop file,South West Water,2026-04,7545,203
+EA start/stop file,South West Water,2026-05,4777,383
+EA start/stop file,South West Water,2026-06,6699,501
+EA start/stop file,South West Water,2026-07,145,61
+EA start/stop file,South West Water,2026-08,3527,629
+EA start/stop file,Southern Water,2026-01,28065,686
+EA start/stop file,Southern Water,2026-02,37811,613
+EA start/stop file,Southern Water,2026-03,5466,197
+EA start/stop file,Southern Water,2026-04,2141,26
+EA start/stop file,Southern Water,2026-05,1448,142
+EA start/stop file,Southern Water,2026-06,2287,399
+EA start/stop file,Southern Water,2026-07,13,8
+EA start/stop file,Southern Water,2026-08,922,243
+EA start/stop file,Thames Water,2026-01,5171,322
+EA start/stop file,Thames Water,2026-02,5515,305
+EA start/stop file,Thames Water,2026-03,1188,174
+EA start/stop file,Thames Water,2026-04,180,35
+EA start/stop file,Thames Water,2026-05,81,40
+EA start/stop file,Thames Water,2026-06,646,222
+EA start/stop file,Thames Water,2026-07,66,4
+EA start/stop file,Thames Water,2026-08,231,64
+EA start/stop file,United Utilities,2026-01,8995,948
+EA start/stop file,United Utilities,2026-02,14213,1105
+EA start/stop file,United Utilities,2026-03,15094,1173
+EA start/stop file,United Utilities,2026-04,3802,752
+EA start/stop file,United Utilities,2026-05,4691,917
+EA start/stop file,United Utilities,2026-06,7551,1101
+EA start/stop file,United Utilities,2026-07,595,287
+EA start/stop file,United Utilities,2026-08,9731,1458
+EA start/stop file,Wessex Water,2026-01,92832,873
+EA start/stop file,Wessex Water,2026-02,114848,808
+EA start/stop file,Wessex Water,2026-03,19490,444
+EA start/stop file,Wessex Water,2026-04,5431,114
+EA start/stop file,Wessex Water,2026-05,1727,314
+EA start/stop file,Wessex Water,2026-06,3559,611
+EA start/stop file,Wessex Water,2026-07,23,16
+EA start/stop file,Wessex Water,2026-08,2033,484
+EA start/stop file,Yorkshire Water,2026-01,32650,1234
+EA start/stop file,Yorkshire Water,2026-02,51214,1183
+EA start/stop file,Yorkshire Water,2026-03,10204,1100
+EA start/stop file,Yorkshire Water,2026-04,1296,413
+EA start/stop file,Yorkshire Water,2026-05,5381,1138
+EA start/stop file,Yorkshire Water,2026-06,3119,866
+EA start/stop file,Yorkshire Water,2026-07,139,46
+EA start/stop file,Yorkshire Water,2026-08,7683,1408
+company layer,Anglian Water,2025-04,1885,442
+company layer,Anglian Water,2025-05,2407,398
+company layer,Anglian Water,2025-06,2965,525
+company layer,Anglian Water,2025-07,5671,784
+company layer,Anglian Water,2025-08,3044,415
+company layer,Anglian Water,2025-09,3761,637
+company layer,Anglian Water,2025-10,3355,538
+company layer,Anglian Water,2025-11,10830,860
+company layer,Anglian Water,2025-12,12118,661
+company layer,Anglian Water,2026-01,15658,784
+company layer,Anglian Water,2026-02,23368,810
+company layer,Anglian Water,2026-03,7340,499
+company layer,Anglian Water,2026-04,1947,307
+company layer,Anglian Water,2026-05,2068,401
+company layer,Anglian Water,2026-06,2600,585
+company layer,Anglian Water,2026-07,1023,245
+company layer,Severn Trent Water,2025-01,23980,1618
+company layer,Severn Trent Water,2025-02,3954,481
+company layer,Severn Trent Water,2025-03,1466,337
+company layer,Severn Trent Water,2025-04,746,389
+company layer,Severn Trent Water,2025-05,2240,659
+company layer,Severn Trent Water,2025-06,1378,534
+company layer,Severn Trent Water,2025-07,3523,1042
+company layer,Severn Trent Water,2025-08,806,400
+company layer,Severn Trent Water,2025-09,7951,1369
+company layer,Severn Trent Water,2025-10,3735,904
+company layer,Severn Trent Water,2025-11,20299,1653
+company layer,Severn Trent Water,2025-12,21712,1333
+company layer,Wessex Water,2025-01,70503,961
+company layer,Wessex Water,2025-02,36599,683
+company layer,Wessex Water,2025-03,14092,95
+company layer,Wessex Water,2025-04,4574,190
+company layer,Wessex Water,2025-05,3044,183
+company layer,Wessex Water,2025-06,1261,386
+company layer,Wessex Water,2025-07,783,333
+company layer,Wessex Water,2025-08,1706,437
+company layer,Wessex Water,2025-09,6069,696
+company layer,Wessex Water,2025-10,2517,432
+company layer,Wessex Water,2025-11,20450,837
+company layer,Wessex Water,2025-12,73830,958
+company layer,Wessex Water,2026-01,95173,937
+company layer,Wessex Water,2026-02,117244,854
+company layer,Wessex Water,2026-03,20635,453
+company layer,Wessex Water,2026-04,5434,116
+company layer,Wessex Water,2026-05,1739,317
+company layer,Wessex Water,2026-06,3540,634
+company layer,Wessex Water,2026-07,23,16
+company layer,Wessex Water,2026-08,2046,491
+company layer,Wessex Water,2026-09,314,104
+company layer,Yorkshire Water,2026-01,6662,1228
+company layer,Yorkshire Water,2026-02,7436,1175
+company layer,Yorkshire Water,2026-03,3104,1097
+company layer,Yorkshire Water,2026-04,804,414
+company layer,Yorkshire Water,2026-05,2741,1135
+company layer,Yorkshire Water,2026-06,2170,914
+company layer,Yorkshire Water,2026-07,52,43
+company layer,Yorkshire Water,2026-08,4184,1446
+company layer,Yorkshire Water,2026-09,1078,628

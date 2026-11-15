@@ -89,5 +89,5 @@ for, and a new model needs a new map and check.
 |---|---|
 | Stage | Limited forecast (research workflow): three SEPA lochs, labelled trial |
 | Supported claim | On 2022-25 Scottish Water records, the English model with Scottish covariates ranks overflow-days better than their history, and with Scotland's map its level is right on 2025 at leads 0-3. On 2021, unseen, the mapped forecast beats each overflow's history at the right level at lead 0 |
-| Next deliverables | 1. Gate B from the shadow after its Nov-Jan window. 2. A shadow arm with Scotland's map, so the live check scores what the trial shows. 3. Scottish river spots, each with an authority's own access statement. 4. Click-anywhere in Scotland. 5. Outside review (Stirling invitation, Ethan's) |
+| Next deliverables | 1. Gate B from the shadow after its Nov-Jan window. 2. A shadow arm with Scotland's map, so the live check scores what the trial shows: built 13 Nov 2026 ([statement](SCOTLAND-MAP-SHADOW-ARM-2026-11.md), arm `scotland-map-v1`, read on or after 3 Feb 2027), logging from the first build after its PR merges. 3. Scottish river spots, each with an authority's own access statement. 4. Click-anywhere in Scotland. 5. Outside review (Stirling invitation, Ethan's) |
 | Release route | Owner sets the variable; rollback is deleting it |

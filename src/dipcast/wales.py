@@ -19,7 +19,7 @@ from pathlib import Path
 
 import httpx
 
-from dipcast import config, typical
+from dipcast import config, sample_history, typical
 from dipcast.coastal import ID, TZ, instant, uri, value, when
 
 BASE = "https://environment.data.gov.uk/wales/bathing-waters/doc"
@@ -166,7 +166,10 @@ def render(snapshot: dict) -> str:
                      f'<p class="small">{escape(s["kind"].title())} · {escape(rating)}<br>'
                      f'<span class="wales-advice">Current NRW forecast: open the profile</span><br>'
                      f'<span class="wales-sample">{_sample_text(sample)}</span>{_water(s)}'
-                     + (f'<br>{escape(typical.line(s["typical"]))}' if s.get("typical") else '') + '</p></li>')
+                     + (f'<br>{escape(typical.line(s["typical"]))}' if s.get("typical") else '')
+                     + (f'<br><a class="wales-history" href="samples.html#wales={escape(s["id"], quote=True)}">'
+                        f'{escape(sample_history.history_line(s["history"]))}</a>' if s.get("history") else '')
+                     + '</p></li>')
     inland = sum(s["kind"] in ("lake", "river") for s in snapshot["sites"])
     dated = (f'Snapshot of sites and samples {when(snapshot["fetched_at"])}.' if snapshot.get("state") != "live"
              else f'Sites and samples as published {when(snapshot["fetched_at"])}.')

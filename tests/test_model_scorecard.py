@@ -23,11 +23,13 @@ def test_the_committed_export_holds_its_contract():
     assert _mod("export_model_scorecard").check(doc) == []
     stage = {m["id"]: m["stage"] for m in doc["models"]}
     assert stage == {"production": "live", **{i: "shadow" for i in RUNNING}, "winter-recalibration": "scheduled",
+                     "combined-v1": "scheduled",
                      "spill-duration": "lab", "primary-2027": "not_started"}
     reads = {m["id"]: m["window"]["read_on"] for m in doc["models"] if m.get("window")}
     assert reads == {"regional-v1": "2026-11-28", "live-status": "2026-11-23", "lead-calibration-b": "2026-11-16",
                      "company-calibration-a8": "2026-11-25", "ensemble-rain-d4": "2026-11-21",
-                     "upgraded-overflows-b": "2026-12-02", "winter-recalibration": "2027-03-09"}
+                     "upgraded-overflows-b": "2026-12-02", "winter-recalibration": "2027-03-09",
+                     "combined-v1": "2026-12-21"}
     # Nothing from inside a window: every result is from before it, and the 2027 evaluation has none.
     assert all(x["data"] != "prospective" for m in doc["models"] for x in m["results"])
 
@@ -48,14 +50,16 @@ def test_the_check_refuses_a_changed_figure_an_early_score_and_a_lost_verdict():
 
 def test_the_page_shows_every_model_with_its_stage(tmp_path):
     bs = _mod("build_site")
-    assert bs.write_model_scorecard(tmp_path, today=date(2026, 11, 1)) == {"available": True, "models": 10,
+    assert bs.write_model_scorecard(tmp_path, today=date(2026, 11, 1)) == {"available": True, "models": 11,
                                                                            "version": "1.0.0"}
     html = (tmp_path / "models.html").read_text()
     assert "<title>Model scorecard · SwimSignal</title>" in html and "<!-- SCORECARD" not in html
-    assert html.count('<dl class="fields">') == 10
+    assert html.count('<dl class="fields">') == 11
     assert ("Running test: window 31 Oct 2026 to 27 Nov 2026. Read on or after 28 Nov 2026; no score from the window "
             "is shown before then.") in html
     assert "Scheduled: its window runs 14 Dec 2026 to 7 Mar 2027, read on or after 9 Mar 2027." in html
+    assert "Scheduled: its window runs 22 Nov 2026 to 19 Dec 2026, read on or after 21 Dec 2026." in html   # combined-v1
+    assert "Nothing is logged yet." in html                       # no table yet: what it will log, not a count
     assert "In the lab: not good enough yet to run beside the forecast. Next, 1 Dec 2026:" in html
     assert "Not started. Next, 1 May 2027:" in html
     assert "[0.00007, 0.00261]" in html and "7e" not in html   # small numbers in full
@@ -94,3 +98,17 @@ def test_another_schema_is_not_published(tmp_path):
     assert h["available"] is False and "not swimsignal.model-scorecard 1.x" in h["why"]
     assert "No scorecard is published in this build." in (tmp_path / "models.html").read_text()
     assert not (tmp_path / "data" / "research" / "model_scorecard.json").exists()
+
+
+def test_a_logger_that_has_not_run_yet_gets_no_count(tmp_path):
+    """combined-v1's table does not exist until its first logged build: the export leaves its count out, never fails."""
+    import duckdb
+    m = _mod("export_model_scorecard")
+    db = tmp_path / "state.duckdb"
+    con = duckdb.connect(str(db))
+    con.execute("CREATE TABLE shadow_regional_v1 AS SELECT TIMESTAMPTZ '2026-10-31 09:00:00+00' AS issued_at")
+    con.execute("CREATE TABLE forecast_overflows AS SELECT TIMESTAMPTZ '2026-10-31 09:00:00+00' AS issued_at, "
+                "0.5 AS p_status, [0.5] AS p_cal_members")
+    con.close()
+    by = {x["id"]: x for x in m.build(db, date(2026, 11, 13))["models"]}
+    assert by["regional-v1"]["log"]["rows"] == 1 and "rows" not in by["combined-v1"]["log"]

@@ -1,0 +1,316 @@
+{
+ "schema": "swimsignal.coastal-baselines-manifest",
+ "version": "1.0",
+ "record": "docs/COASTAL-BASELINES-2026-11.md",
+ "code_commit": "0cbf932a",
+ "licence": {
+  "samples_and_predictions": "Environment Agency, Open Government Licence v3.0",
+  "spill_records": "Environment Agency EDM detailed data, Open Government Licence",
+  "rain": "Contains Met Office data, British Crown copyright, CC BY-SA 4.0 (UK Radar Observations, AWS Open Data). Per-sample rain is not committed; the explorer's after-rain shares are derived from it."
+ },
+ "fetch": {
+  "services": {
+   "bwq": {
+    "requests_sent": 698,
+    "by_stage": {
+     "catalogue": 1,
+     "prf-probe": 1,
+     "prf": 696
+    },
+    "by_status": {
+     "200": 696,
+     "ConnectError": 1,
+     "ConnectTimeout": 1
+    },
+    "refusals": [],
+    "first_request": "2026-11-13T15:18:46+00:00",
+    "last_request": "2026-11-13T18:11:53+00:00",
+    "bytes_received": 362180553
+   },
+   "wqa": {
+    "requests_sent": 331,
+    "by_stage": {
+     "ecoli": 165,
+     "enterococci": 166
+    },
+    "by_status": {
+     "200": 330,
+     "502": 1
+    },
+    "refusals": [],
+    "first_request": "2026-11-13T15:19:09+00:00",
+    "last_request": "2026-11-13T15:42:12+00:00",
+    "bytes_received": 170079726
+   }
+  },
+  "caps": {
+   "wqa": {
+    "cap": 430,
+    "pace_s": 3.0
+   },
+   "bwq": {
+    "cap": 730,
+    "pace_s": 10.0
+   }
+  },
+  "stopped": {},
+  "raw_responses": {
+   "files": 1026,
+   "bytes": 532260129,
+   "sha256_of_listing": "947aee878318498a7120a1a38530ab1faa18ecaaa1f8e9f6869e13636b31d8a6",
+   "listing": "one line per response, '<key> <sha256 of body>', sorted by key",
+   "files_not_matching_the_ledger": [],
+   "committed": false
+  }
+ },
+ "committed": {
+  "fetch_ledger.jsonl": {
+   "bytes": 561250,
+   "sha256": "04a7e3570d0cd0ce4e455e8ca252ef7e53d595918cb41d0d83c825e679e73de1",
+   "rows": 1029
+  },
+  "sites.csv": {
+   "bytes": 83871,
+   "sha256": "56dd8ff3414626e5f4387e083acfd940cf9183697a301d62f21e50062d2877d7",
+   "rows": 426
+  },
+  "site_year.csv": {
+   "bytes": 367957,
+   "sha256": "6841cb156d1eff874ab078a87d28bbc3b6af16cfc5cbbcf3d5d96db3a382a2f9",
+   "rows": 2003
+  },
+  "year_summary.csv": {
+   "bytes": 668,
+   "sha256": "3b7e4c13b6e734924d4b1bfabb14287fda62beb5372397305ceadfcb2a448114",
+   "rows": 5
+  },
+  "samples.parquet": {
+   "bytes": 671914,
+   "sha256": "b26f3af80e3fc0dafe115db8104c0916a57469448e24b5fcbde84fa25dc58660",
+   "rows": 32875
+  },
+  "scores.json": {
+   "bytes": 518923,
+   "sha256": "8848742ed06f93286fc08140c7cb0b73ae44c84a9286b7d27586f5665c5c61d2",
+   "rows": null
+  },
+  "scores.md": {
+   "bytes": 35491,
+   "sha256": "05cb903c21b55e41acdc6c2525b2279ff907d104af6d8096f17872658e9a6854",
+   "rows": null
+  }
+ },
+ "not_committed": {
+  "features.parquet": {
+   "bytes": 862129,
+   "sha256": "c76e5ac881c6016c602c20862bb4525f4e90f643eb4710c31e333d2b745e2f67",
+   "rows": 32875
+  },
+  "predictions_over_500.parquet": {
+   "bytes": 3256141,
+   "sha256": "a5e041efe1ffd306fcb00e750516322cedc5c1688dd65330090e098465d99e5f",
+   "rows": 111521
+  },
+  "predictions_over_250.parquet": {
+   "bytes": 3358870,
+   "sha256": "5bdd6b34d537350fe3a2b892041c6755d44e8df68bb99c8b8e850ae7b5723f44",
+   "rows": 111521
+  }
+ },
+ "shared_inputs": {
+  "read_only": true,
+  "unchanged_by_the_build": true,
+  "fingerprints": [
+   {
+    "file": "overflows.parquet",
+    "bytes": "2538851",
+    "sha256": "3e5727263c91f7fa7593baa5ce063687a4b336d6aa7bc8d1aa74611ba2722fee"
+   },
+   {
+    "file": "river_network.pkl",
+    "bytes": "113308879",
+    "sha256": "fc66101dbf5fcdd113405c26a63dffd1e23e2e523b84725cda2cccf2381dec78"
+   },
+   {
+    "file": "dcww_ea_events.parquet",
+    "bytes": "333750",
+    "sha256": "91cdc58c1d3f7abd538bc7cf85c4270a40ac041b2b206cd3cfeedd9cbe06d84e"
+   },
+   {
+    "file": "ea_events_anglian_water.parquet",
+    "bytes": "5354331",
+    "sha256": "9d6b7f9d245e8ef7c0158d8c7a76bc67fa7369c9c71263f4d82a2f3ab8e96505"
+   },
+   {
+    "file": "ea_events_northumbrian_water.parquet",
+    "bytes": "3802559",
+    "sha256": "db27541813d2798672113a73a0703c87cd1309550f13cc697a162dc4ef0cd237"
+   },
+   {
+    "file": "ea_events_severn_trent_water.parquet",
+    "bytes": "6430969",
+    "sha256": "750c3482b16bb320c5b9b655ae3dd3ff96535d8e06397f9a514726889f96e504"
+   },
+   {
+    "file": "ea_events_south_west_water.parquet",
+    "bytes": "8656031",
+    "sha256": "b6452a8038c70d96c2b27adf6821c442553542b75dfda5547afd0a5ecc12ce51"
+   },
+   {
+    "file": "ea_events_southern_water.parquet",
+    "bytes": "2829865",
+    "sha256": "0dc7648a1f1736a2c168749ffaa05c8edf41751fe9df7f0f2de2d5a81b0ea525"
+   },
+   {
+    "file": "ea_events_thames_water.parquet",
+    "bytes": "710847",
+    "sha256": "4c8afc5a013c943034b9ee916911154eadd826514eb621e6a9fb012478e6ef2e"
+   },
+   {
+    "file": "ea_events_united_utilities.parquet",
+    "bytes": "7513941",
+    "sha256": "c245fb7cd382d3f42c4603f7d8b7f98ce6cf119422f13b4ba6b09f56c5809d9c"
+   },
+   {
+    "file": "ea_events_wessex_water.parquet",
+    "bytes": "11890997",
+    "sha256": "26ca5cd0a0060d0e85b1314cea8509cf6037fea4d85ecccafdb68a17c35a02e3"
+   },
+   {
+    "file": "ea_events_yorkshire_water.parquet",
+    "bytes": "3738102",
+    "sha256": "dca57cf63abca6781224c608b85f509b715b150b57b5aa5f0e901da1c8cbbe78"
+   },
+   {
+    "folder": "radar_overflows files=704 bytes=227941400 listing_sha256=f6278f7ae5b51fa5a7128945486ca133244610f2b405b535e1c2490a065ab311"
+   }
+  ]
+ },
+ "counts": {
+  "sites": 426,
+  "sites_by_kind": {
+   "coast": 373,
+   "estuary": 53
+  },
+  "sites_with_archive_point": 407,
+  "sites_with_samples": 404,
+  "samples": 32875,
+  "observations": {
+   "ecoli": {
+    "request_groups": 85,
+    "results": 32875,
+    "groups_short_of_total": [],
+    "purposes": {
+     "MS": 32875
+    },
+    "units": {
+     "NO/100ml": 32875
+    },
+    "materials": {
+     "2IZZ": 32114,
+     "2HZZ": 760,
+     "2AZZ": 1
+    },
+    "no_number": 0,
+    "no_time": 0,
+    "rows_at_unmapped_points": 0,
+    "minutes_with_equal_results": 0,
+    "minutes_with_different_results": 0
+   },
+   "enterococci": {
+    "request_groups": 85,
+    "results": 32814,
+    "groups_short_of_total": [],
+    "purposes": {
+     "MS": 32814
+    },
+    "units": {
+     "CFU/0.1l": 32814
+    },
+    "materials": {
+     "2IZZ": 32053,
+     "2HZZ": 760,
+     "2AZZ": 1
+    },
+    "no_number": 0,
+    "no_time": 0,
+    "minutes_with_equal_results": 0,
+    "minutes_with_different_results": 0,
+    "rows_with_no_ecoli_row": 2
+   }
+  },
+  "overflows": {
+   "overflows": 14630,
+   "network_key": "b5724303"
+  },
+  "rain": {
+   "overflows_read": 1785,
+   "sites_with_rain": 423,
+   "days_with_no_radar_file": []
+  },
+  "spills": {
+   "event_files": [
+    "ea_events_anglian_water.parquet",
+    "ea_events_northumbrian_water.parquet",
+    "ea_events_severn_trent_water.parquet",
+    "ea_events_south_west_water.parquet",
+    "ea_events_southern_water.parquet",
+    "ea_events_thames_water.parquet",
+    "ea_events_united_utilities.parquet",
+    "ea_events_wessex_water.parquet",
+    "ea_events_yorkshire_water.parquet",
+    "dcww_ea_events.parquet"
+   ],
+   "events_read": 689593,
+   "overflows_with_events": 2847,
+   "overflows_in_groups": 3255
+  },
+  "predictions": {
+   "rows": 300949,
+   "days": 694,
+   "by_year": {
+    "2022": 57722,
+    "2023": 59107,
+    "2024": 58630,
+    "2025": 62550,
+    "2026": 62940
+   },
+   "origin_by_year": {
+    "2022": {
+     "absent": 57722
+    },
+    "2023": {
+     "absent": 59107
+    },
+    "2024": {
+     "absent": 2643,
+     "NON_PRF_SITE": 33245,
+     "PRF_PROVIDED": 22742
+    },
+    "2025": {
+     "NON_PRF_SITE": 37546,
+     "PRF_PROVIDED": 24855,
+     "absent": 149
+    },
+    "2026": {
+     "PRF_PROVIDED": 24325,
+     "NON_PRF_SITE": 38364,
+     "absent": 251
+    }
+   },
+   "levels": {
+    "normal": 291028,
+    "increased": 9921
+   }
+  },
+  "rule": {
+   "near_km": 2.0,
+   "ring_km": 5.0,
+   "rain_km": 5.0,
+   "river_node_km": 2.0,
+   "river_max_km": 30.0,
+   "window_h": 72,
+   "min_coverage": 0.9
+  }
+ }
+}

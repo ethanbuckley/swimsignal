@@ -214,6 +214,65 @@ MODELS = [
                     rec("Live-status shadow", "docs/LIVE-STATUS-SHADOW-TEST-2026-10.md")],
     },
     {
+        "id": "combined-v1",
+        "name": "Combined candidate (combined-v1)",
+        "stage": "scheduled",
+        "predicts": "The daily spill chance per overflow, today and four days ahead, at the nine English companies. "
+                    "It starts from the regional routing chance and moves it by what the overflow's own live spill "
+                    "status adds. Where the status is stale or missing it keeps the regional routing chance alone.",
+        "tested": "Scored once on the Environment Agency's start and stop records for 1 January to 31 August 2026: "
+                  "3,262,518 overflow-days at 13,426 overflows, with reanalysis rain. No part of it was fitted on "
+                  "those months, but the routing rule and the way the two parts are joined were chosen after they "
+                  "had been seen. Not yet tested on SwimSignal's own polls.",
+        "reference": "The live forecast, \"spilling now or in the last two days\", and rain over 10 mm in two days.",
+        "results": [
+            r("All nine companies, one day ahead", "Brier", 0.0307, 0.0419, "live forecast", "seen",
+              "| All nine | 0.060 | 0.0307 | 0.0419 | 0.0316 | 0.0363 | 0.0462 | 0.0506 | 0.007 / 0.024 |",
+              "docs/COMBINED-CANDIDATE-BACKTEST-2026-11.md", diff=-0.0112, interval=[-0.0186, -0.0054],
+              note="Interval: 95%, resampling overflows and weeks. Held out from every fit, but the candidate was "
+                   "chosen with these months in view."),
+            r("United Utilities only, one day ahead", "Brier", 0.0377, 0.0379, "live forecast", "seen",
+              "| United Utilities | 0.054 | 0.0377 | 0.0379 | 0.0389 | 0.0379 | 0.0528 | 0.0503 | 0.010 / 0.006 |",
+              "docs/COMBINED-CANDIDATE-BACKTEST-2026-11.md", diff=-0.0002, interval=[-0.0014, 0.0011],
+              note="The interval includes zero: not shown better. United Utilities keeps the live forecast."),
+            r("All nine companies, one day ahead, against the live-status input alone", "Brier", 0.0307, 0.0316,
+              "live status alone", "seen", "| 1 | −0.0008 [−0.0024, +0.0002] | −0.0055 [−0.0093, −0.0025] |",
+              "docs/COMBINED-CANDIDATE-BACKTEST-2026-11.md", diff=-0.0008, interval=[-0.0024, 0.0002],
+              note="The interval includes zero: not shown better than the simpler candidate."),
+        ],
+        "verdict": {"quote": "combined-v1 passes the bar at eight companies and for all nine together. It fails at "
+                             "United Utilities",
+                    "source": "docs/COMBINED-CANDIDATE-BACKTEST-2026-11.md",
+                    "plain": "On January to August 2026 it beat the live forecast and both simple rules at eight "
+                             "companies, one and two days ahead. It did not at United Utilities. This is development "
+                             "evidence, because the candidate was chosen after those months were seen. A running "
+                             "test on SwimSignal's own polls is next."},
+        "misses": "Most of its gain is the status input: it is not shown better than the live-status candidate alone. "
+                  "The 2026 test read the status from the Environment Agency's complete record; the live site reads "
+                  "its own polls, which miss short spills and go stale. Southern reported no usable live status in "
+                  "October, so there it is the regional routing chance alone.",
+        "wrong": "On the 2026 records its calibration error was 0.007 across the nine companies, against the live "
+                 "forecast's 0.024. As a warning at 0.40, one day ahead, it caught 53% of spill days and 29% of its "
+                 "warnings had no spill (live forecast: 23% and 32%).",
+        "window": {"start": "2026-11-22", "end": "2026-12-19", "read_on": "2026-12-21",
+                   "rule": "At the eight companies other than United Utilities, one and two days ahead: a lower Brier "
+                           "score than the live forecast, than persistence and than the rain rule, each with the 95% "
+                           "interval wholly below zero. A company clearly worse than the live forecast goes back to "
+                           "it. An interval that includes zero shows nothing either way. These dates assume the "
+                           "logger starts by 18 November 2026: the window opens four days after the first logged "
+                           "forecast and runs 28 days, and the dates are confirmed from the first logged rows.",
+                   "extension": "Under 200 spill rows at the eight companies one or two days ahead: 14 more days, "
+                                "once."},
+        "log": {"table": "shadow_combined_v1", "where": "true"},
+        "how": "From its start it logs its own chance beside the live forecast's for every overflow-day, in a table "
+               "of its own, only for forecasts issued by 08:00. Nothing is logged yet.",
+        "show": {"shown": False, "why": "Never shown: no page, alert or score reads it. A pass at the read leads to a "
+                                        "separate rollout proposal for the eight companies, not straight to the "
+                                        "forecast."},
+        "records": [rec("Combined candidate backtest", "docs/COMBINED-CANDIDATE-BACKTEST-2026-11.md"),
+                    rec("Combined shadow statement", "docs/COMBINED-SHADOW-2026-11.md")],
+    },
+    {
         "id": "lead-calibration-b",
         "name": "Lead calibration, option B",
         "stage": "shadow",
@@ -443,11 +502,14 @@ def count_logs(models: list[dict], db: Path) -> None:
     for m in models:
         if not (lg := m.get("log")):
             continue
+        if not con.execute("SELECT count(*) FROM information_schema.tables WHERE table_name = ?", [lg["table"]]).fetchone()[0]:
+            continue   # a test whose logger has not run yet has no table: no count, and the page says what it will log
         n, first, last = con.execute(
             f"SELECT count(*), strftime(min(issued_at) AT TIME ZONE 'UTC', '%Y-%m-%dT%H:%MZ'), "
             f"strftime(max(issued_at) AT TIME ZONE 'UTC', '%Y-%m-%dT%H:%MZ') FROM {lg['table']} WHERE {lg['where']}"
         ).fetchone()
-        lg.update(rows=int(n), first=first, last=last)
+        if n:
+            lg.update(rows=int(n), first=first, last=last)
 
 
 def build(state: Path | None, as_of: date) -> dict:

@@ -1,0 +1,413 @@
+{
+ "layers": [
+  {
+   "source": "Anglian Water 2025-04 to 2025-10",
+   "company": "Anglian Water",
+   "item": "1c54905839b341439f83ae5e874924c0",
+   "url": "https://services-eu1.arcgis.com/XxS6FebPX29TRGDJ/arcgis/rest/services/April_to_October_EDM_for_STREAM/FeatureServer/0",
+   "credit": "Anglian Water Event Duration Monitoring (Monthly April 2025 to October 2025), Anglian Water, via Stream, licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)",
+   "stated_months": [
+    "2025-04",
+    "2025-10"
+   ],
+   "raw_cache": "Anglian_Water_2025-04_to_2025-10.parquet",
+   "raw_sha256": "1269b13539a129ecae4225d3d397f02b000bc765ec68b5f757332a5a649831e1",
+   "first_start": "2025-04-01T02:11:01+00:00",
+   "last_start": "2025-10-31T23:42:54+00:00",
+   "overflows": 1108,
+   "rows": 25300,
+   "swapped_start": 0,
+   "swapped_end": 0,
+   "no_id_or_start": 0,
+   "negative_or_over_60_days": 0,
+   "repeated": 2212,
+   "start_outside_stated_months": 0,
+   "kept": 23088
+  },
+  {
+   "source": "Anglian Water 2025-11",
+   "company": "Anglian Water",
+   "item": "9715999f8a3c44c99247cc9a79638ce0",
+   "url": "https://services-eu1.arcgis.com/XxS6FebPX29TRGDJ/arcgis/rest/services/Event_Duration_Monitoring_Monthly_(November_2025)/FeatureServer/0",
+   "credit": "Anglian Water Event Duration Monitoring (Monthly November 2025), Anglian Water, via Stream, licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)",
+   "stated_months": [
+    "2025-11",
+    "2025-11"
+   ],
+   "raw_cache": "Anglian_Water_2025-11.parquet",
+   "raw_sha256": "8424b51c9b8bc9798e962035c4804774fa878036f5f741a54c2263a2781028f0",
+   "first_start": "2025-11-01T00:00:00+00:00",
+   "last_start": "2025-11-30T23:34:00+00:00",
+   "overflows": 860,
+   "rows": 10830,
+   "swapped_start": 0,
+   "swapped_end": 0,
+   "no_id_or_start": 0,
+   "negative_or_over_60_days": 0,
+   "repeated": 0,
+   "start_outside_stated_months": 0,
+   "kept": 10830
+  },
+  {
+   "source": "Anglian Water 2025-12",
+   "company": "Anglian Water",
+   "item": "44ef5fb6ef0c414b95d6e58a704ab911",
+   "url": "https://services-eu1.arcgis.com/XxS6FebPX29TRGDJ/arcgis/rest/services/December_EDM_for_Stream/FeatureServer/0",
+   "credit": "Anglian Water Event Duration Monitoring (Monthly December 2025), Anglian Water, via Stream, licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)",
+   "stated_months": [
+    "2025-12",
+    "2025-12"
+   ],
+   "raw_cache": "Anglian_Water_2025-12.parquet",
+   "raw_sha256": "1df8383922ce44f5abe3f6f8aec80a7ee78e86761ccfcc5ae397931995387c14",
+   "first_start": "2025-12-01T00:00:00+00:00",
+   "last_start": "2025-12-31T23:59:00+00:00",
+   "overflows": 661,
+   "rows": 12118,
+   "swapped_start": 6157,
+   "swapped_end": 6146,
+   "no_id_or_start": 0,
+   "negative_or_over_60_days": 0,
+   "repeated": 0,
+   "start_outside_stated_months": 0,
+   "kept": 12118
+  },
+  {
+   "source": "Anglian Water 2026-01",
+   "company": "Anglian Water",
+   "item": "0ebb95a1d23b4583a8eeb89d6d5087be",
+   "url": "https://services-eu1.arcgis.com/XxS6FebPX29TRGDJ/arcgis/rest/services/January_EDM_for_Stream/FeatureServer/0",
+   "credit": "Anglian Water Event Duration Monitoring (Monthly January 2026), Anglian Water, via Stream, licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)",
+   "stated_months": [
+    "2026-01",
+    "2026-01"
+   ],
+   "raw_cache": "Anglian_Water_2026-01.parquet",
+   "raw_sha256": "6721d083d1bc8f4a8381d92017c8bb816edcacf1e24676ca37859966aaa04b35",
+   "first_start": "2026-01-01T00:14:00+00:00",
+   "last_start": "2026-01-31T23:59:00+00:00",
+   "overflows": 784,
+   "rows": 15658,
+   "swapped_start": 0,
+   "swapped_end": 0,
+   "no_id_or_start": 0,
+   "negative_or_over_60_days": 0,
+   "repeated": 0,
+   "start_outside_stated_months": 0,
+   "kept": 15658
+  },
+  {
+   "source": "Anglian Water 2026-02",
+   "company": "Anglian Water",
+   "item": "d34e2e2acd3a4e75880c9c4888d9a03a",
+   "url": "https://services-eu1.arcgis.com/XxS6FebPX29TRGDJ/arcgis/rest/services/February_EDM_for_Stream/FeatureServer/0",
+   "credit": "Anglian Water Event Duration Monitoring (Monthly February 2026), Anglian Water, via Stream, licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)",
+   "stated_months": [
+    "2026-02",
+    "2026-02"
+   ],
+   "raw_cache": "Anglian_Water_2026-02.parquet",
+   "raw_sha256": "1fa2ed6586494baea836cd5c303992699d736c8f74a247d7950551a8f8dd7b4e",
+   "first_start": "2026-02-01T00:02:00+00:00",
+   "last_start": "2026-02-28T23:57:00+00:00",
+   "overflows": 810,
+   "rows": 23377,
+   "swapped_start": 0,
+   "swapped_end": 0,
+   "no_id_or_start": 0,
+   "negative_or_over_60_days": 0,
+   "repeated": 9,
+   "start_outside_stated_months": 0,
+   "kept": 23368
+  },
+  {
+   "source": "Anglian Water 2026-03",
+   "company": "Anglian Water",
+   "item": "05c079a7acc34646a837e83a34d08eb1",
+   "url": "https://services-eu1.arcgis.com/XxS6FebPX29TRGDJ/arcgis/rest/services/March_EDM_for_Stream/FeatureServer/0",
+   "credit": "Anglian Water Event Duration Monitoring (Monthly March 2026), Anglian Water, via Stream, licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)",
+   "stated_months": [
+    "2026-03",
+    "2026-03"
+   ],
+   "raw_cache": "Anglian_Water_2026-03.parquet",
+   "raw_sha256": "2b01aa4e3c5701a3efdbf85f0c9538b492784644838d1123a226ccddeb5b6b1b",
+   "first_start": "2026-03-01T00:00:00+00:00",
+   "last_start": "2026-03-31T22:54:00+00:00",
+   "overflows": 499,
+   "rows": 7342,
+   "swapped_start": 3374,
+   "swapped_end": 2951,
+   "no_id_or_start": 2,
+   "negative_or_over_60_days": 0,
+   "repeated": 0,
+   "start_outside_stated_months": 0,
+   "kept": 7340
+  },
+  {
+   "source": "Anglian Water 2026-04",
+   "company": "Anglian Water",
+   "item": "418057ac8d5c431987331dd53e433615",
+   "url": "https://services-eu1.arcgis.com/XxS6FebPX29TRGDJ/arcgis/rest/services/April_EDM_For_Stream/FeatureServer/0",
+   "credit": "Anglian Water Event Duration Monitoring (Monthly April 2026), Anglian Water, via Stream, licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)",
+   "stated_months": [
+    "2026-04",
+    "2026-04"
+   ],
+   "raw_cache": "Anglian_Water_2026-04.parquet",
+   "raw_sha256": "2d023e578bb6172328ad6101bcd04b8d978deca293a25965f3c0fe3270e90516",
+   "first_start": "2026-04-01T03:23:00+00:00",
+   "last_start": "2026-04-30T23:54:00+00:00",
+   "overflows": 307,
+   "rows": 1947,
+   "swapped_start": 0,
+   "swapped_end": 0,
+   "no_id_or_start": 0,
+   "negative_or_over_60_days": 0,
+   "repeated": 0,
+   "start_outside_stated_months": 0,
+   "kept": 1947
+  },
+  {
+   "source": "Anglian Water 2026-05 to 2026-06",
+   "company": "Anglian Water",
+   "item": "64de10fa1f06437197a33961ca26e471",
+   "url": "https://services-eu1.arcgis.com/XxS6FebPX29TRGDJ/arcgis/rest/services/May_to_June_EDM_for_STREAM/FeatureServer/0",
+   "credit": "Anglian Water Event Duration Monitoring (Monthly May and June 2026), Anglian Water, via Stream, licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)",
+   "stated_months": [
+    "2026-05",
+    "2026-06"
+   ],
+   "raw_cache": "Anglian_Water_2026-05_to_2026-06.parquet",
+   "raw_sha256": "3083b37c0cd2a44d6df1045d5f1317a79cf39bf587727db78279b6fa8a23fe40",
+   "first_start": "2026-05-01T00:00:00+00:00",
+   "last_start": "2026-06-30T23:44:39+00:00",
+   "overflows": 714,
+   "rows": 4668,
+   "swapped_start": 0,
+   "swapped_end": 0,
+   "no_id_or_start": 0,
+   "negative_or_over_60_days": 0,
+   "repeated": 0,
+   "start_outside_stated_months": 0,
+   "kept": 4668
+  },
+  {
+   "source": "Anglian Water 2026-07",
+   "company": "Anglian Water",
+   "item": "a5455681629943aeac94d58664874a14",
+   "url": "https://services-eu1.arcgis.com/XxS6FebPX29TRGDJ/arcgis/rest/services/Anglian_Water_Event_Duration_Monitoring_(Monhly_July_2026)/FeatureServer/0",
+   "credit": "Anglian Water Event Duration Monitoring (Monthly July 2026), Anglian Water, via Stream, licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)",
+   "stated_months": [
+    "2026-07",
+    "2026-07"
+   ],
+   "raw_cache": "Anglian_Water_2026-07.parquet",
+   "raw_sha256": "f084bb572d15a1b075f4a3094ef6e1a7406760a91f620e1daadfdfc4d25a44b9",
+   "first_start": "2026-07-01T00:45:01+00:00",
+   "last_start": "2026-07-31T17:55:46+00:00",
+   "overflows": 245,
+   "rows": 1023,
+   "swapped_start": 0,
+   "swapped_end": 0,
+   "no_id_or_start": 0,
+   "negative_or_over_60_days": 0,
+   "repeated": 0,
+   "start_outside_stated_months": 0,
+   "kept": 1023
+  },
+  {
+   "source": "Severn Trent Water 2025",
+   "company": "Severn Trent Water",
+   "item": "5ab094ee53ba421fa99ebd4843cb27e7",
+   "url": "https://services-eu1.arcgis.com/XxS6FebPX29TRGDJ/arcgis/rest/services/STW_Edm_2025/FeatureServer/0",
+   "credit": "Severn Trent Water Event Duration Monitoring 2025, Severn Trent Water, via Stream, licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)",
+   "stated_months": [
+    "2025-01",
+    "2025-12"
+   ],
+   "raw_cache": "Severn_Trent_Water_2025.parquet",
+   "raw_sha256": "51001a87c1eef4bca4c4e455d6a249e894cebf7dc6bc24f34835bd49f84cd04a",
+   "first_start": "2025-01-01T00:00:00+00:00",
+   "last_start": "2025-12-31T23:05:15+00:00",
+   "overflows": 2002,
+   "rows": 91791,
+   "swapped_start": 0,
+   "swapped_end": 0,
+   "no_id_or_start": 0,
+   "negative_or_over_60_days": 1,
+   "repeated": 0,
+   "start_outside_stated_months": 0,
+   "kept": 91790
+  },
+  {
+   "source": "Wessex Water 2025",
+   "company": "Wessex Water",
+   "item": "8cb7cef582b34c81994d75bc7f6355ee",
+   "url": "https://services.arcgis.com/3SZ6e0uCvPROr4mS/arcgis/rest/services/Wessex_Water_Event_Duration_Monitoring_2025_view/FeatureServer/0",
+   "credit": "Wessex Water Event Duration Monitoring 2025 \u00a9 2025 by Wessex Water, licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)",
+   "stated_months": [
+    "2025-01",
+    "2025-12"
+   ],
+   "raw_cache": "Wessex_Water_2025.parquet",
+   "raw_sha256": "3379b59c4af05fba4db60e1fbf2a82b7301872a6d180e1a60fd4d402f84f8f3f",
+   "first_start": "2025-01-01T00:00:00+00:00",
+   "last_start": "2025-12-31T23:58:03+00:00",
+   "overflows": 1180,
+   "rows": 235428,
+   "swapped_start": 0,
+   "swapped_end": 0,
+   "no_id_or_start": 0,
+   "negative_or_over_60_days": 0,
+   "repeated": 0,
+   "start_outside_stated_months": 0,
+   "kept": 235428
+  },
+  {
+   "source": "Wessex Water 2026",
+   "company": "Wessex Water",
+   "item": "10f23bbd5086440891be031405185133",
+   "url": "https://services.arcgis.com/3SZ6e0uCvPROr4mS/arcgis/rest/services/Wessex_Water_Event_Duration_Monitoring_2026_view2/FeatureServer/0",
+   "credit": "Wessex Water Event Duration Monitoring Monthly 2026 \u00a9 2026 by Wessex Water, licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)",
+   "stated_months": [
+    "2026-01",
+    "2026-12"
+   ],
+   "raw_cache": "Wessex_Water_2026.parquet",
+   "raw_sha256": "e4475d7c65ad98c3c8b563841c6e7a1e318d83fe506117de08135299ec9544f0",
+   "first_start": "2026-01-01T00:00:00+00:00",
+   "last_start": "2026-09-30T22:39:00+00:00",
+   "overflows": 1146,
+   "rows": 246148,
+   "swapped_start": 0,
+   "swapped_end": 0,
+   "no_id_or_start": 0,
+   "negative_or_over_60_days": 0,
+   "repeated": 0,
+   "start_outside_stated_months": 0,
+   "kept": 246148
+  },
+  {
+   "source": "Yorkshire Water 2026",
+   "company": "Yorkshire Water",
+   "item": "aefd77a821124897afc69362d5676236",
+   "url": "https://services-eu1.arcgis.com/1WqkK5cDKUbF0CkH/arcgis/rest/services/Event Duration Monitoring History/FeatureServer/0",
+   "credit": "Event Duration Monitoring History \u00a9 2026 by Yorkshire Water, licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)",
+   "stated_months": [
+    "2026-01",
+    "2026-12"
+   ],
+   "raw_cache": "Yorkshire_Water_2026.parquet",
+   "raw_sha256": "2dbd383a3980717e076b094aef73ff54255098f434865296165e896deabc2168",
+   "first_start": "2026-01-01T00:00:00+00:00",
+   "last_start": "2026-09-30T10:00:00+00:00",
+   "overflows": 1753,
+   "rows": 28231,
+   "swapped_start": 0,
+   "swapped_end": 0,
+   "no_id_or_start": 0,
+   "negative_or_over_60_days": 0,
+   "repeated": 0,
+   "start_outside_stated_months": 0,
+   "kept": 28231
+  }
+ ],
+ "outputs": [
+  {
+   "file": "company_events_anglian_water.parquet",
+   "company": "Anglian Water",
+   "events": 100040,
+   "sha256": "bed0ea4845c86949299152a38cea430c696da9c418cad343c7b80874b13d26f2"
+  },
+  {
+   "file": "company_events_severn_trent_water.parquet",
+   "company": "Severn Trent Water",
+   "events": 91790,
+   "sha256": "d0b27badee527118a2526cc51e8f45921f59872c72febb5716439cd5b03b86cd"
+  },
+  {
+   "file": "company_events_wessex_water.parquet",
+   "company": "Wessex Water",
+   "events": 481576,
+   "sha256": "8b8bc25d502aba9edea0bc3d12d72a9d0e5dc130ffb9c8a8e87ef67921254d66"
+  },
+  {
+   "file": "company_events_yorkshire_water.parquet",
+   "company": "Yorkshire Water",
+   "events": 28231,
+   "sha256": "be076310d549d52d2233d28e6d3ab9216ca43c2531b76e64eeddd3518e43a9f1"
+  }
+ ],
+ "ea_zips": [
+  {
+   "file": "2026 year to August Detailed EDM Start-Stop Data.zip",
+   "year": 2026,
+   "bytes": 29672650,
+   "sha256": "d0dbf32fb8622f98fe072466598d706590e5f8e667619cba7d0639c6555a1a8f",
+   "members": [
+    {
+     "name": "Dwr Cymru Detailed Data 2026.xlsx",
+     "bytes": 165874,
+     "sha256": "ab1c4ac6d5ae00fd62396f25e3c9e334a310de96e4d2db6d47c219475009efd2"
+    },
+    {
+     "name": "Anglian Water Detailed Data 2026.xlsx",
+     "bytes": 2620138,
+     "sha256": "9479dd42da6514c12053de6d05fd6930add52cc134c10a4935fa1f21fccacfdb"
+    },
+    {
+     "name": "Northumbrian Water Detailed Data 2026.xlsx",
+     "bytes": 2463789,
+     "sha256": "e9594591d1c64a06b6a75f5c76c1eda3cb12e2378bafcd272cf5a59baa01d12a"
+    },
+    {
+     "name": "Severn Trent Water Detailed Data 2026.xlsx",
+     "bytes": 3036540,
+     "sha256": "6fac0a9e2708d202b04ad64ca6fbf56364eb4bdb8403e3751a0119c3832a14b8"
+    },
+    {
+     "name": "South West Water Detailed Data 2026.xlsx",
+     "bytes": 6518303,
+     "sha256": "6650661cd1e1ffcfa52623a060cc7f5845cc6da50f12546d2f895bd9e81eb5da"
+    },
+    {
+     "name": "Southern Water Detailed Data 2026.xlsx",
+     "bytes": 2534153,
+     "sha256": "4ebf87b25083c8e357f625c3d0f39a457ce95d74ebc2a78e692e24d094690647"
+    },
+    {
+     "name": "Thames Water Detailed Data 2026.xlsx",
+     "bytes": 387435,
+     "sha256": "8bd336e610bac5c373a0314b1d4130eb5b776cfb85b39ca52fe918b13176cfc2"
+    },
+    {
+     "name": "United Utilities Detailed Data 2026.xlsx",
+     "bytes": 2101569,
+     "sha256": "829610c104a9eca3b40f133e5566fa62d7f046beec8af426895f7a9973818307"
+    },
+    {
+     "name": "Wessex Water Detailed Data 2026.xlsx",
+     "bytes": 7014613,
+     "sha256": "c1a5fe36a89c4687ee5d0722fa59e59a7d6ee9c4de45c16f18775f423b8d1535"
+    },
+    {
+     "name": "Yorkshire Water Detailed Data 2026.xlsx",
+     "bytes": 2828528,
+     "sha256": "fa879dd45736b62913d4a9caa01b5c89fcfc3559c6951a424017e606d8b5f071"
+    }
+   ]
+  }
+ ],
+ "ledger": {
+  "requests": 371,
+  "statuses": [
+   200
+  ],
+  "bytes": 161794178,
+  "first": "2026-11-13T15:23:44+00:00",
+  "last": "2026-11-13T15:29:02+00:00"
+ },
+ "requests_this_run": 0,
+ "coverage_csv": "EVENT-RECORDS-2026-11-coverage.csv"
+}

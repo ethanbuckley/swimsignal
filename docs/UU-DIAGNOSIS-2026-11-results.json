@@ -1,0 +1,557 @@
+{
+ "seed": 20261113,
+ "draws": 2000,
+ "inputs": {
+  "coverage": "a5bbf9506a1f0b211364d7eb3dcd7f020d1c6bf1bd57d0e08e62a64c3c1816be",
+  "stream_events": "4ef2c254706f06ce619371a8e8061c1da2a8b5c6f2a39e9b4f5c791c18f31983",
+  "ea_events_2024_25": "c245fb7cd382d3f42c4603f7d8b7f98ce6cf119422f13b4ba6b09f56c5809d9c",
+  "ea_events_2026": "54aeb21abf61162fc12f911a302d4c6f36a7460f60267d8b972ddfd9f46d0ea1",
+  "holdout": "882f9d4fb2c9314943fa861d8c6f4c62d8cd1eb57f1aa25059f4eb27d07068dc",
+  "v2_pooled": "bd8faaaf31031fa3ca8ac763dc7047c9b591ffe37feddb220b7e52d73b1f2dc3",
+  "rain_files": 988,
+  "rain_listing_before": "db2d5bf38eb3817c821f01cc2f32cc71321ef27a7498cfbc792341c21b9bfa9e",
+  "rain_listing_after": "db2d5bf38eb3817c821f01cc2f32cc71321ef27a7498cfbc792341c21b9bfa9e",
+  "unchanged": true
+ },
+ "rows": {
+  "rows": 539217,
+  "overflows": 2219,
+  "weeks": 36,
+  "spill_days": 29282,
+  "base_rate": 0.05430466769408235,
+  "window_e": {
+   "reference": "2026-10-05 to 2026-11-01",
+   "reference_days": 28,
+   "days_needed": 20,
+   "candidates": 2265,
+   "pass": 2219,
+   "edm_50_not_ilkley": 2265
+  },
+  "inputs_639": {
+   "zip2026_sha256": "d0dbf32fb8622f98fe072466598d706590e5f8e667619cba7d0639c6555a1a8f",
+   "coverage_sha256": "a5bbf9506a1f0b211364d7eb3dcd7f020d1c6bf1bd57d0e08e62a64c3c1816be",
+   "annual_returns_sha256": "9f8604f9bbea29b993deadaf70ca92ae9a08050aaa717a731c58e8269db45065",
+   "event_files": {
+    "<scratch>/events2025/ea_events_united_utilities.parquet": "c245fb7cd382d3f42c4603f7d8b7f98ce6cf119422f13b4ba6b09f56c5809d9c",
+    "<scratch>/events2026/ea_events_united_utilities.parquet": "54aeb21abf61162fc12f911a302d4c6f36a7460f60267d8b972ddfd9f46d0ea1"
+   },
+   "rain_2026": {
+    "cells": 188,
+    "files": 376,
+    "shared_2026": 16,
+    "fetched_2026a": 172,
+    "file_list_sha256": "46563c3428ee7b4d6a9b34b0750711d82f8b9c95a34de4fa4e8414ce1c3b892b"
+   },
+   "lead_rain_2026": {
+    "files": 16,
+    "cells": 16,
+    "file_list_sha256": "f1eff39b348db0e986d24879cb90c6069a0b2f7e37918bcf6d3991148cb50e19"
+   }
+  }
+ },
+ "face": {
+  "reproduced": {
+   "production": 0.03793331784659397,
+   "D2": 0.041953701583320464,
+   "live status lead 1": 0.038860067997552435,
+   "combined-v1 lead 1": 0.03772077509753536
+  },
+  "committed": {
+   "production": 0.0379333,
+   "D2": 0.0419537,
+   "live status lead 1": 0.0388601,
+   "combined-v1 lead 1": 0.0377208
+  },
+  "v2 arm (b)": 0.03925438301008825,
+  "v2 in #357 (local days)": 0.039017,
+  "rows_match": true,
+  "lead_rows": {
+   "0": 12773,
+   "1": 12773,
+   "2": 12773,
+   "3": 12773,
+   "4": 12773
+  },
+  "offsets_reproduced": {
+   "stored": 2271,
+   "exact": 2271,
+   "stream_rows": 2404632,
+   "years": [
+    2023,
+    2024,
+    2025
+   ]
+  }
+ },
+ "training_rows": {
+  "ea_rule_rows": 1630829,
+  "ea_rule_overflows": 2270,
+  "spill_days_ea_labels": 138813,
+  "spill_days_stream_labels": 138333,
+  "both": 137494,
+  "ea_only": 1319,
+  "stream_only": 839,
+  "overflows_with_any_stream_event": 2150
+ },
+ "C2": {
+  "coefficients": {
+   "P": {
+    "(i) one constant": [
+     -0.09394557826096771
+    ],
+    "(ii) constant and slope": [
+     -0.12143787158110401,
+     0.9831917626153547
+    ],
+    "(iii) constant per month": [
+     -0.4722495833399388,
+     -0.1436104212893714,
+     0.3108664588524824,
+     -0.24347258561500104,
+     -0.16626008109240994,
+     -0.4756642920839024,
+     -0.9748822749269737,
+     0.6363255836808182
+    ]
+   },
+   "V": {
+    "(i) one constant": [
+     -0.4019700463620061
+    ],
+    "(ii) constant and slope": [
+     -0.46859653944929447,
+     0.9473254544869423
+    ],
+    "(iii) constant per month": [
+     -0.8054515324777539,
+     -0.76241265318534,
+     -0.2608215625692782,
+     -0.7376070690966519,
+     -0.5015480829044939,
+     -0.3854842669951919,
+     -0.744466999736551,
+     0.7059434398012087
+    ]
+   }
+  }
+ },
+ "C4": {
+  "mean_forecast_by_season": {
+   "2024 Jan-Feb": {
+    "observed": 0.1505532817947552,
+    "P": 0.14511423421404773,
+    "V": 0.1731776980423626,
+    "P-none": 0.1493804260757302,
+    "V-none": 0.19419914496889784
+   },
+   "2024 Jan-Aug": {
+    "observed": 0.09592288596157716,
+    "P": 0.09524587249127663,
+    "V": 0.10742977027580301,
+    "P-none": 0.0982142706316189,
+    "V-none": 0.12201785897592392
+   },
+   "2024 Sep-Dec": {
+    "observed": 0.09590797605468954,
+    "P": 0.09452521076274176,
+    "V": 0.10219006897097364,
+    "P-none": 0.09737866030729485,
+    "V-none": 0.11596180888391357
+   },
+   "2024 whole year": {
+    "observed": 0.09591791599261462,
+    "P": 0.09500565191509834,
+    "V": 0.10568320317419323,
+    "P-none": 0.09793573385684422,
+    "V-none": 0.11999917561192046
+   },
+   "2025 Jan-Feb": {
+    "observed": 0.07936817034534928,
+    "P": 0.0804029992137925,
+    "V": 0.1009193068504019,
+    "P-none": 0.08185960434477119,
+    "V-none": 0.1099802308979331
+   },
+   "2025 Jan-Aug": {
+    "observed": 0.04462374683811322,
+    "P": 0.047621069886862606,
+    "V": 0.05390030742666769,
+    "P-none": 0.04860644438280743,
+    "V-none": 0.05999825283061655
+   },
+   "2025 Sep-Dec": {
+    "observed": 0.1342914888838985,
+    "P": 0.13606996347463202,
+    "V": 0.14157130577034258,
+    "P-none": 0.1392572400377803,
+    "V-none": 0.15651949297563603
+   },
+   "2025 whole year": {
+    "observed": 0.07459488253560857,
+    "P": 0.07718480966140472,
+    "V": 0.083204038379896,
+    "P-none": 0.07890616238255181,
+    "V-none": 0.09226014679689704
+   },
+   "2026 Jan-Feb": {
+    "observed": 0.07312806959922397,
+    "P": 0.0878327811797754,
+    "V": 0.11702185603978683,
+    "P-none": 0.08779492062717363,
+    "V-none": 0.12747997442149234
+   },
+   "2026 Jan-Aug": {
+    "observed": 0.05430466769408235,
+    "P": 0.05776932213440498,
+    "V": 0.07032173664528642,
+    "P-none": 0.0581038996404473,
+    "V-none": 0.077420115860112
+   }
+  }
+ },
+ "C4b": {
+  "overflows": 2219,
+  "top_5pct_overflows": 111,
+  "share_of_G1_from_top_5pct": 0.9654911203659711,
+  "share_of_overflows_with_positive_contribution": 0.5218566922036953,
+  "top_5pct": {
+   "rate_2026": 0.0890890890890891,
+   "rate_2024_25_jan_aug": 0.173874003290689,
+   "mean_P": 0.15265155822785187,
+   "mean_V": 0.21404208291002788
+  }
+ },
+ "C5": {
+  "cells": 188,
+  "radar_files": 1692,
+  "radar_files_missing": 0,
+  "radar_listing_before": "b12ff584f6db4aae656bcdb609dee49cb5dd3ecaf9e7f640b96beac0560eea8d",
+  "rows_radar_covers": 472647,
+  "share_rows": 0.8765432098765432,
+  "cells_with_120_radar_days": 188,
+  "disagreement_thirds_cut": [
+   0.5104415008110702,
+   0.590659299987753
+  ],
+  "era5_over_radar_total_median": 1.03479829884485,
+  "era5_over_radar_total_iqr": [
+   0.9252174946786291,
+   1.1689516903641617
+  ],
+  "daily_correlation_pooled": 0.7788397962088391,
+  "wetness_thirds_cut_mm_per_day": [
+   3.0222222805023193,
+   3.569547414779663
+  ],
+  "hourly_alignment": {
+   "radar hour + -2": 0.36057273303437115,
+   "radar hour + -1": 0.4604554382580792,
+   "radar hour + 0": 0.534810754433637,
+   "radar hour + 1": 0.4688195738096032,
+   "radar hour + 2": 0.3746073972811528
+  },
+  "radar_listing_after": "b12ff584f6db4aae656bcdb609dee49cb5dd3ecaf9e7f640b96beac0560eea8d"
+ },
+ "C7": {
+  "fallback_rows_by_lead": {
+   "0": 0,
+   "1": 0,
+   "2": 0,
+   "3": 0,
+   "4": 0
+  },
+  "poll_counts_5_to_17_oct": [
+   {
+    "company": "Anglian Water",
+    "n_known": 173547,
+    "n_unknown": 5828,
+    "n_stale": 1540,
+    "unknown_share": 0.03249059233449477,
+    "stale_share_of_known": 0.00887367687139507
+   },
+   {
+    "company": "Northumbrian Water",
+    "n_known": 189259,
+    "n_unknown": 3991,
+    "n_stale": 7565,
+    "unknown_share": 0.020652005174644245,
+    "stale_share_of_known": 0.0399716790218695
+   },
+   {
+    "company": "Severn Trent Water",
+    "n_known": 299584,
+    "n_unknown": 1291,
+    "n_stale": 0,
+    "unknown_share": 0.004290818446198588,
+    "stale_share_of_known": 0.0
+   },
+   {
+    "company": "South West Water",
+    "n_known": 163944,
+    "n_unknown": 1656,
+    "n_stale": 1825,
+    "unknown_share": 0.01,
+    "stale_share_of_known": 0.011131849899965842
+   },
+   {
+    "company": "Southern Water",
+    "n_known": 115259,
+    "n_unknown": 205,
+    "n_stale": 11988,
+    "unknown_share": 0.001775445160396314,
+    "stale_share_of_known": 0.10400923138323255
+   },
+   {
+    "company": "Thames Water",
+    "n_known": 67624,
+    "n_unknown": 3626,
+    "n_stale": 0,
+    "unknown_share": 0.05089122807017544,
+    "stale_share_of_known": 0.0
+   },
+   {
+    "company": "United Utilities",
+    "n_known": 278177,
+    "n_unknown": 3698,
+    "n_stale": 0,
+    "unknown_share": 0.01311929046563193,
+    "stale_share_of_known": 0.0
+   },
+   {
+    "company": "Wessex Water",
+    "n_known": 158359,
+    "n_unknown": 2016,
+    "n_stale": 210,
+    "unknown_share": 0.0125705378020265,
+    "stale_share_of_known": 0.0013261008215510327
+   },
+   {
+    "company": "Yorkshire Water",
+    "n_known": 265195,
+    "n_unknown": 4565,
+    "n_stale": 0,
+    "unknown_share": 0.016922449584816132,
+    "stale_share_of_known": 0.0
+   }
+  ],
+  "poll_days": 13
+ },
+ "C8": {
+  "a_uplift_against_level_error": {
+   "D2": {
+    "spearman": 0.6425957829675049,
+    "ci": [
+     0.6133867548740147,
+     0.670734599791597
+    ],
+    "sd_of_level_error": 0.9274509017111487
+   },
+   "P": {
+    "spearman": 0.4862015324457687,
+    "ci": [
+     0.4503627739609312,
+     0.521654417902279
+    ],
+    "sd_of_level_error": 0.8813231650529767
+   },
+   "V": {
+    "spearman": 0.5879354395142911,
+    "ci": [
+     0.5566426772224499,
+     0.6182378697967602
+    ],
+    "sd_of_level_error": 0.8662896936862081
+   }
+  },
+  "a_overflows": 2219,
+  "b_spill_day_after_spill_day": 0.3668000400066376,
+  "b_spill_day_after_dry_day": 0.03654676303267479,
+  "b_persistence_skill_by_company": [
+   {
+    "lead": 0,
+    "company": "Anglian Water",
+    "base_rate": 0.0419382,
+    "brier": 0.0271077,
+    "auc": 0.877516,
+    "skill_over_flat_rate": 0.3253331678974132,
+    "rank_from_bottom": 5.0
+   },
+   {
+    "lead": 0,
+    "company": "Northumbrian Water",
+    "base_rate": 0.0532764,
+    "brier": 0.0459943,
+    "auc": 0.711832,
+    "skill_over_flat_rate": 0.08810268017337375,
+    "rank_from_bottom": 2.0
+   },
+   {
+    "lead": 0,
+    "company": "Severn Trent Water",
+    "base_rate": 0.0533989,
+    "brier": 0.0393834,
+    "auc": 0.826889,
+    "skill_over_flat_rate": 0.2208628887709041,
+    "rank_from_bottom": 4.0
+   },
+   {
+    "lead": 0,
+    "company": "South West Water",
+    "base_rate": 0.0940012,
+    "brier": 0.0494949,
+    "auc": 0.897403,
+    "skill_over_flat_rate": 0.4188350275505175,
+    "rank_from_bottom": 8.0
+   },
+   {
+    "lead": 0,
+    "company": "Southern Water",
+    "base_rate": 0.0649993,
+    "brier": 0.0394979,
+    "auc": 0.893717,
+    "skill_over_flat_rate": 0.35008974420955596,
+    "rank_from_bottom": 6.0
+   },
+   {
+    "lead": 0,
+    "company": "Thames Water",
+    "base_rate": 0.0652408,
+    "brier": 0.0308027,
+    "auc": 0.933971,
+    "skill_over_flat_rate": 0.4949088488403911,
+    "rank_from_bottom": 9.0
+   },
+   {
+    "lead": 0,
+    "company": "United Utilities",
+    "base_rate": 0.0544901,
+    "brier": 0.0490016,
+    "auc": 0.724265,
+    "skill_over_flat_rate": 0.04889913770562426,
+    "rank_from_bottom": 1.0
+   },
+   {
+    "lead": 0,
+    "company": "Wessex Water",
+    "base_rate": 0.0664884,
+    "brier": 0.0399783,
+    "auc": 0.876964,
+    "skill_over_flat_rate": 0.3558919579064621,
+    "rank_from_bottom": 7.0
+   },
+   {
+    "lead": 0,
+    "company": "Yorkshire Water",
+    "base_rate": 0.0600788,
+    "brier": 0.0452247,
+    "auc": 0.795547,
+    "skill_over_flat_rate": 0.19912820356182348,
+    "rank_from_bottom": 3.0
+   },
+   {
+    "lead": 1,
+    "company": "Anglian Water",
+    "base_rate": 0.0421028,
+    "brier": 0.0312948,
+    "auc": 0.829241,
+    "skill_over_flat_rate": 0.22403470564848582,
+    "rank_from_bottom": 5.0
+   },
+   {
+    "lead": 1,
+    "company": "Northumbrian Water",
+    "base_rate": 0.0534957,
+    "brier": 0.0486895,
+    "auc": 0.67158,
+    "skill_over_flat_rate": 0.038401341677541945,
+    "rank_from_bottom": 2.0
+   },
+   {
+    "lead": 1,
+    "company": "Severn Trent Water",
+    "base_rate": 0.0535919,
+    "brier": 0.0439524,
+    "auc": 0.777447,
+    "skill_over_flat_rate": 0.13342732331414608,
+    "rank_from_bottom": 3.0
+   },
+   {
+    "lead": 1,
+    "company": "South West Water",
+    "base_rate": 0.0942723,
+    "brier": 0.0554898,
+    "auc": 0.875042,
+    "skill_over_flat_rate": 0.35012264144942107,
+    "rank_from_bottom": 8.0
+   },
+   {
+    "lead": 1,
+    "company": "Southern Water",
+    "base_rate": 0.0652364,
+    "brier": 0.0438885,
+    "auc": 0.853624,
+    "skill_over_flat_rate": 0.2802876442564354,
+    "rank_from_bottom": 6.0
+   },
+   {
+    "lead": 1,
+    "company": "Thames Water",
+    "base_rate": 0.0654802,
+    "brier": 0.0362768,
+    "auc": 0.903891,
+    "skill_over_flat_rate": 0.4071695997639956,
+    "rank_from_bottom": 9.0
+   },
+   {
+    "lead": 1,
+    "company": "United Utilities",
+    "base_rate": 0.054655,
+    "brier": 0.052771,
+    "auc": 0.657929,
+    "skill_over_flat_rate": -0.021351177399604238,
+    "rank_from_bottom": 1.0
+   },
+   {
+    "lead": 1,
+    "company": "Wessex Water",
+    "base_rate": 0.0667403,
+    "brier": 0.0435761,
+    "auc": 0.853105,
+    "skill_over_flat_rate": 0.3003872882606996,
+    "rank_from_bottom": 7.0
+   },
+   {
+    "lead": 1,
+    "company": "Yorkshire Water",
+    "base_rate": 0.0603093,
+    "brier": 0.048971,
+    "auc": 0.752825,
+    "skill_over_flat_rate": 0.1358885574886496,
+    "rank_from_bottom": 4.0
+   }
+  ]
+ },
+ "G1": {
+  "check": "G1",
+  "comparison": "V minus P (v2 arm (b) minus production)",
+  "rows": 539217,
+  "brier_a": 0.03925438301008825,
+  "brier_b": 0.03793331784659397,
+  "difference": 0.001321065163494277,
+  "ci_low": 0.00011263890324335267,
+  "ci_high": 0.0025694641064445784
+ },
+ "run": {
+  "main_script_commit": "ffe4d704",
+  "addendum_script_commit": "9489020d",
+  "shared_inputs_fingerprint_before_and_after": "bab324bd30b9b1a10839e9f3ffccdbaa9656b0b9443afe844ee38a62cedbc684",
+  "first_attempt": "stopped at face check 3 (2,269 of 2,271 offsets); cause: archive_55.000_-3.200_2022.parquet added to the shared rain cache on 1 Nov 2026; the scratch link to it was removed and the run repeated from the same commit",
+  "per_overflow_tail_sums": {
+   "overflows": 2219,
+   "total": 712.34,
+   "5pct_where_v2_loses_most": 687.76,
+   "5pct_where_v2_gains_most": -401.61,
+   "middle_90pct": 426.19
+  }
+ }
+}

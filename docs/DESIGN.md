@@ -2539,3 +2539,28 @@ The review's last two items (`docs/REVIEW-2026-11-12.md`, section 9).
 
 **Checked:** headless Chrome at 375 and 320 px with three spots saved; Millerground's page (the line, its link, no
 samples in its timeline) and Fellfoot's (no line) in the in-app browser. Node tests 1,119 pass.
+
+## Ammonium sensor (13 November 2026, draft)
+
+A measured tile under "Latest readings" (`sondeTile` in `index.html`; the data is `build_site.attach_sondes`,
+`docs/SONDE-READINGS-CONTRACT-v1.md`). Draft PR #687: the public wording is Ethan's to approve.
+
+- **Where.** Only a river spot whose own river has a live Environment Agency sonde upstream of it along the river (20 km
+  at most) or at it. On 13 November that is 2 of 85 river spots. No tile anywhere else: no sonde is not a gap to report.
+- **Anatomy.** The tiles' own: a probe in the water from the stroke set, "Ammonium sensor", the reading as the figure
+  in ink ("1.89" with "mg/L, measured"), a line of the last day's readings, one sentence, a quiet line, the fold. Full
+  width (`wide`): half width beside Right now it ran to about twenty lines on a 375 px phone.
+- **The sentence** says where and how old, as the water temperature does, counted when the page is read: "Measured at
+  Boxtedmill on the Stour, 7.4 km upstream, 21 min ago. The Environment Agency labels it Unchecked." Then the day's
+  range, then, every time a figure shows: "Ammonium is a marker that can come from sewage. It is not a count of
+  bacteria and not a sign that the water is fit to swim in."
+- **The quiet line** gives the same sonde's dissolved oxygen and turbidity, each with the EA's label and its age.
+- **No level.** No colour, band, word or advice comes from any reading. The line is ink on a hairline from zero
+  (`.sline`), so a small change is not drawn as a large one, with the first and last times under it.
+- **Old or missing.** Over a day old: no figure, "Last reading … 26 h ago: too old to use." No reading: "No ammonium
+  reading in the last day from the sensor …". Both end "No reading does not mean clean water."
+- **The fold** says what a sonde is, what ammonium is and is not, what "Unchecked" means, how the sensor was chosen,
+  that it is not part of the pollution level, links the EA's page for the sensor and gives the OGL credit.
+
+**Checked:** headless Chrome at 375 and 1,440 px on the live data of 13 November with the run's readings (Dedham,
+Dosthill); `tests/site_sonde.test.cjs`. Not checked: 320 px, Safari, a screen reader.

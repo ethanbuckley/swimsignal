@@ -1,0 +1,363 @@
+{ "format" : "linked-data-api", "version" : "0.2", "result" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/doc/bathing-water-quality/in-season/sample.json?_pageSize=200&bwq_bathingWater.eubwidNotation=ukl2400-38620", "definition" : "http://environment.data.gov.uk/wales/bathing-waters/meta/doc/bathing-water-quality/in-season/sample.json?bwq_bathingWater.eubwidNotation=ukl2400-38620", "extendedMetadataVersion" : "http://environment.data.gov.uk/wales/bathing-waters/doc/bathing-water-quality/in-season/sample.json?_pageSize=200&bwq_bathingWater.eubwidNotation=ukl2400-38620&_metadata=all", "first" : "http://environment.data.gov.uk/wales/bathing-waters/doc/bathing-water-quality/in-season/sample.json?_pageSize=200&_page=0&bwq_bathingWater.eubwidNotation=ukl2400-38620", "isPartOf" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/doc/bathing-water-quality/in-season/sample.json?bwq_bathingWater.eubwidNotation=ukl2400-38620", "definition" : "http://environment.data.gov.uk/wales/bathing-waters/meta/doc/bathing-water-quality/in-season/sample.json?bwq_bathingWater.eubwidNotation=ukl2400-38620", "hasPart" : "http://environment.data.gov.uk/wales/bathing-waters/doc/bathing-water-quality/in-season/sample.json?_pageSize=200&bwq_bathingWater.eubwidNotation=ukl2400-38620", "type" : ["http://purl.org/linked-data/api/vocab#ListEndpoint"]}
+    , "items" : [{"_about" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/in-season/sample/point/38620/date/20240724/time/110756/recordDate/20240724", "bwq_bathingWater" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/id/bathing-water/ukl2400-38620", "eubwidNotation" : "ukl2400-38620", "name" : {"_value" : "The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+      }
+      , "bwq_samplingPoint" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/so/SamplingPoint/38620", "name" : {"_value" : "Sampling point at The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+        , "samplePointNotation" : "38620"}
+      , "dataset" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/nrw/in-season", "escherichiaColiCount" : 370, "escherichiaColiQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "intestinalEnterococciCount" : 99, "intestinalEnterococciQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "label" : [{"_value" : "The Warren, Hay On Wye sample assessment for 2024-W30", "_datatype" : "langString", "_lang" : "en"}
+      ], "sampleDateTime" : {"_about" : "http://reference.data.gov.uk/id/gregorian-instant/2024-07-24T11:07:56", "inXSDDateTime" : {"_value" : "2024-07-24T11:07:56", "_datatype" : "dateTime"}
+      }
+      , "sampleWeek" : {"_about" : "http://reference.data.gov.uk/id/week/2024-W30", "label" : [{"_value" : "British Week:2024-W30", "_datatype" : "langString", "_lang" : "en"}
+        ]}
+      , "source" : "http://environment.data.gov.uk/wales/bathing-waters/sources/input/2024%20data%20for%20explorer%20-%20all%20discouting%20and%20replacements-2024-12-09_14-39-59_741-0249.csv#row=001141", "type" : ["http://environment.data.gov.uk/def/bathing-water-quality/SampleAssessment", "http://purl.org/linked-data/cube#Observation"]}
+    , {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/in-season/sample/point/38620/date/20240710/time/110957/recordDate/20240710", "bwq_bathingWater" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/id/bathing-water/ukl2400-38620", "eubwidNotation" : "ukl2400-38620", "name" : {"_value" : "The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+      }
+      , "bwq_samplingPoint" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/so/SamplingPoint/38620", "name" : {"_value" : "Sampling point at The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+        , "samplePointNotation" : "38620"}
+      , "dataset" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/nrw/in-season", "escherichiaColiCount" : 6600, "escherichiaColiQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "intestinalEnterococciCount" : 1818, "intestinalEnterococciQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "label" : [{"_value" : "The Warren, Hay On Wye sample assessment for 2024-W28", "_datatype" : "langString", "_lang" : "en"}
+      ], "sampleDateTime" : {"_about" : "http://reference.data.gov.uk/id/gregorian-instant/2024-07-10T11:09:57", "inXSDDateTime" : {"_value" : "2024-07-10T11:09:57", "_datatype" : "dateTime"}
+      }
+      , "sampleWeek" : {"_about" : "http://reference.data.gov.uk/id/week/2024-W28", "label" : [{"_value" : "British Week:2024-W28", "_datatype" : "langString", "_lang" : "en"}
+        ]}
+      , "source" : "http://environment.data.gov.uk/wales/bathing-waters/sources/input/2024%20data%20for%20explorer%20-%20all%20discouting%20and%20replacements-2024-12-09_14-39-59_741-0249.csv#row=001142", "type" : ["http://environment.data.gov.uk/def/bathing-water-quality/SampleAssessment", "http://purl.org/linked-data/cube#Observation"]}
+    , {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/in-season/sample/point/38620/date/20240809/time/110000/recordDate/20240809", "bwq_bathingWater" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/id/bathing-water/ukl2400-38620", "eubwidNotation" : "ukl2400-38620", "name" : {"_value" : "The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+      }
+      , "bwq_samplingPoint" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/so/SamplingPoint/38620", "name" : {"_value" : "Sampling point at The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+        , "samplePointNotation" : "38620"}
+      , "dataset" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/nrw/in-season", "escherichiaColiCount" : 180, "escherichiaColiQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "intestinalEnterococciCount" : 45, "intestinalEnterococciQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "label" : [{"_value" : "The Warren, Hay On Wye sample assessment for 2024-W32", "_datatype" : "langString", "_lang" : "en"}
+      ], "sampleDateTime" : {"_about" : "http://reference.data.gov.uk/id/gregorian-instant/2024-08-09T11:00:00", "inXSDDateTime" : {"_value" : "2024-08-09T11:00:00", "_datatype" : "dateTime"}
+      }
+      , "sampleWeek" : {"_about" : "http://reference.data.gov.uk/id/week/2024-W32", "label" : [{"_value" : "British Week:2024-W32", "_datatype" : "langString", "_lang" : "en"}
+        ]}
+      , "source" : "http://environment.data.gov.uk/wales/bathing-waters/sources/input/2024%20data%20for%20explorer%20-%20all%20discouting%20and%20replacements-2024-12-09_14-39-59_741-0249.csv#row=001138", "type" : ["http://environment.data.gov.uk/def/bathing-water-quality/SampleAssessment", "http://purl.org/linked-data/cube#Observation"]}
+    , {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/in-season/sample/point/38620/date/20240823/time/104000/recordDate/20240823", "bwq_bathingWater" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/id/bathing-water/ukl2400-38620", "eubwidNotation" : "ukl2400-38620", "name" : {"_value" : "The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+      }
+      , "bwq_samplingPoint" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/so/SamplingPoint/38620", "name" : {"_value" : "Sampling point at The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+        , "samplePointNotation" : "38620"}
+      , "dataset" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/nrw/in-season", "escherichiaColiCount" : 670, "escherichiaColiQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "intestinalEnterococciCount" : 570, "intestinalEnterococciQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "label" : [{"_value" : "The Warren, Hay On Wye sample assessment for 2024-W34", "_datatype" : "langString", "_lang" : "en"}
+      ], "sampleDateTime" : {"_about" : "http://reference.data.gov.uk/id/gregorian-instant/2024-08-23T10:40:00", "inXSDDateTime" : {"_value" : "2024-08-23T10:40:00", "_datatype" : "dateTime"}
+      }
+      , "sampleWeek" : {"_about" : "http://reference.data.gov.uk/id/week/2024-W34", "label" : [{"_value" : "British Week:2024-W34", "_datatype" : "langString", "_lang" : "en"}
+        ]}
+      , "source" : "http://environment.data.gov.uk/wales/bathing-waters/sources/input/2024%20data%20for%20explorer%20-%20all%20discouting%20and%20replacements-2024-12-09_14-39-59_741-0249.csv#row=001139", "type" : ["http://environment.data.gov.uk/def/bathing-water-quality/SampleAssessment", "http://purl.org/linked-data/cube#Observation"]}
+    , {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/in-season/sample/point/38620/date/20240906/time/103300/recordDate/20240906", "bwq_bathingWater" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/id/bathing-water/ukl2400-38620", "eubwidNotation" : "ukl2400-38620", "name" : {"_value" : "The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+      }
+      , "bwq_samplingPoint" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/so/SamplingPoint/38620", "name" : {"_value" : "Sampling point at The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+        , "samplePointNotation" : "38620"}
+      , "dataset" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/nrw/in-season", "escherichiaColiCount" : 865, "escherichiaColiQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "intestinalEnterococciCount" : 440, "intestinalEnterococciQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "label" : [{"_value" : "The Warren, Hay On Wye sample assessment for 2024-W36", "_datatype" : "langString", "_lang" : "en"}
+      ], "sampleDateTime" : {"_about" : "http://reference.data.gov.uk/id/gregorian-instant/2024-09-06T10:33:00", "inXSDDateTime" : {"_value" : "2024-09-06T10:33:00", "_datatype" : "dateTime"}
+      }
+      , "sampleWeek" : {"_about" : "http://reference.data.gov.uk/id/week/2024-W36", "label" : [{"_value" : "British Week:2024-W36", "_datatype" : "langString", "_lang" : "en"}
+        ]}
+      , "source" : "http://environment.data.gov.uk/wales/bathing-waters/sources/input/2024%20data%20for%20explorer%20-%20all%20discouting%20and%20replacements-2024-12-09_14-39-59_741-0249.csv#row=001140", "type" : ["http://environment.data.gov.uk/def/bathing-water-quality/SampleAssessment", "http://purl.org/linked-data/cube#Observation"]}
+    , {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/in-season/sample/point/38620/date/20240920/time/111500/recordDate/20240920", "bwq_bathingWater" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/id/bathing-water/ukl2400-38620", "eubwidNotation" : "ukl2400-38620", "name" : {"_value" : "The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+      }
+      , "bwq_samplingPoint" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/so/SamplingPoint/38620", "name" : {"_value" : "Sampling point at The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+        , "samplePointNotation" : "38620"}
+      , "dataset" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/nrw/in-season", "escherichiaColiCount" : 189, "escherichiaColiQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "intestinalEnterococciCount" : 90, "intestinalEnterococciQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "label" : [{"_value" : "The Warren, Hay On Wye sample assessment for 2024-W38", "_datatype" : "langString", "_lang" : "en"}
+      ], "sampleDateTime" : {"_about" : "http://reference.data.gov.uk/id/gregorian-instant/2024-09-20T11:15:00", "inXSDDateTime" : {"_value" : "2024-09-20T11:15:00", "_datatype" : "dateTime"}
+      }
+      , "sampleWeek" : {"_about" : "http://reference.data.gov.uk/id/week/2024-W38", "label" : [{"_value" : "British Week:2024-W38", "_datatype" : "langString", "_lang" : "en"}
+        ]}
+      , "source" : "http://environment.data.gov.uk/wales/bathing-waters/sources/input/2024%20data%20for%20explorer%20-%20all%20discouting%20and%20replacements-2024-12-09_14-39-59_741-0249.csv#row=001137", "type" : ["http://environment.data.gov.uk/def/bathing-water-quality/SampleAssessment", "http://purl.org/linked-data/cube#Observation"]}
+    , {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/in-season/sample/point/38620/date/20250507/time/114110/recordDate/20250507", "bwq_bathingWater" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/id/bathing-water/ukl2400-38620", "eubwidNotation" : "ukl2400-38620", "name" : {"_value" : "The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+      }
+      , "bwq_samplingPoint" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/so/SamplingPoint/38620", "name" : {"_value" : "Sampling point at The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+        , "samplePointNotation" : "38620"}
+      , "dataset" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/nrw/in-season", "escherichiaColiCount" : 45, "escherichiaColiQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "intestinalEnterococciCount" : 10, "intestinalEnterococciQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/lessThan", "countQualifierNotation" : "<"}
+      , "label" : [{"_value" : "The Warren, Hay On Wye sample assessment for 2025-W19", "_datatype" : "langString", "_lang" : "en"}
+      ], "sampleDateTime" : {"_about" : "http://reference.data.gov.uk/id/gregorian-instant/2025-05-07T11:41:10", "inXSDDateTime" : {"_value" : "2025-05-07T11:41:10", "_datatype" : "dateTime"}
+      }
+      , "sampleWeek" : {"_about" : "http://reference.data.gov.uk/id/week/2025-W19", "label" : [{"_value" : "British Week:2025-W19", "_datatype" : "langString", "_lang" : "en"}
+        ]}
+      , "source" : "http://environment.data.gov.uk/wales/bathing-waters/sources/input/2025%20data%20for%20explorer%20-%20all%20discounting%20and%20replacements-2025-11-18_10-48-36_823-0221.csv#row=000060", "type" : ["http://environment.data.gov.uk/def/bathing-water-quality/SampleAssessment", "http://purl.org/linked-data/cube#Observation"]}
+    , {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/in-season/sample/point/38620/date/20250521/time/144203/recordDate/20250521", "bwq_bathingWater" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/id/bathing-water/ukl2400-38620", "eubwidNotation" : "ukl2400-38620", "name" : {"_value" : "The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+      }
+      , "bwq_samplingPoint" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/so/SamplingPoint/38620", "name" : {"_value" : "Sampling point at The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+        , "samplePointNotation" : "38620"}
+      , "dataset" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/nrw/in-season", "escherichiaColiCount" : 108, "escherichiaColiQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "intestinalEnterococciCount" : 10, "intestinalEnterococciQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/lessThan", "countQualifierNotation" : "<"}
+      , "label" : [{"_value" : "The Warren, Hay On Wye sample assessment for 2025-W21", "_datatype" : "langString", "_lang" : "en"}
+      ], "sampleDateTime" : {"_about" : "http://reference.data.gov.uk/id/gregorian-instant/2025-05-21T14:42:03", "inXSDDateTime" : {"_value" : "2025-05-21T14:42:03", "_datatype" : "dateTime"}
+      }
+      , "sampleWeek" : {"_about" : "http://reference.data.gov.uk/id/week/2025-W21", "label" : [{"_value" : "British Week:2025-W21", "_datatype" : "langString", "_lang" : "en"}
+        ]}
+      , "source" : "http://environment.data.gov.uk/wales/bathing-waters/sources/input/2025%20data%20for%20explorer%20-%20all%20discounting%20and%20replacements-2025-11-18_10-48-36_823-0221.csv#row=000163", "type" : ["http://environment.data.gov.uk/def/bathing-water-quality/SampleAssessment", "http://purl.org/linked-data/cube#Observation"]}
+    , {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/in-season/sample/point/38620/date/20250605/time/113338/recordDate/20250605", "bwq_bathingWater" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/id/bathing-water/ukl2400-38620", "eubwidNotation" : "ukl2400-38620", "name" : {"_value" : "The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+      }
+      , "bwq_samplingPoint" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/so/SamplingPoint/38620", "name" : {"_value" : "Sampling point at The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+        , "samplePointNotation" : "38620"}
+      , "dataset" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/nrw/in-season", "escherichiaColiCount" : 640, "escherichiaColiQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "intestinalEnterococciCount" : 250, "intestinalEnterococciQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "label" : [{"_value" : "The Warren, Hay On Wye sample assessment for 2025-W23", "_datatype" : "langString", "_lang" : "en"}
+      ], "sampleDateTime" : {"_about" : "http://reference.data.gov.uk/id/gregorian-instant/2025-06-05T11:33:38", "inXSDDateTime" : {"_value" : "2025-06-05T11:33:38", "_datatype" : "dateTime"}
+      }
+      , "sampleWeek" : {"_about" : "http://reference.data.gov.uk/id/week/2025-W23", "label" : [{"_value" : "British Week:2025-W23", "_datatype" : "langString", "_lang" : "en"}
+        ]}
+      , "source" : "http://environment.data.gov.uk/wales/bathing-waters/sources/input/2025%20data%20for%20explorer%20-%20all%20discounting%20and%20replacements-2025-11-18_10-48-36_823-0221.csv#row=000271", "type" : ["http://environment.data.gov.uk/def/bathing-water-quality/SampleAssessment", "http://purl.org/linked-data/cube#Observation"]}
+    , {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/in-season/sample/point/38620/date/20250611/time/140708/recordDate/20250611", "bwq_bathingWater" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/id/bathing-water/ukl2400-38620", "eubwidNotation" : "ukl2400-38620", "name" : {"_value" : "The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+      }
+      , "bwq_samplingPoint" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/so/SamplingPoint/38620", "name" : {"_value" : "Sampling point at The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+        , "samplePointNotation" : "38620"}
+      , "dataset" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/nrw/in-season", "escherichiaColiCount" : 220, "escherichiaColiQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "intestinalEnterococciCount" : 99, "intestinalEnterococciQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "label" : [{"_value" : "The Warren, Hay On Wye sample assessment for 2025-W24", "_datatype" : "langString", "_lang" : "en"}
+      ], "sampleDateTime" : {"_about" : "http://reference.data.gov.uk/id/gregorian-instant/2025-06-11T14:07:08", "inXSDDateTime" : {"_value" : "2025-06-11T14:07:08", "_datatype" : "dateTime"}
+      }
+      , "sampleWeek" : {"_about" : "http://reference.data.gov.uk/id/week/2025-W24", "label" : [{"_value" : "British Week:2025-W24", "_datatype" : "langString", "_lang" : "en"}
+        ]}
+      , "source" : "http://environment.data.gov.uk/wales/bathing-waters/sources/input/2025%20data%20for%20explorer%20-%20all%20discounting%20and%20replacements-2025-11-18_10-48-36_823-0221.csv#row=000324", "type" : ["http://environment.data.gov.uk/def/bathing-water-quality/SampleAssessment", "http://purl.org/linked-data/cube#Observation"]}
+    , {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/in-season/sample/point/38620/date/20250618/time/150802/recordDate/20250618", "bwq_bathingWater" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/id/bathing-water/ukl2400-38620", "eubwidNotation" : "ukl2400-38620", "name" : {"_value" : "The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+      }
+      , "bwq_samplingPoint" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/so/SamplingPoint/38620", "name" : {"_value" : "Sampling point at The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+        , "samplePointNotation" : "38620"}
+      , "dataset" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/nrw/in-season", "escherichiaColiCount" : 90, "escherichiaColiQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "intestinalEnterococciCount" : 72, "intestinalEnterococciQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "label" : [{"_value" : "The Warren, Hay On Wye sample assessment for 2025-W25", "_datatype" : "langString", "_lang" : "en"}
+      ], "sampleDateTime" : {"_about" : "http://reference.data.gov.uk/id/gregorian-instant/2025-06-18T15:08:02", "inXSDDateTime" : {"_value" : "2025-06-18T15:08:02", "_datatype" : "dateTime"}
+      }
+      , "sampleWeek" : {"_about" : "http://reference.data.gov.uk/id/week/2025-W25", "label" : [{"_value" : "British Week:2025-W25", "_datatype" : "langString", "_lang" : "en"}
+        ]}
+      , "source" : "http://environment.data.gov.uk/wales/bathing-waters/sources/input/2025%20data%20for%20explorer%20-%20all%20discounting%20and%20replacements-2025-11-18_10-48-36_823-0221.csv#row=000376", "type" : ["http://environment.data.gov.uk/def/bathing-water-quality/SampleAssessment", "http://purl.org/linked-data/cube#Observation"]}
+    , {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/in-season/sample/point/38620/date/20250626/time/123619/recordDate/20250626", "bwq_bathingWater" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/id/bathing-water/ukl2400-38620", "eubwidNotation" : "ukl2400-38620", "name" : {"_value" : "The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+      }
+      , "bwq_samplingPoint" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/so/SamplingPoint/38620", "name" : {"_value" : "Sampling point at The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+        , "samplePointNotation" : "38620"}
+      , "dataset" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/nrw/in-season", "escherichiaColiCount" : 108, "escherichiaColiQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "intestinalEnterococciCount" : 10, "intestinalEnterococciQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/lessThan", "countQualifierNotation" : "<"}
+      , "label" : [{"_value" : "The Warren, Hay On Wye sample assessment for 2025-W26", "_datatype" : "langString", "_lang" : "en"}
+      ], "sampleDateTime" : {"_about" : "http://reference.data.gov.uk/id/gregorian-instant/2025-06-26T12:36:19", "inXSDDateTime" : {"_value" : "2025-06-26T12:36:19", "_datatype" : "dateTime"}
+      }
+      , "sampleWeek" : {"_about" : "http://reference.data.gov.uk/id/week/2025-W26", "label" : [{"_value" : "British Week:2025-W26", "_datatype" : "langString", "_lang" : "en"}
+        ]}
+      , "source" : "http://environment.data.gov.uk/wales/bathing-waters/sources/input/2025%20data%20for%20explorer%20-%20all%20discounting%20and%20replacements-2025-11-18_10-48-36_823-0221.csv#row=000440", "type" : ["http://environment.data.gov.uk/def/bathing-water-quality/SampleAssessment", "http://purl.org/linked-data/cube#Observation"]}
+    , {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/in-season/sample/point/38620/date/20250703/time/135300/recordDate/20250703", "bwq_bathingWater" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/id/bathing-water/ukl2400-38620", "eubwidNotation" : "ukl2400-38620", "name" : {"_value" : "The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+      }
+      , "bwq_samplingPoint" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/so/SamplingPoint/38620", "name" : {"_value" : "Sampling point at The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+        , "samplePointNotation" : "38620"}
+      , "dataset" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/nrw/in-season", "escherichiaColiCount" : 27, "escherichiaColiQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "intestinalEnterococciCount" : 10, "intestinalEnterococciQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/lessThan", "countQualifierNotation" : "<"}
+      , "label" : [{"_value" : "The Warren, Hay On Wye sample assessment for 2025-W27", "_datatype" : "langString", "_lang" : "en"}
+      ], "sampleDateTime" : {"_about" : "http://reference.data.gov.uk/id/gregorian-instant/2025-07-03T13:53:00", "inXSDDateTime" : {"_value" : "2025-07-03T13:53:00", "_datatype" : "dateTime"}
+      }
+      , "sampleWeek" : {"_about" : "http://reference.data.gov.uk/id/week/2025-W27", "label" : [{"_value" : "British Week:2025-W27", "_datatype" : "langString", "_lang" : "en"}
+        ]}
+      , "source" : "http://environment.data.gov.uk/wales/bathing-waters/sources/input/2025%20data%20for%20explorer%20-%20all%20discounting%20and%20replacements-2025-11-18_10-48-36_823-0221.csv#row=000509", "type" : ["http://environment.data.gov.uk/def/bathing-water-quality/SampleAssessment", "http://purl.org/linked-data/cube#Observation"]}
+    , {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/in-season/sample/point/38620/date/20250709/time/121352/recordDate/20250709", "bwq_bathingWater" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/id/bathing-water/ukl2400-38620", "eubwidNotation" : "ukl2400-38620", "name" : {"_value" : "The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+      }
+      , "bwq_samplingPoint" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/so/SamplingPoint/38620", "name" : {"_value" : "Sampling point at The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+        , "samplePointNotation" : "38620"}
+      , "dataset" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/nrw/in-season", "escherichiaColiCount" : 117, "escherichiaColiQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "intestinalEnterococciCount" : 72, "intestinalEnterococciQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "label" : [{"_value" : "The Warren, Hay On Wye sample assessment for 2025-W28", "_datatype" : "langString", "_lang" : "en"}
+      ], "sampleDateTime" : {"_about" : "http://reference.data.gov.uk/id/gregorian-instant/2025-07-09T12:13:52", "inXSDDateTime" : {"_value" : "2025-07-09T12:13:52", "_datatype" : "dateTime"}
+      }
+      , "sampleWeek" : {"_about" : "http://reference.data.gov.uk/id/week/2025-W28", "label" : [{"_value" : "British Week:2025-W28", "_datatype" : "langString", "_lang" : "en"}
+        ]}
+      , "source" : "http://environment.data.gov.uk/wales/bathing-waters/sources/input/2025%20data%20for%20explorer%20-%20all%20discounting%20and%20replacements-2025-11-18_10-48-36_823-0221.csv#row=000544", "type" : ["http://environment.data.gov.uk/def/bathing-water-quality/SampleAssessment", "http://purl.org/linked-data/cube#Observation"]}
+    , {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/in-season/sample/point/38620/date/20250716/time/125249/recordDate/20250716", "bwq_bathingWater" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/id/bathing-water/ukl2400-38620", "eubwidNotation" : "ukl2400-38620", "name" : {"_value" : "The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+      }
+      , "bwq_samplingPoint" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/so/SamplingPoint/38620", "name" : {"_value" : "Sampling point at The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+        , "samplePointNotation" : "38620"}
+      , "dataset" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/nrw/in-season", "escherichiaColiCount" : 90, "escherichiaColiQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "intestinalEnterococciCount" : 36, "intestinalEnterococciQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "label" : [{"_value" : "The Warren, Hay On Wye sample assessment for 2025-W29", "_datatype" : "langString", "_lang" : "en"}
+      ], "sampleDateTime" : {"_about" : "http://reference.data.gov.uk/id/gregorian-instant/2025-07-16T12:52:49", "inXSDDateTime" : {"_value" : "2025-07-16T12:52:49", "_datatype" : "dateTime"}
+      }
+      , "sampleWeek" : {"_about" : "http://reference.data.gov.uk/id/week/2025-W29", "label" : [{"_value" : "British Week:2025-W29", "_datatype" : "langString", "_lang" : "en"}
+        ]}
+      , "source" : "http://environment.data.gov.uk/wales/bathing-waters/sources/input/2025%20data%20for%20explorer%20-%20all%20discounting%20and%20replacements-2025-11-18_10-48-36_823-0221.csv#row=000594", "type" : ["http://environment.data.gov.uk/def/bathing-water-quality/SampleAssessment", "http://purl.org/linked-data/cube#Observation"]}
+    , {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/in-season/sample/point/38620/date/20250725/time/103700/recordDate/20250725", "bwq_bathingWater" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/id/bathing-water/ukl2400-38620", "eubwidNotation" : "ukl2400-38620", "name" : {"_value" : "The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+      }
+      , "bwq_samplingPoint" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/so/SamplingPoint/38620", "name" : {"_value" : "Sampling point at The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+        , "samplePointNotation" : "38620"}
+      , "dataset" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/nrw/in-season", "escherichiaColiCount" : 108, "escherichiaColiQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "intestinalEnterococciCount" : 18, "intestinalEnterococciQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "label" : [{"_value" : "The Warren, Hay On Wye sample assessment for 2025-W30", "_datatype" : "langString", "_lang" : "en"}
+      ], "sampleDateTime" : {"_about" : "http://reference.data.gov.uk/id/gregorian-instant/2025-07-25T10:37:00", "inXSDDateTime" : {"_value" : "2025-07-25T10:37:00", "_datatype" : "dateTime"}
+      }
+      , "sampleWeek" : {"_about" : "http://reference.data.gov.uk/id/week/2025-W30", "label" : [{"_value" : "British Week:2025-W30", "_datatype" : "langString", "_lang" : "en"}
+        ]}
+      , "source" : "http://environment.data.gov.uk/wales/bathing-waters/sources/input/2025%20data%20for%20explorer%20-%20all%20discounting%20and%20replacements-2025-11-18_10-48-36_823-0221.csv#row=000667", "type" : ["http://environment.data.gov.uk/def/bathing-water-quality/SampleAssessment", "http://purl.org/linked-data/cube#Observation"]}
+    , {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/in-season/sample/point/38620/date/20250730/time/134303/recordDate/20250730", "bwq_bathingWater" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/id/bathing-water/ukl2400-38620", "eubwidNotation" : "ukl2400-38620", "name" : {"_value" : "The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+      }
+      , "bwq_samplingPoint" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/so/SamplingPoint/38620", "name" : {"_value" : "Sampling point at The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+        , "samplePointNotation" : "38620"}
+      , "dataset" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/nrw/in-season", "escherichiaColiCount" : 72, "escherichiaColiQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "intestinalEnterococciCount" : 36, "intestinalEnterococciQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "label" : [{"_value" : "The Warren, Hay On Wye sample assessment for 2025-W31", "_datatype" : "langString", "_lang" : "en"}
+      ], "sampleDateTime" : {"_about" : "http://reference.data.gov.uk/id/gregorian-instant/2025-07-30T13:43:03", "inXSDDateTime" : {"_value" : "2025-07-30T13:43:03", "_datatype" : "dateTime"}
+      }
+      , "sampleWeek" : {"_about" : "http://reference.data.gov.uk/id/week/2025-W31", "label" : [{"_value" : "British Week:2025-W31", "_datatype" : "langString", "_lang" : "en"}
+        ]}
+      , "source" : "http://environment.data.gov.uk/wales/bathing-waters/sources/input/2025%20data%20for%20explorer%20-%20all%20discounting%20and%20replacements-2025-11-18_10-48-36_823-0221.csv#row=000706", "type" : ["http://environment.data.gov.uk/def/bathing-water-quality/SampleAssessment", "http://purl.org/linked-data/cube#Observation"]}
+    , {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/in-season/sample/point/38620/date/20250806/time/121307/recordDate/20250806", "bwq_bathingWater" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/id/bathing-water/ukl2400-38620", "eubwidNotation" : "ukl2400-38620", "name" : {"_value" : "The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+      }
+      , "bwq_samplingPoint" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/so/SamplingPoint/38620", "name" : {"_value" : "Sampling point at The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+        , "samplePointNotation" : "38620"}
+      , "dataset" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/nrw/in-season", "escherichiaColiCount" : 720, "escherichiaColiQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "intestinalEnterococciCount" : 387, "intestinalEnterococciQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "label" : [{"_value" : "The Warren, Hay On Wye sample assessment for 2025-W32", "_datatype" : "langString", "_lang" : "en"}
+      ], "sampleDateTime" : {"_about" : "http://reference.data.gov.uk/id/gregorian-instant/2025-08-06T12:13:07", "inXSDDateTime" : {"_value" : "2025-08-06T12:13:07", "_datatype" : "dateTime"}
+      }
+      , "sampleWeek" : {"_about" : "http://reference.data.gov.uk/id/week/2025-W32", "label" : [{"_value" : "British Week:2025-W32", "_datatype" : "langString", "_lang" : "en"}
+        ]}
+      , "source" : "http://environment.data.gov.uk/wales/bathing-waters/sources/input/2025%20data%20for%20explorer%20-%20all%20discounting%20and%20replacements-2025-11-18_10-48-36_823-0221.csv#row=000759", "type" : ["http://environment.data.gov.uk/def/bathing-water-quality/SampleAssessment", "http://purl.org/linked-data/cube#Observation"]}
+    , {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/in-season/sample/point/38620/date/20250814/time/100229/recordDate/20250814", "bwq_bathingWater" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/id/bathing-water/ukl2400-38620", "eubwidNotation" : "ukl2400-38620", "name" : {"_value" : "The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+      }
+      , "bwq_samplingPoint" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/so/SamplingPoint/38620", "name" : {"_value" : "Sampling point at The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+        , "samplePointNotation" : "38620"}
+      , "dataset" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/nrw/in-season", "escherichiaColiCount" : 108, "escherichiaColiQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "intestinalEnterococciCount" : 36, "intestinalEnterococciQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "label" : [{"_value" : "The Warren, Hay On Wye sample assessment for 2025-W33", "_datatype" : "langString", "_lang" : "en"}
+      ], "sampleDateTime" : {"_about" : "http://reference.data.gov.uk/id/gregorian-instant/2025-08-14T10:02:29", "inXSDDateTime" : {"_value" : "2025-08-14T10:02:29", "_datatype" : "dateTime"}
+      }
+      , "sampleWeek" : {"_about" : "http://reference.data.gov.uk/id/week/2025-W33", "label" : [{"_value" : "British Week:2025-W33", "_datatype" : "langString", "_lang" : "en"}
+        ]}
+      , "source" : "http://environment.data.gov.uk/wales/bathing-waters/sources/input/2025%20data%20for%20explorer%20-%20all%20discounting%20and%20replacements-2025-11-18_10-48-36_823-0221.csv#row=000818", "type" : ["http://environment.data.gov.uk/def/bathing-water-quality/SampleAssessment", "http://purl.org/linked-data/cube#Observation"]}
+    , {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/in-season/sample/point/38620/date/20250827/time/113902/recordDate/20250827", "bwq_bathingWater" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/id/bathing-water/ukl2400-38620", "eubwidNotation" : "ukl2400-38620", "name" : {"_value" : "The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+      }
+      , "bwq_samplingPoint" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/so/SamplingPoint/38620", "name" : {"_value" : "Sampling point at The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+        , "samplePointNotation" : "38620"}
+      , "dataset" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/nrw/in-season", "escherichiaColiCount" : 290, "escherichiaColiQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "intestinalEnterococciCount" : 72, "intestinalEnterococciQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "label" : [{"_value" : "The Warren, Hay On Wye sample assessment for 2025-W35", "_datatype" : "langString", "_lang" : "en"}
+      ], "sampleDateTime" : {"_about" : "http://reference.data.gov.uk/id/gregorian-instant/2025-08-27T11:39:02", "inXSDDateTime" : {"_value" : "2025-08-27T11:39:02", "_datatype" : "dateTime"}
+      }
+      , "sampleWeek" : {"_about" : "http://reference.data.gov.uk/id/week/2025-W35", "label" : [{"_value" : "British Week:2025-W35", "_datatype" : "langString", "_lang" : "en"}
+        ]}
+      , "source" : "http://environment.data.gov.uk/wales/bathing-waters/sources/input/2025%20data%20for%20explorer%20-%20all%20discounting%20and%20replacements-2025-11-18_10-48-36_823-0221.csv#row=000907", "type" : ["http://environment.data.gov.uk/def/bathing-water-quality/SampleAssessment", "http://purl.org/linked-data/cube#Observation"]}
+    , {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/in-season/sample/point/38620/date/20250903/time/103404/recordDate/20250903", "bwq_bathingWater" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/id/bathing-water/ukl2400-38620", "eubwidNotation" : "ukl2400-38620", "name" : {"_value" : "The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+      }
+      , "bwq_samplingPoint" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/so/SamplingPoint/38620", "name" : {"_value" : "Sampling point at The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+        , "samplePointNotation" : "38620"}
+      , "dataset" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/nrw/in-season", "escherichiaColiCount" : 1182, "escherichiaColiQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "intestinalEnterococciCount" : 762, "intestinalEnterococciQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "label" : [{"_value" : "The Warren, Hay On Wye sample assessment for 2025-W36", "_datatype" : "langString", "_lang" : "en"}
+      ], "sampleDateTime" : {"_about" : "http://reference.data.gov.uk/id/gregorian-instant/2025-09-03T10:34:04", "inXSDDateTime" : {"_value" : "2025-09-03T10:34:04", "_datatype" : "dateTime"}
+      }
+      , "sampleWeek" : {"_about" : "http://reference.data.gov.uk/id/week/2025-W36", "label" : [{"_value" : "British Week:2025-W36", "_datatype" : "langString", "_lang" : "en"}
+        ]}
+      , "source" : "http://environment.data.gov.uk/wales/bathing-waters/sources/input/2025%20data%20for%20explorer%20-%20all%20discounting%20and%20replacements-2025-11-18_10-48-36_823-0221.csv#row=000969", "type" : ["http://environment.data.gov.uk/def/bathing-water-quality/SampleAssessment", "http://purl.org/linked-data/cube#Observation"]}
+    , {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/in-season/sample/point/38620/date/20250911/time/110700/recordDate/20250911", "bwq_bathingWater" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/id/bathing-water/ukl2400-38620", "eubwidNotation" : "ukl2400-38620", "name" : {"_value" : "The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+      }
+      , "bwq_samplingPoint" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/so/SamplingPoint/38620", "name" : {"_value" : "Sampling point at The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+        , "samplePointNotation" : "38620"}
+      , "dataset" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/nrw/in-season", "escherichiaColiCount" : 260, "escherichiaColiQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "intestinalEnterococciCount" : 89, "intestinalEnterococciQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "label" : [{"_value" : "The Warren, Hay On Wye sample assessment for 2025-W37", "_datatype" : "langString", "_lang" : "en"}
+      ], "sampleDateTime" : {"_about" : "http://reference.data.gov.uk/id/gregorian-instant/2025-09-11T11:07:00", "inXSDDateTime" : {"_value" : "2025-09-11T11:07:00", "_datatype" : "dateTime"}
+      }
+      , "sampleWeek" : {"_about" : "http://reference.data.gov.uk/id/week/2025-W37", "label" : [{"_value" : "British Week:2025-W37", "_datatype" : "langString", "_lang" : "en"}
+        ]}
+      , "source" : "http://environment.data.gov.uk/wales/bathing-waters/sources/input/2025%20data%20for%20explorer%20-%20all%20discounting%20and%20replacements-2025-11-18_10-48-36_823-0221.csv#row=001047", "type" : ["http://environment.data.gov.uk/def/bathing-water-quality/SampleAssessment", "http://purl.org/linked-data/cube#Observation"]}
+    , {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/in-season/sample/point/38620/date/20260511/time/141056/recordDate/20260511", "bwq_bathingWater" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/id/bathing-water/ukl2400-38620", "eubwidNotation" : "ukl2400-38620", "name" : {"_value" : "The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+      }
+      , "bwq_samplingPoint" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/so/SamplingPoint/38620", "name" : {"_value" : "Sampling point at The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+        , "samplePointNotation" : "38620"}
+      , "dataset" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/nrw/in-season", "escherichiaColiCount" : 18, "escherichiaColiQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "intestinalEnterococciCount" : 10, "intestinalEnterococciQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/lessThan", "countQualifierNotation" : "<"}
+      , "label" : [{"_value" : "The Warren, Hay On Wye sample assessment for 2026-W20", "_datatype" : "langString", "_lang" : "en"}
+      ], "sampleDateTime" : {"_about" : "http://reference.data.gov.uk/id/gregorian-instant/2026-05-11T14:10:56", "inXSDDateTime" : {"_value" : "2026-05-11T14:10:56", "_datatype" : "dateTime"}
+      }
+      , "sampleWeek" : {"_about" : "http://reference.data.gov.uk/id/week/2026-W20", "label" : [{"_value" : "British Week:2026-W20", "_datatype" : "langString", "_lang" : "en"}
+        ]}
+      , "source" : "http://environment.data.gov.uk/wales/bathing-waters/sources/input/wiski_20261006_all-2026-10-06_13-00-30_536-0662.csv#row=000058", "type" : ["http://environment.data.gov.uk/def/bathing-water-quality/SampleAssessment", "http://purl.org/linked-data/cube#Observation"]}
+    , {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/in-season/sample/point/38620/date/20260527/time/132000/recordDate/20260527", "bwq_bathingWater" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/id/bathing-water/ukl2400-38620", "eubwidNotation" : "ukl2400-38620", "name" : {"_value" : "The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+      }
+      , "bwq_samplingPoint" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/so/SamplingPoint/38620", "name" : {"_value" : "Sampling point at The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+        , "samplePointNotation" : "38620"}
+      , "dataset" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/nrw/in-season", "escherichiaColiCount" : 10, "escherichiaColiQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/lessThan", "countQualifierNotation" : "<"}
+      , "intestinalEnterococciCount" : 10, "intestinalEnterococciQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/lessThan", "countQualifierNotation" : "<"}
+      , "label" : [{"_value" : "The Warren, Hay On Wye sample assessment for 2026-W22", "_datatype" : "langString", "_lang" : "en"}
+      ], "sampleDateTime" : {"_about" : "http://reference.data.gov.uk/id/gregorian-instant/2026-05-27T13:20:00", "inXSDDateTime" : {"_value" : "2026-05-27T13:20:00", "_datatype" : "dateTime"}
+      }
+      , "sampleWeek" : {"_about" : "http://reference.data.gov.uk/id/week/2026-W22", "label" : [{"_value" : "British Week:2026-W22", "_datatype" : "langString", "_lang" : "en"}
+        ]}
+      , "source" : "http://environment.data.gov.uk/wales/bathing-waters/sources/input/wiski_20261006_all-2026-10-06_13-00-30_536-0662.csv#row=000184", "type" : ["http://environment.data.gov.uk/def/bathing-water-quality/SampleAssessment", "http://purl.org/linked-data/cube#Observation"]}
+    , {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/in-season/sample/point/38620/date/20260616/time/150900/recordDate/20260616", "bwq_bathingWater" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/id/bathing-water/ukl2400-38620", "eubwidNotation" : "ukl2400-38620", "name" : {"_value" : "The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+      }
+      , "bwq_samplingPoint" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/so/SamplingPoint/38620", "name" : {"_value" : "Sampling point at The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+        , "samplePointNotation" : "38620"}
+      , "dataset" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/nrw/in-season", "escherichiaColiCount" : 45, "escherichiaColiQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "intestinalEnterococciCount" : 18, "intestinalEnterococciQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "label" : [{"_value" : "The Warren, Hay On Wye sample assessment for 2026-W25", "_datatype" : "langString", "_lang" : "en"}
+      ], "sampleDateTime" : {"_about" : "http://reference.data.gov.uk/id/gregorian-instant/2026-06-16T15:09:00", "inXSDDateTime" : {"_value" : "2026-06-16T15:09:00", "_datatype" : "dateTime"}
+      }
+      , "sampleWeek" : {"_about" : "http://reference.data.gov.uk/id/week/2026-W25", "label" : [{"_value" : "British Week:2026-W25", "_datatype" : "langString", "_lang" : "en"}
+        ]}
+      , "source" : "http://environment.data.gov.uk/wales/bathing-waters/sources/input/wiski_20261006_all-2026-10-06_13-00-30_536-0662.csv#row=000359", "type" : ["http://environment.data.gov.uk/def/bathing-water-quality/SampleAssessment", "http://purl.org/linked-data/cube#Observation"]}
+    , {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/in-season/sample/point/38620/date/20260706/time/120014/recordDate/20260706", "bwq_bathingWater" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/id/bathing-water/ukl2400-38620", "eubwidNotation" : "ukl2400-38620", "name" : {"_value" : "The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+      }
+      , "bwq_samplingPoint" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/so/SamplingPoint/38620", "name" : {"_value" : "Sampling point at The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+        , "samplePointNotation" : "38620"}
+      , "dataset" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/nrw/in-season", "escherichiaColiCount" : 54, "escherichiaColiQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "intestinalEnterococciCount" : 10, "intestinalEnterococciQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/lessThan", "countQualifierNotation" : "<"}
+      , "label" : [{"_value" : "The Warren, Hay On Wye sample assessment for 2026-W28", "_datatype" : "langString", "_lang" : "en"}
+      ], "sampleDateTime" : {"_about" : "http://reference.data.gov.uk/id/gregorian-instant/2026-07-06T12:00:14", "inXSDDateTime" : {"_value" : "2026-07-06T12:00:14", "_datatype" : "dateTime"}
+      }
+      , "sampleWeek" : {"_about" : "http://reference.data.gov.uk/id/week/2026-W28", "label" : [{"_value" : "British Week:2026-W28", "_datatype" : "langString", "_lang" : "en"}
+        ]}
+      , "source" : "http://environment.data.gov.uk/wales/bathing-waters/sources/input/wiski_20261006_all-2026-10-06_13-00-30_536-0662.csv#row=000499", "type" : ["http://environment.data.gov.uk/def/bathing-water-quality/SampleAssessment", "http://purl.org/linked-data/cube#Observation"]}
+    , {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/in-season/sample/point/38620/date/20260731/time/100000/recordDate/20260731", "bwq_bathingWater" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/id/bathing-water/ukl2400-38620", "eubwidNotation" : "ukl2400-38620", "name" : {"_value" : "The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+      }
+      , "bwq_samplingPoint" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/so/SamplingPoint/38620", "name" : {"_value" : "Sampling point at The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+        , "samplePointNotation" : "38620"}
+      , "dataset" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/nrw/in-season", "escherichiaColiCount" : 117, "escherichiaColiQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "intestinalEnterococciCount" : 97, "intestinalEnterococciQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "label" : [{"_value" : "The Warren, Hay On Wye sample assessment for 2026-W31", "_datatype" : "langString", "_lang" : "en"}
+      ], "sampleDateTime" : {"_about" : "http://reference.data.gov.uk/id/gregorian-instant/2026-07-31T10:00:00", "inXSDDateTime" : {"_value" : "2026-07-31T10:00:00", "_datatype" : "dateTime"}
+      }
+      , "sampleWeek" : {"_about" : "http://reference.data.gov.uk/id/week/2026-W31", "label" : [{"_value" : "British Week:2026-W31", "_datatype" : "langString", "_lang" : "en"}
+        ]}
+      , "source" : "http://environment.data.gov.uk/wales/bathing-waters/sources/input/wiski_20261006_all-2026-10-06_13-00-30_536-0662.csv#row=000711", "type" : ["http://environment.data.gov.uk/def/bathing-water-quality/SampleAssessment", "http://purl.org/linked-data/cube#Observation"]}
+    , {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/in-season/sample/point/38620/date/20260813/time/104224/recordDate/20260813", "bwq_bathingWater" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/id/bathing-water/ukl2400-38620", "eubwidNotation" : "ukl2400-38620", "name" : {"_value" : "The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+      }
+      , "bwq_samplingPoint" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/so/SamplingPoint/38620", "name" : {"_value" : "Sampling point at The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+        , "samplePointNotation" : "38620"}
+      , "dataset" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/nrw/in-season", "escherichiaColiCount" : 220, "escherichiaColiQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "intestinalEnterococciCount" : 146, "intestinalEnterococciQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "label" : [{"_value" : "The Warren, Hay On Wye sample assessment for 2026-W33", "_datatype" : "langString", "_lang" : "en"}
+      ], "sampleDateTime" : {"_about" : "http://reference.data.gov.uk/id/gregorian-instant/2026-08-13T10:42:24", "inXSDDateTime" : {"_value" : "2026-08-13T10:42:24", "_datatype" : "dateTime"}
+      }
+      , "sampleWeek" : {"_about" : "http://reference.data.gov.uk/id/week/2026-W33", "label" : [{"_value" : "British Week:2026-W33", "_datatype" : "langString", "_lang" : "en"}
+        ]}
+      , "source" : "http://environment.data.gov.uk/wales/bathing-waters/sources/input/wiski_20261006_all-2026-10-06_13-00-30_536-0662.csv#row=000818", "type" : ["http://environment.data.gov.uk/def/bathing-water-quality/SampleAssessment", "http://purl.org/linked-data/cube#Observation"]}
+    , {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/in-season/sample/point/38620/date/20260826/time/121725/recordDate/20260826", "bwq_bathingWater" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/id/bathing-water/ukl2400-38620", "eubwidNotation" : "ukl2400-38620", "name" : {"_value" : "The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+      }
+      , "bwq_samplingPoint" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/so/SamplingPoint/38620", "name" : {"_value" : "Sampling point at The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+        , "samplePointNotation" : "38620"}
+      , "dataset" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/nrw/in-season", "escherichiaColiCount" : 99, "escherichiaColiQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "intestinalEnterococciCount" : 340, "intestinalEnterococciQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "label" : [{"_value" : "The Warren, Hay On Wye sample assessment for 2026-W35", "_datatype" : "langString", "_lang" : "en"}
+      ], "sampleDateTime" : {"_about" : "http://reference.data.gov.uk/id/gregorian-instant/2026-08-26T12:17:25", "inXSDDateTime" : {"_value" : "2026-08-26T12:17:25", "_datatype" : "dateTime"}
+      }
+      , "sampleWeek" : {"_about" : "http://reference.data.gov.uk/id/week/2026-W35", "label" : [{"_value" : "British Week:2026-W35", "_datatype" : "langString", "_lang" : "en"}
+        ]}
+      , "source" : "http://environment.data.gov.uk/wales/bathing-waters/sources/input/wiski_20261006_all-2026-10-06_13-00-30_536-0662.csv#row=000926", "type" : ["http://environment.data.gov.uk/def/bathing-water-quality/SampleAssessment", "http://purl.org/linked-data/cube#Observation"]}
+    , {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/in-season/sample/point/38620/date/20260907/time/103000/recordDate/20260907", "bwq_bathingWater" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/id/bathing-water/ukl2400-38620", "eubwidNotation" : "ukl2400-38620", "name" : {"_value" : "The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+      }
+      , "bwq_samplingPoint" : {"_about" : "http://environment.data.gov.uk/wales/bathing-waters/so/SamplingPoint/38620", "name" : {"_value" : "Sampling point at The Warren, Hay On Wye", "_datatype" : "langString", "_lang" : "en"}
+        , "samplePointNotation" : "38620"}
+      , "dataset" : "http://environment.data.gov.uk/wales/bathing-waters/data/bathing-water-quality/nrw/in-season", "escherichiaColiCount" : 490, "escherichiaColiQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "intestinalEnterococciCount" : 290, "intestinalEnterococciQualifier" : {"_about" : "http://environment.data.gov.uk/def/bathing-water-quality/actual", "countQualifierNotation" : "="}
+      , "label" : [{"_value" : "The Warren, Hay On Wye sample assessment for 2026-W37", "_datatype" : "langString", "_lang" : "en"}
+      ], "sampleDateTime" : {"_about" : "http://reference.data.gov.uk/id/gregorian-instant/2026-09-07T10:30:00", "inXSDDateTime" : {"_value" : "2026-09-07T10:30:00", "_datatype" : "dateTime"}
+      }
+      , "sampleWeek" : {"_about" : "http://reference.data.gov.uk/id/week/2026-W37", "label" : [{"_value" : "British Week:2026-W37", "_datatype" : "langString", "_lang" : "en"}
+        ]}
+      , "source" : "http://environment.data.gov.uk/wales/bathing-waters/sources/input/wiski_20261006_all-2026-10-06_13-00-30_536-0662.csv#row=001014", "type" : ["http://environment.data.gov.uk/def/bathing-water-quality/SampleAssessment", "http://purl.org/linked-data/cube#Observation"]}
+    ], "itemsPerPage" : 200, "page" : 0, "startIndex" : 1, "type" : ["http://purl.org/linked-data/api/vocab#Page"]}
+}

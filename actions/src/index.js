@@ -9,7 +9,11 @@
 //   - a day's record counts its own writes, and once it reaches WRITE_CAP no more are made that day. The
 //     day is then marked capped in what GET returns, so a total read from it is a floor, not a count.
 
-export const EVENTS = ['spot', 'day', 'save', 'plan', 'alerts'];
+// The first five since 10 Nov 2026 (PR #661); the other six count the redesign of 11 Nov 2026 (PRs #673-#676), none
+// with a spot: an alert for a date asked for (dayalert), an alert for back to low risk asked for (lowalert), "Log a swim
+// here" pressed (logswim), a row of the home page's spill feed opened (feed), the phone's search opened (search), and a
+// day picked on the phone map's five-day strip (mapday). README, "What it counts".
+export const EVENTS = ['spot', 'day', 'save', 'plan', 'alerts', 'dayalert', 'lowalert', 'logswim', 'feed', 'search', 'mapday'];
 const WITH_SPOT = new Set(['spot', 'day', 'save']);
 const SPOT_ID = /^[A-Za-z0-9_-]{1,80}$/;
 export const WRITE_CAP = 300;     // KV writes a UTC day for this Worker (README, "Writes")
