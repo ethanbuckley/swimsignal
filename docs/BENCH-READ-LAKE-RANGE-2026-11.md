@@ -114,3 +114,26 @@ over 900 is better (it is not), or that its 8-in-10 range holds 8 in 10 there: t
 **What follows, as stated.** A PR, for Ethan's review, that offers the "higher / lower than usual" line at these 7
 lake bathing waters, with their usual reading from their own 2023-26 sample-day inputs and the wording and
 thresholds unchanged. Nothing on the site changes until that PR is merged.
+
+## Correction, 15 November 2026 (after the read)
+
+The statement said "At any other lake the page shows it on the 'average lake' basis". That is wrong for these 7
+bathing waters. Checked on the live `spots.json` the same evening:
+
+- The Serpentine, Hampstead Heath's three ponds and Colwick are lake spots with no monitored overflow upstream. Their
+  forecast has daily rows with rain at the spot and an E. coli figure, but `forecast.py` computes lake-range-v1 only
+  `if pin.mode == "lake" and not ov.empty`, so they get no range. The page shows "E. coli in past samples" (their own
+  2023-26 samples) and says "Past samples, not a forecast: with no monitored overflow upstream there is nothing to
+  forecast from."
+- Cotswold Country Park and Henleaze Lake are "isolated" lakes: the forecast stops with an error and has no daily
+  rows.
+
+So lake-range-v1 is not shown at any of the 7, and the "average lake" text (which says the lake has no Environment
+Agency samples) would be false there: each has 56 to 81 samples since 2023.
+
+**What this changes.** The result above stands: it is about the model's order within a lake, and the model, rows,
+metric and reference are as stated. The stated next step does not fit. The "higher / lower than usual" line follows
+the range sentence, which these spots do not have, so "with the wording unchanged" is not possible. Any version needs
+new wording at 5 spots (the 2 isolated lakes have no daily inputs), and the read supports only order: not the range's
+level, not its 8-in-10 coverage at these lakes. The choice of what to show is Ethan's; the options are in #700.
+Nothing has been built.
