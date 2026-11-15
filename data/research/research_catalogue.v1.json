@@ -3057,8 +3057,8 @@
    "verdict": "Not yet read. Stage 1 only, on 15 November 2026: the statement, the kill rule and a frozen candidate were pushed before the first request, then 64,279 river E. coli results for 2012 to 2026 were fetched from the Environment Agency's archive and their sampling points counted and placed, with no result read. 59 points pass all five rules, with 6,322 held-out samples from 2012 to 2022. The kill rule (fewer than 30 points, or over half the rows at points with no overflow upstream) is not met: 25.7% of rows are at such points.",
    "scope": "Sampling points that are not bathing waters, kept purposes only (planned monitoring and planned investigations), May to September. 48 of the 59 points are in the South West and most are small streams, so a later pass would say little about large lowland rivers. Nothing has been scored.",
    "stage": "waiting",
-   "stage_note": "Waits on rain for 2012 to 2022 at the points and their overflows: the Copernicus account the ERA5-Land download needs, or Open-Meteo calls spread under the daily ration. Nothing on the site changes.",
-   "next": "An amendment before any join (the river-system unit, rows sharing a point and time, catchment bands, the deciding rain source), then one read of the frozen candidate against production, the month rate and a rain rule.",
+   "stage_note": "Waits on rain for 2012 to 2022 at the points and their overflows. The ERA5-Land download from the Copernicus store started on 15 November 2026. Nothing on the site changes.",
+   "next": "Amendment 1 (pushed before any join) fixes the rest: ERA5-Land rain throughout, with a rain match check choosing between the frozen candidate and the same form refitted on ERA5-Land rows; 33 river systems for the interval; three catchment bands. Then one read against production, the month rate and a rain rule.",
    "records": [
     {
      "doc": "docs/RIVER-UNSEEN-PROTOCOL-2026-11.md",

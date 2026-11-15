@@ -95,3 +95,27 @@ def test_the_frozen_candidate_is_the_one_the_statement_names():
     p = freeze_candidate.predict(m, rows)
     assert abs(p["mu_log10"][0] - m["intercept"]) < 1e-12
     assert abs((p["high_log10"][0] - p["mu_log10"][0]) - 1.2815515655446004 * m["sd_log10"]) < 1e-9
+
+
+def test_a_points_river_system_is_its_outlet_and_its_band_is_by_channel_length():
+    import networkx as nx
+
+    import systems
+    g = nx.DiGraph([("a", "b"), ("b", "sea1"), ("c", "b"), ("x", "sea2"), ("b", "sea0")])   # b braids to two outlets
+    assert systems.outlet(g, "a") == systems.outlet(g, "c") == "sea0" and systems.outlet(g, "x") == "sea2"
+    assert systems.outlet(g, "sea1") == "sea1"
+    assert [systems.band(v) for v in (0.0, 9.9, 10.0, 99.9, 100.0, 3863.4)] == ["small", "small", "medium", "medium",
+                                                                               "large", "large"]
+
+
+def test_the_committed_systems_and_cells_match_the_points_table():
+    d = ROOT / "docs" / "river-unseen"
+    p, s, c = (pd.read_csv(d / f) for f in ("points.csv", "systems.csv", "rain_cells.csv"))
+    kept = s[s["kept_point"]]
+    assert set(kept["point"]) == set(p[p["kept_point"]]["point"]) and len(kept) == 59
+    assert kept["system"].nunique() == 33 and kept.groupby("system").size().max() == 11
+    assert kept["band"].value_counts().to_dict() == {"medium": 29, "small": 20, "large": 10}
+    assert kept.groupby("band")["kept_held_out"].sum().to_dict() == {"large": 1154, "medium": 3614, "small": 1554}
+    assert len(c) == 85 and c["for"].str.contains("point").sum() == 41
+    text = (ROOT / "docs" / "RIVER-UNSEEN-PROTOCOL-2026-11.md").read_text()
+    assert "## Amendment 1" in text and text.index("## Staging result") < text.index("## Amendment 1")

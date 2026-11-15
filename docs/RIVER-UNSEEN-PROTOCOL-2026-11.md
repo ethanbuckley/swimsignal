@@ -257,3 +257,129 @@ Stage 2 is the read. It is blocked on rain, not on anything in this PR:
 3. **Then the read**, once, with its result under this file.
 
 Nothing on the site changes at any stage until Ethan decides on a wording proposal.
+
+---
+
+## Amendment 1, 15 November 2026: what the read still needed fixed
+
+Written after the staging result and **before any sample result is read or joined to rain, exposure or a model
+figure**. It fixes the four things "What follows" listed, and three more that building the rows will need. It changes
+no row rule, no point rule, the kill rule, the primary metric, either pass threshold or what an outcome leads to.
+
+What was known when this was written: everything under "What was known" and "Staging result" above; the unit and
+time columns of the sealed table (read for sections 5 and 6 below; neither is a result); and that the first month of
+ERA5-Land rain had arrived from the Copernicus Climate Data Store (10.1 MB in 2.0 minutes). No rain value has been
+opened.
+
+### 1. Which rain decides
+
+The statement said the candidate and every reference use the same rain source. It did not say what happens when
+that source is not the one the candidate was fitted on. `river-range-v0` was fitted on the bench's seen rows, whose
+rain is Open-Meteo's archive, most likely the IFS analysis (#702). The read's rain is ERA5-Land from the Copernicus
+store, converted by #702's `to_cells.py`. #702's record sets the rule: "Never fit on one source and test on the
+other", unless its `best_match` check passes.
+
+So the candidate depends on that check, and the choice is fixed now:
+
+- **Run #702's `best_match` check first** (`match_check.py`, tests B1 to B4, thresholds as #702 wrote them), on every
+  cell and year where both a cached Open-Meteo file and ERA5-Land exist. It reads rain only, no sample.
+- **If it passes:** the candidate is `river-range-v0` as frozen (`bb4d8c10…`). The main reference is production's
+  river chance as deployed.
+- **If it fails, or gives no verdict:** the candidate is `river-range-v0e`. It is the same script
+  (`freeze_candidate.py`), the same features and the same 943 seen river samples, with their rain and exposure
+  rebuilt from ERA5-Land for 2023-26. It is fitted and its hash committed before any archive result is joined. The
+  main reference is production's form refitted on those same rows. Production as deployed is reported beside it
+  and decides nothing.
+- Either way the read uses ERA5-Land for every row and every figure, and the pass thresholds are unchanged.
+
+Expectation, written before the check: it is more likely to fail than pass, as #702 expects, so `river-range-v0e`
+is the more likely candidate.
+
+One limit this does not remove. The spill model inside the exposure was trained on Open-Meteo rain for 2024-25 and
+is not refitted. In the `v0e` branch it is fed ERA5-Land in the fit and in the test alike, so the E. coli model
+learns its exposure term on the same kind of exposure it is tested on. The spill chances themselves may be off in
+level. The read reports exposure's distribution in 2023-26 and 2012-22 side by side so a shift is visible.
+
+This needs ERA5-Land for January 2023 to August 2026 as well as 2012-22: 44 more monthly requests, queued after the
+132 now running.
+
+### 2. River systems, for the interval
+
+`scripts/river_unseen/systems.py` writes `docs/river-unseen/systems.csv` from positions and the river network only.
+A point's river system is the outlet it drains to: the terminal node of the network reached by going downstream
+from where its trace starts (the smallest node id where a braid reaches more than one). Points with the same outlet
+are one system.
+
+- The 59 kept points fall in **33 systems**. 23 systems hold one point.
+- The largest, S07, holds 11 points and 876 rows: the Hampshire Avon, Nadder, Wylye and Bourne, and the Dorset Stour,
+  which share an outlet at Christchurch Harbour. S30 (the Yealm and Piall) holds 6; S25 (the Wyre and its brooks)
+  holds 4.
+
+The deciding interval: 2,000 resamples, seed 20261115, of system-seasons drawn with replacement. A drawn
+system-season brings every held-out row at every point of that system in that season, and one drawn twice counts
+twice. In each resample a point's correlation is recomputed from its drawn rows, a point with fewer than 15 rows is
+left out of that resample's mean, and the mean is over points. The 2.5th and 97.5th percentiles are the interval.
+This is the bench's water-body-season interval (#700) with "river system" in place of "water body".
+
+### 3. Catchment size bands
+
+By the length of channel upstream of the point on the network (`upstream_km` in `systems.csv`). The band edges were
+written into `systems.py` before any length was computed.
+
+| Band | Channel upstream | Kept points | Held-out rows |
+|---|---|---|---|
+| Small | under 10 km | 20 | 1,554 |
+| Medium | 10 km to under 100 km | 29 | 3,614 |
+| Large | 100 km or more | 10 | 1,154 |
+
+The read reports the primary metric and the range check for each band, deciding nothing. The 10 large points are
+six in the Hampshire Avon and Stour system, the Devon Avon, two on the Wyre and the Thames. A reader who wants to
+know about large rivers should look at that row and its interval, not the pooled figure.
+
+### 4. Two results at one point and time
+
+If two kept rows share a sampling point and a time: where the results are equal, one is kept; where they differ, the
+higher is kept (the coastal baselines' rule). Counted in the read's manifest. The 4 such rows in the fetch are not
+among the kept held-out rows at kept points, so today this rule touches no row of the read.
+
+### 5. Results at the lab's limits
+
+Every kept row's unit is "number per hundred millilitres" (the unit column, checked). A result reported as below a
+limit is kept at the limit with its "<", one reported as above a limit at that value with its ">", as #584 and #466
+did.
+
+- The primary metric uses those values as they are; ties are allowed.
+- Range check: a "<" result counts as inside when the range's lower end is at or below the limit. A ">" result counts
+  as inside when the range's upper end is at or above the limit. Any other result counts as inside when it lies
+  between the two ends, ends included.
+- The share of "<" and ">" results is reported beside the range check. If more than a quarter of held-out results
+  are at a limit, the record says the range check is weak evidence, whatever it reads.
+
+### 6. Sample times
+
+The archive gives each time with no offset. It is read as UK local time, as the coastal baselines read it. The 48-
+and 24-hour rain windows end at that time, as the bench's rows do, and a row whose 48-hour window is less than 90%
+covered is dropped (`ecoli.MIN_COVERAGE`). No kept row has a time of exactly midnight; 77 of the 6,322 fall between
+00:00 and 05:59 and are kept as given.
+
+### 7. Building the rows, and the references
+
+- **Rows.** The bench's row builder (#700: `stage.py` through `lake_range_hindcast.build_rows`), unchanged, with
+  each kept point as a river pin at its `points.csv` position. If #700 is not merged when stage 2 starts, stage 2
+  waits for it or carries its files unchanged and names the commit. The spill model file, the lead-0 calibration map
+  and the overflow table go in the read's manifest by SHA-256.
+- **Rain cells.** `docs/river-unseen/rain_cells.csv`: 85 cells of 0.1 degree, 41 holding a kept point and the rest
+  holding only overflows upstream of one.
+- **Month-of-year rate:** the share of the 943 seen river samples over 900 in each calendar month.
+- **Rain rule:** over 900 forecast when more than 10 mm fell in the 48 hours before the sample, with the two chances
+  set to the seen river rows' shares over 900 above and below that line.
+- **One read.** The result goes under this file with the command, the commit and the time, and a line is appended to
+  `docs/river-unseen/reads.jsonl` for every run of the read script against held-out rows, whatever it shows.
+
+### What follows now
+
+1. The download finishes: 2012-22, then 2023 to August 2026.
+2. `to_cells.py` for the 85 cells and for every cached cell the match check pairs.
+3. The `best_match` check. Its verdict picks the candidate (section 1).
+4. If `river-range-v0e`: rebuild the 943 seen river rows on ERA5-Land, fit, commit the hash.
+5. Build the held-out rows and read once.
