@@ -3541,6 +3541,34 @@
    "prs": [
     700
    ]
+  },
+  {
+   "id": "bench-read-lake-range",
+   "title": "Bench read 1: lake-range-v1 at lakes without their own level, 2012-22",
+   "section": "promising",
+   "topics": [
+    "ecoli",
+    "lakes",
+    "evaluation"
+   ],
+   "verdict": "Pass, as stated before the read. At the 7 lake bathing waters lake-range-v1 has no own level for (5 water bodies, 1,373 samples 2012-22 never read before), its likely reading ordered each lake's samples with a mean within-site rho of 0.289 against production's -0.015; difference +0.304 (interval over water-body seasons +0.197 to +0.409). Its chance over 900 was not better (Brier +0.0002, interval +0.0000 to +0.0005).",
+   "scope": "Order within a lake at lead 0 on archive rain; the 7 lakes have no monitored overflow upstream, so rain and season only. Says nothing about the 8-in-10 range's coverage, the chance's level, rivers, or leads 1 to 4.",
+   "stage": "development",
+   "stage_note": "Result recorded in #700. The statement's next step, a PR offering the \"higher / lower than usual\" line at these 7 lakes for Ethan's review, is not built yet.",
+   "next": "Build that PR; the 2027 read of shadow_lake_range_v1 continues as monitoring.",
+   "records": [
+    {
+     "doc": "docs/BENCH-READ-LAKE-RANGE-2026-11.md",
+     "quote": "Production's chance does not order those lakes' samples at all (−0.015)."
+    },
+    {
+     "doc": "docs/BENCH-READ-LAKE-RANGE-2026-11.md",
+     "quote": "the bench does not measure coverage."
+    }
+   ],
+   "prs": [
+    700
+   ]
   }
  ]
 }

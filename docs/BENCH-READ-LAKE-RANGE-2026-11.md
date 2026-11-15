@@ -69,3 +69,48 @@ rows read before as well, so they describe the bench, not this question alone.
   Frensham (deployed 0.102). Those rows are not in this read's subset.
 
 ## Result
+
+Read on 15 November 2026 at 20:04 UTC, from the statement and candidate at `47527861` (pushed at 20:04:29 UTC,
+before the read). Ledger read 1. Result file `docs/backtest-bench/results/lake_range_v1-20261115T200444Z.json`.
+Command: `bench.py final --candidate scripts/backtest_bench/candidates/lake_range_v1.py --statement
+docs/BENCH-READ-LAKE-RANGE-2026-11.md`.
+
+**Pass, as stated.** On the lake rows not read before (1,373 rows, 7 bathing waters, 5 water bodies, 52 water-body
+seasons; 32 results over 900, 68 over 500), lake-range-v1's likely reading orders a lake's own samples better than
+production's chance:
+
+| Figure | Mean within-site rho |
+|---|---|
+| lake-range-v1, likely reading (candidate) | 0.289 |
+| production as deployed | −0.015 |
+| production's form refitted on the seen rows | 0.143 |
+| month-of-year rate | 0.032 |
+
+Candidate minus production as deployed: **+0.304**, water-body-season interval **[+0.197, +0.409]** (deciding),
+water-body interval [+0.156, +0.386]. Against production's form refitted: +0.146 [+0.048, +0.250].
+
+Reported, deciding nothing (same rows unless named):
+
+- **The chance over 900 is not better.** Brier 0.0230 against production's 0.0228: +0.0002, interval
+  [+0.0000, +0.0005] over water-body seasons, so if anything slightly worse. Both beat the month rate (0.0301). The
+  pass is about order within a lake, not about the level of the chance.
+- Over 500: Brier 0.0479 against the month rate's 0.0656 (−0.0177 [−0.0233, −0.0105]) and the shrunk site rate's
+  0.0464 (+0.0015 [−0.0001, +0.0034]). Production gives no figure over 500.
+- Within-site AUC over 900: 0.599 against 0.508, +0.092 [−0.168, +0.269]. Not shown either way (32 results over
+  900 at 7 sites).
+- All held-out lake rows, with Windermere and Frensham (2,335 rows, 7 water bodies): rho 0.288 against 0.034,
+  +0.254 [+0.180, +0.328].
+- Either side of the likely change of rain source (all held-out rows; rivers add zero): seasons to 2016 +0.264
+  [+0.165, +0.380]; from 2017 +0.231 [+0.122, +0.338]. The same direction and size on both sides.
+- Rivers: zero by construction, as stated.
+- The shrunk site rate has no within-site rho (it is constant within a site), so its rho rows read "nan". Expected,
+  not an error.
+
+**What it shows.** At 7 lake bathing waters it was not fitted on, in 11 seasons neither model was fitted on,
+lake-range-v1's likely reading is higher on the days that sampled higher, more often than production's chance is.
+Production's chance does not order those lakes' samples at all (−0.015). **What it does not show.** That its chance
+over 900 is better (it is not), or that its 8-in-10 range holds 8 in 10 there: the bench does not measure coverage.
+
+**What follows, as stated.** A PR, for Ethan's review, that offers the "higher / lower than usual" line at these 7
+lake bathing waters, with their usual reading from their own 2023-26 sample-day inputs and the wording and
+thresholds unchanged. Nothing on the site changes until that PR is merged.
