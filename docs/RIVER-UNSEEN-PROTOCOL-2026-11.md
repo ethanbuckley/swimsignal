@@ -148,3 +148,112 @@ an amendment pushed before the join.
 ---
 
 ## Staging result
+
+Added 15 November 2026, after the statement above was pushed at `0db5828f` (22:44:16 UTC). The first request went
+at 22:44:23 UTC. Nothing above this heading changed.
+
+**The kill rule is not met. The set can test the river model.** 59 sampling points pass all five rules, with 6,322
+held-out samples from 2012-22. The bench has 60 held-out river rows at 2 sites. No result was read to get here.
+
+### The fetch
+
+34 requests, all answered 200, 26.1 MiB, 22:44:23 to 22:48:55 UTC (`docs/river-unseen/ledger.jsonl`). Under the cap
+of 150 requests. 64,279 rows, 2012 to 2026, at 1,223 sampling points. No observation id came twice across pages. 4
+rows share a point and a time with another row; they are kept as they are for stage 2 to rule on.
+
+| Year | 2012 | 2013 | 2014 | 2015 | 2016 | 2017 | 2018 | 2019 | 2020 | 2021 | 2022 | 2023 | 2024 | 2025 | 2026 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Rows fetched | 9,683 | 7,286 | 5,775 | 5,017 | 3,310 | 2,814 | 2,838 | 3,349 | 317 | 2,808 | 3,719 | 4,295 | 3,810 | 4,853 | 4,405 |
+| Kept, held out | 3,320 | 2,190 | 1,301 | 1,553 | 1,219 | 1,188 | 1,347 | 1,874 | 0 | 1,272 | 1,892 | | | | |
+
+2020 has no kept row: 317 rows were taken that year, none in May to September with a kept purpose.
+
+### Rows
+
+- 61,741 of 64,279 rows are river water. The rest are estuary, sea, drainage and other materials filed under a river
+  sampling point, and are dropped.
+- 29% of rows (18,545) have a dropped purpose. 17,061 of those are follow-ups to a statutory failure at a point that
+  is not designated. That share is larger than the two pages seen before the statement suggested.
+- Kept rows: 17,156 held out and 12,718 development.
+
+### Points
+
+| Rule | Points left |
+|---|---|
+| All sampling points with a row | 1,223 |
+| 1. 30 or more kept held-out rows in three or more seasons | 115 |
+| 2. In river mode within 50 m of a link | 95 |
+| 3. The link's name appears in the point's label, or the link has no name | 82 |
+| 5. More than 500 m from every inland bathing water | 82 |
+| 4. One or more monitored overflows upstream | **59** |
+
+Kill rule, first part: 59 points, against a floor of 30. Second part: the 82 points passing rules 1, 2, 3 and 5 hold
+8,511 kept held-out rows, 2,189 of them (25.7%) at the 23 points with no overflow upstream, against a ceiling of half.
+
+At the 59 kept points: 6,322 held-out rows and 1,495 development rows. Every point has 38 or more held-out rows; the
+middle point has 81; the largest has 402. 29 points have five or more seasons.
+
+### What kind of points these are
+
+Read from labels, positions and counts (`docs/river-unseen/points.csv`):
+
+- **48 of the 59 are in the South West**, with 4,606 of the 6,322 rows. 5 are in East Anglia (the Deben, Ore and
+  Tud), 4 in the North West (the Wyre and its brooks), 1 on the Thames above Runnymede and 1 at Havant.
+- **Most are small.** 22 points have one overflow upstream, 19 have two to five, 18 have six or more. 18 sit on a
+  link with no name, most of them a stream crossing a beach ("Polzeath Beach - Stream A").
+- **The larger rivers are few:** the Hampshire Avon and its tributaries the Nadder, Wylye and Bourne (10 points, 4
+  seasons each), the Dorset Stour (47 overflows upstream), the Wyre, the Yealm, the Thames.
+- One kept point, the Hampshire Avon at Fordingbridge, is 825 m from the bench's Fordingbridge bathing water. It
+  passes rule 5 as written. Its held-out rows are from years before that bathing water was sampled.
+
+So the limit stated before the fetch holds, and is stronger than stated: a pass would support the model at small
+coastal streams and chalk rivers of southern England. It would say little about large lowland rivers. Stage 2 must
+report the Avon system, the Stour, the Wyre and the Thames apart.
+
+### What rule 3 cost
+
+Rule 3 dropped 13 points that rule 2 had placed. Read by eye, with no result in view:
+
+- 4 are right to drop: the point sits on a tributary and landed on the main river (Newton Stream and two Cofflete
+  Stream points on the "River Yealm" link; Barton Brook on "New Mill Brook").
+- 5 look like the right water under another spelling or name: "Sparting Brook" against "Sparling Brook", "Lariggan"
+  against "Larriggan", "Old River Brock" (the rule removes "River" from the middle of a name), the Strat at Bude on
+  the link named "River Neet", and the Mawgan Porth stream on the "River Menalhyl".
+- 4 could not be told from the label.
+
+The rule stays as written. Loosening it after seeing which points it drops would be choosing the set after the
+fact. The 13 are the sensitivity set the statement names; 8 of them have an overflow upstream.
+
+Rule 2 dropped 20 points: 5 where the network has no river within reach, 2 that land on a lake, and 13 that land
+more than 50 m from a link (168 m to 1.5 km), mostly streams too small for the network.
+
+### Shared inputs
+
+Placement ran in a scratch root: copy-on-write clones of the main checkout's `data/processed` and `data/raw`, with
+this commit's tracked data laid over them, and scratch `DIPCAST_STATE` and `DIPCAST_CACHE`. Nothing was written to
+either scratch folder. The main checkout's `river_network.pkl`, `overflows.parquet` and `lakes.parquet` (size and
+SHA-256) and the listings of `data/raw` and `data/processed` (name, size and modified time of every file) were the
+same before and after (`docs/river-unseen/shared_inputs_fingerprint.txt`). As a check on the trace, the bathing water
+at Ilkley placed 3 m from the River Wharfe with 16 overflows upstream, the bench's own count.
+
+### Where things are
+
+- In git: `docs/river-unseen/points.csv` (1,223 points; no result), `manifest.json`, `ledger.jsonl`,
+  `river_range_v0.json`. Contains Environment Agency information © Environment Agency and database right, Open
+  Government Licence v3.0.
+- Not in git: the 34 raw pages (26 MB) and the sealed sample table, in `swimsignal-private/river-unseen/`. The table
+  is `samples.parquet`, 64,279 rows, SHA-256 `95ca8c9f…` (in the manifest). It holds the results as text.
+
+### What follows
+
+Stage 2 is the read. It is blocked on rain, not on anything in this PR:
+
+1. **Rain for 59 point cells and their overflows' cells, 2012-22.** Either the Copernicus account that #702 waits on
+   (Ethan's step, then no Open-Meteo call), or about 1,700 weighted Open-Meteo calls for the point cells (59 cells,
+   11 years, 2.6 a cell-year) and more for the overflows' cells, spread under the daily ration.
+2. **An amendment before any join**, to fix what this statement left open: which points form one river system for
+   the interval; how two results at one point and time are handled; the catchment-size bands; and which rain source
+   decides.
+3. **Then the read**, once, with its result under this file.
+
+Nothing on the site changes at any stage until Ethan decides on a wording proposal.
