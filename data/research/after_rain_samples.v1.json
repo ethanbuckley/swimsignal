@@ -1,0 +1,521 @@
+{
+ "schema": "swimsignal.after-rain-samples",
+ "version": "1.0.0",
+ "line_mm": 10.0,
+ "min_group": 5,
+ "record": "docs/AFTER-RAIN-SAMPLES-2026-11.md",
+ "samples_from": "data/research/ecoli_evidence.v1.json (Environment Agency, OGL v3)",
+ "rain_from": {
+  "what": "Open-Meteo archive rain at the bathing water's 0.1-degree cell, the 48 hours before each sample; no rain value is in this file",
+  "rows": "backtest bench ecoli-v1 seen.parquet",
+  "rows_sha256": "417648aa938c7bb74e8eb85e8128a4227499a24474330f704f05ca14e3a91e13"
+ },
+ "sites": {
+  "bw-ukd1101-45800": {
+   "bw_id": "ukd1101-45800",
+   "name": "Derwent Water at Crow Park",
+   "kind": "lake",
+   "after_rain": {
+    "samples": 20,
+    "median": 360
+   },
+   "after_less": {
+    "samples": 38,
+    "median": 200
+   },
+   "without_rain_figure": 3,
+   "first_year": 2024,
+   "last_year": 2026
+  },
+  "bw-ukd1203-45625": {
+   "bw_id": "ukd1203-45625",
+   "name": "Windermere, Lakeside YMCA",
+   "kind": "lake",
+   "after_rain": {
+    "samples": 24,
+    "median": "<10"
+   },
+   "after_less": {
+    "samples": 53,
+    "median": "<10"
+   },
+   "without_rain_figure": 3,
+   "first_year": 2023,
+   "last_year": 2026
+  },
+  "bw-ukd1203-45650": {
+   "bw_id": "ukd1203-45650",
+   "name": "Windermere, Millerground Landing",
+   "kind": "lake",
+   "after_rain": {
+    "samples": 23,
+    "median": 36
+   },
+   "after_less": {
+    "samples": 54,
+    "median": "<10"
+   },
+   "without_rain_figure": 3,
+   "first_year": 2023,
+   "last_year": 2026
+  },
+  "bw-ukd1203-45675": {
+   "bw_id": "ukd1203-45675",
+   "name": "Windermere, Rayrigg Meadow",
+   "kind": "lake",
+   "after_rain": {
+    "samples": 22,
+    "median": 18
+   },
+   "after_less": {
+    "samples": 55,
+    "median": "<10"
+   },
+   "without_rain_figure": 3,
+   "first_year": 2023,
+   "last_year": 2026
+  },
+  "bw-ukd1203-45700": {
+   "bw_id": "ukd1203-45700",
+   "name": "Windermere, Fellfoot",
+   "kind": "lake",
+   "after_rain": {
+    "samples": 23,
+    "median": 27
+   },
+   "after_less": {
+    "samples": 54,
+    "median": 18
+   },
+   "without_rain_figure": 4,
+   "first_year": 2023,
+   "last_year": 2026
+  },
+  "bw-ukd1230-45725": {
+   "bw_id": "ukd1230-45725",
+   "name": "Coniston Water, Brown Howe",
+   "kind": "lake",
+   "after_rain": {
+    "samples": 28,
+    "median": 150
+   },
+   "after_less": {
+    "samples": 29,
+    "median": 18
+   },
+   "without_rain_figure": 3,
+   "first_year": 2024,
+   "last_year": 2026
+  },
+  "bw-ukd1230-45750": {
+   "bw_id": "ukd1230-45750",
+   "name": "Coniston Water, Boating Centre",
+   "kind": "lake",
+   "after_rain": {
+    "samples": 30,
+    "median": 120
+   },
+   "after_less": {
+    "samples": 27,
+    "median": 73
+   },
+   "without_rain_figure": 3,
+   "first_year": 2024,
+   "last_year": 2026
+  },
+  "bw-ukd1230-45775": {
+   "bw_id": "ukd1230-45775",
+   "name": "Coniston Water, Monk Coniston",
+   "kind": "lake",
+   "after_rain": {
+    "samples": 29,
+    "median": 130
+   },
+   "after_less": {
+    "samples": 28,
+    "median": 18
+   },
+   "without_rain_figure": 3,
+   "first_year": 2024,
+   "last_year": 2026
+  },
+  "bw-ukd4308-46501": {
+   "bw_id": "ukd4308-46501",
+   "name": "River Ribble at Edisford Bridge",
+   "kind": "river",
+   "after_rain": {
+    "samples": 22,
+    "median": 3200
+   },
+   "after_less": {
+    "samples": 37,
+    "median": 280
+   },
+   "without_rain_figure": 1,
+   "first_year": 2024,
+   "last_year": 2026
+  },
+  "bw-uke2203-08903": {
+   "bw_id": "uke2203-08903",
+   "name": "Nidd at the Lido, Knaresborough",
+   "kind": "river",
+   "after_rain": {
+    "samples": 7,
+    "median": 620
+   },
+   "after_less": {
+    "samples": 50,
+    "median": 580
+   },
+   "without_rain_figure": 3,
+   "first_year": 2024,
+   "last_year": 2026
+  },
+  "bw-uke4100-08901": {
+   "bw_id": "uke4100-08901",
+   "name": "Wharfe at Cromwheel, Ilkley",
+   "kind": "river",
+   "after_rain": {
+    "samples": 13,
+    "median": 1900
+   },
+   "after_less": {
+    "samples": 64,
+    "median": 420
+   },
+   "without_rain_figure": 3,
+   "first_year": 2023,
+   "last_year": 2026
+  },
+  "bw-uke4200-08904": {
+   "bw_id": "uke4200-08904",
+   "name": "Wharfe at Wilderness Carpark",
+   "kind": "river",
+   "after_rain": {
+    "samples": 6,
+    "median": 420
+   },
+   "after_less": {
+    "samples": 50,
+    "median": 310
+   },
+   "without_rain_figure": 2,
+   "first_year": 2024,
+   "last_year": 2026
+  },
+  "bw-ukf1400-09750": {
+   "bw_id": "ukf1400-09750",
+   "name": "Colwick Country Park (West Lake)",
+   "kind": "lake",
+   "after_rain": {
+    "samples": 10,
+    "median": 27
+   },
+   "after_less": {
+    "samples": 54,
+    "median": 27
+   },
+   "without_rain_figure": 5,
+   "first_year": 2023,
+   "last_year": 2026
+  },
+  "bw-ukf2208-09701": {
+   "bw_id": "ukf2208-09701",
+   "name": "Rutland Water Whitwell Creek",
+   "kind": "lake",
+   "after_rain": {
+    "samples": 10,
+    "median": "<10"
+   },
+   "after_less": {
+    "samples": 63,
+    "median": 18
+   },
+   "without_rain_figure": 3,
+   "first_year": 2023,
+   "last_year": 2026
+  },
+  "bw-ukf2208-09702": {
+   "bw_id": "ukf2208-09702",
+   "name": "Rutland Water Sykes Lane",
+   "kind": "lake",
+   "after_rain": {
+    "samples": 9,
+    "median": 18
+   },
+   "after_less": {
+    "samples": 59,
+    "median": 18
+   },
+   "without_rain_figure": 2,
+   "first_year": 2023,
+   "last_year": 2026
+  },
+  "bw-ukg2100-36070": {
+   "bw_id": "ukg2100-36070",
+   "name": "River Severn at Ironbridge",
+   "kind": "river",
+   "after_rain": {
+    "samples": 9,
+    "median": 1400
+   },
+   "after_less": {
+    "samples": 49,
+    "median": 250
+   },
+   "without_rain_figure": 3,
+   "first_year": 2024,
+   "last_year": 2026
+  },
+  "bw-ukg2200-36060": {
+   "bw_id": "ukg2200-36060",
+   "name": "River Teme in Ludlow",
+   "kind": "river",
+   "after_rain": {
+    "samples": 7,
+    "median": 3200
+   },
+   "after_less": {
+    "samples": 51,
+    "median": 200
+   },
+   "without_rain_figure": 3,
+   "first_year": 2024,
+   "last_year": 2026
+  },
+  "bw-ukg2200-36071": {
+   "bw_id": "ukg2200-36071",
+   "name": "River Severn in Shrewsbury",
+   "kind": "river",
+   "after_rain": {
+    "samples": 8,
+    "median": 770
+   },
+   "after_less": {
+    "samples": 49,
+    "median": 180
+   },
+   "without_rain_figure": 3,
+   "first_year": 2024,
+   "last_year": 2026
+  },
+  "bw-ukh1201-09801": {
+   "bw_id": "ukh1201-09801",
+   "name": "Sheep's Green, River Cam",
+   "kind": "river",
+   "after_rain": {
+    "samples": 7,
+    "median": 2700
+   },
+   "after_less": {
+    "samples": 50,
+    "median": 490
+   },
+   "without_rain_figure": 4,
+   "first_year": 2024,
+   "last_year": 2026
+  },
+  "bw-uki1101-11910": {
+   "bw_id": "uki1101-11910",
+   "name": "Hampstead Heath (Ladies Pond)",
+   "kind": "lake",
+   "after_rain": {
+    "samples": 10,
+    "median": 360
+   },
+   "after_less": {
+    "samples": 68,
+    "median": 91
+   },
+   "without_rain_figure": 2,
+   "first_year": 2023,
+   "last_year": 2026
+  },
+  "bw-uki1101-11920": {
+   "bw_id": "uki1101-11920",
+   "name": "Hampstead Heath (Mens Pond)",
+   "kind": "lake",
+   "after_rain": {
+    "samples": 7,
+    "median": 73
+   },
+   "after_less": {
+    "samples": 52,
+    "median": 55
+   },
+   "without_rain_figure": 1,
+   "first_year": 2023,
+   "last_year": 2026
+  },
+  "bw-uki1101-11930": {
+   "bw_id": "uki1101-11930",
+   "name": "Hampstead Heath (Mixed Pond)",
+   "kind": "lake",
+   "after_rain": {
+    "samples": 8,
+    "median": 210
+   },
+   "after_less": {
+    "samples": 60,
+    "median": 64
+   },
+   "without_rain_figure": 2,
+   "first_year": 2023,
+   "last_year": 2026
+  },
+  "bw-uki1106-11940": {
+   "bw_id": "uki1106-11940",
+   "name": "The Serpentine - Hyde Park",
+   "kind": "lake",
+   "after_rain": {
+    "samples": 12,
+    "median": 190
+   },
+   "after_less": {
+    "samples": 67,
+    "median": 130
+   },
+   "without_rain_figure": 2,
+   "first_year": 2023,
+   "last_year": 2026
+  },
+  "bw-ukj1402-11946": {
+   "bw_id": "ukj1402-11946",
+   "name": "Wolvercote Mill Stream",
+   "kind": "river",
+   "after_rain": {
+    "samples": 8,
+    "median": 420
+   },
+   "after_less": {
+    "samples": 67,
+    "median": 230
+   },
+   "without_rain_figure": 5,
+   "first_year": 2023,
+   "last_year": 2026
+  },
+  "bw-ukj1403-11947": {
+   "bw_id": "ukj1403-11947",
+   "name": "Wallingford Beach, River Thames",
+   "kind": "river",
+   "after_rain": {
+    "samples": 6,
+    "median": 310
+   },
+   "after_less": {
+    "samples": 50,
+    "median": 210
+   },
+   "without_rain_figure": 5,
+   "first_year": 2024,
+   "last_year": 2026
+  },
+  "bw-ukj2310-11945": {
+   "bw_id": "ukj2310-11945",
+   "name": "Frensham Great Pond",
+   "kind": "lake",
+   "after_rain": {
+    "samples": 5,
+    "median": 45
+   },
+   "after_less": {
+    "samples": 49,
+    "median": 27
+   },
+   "without_rain_figure": 1,
+   "first_year": 2023,
+   "last_year": 2026
+  },
+  "bw-ukj3308-19001": {
+   "bw_id": "ukj3308-19001",
+   "name": "River Avon at Fordingbridge",
+   "kind": "river",
+   "after_rain": {
+    "samples": 9,
+    "median": 300
+   },
+   "after_less": {
+    "samples": 48,
+    "median": 270
+   },
+   "without_rain_figure": 3,
+   "first_year": 2024,
+   "last_year": 2026
+  },
+  "bw-ukk1100-36050": {
+   "bw_id": "ukk1100-36050",
+   "name": "Henleaze Lake",
+   "kind": "lake",
+   "after_rain": {
+    "samples": 10,
+    "median": 210
+   },
+   "after_less": {
+    "samples": 66,
+    "median": 100
+   },
+   "without_rain_figure": 3,
+   "first_year": 2023,
+   "last_year": 2026
+  },
+  "bw-ukk1302-11760": {
+   "bw_id": "ukk1302-11760",
+   "name": "Cotswold Country Park and Beach",
+   "kind": "lake",
+   "after_rain": {
+    "samples": 9,
+    "median": 18
+   },
+   "after_less": {
+    "samples": 45,
+    "median": 27
+   },
+   "without_rain_figure": 2,
+   "first_year": 2023,
+   "last_year": 2026
+  },
+  "bw-ukk2301-36051": {
+   "bw_id": "ukk2301-36051",
+   "name": "River Frome at Farleigh Hungerford",
+   "kind": "river",
+   "after_rain": {
+    "samples": 7,
+    "median": 2100
+   },
+   "after_less": {
+    "samples": 50,
+    "median": 350
+   },
+   "without_rain_figure": 3,
+   "first_year": 2024,
+   "last_year": 2026
+  },
+  "bw-ukk2304-35201": {
+   "bw_id": "ukk2304-35201",
+   "name": "River Tone at French Weir Park",
+   "kind": "river",
+   "after_rain": {
+    "samples": 7,
+    "median": 1800
+   },
+   "after_less": {
+    "samples": 52,
+    "median": 790
+   },
+   "without_rain_figure": 2,
+   "first_year": 2024,
+   "last_year": 2026
+  }
+ },
+ "too_few_after_rain": [
+  "bw-ukd6300-40752",
+  "bw-uke2204-08905",
+  "bw-ukh1401-11051",
+  "bw-ukh1406-10712",
+  "bw-uki2203-11942",
+  "bw-ukj1102-11941",
+  "bw-ukk1500-19002"
+ ],
+ "written": "2026-11-15"
+}

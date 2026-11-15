@@ -2501,6 +2501,13 @@ const rangeFold = ds => explain(ECOLI_FOLD, ds.map(x => rangeLine(x, dayWord(x.d
 const typicalLine = t => `The middle of ${t.samples} Environment Agency samples here, May to September ${t.first_year === t.last_year ? t.first_year : `${t.first_year}–${t.last_year}`}, read ${ecoliReading(t.median)} E.&nbsp;coli per 100&nbsp;ml; the middle 8 in 10 read ${t.low === t.high ? ecoliReading(t.low) : `between ${ecoliReading(t.low)} and ${ecoliReading(t.high)}`}. ${t.over_line ? `${t.over_line} ${t.over_line === 1 ? 'was' : 'were'} over ${t.line}.` : `None was over ${t.line}.`}`;
 const TYPICAL_SAID = 'Past samples, not a forecast: with no monitored overflow upstream there is nothing to forecast from.';
 const TYPICAL_MORE = 'For comparison, England rates an inland bathing water Excellent when about 95 in 100 of its samples, over four seasons, are under 500 per 100&nbsp;ml. Past samples do not set the level. <a href="#about-ecoli">What this counts</a>';
+// Beside them, in season, the same samples split by the rain in the 48 hours before each (build_site.attach_after_rain,
+// docs/AFTER-RAIN-SAMPLES-2026-11.md), after the day's own rain. Two sets of past results and a rain figure: no
+// estimate, level, colour or comparison word.
+const afterRainDay = (d, days) => d.ecoli_after_rain ? days.find(x => !nil(x.rain_48h_mm) && x.in_validated_season !== false) || null : null;
+const afterRainLine = (a, x) => `About ${Math.round(x.rain_48h_mm)}&nbsp;mm of rain here in the 48 hours to midday ${dayWord(x.date)}. Past samples here taken after more than ${a.line_mm}&nbsp;mm in 48 hours: the middle of ${a.after_rain.samples} read ${ecoliReading(a.after_rain.median)}. After less rain, the middle of ${a.after_less.samples} read ${ecoliReading(a.after_less.median)}.`;
+const AFTER_RAIN_SAID = 'Past samples, not a forecast.';
+const AFTER_RAIN_MORE = "The rain before each sample is Open-Meteo's archive estimate for the grid square the water is in. 10&nbsp;mm in 48 hours is the line the rain rule on the Accuracy page uses. Few samples follow that much rain, so the middle of them can move a lot as seasons are added. With no monitored overflow upstream, rain is the one thing here known day by day: on 2012–2022 samples at this water and six others like it, an estimate from rain and the time of year put each water's samples in the right order more often than not.";
 // The calibrated number, over the days given: it counts bacteria from any source, so rain can
 // raise it when the spills are low. Rivers with overflows upstream only, the case it was tested on.
 function water(d, days) {
@@ -2525,8 +2532,10 @@ function water(d, days) {
       + explain('About this estimate', ecoliMore()),
       days.length === 1 ? tileLine(d, 'water', days[0].date) : '');
   }
-  if (d.ecoli_typical && !daily(d)) { const t = d.ecoli_typical;
-    return factorRow('E.&nbsp;coli in past samples', null, `${cap(ecoliReading(t.median))} per 100&nbsp;ml`, `${typicalLine(t)} ${TYPICAL_SAID}`); }
+  if (d.ecoli_typical && !daily(d)) { const t = d.ecoli_typical, w = afterRainDay(d, days);
+    return factorRow('E.&nbsp;coli in past samples', null, `${cap(ecoliReading(t.median))} per 100&nbsp;ml`, w
+      ? `${typicalLine(t)} ${afterRainLine(d.ecoli_after_rain, w)} ${AFTER_RAIN_SAID}` + explain('About these samples', AFTER_RAIN_MORE)
+      : `${typicalLine(t)} ${TYPICAL_SAID}`); }
   if (d.error) return '';
   return factorRow('E.&nbsp;coli estimate', null, 'Not estimated', (d.location || {}).mode === 'lake'
     ? 'No estimate here: the lake model needs monitored overflows upstream and a rain forecast for the lake.'
@@ -3136,9 +3145,11 @@ function facts(d, iso = null) {
       vis: scaleBar(x0.p_ecoli_gt900, ECOLI_CUTS, b), rel: tileLine(d, 'water', iso),
       say: `Chance a water sample would show E.&nbsp;coli over 900 per 100&nbsp;ml ${when}${x1 && !nil(x1.p_ecoli_gt900) && !untested(x1) ? `; ${pct(x1.p_ecoli_gt900)}% tomorrow` : ''}. ${ecoliSaid(d, x0)}`,
       more: ecoliMore() }); }
-  else if (d.ecoli_typical && !daily(d)) { const t = d.ecoli_typical;
+  else if (d.ecoli_typical && !daily(d)) { const t = d.ecoli_typical, w = afterRainDay(d, x0 ? [x0] : []);
     out.push({ wide: true, icon: ICON.water, label: 'E.&nbsp;coli in past samples', fig: t.median === '<10' ? 'Under 10' : ecoliReading(t.median),
-      unit: 'per 100&nbsp;ml, the middle sample', say: `${typicalLine(t)} ${TYPICAL_SAID}`, more: TYPICAL_MORE }); }
+      unit: 'per 100&nbsp;ml, the middle sample',
+      say: w ? `${typicalLine(t)} ${afterRainLine(d.ecoli_after_rain, w)} ${AFTER_RAIN_SAID}` : `${typicalLine(t)} ${TYPICAL_SAID}`,
+      more: w ? `${AFTER_RAIN_MORE} ${TYPICAL_MORE}` : TYPICAL_MORE }); }
   else if (!d.error) out.push({ icon: ICON.water, label: 'E.&nbsp;coli estimate', fig: '–', unit: ecoliTested(d) && !d.unlisted ? 'no estimate' : 'not estimated',
     say: ecoliTested(d) && d.unlisted ? UNLISTED_ECOLI : ecoliTested(d) || lakeRanged(d) ? 'No rainfall forecast has arrived, so there is no estimate.' : (d.location || {}).mode === 'lake'
       ? (d.unlisted ? UNLISTED_ECOLI : 'No estimate here: the lake model needs monitored overflows upstream and a rain forecast for the lake.') : 'Estimated only on rivers with monitored overflows upstream, the case the model was tested on.' });
