@@ -1,0 +1,180 @@
+{
+ "rows": {
+  "river_seen": 943,
+  "at_sites_with_a_series": 852,
+  "with_level_features": 810,
+  "sites": 17,
+  "over_900": 151
+ },
+ "primary_base_plus_rise_vs_base": {
+  "a": 0.437,
+  "b": 0.445,
+  "difference": -0.008,
+  "ci95": [
+   -0.056,
+   0.024
+  ]
+ },
+ "reported": {
+  "base_plus_rise_and_index_vs_base": {
+   "a": 0.431,
+   "b": 0.445,
+   "difference": -0.014,
+   "ci95": [
+    -0.067,
+    0.021
+   ]
+  },
+  "rain_plus_rise_and_index_vs_rain_only": {
+   "a": 0.356,
+   "b": 0.385,
+   "difference": -0.029,
+   "ci95": [
+    -0.063,
+    -0.001
+   ]
+  },
+  "rise24_alone_vs_lrain48_alone": {
+   "a": 0.121,
+   "b": 0.4,
+   "difference": -0.279,
+   "ci95": [
+    -0.4,
+    -0.129
+   ]
+  },
+  "index_alone_vs_lrain48_alone": {
+   "a": 0.361,
+   "b": 0.4,
+   "difference": -0.038,
+   "ci95": [
+    -0.145,
+    0.07
+   ]
+  },
+  "dry_days": {
+   "rows": 438,
+   "over_900": 39,
+   "index_alone_vs_base": {
+    "a": 0.329,
+    "b": 0.27,
+    "difference": 0.059,
+    "ci95": [
+     -0.069,
+     0.188
+    ]
+   },
+   "rise24_alone_vs_base": {
+    "a": -0.078,
+    "b": 0.27,
+    "difference": -0.348,
+    "ci95": [
+     -0.568,
+     -0.133
+    ]
+   }
+  },
+  "rise24_share_above_0.05": 0.081,
+  "over_900_when_rise24_above_0.05": 0.455,
+  "over_900_otherwise": 0.163,
+  "by_site_rho": {
+   "Friars Meadow, River Stour": {
+    "n": 57,
+    "rise24": -0.08,
+    "index": 0.37,
+    "lrain48": 0.4
+   },
+   "Ham and Kingston, River Thames": {
+    "n": 18,
+    "rise24": -0.11,
+    "index": 0.23,
+    "lrain48": 0.58
+   },
+   "Nidd at the Lido, Knaresborough": {
+    "n": 40,
+    "rise24": -0.09,
+    "index": 0.47,
+    "lrain48": 0.34
+   },
+   "Pangbourne Meadow, River Thames": {
+    "n": 16,
+    "rise24": 0.06,
+    "index": -0.01,
+    "lrain48": -0.5
+   },
+   "River Avon at Fordingbridge": {
+    "n": 57,
+    "rise24": -0.17,
+    "index": 0.25,
+    "lrain48": 0.26
+   },
+   "River Frome at Farleigh Hungerford": {
+    "n": 57,
+    "rise24": 0.27,
+    "index": 0.32,
+    "lrain48": 0.5
+   },
+   "River Ribble at Edisford Bridge": {
+    "n": 39,
+    "rise24": 0.53,
+    "index": 0.73,
+    "lrain48": 0.75
+   },
+   "River Severn at Ironbridge": {
+    "n": 58,
+    "rise24": 0.21,
+    "index": 0.46,
+    "lrain48": 0.52
+   },
+   "River Severn in Shrewsbury": {
+    "n": 57,
+    "rise24": 0.24,
+    "index": 0.46,
+    "lrain48": 0.35
+   },
+   "River Teme in Ludlow": {
+    "n": 58,
+    "rise24": -0.0,
+    "index": 0.59,
+    "lrain48": 0.54
+   },
+   "River Tone at French Weir Park": {
+    "n": 59,
+    "rise24": 0.01,
+    "index": 0.44,
+    "lrain48": 0.39
+   },
+   "Swale above Richmond Falls": {
+    "n": 17,
+    "rise24": 0.1,
+    "index": 0.14,
+    "lrain48": 0.53
+   },
+   "Wallingford Beach, River Thames": {
+    "n": 56,
+    "rise24": 0.19,
+    "index": 0.27,
+    "lrain48": 0.41
+   },
+   "Wharfe at Cromwheel, Ilkley": {
+    "n": 77,
+    "rise24": 0.47,
+    "index": 0.64,
+    "lrain48": 0.66
+   },
+   "Wharfe at Wilderness Carpark": {
+    "n": 56,
+    "rise24": 0.07,
+    "index": 0.69,
+    "lrain48": 0.49
+   },
+   "Wolvercote Mill Stream": {
+    "n": 75,
+    "rise24": 0.23,
+    "index": -0.28,
+    "lrain48": 0.18
+   }
+  }
+ },
+ "supported": false
+}

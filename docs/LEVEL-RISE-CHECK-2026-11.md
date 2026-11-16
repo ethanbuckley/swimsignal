@@ -65,3 +65,38 @@ share of samples over 900 with and without a rise; each site's correlations.
 ---
 
 ## Result
+
+Run 16 November 2026, after the statement above was pushed at `1414f8dd` (11:25:40 UTC). 17 requests, all answered,
+83,031 to 120,192 readings a gauge. Result file: `docs/level-rise-check/result.json`. Scoring took 4.5 minutes.
+
+**Not supported, as stated.** Adding the 24-hour rise to rain, season and exposure did not improve the ordering of a
+site's samples.
+
+810 of the 943 seen river samples had a usable gauge reading, at 17 bathing waters, 151 of them over 900.
+
+| Comparison (mean within-site correlation) | With | Without | Difference (95%) |
+|---|---|---|---|
+| **Base plus the 24-hour rise, against base (deciding)** | 0.437 | 0.445 | −0.008 (−0.056 to +0.024) |
+| Base plus the rise and the level's place in its range | 0.431 | 0.445 | −0.014 (−0.067 to +0.021) |
+| Rain and season plus both gauge inputs, against rain and season | 0.356 | 0.385 | −0.029 (−0.063 to −0.001) |
+| The rise alone, against 48-hour rain alone | 0.121 | 0.400 | −0.279 (−0.400 to −0.129) |
+| The level's place in its range alone, against 48-hour rain alone | 0.361 | 0.400 | −0.038 (−0.145 to +0.070) |
+
+Reported, deciding nothing:
+
+- **The rise carries little.** On its own it orders samples far worse than rain does. Samples after a rise of more
+  than 5% of the usual range read over 900 45% of the time against 16% otherwise, but only 8% of samples followed
+  such a rise, and rain already marks those days.
+- **How high the river stands carries about as much as rain, and nothing on top of it.** On its own the level's
+  place in its range gives 0.361 against rain's 0.400, with the interval through zero. It beat rain at 6 of 16 sites.
+  Added to the base it changed nothing. So the gauge mostly repeats what the rain says.
+- **Dry days** (438 samples, 39 over 900): the level alone gives 0.329 against the base's 0.270, a difference of
+  +0.059 (−0.069 to +0.188). Not shown. This is the one place the gauge might add something, since rain is silent
+  there, and 17 sites cannot settle it.
+- One model form was tried, with one slope for every site. A river's level range means different things at
+  different gauges, and a form with a slope per site was not tried. The statement rules out further variants on
+  these samples.
+
+**What follows, as stated.** No gauge candidate goes to the RIVER-UNSEEN read. The dry-day figure is noted for the
+dry-day project in the ambition portfolio (#704): if that project gets unseen river points with gauges, the level's
+place in its range on dry days is a stated question there, under its own statement. Nothing on the site changes.
