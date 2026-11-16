@@ -114,6 +114,8 @@ def main(argv: list[str]) -> None:
     else:
         samples, audit, out = bathing_samples(pd.read_parquet(argv[1])), {}, Path(argv[2])
     rows, built = build(samples, at_points=argv[0] == "points")
+    if argv[0] == "bathing":   # the columns freeze_candidate.py checks
+        rows["part"], rows["row_version"] = "seen", "ecoli-rows-v1 rebuilt on the rain cache in use"
     rows.to_parquet(out, index=False)
     audit.update(built)
     audit["rows_by_season"] = {str(int(k)): int(v) for k, v in rows.groupby("season").size().items()}

@@ -2,6 +2,8 @@
 is fetched.
 
     python scripts/river_unseen/freeze_candidate.py <bench seen.parquet> docs/river-unseen/river_range_v0.json
+    python scripts/river_unseen/freeze_candidate.py <seen rows rebuilt on ERA5-Land> docs/river-unseen/river_range_v0e.json \\
+        river-range-v0e <where those rows are kept>
 
 A log10 E. coli model on the backtest bench's seen river rows (2023-26, bathing waters): ordinary least squares on
 rain in the 48 and 24 hours before the sample, upstream exposure and season. No site level, so it can be applied at
@@ -38,13 +40,13 @@ def predict(model: dict, rows: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame({"mu_log10": mu, "low_log10": mu - z, "high_log10": mu + z}, index=rows.index)
 
 
-def main(seen: Path, out: Path) -> None:
+def main(seen: Path, out: Path, name: str = "river-range-v0", source: str = "swimsignal-private/bench/ecoli-v1/seen.parquet") -> None:
     rows = pd.read_parquet(seen)
     assert set(rows["part"]) == {"seen"}, "seen rows only"
     rows = rows[rows["kind"] == "river"]
     assert rows[FEATURES + ["log_ecoli"]].notna().all().all()
     model = fit(rows)
-    doc = {"name": "river-range-v0", "target": "log10 E. coli per 100 ml; a result below the lab limit kept at the limit",
+    doc = {"name": name, "target": "log10 E. coli per 100 ml; a result below the lab limit kept at the limit",
            "features": {"lrain48": "ln(1 + mm of rain in the 48 h before the sample)",
                         "lrain24": "ln(1 + mm of rain in the 24 h before the sample)",
                         "logit_risk": "logit of the lead-0 upstream exposure, as the bench builds it",
@@ -52,7 +54,7 @@ def main(seen: Path, out: Path) -> None:
            **model, "range": "likely reading 10^mu; 8 in 10 between 10^(mu - z*sd) and 10^(mu + z*sd), z = 1.2816",
            "fitted_on": {"rows": int(len(rows)), "sites": int(rows["bw_id"].nunique()),
                          "seasons": sorted(int(s) for s in rows["season"].unique()),
-                         "file": "swimsignal-private/bench/ecoli-v1/seen.parquet",
+                         "file": source,
                          "sha256": hashlib.sha256(seen.read_bytes()).hexdigest(),
                          "row_version": str(rows["row_version"].iloc[0])},
            "frozen_at": datetime.now(UTC).isoformat(timespec="seconds")}
@@ -61,4 +63,4 @@ def main(seen: Path, out: Path) -> None:
 
 
 if __name__ == "__main__":
-    main(Path(sys.argv[1]), Path(sys.argv[2]))
+    main(Path(sys.argv[1]), Path(sys.argv[2]), *sys.argv[3:5])

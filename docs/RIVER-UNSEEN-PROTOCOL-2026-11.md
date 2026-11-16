@@ -400,3 +400,46 @@ line with the expectation in section 1 that the check fails and `river-range-v0e
 itself still runs once, on every paired cell and year, when the downloads finish.
 
 `build_rows.py points` joins results to inputs, so it is part of the read. It has not been run.
+
+### Match check and the candidate, 16 November 2026 (no held-out result read)
+
+**The rain match check failed, so the candidate is `river-range-v0e`.** This is section 1's second branch, and the
+outcome it expected.
+
+The check: #702's `match_check.py --kind best_match`, run once, on every cell and year where both a cached Open-Meteo
+file and converted ERA5-Land exist (2019 to 2026, after the 2023-26 download finished and 2019 to 2022 were on disk).
+2,070 cells, 2,569,384 paired cell-days. The reference files' SHA-256 was the same before and after.
+
+| Test | Result | Needed | |
+|---|---|---|---|
+| B1 pooled daily correlation | 0.879 | 0.90 or more | fail |
+| B2 mean daily difference as a share of the reference | 12.1% lower | within 10% | fail |
+| B3 share of cell-days within 0.5 mm | 58.0% | 85% or more | fail |
+| B4 share of cells with daily correlation of 0.80 or more | 99.7% | 90% or more | pass |
+
+Hourly correlation is 0.627 with no shift (0.594 one hour early, 0.564 one hour late), so the times line up and the
+two products differ in the rain itself. ERA5-Land is not a stand-in for the cached rain. A model fitted on one must
+not be tested on the other, which is what section 1 provided for.
+
+**The candidate, frozen before any archive result is joined:** `docs/river-unseen/river_range_v0e.json`, SHA-256
+`3c8bfe59…`. Same script, same features, fitted on the bench's seen river samples with rain and exposure rebuilt
+from ERA5-Land by `build_rows.py bathing` (rows in `swimsignal-private/river-unseen/seen_river_rows_era5land.parquet`,
+SHA-256 `7fac233d…`).
+
+One departure from section 1, and why. It said "the same 943 seen river samples". 923 could be rebuilt. The other
+20 are all from September 2026, and the ERA5-Land download ends at August 2026 because later months are still
+preliminary at the source. They were dropped by the 90% rain-coverage rule, not by choice, before any fit.
+
+| | Fitted on | 48-h rain | 24-h rain | Exposure | Spread (log10) |
+|---|---|---|---|---|---|
+| `river-range-v0` (Open-Meteo rain; not used) | 943 | 0.110 | −0.033 | 0.118 | 0.456 |
+| `river-range-v0e` (ERA5-Land rain; the candidate) | 923 | 0.127 | −0.039 | 0.118 | 0.457 |
+
+The two fits are close. Exposure on the seen rows runs lower on ERA5-Land (median 0.033 against 0.042, 90th
+percentile 0.365 against 0.432), as the lower rain would give.
+
+**The main reference**, as section 1 set: production's form refitted on those 923 rows. Production as deployed is
+reported and decides nothing.
+
+**What is left:** 80 months of 2012-18 rain still downloading; then convert the 85 river cells for 2012-22, build
+the held-out rows and read once.

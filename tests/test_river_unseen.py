@@ -92,6 +92,12 @@ def test_the_frozen_candidate_is_the_one_the_statement_names():
     assert sha.startswith("bb4d8c10") and sha[:8] in (ROOT / "docs" / "RIVER-UNSEEN-PROTOCOL-2026-11.md").read_text()
     m = json.loads(f.read_text())
     assert list(m["coef"]) == freeze_candidate.FEATURES and m["fitted_on"]["rows"] == 943
+    e = ROOT / "docs" / "river-unseen" / "river_range_v0e.json"   # the candidate after the rain match check failed
+    esha = hashlib.sha256(e.read_bytes()).hexdigest()
+    text = (ROOT / "docs" / "RIVER-UNSEEN-PROTOCOL-2026-11.md").read_text()
+    assert esha.startswith("3c8bfe59") and esha[:8] in text
+    em = json.loads(e.read_text())
+    assert em["name"] == "river-range-v0e" and em["fitted_on"]["rows"] == 923 and list(em["coef"]) == freeze_candidate.FEATURES
     rows = pd.DataFrame({k: [0.0, 1.0] for k in freeze_candidate.FEATURES})
     p = freeze_candidate.predict(m, rows)
     assert abs(p["mu_log10"][0] - m["intercept"]) < 1e-12
