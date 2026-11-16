@@ -984,6 +984,13 @@
    "branch": "claude/radar-shadow-logger-a011b5",
    "branch_exists": true,
    "date": "2026-11-14"
+  },
+  "700": {
+   "n": 700,
+   "state": "open",
+   "branch": "claude/swimsignal-open-work-7a5300",
+   "branch_exists": true,
+   "date": "2026-11-15"
   }
  },
  "entries": [
@@ -3509,6 +3516,62 @@
    ],
    "prs": [
     699
+   ]
+  },
+  {
+   "id": "backtest-bench",
+   "title": "Backtest bench for E. coli candidates on held-out years",
+   "section": "promising",
+   "topics": [
+    "evaluation",
+    "ecoli",
+    "model"
+   ],
+   "verdict": "No result: a tool. Frozen rows for every EA sample at the 38 inland bathing waters, 2012-26, with production's inputs rebuilt as a lead-0 hindcast, and one command that scores a candidate against production and simple references. Its rebuilt rows match the 2012-22 lake-line check's 962 rows exactly.",
+   "scope": "E. coli at inland bathing waters, lead 0 on archive rain. Held-out rows are 2012-22 lakes and 2021-22 rivers (2,395 rows, 53 over 900); 962 of them were read by earlier lake tests. Says nothing about the spill model, leads 1 to 4, or coastal waters.",
+   "stage": "development",
+   "stage_note": "Built and tested (#700, open). No candidate has been read on the held-out rows; every final read goes in docs/backtest-bench/ledger.jsonl.",
+   "next": "First candidates through the final read, with statements pushed first: the frozen lake models on the 1,433 rows not read before.",
+   "records": [
+    {
+     "doc": "docs/BACKTEST-BENCH-2026-11.md",
+     "quote": "A tool, not a test: no candidate has been scored on the held-out rows, and nothing on the\nsite changes."
+    }
+   ],
+   "prs": [
+    700
+   ]
+  },
+  {
+   "id": "bench-read-lake-range",
+   "title": "Bench read 1: lake-range-v1 at lakes without their own level, 2012-22",
+   "section": "promising",
+   "topics": [
+    "ecoli",
+    "lakes",
+    "evaluation"
+   ],
+   "verdict": "Pass, as stated before the read. At the 7 lake bathing waters lake-range-v1 has no own level for (5 water bodies, 1,373 samples 2012-22 never read before), its likely reading ordered each lake's samples with a mean within-site rho of 0.289 against production's -0.015; difference +0.304 (interval over water-body seasons +0.197 to +0.409). Its chance over 900 was not better (Brier +0.0002, interval +0.0000 to +0.0005).",
+   "scope": "Order within a lake at lead 0 on archive rain; the 7 lakes have no monitored overflow upstream, so rain and season only. Says nothing about the 8-in-10 range's coverage, the chance's level, rivers, or leads 1 to 4.",
+   "stage": "development",
+   "stage_note": "Result recorded in #700. The statement's next step assumed the page shows lake-range-v1 at these 7 lakes; it does not (they show past samples, or nothing at the 2 isolated lakes), so the step cannot be built as stated. What to show at the 5 lake spots with daily inputs is Ethan's decision.",
+   "next": "Ethan's choice: a direction line beside the past samples, a coverage read first, or nothing.",
+   "records": [
+    {
+     "doc": "docs/BENCH-READ-LAKE-RANGE-2026-11.md",
+     "quote": "Production's chance does not order those lakes' samples at all (−0.015)."
+    },
+    {
+     "doc": "docs/BENCH-READ-LAKE-RANGE-2026-11.md",
+     "quote": "the bench does not measure coverage."
+    },
+    {
+     "doc": "docs/BENCH-READ-LAKE-RANGE-2026-11.md",
+     "quote": "So lake-range-v1 is not shown at any of the 7, and the \"average lake\" text (which says the lake has no Environment"
+    }
+   ],
+   "prs": [
+    700
    ]
   }
  ]
