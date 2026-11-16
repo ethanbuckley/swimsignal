@@ -1,0 +1,145 @@
+{
+ "read_at": "2026-11-16T18:19:18+00:00",
+ "commit": "971ec69d91136eb4af1e7aaa96ad8ee3972ecb7c",
+ "rows": 6322,
+ "points": 59,
+ "systems": 33,
+ "seasons": [
+  2012,
+  2013,
+  2014,
+  2015,
+  2016,
+  2017,
+  2018,
+  2019,
+  2021,
+  2022
+ ],
+ "over_900": 3055,
+ "primary_rho": {
+  "value": 0.3604,
+  "ci95": [
+   0.3139,
+   0.3938
+  ]
+ },
+ "primary_pass": true,
+ "range_coverage": 0.531,
+ "range_pass": false,
+ "share_at_a_lab_limit": 0.0073,
+ "range_check_weak": false,
+ "reported": {
+  "rho_by_figure": {
+   "mu_log10": 0.3604,
+   "production_refit": 0.347,
+   "production_deployed": 0.3763,
+   "lrain48": 0.3552
+  },
+  "candidate_rho_minus_production_refit": {
+   "value": 0.0134,
+   "ci95": [
+    0.0105,
+    0.0282
+   ]
+  },
+  "brier_over_900": {
+   "p_candidate": 0.3064,
+   "production_refit": 0.3049,
+   "production_deployed": 0.3003,
+   "month_rate": 0.3186,
+   "rain_rule": 0.2863
+  },
+  "exposure_quantiles": {
+   "seen": [
+    0.0059,
+    0.0329,
+    0.3647
+   ],
+   "held_out": [
+    0.0011,
+    0.011,
+    0.2523
+   ]
+  },
+  "subsets": {
+   "seasons_to_2016": {
+    "rows": 3895,
+    "points": 57,
+    "rho": 0.3815,
+    "coverage": 0.5718,
+    "over_900": 1848
+   },
+   "seasons_from_2017": {
+    "rows": 2427,
+    "points": 39,
+    "rho": 0.329,
+    "coverage": 0.4656,
+    "over_900": 1207
+   },
+   "band_large": {
+    "rows": 1154,
+    "points": 10,
+    "rho": 0.447,
+    "coverage": 0.6681,
+    "over_900": 469
+   },
+   "band_medium": {
+    "rows": 3614,
+    "points": 29,
+    "rho": 0.3671,
+    "coverage": 0.5208,
+    "over_900": 1844
+   },
+   "band_small": {
+    "rows": 1554,
+    "points": 20,
+    "rho": 0.3074,
+    "coverage": 0.453,
+    "over_900": 742
+   },
+   "purpose_MN": {
+    "rows": 1,
+    "points": 1,
+    "rho": NaN,
+    "coverage": 0.0,
+    "over_900": 1
+   },
+   "purpose_MS": {
+    "rows": 313,
+    "points": 29,
+    "rho": 0.2735,
+    "coverage": 0.6422,
+    "over_900": 106
+   },
+   "purpose_MU": {
+    "rows": 3063,
+    "points": 30,
+    "rho": 0.4037,
+    "coverage": 0.6066,
+    "over_900": 1407
+   },
+   "purpose_PI": {
+    "rows": 2290,
+    "points": 29,
+    "rho": 0.3253,
+    "coverage": 0.4022,
+    "over_900": 1258
+   },
+   "purpose_PN": {
+    "rows": 655,
+    "points": 20,
+    "rho": 0.3151,
+    "coverage": 0.5756,
+    "over_900": 283
+   }
+  }
+ },
+ "outcome": "order passes, range fails",
+ "inputs": {
+  "held_out_rows": "382a335e0d6b010e8611bedf7d7fa409cab0c8ba56bb8a8bc9d9ad3ae20b3678",
+  "seen_rows": "7fac233ddea292fae7a0e036ebb2c05f1b3d66af9e1df5b079118959fe927629",
+  "candidate": "3c8bfe59ad92665aa7323c0ca2c5c355d6522a5edf65bff6c5bc5229b8b446c8",
+  "production": "7daf7c8e407a82ba1344ab1b925092953791c138d690d5dc18093221d49ca09c"
+ }
+}
