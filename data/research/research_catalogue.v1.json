@@ -984,6 +984,13 @@
    "branch": "claude/radar-shadow-logger-a011b5",
    "branch_exists": true,
    "date": "2026-11-14"
+  },
+  "703": {
+   "n": 703,
+   "state": "open",
+   "branch": "claude/lake-direction-no-overflow",
+   "branch_exists": true,
+   "date": "2026-11-15"
   }
  },
  "entries": [
@@ -3509,6 +3516,30 @@
    ],
    "prs": [
     699
+   ]
+  },
+  {
+   "id": "after-rain-samples",
+   "title": "Past samples after rain, at lakes with no daily E. coli figure",
+   "section": "data",
+   "topics": [
+    "ecoli",
+    "lakes",
+    "rain"
+   ],
+   "verdict": "An observation, not a test. At the Serpentine, Hampstead Heath's three ponds and Colwick, their own 2023-26 samples after more than 10 mm of rain in 48 hours had middle results of 190, 360, 73, 210 and 27, against 130, 91, 55, 64 and 27 after less rain (7 to 12 samples after rain at each).",
+   "scope": "Seen samples, small wet groups; past results only, no estimate. Says nothing about a day's water.",
+   "stage": "development",
+   "stage_note": "Built in #703 (open); in season only, so nothing shows before May 2027.",
+   "next": "Rerun the export after the 2027 season with rebuilt bench rows.",
+   "records": [
+    {
+     "doc": "docs/AFTER-RAIN-SAMPLES-2026-11.md",
+     "quote": "These are seen samples, and the wet groups are small: one more wet sample can move a middle a long way. The page says"
+    }
+   ],
+   "prs": [
+    703
    ]
   }
  ]

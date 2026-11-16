@@ -912,6 +912,22 @@ says. They asked for observations, missing information and experimental estimate
 - **Not done:** headings over the tiles ("Forecast", "Observed", "Experimental"), which would put words between
   tiles; proposed in the pull request with a mock, to wait for user testing.
 
+### Past samples after rain (15 November 2026)
+
+At a bathing water with no daily E. coli figure, its daily rows known and its own samples split by the rain before
+them (`ecoli_after_rain`, docs/AFTER-RAIN-SAMPLES-2026-11.md): in season, "E. coli in past samples" adds the day's
+rain and the two groups' middle results, in the tile's own sentence and words ("About 14 mm of rain here in the
+48 hours to midday today. Past samples here taken after more than 10 mm in 48 hours: the middle of 12 read 190. After
+less rain, the middle of 67 read 130. Past samples, not a forecast."). Five lakes have it: the Serpentine, Hampstead
+Heath's three ponds and Colwick. No estimate, comparison word, colour or level; the reader compares the two figures.
+
+- **New, and it reverses one sentence at those five in season.** "Past samples, not a forecast: with no monitored
+  overflow upstream there is nothing to forecast from" (added with the lake range, 1 November) becomes "Past samples,
+  not a forecast." there: on 2012-22 samples at those lakes, an estimate from rain and the time of year ordered
+  each lake's samples (bench read 1, #700). Everywhere else, and out of season, the old sentence stays.
+- **Not done:** a "higher / lower than usual" line at those lakes. With the direction proposal's thresholds it would
+  have said "about usual" on 347 of their 348 sample days in 2023-26.
+
 ### What the level rests on (4 October 2026)
 
 One tile (`evidence.js`) after the forecast's tiles, folded whole as the day-by-day numbers are (6 October

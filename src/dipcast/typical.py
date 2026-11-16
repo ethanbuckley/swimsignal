@@ -20,23 +20,39 @@ FILES = {n: RESEARCH / f"typical_{n}.v1.json" for n in ("england_coast", "wales"
 LINES = {"coast": 500, "estuary": 500, "lake": 900, "river": 900, "inland": 900}   # the "sufficient" E. coli lines
 
 
+def _ranked(samples: list[dict] | None) -> list[dict]:
+    """The samples with a count, in rank order: a "<10" below every count, a ">10000" above."""
+    xs = [x for x in samples or [] if isinstance(x.get("ecoli"), int | float) and x.get("t")]
+    return sorted(xs, key=lambda x: x["ecoli"] + {"<": -0.5, ">": 0.5}.get(x.get("q"), 0.0))
+
+
+def _at(xs: list[dict], q: float):
+    """The value at rank ceil(q * n) of ranked samples: a lab limit stays one ("<10"), else two significant figures."""
+    x = xs[max(0, math.ceil(q * len(xs)) - 1)]
+    if x.get("q") in ("<", ">"):
+        return f"{x['q']}{x['ecoli']:g}"
+    v = float(f"{x['ecoli']:.2g}")
+    return int(v) if v == int(v) else v
+
+
+def middle(samples: list[dict] | None) -> dict | None:
+    """How many samples and the middle one, by typical_readings' own rule, with no minimum (the caller sets one)."""
+    xs = _ranked(samples)
+    return {"samples": len(xs), "median": _at(xs, 0.5)} if xs else None
+
+
 def typical_readings(samples: list[dict], line: int) -> dict | None:
     """From samples {"t": ISO time, "ecoli": number, "q": "<", ">" or None}: the middle one and the 10th and 90th in
     100 by rank, how many, their years, and how many were over `line` (900 inland, 500 coastal: the "sufficient"
     standards' E. coli lines). A value the lab gave as a limit stays one ("<10", ">10000"): a "<10" ranks below every
     count. Other values to two significant figures. None under MIN_SAMPLES samples."""
-    xs = [x for x in samples or [] if isinstance(x.get("ecoli"), int | float) and x.get("t")]
+    xs = _ranked(samples)
     if len(xs) < MIN_SAMPLES:
         return None
-    xs = sorted(xs, key=lambda x: x["ecoli"] + {"<": -0.5, ">": 0.5}.get(x.get("q"), 0.0))
     n = len(xs)
 
     def at(q: float):
-        x = xs[max(0, math.ceil(q * n) - 1)]
-        if x.get("q") in ("<", ">"):
-            return f"{x['q']}{x['ecoli']:g}"
-        v = float(f"{x['ecoli']:.2g}")
-        return int(v) if v == int(v) else v
+        return _at(xs, q)
     years = sorted({x["t"][:4] for x in xs})
     return {"samples": n, "first_year": int(years[0]), "last_year": int(years[-1]), "low": at(0.1), "median": at(0.5),
             "high": at(0.9), "line": line, "over_line": sum(1 for x in xs if x["ecoli"] > line and x.get("q") != "<")}

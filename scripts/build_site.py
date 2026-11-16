@@ -4492,6 +4492,33 @@ def attach_typical_readings(results: list[dict], path: Path = ECOLI_EVIDENCE) ->
     return n
 
 
+AFTER_RAIN = config.ROOT / "data" / "research" / "after_rain_samples.v1.json"
+
+
+def attach_after_rain(results: list[dict], path: Path = AFTER_RAIN) -> int | None:
+    """On each bathing water in the file, `ecoli_after_rain` (scripts/export_after_rain_samples.py): its own past
+    samples split by the rain in the 48 hours before each, more than `line_mm` or not, how many and the middle result
+    of each. The page gives it beside the past samples where the spot has them and the day's 48-hour rain is known.
+    Past samples, not a forecast; no rain value is in the file. Returns how many spots got it, None without the file
+    or with another schema."""
+    try:
+        doc = json.loads(path.read_text())
+    except (OSError, ValueError):
+        return None
+    if doc.get("schema") != "swimsignal.after-rain-samples" or str(doc.get("version", "")).split(".")[0] != "1":
+        return None
+    n = 0
+    for r in results:
+        x = (doc.get("sites") or {}).get(str(r["id"]))
+        daily = not r.get("error") and ((r.get("upstream_summary") or {}).get("overflows") or 0) > 0
+        if x and r.get("ecoli_typical") and not daily and r.get("days"):   # where the page can give it (levels.js daily)
+            r["ecoli_after_rain"] = {"line_mm": doc["line_mm"], "after_rain": x["after_rain"],
+                                     "after_less": x["after_less"], "first_year": x["first_year"],
+                                     "last_year": x["last_year"]}
+            n += 1
+    return n
+
+
 def write_samples(site: Path, token: str | None = None, root: str | None = None, results: list[dict] | None = None) -> str:
     """samples.html and samples.js beside the app, and the samples they read. Returns the script's version."""
     write_ecoli_evidence(site, results=results)
@@ -5420,6 +5447,7 @@ def build(refresh: bool = True) -> dict:
     n_history = attach_sample_history(results)   # from the research export, a file: no request
     n_lab_links = attach_lab_links(results)   # which Research Lab exhibits hold this spot's record: files, no request
     n_typical = attach_typical_readings(results)   # the same export: typical readings where no daily figure is
+    n_after_rain = attach_after_rain(results)   # past samples split by the rain before them, from a file: no request
     measured = attach_measured(results)   # lab results organisations sent, from samples/: not part of the level
     n_classified = attach_classifications(results)
     water_body = attach_water_body(results)   # the EA's reasons for not reaching good status, from a file: no request
@@ -5457,6 +5485,7 @@ def build(refresh: bool = True) -> dict:
     health["lab_links"] = n_lab_links
     health["river_rise_history"] = rise_history
     health["typical_readings"] = n_typical
+    health["after_rain_samples"] = n_after_rain
     if water_body is None:
         health["warnings"].append("data/raw/rnags.json is missing or unreadable: no spot says what the Environment Agency lists on its water body")
     else:
