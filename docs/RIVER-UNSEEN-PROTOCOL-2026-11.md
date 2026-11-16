@@ -463,3 +463,93 @@ The commands for the read, in order, once 2012-18 rain is on disk:
 1. `to_cells.py --points <85 cells> --years 2012-2022`
 2. `build_rows.py points <sealed samples> points.csv systems.csv <held-out rows> held_out kept`
 3. `read.py <held-out rows> <seen rows on ERA5-Land> river_range_v0e.json <production model> docs/river-unseen`
+
+## The read, 16 November 2026: order passes, range fails
+
+Run once, at 18:19 UTC on 16 November 2026, at commit `971ec69d`, with the candidate `river-range-v0e`
+(`3c8bfe59…`). Logged in `docs/river-unseen/reads.jsonl`; every figure is in `docs/river-unseen/result.json`. The
+2012-18 rain finished downloading at 17:52 UTC. The row builder took 6,322 samples in and gave 6,322 rows out at 59
+points in 33 river systems, with no row dropped. There are no 2020 rows, as at staging.
+
+| Check | Result | Pass rule | Verdict |
+|---|---|---|---|
+| Order: mean within-point correlation | 0.360 (0.314 to 0.394) | interval wholly above 0.15 | pass |
+| Range: share inside the 8-in-10 range | 53.1% | 72% to 88% | fail |
+
+0.7% of results sat at a lab limit, so the range check is not weak by amendment 1's rule.
+
+**What is supported.** At river points and years no model here had seen, the candidate puts a point's days in the
+right order: 0.360, against 0.426 in-sample on the seen rows. This is confirmation evidence for the order, at these
+points. They are not swimming spots, 48 of 59 are in the South West, and the hindcast is at lead 0.
+
+**What is not supported.** A stated reading or range at river points. The range was fitted on bathing waters and
+sits too low here.
+
+### Reported, deciding nothing
+
+| Figure | Within-point correlation |
+|---|---|
+| Candidate | 0.360 |
+| Production, refitted on the same seen rows | 0.347 |
+| Production as deployed | 0.376 |
+| Rain in the last 48 hours alone | 0.355 |
+
+The candidate less refitted production is +0.013 (0.011 to 0.028). Rain alone comes within 0.005 of the candidate,
+so the overflow exposure adds little to the order at these points.
+
+Brier score for a result over 900 (lower is better; 48.3% of results were over 900): rain rule 0.286, production as
+deployed 0.300, production refitted 0.305, candidate 0.306, month rate 0.319.
+
+| Rows | Samples | Points | Correlation | Inside the range |
+|---|---|---|---|---|
+| Seasons to 2016 | 3,895 | 57 | 0.382 | 57.2% |
+| Seasons from 2017 | 2,427 | 39 | 0.329 | 46.6% |
+| Large catchment (100 km of channel or more) | 1,154 | 10 | 0.447 | 66.8% |
+| Medium (10 to 100 km) | 3,614 | 29 | 0.367 | 52.1% |
+| Small (under 10 km) | 1,554 | 20 | 0.307 | 45.3% |
+| Purpose MU | 3,063 | 30 | 0.404 | 60.7% |
+| Purpose PI | 2,290 | 29 | 0.325 | 40.2% |
+| Purpose PN | 655 | 20 | 0.315 | 57.6% |
+| Purpose MS | 313 | 29 | 0.274 | 64.2% |
+
+The two side sets, scored with `read.py --dev` so that nothing is logged as a read:
+
+| Side set | Samples scored | Points | Correlation | Inside the range |
+|---|---|---|---|---|
+| Rule 3 sensitivity (overflow upstream, name rule failed) | 518 of 870 | 7 of 8 | 0.341 (0.293 to 0.460) | 42.7% |
+| No overflow upstream | 2,071 of 2,189 | 23 | 0.309 (0.263 to 0.375) | 29.5% |
+
+The sensitivity set lost 352 rows in the builder (219 with no full rain window, 133 with no exposure, as first
+built) and the no-overflow set lost 118 with no full rain window. The cause was not traced; a rain cell with no land
+value in ERA5-Land is the likely one. At the no-overflow points the rain rule has the best Brier score (0.292
+against 0.484 for the candidate), and rain alone orders days slightly better than the candidate (0.321 against
+0.309).
+
+### The spread, by stream size (exploratory, after the read)
+
+The statement asks for the spread to be diagnosed by stream size when the range fails. These figures were computed
+after the read on rows now seen. They are development evidence.
+
+- The misses are one-sided: 44.3% of results were above the range and 2.6% below. The mean result was 0.54 log10
+  above the likely reading, a factor of 3.4. The median result was 818 per 100 ml, against 320 on the seen rows.
+- By band, the share above the range was 25.6% (large), 46.5% (medium) and 53.2% (small). The mean gap was 0.21,
+  0.58 and 0.68 log10.
+- By purpose, the mean gap was 0.36 (MS), 0.43 (MU), 0.48 (PN) and 0.72 (PI) log10. Planned investigations sit
+  furthest out, as the limits section expected.
+- A point's own level explains most of it. The standard deviation of the points' mean gaps is 0.41 log10. Within a
+  point the spread is 0.51 log10, against the candidate's 0.46. With each point's own mean gap removed, which uses
+  the results themselves, 78.4% of results fall inside a range of the candidate's width (75.1% large, 81.2% medium,
+  74.3% small). That is a hindsight figure. It says a range needs a level for the place, and it does not show that
+  such a range would pass.
+
+### What this leads to
+
+By the statement: an order-only line is proposed for river spots ("higher or lower than usual here"), with no
+reading and no range. Ethan decides; nothing shows until he does. The river estimate, every forecast, every frozen
+file and every active window are unchanged.
+
+The next deliverable the evidence supports is a candidate for the level of a place, frozen before it is scored:
+stream size and what lies upstream as inputs, fitted on seasons to 2016 and scored on seasons from 2017, by river
+system. These rows have now been read, so that would be a development result, and a pass would need new unseen
+points or the 2027 season to confirm it. Those 2023-26 archive rows at these points (development by the statement)
+have not been scored.

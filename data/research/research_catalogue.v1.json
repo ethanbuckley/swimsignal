@@ -3046,7 +3046,7 @@
   },
   {
    "id": "river-unseen",
-   "title": "River samples the river model never saw: statement and staging",
+   "title": "River samples the river model never saw: the order holds, the range does not",
    "section": "data",
    "topics": [
     "e. coli",
@@ -3054,15 +3054,15 @@
     "evaluation",
     "sources"
    ],
-   "verdict": "Not yet read. Stage 1 only, on 15 November 2026: the statement, the kill rule and a frozen candidate were pushed before the first request, then 64,279 river E. coli results for 2012 to 2026 were fetched from the Environment Agency's archive and their sampling points counted and placed, with no result read. 59 points pass all five rules, with 6,322 held-out samples from 2012 to 2022. The kill rule (fewer than 30 points, or over half the rows at points with no overflow upstream) is not met: 25.7% of rows are at such points.",
-   "scope": "Sampling points that are not bathing waters, kept purposes only (planned monitoring and planned investigations), May to September. 48 of the 59 points are in the South West and most are small streams, so a later pass would say little about large lowland rivers. Nothing has been scored.",
-   "stage": "waiting",
-   "stage_note": "Waits on rain for 2012 to 2022 at the points and their overflows. The ERA5-Land download from the Copernicus store started on 15 November 2026. Nothing on the site changes.",
-   "next": "Amendment 1 (pushed before any join) fixes the rest: ERA5-Land rain throughout, with a rain match check choosing between the frozen candidate and the same form refitted on ERA5-Land rows; 33 river systems for the interval; three catchment bands. Then one read against production, the month rate and a rain rule.",
+   "verdict": "Read once on 16 November 2026: the order passes and the range fails. On 6,322 river E. coli results from 2012 to 2022 at 59 Environment Agency sampling points that no model here had used, the frozen candidate put each point's days in the right order (mean within-point correlation 0.360, interval 0.314 to 0.394, against a bar of 0.15). Only 53.1% of results fell inside its 8-in-10 range, against a pass band of 72% to 88%: 44.3% were above it and 2.6% below. Rain in the last 48 hours alone scored 0.355, so the overflow exposure added little to the order.",
+   "scope": "Sampling points that are not bathing waters, kept purposes only (planned monitoring and planned investigations), May to September, hindcast on ERA5-Land rain at lead 0. 48 of the 59 points are in the South West and most are small streams; the median result was 818 per 100 ml against 320 at the bathing waters the model was fitted on. The split of the misses by stream size was made after the read and is development evidence.",
+   "stage": "tested",
+   "stage_note": "Nothing on the site changes. An order-only line at river spots (higher or lower than usual here) is proposed and waits on Ethan's decision.",
+   "next": "A candidate for the usual level of a place (stream size and what lies upstream), frozen before it is scored on the later seasons by river system, as a development result. A range at river spots needs that level first.",
    "records": [
     {
      "doc": "docs/RIVER-UNSEEN-PROTOCOL-2026-11.md",
-     "quote": "**The kill rule is not met. The set can test the river model.**"
+     "quote": "## The read, 16 November 2026: order passes, range fails"
     }
    ],
    "prs": [
