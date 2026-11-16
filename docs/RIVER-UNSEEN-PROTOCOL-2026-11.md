@@ -443,3 +443,23 @@ reported and decides nothing.
 
 **What is left:** 80 months of 2012-18 rain still downloading; then convert the 85 river cells for 2012-22, build
 the held-out rows and read once.
+
+### Read script ready, 16 November 2026 (no held-out result read)
+
+`scripts/river_unseen/read.py` computes what the statement and amendment 1 fix: the primary correlation with its
+river-system-season interval, the range check with the lab-limit rule, and the reported figures. Without `--dev` it
+refuses to run unless the candidate, the statement and the scripts are committed and the candidate's hash is named
+here; it writes `docs/river-unseen/result.json` and appends to `docs/river-unseen/reads.jsonl` whatever it shows.
+
+Tested with `--dev` on the 923 seen river rows the candidate was fitted on, which logs nothing. In-sample, so it says
+nothing about the read: correlation 0.426 (0.349 to 0.504), 80.6% inside the range. It ran in 98 seconds.
+
+`build_rows.py points` now also builds the two reported side sets: the 8 points rule 3 alone dropped that have an
+overflow upstream, and the 23 points with no overflow upstream (exposure 0, as production gives). Neither decides
+anything.
+
+The commands for the read, in order, once 2012-18 rain is on disk:
+
+1. `to_cells.py --points <85 cells> --years 2012-2022`
+2. `build_rows.py points <sealed samples> points.csv systems.csv <held-out rows> held_out kept`
+3. `read.py <held-out rows> <seen rows on ERA5-Land> river_range_v0e.json <production model> docs/river-unseen`

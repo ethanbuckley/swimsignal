@@ -4,7 +4,7 @@ section 7): rain in the 48 and 24 hours before each sample and the lead-0 hindca
 
     export DIPCAST_ROOT=<scratch copy of data/> DIPCAST_STATE=<scratch>/state DIPCAST_CACHE=<ERA5-Land cells>/cache
     python scripts/river_unseen/build_rows.py points <samples.parquet> docs/river-unseen/points.csv \\
-        docs/river-unseen/systems.csv <out.parquet> [held_out|development]
+        docs/river-unseen/systems.csv <out.parquet> [held_out|development] [kept|sensitivity|no_overflow]
     python scripts/river_unseen/build_rows.py bathing <bench seen.parquet> <out.parquet>
 
 `points` joins sample results to inputs. It is part of the read: run it only after the candidate's hash is
@@ -42,9 +42,23 @@ def one_per_point_and_time(s: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
                   "rows_dropped": int(len(s) - len(kept))}
 
 
-def point_samples(samples: pd.DataFrame, points: pd.DataFrame, systems: pd.DataFrame, span: str) -> tuple[pd.DataFrame, dict]:
-    """The kept rows of `span` at kept points, shaped as build_rows wants them."""
-    kp = points[points["kept_point"]].set_index("point")
+def which_points(points: pd.DataFrame, which: str) -> pd.DataFrame:
+    """`kept`: the points passing all five rules (the read). `sensitivity`: those rule 3 alone dropped.
+    `no_overflow`: those passing rules 1, 2, 3 and 5 with no monitored overflow upstream. The last two are reported
+    beside the read and decide nothing."""
+    if which == "kept":
+        return points[points["kept_point"]]
+    base = points["rule1_count"] & points["rule2_on_river"] & points["rule5_not_bench"]
+    if which == "sensitivity":
+        return points[base & ~points["rule3_right_river"] & points["rule4_overflow_upstream"]]
+    assert which == "no_overflow", which
+    return points[base & points["rule3_right_river"] & ~points["rule4_overflow_upstream"]]
+
+
+def point_samples(samples: pd.DataFrame, points: pd.DataFrame, systems: pd.DataFrame, span: str,
+                  which: str = "kept") -> tuple[pd.DataFrame, dict]:
+    """The kept rows of `span` at the chosen points, shaped as build_rows wants them."""
+    kp = which_points(points, which).set_index("point")
     s = samples[samples["kept"] & (samples["span"] == span) & samples["point"].isin(kp.index)].copy()
     parsed = s["result"].map(parse_result)
     s["ecoli"], s["ecoli_qual"] = [p[0] for p in parsed], [p[1] for p in parsed]
@@ -78,7 +92,28 @@ def point_up(net, ov, bw_id: str, lat: float, lon: float):
     return pin, upstream_overflows(net, pin, ov, velocity_ms=river_velocity(None))
 
 
-def build(samples: pd.DataFrame, at_points: bool) -> tuple[pd.DataFrame, dict]:
+def rows_without_overflows(samples: pd.DataFrame, hourly) -> tuple[pd.DataFrame, dict]:
+    """Rows for points with no monitored overflow upstream: the rain windows, and exposure 0 as production gives."""
+    from dipcast.ingest.rainfall import grid_cell
+    from dipcast.model.ecoli import rain_windows
+    out, drops = [], {"no_site_rain": 0, "rain_window": 0}
+    for _, g in samples.groupby("bw_id"):
+        cell = tuple(float(v) for v in grid_cell(float(g["lat"].iloc[0]), float(g["lon"].iloc[0])))
+        try:
+            site_rain = hourly.loc[cell].set_index("time")["precip_mm"].sort_index()
+        except KeyError:
+            drops["no_site_rain"] += len(g)
+            continue
+        g = g.sort_values("sample_time").reset_index(drop=True)
+        g["rain_48h"], g["rain_24h"] = rain_windows(site_rain, pd.DatetimeIndex(g["sample_time"]))
+        g["risk_model"], g["missing_share"], g["upstream"] = 0.0, 0.0, 0
+        bad = g["rain_48h"].isna() | g["rain_24h"].isna()
+        drops["rain_window"] += int(bad.sum())
+        out.append(g[~bad])
+    return pd.concat(out, ignore_index=True), drops
+
+
+def build(samples: pd.DataFrame, at_points: bool, no_overflow: bool = False) -> tuple[pd.DataFrame, dict]:
     assert all(k in os.environ for k in ("DIPCAST_ROOT", "DIPCAST_STATE", "DIPCAST_CACHE")), \
         "set a scratch DIPCAST_ROOT and DIPCAST_STATE, and DIPCAST_CACHE to the rain cache to read"
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -96,7 +131,10 @@ def build(samples: pd.DataFrame, at_points: bool) -> tuple[pd.DataFrame, dict]:
     ov = load_overflows(net)
     rain = load_rain()
     hourly = rain.set_index(["cell_lat", "cell_lon"]).sort_index()
-    rows, drops = lrh.build_rows(samples, net, ov, SpillModel.load(), hourly, daily_rain_features(rain))
+    if no_overflow:
+        rows, drops = rows_without_overflows(samples, hourly)
+    else:
+        rows, drops = lrh.build_rows(samples, net, ov, SpillModel.load(), hourly, daily_rain_features(rain))
     x = features(rows["rain_48h"], rows["rain_24h"], rows["risk_model"], np.zeros(len(rows)), rows["sample_time"])
     rows = pd.concat([rows.reset_index(drop=True), x.drop(columns=["lake"])], axis=1)
     rows["season"], rows["month"] = rows["sample_time"].dt.year, rows["sample_time"].dt.month
@@ -108,12 +146,14 @@ def build(samples: pd.DataFrame, at_points: bool) -> tuple[pd.DataFrame, dict]:
 
 def main(argv: list[str]) -> None:
     if argv[0] == "points":
+        which = argv[6] if len(argv) > 6 else "kept"
         samples, audit = point_samples(pd.read_parquet(argv[1]), pd.read_csv(argv[2]), pd.read_csv(argv[3]),
-                                       argv[5] if len(argv) > 5 else "held_out")
+                                       argv[5] if len(argv) > 5 else "held_out", which)
         out = Path(argv[4])
     else:
         samples, audit, out = bathing_samples(pd.read_parquet(argv[1])), {}, Path(argv[2])
-    rows, built = build(samples, at_points=argv[0] == "points")
+    rows, built = build(samples, at_points=argv[0] == "points",
+                        no_overflow=argv[0] == "points" and len(argv) > 6 and argv[6] == "no_overflow")
     if argv[0] == "bathing":   # the columns freeze_candidate.py checks
         rows["part"], rows["row_version"] = "seen", "ecoli-rows-v1 rebuilt on the rain cache in use"
     rows.to_parquet(out, index=False)

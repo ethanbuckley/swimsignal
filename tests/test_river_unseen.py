@@ -154,3 +154,39 @@ def test_point_samples_keeps_only_the_span_at_kept_points_in_local_time():
     assert str(out["sample_time"].iloc[0]) == "2015-07-15 10:00:00+01:00" and out["system"].iloc[0] == "S01"
     dev, _ = build_rows.point_samples(samples, points, systems, "development")
     assert dev["ecoli"].tolist() == [9.0]
+
+
+def test_the_three_point_sets_do_not_overlap():
+    import build_rows
+    p = pd.read_csv(ROOT / "docs" / "river-unseen" / "points.csv")
+    sets = {w: set(build_rows.which_points(p, w)["point"]) for w in ("kept", "sensitivity", "no_overflow")}
+    assert (len(sets["kept"]), len(sets["sensitivity"]), len(sets["no_overflow"])) == (59, 8, 23)
+    assert not (sets["kept"] & sets["sensitivity"]) and not (sets["kept"] & sets["no_overflow"])
+
+
+def test_the_read_scores_order_within_a_point_and_the_range_at_lab_limits():
+    import read
+    d = pd.DataFrame({"log_ecoli": [1.0, 1.0, 4.0, 4.0, 2.0, 2.0], "ecoli_qual": ["<", "<", ">", ">", "=", "="],
+                      "low_log10": [0.5, 1.5, 2.0, 2.0, 1.5, 2.5], "high_log10": [2.0, 3.0, 4.5, 3.5, 2.5, 3.0]})
+    assert read.inside(d).tolist() == [True, False, True, False, True, False]
+    assert read.outcome({"primary_pass": True, "range_pass": True}) == "both pass"
+    assert read.outcome({"primary_pass": True, "range_pass": False}) == "order passes, range fails"
+    assert read.outcome({"primary_pass": False, "range_pass": True}) == "order fails"
+    rng = np.random.default_rng(0)
+    n = 40
+    rows = pd.concat([pd.DataFrame({"bw_id": f"P{i}", "system": f"S{i // 2}", "season": np.repeat([2014, 2015], n // 2),
+                                    "x": rng.normal(size=n)}) for i in range(6)], ignore_index=True)
+    rows["log_ecoli"] = rows["x"] + rng.normal(scale=1.0, size=len(rows))
+    rows["noise"] = rng.normal(size=len(rows))
+    assert read.rho_points(rows, "x") > 0.5 and abs(read.rho_points(rows, "noise")) < 0.2
+    iv = read.interval(rows, lambda v: read.rho_points(v, "x"), lambda v: read.rho_points(v, "x", "_p"))
+    assert iv["ci95"][0] < iv["value"] < iv["ci95"][1] and iv["ci95"][0] > read.RHO_BAR
+    assert read.rho_points(rows.groupby("bw_id").head(10), "x") != read.rho_points(rows.groupby("bw_id").head(10), "x")  # nan: under 15 rows
+
+
+def test_production_as_deployed_is_the_logistic_of_its_standardised_inputs():
+    import read
+    m = {"intercept": -2.0, "coef": {"lrain48": 0.5, "lake": 9.0}, "mean": {"lrain48": 1.0, "lake": 0.0},
+         "scale": {"lrain48": 2.0, "lake": 1.0}}
+    p = read.production_deployed(m, pd.DataFrame({"lrain48": [1.0, 5.0]}))
+    assert abs(p[0] - 1 / (1 + np.exp(2.0))) < 1e-12 and abs(p[1] - 1 / (1 + np.exp(1.0))) < 1e-12
