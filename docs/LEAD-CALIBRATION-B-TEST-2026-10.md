@@ -271,3 +271,100 @@ checked: either 2026 has so far been drier relative to the model than 2025, or t
 record fewer spill-days than the EDM files for the same overflows. The EA's 2026 files for Thames
 Water and Welsh Water could settle the second question by comparison with the live history for the
 same days.
+
+### Step 4: the primary check, window 18 Oct to 14 Nov 2026 (run 16 Nov 2026)
+
+**Verdict: FAIL. All three conditions fail. Nothing is deployed, A1 stays open, and this document
+is the record.**
+
+- **Command:** `uv run python scripts/lead_calibration_b_check.py --from 2026-10-18 --to 2026-11-14`,
+  from a worktree at main's commit `6743baf2`.
+- **File read:** the published `https://swimsignal.co.uk/data/verification_live.csv`, last modified
+  16 Nov 2026 08:36 UTC, 14,883,332 bytes, SHA-256 beginning `9d13c3ca0c796d11`. A saved copy gives
+  the same output byte for byte.
+- **Model-change rule:** `git log origin/main --since=2026-10-18 -- data/processed/spill_model.pkl`
+  lists no commit. The model's SHA-256 still begins `faa7917e2be725a9`. The window stays 28 days.
+- **Maps:** today's map still hashes `734202bc7f22af38` and B's `fce6a1d12025df37`, as stated.
+- **Rows:** 94,699 scored forecasts on 1,331 overflows, 6,321 with a spill. Base rate 0.0667.
+- **Sanity check: passes.** Today's map recomputed matches the logged calibrated forecast, mean
+  absolute difference 0.00004 (limit 0.001).
+- **Minimum data: met.** 6,321 rows with observed = 1 (minimum 200). No extension.
+
+| | Today | B | |
+|---|---|---|---|
+| Brier | **0.04719** | 0.05209 | B is 10.4% worse |
+| ECE | **0.0111** | 0.0421 | |
+| Mean forecast (observed 0.0667) | 0.0761 | 0.1088 | |
+
+| Condition | Result | Numbers |
+|---|---|---|
+| L1: Brier(B) < Brier(today), all rows | **FAIL** | 0.05209 against 0.04719 |
+| L2: Brier(B) ≤ 1.02 × Brier(today) at each company with 50 or more spills | **FAIL** | fails at 7 of 9 |
+| L3: ECE(B) ≤ ECE(today), all rows | **FAIL** | 0.0421 against 0.0111 |
+
+All nine companies have 50 or more spills, so L2 applies to each.
+
+| Company | Rows | Spills | Observed | Today | B | Brier today | Brier B | B / today | L2 |
+|---|---|---|---|---|---|---|---|---|---|
+| Anglian | 13,758 | 614 | 0.0446 | 0.0362 | 0.0573 | **0.04021** | 0.04231 | 1.052 | FAIL |
+| Northumbrian | 1,200 | 87 | 0.0725 | 0.0453 | 0.0679 | 0.04912 | **0.04713** | 0.960 | pass |
+| Severn Trent | 12,106 | 436 | 0.0360 | 0.0455 | 0.0699 | **0.03021** | 0.03343 | 1.106 | FAIL |
+| South West | 2,573 | 494 | 0.1920 | 0.1640 | 0.2130 | **0.11246** | 0.11709 | 1.041 | FAIL |
+| Southern | 5,721 | 651 | 0.1138 | 0.1209 | 0.1691 | **0.06488** | 0.07025 | 1.083 | FAIL |
+| Thames | 16,422 | 661 | 0.0403 | 0.0825 | 0.1188 | **0.04016** | 0.05110 | 1.272 | FAIL |
+| United Utilities | 12,168 | 1,037 | 0.0852 | 0.0977 | 0.1353 | **0.04747** | 0.05265 | 1.109 | FAIL |
+| Wessex | 20,593 | 1,524 | 0.0740 | 0.0856 | 0.1202 | **0.04941** | 0.05435 | 1.100 | FAIL |
+| Yorkshire | 10,158 | 817 | 0.0804 | 0.0672 | 0.0989 | **0.05671** | 0.05783 | 1.020 | pass |
+
+Yorkshire passes L2 by a hair: the ratio is 1.0197 against a limit of 1.02. Its Brier is still
+worse under B.
+
+By bin of today's forecast:
+
+| Bin | Rows | Observed | Today | B |
+|---|---|---|---|---|
+| 0.0 | 75,741 | 0.019 | 0.018 | 0.034 |
+| 0.1 | 7,725 | 0.114 | 0.143 | 0.220 |
+| 0.2 | 3,922 | 0.209 | 0.244 | 0.355 |
+| 0.3 | 2,296 | 0.274 | 0.347 | 0.479 |
+| 0.4 | 1,393 | 0.352 | 0.445 | 0.586 |
+| 0.5 | 1,227 | 0.462 | 0.549 | 0.684 |
+| 0.6 | 1,138 | 0.548 | 0.651 | 0.767 |
+| 0.7 | 857 | 0.678 | 0.750 | 0.819 |
+| 0.8 | 395 | 0.777 | 0.827 | 0.866 |
+| 0.9 | 5 | 0.200 | 0.914 | 0.949 |
+
+**Coverage of the window (measured).** Rows exist for 19 of the 28 target days. No rows are
+published for 25 and 26 Oct, 2 to 5 Nov, or 9, 11 and 13 Nov. 27 to 30 Oct have about 3,300 to
+4,000 rows a day against about 5,000 to 6,400 on the other days. The statement sets no rule on
+missing days, and the minimum-data rule is met many times over, so the verdict stands. Why those
+days have no scored rows was not checked here.
+
+**Against the expected moves (measured).**
+- The mean forecast goes up at every company, as stated. United Utilities rises 39%, against the
+  "about 40%" stated. Outside United Utilities the rises are 30% (South West) to 58% (Anglian).
+  That is below the stated "a half to three-quarters" at five of the eight; only Anglian, Severn
+  Trent and Northumbrian reach a half.
+- The bins move as stated: up by 0.08 to 0.14 in the 0.1-0.6 bins and by 0.016 at 0.0-0.1.
+- The prediction held. B is further from the observed rate than today's map in every one of the
+  ten bins, the 0.0-0.4 bins included.
+- L2 was called at risk at United Utilities. It fails there (ratio 1.109).
+- Today's mean forecast is above the observed rate over all rows (0.0761 against 0.0667) and at
+  five of nine companies: Severn Trent, Southern, Thames, United Utilities and Wessex. It is below
+  at Anglian, Northumbrian, South West and Yorkshire. Before the window it was above at six; South
+  West has changed side.
+- B's mean forecast is above the observed rate at seven of nine. It is below at Northumbrian
+  (0.0679 against 0.0725), the one company where B scores better.
+
+**Inferred, not checked.**
+- The window was wetter than the rows before it: the base rate is 0.0667 against 0.0295, and 23
+  and 24 Oct hold 3,720 of the 6,321 spills. B still loses, so the secondary check's result was
+  not a dry-spell effect alone.
+- The smaller percentage rises outside United Utilities probably follow from that: the map lifts
+  high forecasts by a smaller share than low ones, and this window had more high forecasts.
+- The question left open in step 3 is still open: whether live feeds record fewer spill-days than
+  the EDM files for the same overflows. This check cannot separate that from a real 2025 to 2026
+  difference. A map fitted on live-feed labels is the candidate that would test it.
+
+**What changes.** Nothing. `data/processed/lead_calibration.json`, the strict xfail mark in
+`tests/test_training.py` and the Method page are untouched.
