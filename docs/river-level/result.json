@@ -1,0 +1,184 @@
+{
+ "run_at": "2026-11-16T19:32:37+00:00",
+ "commit": "e1572f4d48424ff0a8c783fa26ed679f9e74c043",
+ "rows_sha256": "382a335e0d6b010e8611bedf7d7fa409cab0c8ba56bb8a8bc9d9ad3ae20b3678",
+ "form": "river-level-v1",
+ "evidence": "development (rows read on 16 November 2026)",
+ "L1_no_samples": {
+  "rows": 2427,
+  "points": 39,
+  "systems": 29,
+  "coverage": 0.7915,
+  "coverage_ci95": [
+   0.7641,
+   0.8177
+  ],
+  "above": 0.129,
+  "below": 0.0795,
+  "pass": true,
+  "median_half_width_log10": 0.724,
+  "rho_within_point": 0.4216,
+  "level_correlation_across_points": 0.1838,
+  "by_band": {
+   "large": {
+    "rows": 258,
+    "coverage": 0.7364,
+    "above": 0.1163
+   },
+   "medium": {
+    "rows": 1369,
+    "coverage": 0.8115,
+    "above": 0.1388
+   },
+   "small": {
+    "rows": 800,
+    "coverage": 0.775,
+    "above": 0.1163
+   }
+  }
+ },
+ "L2_earlier_samples": {
+  "rows": 2200,
+  "points": 34,
+  "systems": 24,
+  "coverage": 0.7568,
+  "coverage_ci95": [
+   0.7198,
+   0.7891
+  ],
+  "above": 0.0977,
+  "below": 0.1455,
+  "pass": true,
+  "median_half_width_log10": 0.5943,
+  "rho_within_point": 0.4293,
+  "level_correlation_across_points": 0.719,
+  "by_band": {
+   "large": {
+    "rows": 182,
+    "coverage": 0.544,
+    "above": 0.1044
+   },
+   "medium": {
+    "rows": 1369,
+    "coverage": 0.8057,
+    "above": 0.0928
+   },
+   "small": {
+    "rows": 649,
+    "coverage": 0.7134,
+    "above": 0.1063
+   }
+  }
+ },
+ "river_range_v0e_same_rows": {
+  "rows": 2427,
+  "points": 39,
+  "systems": 29,
+  "coverage": 0.466,
+  "coverage_ci95": [
+   0.4166,
+   0.5125
+  ],
+  "above": 0.5117,
+  "below": 0.0222,
+  "pass": false,
+  "median_half_width_log10": 0.5862,
+  "rho_within_point": 0.329,
+  "level_correlation_across_points": 0.1027,
+  "by_band": {
+   "large": {
+    "rows": 258,
+    "coverage": 0.6938,
+    "above": 0.1783
+   },
+   "medium": {
+    "rows": 1369,
+    "coverage": 0.4624,
+    "above": 0.5274
+   },
+   "small": {
+    "rows": 800,
+    "coverage": 0.3987,
+    "above": 0.5925
+   }
+  }
+ },
+ "river_range_v0e_on_L2_rows": {
+  "rows": 2200,
+  "points": 34,
+  "systems": 24,
+  "coverage": 0.4568,
+  "coverage_ci95": [
+   0.4075,
+   0.5056
+  ],
+  "above": 0.5318,
+  "below": 0.0114,
+  "pass": false,
+  "median_half_width_log10": 0.5862,
+  "rho_within_point": 0.3252,
+  "level_correlation_across_points": 0.171,
+  "by_band": {
+   "large": {
+    "rows": 182,
+    "coverage": 0.7363,
+    "above": 0.2253
+   },
+   "medium": {
+    "rows": 1369,
+    "coverage": 0.4624,
+    "above": 0.5274
+   },
+   "small": {
+    "rows": 649,
+    "coverage": 0.3667,
+    "above": 0.6271
+   }
+  }
+ },
+ "fits": {
+  "tau": [
+   0.3065,
+   0.3301,
+   0.3355
+  ],
+  "sigma": [
+   0.4389,
+   0.4582,
+   0.4626
+  ]
+ },
+ "coef_median": {
+  "lrain48": 0.0283,
+  "lrain24": 0.2079,
+  "logit_risk": 0.0624,
+  "doy_sin": -0.2027,
+  "doy_cos": -0.0967,
+  "log_km": -0.0475,
+  "log_overflows": -0.1796
+ },
+ "fit_all_systems_to_2016": {
+  "intercept": 3.258173245725044,
+  "coef": {
+   "lrain48": 0.02828061501434915,
+   "lrain24": 0.2079228576481933,
+   "logit_risk": 0.062210543932657694,
+   "doy_sin": -0.2028399563699263,
+   "doy_cos": -0.09673612432714827,
+   "log_km": -0.04874724665603115,
+   "log_overflows": -0.17938252151081363
+  },
+  "sigma": 0.4582840797138852,
+  "tau": 0.32973039874512505,
+  "rows": 3895,
+  "points": 57
+ },
+ "bathing_rivers_reported": {
+  "note": "seen bathing-water river rows; no km of channel, so the level form is not applied; v0e range only",
+  "rows": 923,
+  "coverage": 0.8061,
+  "above": 0.1051,
+  "below": 0.0888
+ },
+ "outcome": "L1 passes, L2 passes"
+}

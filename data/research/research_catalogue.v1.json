@@ -3058,11 +3058,15 @@
    "scope": "Sampling points that are not bathing waters, kept purposes only (planned monitoring and planned investigations), May to September, hindcast on ERA5-Land rain at lead 0. 48 of the 59 points are in the South West and most are small streams; the median result was 818 per 100 ml against 320 at the bathing waters the model was fitted on. The split of the misses by stream size was made after the read and is development evidence.",
    "stage": "waiting",
    "stage_note": "Read on 16 November 2026. Nothing on the site changes. An order-only line at river spots (higher or lower than usual here) is proposed and waits on Ethan's decision.",
-   "next": "A candidate for the usual level of a place (stream size and what lies upstream), frozen before it is scored on the later seasons by river system, as a development result. A range at river spots needs that level first.",
+   "next": "A follow-up fitted after the read (development evidence only) gave each place a usual level: with a place's own earlier samples 75.7% of later results fell inside a range of the old width, and 79.2% with no samples and a wider range. Stream size did not predict a place's level. Next: a backtest of that range on bathing-water rivers' own seasons, then a shadow log for the 2027 season.",
    "records": [
     {
      "doc": "docs/RIVER-UNSEEN-PROTOCOL-2026-11.md",
      "quote": "## The read, 16 November 2026: order passes, range fails"
+    },
+    {
+     "doc": "docs/RIVER-LEVEL-CANDIDATE-2026-11.md",
+     "quote": "## Result, 16 November 2026: L1 passes, L2 passes (development)"
     }
    ],
    "prs": [
