@@ -3058,7 +3058,7 @@
    "scope": "Sampling points that are not bathing waters, kept purposes only (planned monitoring and planned investigations), May to September, hindcast on ERA5-Land rain at lead 0. 48 of the 59 points are in the South West and most are small streams; the median result was 818 per 100 ml against 320 at the bathing waters the model was fitted on. The split of the misses by stream size was made after the read and is development evidence.",
    "stage": "waiting",
    "stage_note": "Read on 16 November 2026. Nothing on the site changes. An order-only line at river spots (higher or lower than usual here) is proposed and waits on Ethan's decision.",
-   "next": "A follow-up fitted after the read (development evidence only) gave each place a usual level: with a place's own earlier samples 75.7% of later results fell inside a range of the old width, and 79.2% with no samples and a wider range. Stream size did not predict a place's level. Next: a backtest of that range on bathing-water rivers' own seasons, then a shadow log for the 2027 season.",
+   "next": "Two follow-ups fitted after the read (development evidence only). Giving each place a usual level from its own earlier samples put 75.7% of later results inside the range at the archive points, against 46% for the old range; stream size did not predict a place's level. At bathing-water rivers the same range held (81.1% of 544 samples) and did no better than the old one (83.3%), so no new shadow log is built there. What is missing is samples at swim spots that are not bathing waters.",
    "records": [
     {
      "doc": "docs/RIVER-UNSEEN-PROTOCOL-2026-11.md",
@@ -3067,6 +3067,10 @@
     {
      "doc": "docs/RIVER-LEVEL-CANDIDATE-2026-11.md",
      "quote": "## Result, 16 November 2026: L1 passes, L2 passes (development)"
+    },
+    {
+     "doc": "docs/RIVER-LEVEL-BATHING-BACKTEST-2026-11.md",
+     "quote": "**No shadow log for bathing rivers on this evidence.**"
     }
    ],
    "prs": [

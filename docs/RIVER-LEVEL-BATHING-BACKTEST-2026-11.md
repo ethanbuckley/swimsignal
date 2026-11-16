@@ -61,3 +61,40 @@ inside by site, for both. The within-site correlation.
 - 14 sites, three scored seasons, one of them thin (40 samples in 2024).
 - Lead 0 hindcast on ERA5-Land rain.
 - Run once. A second run needs an amendment here first.
+
+## Result, 16 November 2026: the range passes and does no better than the old one (development)
+
+Run once at commit `212d4cfc`, the commit that carries this statement. Logged in `docs/river-level/runs.jsonl`;
+every figure is in `docs/river-level/bathing_result.json`.
+
+**Correction to the statement, made after the run.** It said 11 of the 20 sites have more channel upstream than
+the largest archive point the line was fitted on. The count is 1; the largest kept archive point has 3863.4 km.
+Nothing scored depends on that sentence.
+
+| | Samples | Sites | Inside | Interval | Above | Below | Verdict |
+|---|---|---|---|---|---|---|---|
+| `river-level-v1`, earlier samples | 544 | 14 | 81.1% | 75.1% to 86.8% | 5.1% | 13.8% | pass |
+| `river-range-v0e` (in sample) | 544 | 14 | 83.3% | 78.7% to 87.5% | 7.2% | 9.6% | passes the same rule |
+
+The mean gain in log predictive density over `river-range-v0e` is -0.093 (-0.199 to +0.015). The interval is not
+above zero, and the point estimate is against the new range.
+
+**What is supported.** The frozen line, fitted only on archive points to 2016, with a site's level from its own
+earlier seasons, states a range that held at bathing-water rivers in the next season. Those sites are far larger
+than the points it was fitted on, so the weak large-catchment figure in the candidate's run (54.4% on 182 samples)
+did not repeat here.
+
+**What is not supported.** That it is better than the old range at bathing waters. The old range is in sample
+here and has that advantage, but on this evidence the two are level. Within a site the old form orders days better
+(0.44 against 0.38). By site the new range runs from 54% (Sheep's Green, Cam) to 96%; the old from 63% to 94%.
+
+### What this leads to
+
+The statement's second outcome: the place level matters at points dirtier than bathing waters, and not at bathing
+waters. **No shadow log for bathing rivers on this evidence.** The old range at bathing-water rivers is the thing
+worth a prospective check, and the bench already covers it.
+
+The open question is places that are not bathing waters and have no samples: most swim spots on the site. There
+the read says a range fitted on bathing waters sits too low at dirtier points, and the candidate says a place's
+level cannot be told from stream size. What would answer it is samples at swim spots that are not bathing waters
+(the DENSE project's Yorkshire sites, citizen sampling), not another model on these rows.
