@@ -1,0 +1,1650 @@
+{
+ "summary": {
+  "mode": "amended",
+  "fetched": 7,
+  "with_readings": 7,
+  "with_an_event": 7,
+  "sondes_natural_one_per_place": 7,
+  "artificial_channel_stations": 0,
+  "tier_a_events_natural": {
+   "rise": 43,
+   "no rise": 113,
+   "raised before": 8,
+   "gap": 3,
+   "no baseline": 16
+  },
+  "sondes_with_5_rises": 6,
+  "sondes_with_10_rises": 1,
+  "sondes_with_signal": 4,
+  "sondes_with_signal_and_5_rises": [
+   "E02569A",
+   "E03459A",
+   "E04798A",
+   "E06527A"
+  ],
+  "sondes_with_signal_and_10_rises": [
+   "E04798A"
+  ],
+  "rivers_with_signal_and_5_rises": [
+   "Frickley Beck",
+   "River Breamish",
+   "River Calder"
+  ],
+  "descriptive_all_tier_a_rises_natural": {
+   "note": "every Tier A rise at natural-channel sondes, signal or not: a description, not a travel time",
+   "lag_h": {
+    "n": 43,
+    "median": 5.183,
+    "lo": 2.733,
+    "hi": 8.017,
+    "q1": 2.408,
+    "q3": 14.05
+   },
+   "lag_over_model": {
+    "n": 43,
+    "median": 0.781,
+    "lo": 0.402,
+    "hi": 1.304,
+    "q1": 0.314,
+    "q3": 1.853
+   },
+   "v_ms": {
+    "n": 43,
+    "median": 0.256,
+    "lo": 0.153,
+    "hi": 0.497,
+    "q1": 0.108,
+    "q3": 0.637
+   },
+   "window": {
+    "before": 26,
+    "after": 14,
+    "inside": 3
+   },
+   "same_slot_as_start": 0
+  },
+  "pooled": {
+   "sondes": 4,
+   "rises": 28,
+   "median_v_ms": 0.4373,
+   "v_ci": [
+    0.1326,
+    1.4213
+   ],
+   "excludes_model_speed": false,
+   "slope_h_per_km": -0.8249,
+   "slope_ci": [
+    -1.7281,
+    0.6924
+   ],
+   "intercept_h": 6.473,
+   "intercept_ci": [
+    -0.6189,
+    10.576
+   ],
+   "model_slope_h_per_km": 1.3889
+  },
+  "pooled_10_rises": "under 3 sondes on 2 rivers with 10 rises and a signal",
+  "tier_a_by_spill_length_natural": [
+   {
+    "band": "under 1 h",
+    "events": 113,
+    "sondes": 7,
+    "rises": 28,
+    "rise_share": 0.248,
+    "background_share": 0.056,
+    "diff_ci": [
+     0.124,
+     0.293
+    ]
+   },
+   {
+    "band": "1 to 6 h",
+    "events": 24,
+    "sondes": 4,
+    "rises": 8,
+    "rise_share": 0.333,
+    "background_share": 0.077,
+    "diff_ci": [
+     0.104,
+     0.473
+    ]
+   },
+   {
+    "band": "6 h or more",
+    "events": 19,
+    "sondes": 3,
+    "rises": 7,
+    "rise_share": 0.368,
+    "background_share": 0.067,
+    "diff_ci": [
+     0.13,
+     0.437
+    ]
+   }
+  ],
+  "tier_a_events_by_reading_interval_natural": {
+   "15": {
+    "no rise": 4,
+    "rise": 1,
+    "raised before": 1
+   },
+   "30": {
+    "no rise": 29,
+    "rise": 16,
+    "raised before": 3,
+    "gap": 3
+   },
+   "60": {
+    "no rise": 80,
+    "rise": 26,
+    "raised before": 4
+   }
+  }
+ },
+ "seen_and_new": {
+  "seen_events_compared": 135,
+  "seen_events_changed": 0,
+  "changed": [],
+  "sondes": [
+   {
+    "station_id": "E02569A",
+    "seen": {
+     "tier_a": 28,
+     "rise": 7,
+     "no_rise": 15,
+     "raised_before": 3,
+     "gap": 1,
+     "no_baseline": 2,
+     "lag_h": {
+      "n": 7,
+      "median": 0.717,
+      "lo": 0.283,
+      "hi": 2.733
+     },
+     "v_ms": {
+      "n": 7,
+      "median": 2.182,
+      "lo": 0.572,
+      "hi": 5.518
+     },
+     "model_travel_h": {
+      "n": 7,
+      "median": 7.82,
+      "lo": 7.82,
+      "hi": 7.82
+     }
+    },
+    "new": {
+     "tier_a": 4,
+     "rise": 1,
+     "no_rise": 2,
+     "raised_before": 1,
+     "gap": 0,
+     "no_baseline": 0,
+     "lag_h": {
+      "n": 1,
+      "values": [
+       27.03
+      ]
+     },
+     "v_ms": {
+      "n": 1,
+      "values": [
+       0.06
+      ]
+     },
+     "model_travel_h": {
+      "n": 1,
+      "values": [
+       7.82
+      ]
+     }
+    },
+    "all": {
+     "tier_a": 32,
+     "rise": 8,
+     "no_rise": 17,
+     "raised_before": 4,
+     "gap": 1,
+     "no_baseline": 2,
+     "lag_h": {
+      "n": 8,
+      "median": 0.908,
+      "lo": 0.283,
+      "hi": 15.23
+     },
+     "v_ms": {
+      "n": 8,
+      "median": 1.801,
+      "lo": 0.103,
+      "hi": 5.518
+     },
+     "model_travel_h": {
+      "n": 8,
+      "median": 7.82,
+      "lo": 7.82,
+      "hi": 7.82
+     }
+    }
+   },
+   {
+    "station_id": "E03360A",
+    "seen": {
+     "tier_a": 19,
+     "rise": 4,
+     "no_rise": 11,
+     "raised_before": 1,
+     "gap": 0,
+     "no_baseline": 3,
+     "lag_h": {
+      "n": 4,
+      "values": [
+       2.63,
+       2.82,
+       21.73,
+       25.35
+      ]
+     },
+     "v_ms": {
+      "n": 4,
+      "values": [
+       0.05,
+       0.06,
+       0.51,
+       0.95
+      ]
+     },
+     "model_travel_h": {
+      "n": 4,
+      "values": [
+       6.67,
+       6.67,
+       6.67,
+       13.38
+      ]
+     }
+    },
+    "new": {
+     "tier_a": 16,
+     "rise": 0,
+     "no_rise": 14,
+     "raised_before": 0,
+     "gap": 0,
+     "no_baseline": 2,
+     "lag_h": {
+      "n": 0,
+      "values": []
+     },
+     "v_ms": {
+      "n": 0,
+      "values": []
+     },
+     "model_travel_h": {
+      "n": 0,
+      "values": []
+     }
+    },
+    "all": {
+     "tier_a": 35,
+     "rise": 4,
+     "no_rise": 25,
+     "raised_before": 1,
+     "gap": 0,
+     "no_baseline": 5,
+     "lag_h": {
+      "n": 4,
+      "values": [
+       2.63,
+       2.82,
+       21.73,
+       25.35
+      ]
+     },
+     "v_ms": {
+      "n": 4,
+      "values": [
+       0.05,
+       0.06,
+       0.51,
+       0.95
+      ]
+     },
+     "model_travel_h": {
+      "n": 4,
+      "values": [
+       6.67,
+       6.67,
+       6.67,
+       13.38
+      ]
+     }
+    }
+   },
+   {
+    "station_id": "E03430A",
+    "seen": {
+     "tier_a": 19,
+     "rise": 5,
+     "no_rise": 11,
+     "raised_before": 0,
+     "gap": 0,
+     "no_baseline": 3,
+     "lag_h": {
+      "n": 5,
+      "median": 6.633,
+      "lo": 3.8,
+      "hi": 27.35
+     },
+     "v_ms": {
+      "n": 5,
+      "median": 0.251,
+      "lo": 0.061,
+      "hi": 0.792
+     },
+     "model_travel_h": {
+      "n": 5,
+      "median": 8.33,
+      "lo": 8.33,
+      "hi": 15.04
+     }
+    },
+    "new": {
+     "tier_a": 16,
+     "rise": 0,
+     "no_rise": 16,
+     "raised_before": 0,
+     "gap": 0,
+     "no_baseline": 0,
+     "lag_h": {
+      "n": 0,
+      "values": []
+     },
+     "v_ms": {
+      "n": 0,
+      "values": []
+     },
+     "model_travel_h": {
+      "n": 0,
+      "values": []
+     }
+    },
+    "all": {
+     "tier_a": 35,
+     "rise": 5,
+     "no_rise": 27,
+     "raised_before": 0,
+     "gap": 0,
+     "no_baseline": 3,
+     "lag_h": {
+      "n": 5,
+      "median": 6.633,
+      "lo": 3.8,
+      "hi": 27.35
+     },
+     "v_ms": {
+      "n": 5,
+      "median": 0.251,
+      "lo": 0.061,
+      "hi": 0.792
+     },
+     "model_travel_h": {
+      "n": 5,
+      "median": 8.33,
+      "lo": 8.33,
+      "hi": 15.04
+     }
+    }
+   },
+   {
+    "station_id": "E03459A",
+    "seen": {
+     "tier_a": 16,
+     "rise": 4,
+     "no_rise": 11,
+     "raised_before": 0,
+     "gap": 1,
+     "no_baseline": 0,
+     "lag_h": {
+      "n": 4,
+      "values": [
+       0.25,
+       1.5,
+       2.5,
+       12.52
+      ]
+     },
+     "v_ms": {
+      "n": 4,
+      "values": [
+       0.09,
+       0.44,
+       0.73,
+       4.39
+      ]
+     },
+     "model_travel_h": {
+      "n": 4,
+      "values": [
+       5.49,
+       5.49,
+       5.49,
+       5.49
+      ]
+     }
+    },
+    "new": {
+     "tier_a": 6,
+     "rise": 1,
+     "no_rise": 0,
+     "raised_before": 0,
+     "gap": 0,
+     "no_baseline": 5,
+     "lag_h": {
+      "n": 1,
+      "values": [
+       10.52
+      ]
+     },
+     "v_ms": {
+      "n": 1,
+      "values": [
+       0.1
+      ]
+     },
+     "model_travel_h": {
+      "n": 1,
+      "values": [
+       5.49
+      ]
+     }
+    },
+    "all": {
+     "tier_a": 22,
+     "rise": 5,
+     "no_rise": 11,
+     "raised_before": 0,
+     "gap": 1,
+     "no_baseline": 5,
+     "lag_h": {
+      "n": 5,
+      "median": 2.5,
+      "lo": 0.25,
+      "hi": 12.52
+     },
+     "v_ms": {
+      "n": 5,
+      "median": 0.439,
+      "lo": 0.088,
+      "hi": 4.39
+     },
+     "model_travel_h": {
+      "n": 5,
+      "median": 5.49,
+      "lo": 5.49,
+      "hi": 5.49
+     }
+    }
+   },
+   {
+    "station_id": "E04798A",
+    "seen": {
+     "tier_a": 20,
+     "rise": 7,
+     "no_rise": 12,
+     "raised_before": 1,
+     "gap": 0,
+     "no_baseline": 0,
+     "lag_h": {
+      "n": 7,
+      "median": 5.017,
+      "lo": 2.05,
+      "hi": 9.05
+     },
+     "v_ms": {
+      "n": 7,
+      "median": 0.256,
+      "lo": 0.142,
+      "hi": 0.627
+     },
+     "model_travel_h": {
+      "n": 7,
+      "median": 6.42,
+      "lo": 6.42,
+      "hi": 6.42
+     }
+    },
+    "new": {
+     "tier_a": 9,
+     "rise": 3,
+     "no_rise": 6,
+     "raised_before": 0,
+     "gap": 0,
+     "no_baseline": 0,
+     "lag_h": {
+      "n": 3,
+      "values": [
+       0.85,
+       2.32,
+       2.95
+      ]
+     },
+     "v_ms": {
+      "n": 3,
+      "values": [
+       0.44,
+       0.55,
+       1.51
+      ]
+     },
+     "model_travel_h": {
+      "n": 3,
+      "values": [
+       6.42,
+       6.42,
+       6.42
+      ]
+     }
+    },
+    "all": {
+     "tier_a": 29,
+     "rise": 10,
+     "no_rise": 18,
+     "raised_before": 1,
+     "gap": 0,
+     "no_baseline": 0,
+     "lag_h": {
+      "n": 10,
+      "median": 2.767,
+      "lo": 2.05,
+      "hi": 7.034
+     },
+     "v_ms": {
+      "n": 10,
+      "median": 0.466,
+      "lo": 0.199,
+      "hi": 0.627
+     },
+     "model_travel_h": {
+      "n": 10,
+      "median": 6.42,
+      "lo": 6.42,
+      "hi": 6.42
+     }
+    },
+    "new_median_inside_seen_interval": true,
+    "new_median_lag_h": 2.32
+   },
+   {
+    "station_id": "E06527A",
+    "seen": {
+     "tier_a": 9,
+     "rise": 5,
+     "no_rise": 4,
+     "raised_before": 0,
+     "gap": 0,
+     "no_baseline": 0,
+     "lag_h": {
+      "n": 5,
+      "median": 5.517,
+      "lo": 2.517,
+      "hi": 7.017
+     },
+     "v_ms": {
+      "n": 5,
+      "median": 0.112,
+      "lo": 0.088,
+      "hi": 0.239
+     },
+     "model_travel_h": {
+      "n": 5,
+      "median": 3.08,
+      "lo": 3.01,
+      "hi": 3.08
+     }
+    },
+    "new": {
+     "tier_a": 3,
+     "rise": 0,
+     "no_rise": 1,
+     "raised_before": 1,
+     "gap": 0,
+     "no_baseline": 1,
+     "lag_h": {
+      "n": 0,
+      "values": []
+     },
+     "v_ms": {
+      "n": 0,
+      "values": []
+     },
+     "model_travel_h": {
+      "n": 0,
+      "values": []
+     }
+    },
+    "all": {
+     "tier_a": 12,
+     "rise": 5,
+     "no_rise": 5,
+     "raised_before": 1,
+     "gap": 0,
+     "no_baseline": 1,
+     "lag_h": {
+      "n": 5,
+      "median": 5.517,
+      "lo": 2.517,
+      "hi": 7.017
+     },
+     "v_ms": {
+      "n": 5,
+      "median": 0.112,
+      "lo": 0.088,
+      "hi": 0.239
+     },
+     "model_travel_h": {
+      "n": 5,
+      "median": 3.08,
+      "lo": 3.01,
+      "hi": 3.08
+     }
+    }
+   },
+   {
+    "station_id": "E06616A",
+    "seen": {
+     "tier_a": 6,
+     "rise": 1,
+     "no_rise": 3,
+     "raised_before": 1,
+     "gap": 1,
+     "no_baseline": 0,
+     "lag_h": {
+      "n": 1,
+      "values": [
+       30.95
+      ]
+     },
+     "v_ms": {
+      "n": 1,
+      "values": [
+       0.12
+      ]
+     },
+     "model_travel_h": {
+      "n": 1,
+      "values": [
+       18.97
+      ]
+     }
+    },
+    "new": {
+     "tier_a": 12,
+     "rise": 5,
+     "no_rise": 7,
+     "raised_before": 0,
+     "gap": 0,
+     "no_baseline": 0,
+     "lag_h": {
+      "n": 5,
+      "median": 15.12,
+      "lo": 8.017,
+      "hi": 30.45
+     },
+     "v_ms": {
+      "n": 5,
+      "median": 0.251,
+      "lo": 0.125,
+      "hi": 0.473
+     },
+     "model_travel_h": {
+      "n": 5,
+      "median": 18.97,
+      "lo": 18.97,
+      "hi": 18.97
+     }
+    },
+    "all": {
+     "tier_a": 18,
+     "rise": 6,
+     "no_rise": 10,
+     "raised_before": 1,
+     "gap": 1,
+     "no_baseline": 0,
+     "lag_h": {
+      "n": 6,
+      "median": 17.62,
+      "lo": 10.498,
+      "hi": 30.7
+     },
+     "v_ms": {
+      "n": 6,
+      "median": 0.22,
+      "lo": 0.124,
+      "hi": 0.383
+     },
+     "model_travel_h": {
+      "n": 6,
+      "median": 18.97,
+      "lo": 18.97,
+      "hi": 18.97
+     }
+    }
+   }
+  ],
+  "tier_a_totals": {
+   "seen": {
+    "rise": 33,
+    "no rise": 67,
+    "raised before": 6,
+    "gap": 3,
+    "no baseline": 8
+   },
+   "new": {
+    "rise": 10,
+    "no rise": 46,
+    "raised before": 2,
+    "gap": 0,
+    "no baseline": 8
+   }
+  }
+ },
+ "per_sonde": [
+  {
+   "station_id": "E02569A",
+   "site": "E02569",
+   "label": "TILL_US HAREHOPE_E_202205",
+   "watercourse": "River Breamish",
+   "artificial_channel": false,
+   "readings": 51062,
+   "valid_readings": 50450,
+   "first": "2023-12-30T00:01Z",
+   "last": "2026-08-31T23:01Z",
+   "monitored_upstream": 1,
+   "timing_overflows": 1,
+   "events": 32,
+   "reading_interval_min": 30,
+   "tier_a": 32,
+   "a_rise": 8,
+   "a_no_rise": 17,
+   "a_raised_before": 4,
+   "a_gap": 1,
+   "a_no_baseline": 2,
+   "tier_b": 0,
+   "tier_b_lake": 0,
+   "d_km": {
+    "n": 8,
+    "median": 5.628,
+    "lo": 5.628,
+    "hi": 5.628,
+    "q1": 5.628,
+    "q3": 5.628
+   },
+   "model_travel_h": {
+    "n": 8,
+    "median": 7.82,
+    "lo": 7.82,
+    "hi": 7.82,
+    "q1": 7.82,
+    "q3": 7.82
+   },
+   "lag_h": {
+    "n": 8,
+    "median": 0.908,
+    "lo": 0.283,
+    "hi": 15.233,
+    "q1": 0.358,
+    "q3": 5.858
+   },
+   "lag_over_model": {
+    "n": 8,
+    "median": 0.116,
+    "lo": 0.036,
+    "hi": 1.948,
+    "q1": 0.046,
+    "q3": 0.749
+   },
+   "v_ms": {
+    "n": 8,
+    "median": 1.801,
+    "lo": 0.103,
+    "hi": 5.518,
+    "q1": 0.455,
+    "q3": 4.438
+   },
+   "peak_lag_h": {
+    "n": 8,
+    "median": 1.75,
+    "lo": 1.234,
+    "hi": 15.733,
+    "q1": 1.421,
+    "q3": 15.733
+   },
+   "window": {
+    "before": 6,
+    "inside": 2,
+    "after": 0
+   },
+   "lag_h_looser": {
+    "n": 7,
+    "median": 8.033,
+    "lo": 0.233,
+    "hi": 29.617,
+    "q1": 0.9,
+    "q3": 25.217
+   },
+   "lag_h_stricter": {
+    "n": 2,
+    "values": [
+     0.12,
+     0.38
+    ]
+   },
+   "tier_b_rises": 0,
+   "tier_b_v_ms": {
+    "n": 0
+   },
+   "quiet24_tier_a": 36,
+   "quiet24_lag_h": {
+    "n": 8,
+    "median": 0.908,
+    "lo": 0.283,
+    "hi": 15.233,
+    "q1": 0.358,
+    "q3": 5.858
+   },
+   "dry": {
+    "n": 25,
+    "rise_share": 0.32,
+    "background_share": 0.063,
+    "diff": 0.257,
+    "lo": 0.061,
+    "hi": 0.458,
+    "pseudo_starts": 2284,
+    "signal": true
+   }
+  },
+  {
+   "station_id": "E04798A",
+   "site": "E04798",
+   "label": "CALDER_STONES LANE_E_202502",
+   "watercourse": "River Calder",
+   "artificial_channel": false,
+   "readings": 12474,
+   "valid_readings": 12185,
+   "first": "2025-03-06T23:01Z",
+   "last": "2026-08-31T23:01Z",
+   "monitored_upstream": 1,
+   "timing_overflows": 1,
+   "events": 29,
+   "reading_interval_min": 60,
+   "tier_a": 29,
+   "a_rise": 10,
+   "a_no_rise": 18,
+   "a_raised_before": 1,
+   "a_gap": 0,
+   "a_no_baseline": 0,
+   "tier_b": 0,
+   "tier_b_lake": 0,
+   "d_km": {
+    "n": 10,
+    "median": 4.625,
+    "lo": 4.625,
+    "hi": 4.625,
+    "q1": 4.625,
+    "q3": 4.625
+   },
+   "model_travel_h": {
+    "n": 10,
+    "median": 6.42,
+    "lo": 6.42,
+    "hi": 6.42,
+    "q1": 6.42,
+    "q3": 6.42
+   },
+   "lag_h": {
+    "n": 10,
+    "median": 2.767,
+    "lo": 2.05,
+    "hi": 7.033,
+    "q1": 2.117,
+    "q3": 5.717
+   },
+   "lag_over_model": {
+    "n": 10,
+    "median": 0.431,
+    "lo": 0.319,
+    "hi": 1.096,
+    "q1": 0.33,
+    "q3": 0.89
+   },
+   "v_ms": {
+    "n": 10,
+    "median": 0.466,
+    "lo": 0.199,
+    "hi": 0.627,
+    "q1": 0.226,
+    "q3": 0.609
+   },
+   "peak_lag_h": {
+    "n": 10,
+    "median": 4.45,
+    "lo": 2.983,
+    "hi": 15.367,
+    "q1": 3.0,
+    "q3": 12.717
+   },
+   "window": {
+    "before": 8,
+    "inside": 1,
+    "after": 1
+   },
+   "lag_h_looser": {
+    "n": 14,
+    "median": 1.967,
+    "lo": 0.9,
+    "hi": 3.767,
+    "q1": 0.9,
+    "q3": 3.579
+   },
+   "lag_h_stricter": {
+    "n": 5,
+    "median": 2.317,
+    "lo": 1.85,
+    "hi": 15.05,
+    "q1": 2.05,
+    "q3": 5.017
+   },
+   "tier_b_rises": 0,
+   "tier_b_v_ms": {
+    "n": 0
+   },
+   "quiet24_tier_a": 32,
+   "quiet24_lag_h": {
+    "n": 11,
+    "median": 2.95,
+    "lo": 2.05,
+    "hi": 9.05,
+    "q1": 2.183,
+    "q3": 7.5
+   },
+   "dry": {
+    "n": 28,
+    "rise_share": 0.357,
+    "background_share": 0.043,
+    "diff": 0.314,
+    "lo": 0.135,
+    "hi": 0.493,
+    "pseudo_starts": 1397,
+    "signal": true
+   }
+  },
+  {
+   "station_id": "E03430A",
+   "site": "E03430",
+   "label": "WITHAM_DS GRANGE FARM_K_202109",
+   "watercourse": "River Witham",
+   "artificial_channel": false,
+   "readings": 21228,
+   "valid_readings": 21208,
+   "first": "2023-12-30T00:04Z",
+   "last": "2026-08-31T23:01Z",
+   "monitored_upstream": 2,
+   "timing_overflows": 2,
+   "events": 38,
+   "reading_interval_min": 60,
+   "tier_a": 35,
+   "a_rise": 5,
+   "a_no_rise": 27,
+   "a_raised_before": 0,
+   "a_gap": 0,
+   "a_no_baseline": 3,
+   "tier_b": 3,
+   "tier_b_lake": 0,
+   "d_km": {
+    "n": 5,
+    "median": 5.998,
+    "lo": 5.998,
+    "hi": 10.83,
+    "q1": 5.998,
+    "q3": 5.998
+   },
+   "model_travel_h": {
+    "n": 5,
+    "median": 8.33,
+    "lo": 8.33,
+    "hi": 15.04,
+    "q1": 8.33,
+    "q3": 8.33
+   },
+   "lag_h": {
+    "n": 5,
+    "median": 6.633,
+    "lo": 3.8,
+    "hi": 27.35,
+    "q1": 5.183,
+    "q3": 22.733
+   },
+   "lag_over_model": {
+    "n": 5,
+    "median": 0.796,
+    "lo": 0.253,
+    "hi": 3.283,
+    "q1": 0.622,
+    "q3": 2.729
+   },
+   "v_ms": {
+    "n": 5,
+    "median": 0.251,
+    "lo": 0.061,
+    "hi": 0.792,
+    "q1": 0.073,
+    "q3": 0.321
+   },
+   "peak_lag_h": {
+    "n": 5,
+    "median": 15.633,
+    "lo": 3.8,
+    "hi": 29.733,
+    "q1": 5.183,
+    "q3": 27.35
+   },
+   "window": {
+    "before": 3,
+    "inside": 0,
+    "after": 2
+   },
+   "lag_h_looser": {
+    "n": 10,
+    "median": 18.975,
+    "lo": 5.183,
+    "hi": 25.35,
+    "q1": 5.546,
+    "q3": 24.671
+   },
+   "lag_h_stricter": {
+    "n": 2,
+    "values": [
+     12.63,
+     22.73
+    ]
+   },
+   "tier_b_rises": 0,
+   "tier_b_v_ms": {
+    "n": 0
+   },
+   "quiet24_tier_a": 45,
+   "quiet24_lag_h": {
+    "n": 5,
+    "median": 6.633,
+    "lo": 3.8,
+    "hi": 27.35,
+    "q1": 5.183,
+    "q3": 22.733
+   },
+   "dry": {
+    "n": 32,
+    "rise_share": 0.156,
+    "background_share": 0.052,
+    "diff": 0.105,
+    "lo": -0.012,
+    "hi": 0.249,
+    "pseudo_starts": 2460,
+    "signal": false
+   }
+  },
+  {
+   "station_id": "E06527A",
+   "site": "E06527",
+   "label": "EA BECK_DS HAZEL LANE_E_202506",
+   "watercourse": "Frickley Beck",
+   "artificial_channel": false,
+   "readings": 10555,
+   "valid_readings": 10551,
+   "first": "2025-06-16T14:16Z",
+   "last": "2026-04-14T12:01Z",
+   "monitored_upstream": 5,
+   "timing_overflows": 4,
+   "events": 25,
+   "reading_interval_min": 30,
+   "tier_a": 12,
+   "a_rise": 5,
+   "a_no_rise": 5,
+   "a_raised_before": 1,
+   "a_gap": 0,
+   "a_no_baseline": 1,
+   "tier_b": 13,
+   "tier_b_lake": 0,
+   "d_km": {
+    "n": 5,
+    "median": 2.219,
+    "lo": 2.17,
+    "hi": 2.219,
+    "q1": 2.17,
+    "q3": 2.219
+   },
+   "model_travel_h": {
+    "n": 5,
+    "median": 3.08,
+    "lo": 3.01,
+    "hi": 3.08,
+    "q1": 3.01,
+    "q3": 3.08
+   },
+   "lag_h": {
+    "n": 5,
+    "median": 5.517,
+    "lo": 2.517,
+    "hi": 7.017,
+    "q1": 4.017,
+    "q3": 6.767
+   },
+   "lag_over_model": {
+    "n": 5,
+    "median": 1.791,
+    "lo": 0.836,
+    "hi": 2.278,
+    "q1": 1.304,
+    "q3": 2.248
+   },
+   "v_ms": {
+    "n": 5,
+    "median": 0.112,
+    "lo": 0.088,
+    "hi": 0.239,
+    "q1": 0.089,
+    "q3": 0.153
+   },
+   "peak_lag_h": {
+    "n": 5,
+    "median": 7.517,
+    "lo": 4.517,
+    "hi": 27.767,
+    "q1": 6.017,
+    "q3": 27.517
+   },
+   "window": {
+    "before": 1,
+    "inside": 0,
+    "after": 4
+   },
+   "lag_h_looser": {
+    "n": 6,
+    "median": 5.517,
+    "lo": 2.517,
+    "hi": 19.267,
+    "q1": 4.267,
+    "q3": 6.579
+   },
+   "lag_h_stricter": {
+    "n": 3,
+    "values": [
+     4.02,
+     5.52,
+     8.27
+    ]
+   },
+   "tier_b_rises": 9,
+   "tier_b_v_ms": {
+    "n": 9,
+    "median": 0.163,
+    "lo": 0.114,
+    "hi": 0.204,
+    "q1": 0.129,
+    "q3": 0.189
+   },
+   "quiet24_tier_a": 13,
+   "quiet24_lag_h": {
+    "n": 5,
+    "median": 5.517,
+    "lo": 2.517,
+    "hi": 7.017,
+    "q1": 4.017,
+    "q3": 6.767
+   },
+   "dry": {
+    "n": 10,
+    "rise_share": 0.5,
+    "background_share": 0.091,
+    "diff": 0.409,
+    "lo": 0.058,
+    "hi": 0.738,
+    "pseudo_starts": 361,
+    "signal": true
+   }
+  },
+  {
+   "station_id": "E03360A",
+   "site": "E03360",
+   "label": "WITHAM_US GRANGE FARM_K_202109",
+   "watercourse": "River Witham",
+   "artificial_channel": false,
+   "readings": 21083,
+   "valid_readings": 21078,
+   "first": "2023-12-30T00:04Z",
+   "last": "2026-08-31T23:01Z",
+   "monitored_upstream": 2,
+   "timing_overflows": 2,
+   "events": 38,
+   "reading_interval_min": 60,
+   "tier_a": 35,
+   "a_rise": 4,
+   "a_no_rise": 25,
+   "a_raised_before": 1,
+   "a_gap": 0,
+   "a_no_baseline": 5,
+   "tier_b": 3,
+   "tier_b_lake": 0,
+   "d_km": {
+    "n": 4,
+    "values": [
+     4.8,
+     4.8,
+     4.8,
+     9.63
+    ]
+   },
+   "model_travel_h": {
+    "n": 4,
+    "values": [
+     6.67,
+     6.67,
+     6.67,
+     13.38
+    ]
+   },
+   "lag_h": {
+    "n": 4,
+    "values": [
+     2.63,
+     2.82,
+     21.73,
+     25.35
+    ]
+   },
+   "lag_over_model": {
+    "n": 4,
+    "values": [
+     0.21,
+     0.39,
+     3.26,
+     3.8
+    ]
+   },
+   "v_ms": {
+    "n": 4,
+    "values": [
+     0.05,
+     0.06,
+     0.51,
+     0.95
+    ]
+   },
+   "peak_lag_h": {
+    "n": 4,
+    "values": [
+     2.82,
+     13.63,
+     21.73,
+     26.35
+    ]
+   },
+   "window": {
+    "before": 2,
+    "inside": 0,
+    "after": 2
+   },
+   "lag_h_looser": {
+    "n": 9,
+    "median": 3.183,
+    "lo": 1.817,
+    "hi": 17.733,
+    "q1": 2.433,
+    "q3": 10.35
+   },
+   "lag_h_stricter": {
+    "n": 2,
+    "values": [
+     2.63,
+     21.73
+    ]
+   },
+   "tier_b_rises": 1,
+   "tier_b_v_ms": {
+    "n": 1,
+    "values": [
+     0.07
+    ]
+   },
+   "quiet24_tier_a": 45,
+   "quiet24_lag_h": {
+    "n": 5,
+    "median": 2.817,
+    "lo": 1.9,
+    "hi": 25.35,
+    "q1": 2.633,
+    "q3": 21.733
+   },
+   "dry": {
+    "n": 29,
+    "rise_share": 0.138,
+    "background_share": 0.041,
+    "diff": 0.097,
+    "lo": -0.013,
+    "hi": 0.239,
+    "pseudo_starts": 2475,
+    "signal": false
+   }
+  },
+  {
+   "station_id": "E06616A",
+   "site": "E06616",
+   "label": "GOWY_MILL PARK LANE_E_202511",
+   "watercourse": "River Gowy",
+   "artificial_channel": false,
+   "readings": 7411,
+   "valid_readings": 7411,
+   "first": "2025-11-18T15:00Z",
+   "last": "2026-08-31T09:01Z",
+   "monitored_upstream": 1,
+   "timing_overflows": 1,
+   "events": 18,
+   "reading_interval_min": 60,
+   "tier_a": 18,
+   "a_rise": 6,
+   "a_no_rise": 10,
+   "a_raised_before": 1,
+   "a_gap": 1,
+   "a_no_baseline": 0,
+   "tier_b": 0,
+   "tier_b_lake": 0,
+   "d_km": {
+    "n": 6,
+    "median": 13.662,
+    "lo": 13.662,
+    "hi": 13.662,
+    "q1": 13.662,
+    "q3": 13.662
+   },
+   "model_travel_h": {
+    "n": 6,
+    "median": 18.97,
+    "lo": 18.97,
+    "hi": 18.97,
+    "q1": 18.97,
+    "q3": 18.97
+   },
+   "lag_h": {
+    "n": 6,
+    "median": 17.617,
+    "lo": 10.5,
+    "hi": 30.7,
+    "q1": 13.517,
+    "q3": 27.867
+   },
+   "lag_over_model": {
+    "n": 6,
+    "median": 0.929,
+    "lo": 0.554,
+    "hi": 1.618,
+    "q1": 0.713,
+    "q3": 1.469
+   },
+   "v_ms": {
+    "n": 6,
+    "median": 0.22,
+    "lo": 0.124,
+    "hi": 0.383,
+    "q1": 0.141,
+    "q3": 0.282
+   },
+   "peak_lag_h": {
+    "n": 6,
+    "median": 24.067,
+    "lo": 18.05,
+    "hi": 32.45,
+    "q1": 20.117,
+    "q3": 30.592
+   },
+   "window": {
+    "before": 3,
+    "inside": 0,
+    "after": 3
+   },
+   "lag_h_looser": {
+    "n": 10,
+    "median": 11.217,
+    "lo": 7.95,
+    "hi": 20.2,
+    "q1": 8.208,
+    "q3": 17.367
+   },
+   "lag_h_stricter": {
+    "n": 4,
+    "values": [
+     10.02,
+     30.95,
+     31.45,
+     43.12
+    ]
+   },
+   "tier_b_rises": 0,
+   "tier_b_v_ms": {
+    "n": 0
+   },
+   "quiet24_tier_a": 20,
+   "quiet24_lag_h": {
+    "n": 6,
+    "median": 17.617,
+    "lo": 10.5,
+    "hi": 30.7,
+    "q1": 13.517,
+    "q3": 27.867
+   },
+   "dry": {
+    "n": 16,
+    "rise_share": 0.375,
+    "background_share": 0.161,
+    "diff": 0.214,
+    "lo": -0.046,
+    "hi": 0.473,
+    "pseudo_starts": 658,
+    "signal": false
+   }
+  },
+  {
+   "station_id": "E03459A",
+   "site": "E03459",
+   "label": "EA BECK_US SOUTH ELMSALL STW_E_202506",
+   "watercourse": "Frickley Beck",
+   "artificial_channel": false,
+   "readings": 10414,
+   "valid_readings": 10409,
+   "first": "2025-06-16T12:42Z",
+   "last": "2026-04-07T19:01Z",
+   "monitored_upstream": 3,
+   "timing_overflows": 2,
+   "events": 26,
+   "reading_interval_min": 30,
+   "tier_a": 22,
+   "a_rise": 5,
+   "a_no_rise": 11,
+   "a_raised_before": 0,
+   "a_gap": 1,
+   "a_no_baseline": 5,
+   "tier_b": 4,
+   "tier_b_lake": 0,
+   "d_km": {
+    "n": 5,
+    "median": 3.951,
+    "lo": 3.951,
+    "hi": 3.951,
+    "q1": 3.951,
+    "q3": 3.951
+   },
+   "model_travel_h": {
+    "n": 5,
+    "median": 5.49,
+    "lo": 5.49,
+    "hi": 5.49,
+    "q1": 5.49,
+    "q3": 5.49
+   },
+   "lag_h": {
+    "n": 5,
+    "median": 2.5,
+    "lo": 0.25,
+    "hi": 12.517,
+    "q1": 1.5,
+    "q3": 10.517
+   },
+   "lag_over_model": {
+    "n": 5,
+    "median": 0.455,
+    "lo": 0.046,
+    "hi": 2.28,
+    "q1": 0.273,
+    "q3": 1.916
+   },
+   "v_ms": {
+    "n": 5,
+    "median": 0.439,
+    "lo": 0.088,
+    "hi": 4.39,
+    "q1": 0.104,
+    "q3": 0.732
+   },
+   "peak_lag_h": {
+    "n": 5,
+    "median": 4.0,
+    "lo": 0.75,
+    "hi": 13.517,
+    "q1": 2.0,
+    "q3": 13.017
+   },
+   "window": {
+    "before": 3,
+    "inside": 0,
+    "after": 2
+   },
+   "lag_h_looser": {
+    "n": 5,
+    "median": 2.5,
+    "lo": 0.25,
+    "hi": 12.517,
+    "q1": 1.5,
+    "q3": 2.517
+   },
+   "lag_h_stricter": {
+    "n": 3,
+    "values": [
+     0.25,
+     1.5,
+     2.5
+    ]
+   },
+   "tier_b_rises": 0,
+   "tier_b_v_ms": {
+    "n": 0
+   },
+   "quiet24_tier_a": 24,
+   "quiet24_lag_h": {
+    "n": 5,
+    "median": 2.5,
+    "lo": 0.25,
+    "hi": 12.517,
+    "q1": 1.5,
+    "q3": 10.517
+   },
+   "dry": {
+    "n": 16,
+    "rise_share": 0.312,
+    "background_share": 0.023,
+    "diff": 0.29,
+    "lo": 0.04,
+    "hi": 0.555,
+    "pseudo_starts": 568,
+    "signal": true
+   }
+  }
+ ],
+ "per_reach_speed_description": [
+  {
+   "station_id": "E02569A",
+   "label": "TILL_US HAREHOPE_E_202205",
+   "rises": 8,
+   "d_km": 5.63,
+   "implied_speed_ms_median": 1.801,
+   "catchment_km2_at_sonde": 134.7,
+   "reach_speed_ms_at_sonde": 0.2,
+   "reach_speed_ms_at_anchor": 0.13,
+   "fixed_speed_ms": 0.2
+  },
+  {
+   "station_id": "E04798A",
+   "label": "CALDER_STONES LANE_E_202502",
+   "rises": 10,
+   "d_km": 4.62,
+   "implied_speed_ms_median": 0.466,
+   "catchment_km2_at_sonde": 30.4,
+   "reach_speed_ms_at_sonde": 0.153,
+   "reach_speed_ms_at_anchor": 0.139,
+   "fixed_speed_ms": 0.2
+  },
+  {
+   "station_id": "E03430A",
+   "label": "WITHAM_DS GRANGE FARM_K_202109",
+   "rises": 5,
+   "d_km": 6.0,
+   "implied_speed_ms_median": 0.251,
+   "catchment_km2_at_sonde": 31.2,
+   "reach_speed_ms_at_sonde": 0.153,
+   "reach_speed_ms_at_anchor": 0.128,
+   "fixed_speed_ms": 0.2
+  },
+  {
+   "station_id": "E06527A",
+   "label": "EA BECK_DS HAZEL LANE_E_202506",
+   "rises": 5,
+   "d_km": 2.22,
+   "implied_speed_ms_median": 0.112,
+   "catchment_km2_at_sonde": 39.2,
+   "reach_speed_ms_at_sonde": 0.16,
+   "reach_speed_ms_at_anchor": 0.157,
+   "fixed_speed_ms": 0.2
+  },
+  {
+   "station_id": "E03360A",
+   "label": "WITHAM_US GRANGE FARM_K_202109",
+   "rises": 4,
+   "d_km": 4.8,
+   "implied_speed_ms_median": 0.284,
+   "catchment_km2_at_sonde": 29.2,
+   "reach_speed_ms_at_sonde": 0.152,
+   "reach_speed_ms_at_anchor": 0.128,
+   "fixed_speed_ms": 0.2
+  },
+  {
+   "station_id": "E06616A",
+   "label": "GOWY_MILL PARK LANE_E_202511",
+   "rises": 6,
+   "d_km": 13.66,
+   "implied_speed_ms_median": 0.22,
+   "catchment_km2_at_sonde": 57.3,
+   "reach_speed_ms_at_sonde": 0.171,
+   "reach_speed_ms_at_anchor": 0.135,
+   "fixed_speed_ms": 0.2
+  },
+  {
+   "station_id": "E03459A",
+   "label": "EA BECK_US SOUTH ELMSALL STW_E_202506",
+   "rises": 5,
+   "d_km": 3.95,
+   "implied_speed_ms_median": 0.439,
+   "catchment_km2_at_sonde": 35.3,
+   "reach_speed_ms_at_sonde": 0.157,
+   "reach_speed_ms_at_anchor": 0.05,
+   "fixed_speed_ms": 0.2
+  }
+ ]
+}
