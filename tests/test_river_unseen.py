@@ -222,3 +222,20 @@ def test_level_fit_recovers_the_spreads_and_ranges_cover_eight_in_ten():
     assert (l2["high_log10"] - l2["mu_log10"]).median() < (l1["high_log10"] - l1["mu_log10"]).median()
     s = lc.summary(l2)
     assert s["pass"] and abs(s["above"] - s["below"]) < 0.05
+
+
+def test_bathing_backtest_uses_only_earlier_seasons_and_scores_both_ranges():
+    import level_bathing_backtest as bb
+    import level_candidate as lc
+    d = _made_up_level_rows(seed=5, points=12)
+    m = lc.fit(_made_up_level_rows(seed=6))
+    new = bb.earlier_samples_ranges(d, m)
+    assert set(new["season"]) == set(range(2013, 2020)) and 0.74 < new["inside"].mean() < 0.86
+    late = d.copy()
+    late.loc[late["season"] == 2019, "log_ecoli"] += 5.0      # a later season must not move an earlier range
+    again = bb.earlier_samples_ranges(late, m)
+    early = new["season"] < 2019
+    assert np.allclose(new.loc[early, "mu_log10"], again.loc[early[early].index, "mu_log10"])
+    cand = json.loads((ROOT / "docs" / "river-unseen" / "river_range_v0e.json").read_text())
+    res = bb.score(d, m, cand)
+    assert res["L2"]["rows"] == len(new) and res["log_density_gain_over_v0e"]["value"] > 0

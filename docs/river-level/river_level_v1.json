@@ -1,0 +1,18 @@
+{
+ "name": "river-level-v1",
+ "frozen_from": "docs/river-level/result.json fit_all_systems_to_2016, run 2026-11-16T19:32:37+00:00 at e1572f4d",
+ "intercept": 3.258173245725044,
+ "coef": {
+  "lrain48": 0.02828061501434915,
+  "lrain24": 0.2079228576481933,
+  "logit_risk": 0.062210543932657694,
+  "doy_sin": -0.2028399563699263,
+  "doy_cos": -0.09673612432714827,
+  "log_km": -0.04874724665603115,
+  "log_overflows": -0.17938252151081363
+ },
+ "sigma": 0.4582840797138852,
+ "tau": 0.32973039874512505,
+ "rows": 3895,
+ "points": 57
+}
