@@ -190,3 +190,35 @@ def test_production_as_deployed_is_the_logistic_of_its_standardised_inputs():
          "scale": {"lrain48": 2.0, "lake": 1.0}}
     p = read.production_deployed(m, pd.DataFrame({"lrain48": [1.0, 5.0]}))
     assert abs(p[0] - 1 / (1 + np.exp(2.0))) < 1e-12 and abs(p[1] - 1 / (1 + np.exp(1.0))) < 1e-12
+
+
+def _made_up_level_rows(seed=3, points=40, tau=0.4, sigma=0.5):
+    """Rows whose true level spread (tau) and noise (sigma) are known: 40 points in 20 systems, 2012 to 2019."""
+    import level_candidate as lc
+    rng = np.random.default_rng(seed)
+    rows = []
+    for p in range(points):
+        level, log_km, n_over = rng.normal(0, tau), rng.uniform(0, 2.5), int(rng.integers(1, 20))
+        for season in range(2012, 2020):
+            for _ in range(12):
+                x = dict(zip(lc.fc.FEATURES, rng.normal(0, 1, len(lc.fc.FEATURES)), strict=True))
+                y = 3.0 + 0.3 * x["lrain48"] - 0.4 * log_km + level + rng.normal(0, sigma)
+                rows.append({"bw_id": f"P{p}", "system": f"S{p // 2}", "band": "small", "season": season,
+                             "upstream": n_over, "km": 10 ** log_km, "log_ecoli": y, "ecoli_qual": "=", **x})
+    d = pd.DataFrame(rows)
+    systems = d.groupby("bw_id")["km"].first().rename("upstream_km").rename_axis("point").reset_index()
+    return lc.with_place_inputs(d, systems)
+
+
+def test_level_fit_recovers_the_spreads_and_ranges_cover_eight_in_ten():
+    import level_candidate as lc
+    d = _made_up_level_rows()
+    m = lc.fit(d[d["season"] <= lc.SPLIT])
+    assert abs(m["sigma"] - 0.5) < 0.03 and abs(m["tau"] - 0.4) < 0.12
+    assert abs(m["coef"]["lrain48"] - 0.3) < 0.05 and abs(m["coef"]["log_km"] + 0.4) < 0.3
+    l1, l2, fits = lc.leave_system_out(d)
+    assert len(fits) == 20 and set(l1["season"]) == {2017, 2018, 2019} and len(l1) == len(l2) == 40 * 3 * 12
+    assert 0.72 < l1["inside"].mean() < 0.88 and 0.76 < l2["inside"].mean() < 0.84
+    assert (l2["high_log10"] - l2["mu_log10"]).median() < (l1["high_log10"] - l1["mu_log10"]).median()
+    s = lc.summary(l2)
+    assert s["pass"] and abs(s["above"] - s["below"]) < 0.05
