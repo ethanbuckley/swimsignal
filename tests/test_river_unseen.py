@@ -6,6 +6,7 @@ import json
 import sys
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -119,3 +120,31 @@ def test_the_committed_systems_and_cells_match_the_points_table():
     assert len(c) == 85 and c["for"].str.contains("point").sum() == 41
     text = (ROOT / "docs" / "RIVER-UNSEEN-PROTOCOL-2026-11.md").read_text()
     assert "## Amendment 1" in text and text.index("## Staging result") < text.index("## Amendment 1")
+
+
+def test_results_are_parsed_with_their_qualifier_and_repeats_keep_the_higher():
+    import build_rows
+    assert build_rows.parse_result("<10") == (10.0, "<") and build_rows.parse_result("> 20000") == (20000.0, ">")
+    assert build_rows.parse_result("350") == (350.0, "=") and build_rows.parse_result("12.5") == (12.5, "=")
+    v, q = build_rows.parse_result("not analysed")
+    assert np.isnan(v) and q == ""
+    s = pd.DataFrame({"point": ["A", "A", "A", "B", "B"], "time": ["t1", "t1", "t2", "t1", "t1"],
+                      "ecoli": [100.0, 400.0, 5.0, 7.0, 7.0]})
+    kept, audit = build_rows.one_per_point_and_time(s)
+    assert sorted(kept["ecoli"]) == [5.0, 7.0, 400.0]
+    assert audit == {"groups_equal": 1, "groups_unequal": 1, "rows_dropped": 2}
+
+
+def test_point_samples_keeps_only_the_span_at_kept_points_in_local_time():
+    import build_rows
+    samples = stage.mark(pd.concat([_rows(2, "K", 2015), _rows(1, "K", 2024), _rows(2, "X", 2015)], ignore_index=True))
+    samples["result"] = ["<10", "350", "9", "8", "7"]
+    points = pd.DataFrame({"point": ["K", "X"], "kept_point": [True, False], "label": ["R K", "R X"],
+                           "lat": [50.5, 51.0], "lon": [-4.0, -3.0]})
+    systems = pd.DataFrame({"point": ["K"], "system": ["S01"], "band": ["small"]})
+    out, audit = build_rows.point_samples(samples, points, systems, "held_out")
+    assert out["bw_id"].tolist() == ["K"] and audit["rows"] == 2      # two rows share K's time: the higher is kept
+    assert out["ecoli"].tolist() == [350.0] and audit["same_point_and_time"]["groups_unequal"] == 1
+    assert str(out["sample_time"].iloc[0]) == "2015-07-15 10:00:00+01:00" and out["system"].iloc[0] == "S01"
+    dev, _ = build_rows.point_samples(samples, points, systems, "development")
+    assert dev["ecoli"].tolist() == [9.0]

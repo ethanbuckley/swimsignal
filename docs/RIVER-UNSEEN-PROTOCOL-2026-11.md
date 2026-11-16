@@ -383,3 +383,20 @@ covered is dropped (`ecoli.MIN_COVERAGE`). No kept row has a time of exactly mid
 3. The `best_match` check. Its verdict picks the candidate (section 1).
 4. If `river-range-v0e`: rebuild the 943 seen river rows on ERA5-Land, fit, commit the hash.
 5. Build the held-out rows and read once.
+
+### Row builder ready, 16 November 2026 (no held-out result read)
+
+`scripts/river_unseen/build_rows.py` builds the inputs of amendment 1, section 7. It calls
+`lake_range_hindcast.build_rows` unchanged and changes only where a site's pin comes from. That function and its
+rain loader are on main, so stage 2 does not wait on #700.
+
+Tested end to end on samples already seen, with nothing from the sealed table: the bench's 280 seen river samples of
+2025 at 14 bathing waters, rebuilt on ERA5-Land rain for 2025 (2,069 cells converted in 7 seconds). All 280 rows
+came out, none dropped, every site with the same number of overflows upstream as the bench's row, in 21 seconds.
+
+Seen in passing, and not the match check: at those 280 sample times ERA5-Land's 48-hour rain correlates 0.81 with
+the bench's Open-Meteo rain and averages 12% lower (3.41 mm against 3.87 mm); exposure correlates 0.88. That is in
+line with the expectation in section 1 that the check fails and `river-range-v0e` is the candidate. The check
+itself still runs once, on every paired cell and year, when the downloads finish.
+
+`build_rows.py points` joins results to inputs, so it is part of the read. It has not been run.
