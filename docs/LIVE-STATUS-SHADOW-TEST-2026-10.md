@@ -286,3 +286,33 @@ statement says a change to the inputs or the fallback rule ends the window, so t
    different candidate and needs its own window.
 3. **Let it read as "not enough data".** The 2026 backtest (#639) then remains the only evidence, and the switch
    still does nothing until polling improves.
+
+**Decision, 16 November 2026 (Ethan): poll more often, leave the rule.**
+
+How, with no new code. A status is polled by each site build. GitHub's own schedule has been starting a build every
+4 to 7 hours (for example 01:29 and then 08:26 UTC on 16 November), which is what breaks the 8-hour rule. The
+workflow already has a way to pace itself: with the repository variable `SELF_PACE` set to 1, each build asks for the
+next one 30 minutes after it started (`.github/workflows/site.yml`, job `next-build`; tested 6 November on a
+throwaway branch). It is off today.
+
+When. Not before the ensemble-rain window's last target day, 19 November, and its read on 21 November: the
+workflow's own note says that at 48 builds a day the ensemble gets no spare Open-Meteo calls. So: **set `SELF_PACE`
+to 1 on or after 21 November 2026**, after that read.
+
+```
+gh variable set SELF_PACE --body 1
+```
+
+What it does to this test. The rule, the candidates and the fallback are unchanged, so the window does not end. It
+reads "not enough data" on 23 November and takes its one 14-day extension, to target day 5 December, read on or
+after 7 December. A status becomes known again once seven days pass with no stretch over 8 hours: about 28
+November if the pacing starts on 21 November. That leaves about 8 target days with a known status. At the roughly
+26 spill rows a day seen before the window, that is near the 200 needed at each lead and may fall short. If it
+does, the test is inconclusive as stated, and a new window needs a new statement.
+
+Not checked: whether a build every 30 minutes changes anything for the other open windows (regional routing to 27
+November, company calibration to 22 November, the combined shadow). Each scores the latest forecast issued by 08:00,
+which would then be a fresher one. Their owners should say before the variable is set.
+
+Readiness re-check: run `scripts/live_status_shadow_readiness.py` again on 28 November. It should show a known
+status on most decision forecasts from that issue day.
