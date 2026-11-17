@@ -3,8 +3,8 @@
 Written 17 November 2026 for [#716](https://github.com/ethanbuckley/swimsignal/issues/716), after the
 [river level candidate](RIVER-LEVEL-CANDIDATE-2026-11.md) and its
 [bathing-water backtest](RIVER-LEVEL-BATHING-BACKTEST-2026-11.md), and before any range in this read has been
-computed. **Nothing below the line "Result" exists yet.** The script is not written. It will be tested on made-up
-rows only before the one run.
+computed. **Nothing below the line "Result" existed when this was pushed.** The script was written after it and tested on
+made-up rows only before the one run.
 
 Nothing on the site changes. No forecast, frozen file, active window or the 2027 primary evaluation is touched. The
 bench's held-out rows are not opened.
@@ -124,6 +124,81 @@ On Set A's 1,673 pooled samples, n passes when both hold:
 Before this statement was written, the `bw_id`, `system` and `season` columns of both files were read to count
 points and samples. No result column was read. Both files had the same SHA-256 before and after.
 
-## Result
+## Result, 17 November 2026: n = 5 at the archive points (development)
 
-Not run.
+Run once, finishing at 22:43 UTC, at commit `276909e8`, the commit that carries the script. Logged in
+`docs/place-level/runs.jsonl`; every figure is in `docs/place-level/result.json`. The three inputs had the same
+SHA-256 before and after (`382a335e…`, `7fac233d…`, `d7c34055…`). The folds' tau and sigma matched the candidate's
+record, and the counts matched this statement, before anything was scored. The run took 17 minutes of processor time
+and 3 hours 13 minutes on the clock, on a busy machine.
+
+### Set A, which decides: 32 archive points, 1,673 scored samples
+
+| Level from | Inside | Interval | Above | Below | Half-width | Density gain over n = 0 | Rule 1 | Rule 2 |
+|---|---|---|---|---|---|---|---|---|
+| no samples (n = 0) | 79.7% | 76.4% to 83.0% | 13.3% | 7.0% | 0.72 | | | |
+| last 3 | 77.6% | 74.2% to 81.1% | 14.5% | 8.0% | 0.64 | +0.054 (−0.004 to +0.112) | pass | fail |
+| last 5 | 77.3% | 73.7% to 80.8% | 14.4% | 8.3% | 0.63 | +0.076 (+0.005 to +0.149) | pass | pass |
+| last 8 | 76.9% | 73.3% to 80.8% | 13.8% | 9.3% | 0.62 | +0.084 (+0.003 to +0.171) | pass | pass |
+| last 12 | 76.5% | 72.7% to 80.4% | 13.0% | 10.5% | 0.61 | +0.092 (+0.009 to +0.186) | pass | pass |
+| last 20 | 76.9% | 73.2% to 80.7% | 11.9% | 11.2% | 0.60 | +0.111 (+0.025 to +0.205) | pass | pass |
+
+**By the rule, the answer is n = 5.** It passes narrowly: the lower end of its gain is +0.005, and n = 3 misses by
+0.004.
+
+Reported, deciding nothing:
+
+- **The stated level tracks the measured one better with more samples.** Across points the correlation is 0.17 with
+  no samples, 0.55 with 3, 0.70 with 5 and 0.84 with 20.
+- **Older samples are worth less.** With the first n in place of the last n, 3 and 5 do not pass rule 2 (+0.019 and
+  +0.040, both intervals through zero). 8 does (+0.096, +0.026 to +0.172).
+- **A running level does best.** With every earlier sample from 2017: 78.0% inside, gain +0.152 (+0.076 to +0.245).
+- **No sign of drift breaking the range.** With the last 5, 73.3% inside in the same season (157 samples), 76.4% in
+  the next (568) and 78.5% two or more seasons later (948).
+- **Large streams stay weak.** 61.2% inside on 178 samples with the last 5, against 80.8% at medium streams (996)
+  and 76.0% at small ones (499). A place's own samples do not fix that.
+
+### Set B, reported: 14 bathing-water rivers, 548 scored samples
+
+On the same rule the answer here is **not shown by 20**.
+
+| Level from | Inside | Above | Below | Density gain over n = 0 |
+|---|---|---|---|---|
+| no samples (n = 0) | 89.1% | 4.2% | 6.8% | |
+| last 3 | 85.2% | 4.7% | 10.0% | +0.053 (0.000 to +0.110) |
+| last 5 | 83.6% | 4.2% | 12.2% | +0.040 (−0.025 to +0.107) |
+| last 12 | 80.8% | 6.4% | 12.8% | +0.012 (−0.083 to +0.099) |
+| last 20 | 78.5% | 4.9% | 16.6% | −0.038 (−0.169 to +0.069) |
+| running | 82.5% | 5.5% | 12.0% | +0.073 (+0.003 to +0.143) |
+| `river-range-v0e`, in sample | 83.0% | 7.3% | 9.7% | |
+
+- Every range holds, and no fixed batch of own samples beats the no-sample range. The gain falls as n grows.
+- The misses are below the range (16.6% with the last 20). That fits levels falling after the batch was taken.
+  Almost every scored sample here is from a later season than the batch (4 of 548 are from the same season).
+- The first n do worse than no samples: with the first 5, 21.9% fall below and the gain is −0.156 (−0.275 to
+  −0.052).
+- Only the running level is ahead, and narrowly.
+- The no-sample range is too wide here (89.1% inside, over the 88% end of the band). The line was fitted on dirtier
+  points.
+
+### What is supported, as development evidence
+
+- At river points like the archive's, five recent lab samples give a place a better range than none, and the gain
+  grows with more.
+- A level should be kept up to date. Recent samples beat old ones at the archive points. At bathing-water rivers a
+  batch from an earlier season did not help, and a level that kept updating did.
+
+### What is not supported
+
+- That a one-off batch of samples earns a bathing-water river a lasting reading. Set B says it does not.
+- Anything at large rivers. They were weakest in both sets, and every Set B site is one.
+- Anything confirmed. Every row had been read, and the pass at n = 5 is narrow.
+- That forecast-called sampling days set a level faster. These samples were taken on planned days.
+
+### What this leads to
+
+By the statement, a pass at 12 or fewer leads to a draft ask to one sampling group, for Ethan, and a replay page once
+the Wessex rows are built. Set B changes the ask's shape: a group is asked to keep sampling through a season, with
+the level updated at each sample, and not for one batch of five. The first place should be a small or medium river.
+
+Nothing shows on the site. No further form is fitted on these rows.
