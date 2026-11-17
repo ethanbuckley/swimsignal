@@ -3926,7 +3926,7 @@ const saveLabel = on => { const t = `${on ? 'Saved in' : 'Save to'} ${esc(listNo
 // The first words when the search matches no spot. A postcode gets the reason, as Plan a swim gives it (17 Nov 2026:
 // "OX1 4" read "No inland forecasts match." and nothing else, as though Oxford had no spots).
 const noMatchLead = q => typeof looksLikePostcode === 'function' && looksLikePostcode(q || '')
-  ? 'Postcodes do not work here yet: type a town, a village or a river.' : 'No inland forecasts match.';
+  ? 'No listed spot matches.' : 'No inland forecasts match.';
 // Near me: a pin at the end of the search field, as a maps app has it (29 October 2026; it was a full-width
 // button, with "Or check the river or lake where you are" under it, which the map's tap now covers). Also in
 // the built page (home_lead).
@@ -4917,22 +4917,38 @@ let WATERS = null, onMapTyped = 0;
 const loadWaters = () => WATERS || (WATERS = fetch('data/waters.json').then(r => { if (!r.ok) throw new Error(`the list of rivers answered ${r.status}`); return r.json(); })
   .then(waterIndex).catch(e => { WATERS = null; throw e; }));
 const ON_MAP_PLACES = 2;
+// A postcode typed (plan.js, postcodePlace) is a place as a town is: its district or sector, from the site's own
+// file (data/postcodes.json), fetched the first time one is typed and looked up on the device.
+let POSTCODES = null;
+const loadPostcodes = () => POSTCODES || (POSTCODES = fetch('data/postcodes.json').then(r => { if (!r.ok) throw new Error(`the list of postcodes answered ${r.status}`); return r.json(); })
+  .then(postcodeIndex).catch(e => { POSTCODES = null; throw e; }));
+const NO_POSTCODE = t => `No postcode found for “${t}”: type a town, a village or a river.`;   // plain text: set as textContent
+const POSTCODES_DOWN = 'Postcodes could not be looked up just now: type a town, a village or a river.';
 const GO = '<svg class="go" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2Z"/><path d="M9 4v14M15 6v14"/></svg>';
 async function offerOnMap() {
   const t = VIEW.q.trim(), call = ++onMapTyped;
   const hide = () => { const box = document.getElementById('on-map'); if (box) { box.hidden = true; box.innerHTML = ''; } };
-  if (placeKey(t).replace(/ /g, '').length < 3 || looksLikePostcode(t)) { hide(); return; }
+  const postcode = looksLikePostcode(t);
+  if (!postcode && placeKey(t).replace(/ /g, '').length < 3) { hide(); return; }
   // Each file on its own: a file that did not come leaves the other's offers, the spots still answer, and the next letter asks again.
-  const [gotWaters, gotPlaces] = await Promise.allSettled([loadWaters().then(i => waterMatches(i, t)), loadPlaces().then(i => placeMatches(i, t, ON_MAP_PLACES))]);
+  // A postcode is one place, its district or sector, and names no river.
+  const [gotWaters, gotPlaces] = postcode ? await Promise.allSettled([[], loadPostcodes().then(i => [postcodePlace(i, t)].filter(Boolean))])
+    : await Promise.allSettled([loadWaters().then(i => waterMatches(i, t)), loadPlaces().then(i => placeMatches(i, t, ON_MAP_PLACES))]);
   const waters = gotWaters.status === 'fulfilled' ? gotWaters.value : [], places = gotPlaces.status === 'fulfilled' ? gotPlaces.value : [];
   const box = document.getElementById('on-map');
   if (call !== onMapTyped || !box) return;   // a later letter, or another page, has taken over
-  if (!waters.length && !places.length) { hide(); return; }
+  if (!waters.length && !places.length) {
+    hide();
+    // A postcode that is not in the file, or a file that did not come: say which, where the list says nothing matches.
+    const none = postcode && document.querySelector('#spots li.empty p.below');
+    if (none && none.firstChild) none.firstChild.textContent = none.firstChild.textContent.replace(noMatchLead(t), gotPlaces.status === 'fulfilled' ? NO_POSTCODE(t) : POSTCODES_DOWN);
+    return;
+  }
   // A town typed in full (plan.js, townsNamed): first, the spots near it that the list has not shown, in rows
   // as the list's, each with its own level and words, under "Near Ambleside". A swimmer who types their town
   // asks what is near it, and until 6 Nov 2026 only the spots named for it were listed. With the list's filters.
   const listed = new Set(LISTED.map(s => s.id)), near = [];
-  for (const town of townsNamed(places, t)) {
+  for (const town of postcode ? places : townsNamed(places, t)) {
     const n = spotsNear(DATA.spots.filter(listKept), town, (a, b) => km(a, b) / MILE_KM, listed);
     if (n.rows.length) { near.push({ town, ...n }); n.rows.forEach(x => listed.add(x.s.id)); } }
   const nearRows = near.map(n => `<li class="area-head"><h3>Near ${esc(n.town.name)} <span>· ${nearSaid(n.rows.length, n.total)}</span></h3></li>`
@@ -4945,7 +4961,7 @@ async function offerOnMap() {
   const reach = `The spots ${base.within ? `within ${base.within} miles` : 'at any distance'} ${base.day ? dayWord(base.day) : 'today'}, those at low risk first`;
   // A place with no listed spot within the plan's reach (25 miles when it has none) says so, with the nearest, in place of what a plan would hold (plan.js, farFromSpots).
   const reachMiles = base.within || FAR_MILES, far = p => farFromSpots(p, DATA.spots, (a, b) => km(a, b) / MILE_KM, reachMiles);
-  const plans = !places.length ? '' : `<li class="area-head"><h3>Plan a swim <span>· from a town</span></h3></li>`
+  const plans = !places.length ? '' : `<li class="area-head"><h3>Plan a swim <span>· from a ${postcode ? 'postcode' : 'town'}</span></h3></li>`
     + places.map(p => `<li><a class="row" href="${esc(planPath() + planFromPlace(p, base, VIEW.filter))}" data-plan-place><span class="row-main"><span class="nm">From ${esc(p.name)}</span><span class="k">${far(p) ? esc(farSaid(far(p), reachMiles)) : reach}</span></span></a></li>`).join('');
   box.innerHTML = nearRows + plans + `<li class="area-head"><h3>On the map <span>· ${TAP().toLowerCase()} the water for its forecast</span></h3></li>`
     + waters.map((w, i) => `<li><button type="button" class="row" data-water="${i}"><span class="row-main"><span class="nm">${esc(w.name)}</span><span class="k">${where(w)}</span></span>${GO}</button></li>`).join('')
@@ -5444,7 +5460,22 @@ const planDayInput = iso => document.querySelector(`input[name="plan-day"][value
 async function planType(text, commit) {
   const call = ++planTyped, t = text.trim();
   if (!t) { if (commit && PLAN.from && !PLAN.from.here) { PLAN.from = null; planNote = ''; drawPlan(); } return; }
-  if (looksLikePostcode(t)) { if (commit) { planNote = 'Postcodes do not work here yet: type a town, village or district.'; drawPlan(); } return; }
+  // A postcode starts a plan from its district or sector (plan.js, postcodePlace), once it is typed whole or committed.
+  if (looksLikePostcode(t)) {
+    const whole = /[0-9][a-z]{2}$/i.test(t);
+    if (!commit && !whole) return;
+    let codes;
+    try { codes = await loadPostcodes(); } catch (e) { if (commit) { planNote = 'Postcodes could not be looked up just now: type a town, village or district.'; drawPlan(); } return; }
+    if (call !== planTyped || !onPlanPage()) return;
+    const pc = postcodePlace(codes, t);
+    if (!pc) { if (commit) { planNote = `No postcode found for “${esc(t)}”: type a town, village or district.`; drawPlan(); } return; }
+    const field = document.getElementById('plan-from'); if (field && field.value !== pc.name) field.value = pc.name;
+    const moved = !PLAN.from || PLAN.from.here || PLAN.from.name !== pc.name;
+    PLAN.from = { name: pc.name, lat: pc.lat, lon: pc.lon }; planNote = '';
+    drawPlan(moved);
+    if (field && document.activeElement === field) field.blur();
+    return;
+  }
   let index;
   try { index = await loadPlaces(); } catch (e) { if (commit) { planNote = `Could not load the list of places: ${esc(e.message)}.`; drawPlan(); } return; }
   if (call !== planTyped || !onPlanPage()) return;   // a later key, or another page, has taken over

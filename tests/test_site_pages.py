@@ -104,6 +104,12 @@ def test_every_spot_gets_its_own_page_and_preview(tmp_path):
     assert waters["credit"].startswith("Contains OS data") and len(waters["waters"]) > 5000
     assert any(w[0] == "River Kennet" and w[2] == "river" for w in waters["waters"])
     assert any(w[0] == "Ullswater" and w[2] == "lake" for w in waters["waters"])
+    # The postcode districts and sectors the search and Plan a swim understand (scripts/make_postcodes.py): no whole postcodes.
+    codes = json.loads((tmp_path / "data" / "postcodes.json").read_text())
+    assert codes["credit"].startswith("Contains OS data") and "Royal Mail" in codes["credit"]
+    assert len(codes["districts"]) > 2500 and len(codes["sectors"]) > 10000
+    assert codes["districts"]["LS29"] == [53.92, -1.8] and codes["sectors"]["LA22 9"] == [54.44, -3.0]
+    assert not any(re.search(r"[0-9][A-Z]{2}$", k) for k in codes["sectors"])
     assert not any("Canal" in w[0] for w in waters["waters"])
 
 
@@ -839,7 +845,7 @@ def test_the_data_page_lists_every_file_in_data_with_its_size(tmp_path):
     assert row("links/") == '<td>links/</td><td>Not described here yet.</td><td class="num">3 kB</td>'   # a folder, whole
     assert bs.with_data_files((bs.STATIC / "data.html").read_text(), data)[1] == ["links/", "new.csv"]
     # The documented files each have a section of their own.
-    for name in ("spots.json", "alerts.json", "overflows.geojson", "verification.json", "verification_live.csv", "verification_spots_live.csv", "spot_scores.json", "places.json", "waters.json"):
+    for name in ("spots.json", "alerts.json", "overflows.geojson", "verification.json", "verification_live.csv", "verification_spots_live.csv", "spot_scores.json", "places.json", "waters.json", "postcodes.json"):
         assert f'<h2 id="{name.replace(".", "-").replace("_", "-")}">{name}</h2>' in page, name
     assert '<h2 id="anypoint">anypoint/</h2>' in page and '<h2 id="upstream">upstream/</h2>' in page
     # A prose page like the others: the shared head and foot, flat links, and the counter when it is on.
@@ -849,7 +855,7 @@ def test_the_data_page_lists_every_file_in_data_with_its_size(tmp_path):
     # An empty data/ (write_pages over a fresh folder): every described row says so, and nothing breaks.
     empty = tmp_path / "empty"
     empty.mkdir()
-    assert bs.write_data_page(empty) == [] and (empty / "data.html").read_text().count("Not in this build") == 21   # spot_scores.json makes 16, overflows/ 17, waters.json 18, verification_spots_live.csv 19, research/ (satellite lakes, spill durations and E. coli samples) 20, sonde-readings.json 21
+    assert bs.write_data_page(empty) == [] and (empty / "data.html").read_text().count("Not in this build") == 22   # postcodes.json makes 22; spot_scores.json makes 16, overflows/ 17, waters.json 18, verification_spots_live.csv 19, research/ (satellite lakes, spill durations and E. coli samples) 20, sonde-readings.json 21
 
 
 def test_the_data_pages_sections_follow_its_table_and_fold_their_fields():
@@ -1099,7 +1105,7 @@ def test_tips_add_a_page_a_link_in_every_foot_and_a_privacy_section_only_when_on
     assert ">Support SwimSignal</a>" in spot
     privacy = (tmp_path / "privacy.html").read_text()
     assert '<h2 id="tips">If you leave a tip</h2>' in privacy and bs.SUPPORT_RIGHTS[1] in privacy
-    assert "Last updated 31 October 2026 (page-view counter, tips)." in privacy   # after the counter's own note
+    assert "Last updated 17 November 2026 (page-view counter, tips)." in privacy   # after the counter's own note
     assert "(tips)" not in (tmp_path / "terms.html").read_text()
     assert 'href="support.html">How to tip' in (tmp_path / "about.html").read_text()
     assert "support.html" in (tmp_path / "sitemap.xml").read_text()
@@ -1107,7 +1113,7 @@ def test_tips_add_a_page_a_link_in_every_foot_and_a_privacy_section_only_when_on
     bs.write_pages(tmp_path, SPOTS[:1], root="https://example.org/swim/")   # turned off again
     assert not (tmp_path / "support.html").exists()
     assert not any("Support SwimSignal" in p.read_text() for p in tmp_path.rglob("*.html"))
-    assert "Last updated 31 October 2026." in (tmp_path / "privacy.html").read_text()
+    assert "Last updated 17 November 2026." in (tmp_path / "privacy.html").read_text()
 
 
 def test_map_tiles_stay_on_openstreetmap_unless_a_known_provider_has_a_key(monkeypatch):
@@ -1157,7 +1163,7 @@ def test_another_tile_provider_reaches_the_map_the_privacy_notice_and_the_terms(
     privacy = (tmp_path / "privacy.html").read_text()
     assert "OpenStreetMap Foundation" not in privacy and "fetched from OpenStreetMap" not in privacy
     assert '<li><b>CARTO</b>, for the map images. Its <a href="https://carto.com/privacy/">privacy policy</a>' in privacy
-    assert "Last updated 31 October 2026 (page-view counter, map images, tips)." in privacy
+    assert "Last updated 17 November 2026 (page-view counter, map images, tips)." in privacy
     terms = (tmp_path / "terms.html").read_text()
     assert bs.OSM_TERMS not in terms and "map tiles from CARTO:" in terms
 

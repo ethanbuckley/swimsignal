@@ -2606,3 +2606,24 @@ A first-visit review on 17 November 2026 proposed a "where I am" button on the m
 rule and make the privacy page's sentence false. Ethan's decision, 17 November 2026: keep the rule. "What is near
 me" is answered by the list's Near me sort and by Plan a swim. Any later change needs the privacy page changed in
 the same PR.
+
+## A postcode is a place (17 November 2026)
+
+Until 17 November 2026 a postcode typed in the search or on Plan a swim got "Postcodes do not work here yet". Now it
+is a place, as a town is (`postcodePlace` in `plan.js`; `offerOnMap` and `planType` in `index.html`).
+
+- **What is read.** A district ("LS29"), a sector ("LS29 9") or a whole postcode, in any case, with or without the
+  space. A whole postcode is read as its sector. A sector missing from the file falls back to its district.
+- **What is shown.** In the search: "Near LS29 9" with the spots within 10 miles, then "Plan a swim · from a
+  postcode" and the map row, as under a town. A postcode far from every spot gets the same line a far town gets
+  ("No listed spot within 20 miles. The nearest is ..."). On Plan a swim the field changes to the sector and the
+  plan starts from it.
+- **Named by the sector, never the whole postcode.** The plan's address and a shared link hold "LS29 9". A whole
+  postcode can be a handful of houses, and a link is something people pass on.
+- **The file.** `data/postcodes.json` (`scripts/make_postcodes.py`): 2,863 districts and 10,839 sectors of Great
+  Britain from OS Open Names, each at the mean position of its postcodes to two decimal places, 298 kB (73 kB
+  compressed). Fetched the first time a postcode is typed and looked up on the device, as places are.
+- **Not found.** "No postcode found for “BT1 5GS”: type a town, a village or a river." Northern Ireland's
+  postcodes are not in OS Open Names, and SwimSignal has no spot there.
+- Checked in a local preview at 375 px and desktop width with LS29 9BZ, LA22, OX1 4, CF10 1AA, EH1, BT1 5GS and
+  ZZ99. Not checked: 320 px, dark mode, a real phone's keyboard.
