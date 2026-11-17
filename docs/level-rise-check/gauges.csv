@@ -1,0 +1,20 @@
+bw_id,gauge,label,river,lat,lon,low,high,measure
+uke4100-08901,F1902,Ilkley,River Wharfe,53.929346,-1.83091,0.09,1.8,57f6d273-427d-4f3b-8ce9-1bc17c8b11df-level-i-900-m-qualified
+uke2203-08903,L2105,Knaresborough,River Nidd,54.008443,-1.47066,0.42,1.2,2e294ffc-fcf4-4111-9487-19f10cf7b3f1-level-i-900-m-qualified
+uke4200-08904,F2004,Flint Mill,River Wharfe,53.920115,-1.358935,0.403,2.6,f85b0f2b-36a9-4e9e-bad2-ca889240b88c-level-i-900-m-qualified
+uke2204-08905,L2307,Richmond Lownthwaite Bridge,River Swale,54.401122,-1.776606,0.0,3.0,3e1bef32-b715-4899-b58a-78b6d13f3f30-level-i-900-m-qualified
+ukh1201-09801,E60501,Cambridge Jesus Lock,River Cam,52.212835,0.120872,0.637,0.74,
+ukh1406-10712,E27431,Beccles Quay,River Waveney,52.464571,1.564233,0.0,1.1,
+ukh1401-11051,E21227,Lamarsh,River Stour,51.987468,0.752212,0.154,1.65,4e87c615-767d-4b34-94c1-ca47926f6a70-level-i-900-m-qualified
+ukj1102-11941,2200TH,Reading,River Thames,51.461325,-0.967884,6.579,7.0,f44bf96d-3953-4fec-88bd-30ef4e12e523-level-i-900-m-qualified
+uki2203-11942,3404TH,Trowlock Island,River Thames,51.423993,-0.308538,4.42,5.0,defba4e0-fb05-42e7-aec6-f5088f98ae68-level-i-900-m-qualified
+ukj1402-11946,1100TH,Farmoor,River Thames,51.757544,-1.366384,0.5,1.3,6b80bd1c-6c19-4c26-875d-108bf8ef1a84-level-i-900-m-qualified
+ukj1403-11947,1800TH,Sutton Courtenay,River Thames,51.647821,-1.254167,1.911,3.51,b0713e87-cab3-46e4-bfb3-f0bbb91cedf6-level-i-900-m-qualified
+ukj3308-19001,43123,East Mills Flume,River Avon,50.928396,-1.777288,0.597,1.35,481f8042-997a-44cc-b425-51340d4cee9c-level-i-900-m-qualified
+ukk1500-19002,43165,Salisbury Ashley Road,River Avon,51.076527,-1.803528,0.103,0.48,513e2d83-ef5b-473a-a8fd-e066545c4243-level-i-900-m-qualified
+ukk2304-35201,52111,Taunton Market,River Tone,51.020017,-3.100618,0.818,1.77,fad760ef-0c6e-48df-a1c5-01d3f471cbb0-level-i-900-m-qualified
+ukk2301-36051,53120,Tellisford,Somerset Frome,51.30679,-2.280873,0.542,3.2,29434d59-1597-4783-b0b6-9f9a821d30d8-level-i-900-m-qualified
+ukg2200-36060,2625,Ludlow Teme,River Teme,52.36409,-2.706474,0.856,3.0,80e4ce66-6404-4311-9ece-0eac64d73907-level-i-900-m-qualified
+ukg2100-36070,2134,Buildwas,River Severn,52.636354,-2.524962,0.424,3.4,57e8d163-310e-4d4c-a0f2-86055cc91da0-level-i-900-m-qualified
+ukg2200-36071,2077,Welsh Bridge,River Severn,52.709797,-2.75808,0.422,2.7,92bda817-ccf4-4847-a7c2-87160c7b1dff-level-i-900-m-qualified
+ukd4308-46501,710301,Low Moor,River Ribble,53.872754,-2.414398,0.202,3.3,733a1439-f3a2-41e3-b053-8a11b21091f6-level-i-900-m-qualified

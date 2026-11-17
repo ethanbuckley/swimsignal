@@ -1,0 +1,83 @@
+{
+ "run_at": "2026-11-16T19:38:13+00:00",
+ "commit": "212d4cfc393c070f7b8f5ebd02b21cc70eecbf17",
+ "rows_sha256": "7fac233ddea292fae7a0e036ebb2c05f1b3d66af9e1df5b079118959fe927629",
+ "model_sha256": "d7c34055ad4ab61ce53e16f30d124eaaae5010b3585a78df96f3ee0896bb6cc5",
+ "form": "river-level-v1, earlier samples (L2), frozen",
+ "evidence": "development (bench rows already seen)",
+ "seasons_scored": {
+  "2024": 40,
+  "2025": 280,
+  "2026": 224
+ },
+ "L2": {
+  "rows": 544,
+  "points": 14,
+  "coverage": 0.8107,
+  "coverage_ci95": [
+   0.7513,
+   0.868
+  ],
+  "above": 0.0515,
+  "below": 0.1379,
+  "pass": true,
+  "median_half_width_log10": 0.6,
+  "rho_within_point": 0.3806
+ },
+ "river_range_v0e_same_rows_in_sample": {
+  "rows": 544,
+  "points": 14,
+  "coverage": 0.8327,
+  "coverage_ci95": [
+   0.7868,
+   0.875
+  ],
+  "above": 0.0717,
+  "below": 0.0956,
+  "pass": true,
+  "median_half_width_log10": 0.5862,
+  "rho_within_point": 0.4417
+ },
+ "log_density_gain_over_v0e": {
+  "value": -0.0926,
+  "ci95": [
+   -0.1987,
+   0.0151
+  ]
+ },
+ "coverage_by_site": {
+  "L2": {
+   "ukd4308-46501": 0.789,
+   "uke2203-08903": 0.667,
+   "uke4100-08901": 0.893,
+   "uke4200-08904": 0.686,
+   "ukg2100-36070": 0.757,
+   "ukg2200-36060": 0.611,
+   "ukg2200-36071": 0.861,
+   "ukh1201-09801": 0.543,
+   "ukh1401-11051": 0.833,
+   "ukj1402-11946": 0.963,
+   "ukj1403-11947": 0.914,
+   "ukj3308-19001": 0.917,
+   "ukk2301-36051": 0.889,
+   "ukk2304-35201": 0.895
+  },
+  "v0e": {
+   "ukd4308-46501": 0.789,
+   "uke2203-08903": 0.889,
+   "uke4100-08901": 0.821,
+   "uke4200-08904": 0.629,
+   "ukg2100-36070": 0.865,
+   "ukg2200-36060": 0.75,
+   "ukg2200-36071": 0.806,
+   "ukh1201-09801": 0.857,
+   "ukh1401-11051": 0.694,
+   "ukj1402-11946": 0.907,
+   "ukj1403-11947": 0.914,
+   "ukj3308-19001": 0.917,
+   "ukk2301-36051": 0.944,
+   "ukk2304-35201": 0.842
+  }
+ },
+ "outcome": "L2 passes at bathing-water rivers"
+}
