@@ -2594,3 +2594,15 @@ back link: the stroke set's share glyph and "Share", at Save's size and style. I
 the foot (`bindShare`): the share sheet on a phone, a copied link elsewhere, said under the row where Save says what
 it did. Under 400 px wide it is the glyph alone and keeps its name for a screen reader. Measured at 320, 375 and
 1024 px: the row keeps one line and nothing overflows. The button at the foot stays.
+
+## The map never moves to where you are (decided earlier; restated 17 November 2026)
+
+The map does not centre on a visitor's own location, and has no "near me" button. Its images are fetched from
+OpenStreetMap, so asking for the ones around a visitor would tell OpenStreetMap roughly where they are. The
+privacy page promises this of "Near me" on the list and "Use my location" on Plan a swim: "Neither choice moves
+the map". The code says the same where Plan a swim draws its start (`offerOnMap` in `index.html`).
+
+A first-visit review on 17 November 2026 proposed a "where I am" button on the map as new. It would reverse this
+rule and make the privacy page's sentence false. Ethan's decision, 17 November 2026: keep the rule. "What is near
+me" is answered by the list's Near me sort and by Plan a swim. Any later change needs the privacy page changed in
+the same PR.
