@@ -95,7 +95,42 @@ the read and on the bathing waters' result. That is a limit of the proposal.
 2. At the 37 spots that are not bathing waters: words in place of the percentage (proposed), or the percentage
    kept with the sentence added, as at bathing waters.
 3. If the percentage goes there: whether the estimate still sets the level at those spots. Proposed: not counted,
-   as at lakes, since a number judged unfit to show should not set a level unseen. **Not measured:** how many
-   spot-days would change level. Levels there would come from spills alone and could only fall, which is the less
-   cautious direction. That count should be made before anything is built.
+   as at lakes, since a number judged unfit to show should not set a level unseen. Levels there would come from
+   spills alone and could only fall, which is the less cautious direction. **The count, below, is large: over half
+   of spot-days.** That changes the recommendation: see the count.
 4. Any change to the words. The thirds and the definition of usual are fixed here so that 2027 can judge them.
+
+## The count for decision 3 (17 November 2026)
+
+How many spot-days would show a lower level if the estimate stopped setting it at river spots that are not bathing
+waters. Levels as `levels.js` cuts them: spills at 15, 40 and 70 on the exposure index; the estimate at 10%, 25%
+and 50%.
+
+**One real in-season day.** The local build of 30 September 2026, all 37 spots: 36 would have shown a lower level.
+21 went from high to low, 11 from moderate to low, 2 from very high to moderate, 1 from very high to high, 1 from
+very high to low. One stayed at very high.
+
+**The 2025 season, hindcast.** Every day from 1 May to 30 September 2025, lead 0, ERA5-Land rain, production's
+figure without soil moisture. 27 of the 37 spots, 4,131 spot-days. The other 10 spots were dropped: the pin this
+hindcast places at their position finds no overflow upstream where the site's own pin does. That difference was
+not traced.
+
+| | Low | Moderate | High | Very high |
+|---|---|---|---|---|
+| Level as now | 39.4% | 27.2% | 22.3% | 11.1% |
+| From spills alone | 82.2% | 11.5% | 3.7% | 2.7% |
+
+**2,373 of 4,131 spot-days (57.4%) would show a lower level.** 1,112 go from moderate to low and 644 from high to
+low. 21 of the 27 spots are raised on more than half of season days now; from spills alone, 2 are.
+
+**What this means for decision 3.** Dropping the estimate from the level would turn most of the season at these
+spots to "Low risk from sewage spills". The read found E. coli at places that are not bathing waters running
+higher than the estimate says, not lower. So the change would lower the stated level where the evidence points
+the other way. **Revised recommendation: leave the level rule as it is.** Show the words in place of the
+percentage (decision 2), and let the tile's line say how it stands to the level, as it does now ("This sets the
+level above."). The mock-up's "Not counted in the level." would then be wrong and should be changed before
+anything is built.
+
+That leaves a level set by a figure the tile no longer prints. The honest form of that is the tile saying so. The
+alternative, which keeps everything in view, is decision 2's second option: keep the percentage and add the
+sentence, at all 57 river spots.
