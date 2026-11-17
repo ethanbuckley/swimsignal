@@ -124,6 +124,15 @@ def issue_time(issue: str) -> datetime:
     return datetime.strptime(issue.split("-")[-1], "%Y%m%dT%H%MZ").replace(tzinfo=ZoneInfo("UTC"))
 
 
+def _covers(r: dict, t: datetime) -> bool:
+    """Whether this event-log row says the overflow was spilling at time t: by its status, or by its spill's own
+    start and stop. It says nothing about when the row was received (replay_at)."""
+    by_status = r["status"] == 1 and r.get("status_start") is not None and r["status_start"] <= t <= r["fetched_at"]
+    start, end = r.get("start"), r.get("end")
+    by_spill = start is not None and start <= t and (end >= t if end is not None else r["status"] == 1 and t <= r["fetched_at"])
+    return bool(by_status or by_spill)
+
+
 def replay_at(cutoff: datetime, polls: list[datetime], slots: dict[tuple[str, date], int], history: list[dict],
               sites: list[str], hours: float = RECENT_H) -> dict:
     """What SwimSignal had received about these overflows by `cutoff`, and nothing received later.
@@ -142,8 +151,17 @@ def replay_at(cutoff: datetime, polls: list[datetime], slots: dict[tuple[str, da
       shown: the archive does not keep when a state was FIRST seen.
     - An overflow with no known status at the last poll is 'unknown', with when a status was last received. No
       poll in the window is 'not polled'. Neither is ever 'not spilling'.
+    - Where a status WAS received at the last poll, its value is held to the same proof as a spill. A row "covers"
+      that poll when it says the overflow was spilling then: status 1 with status_start <= poll <= fetched_at, or a
+      spill whose own start and stop span the poll. status_start and the spill times are the feed's own, and a
+      feed can backdate them. So:
+        'spilling' needs a covering row last seen at or before the cutoff (proof it had been received);
+        'not spilling' needs no covering row at all, proven or not;
+        otherwise the state is 'unproven': a status arrived, but only a row last seen after the cutoff says what
+        it was. That is neither spilling nor not spilling, and the page puts it under Unknown.
+      The state and the events list use one test of receipt (fetched_at <= cutoff), so they cannot disagree.
 
-    Per site: { state: 'not spilling' | 'spilling' | 'unknown' | 'not polled', polls, last_known_at,
+    Per site: { state: 'not spilling' | 'spilling' | 'unproven' | 'unknown' | 'not polled', polls, last_known_at,
     unknown_polls (polls since the last known status) }. Also events (received spills touching the window, with
     received_by, the earliest poll that provably held them) and unproven (a count)."""
     lo = cutoff - timedelta(hours=hours)
@@ -162,9 +180,9 @@ def replay_at(cutoff: datetime, polls: list[datetime], slots: dict[tuple[str, da
             state = "unknown"
         else:
             t = seen[-1][0]
-            spilling = any(r["site_id"] == s and r["status"] == 1 and r["status_start"] is not None
-                           and r["status_start"] <= t <= r["fetched_at"] for r in history)
-            state = "spilling" if spilling else "not spilling"
+            covering = [r for r in history if r["site_id"] == s and _covers(r, t)]
+            state = ("spilling" if any(r["fetched_at"] <= cutoff for r in covering)
+                     else "unproven" if covering else "not spilling")
         out[s] = {"state": state, "polls": len(seen), "last_known_at": last_known, "unknown_polls": trailing}
     events, unproven = {}, set()
     for r in history:
@@ -395,6 +413,7 @@ def same_time(d: dict, facts: dict, history, coverage, poll_log, issued: dict | 
             "prev_poll": local(got["polls"][-2]) if len(got["polls"]) > 1 else None,
             "counted": len(main), "known": sum(got["sites"][s]["state"] in ("not spilling", "spilling") for s in main),
             "spilling": [one(s) for s in main if got["sites"][s]["state"] == "spilling"],
+            "unproven_state": [one(s) for s in main if got["sites"][s]["state"] == "unproven"],
             "unknown": sorted((one(s) for s in main if got["sites"][s]["state"] in ("unknown", "not polled")), key=lambda r: -(r["weight"] or 0)),
             "side": [one(s) for s in sites if s in side],
             "events": [{"site_id": e["site_id"], "site_name": rows[e["site_id"]].get("site_name"), "km": rows[e["site_id"]].get("km"),

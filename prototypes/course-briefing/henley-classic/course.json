@@ -1,6 +1,6 @@
 {
  "contract": "course-briefing-v1",
- "made": "2026-11-17T23:45+00:00",
+ "made": "2026-11-17T23:53+00:00",
  "course": {
   "id": "henley-classic",
   "name": "Henley Classic",
@@ -805,6 +805,7 @@
     "counted": 50,
     "known": 49,
     "spilling": [],
+    "unproven_state": [],
     "unknown": [
      {
       "site_id": "TWL00191",
@@ -949,6 +950,7 @@
     "counted": 50,
     "known": 50,
     "spilling": [],
+    "unproven_state": [],
     "unknown": [],
     "side": [
      {

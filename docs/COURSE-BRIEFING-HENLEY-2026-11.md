@@ -126,9 +126,22 @@ forecast exactly as issued, and the course's monitors as SwimSignal had received
 - An overflow with no status at the last poll is "unknown", with the time a status last arrived. It is never
   "not spilling".
 
-These rules are `replay_at` in `scripts/course_briefing.py`. Three tests hold them: a poll or a spill row after
-the cutoff cannot enter, a later poll in the same half hour lends nothing, and a monitor with no status stays
-unknown.
+- Where a status did arrive at the last poll, its value needs the same proof. "Spilling" needs a row that
+  covers the poll and was last seen by the cutoff. "Not spilling" needs no row at all that covers the poll. If the
+  only covering row was last seen after the cutoff, the state is "unproven": a status arrived, but the archive
+  cannot show what it was. The page puts that under Unknown.
+
+These rules are `replay_at` in `scripts/course_briefing.py`. Five tests hold them: a poll or a spill row after
+the cutoff cannot enter; a later poll in the same half hour lends nothing; a monitor with no status stays unknown;
+a row last seen after the cutoff cannot make a site "spilling" or "not spilling"; and the state and the list of
+spills never disagree about one spill.
+
+**A fault found in review, 18 November 2026.** In the first cut (`d01180f7`) the state at the last poll read
+"spilling" from any row whose own start was before the poll, even one last seen after the cutoff. A feed can
+backdate a start, so a later record could have set the state. The rule above replaced it. I then compared both
+committed replays under the old and the new rule: **no site changes state.** On 14 November, 49 of 50 are "not
+spilling", Friday Street is "unknown" and Henley works is "not spilling", as before. On 1 November all 50 and
+Henley works are "not spilling", as before. No row covers either last poll, so nothing was ever in doubt there.
 
 ### The three dates
 

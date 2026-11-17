@@ -106,6 +106,50 @@ def test_missing_monitor_data_stays_unknown_and_is_never_not_spilling():
     assert CB.replay_at(UTC0, polls, {("A", UTC0.date()): _bits(polls[2])}, spilling, ["A"])["sites"]["A"]["state"] == "spilling"
 
 
+def test_a_row_last_seen_after_the_cutoff_cannot_set_the_state_either_way():
+    poll, later = UTC0 - timedelta(minutes=17), UTC0 + timedelta(hours=7)            # 07:13, and 14:30 after the cutoff
+    slots = {("A", UTC0.date()): _bits(poll)}                                         # a status did arrive at 07:13
+    # The feed's own start is before the cutoff (it can backdate); the row was last seen after it.
+    backdated = {"site_id": "A", "status": 1, "status_start": UTC0 - timedelta(hours=2), "start": UTC0 - timedelta(hours=2),
+                 "end": None, "fetched_at": later}
+    got = CB.replay_at(UTC0, [poll, later], slots, [backdated], ["A"])
+    assert got["sites"]["A"]["state"] == "unproven"                   # neither "spilling" nor "not spilling"
+    assert got["events"] == [] and got["unproven"] == 1
+    # A closed spill spanning the poll, first seen later, is the same: its own times prove nothing about receipt.
+    closed = {**backdated, "status": 0, "status_start": UTC0 - timedelta(minutes=5), "end": UTC0 - timedelta(minutes=5)}
+    assert CB.replay_at(UTC0, [poll, later], slots, [closed], ["A"])["sites"]["A"]["state"] == "unproven"
+    # The same row last seen at the 07:13 poll is proof, and the spill is then shown too.
+    seen = {**backdated, "fetched_at": poll}
+    got = CB.replay_at(UTC0, [poll, later], slots, [seen], ["A"])
+    assert got["sites"]["A"]["state"] == "spilling" and [e["site_id"] for e in got["events"]] == ["A"] and got["unproven"] == 0
+    # A row that does not reach the poll leaves it not spilling: no row at all covers 07:13.
+    over = {**backdated, "status": 0, "status_start": UTC0 - timedelta(hours=1), "end": UTC0 - timedelta(hours=1), "fetched_at": poll}
+    assert CB.replay_at(UTC0, [poll, later], slots, [over], ["A"])["sites"]["A"]["state"] == "not spilling"
+
+
+def test_the_state_and_the_events_list_never_disagree_about_one_spill():
+    poll, later = UTC0 - timedelta(minutes=17), UTC0 + timedelta(hours=7)
+    slots = {("A", UTC0.date()): _bits(poll)}
+    for status in (0, 1):
+        for start_h in (3.0, 0.5):
+            for end_h in (None, 2.0, 0.1):
+                for fetched in (poll, later):
+                    if end_h is not None and (end_h >= start_h or status == 1):
+                        continue
+                    start = UTC0 - timedelta(hours=start_h)
+                    end = None if end_h is None else UTC0 - timedelta(hours=end_h)
+                    row = {"site_id": "A", "status": status, "status_start": end or start, "start": start, "end": end, "fetched_at": fetched}
+                    got = CB.replay_at(UTC0, [poll, later], slots, [row], ["A"])
+                    state, shown = got["sites"]["A"]["state"], bool(got["events"])
+                    if state == "spilling":
+                        assert shown and got["unproven"] == 0, row     # a spill the state rests on is always shown
+                    if got["unproven"]:
+                        assert state != "spilling" and not shown, row  # a spill left out never sets "spilling"
+                        if CB._covers(row, poll):
+                            assert state == "unproven", row            # and never "not spilling" where it spans the poll
+                    assert not (shown and got["unproven"]), row
+
+
 def test_the_committed_replays_use_an_issue_and_polls_from_before_the_decision_time():
     for d in DOC["dates"]:
         if d["replay"] is None:
@@ -117,6 +161,7 @@ def test_the_committed_replays_use_an_issue_and_polls_from_before_the_decision_t
         assert datetime.fromisoformat(d["replay"]["last_poll"]) <= cutoff
         assert all(datetime.fromisoformat(e["received_by"]) <= cutoff for e in d["replay"]["events"])
         assert all(u["state"] in ("unknown", "not polled") for u in d["replay"]["unknown"])
+        assert d["replay"]["unproven_state"] == [] and all(u["state"] == "not spilling" for u in d["replay"]["side"])
     gap = next(d for d in DOC["dates"] if d["id"] == "gap")["replay"]
     assert [u["site_id"] for u in gap["unknown"]] == ["TWL00191"] and gap["known"] == 49 and gap["counted"] == 50
 
