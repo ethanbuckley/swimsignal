@@ -3913,6 +3913,10 @@ const solo = h => `<div class="solo">${h}</div>`;
 // With more than one list, Save says which list it adds to: the one the Saved page shows.
 const saveLabel = on => { const t = `${on ? 'Saved in' : 'Save to'} ${esc(listNow().name)}`;
   return BOOKMARK + (manyLists() ? `<span class="ln" title="${t}">${t}</span>` : on ? 'Saved' : 'Save'); };
+// The first words when the search matches no spot. A postcode gets the reason, as Plan a swim gives it (17 Nov 2026:
+// "OX1 4" read "No inland forecasts match." and nothing else, as though Oxford had no spots).
+const noMatchLead = q => typeof looksLikePostcode === 'function' && looksLikePostcode(q || '')
+  ? 'Postcodes do not work here yet: type a town, a village or a river.' : 'No inland forecasts match.';
 // Near me: a pin at the end of the search field, as a maps app has it (29 October 2026; it was a full-width
 // button, with "Or check the river or lake where you are" under it, which the map's tap now covers). Also in
 // the built page (home_lead).
@@ -4381,7 +4385,7 @@ function drawSpots() {
   const groups = areaGroups(items);
   ul.innerHTML = groups ? groups.map(([a, xs]) => byArea() ? areaFold(a, xs, spotItem) : areaRows(a, xs, spotItem, VIEW.quiet, !words.length)).join('')
     : items.length ? items.map(spotItem).join('')
-    : `<li class="empty"><p class="below">No inland forecasts match. SwimSignal forecasts ${DATA.spots.length} river and lake spots ${spotsWhere()}. ${regionalLink(VIEW.q)} Missing yours? <a href="feedback.html?type=spot">Request it</a>.</p>`
+    : `<li class="empty"><p class="below">${noMatchLead(VIEW.q)} SwimSignal forecasts ${DATA.spots.length} river and lake spots ${spotsWhere()}. ${regionalLink(VIEW.q)} Missing yours? <a href="feedback.html?type=spot">Request it</a>.</p>`
       + `<button type="button" class="btn" id="clear-filters">Clear search and filters</button></li>`;
   sayOnChange(document.getElementById('count'), items.length === DATA.spots.length ? `${items.length} spot${items.length === 1 ? '' : 's'}.` : `Showing ${items.length} of ${DATA.spots.length} spots.`);
   document.getElementById('count').classList.toggle('sr', !items.length);   // still read out as a status; the page says it already
