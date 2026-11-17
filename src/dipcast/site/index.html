@@ -541,6 +541,9 @@
      what set it and when, where the five days go, the issue time. */
   .top-row { display:flex; align-items:center; justify-content:space-between; gap:12px; }
   .top-row .save { margin-top:0; }
+  .top-row .save:not(.share-top) { margin-left:auto; }   /* Save and Share sit together, opposite the back link */
+  .top-row .share-top { margin-left:-4px; }
+  @media (max-width:399px) { .share-top > span { display:none; } }
   .save-msg { margin:8px 0 4px; } .save-msg:empty { margin:0; }   /* what Save did, under it; empty, no room */
   /* Without a photo the line sits under the button it is about, at the right, at the meta size (12 Nov 2026: at the
      left under "All spots" it read as the page's first sentence, over a centred name). */
@@ -3896,6 +3899,10 @@ function patchNode(old, neu) {
 const FILTERS = { all: 'All', river: 'Rivers', lake: 'Lakes', designated: 'Bathing waters' };
 const SORTS = { low: 'Lowest risk', risk: 'Highest risk', name: 'A–Z', near: 'Near me' };
 const BOOKMARK = '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4Z"/></svg>';
+// Share, beside Save at the top of a spot's page (17 Nov 2026): the same link as "Share this spot" at the foot
+// (bindShare), which on a phone is some eleven screens down. On a narrow phone the icon alone; its name stays.
+const SHARE_TOP = '<button type="button" class="save share-top" id="share-top" aria-label="Share this spot">'
+  + '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V3.5M8 7l4-3.5L16 7"/><path d="M7 11H5.5A1.5 1.5 0 0 0 4 12.5V19a1.5 1.5 0 0 0 1.5 1.5h13A1.5 1.5 0 0 0 20 19v-6.5A1.5 1.5 0 0 0 18.5 11H17"/></svg><span>Share</span></button>';
 // Under the opening of the list, Saved and Plan a swim: the view, then the full map's tile, which a wide
 // desktop shows beside it and the map's frame moves into (placeWrap). Elsewhere the tile is not shown
 // and the view is one stack. The build writes the same frame round the list's shape (home_lead).
@@ -5752,17 +5759,20 @@ function actions(d) {
     + `<p class="small muted below">Did the forecast change where or when you swam? <a href="${fb}">Tell&nbsp;Ethan</a>.</p>`;
 }
 function bindShare(d) {
-  const b = document.getElementById('share'); if (!b) return;
   // The spot's own page: link previews in messaging apps then show its name. With a day open,
-  // the link opens that day.
+  // the link opens that day. Two buttons, one link: at the foot of the page, and beside Save at its top.
   const touch = matchMedia('(pointer: coarse)').matches && navigator.share;
-  if (touch) b.textContent = 'Share this spot';
-  b.addEventListener('click', async () => { const m = document.getElementById('share-msg');
-    const url = new URL(spotPath(d.id), location.origin).href + (DAY ? '#day=' + DAY : '');
+  const share = async said => { const url = new URL(spotPath(d.id), location.origin).href + (DAY ? '#day=' + DAY : '');
     try {
       if (touch) await navigator.share({ title: `${d.name} · ${BRAND}`, url });
-      else { await navigator.clipboard.writeText(url); m.textContent = DAY ? `Link to ${dayName(DAY)}'s forecast copied.` : 'Link copied.'; }
-    } catch (e) { if (e.name !== 'AbortError') m.textContent = url; } });
+      else { await navigator.clipboard.writeText(url); said(DAY ? `Link to ${dayName(DAY)}'s forecast copied.` : 'Link copied.'); }
+    } catch (e) { if (e.name !== 'AbortError') said(url); } };
+  const b = document.getElementById('share'), top = document.getElementById('share-top');
+  if (b) { if (touch) b.textContent = 'Share this spot';
+    b.addEventListener('click', () => share(s => { document.getElementById('share-msg').textContent = s; })); }
+  // At the top, what happened is said under the button, where Save says what it did (save-msg).
+  if (top) top.addEventListener('click', () => share(s => { const m = document.getElementById('save-msg') || document.getElementById('share-msg');
+    if (m) m.textContent = s; }));
 }
 function tech(d) {
   const a = d.assumptions || {}, e = a.ecoli_model || {};
@@ -6114,7 +6124,7 @@ function spotTop(d) {
   // The back link names where it goes (backTo): Saved, or the list it showed, a plan, the full map a
   // marker was tapped on (bindBack goes back to any of them), or all the spots. Save sits opposite it.
   const back = backTo(history.state);
-  let h = `<div class="top-row"><a href="${esc(back.href)}" class="back" id="back">${back.named ? `<span class="bn">${esc(back.label)}</span>` : esc(back.label)}</a>${saveButton(d)}</div>`;
+  let h = `<div class="top-row"><a href="${esc(back.href)}" class="back" id="back">${back.named ? `<span class="bn">${esc(back.label)}</span>` : esc(back.label)}</a>${saveButton(d)}${SHARE_TOP}</div>`;
   // What Save did, under the button that was pressed (bindSave). Empty, it takes no room. With the place's photo
   // (hero, below) it ends the answer instead, under its words: on a phone the back link and Save then sit on the photo, which
   // must come straight after them, with no notice between (.top-row:has(+ [data-notices]:empty + .answer > .hero)).
