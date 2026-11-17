@@ -15,6 +15,7 @@ What it reuses, so the briefing can never disagree with the site:
 - the exposure index: transport.combine_daily, here fed recorded spills in place of forecast chances, as
   forecast_log.verify_spots does, and labelled a reconstruction;
 - a recorded spill's days: forecast_log.observed_spill_days;
+- a poll's day and half-hour slot: as ingest.live.coverage_rows keeps them;
 - the limits wording: briefing.LIMITS and briefing.DECIDES, word for word.
 
 It reads the river network, the annual returns and the join files under DIPCAST_ROOT, and the live history, the
@@ -35,7 +36,7 @@ from zoneinfo import ZoneInfo
 
 REPO = Path(__file__).resolve().parents[1]
 UK = ZoneInfo("Europe/London")
-CONTRACT = "course-briefing-v0"
+CONTRACT = "course-briefing-v1"
 RECENT_H = 48.0          # the site's "recent spill" window (assumptions.recent_spill_hours)
 TOLERANCE_M = 60.0       # the route between the ends must be within this of the organiser's length
 LOG_FROM = "2026-09-12"  # the forecast log's first day (forecast_points)
@@ -110,6 +111,81 @@ def events_in_window(events: list[dict], as_of: datetime, hours: float = RECENT_
     lo = as_of - timedelta(hours=hours)
     hit = [e for e in events if e["start"] <= as_of and (e["end"] is None or e["end"] >= lo)]
     return sorted(hit, key=lambda e: (e["start"], e["site_id"]), reverse=True)
+
+
+def slot_of(t: datetime) -> tuple[date, int]:
+    """A poll's UK day and half-hour slot, as the coverage file keeps them (ingest.live.coverage_rows)."""
+    u = t.astimezone(UK)
+    return u.date(), u.hour * 2 + u.minute // 30
+
+
+def issue_time(issue: str) -> datetime:
+    """When an issue id says it was issued: '6743baf-20261114T0718Z' is 07:18 UTC on 14 Nov 2026."""
+    return datetime.strptime(issue.split("-")[-1], "%Y%m%dT%H%MZ").replace(tzinfo=ZoneInfo("UTC"))
+
+
+def replay_at(cutoff: datetime, polls: list[datetime], slots: dict[tuple[str, date], int], history: list[dict],
+              sites: list[str], hours: float = RECENT_H) -> dict:
+    """What SwimSignal had received about these overflows by `cutoff`, and nothing received later.
+
+    polls: every time the company's feed was polled. slots: (site_id, UK day) -> the bitmask of half-hour slots in
+    which a poll received a known status for that overflow (live_coverage.parquet). history: the event log's rows
+    (live_history.parquet): { site_id, status, status_start, start, end, fetched_at }, where fetched_at is the LAST
+    poll that saw that state.
+
+    The rules, each chosen so that a later record cannot enter:
+    - Only polls at or before the cutoff count. A poll's status was known if its slot's bit is set. The file keeps
+      half hours, not polls: where a poll after the cutoff shares the slot, the bit may be that later poll's, so
+      the status is taken as not received.
+    - A spill counts as received only if a row for it was last seen at or before the cutoff: fetched_at <= cutoff
+      proves receipt. A spill whose rows were all last seen after the cutoff is counted in `unproven` and not
+      shown: the archive does not keep when a state was FIRST seen.
+    - An overflow with no known status at the last poll is 'unknown', with when a status was last received. No
+      poll in the window is 'not polled'. Neither is ever 'not spilling'.
+
+    Per site: { state: 'not spilling' | 'spilling' | 'unknown' | 'not polled', polls, last_known_at,
+    unknown_polls (polls since the last known status) }. Also events (received spills touching the window, with
+    received_by, the earliest poll that provably held them) and unproven (a count)."""
+    lo = cutoff - timedelta(hours=hours)
+    before = sorted(t for t in polls if lo <= t <= cutoff)
+    late_slots = {slot_of(t) for t in polls if t > cutoff}
+    out = {}
+    for s in sites:
+        seen = [(t, slot_of(t)) for t in before]
+        known = [bool((slots.get((s, d), 0) >> k) & 1) and (d, k) not in late_slots for t, (d, k) in seen]
+        if not seen:
+            out[s] = {"state": "not polled", "polls": 0, "last_known_at": None, "unknown_polls": 0}
+            continue
+        last_known = max((t for (t, _), k in zip(seen, known) if k), default=None)
+        trailing = len(known) - 1 - max((i for i, k in enumerate(known) if k), default=-1)
+        if not known[-1]:
+            state = "unknown"
+        else:
+            t = seen[-1][0]
+            spilling = any(r["site_id"] == s and r["status"] == 1 and r["status_start"] is not None
+                           and r["status_start"] <= t <= r["fetched_at"] for r in history)
+            state = "spilling" if spilling else "not spilling"
+        out[s] = {"state": state, "polls": len(seen), "last_known_at": last_known, "unknown_polls": trailing}
+    events, unproven = {}, set()
+    for r in history:
+        if r["site_id"] not in sites or r.get("start") is None or r["start"] > cutoff:
+            continue
+        end = r["end"] if r.get("end") is not None else r["fetched_at"]
+        if end < lo:
+            continue
+        key = (r["site_id"], r["start"])
+        if r["fetched_at"] <= cutoff:
+            e = events.get(key)
+            if e is None or r["fetched_at"] < e["received_by"]:
+                closed = r.get("end") is not None
+                events[key] = {"site_id": r["site_id"], "start": r["start"], "end": r["end"] if closed else None,
+                               "received_by": r["fetched_at"]}
+            elif r.get("end") is not None and e["end"] is None:
+                e["end"] = r["end"]
+        else:
+            unproven.add(key)
+    return {"sites": out, "events": sorted(events.values(), key=lambda e: e["start"], reverse=True),
+            "unproven": len(unproven - set(events)), "polls": before}
 
 
 def sha256(path: Path) -> str:
@@ -288,7 +364,47 @@ def issued_record(state: Path, spot: str, issue: str | None) -> dict | None:
             "recent": rec.get("recent"), "model": rec.get("model")}
 
 
-def date_record(d: dict, facts: dict, events: list[dict], coverage, state: Path, spot: str, names: dict) -> dict:
+def same_time(d: dict, facts: dict, history, coverage, poll_log, issued: dict | None) -> dict | None:
+    """The same-time comparison for one date: the course's monitors as received by the decision time
+    (replay_at), beside the pin's archived issue. None before the forecast log, when nothing was polled."""
+    import pandas as pd
+    if d["day"] < LOG_FROM or history is None or coverage is None or poll_log is None:
+        return None
+    cutoff = datetime.fromisoformat(d["as_of"]).replace(tzinfo=UK)
+    if issued and issue_time(issued["issue"]) > cutoff:
+        raise CourseError(f"{d['id']}: issue {issued['issue']} is after the decision time {d['as_of']}")
+    side = {f["site_id"] for f in facts["inflows"]}
+    rows = {r["site_id"]: r for r in facts["upstream"]} | {f["site_id"]: f for f in facts["inflows"]}
+    sites = sorted(rows)
+    company = {r.get("company") for r in rows.values()}
+    polls = [t.to_pydatetime() for t in pd.to_datetime(poll_log[poll_log["company"].isin(company)]["fetched_at"], utc=True).drop_duplicates()]
+    c = coverage[coverage["site_id"].isin(sites)]
+    slots = {(r.site_id, pd.Timestamp(r.day).date()): int(r.slots) for r in c.itertuples(index=False)}
+    h = history[history["site_id"].isin(sites)]
+    ts = lambda v: None if v != v or v is None else pd.Timestamp(v).tz_convert("UTC").to_pydatetime()   # noqa: E731
+    hist = [{"site_id": r.site_id, "status": int(r.status), "status_start": ts(r.status_start), "start": ts(r.latest_event_start),
+             "end": ts(r.latest_event_end), "fetched_at": ts(r.fetched_at)} for r in h.itertuples(index=False)]
+    got = replay_at(cutoff, polls, slots, hist, sites)
+    local = lambda t: None if t is None else t.astimezone(UK).isoformat(timespec="minutes")   # noqa: E731
+    one = lambda s: {"site_id": s, "site_name": rows[s].get("site_name"), "km": rows[s].get("km"), "weight": rows[s].get("weight"),   # noqa: E731
+                     "side": s in side, "state": got["sites"][s]["state"], "last_known_at": local(got["sites"][s]["last_known_at"]),
+                     "unknown_polls": got["sites"][s]["unknown_polls"]}
+    main = [s for s in sites if s not in side]
+    return {"cutoff": cutoff.isoformat(timespec="minutes"), "window_h": RECENT_H,
+            "polls": len(got["polls"]), "last_poll": local(got["polls"][-1]) if got["polls"] else None,
+            "prev_poll": local(got["polls"][-2]) if len(got["polls"]) > 1 else None,
+            "counted": len(main), "known": sum(got["sites"][s]["state"] in ("not spilling", "spilling") for s in main),
+            "spilling": [one(s) for s in main if got["sites"][s]["state"] == "spilling"],
+            "unknown": sorted((one(s) for s in main if got["sites"][s]["state"] in ("unknown", "not polled")), key=lambda r: -(r["weight"] or 0)),
+            "side": [one(s) for s in sites if s in side],
+            "events": [{"site_id": e["site_id"], "site_name": rows[e["site_id"]].get("site_name"), "km": rows[e["site_id"]].get("km"),
+                        "weight": rows[e["site_id"]].get("weight"), "side": e["site_id"] in side, "start": local(e["start"]),
+                        "end": local(e["end"]), "received_by": local(e["received_by"])} for e in got["events"]],
+            "unproven": got["unproven"]}
+
+
+def date_record(d: dict, facts: dict, events: list[dict], coverage, state: Path, spot: str, names: dict,
+                history=None, poll_log=None) -> dict:
     import pandas as pd
     day = date.fromisoformat(d["day"])
     as_of = datetime.fromisoformat(d["as_of"]).replace(tzinfo=UK)
@@ -314,8 +430,11 @@ def date_record(d: dict, facts: dict, events: list[dict], coverage, state: Path,
                 monitors[s] = {"state": st, "known": k, "unknown": u, "side": s in side}
         polls = int(pd.concat([c["n_known"] + c["n_unknown"]]).max()) if len(c) else 0
         monitors = {"polls": polls, "counted": len(every), "not_reporting": monitors}
+    issued = issued_record(state, spot, d.get("issue"))
+    replay = same_time(d, facts, history, coverage, poll_log, issued)
     return {"id": d["id"], "day": d["day"], "as_of": as_of.isoformat(timespec="minutes"), "title": d["title"],
-            "issued": issued_record(state, spot, d.get("issue")),
+            "kind": "same time" if replay else "historical", "replay": replay,
+            "issued": issued,
             "no_issue_why": None if d.get("issue") else (
                 "SwimSignal's forecast log starts on 12 September 2026, so nothing was issued for this date."
                 if d["day"] < LOG_FROM else "No page record was kept for this date."),
@@ -479,7 +598,8 @@ def build(course_path: Path, events_path: Path | None, openmap: Path | None, out
     coverage = pd.read_parquet(inputs["live_coverage.parquet"]) if Path(inputs["live_coverage.parquet"]).exists() else None
     events = load_events(events_path, history, every)
     names = {r["site_id"]: r["site_name"] for r in facts["upstream"]} | {f["site_id"]: f.get("site_name") for f in facts["inflows"]}
-    dates = [date_record(d, facts, events, coverage, config.STATE, course["spot"], names) for d in course["date"]]
+    poll_log = pd.read_parquet(inputs["poll_log.parquet"]) if Path(inputs["poll_log.parquet"]).exists() else None
+    dates = [date_record(d, facts, events, coverage, config.STATE, course["spot"], names, history, poll_log) for d in course["date"]]
     ar = pd.read_parquet(inputs["annual_returns.parquet"])
     returns = {s: [{"year": int(r.year), "spills": None if r.spills != r.spills else int(r.spills),
                     "hours": None if r.spill_hours != r.spill_hours else round(float(r.spill_hours))}

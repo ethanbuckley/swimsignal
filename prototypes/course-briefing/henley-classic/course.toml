@@ -97,23 +97,25 @@ source = "Open-Meteo forecast, read by the build"
 limit = "A forecast for a grid cell, not a rain gauge."
 
 
-# The three dates. `as_of` is UK local time. `issue` is the page record the briefing quotes, where one exists.
+# The three dates, in the walkthrough's order. `as_of` is the decision time, UK local. `issue` is the page record
+# the briefing quotes: the last one issued before that time. A date before the forecast log has none, and is a
+# historical view only.
+[[date]]
+id = "gap"
+day = "2026-11-14"
+as_of = "2026-11-14T07:30"
+title = "The same time: one monitor silent"
+issue = "6743baf-20261114T0718Z"
+
 [[date]]
 id = "routine"
 day = "2026-11-01"
 as_of = "2026-11-01T08:40"
-title = "A routine day"
+title = "The same time: a quiet day"
 issue = "4deeedd-20261101T0832Z"
 
 [[date]]
 id = "differs"
 day = "2024-07-06"
 as_of = "2024-07-06T13:00"
-title = "The evidence differs along the course"
-
-[[date]]
-id = "gap"
-day = "2026-11-14"
-as_of = "2026-11-14T07:30"
-title = "The nearest monitor gives no reading"
-issue = "6743baf-20261114T0718Z"
+title = "Historical: evidence differs along the course"

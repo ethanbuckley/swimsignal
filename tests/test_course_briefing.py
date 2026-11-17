@@ -61,6 +61,66 @@ def test_only_spills_a_record_could_have_shown_by_then_are_listed():
     assert [e["site_id"] for e in got] == ["running", "recent"]
 
 
+UTC0 = datetime(2026, 11, 14, 7, 30, tzinfo=UTC)          # the cutoff: 07:30 on 14 Nov 2026 (UK is on UTC then)
+
+
+def _bits(*times):
+    """The coverage file's bitmask for known statuses received at these times on 14 Nov."""
+    return sum(1 << CB.slot_of(t)[1] for t in times)
+
+
+def test_an_observation_received_after_the_cutoff_cannot_enter_the_replay():
+    polls = [UTC0 - timedelta(hours=7), UTC0 - timedelta(minutes=17), UTC0 + timedelta(hours=7)]   # 00:30, 07:13, 14:30
+    day = UTC0.date()
+    # A: known only at the 14:30 poll, after the cutoff. B: known at 07:13.
+    slots = {("A", day): _bits(polls[2]), ("B", day): _bits(polls[1])}
+    spill = lambda site, fetched: {"site_id": site, "status": 0, "status_start": UTC0 - timedelta(hours=4), "start": UTC0 - timedelta(hours=5),   # noqa: E731
+                                   "end": UTC0 - timedelta(hours=4), "fetched_at": fetched}
+    history = [spill("A", polls[2]), spill("B", polls[1])]            # the same spill times; A's row was last seen after the cutoff
+    got = CB.replay_at(UTC0, polls, slots, history, ["A", "B"])
+    assert got["polls"] == polls[:2]
+    assert got["sites"]["A"]["state"] == "unknown" and got["sites"]["A"]["last_known_at"] is None
+    assert got["sites"]["B"] == {"state": "not spilling", "polls": 2, "last_known_at": polls[1], "unknown_polls": 0}
+    assert [e["site_id"] for e in got["events"]] == ["B"] and got["events"][0]["received_by"] == polls[1]
+    assert got["unproven"] == 1                                       # A's spill happened before the cutoff, but receipt is not shown
+    # Moving the cutoff past the later poll lets both in: the rule is the receipt time, not the spill's own.
+    late = CB.replay_at(polls[2], polls, slots, history, ["A", "B"])
+    assert late["sites"]["A"]["state"] == "not spilling" and {e["site_id"] for e in late["events"]} == {"A", "B"} and late["unproven"] == 0
+
+
+def test_a_later_poll_in_the_same_half_hour_does_not_lend_its_status():
+    cutoff = UTC0 - timedelta(minutes=10)                                                             # 07:20
+    polls = [UTC0 - timedelta(minutes=17), UTC0 - timedelta(minutes=5)]                             # 07:13 and 07:25: one slot
+    got = CB.replay_at(cutoff, polls, {("A", UTC0.date()): _bits(polls[0])}, [], ["A"])
+    assert got["polls"] == polls[:1] and got["sites"]["A"]["state"] == "unknown"   # the bit may be the 07:25 poll's
+
+
+def test_missing_monitor_data_stays_unknown_and_is_never_not_spilling():
+    polls = [UTC0 - timedelta(hours=27), UTC0 - timedelta(hours=7), UTC0 - timedelta(minutes=17)]
+    slots = {("A", (UTC0 - timedelta(hours=27)).date()): _bits(polls[0])}                              # known a day ago, nothing since
+    got = CB.replay_at(UTC0, polls, slots, [], ["A", "never", ])
+    assert got["sites"]["A"] == {"state": "unknown", "polls": 3, "last_known_at": polls[0], "unknown_polls": 2}
+    assert got["sites"]["never"]["state"] == "unknown" and got["sites"]["never"]["last_known_at"] is None
+    assert CB.replay_at(UTC0, [], {}, [], ["A"])["sites"]["A"]["state"] == "not polled"
+    spilling = [{"site_id": "A", "status": 1, "status_start": UTC0 - timedelta(hours=1), "start": UTC0 - timedelta(hours=1), "end": None, "fetched_at": polls[2]}]
+    assert CB.replay_at(UTC0, polls, {("A", UTC0.date()): _bits(polls[2])}, spilling, ["A"])["sites"]["A"]["state"] == "spilling"
+
+
+def test_the_committed_replays_use_an_issue_and_polls_from_before_the_decision_time():
+    for d in DOC["dates"]:
+        if d["replay"] is None:
+            assert d["kind"] == "historical" and d["day"] < DOC["log_from"]
+            continue
+        cutoff = datetime.fromisoformat(d["replay"]["cutoff"])
+        assert d["kind"] == "same time" and cutoff == datetime.fromisoformat(d["as_of"])
+        assert CB.issue_time(d["issued"]["issue"]) <= cutoff
+        assert datetime.fromisoformat(d["replay"]["last_poll"]) <= cutoff
+        assert all(datetime.fromisoformat(e["received_by"]) <= cutoff for e in d["replay"]["events"])
+        assert all(u["state"] in ("unknown", "not polled") for u in d["replay"]["unknown"])
+    gap = next(d for d in DOC["dates"] if d["id"] == "gap")["replay"]
+    assert [u["site_id"] for u in gap["unknown"]] == ["TWL00191"] and gap["known"] == 49 and gap["counted"] == 50
+
+
 def test_the_script_refuses_a_state_folder_inside_a_checkout(tmp_path):
     with pytest.raises(CB.CourseError):
         CB.guard_state(REPO / "data" / "processed")
@@ -72,7 +132,7 @@ def test_the_script_refuses_a_state_folder_inside_a_checkout(tmp_path):
 def test_the_henley_course_file_reads_and_matches_its_data():
     c = CB.load_course(HENLEY / "course.toml")
     assert c["spot"] == "thames-henley" and c["length_m"] == 2112
-    assert [d["id"] for d in c["date"]] == [d["id"] for d in DOC["dates"]] == ["routine", "differs", "gap"]
+    assert [d["id"] for d in c["date"]] == [d["id"] for d in DOC["dates"]] == ["gap", "routine", "differs"]
     assert DOC["contract"] == CB.CONTRACT and abs(DOC["km"] * 1000 - c["length_m"]) <= CB.TOLERANCE_M
     secs = DOC["sections"]
     assert secs[0]["from_km"] == 0 and secs[-1]["to_km"] == DOC["km"]

@@ -98,27 +98,83 @@ designated 2026) and Wallingford Beach (42.4 km, designated 2024) [repo: route t
 Water's feed in the 30 days to 17 November: 304 polls, half the gaps under 1.1 hours, 38 gaps over 6 hours, the
 longest 15.6 hours [repo: `poll_log.parquet`].
 
-## 4. The three dates
+## 4. The replay: what was known at the decision time
 
-| Date | Why | Issued at the pin | What the course view adds |
+Added 18 November 2026, for the second version. The page now compares two things at one decision time: the pin's
+forecast exactly as issued, and the course's monitors as SwimSignal had received them by then.
+
+### What the archive records about receipt
+
+**Established** [repo: the state release of 17 Nov 2026, `ingest/live.py`]
+
+- `poll_log.parquet` keeps the time of every poll of each company's feed, from 16 September 2026.
+- `live_coverage.parquet` keeps, for each overflow and UK day, the half-hour slots in which a poll received a
+  known status (spilling or not). So for any poll, the archive says whether a status arrived for each overflow.
+- `live_history.parquet` keeps one row for each state of each overflow, with the spill's own start and stop and
+  `fetched_at`. That is the **last** poll that saw the state, not the first.
+- `issued-YYYY-MM.parquet` keeps each page record as issued, from 31 October 2026. It holds counts (48 of 49
+  reporting), not which overflow was missing.
+- `forecast_overflows` logs each overflow at each issue, but its `status_known` column is false for all 50 at
+  every issue I read, so it says nothing here.
+
+**What follows from that**
+
+- A status at a poll is provable to the half hour. If a later poll falls in the same half hour as the cutoff, the
+  replay treats the status as not received.
+- A spill is provably received only when its row was last seen at or before the cutoff. A spill last seen later
+  may have been received in time, but the archive cannot show it. The replay leaves it out and counts it.
+- An overflow with no status at the last poll is "unknown", with the time a status last arrived. It is never
+  "not spilling".
+
+These rules are `replay_at` in `scripts/course_briefing.py`. Three tests hold them: a poll or a spill row after
+the cutoff cannot enter, a later poll in the same half hour lends nothing, and a monitor with no status stays
+unknown.
+
+### The three dates
+
+| Date and decision time | Kind | The pin, as issued | The course, as received by then |
 |---|---|---|---|
-| Sun 1 Nov 2026, 08:40 | Routine | Low, index 1, 49 of 49 reporting (`4deeedd-20261101T0832Z`) | Nothing changes along the course. Henley works reporting, not spilling |
-| Sat 6 Jul 2024, 13:00 | The evidence differs | Nothing: the log starts 12 Sep 2026 | Henley works recorded spilling 11:45 to 12:45, upstream of section 1 only. 14 other spills far upstream |
-| Sat 14 Nov 2026, 07:30 | A feed gap | Low, index 3, 48 of 49 reporting (`6743baf-20261114T0718Z`) | The one missing is Friday Street, 0.3 km above the finish, weight 99%. It spilled for 4 minutes at 02:50 the day before, then gave no reading at any of 6 polls |
+| Sat 14 Nov 2026, 07:30 | Same time | Low, index 3, 48 of 49 reporting (`6743baf-20261114T0718Z`) | 49 of 50 gave a status at the 07:13 poll. The one that did not is Friday Street, 0.3 km above the finish, weight 99%. Its last status arrived at 04:12 on 13 Nov, 13 polls earlier. Its 4-minute spill at 02:50 on 13 Nov was received by 04:12 that day. Henley works: not spilling at 07:13 |
+| Sun 1 Nov 2026, 08:40 | Same time | Low, index 1, 49 of 49 reporting (`4deeedd-20261101T0832Z`) | 50 of 50 gave a status at the 08:29 poll, none spilling. Henley works: not spilling. Nothing received differs along the course |
+| Sat 6 Jul 2024, 13:00 | Historical only | Nothing: the log starts 12 Sep 2026 | Not available. Later records show Henley works spilling 11:45 to 12:45, upstream of section 1 only |
 
-Only the "issued" column is as issued, from the kept page records. Everything else on the page is laid out now
-from records and is labelled "Reconstruction". For 6 July 2024 that means the Environment Agency's files, which
-were published after the year ended. Nobody could have read them on the day.
+The pin counts 49 and the course 50 because the overflow table has changed since. Both agree that one monitor was
+missing on 14 November.
 
-The page also gives, in a fold, the exposure index rebuilt from recorded spills at each end. It is the site's
-`combine_daily` with spill days in place of spill chances. It reads 0 and 6 on 6 July 2024, and 1 and 12 on 14
-November 2026. The second pair is the daily model moving part of one spill onto the next day at the start. It is
-not a second source, and the fold says so.
+### Does the archive support a fair comparison?
+
+**Partly.** It supports a same-time comparison of the pin against the whole course on 14 November 2026. Every
+line in it has receipt evidence from before 07:30. What the course view adds there is which monitor was silent,
+where it is, how much it weighs, and that it had spilled the night before.
+
+It does **not** support a same-time case where the evidence differs along the course. Henley works' last
+recorded spill began on 26 September 2024, and SwimSignal's polls start in September 2026. On every archived day
+its status is "not spilling". The only along-course difference is the July 2024 one, which rests on Environment
+Agency files published after the year ended. The page labels that date "Historical view" and the interview guide
+keeps it out of the pass count.
+
+**The exact records that would close the gap:**
+
+1. A spill, or a spell with no status, at `TWL00222`, polled by SwimSignal: a `poll_log` row for each poll, the
+   `live_coverage` slots for `TWL00222` on that day, and a `live_history` row for the event.
+2. The page record issued for `thames-henley` at or just before the chosen decision time.
+3. Better still, a first-received time for each state. `live_history` keeps the last. One more column,
+   `first_fetched_at`, would make every spill's receipt provable. That is a change to the live poller, so I did not
+   make it.
+
+Until the works spills again, or reports nothing, no archived day can show a same-time difference along this
+course. That is a fact about the river and the records, not about the tool.
+
+### Later records
+
+Each date also keeps the earlier whole-day view in a fold, labelled "Later records, not available at" the
+decision time: the Environment Agency's files for 2024, full-day poll counts, and the exposure index rebuilt from
+recorded spills (0 and 6 on 6 July 2024; 1 and 12 on 14 November 2026, where the second figure is the daily model
+moving part of one spill onto the next day).
 
 Two dates I looked at and did not use. Monday 26 October 2026: Thames Water's feed gave a status for only 167 of
-573 overflows at one poll. It is a clearer company-wide gap, but it says less about this course. Sunday 12 May
-2024: Henley works spilled for 16 hours until 02:00, during weeks of daily spills. It is closer to a dawn swim but
-harder to read, because much else was spilling.
+573 overflows at one poll. Sunday 12 May 2024: Henley works spilled for 16 hours until 02:00, during weeks of
+daily spills.
 
 ## 5. What was reused, and what is new
 
@@ -130,6 +186,9 @@ harder to read, because much else was spilling.
 - The limits and "who decides" wording: `briefing.LIMITS` and `briefing.DECIDES`, word for word. A test fails if
   they drift.
 - Overflow names and the weight's definition: `levels.js` (`plainName`, `WEIGHT_SAID`).
+- A poll's day and half-hour slot: counted as `ingest.live.coverage_rows` counts them.
+- The walkthrough's pin-first order, its reveal and its date buttons are Codex's local changes of 17 November,
+  carried over unchanged in behaviour. The reveal's content is new.
 - New: `scripts/course_briefing.py`, the page (`prototypes/course-briefing/`), and the rule that cuts a course into
   sections (`sections`). The rule: an overflow counts for the stretch from the start up to the furthest join the
   network or a mapped mouth gives. A "possible" mouth beyond that makes the stretch between unresolved.
@@ -149,6 +208,9 @@ Checked against `docs/DESIGN.md`.
 | Distances along the water in km | Already decided: "Units" |
 | Sections in the order a swimmer meets them, each with a rule at its left: heavy, dashed or hairline | New |
 | "Reconstruction" as a label with a rule at its left, on everything not issued | New. It follows the planner's value tags |
+| Each line of the reveal opens with its kind in words: Observation, Modelled connection, Inferred, Later record, Unknown | New. No colour or pill carries it |
+| The reveal is three questions as h3 headings, the map after them | New: the answers come before the drawing on a phone |
+| Later records under a fold named for what it holds | Already decided: "A row says one sentence and folds the rest" |
 | No level and no E. coli figure for a section | New, and deliberate: `docs/PLACE-LEVEL-READ-0-2026-11.md` |
 | The caveat reads "A forecast and an evidence map, not a water test. The organiser decides." | New wording. It adds to the kept caveat and does not replace it |
 
@@ -159,6 +221,8 @@ Nothing reverses a recorded decision.
 1. From the repository root: `python3 -m http.server 8793`
 2. Open `http://localhost:8793/prototypes/course-briefing/henley-classic/`. You should see the course drawing and
    three date buttons. A date is kept after the `#`, as `#date=gap`.
+3. For the walkthrough, add `#mode=walkthrough`. You should see the pin's forecast only, and a button, "Show the
+   course evidence".
 
 The likeliest mistake is serving the `site/` folder, as the usual preview does. The page then loads without its
 stylesheet, because it reads `src/dipcast/pages/page.css` from the repository.
@@ -172,7 +236,10 @@ in the file.
 
 - One course. The section rule has been tried on one stream.
 - The join positions come from two OS maps, not from a visit. Nobody has walked the bank.
-- The 2024 date uses records nobody had on the day.
+- The 2024 date uses records nobody had on the day. It is a historical view only.
+- Receipt is proved to the half hour for a status, and by a spill's last-seen time. A spill received in time but
+  seen again later is left out.
+- No archived day shows a same-time difference along the course (section 4).
 - The counts are from the overflow table of 17 November 2026. The pin's issued records that month count 49.
 - The page says nothing about the event's own safety plan, which I have not seen.
 
@@ -181,6 +248,7 @@ in the file.
 - **Publishing.** The page is outside the site build. Publishing it, or linking it, is his call.
 - **Contacting Henley Swim.** Nothing has been sent. The outreach rules in `docs/ORGANISER-PIVOT-2026-10.md` §5
   item 10 apply.
+- **Whether to keep a first-received time** in the live poller (section 4, record 3).
 - **The three walkthroughs**, with the sheet in `docs/COURSE-BRIEFING-WALKTHROUGH-2026-11.md`. The pass test is
   his: at least two of three organisers name a checkpoint they would add, an extra check, or a change they would
   communicate.

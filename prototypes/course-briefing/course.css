@@ -20,6 +20,13 @@ main.doc .c-tag { margin:8px 0; padding-left:8px; border-left:3px solid var(--no
 main.doc ul.c-list { margin:6px 0 12px; }
 main.doc ul.c-list li { margin:6px 0; }
 
+/* The reveal's answers: each line opens with what kind of thing it is, in words. */
+main.doc ul.c-ans { list-style:none; padding:0; margin:6px 0 14px; border-top:1px solid var(--line); }
+main.doc ul.c-ans li { margin:0; padding:8px 0; border-bottom:1px solid var(--line); font-size:var(--fs-note); line-height:1.45; }
+.c-what { font-weight:700; }
+main.doc .c-actions { margin:14px 0; }
+main.doc details.fold h3 { margin-top:8px; }
+
 /* The dates: three buttons, the picked one in the brand. */
 .c-dates { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:8px; margin:10px 0; }
 .c-dates .btn { flex-direction:column; align-items:flex-start; gap:2px; text-align:left; padding:10px 12px; }
@@ -36,7 +43,7 @@ ol.c-secs { list-style:none; padding:0; margin:20px 0 0; }
 .c-sec + .c-sec { margin-top:14px; }
 .c-sec.adds { border-left-color:var(--ink); }
 .c-sec.unresolved { border-left-style:dashed; border-left-color:var(--ink); }
-main.doc .c-sec h3 { margin:0; }
+main.doc .c-sec h4 { margin:0; font:600 var(--fs-body)/1.3 var(--font-display); color:var(--ink); }
 main.doc .c-kind { font-size:var(--fs-meta); font-weight:600; color:var(--muted); margin:2px 0 8px; }
 main.doc .c-sec p { margin:0 0 8px; }
 main.doc .c-not { font-size:var(--fs-note); margin:18px 0 0; padding-top:12px; border-top:1px solid var(--line); }
@@ -67,4 +74,4 @@ main.doc .c-not { font-size:var(--fs-note); margin:18px 0 0; padding-top:12px; b
   .c-plate { float:right; width:300px; margin:4px 0 16px 28px; }
   main.doc h2 { clear:both; }
 }
-@media print { .c-dates, .skip { display:none; } }
+@media print { .c-actions, .c-dates, .skip { display:none; } }

@@ -1,6 +1,6 @@
 {
- "contract": "course-briefing-v0",
- "made": "2026-11-17T23:18+00:00",
+ "contract": "course-briefing-v1",
+ "made": "2026-11-17T23:45+00:00",
  "course": {
   "id": "henley-classic",
   "name": "Henley Classic",
@@ -791,10 +791,180 @@
  "recent_h": 48.0,
  "dates": [
   {
+   "id": "gap",
+   "day": "2026-11-14",
+   "as_of": "2026-11-14T07:30+00:00",
+   "title": "The same time: one monitor silent",
+   "kind": "same time",
+   "replay": {
+    "cutoff": "2026-11-14T07:30+00:00",
+    "window_h": 48.0,
+    "polls": 20,
+    "last_poll": "2026-11-14T07:13+00:00",
+    "prev_poll": "2026-11-14T00:36+00:00",
+    "counted": 50,
+    "known": 49,
+    "spilling": [],
+    "unknown": [
+     {
+      "site_id": "TWL00191",
+      "site_name": "Friday Street (Henley) SPS",
+      "km": 0.3,
+      "weight": 0.988,
+      "side": false,
+      "state": "unknown",
+      "last_known_at": "2026-11-13T04:12+00:00",
+      "unknown_polls": 13
+     }
+    ],
+    "side": [
+     {
+      "site_id": "TWL00222",
+      "site_name": "Henley STW",
+      "km": 1.9,
+      "weight": 0.0686,
+      "side": true,
+      "state": "not spilling",
+      "last_known_at": "2026-11-14T07:13+00:00",
+      "unknown_polls": 0
+     }
+    ],
+    "events": [
+     {
+      "site_id": "TWL00191",
+      "site_name": "Friday Street (Henley) SPS",
+      "km": 0.3,
+      "weight": 0.988,
+      "side": false,
+      "start": "2026-11-13T02:50+00:00",
+      "end": "2026-11-13T02:54+00:00",
+      "received_by": "2026-11-13T04:12+00:00"
+     }
+    ],
+    "unproven": 0
+   },
+   "issued": {
+    "issue": "6743baf-20261114T0718Z",
+    "issued_at": "2026-11-14T07:18+00:00",
+    "level": "low",
+    "now_level": "low",
+    "now_score": 0,
+    "days": [
+     {
+      "by": "sewage spills",
+      "date": "2026-11-14",
+      "expect": 0.2,
+      "level": "low",
+      "missing": 0,
+      "rain": 0,
+      "score": 3
+     },
+     {
+      "by": "sewage spills",
+      "date": "2026-11-15",
+      "expect": 2.8,
+      "level": "low",
+      "missing": 0,
+      "rain": 2.9,
+      "score": 4
+     },
+     {
+      "by": "sewage spills",
+      "date": "2026-11-16",
+      "expect": 17.2,
+      "level": "moderate",
+      "missing": 0,
+      "rain": 3.5,
+      "score": 27
+     },
+     {
+      "by": "sewage spills",
+      "date": "2026-11-17",
+      "expect": 16.9,
+      "level": "moderate",
+      "missing": 0,
+      "rain": 29.1,
+      "score": 36
+     },
+     {
+      "by": "sewage spills",
+      "date": "2026-11-18",
+      "expect": 3.8,
+      "level": "moderate",
+      "missing": 0,
+      "rain": 30,
+      "score": 32
+     }
+    ],
+    "reporting": 48,
+    "upstream": 49,
+    "discharging": 0,
+    "recent": 0,
+    "model": "spill=808da63d;cal=9b3cc24c;ecoli=f70c7723;rain=open-meteo-forecast"
+   },
+   "no_issue_why": null,
+   "rebuilt": {
+    "finish": 1,
+    "start": 12
+   },
+   "spills": [
+    {
+     "site_id": "TWL00191",
+     "start": "2026-11-13T02:50+00:00",
+     "end": "2026-11-13T02:54+00:00",
+     "ended_after": false,
+     "source": "SwimSignal's polls of the live feed",
+     "side": false,
+     "weight": 0.988
+    }
+   ],
+   "monitors": {
+    "polls": 6,
+    "counted": 51,
+    "not_reporting": {
+     "TWL00191": {
+      "state": "none",
+      "known": 0,
+      "unknown": 6,
+      "side": false
+     }
+    }
+   },
+   "names": {
+    "TWL00191": "Friday Street (Henley) SPS"
+   }
+  },
+  {
    "id": "routine",
    "day": "2026-11-01",
    "as_of": "2026-11-01T08:40+00:00",
-   "title": "A routine day",
+   "title": "The same time: a quiet day",
+   "kind": "same time",
+   "replay": {
+    "cutoff": "2026-11-01T08:40+00:00",
+    "window_h": 48.0,
+    "polls": 43,
+    "last_poll": "2026-11-01T08:29+00:00",
+    "prev_poll": "2026-11-01T01:45+00:00",
+    "counted": 50,
+    "known": 50,
+    "spilling": [],
+    "unknown": [],
+    "side": [
+     {
+      "site_id": "TWL00222",
+      "site_name": "Henley STW",
+      "km": 1.9,
+      "weight": 0.0686,
+      "side": true,
+      "state": "not spilling",
+      "last_known_at": "2026-11-01T08:29+00:00",
+      "unknown_polls": 0
+     }
+    ],
+    "events": [],
+    "unproven": 0
+   },
    "issued": {
     "issue": "4deeedd-20261101T0832Z",
     "issued_at": "2026-11-01T08:32+00:00",
@@ -878,7 +1048,9 @@
    "id": "differs",
    "day": "2024-07-06",
    "as_of": "2024-07-06T13:00+01:00",
-   "title": "The evidence differs along the course",
+   "title": "Historical: evidence differs along the course",
+   "kind": "historical",
+   "replay": null,
    "issued": null,
    "no_issue_why": "SwimSignal's forecast log starts on 12 September 2026, so nothing was issued for this date.",
    "rebuilt": {
@@ -1035,102 +1207,6 @@
     "TWL00081": "Chapel Row STW",
     "TWL00031": "Beenham STW",
     "TWL00212": "Hamstead Marshall STW"
-   }
-  },
-  {
-   "id": "gap",
-   "day": "2026-11-14",
-   "as_of": "2026-11-14T07:30+00:00",
-   "title": "The nearest monitor gives no reading",
-   "issued": {
-    "issue": "6743baf-20261114T0718Z",
-    "issued_at": "2026-11-14T07:18+00:00",
-    "level": "low",
-    "now_level": "low",
-    "now_score": 0,
-    "days": [
-     {
-      "by": "sewage spills",
-      "date": "2026-11-14",
-      "expect": 0.2,
-      "level": "low",
-      "missing": 0,
-      "rain": 0,
-      "score": 3
-     },
-     {
-      "by": "sewage spills",
-      "date": "2026-11-15",
-      "expect": 2.8,
-      "level": "low",
-      "missing": 0,
-      "rain": 2.9,
-      "score": 4
-     },
-     {
-      "by": "sewage spills",
-      "date": "2026-11-16",
-      "expect": 17.2,
-      "level": "moderate",
-      "missing": 0,
-      "rain": 3.5,
-      "score": 27
-     },
-     {
-      "by": "sewage spills",
-      "date": "2026-11-17",
-      "expect": 16.9,
-      "level": "moderate",
-      "missing": 0,
-      "rain": 29.1,
-      "score": 36
-     },
-     {
-      "by": "sewage spills",
-      "date": "2026-11-18",
-      "expect": 3.8,
-      "level": "moderate",
-      "missing": 0,
-      "rain": 30,
-      "score": 32
-     }
-    ],
-    "reporting": 48,
-    "upstream": 49,
-    "discharging": 0,
-    "recent": 0,
-    "model": "spill=808da63d;cal=9b3cc24c;ecoli=f70c7723;rain=open-meteo-forecast"
-   },
-   "no_issue_why": null,
-   "rebuilt": {
-    "finish": 1,
-    "start": 12
-   },
-   "spills": [
-    {
-     "site_id": "TWL00191",
-     "start": "2026-11-13T02:50+00:00",
-     "end": "2026-11-13T02:54+00:00",
-     "ended_after": false,
-     "source": "SwimSignal's polls of the live feed",
-     "side": false,
-     "weight": 0.988
-    }
-   ],
-   "monitors": {
-    "polls": 6,
-    "counted": 51,
-    "not_reporting": {
-     "TWL00191": {
-      "state": "none",
-      "known": 0,
-      "unknown": 6,
-      "side": false
-     }
-    }
-   },
-   "names": {
-    "TWL00191": "Friday Street (Henley) SPS"
    }
   }
  ],
