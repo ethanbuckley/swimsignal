@@ -169,3 +169,28 @@ sentence, at all 57 river spots.
 6. **The 2027 judgement**, as fixed above, logged from the first in-season build.
 
 Nothing shows before May 2027 whatever is built, since the sentence is in season only.
+
+## Sizing the Open-Meteo calls for the cut-points (17 November 2026; no request made)
+
+Counted with the build's own cell list (`build_site.spot_rain_cells`) and Open-Meteo's own weight
+(`rainfall.call_weight`), against the archive rain already in the shared cache, which was read and not written.
+
+| Spots | Rain cells | Rain cell-seasons missing, 2023 to 2026 | Soil cell-seasons missing | Calls |
+|---|---|---|---|---|
+| The 57 river spots of 30 September | 286 | 422 | 112 | about 630 |
+| All 84 river spots on this branch | 340 | 631 | 182 | about 960 |
+
+A call here is one request for one cell and one season (1 May to 30 September with a lead-in, about 165 days, one
+variable), which Open-Meteo weighs at 1.18. Asking for whole years would cost about 2.2 times as much. The 2026
+season counts as a whole one, since the archive now reaches past 30 September.
+
+**It fits.** About 960 calls is under one day of Open-Meteo's free allowance of 10,000 for one address, and the
+allowance is counted per address. Run from a machine that is not the site's runner, it takes nothing from the
+build's 9,000 a day. At a polite pace of one request a second it is about 16 minutes.
+
+Not covered by this count:
+
+- Main now lists 133 spots against this branch's 121. The count must be redone on main before any fetch.
+- The spill model's own inputs for the hindcast (antecedent rain before 1 May is in the lead-in; anything longer
+  is not).
+- Whether another session on the same machine is using the same allowance that day.
