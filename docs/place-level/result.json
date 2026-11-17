@@ -1,0 +1,1365 @@
+{
+ "run_at": "2026-11-17T22:43:34+00:00",
+ "commit": "276909e81e6ebdc88dd0e037b62dc7aabbd2ad41",
+ "inputs_sha256": {
+  "heldout_rows_era5land.parquet": "382a335e0d6b010e8611bedf7d7fa409cab0c8ba56bb8a8bc9d9ad3ae20b3678",
+  "seen_river_rows_era5land.parquet": "7fac233ddea292fae7a0e036ebb2c05f1b3d66af9e1df5b079118959fe927629",
+  "river_level_v1.json": "d7c34055ad4ab61ce53e16f30d124eaaae5010b3585a78df96f3ee0896bb6cc5"
+ },
+ "read": "PLACE-LEVEL read 0",
+ "evidence": "development (every row was read on 16 November 2026)",
+ "own_samples": 20,
+ "set_A_archive_points": {
+  "places": 32,
+  "systems": 25,
+  "scored": 1673,
+  "n0": {
+   "rows": 1673,
+   "points": 32,
+   "systems": 25,
+   "coverage": 0.7968,
+   "coverage_ci95": [
+    0.7636,
+    0.8297
+   ],
+   "above": 0.1333,
+   "below": 0.0699,
+   "median_half_width_log10": 0.724,
+   "level_correlation_across_points": 0.1745,
+   "by_band": {
+    "large": {
+     "rows": 178,
+     "coverage": 0.7303,
+     "above": 0.1404
+    },
+    "medium": {
+     "rows": 996,
+     "coverage": 0.8122,
+     "above": 0.1426
+    },
+    "small": {
+     "rows": 499,
+     "coverage": 0.7896,
+     "above": 0.1122
+    }
+   },
+   "rule_1_range": true,
+   "by_seasons_after": {
+    "same season": {
+     "rows": 157,
+     "coverage": 0.7261,
+     "above": 0.1019,
+     "below": 0.172
+    },
+    "next season": {
+     "rows": 568,
+     "coverage": 0.7852,
+     "above": 0.1373,
+     "below": 0.0775
+    },
+    "two or more later": {
+     "rows": 948,
+     "coverage": 0.8154,
+     "above": 0.1361,
+     "below": 0.0485
+    }
+   }
+  },
+  "last_n": {
+   "3": {
+    "rows": 1673,
+    "points": 32,
+    "systems": 25,
+    "coverage": 0.7759,
+    "coverage_ci95": [
+     0.7421,
+     0.8106
+    ],
+    "above": 0.1447,
+    "below": 0.0795,
+    "median_half_width_log10": 0.6444,
+    "level_correlation_across_points": 0.5491,
+    "by_band": {
+     "large": {
+      "rows": 178,
+      "coverage": 0.6236,
+      "above": 0.1124
+     },
+     "medium": {
+      "rows": 996,
+      "coverage": 0.8082,
+      "above": 0.1365
+     },
+     "small": {
+      "rows": 499,
+      "coverage": 0.7655,
+      "above": 0.1723
+     }
+    },
+    "rule_1_range": true,
+    "log_density_gain_over_n0": {
+     "value": 0.0535,
+     "ci95": [
+      -0.004,
+      0.1119
+     ]
+    },
+    "rule_2_gain": false,
+    "pass": false,
+    "by_seasons_after": {
+     "same season": {
+      "rows": 157,
+      "coverage": 0.7389,
+      "above": 0.1465,
+      "below": 0.1146
+     },
+     "next season": {
+      "rows": 568,
+      "coverage": 0.7641,
+      "above": 0.1514,
+      "below": 0.0845
+     },
+     "two or more later": {
+      "rows": 948,
+      "coverage": 0.789,
+      "above": 0.1403,
+      "below": 0.0707
+     }
+    }
+   },
+   "5": {
+    "rows": 1673,
+    "points": 32,
+    "systems": 25,
+    "coverage": 0.7729,
+    "coverage_ci95": [
+     0.7374,
+     0.8084
+    ],
+    "above": 0.1441,
+    "below": 0.0831,
+    "median_half_width_log10": 0.6284,
+    "level_correlation_across_points": 0.7005,
+    "by_band": {
+     "large": {
+      "rows": 178,
+      "coverage": 0.6124,
+      "above": 0.1067
+     },
+     "medium": {
+      "rows": 996,
+      "coverage": 0.8082,
+      "above": 0.1376
+     },
+     "small": {
+      "rows": 499,
+      "coverage": 0.7595,
+      "above": 0.1703
+     }
+    },
+    "rule_1_range": true,
+    "log_density_gain_over_n0": {
+     "value": 0.076,
+     "ci95": [
+      0.0053,
+      0.1485
+     ]
+    },
+    "rule_2_gain": true,
+    "pass": true,
+    "by_seasons_after": {
+     "same season": {
+      "rows": 157,
+      "coverage": 0.7325,
+      "above": 0.1529,
+      "below": 0.1146
+     },
+     "next season": {
+      "rows": 568,
+      "coverage": 0.7641,
+      "above": 0.1496,
+      "below": 0.0863
+     },
+     "two or more later": {
+      "rows": 948,
+      "coverage": 0.7848,
+      "above": 0.1392,
+      "below": 0.0759
+     }
+    }
+   },
+   "8": {
+    "rows": 1673,
+    "points": 32,
+    "systems": 25,
+    "coverage": 0.7693,
+    "coverage_ci95": [
+     0.733,
+     0.8076
+    ],
+    "above": 0.1375,
+    "below": 0.0932,
+    "median_half_width_log10": 0.6162,
+    "level_correlation_across_points": 0.7416,
+    "by_band": {
+     "large": {
+      "rows": 178,
+      "coverage": 0.5955,
+      "above": 0.1348
+     },
+     "medium": {
+      "rows": 996,
+      "coverage": 0.8032,
+      "above": 0.1275
+     },
+     "small": {
+      "rows": 499,
+      "coverage": 0.7635,
+      "above": 0.1583
+     }
+    },
+    "rule_1_range": true,
+    "log_density_gain_over_n0": {
+     "value": 0.0842,
+     "ci95": [
+      0.0034,
+      0.171
+     ]
+    },
+    "rule_2_gain": true,
+    "pass": true,
+    "by_seasons_after": {
+     "same season": {
+      "rows": 157,
+      "coverage": 0.7325,
+      "above": 0.1656,
+      "below": 0.1019
+     },
+     "next season": {
+      "rows": 568,
+      "coverage": 0.7711,
+      "above": 0.1514,
+      "below": 0.0775
+     },
+     "two or more later": {
+      "rows": 948,
+      "coverage": 0.7743,
+      "above": 0.1245,
+      "below": 0.1013
+     }
+    }
+   },
+   "12": {
+    "rows": 1673,
+    "points": 32,
+    "systems": 25,
+    "coverage": 0.7651,
+    "coverage_ci95": [
+     0.727,
+     0.8041
+    ],
+    "above": 0.1297,
+    "below": 0.1052,
+    "median_half_width_log10": 0.6081,
+    "level_correlation_across_points": 0.7529,
+    "by_band": {
+     "large": {
+      "rows": 178,
+      "coverage": 0.5899,
+      "above": 0.1348
+     },
+     "medium": {
+      "rows": 996,
+      "coverage": 0.8022,
+      "above": 0.1285
+     },
+     "small": {
+      "rows": 499,
+      "coverage": 0.7535,
+      "above": 0.1303
+     }
+    },
+    "rule_1_range": true,
+    "log_density_gain_over_n0": {
+     "value": 0.0917,
+     "ci95": [
+      0.0089,
+      0.1858
+     ]
+    },
+    "rule_2_gain": true,
+    "pass": true,
+    "by_seasons_after": {
+     "same season": {
+      "rows": 157,
+      "coverage": 0.7452,
+      "above": 0.1529,
+      "below": 0.1019
+     },
+     "next season": {
+      "rows": 568,
+      "coverage": 0.7764,
+      "above": 0.1391,
+      "below": 0.0845
+     },
+     "two or more later": {
+      "rows": 948,
+      "coverage": 0.7616,
+      "above": 0.1203,
+      "below": 0.1181
+     }
+    }
+   },
+   "20": {
+    "rows": 1673,
+    "points": 32,
+    "systems": 25,
+    "coverage": 0.7687,
+    "coverage_ci95": [
+     0.7322,
+     0.8069
+    ],
+    "above": 0.1189,
+    "below": 0.1124,
+    "median_half_width_log10": 0.6006,
+    "level_correlation_across_points": 0.8383,
+    "by_band": {
+     "large": {
+      "rows": 178,
+      "coverage": 0.6067,
+      "above": 0.1404
+     },
+     "medium": {
+      "rows": 996,
+      "coverage": 0.8052,
+      "above": 0.1195
+     },
+     "small": {
+      "rows": 499,
+      "coverage": 0.7535,
+      "above": 0.1102
+     }
+    },
+    "rule_1_range": true,
+    "log_density_gain_over_n0": {
+     "value": 0.1105,
+     "ci95": [
+      0.025,
+      0.2052
+     ]
+    },
+    "rule_2_gain": true,
+    "pass": true,
+    "by_seasons_after": {
+     "same season": {
+      "rows": 157,
+      "coverage": 0.7134,
+      "above": 0.1465,
+      "below": 0.1401
+     },
+     "next season": {
+      "rows": 568,
+      "coverage": 0.7835,
+      "above": 0.1232,
+      "below": 0.0933
+     },
+     "two or more later": {
+      "rows": 948,
+      "coverage": 0.769,
+      "above": 0.1118,
+      "below": 0.1192
+     }
+    }
+   }
+  },
+  "first_n_reported": {
+   "3": {
+    "rows": 1673,
+    "points": 32,
+    "systems": 25,
+    "coverage": 0.7513,
+    "coverage_ci95": [
+     0.7118,
+     0.789
+    ],
+    "above": 0.1195,
+    "below": 0.1291,
+    "median_half_width_log10": 0.6444,
+    "level_correlation_across_points": 0.5385,
+    "by_band": {
+     "large": {
+      "rows": 178,
+      "coverage": 0.6742,
+      "above": 0.1348
+     },
+     "medium": {
+      "rows": 996,
+      "coverage": 0.7771,
+      "above": 0.1235
+     },
+     "small": {
+      "rows": 499,
+      "coverage": 0.7275,
+      "above": 0.1062
+     }
+    },
+    "rule_1_range": true,
+    "log_density_gain_over_n0": {
+     "value": 0.019,
+     "ci95": [
+      -0.0526,
+      0.0891
+     ]
+    },
+    "rule_2_gain": false,
+    "pass": false,
+    "by_seasons_after": {
+     "same season": {
+      "rows": 157,
+      "coverage": 0.6051,
+      "above": 0.1529,
+      "below": 0.242
+     },
+     "next season": {
+      "rows": 568,
+      "coverage": 0.7588,
+      "above": 0.1215,
+      "below": 0.1197
+     },
+     "two or more later": {
+      "rows": 948,
+      "coverage": 0.7711,
+      "above": 0.1129,
+      "below": 0.116
+     }
+    }
+   },
+   "5": {
+    "rows": 1673,
+    "points": 32,
+    "systems": 25,
+    "coverage": 0.7549,
+    "coverage_ci95": [
+     0.7196,
+     0.7918
+    ],
+    "above": 0.1189,
+    "below": 0.1261,
+    "median_half_width_log10": 0.6284,
+    "level_correlation_across_points": 0.6708,
+    "by_band": {
+     "large": {
+      "rows": 178,
+      "coverage": 0.6573,
+      "above": 0.1348
+     },
+     "medium": {
+      "rows": 996,
+      "coverage": 0.7811,
+      "above": 0.1295
+     },
+     "small": {
+      "rows": 499,
+      "coverage": 0.7375,
+      "above": 0.0922
+     }
+    },
+    "rule_1_range": true,
+    "log_density_gain_over_n0": {
+     "value": 0.0402,
+     "ci95": [
+      -0.0308,
+      0.11
+     ]
+    },
+    "rule_2_gain": false,
+    "pass": false,
+    "by_seasons_after": {
+     "same season": {
+      "rows": 157,
+      "coverage": 0.6369,
+      "above": 0.1401,
+      "below": 0.2229
+     },
+     "next season": {
+      "rows": 568,
+      "coverage": 0.7694,
+      "above": 0.118,
+      "below": 0.1127
+     },
+     "two or more later": {
+      "rows": 948,
+      "coverage": 0.7658,
+      "above": 0.116,
+      "below": 0.1181
+     }
+    }
+   },
+   "8": {
+    "rows": 1673,
+    "points": 32,
+    "systems": 25,
+    "coverage": 0.7675,
+    "coverage_ci95": [
+     0.7368,
+     0.8015
+    ],
+    "above": 0.1142,
+    "below": 0.1184,
+    "median_half_width_log10": 0.6162,
+    "level_correlation_across_points": 0.8109,
+    "by_band": {
+     "large": {
+      "rows": 178,
+      "coverage": 0.6629,
+      "above": 0.1404
+     },
+     "medium": {
+      "rows": 996,
+      "coverage": 0.7902,
+      "above": 0.1225
+     },
+     "small": {
+      "rows": 499,
+      "coverage": 0.7595,
+      "above": 0.0882
+     }
+    },
+    "rule_1_range": true,
+    "log_density_gain_over_n0": {
+     "value": 0.096,
+     "ci95": [
+      0.0256,
+      0.1718
+     ]
+    },
+    "rule_2_gain": true,
+    "pass": true,
+    "by_seasons_after": {
+     "same season": {
+      "rows": 157,
+      "coverage": 0.707,
+      "above": 0.1083,
+      "below": 0.1847
+     },
+     "next season": {
+      "rows": 568,
+      "coverage": 0.787,
+      "above": 0.1144,
+      "below": 0.0986
+     },
+     "two or more later": {
+      "rows": 948,
+      "coverage": 0.7658,
+      "above": 0.115,
+      "below": 0.1192
+     }
+    }
+   },
+   "12": {
+    "rows": 1673,
+    "points": 32,
+    "systems": 25,
+    "coverage": 0.7633,
+    "coverage_ci95": [
+     0.7292,
+     0.7988
+    ],
+    "above": 0.1136,
+    "below": 0.1231,
+    "median_half_width_log10": 0.6081,
+    "level_correlation_across_points": 0.8079,
+    "by_band": {
+     "large": {
+      "rows": 178,
+      "coverage": 0.6292,
+      "above": 0.1461
+     },
+     "medium": {
+      "rows": 996,
+      "coverage": 0.7992,
+      "above": 0.1245
+     },
+     "small": {
+      "rows": 499,
+      "coverage": 0.7395,
+      "above": 0.0802
+     }
+    },
+    "rule_1_range": true,
+    "log_density_gain_over_n0": {
+     "value": 0.0971,
+     "ci95": [
+      0.0173,
+      0.1836
+     ]
+    },
+    "rule_2_gain": true,
+    "pass": true,
+    "by_seasons_after": {
+     "same season": {
+      "rows": 157,
+      "coverage": 0.707,
+      "above": 0.1274,
+      "below": 0.1656
+     },
+     "next season": {
+      "rows": 568,
+      "coverage": 0.7852,
+      "above": 0.118,
+      "below": 0.0968
+     },
+     "two or more later": {
+      "rows": 948,
+      "coverage": 0.7595,
+      "above": 0.1086,
+      "below": 0.1319
+     }
+    }
+   },
+   "20": {
+    "rows": 1673,
+    "points": 32,
+    "systems": 25,
+    "coverage": 0.7687,
+    "coverage_ci95": [
+     0.7322,
+     0.8069
+    ],
+    "above": 0.1189,
+    "below": 0.1124,
+    "median_half_width_log10": 0.6006,
+    "level_correlation_across_points": 0.8383,
+    "by_band": {
+     "large": {
+      "rows": 178,
+      "coverage": 0.6067,
+      "above": 0.1404
+     },
+     "medium": {
+      "rows": 996,
+      "coverage": 0.8052,
+      "above": 0.1195
+     },
+     "small": {
+      "rows": 499,
+      "coverage": 0.7535,
+      "above": 0.1102
+     }
+    },
+    "rule_1_range": true,
+    "log_density_gain_over_n0": {
+     "value": 0.1105,
+     "ci95": [
+      0.025,
+      0.2052
+     ]
+    },
+    "rule_2_gain": true,
+    "pass": true,
+    "by_seasons_after": {
+     "same season": {
+      "rows": 157,
+      "coverage": 0.7134,
+      "above": 0.1465,
+      "below": 0.1401
+     },
+     "next season": {
+      "rows": 568,
+      "coverage": 0.7835,
+      "above": 0.1232,
+      "below": 0.0933
+     },
+     "two or more later": {
+      "rows": 948,
+      "coverage": 0.769,
+      "above": 0.1118,
+      "below": 0.1192
+     }
+    }
+   }
+  },
+  "running_reported": {
+   "rows": 1673,
+   "points": 32,
+   "systems": 25,
+   "coverage": 0.78,
+   "coverage_ci95": [
+    0.75,
+    0.8121
+   ],
+   "above": 0.1142,
+   "below": 0.1058,
+   "median_half_width_log10": 0.5935,
+   "level_correlation_across_points": 0.9212,
+   "by_band": {
+    "large": {
+     "rows": 178,
+     "coverage": 0.6404,
+     "above": 0.1629
+    },
+    "medium": {
+     "rows": 996,
+     "coverage": 0.8143,
+     "above": 0.1094
+    },
+    "small": {
+     "rows": 499,
+     "coverage": 0.7615,
+     "above": 0.1062
+    }
+   },
+   "rule_1_range": true,
+   "log_density_gain_over_n0": {
+    "value": 0.1518,
+    "ci95": [
+     0.0757,
+     0.245
+    ]
+   },
+   "rule_2_gain": true,
+   "pass": true,
+   "by_seasons_after": {
+    "same season": {
+     "rows": 157,
+     "coverage": 0.7261,
+     "above": 0.1338,
+     "below": 0.1401
+    },
+    "next season": {
+     "rows": 568,
+     "coverage": 0.7975,
+     "above": 0.118,
+     "below": 0.0845
+    },
+    "two or more later": {
+     "rows": 948,
+     "coverage": 0.7785,
+     "above": 0.1086,
+     "below": 0.1129
+    }
+   }
+  },
+  "answer": "n = 5"
+ },
+ "set_B_bathing_rivers_reported": {
+  "places": 14,
+  "systems": 14,
+  "scored": 548,
+  "n0": {
+   "rows": 548,
+   "points": 14,
+   "systems": 14,
+   "coverage": 0.8905,
+   "coverage_ci95": [
+    0.8536,
+    0.9279
+   ],
+   "above": 0.042,
+   "below": 0.0675,
+   "median_half_width_log10": 0.7236,
+   "level_correlation_across_points": 0.2176,
+   "by_band": {
+    "bathing": {
+     "rows": 548,
+     "coverage": 0.8905,
+     "above": 0.042
+    }
+   },
+   "rule_1_range": false,
+   "by_seasons_after": {
+    "same season": {
+     "rows": 4,
+     "coverage": 0.75,
+     "above": 0.0,
+     "below": 0.25
+    },
+    "next season": {
+     "rows": 281,
+     "coverage": 0.8648,
+     "above": 0.0569,
+     "below": 0.0783
+    },
+    "two or more later": {
+     "rows": 263,
+     "coverage": 0.9202,
+     "above": 0.0266,
+     "below": 0.0532
+    }
+   }
+  },
+  "last_n": {
+   "3": {
+    "rows": 548,
+    "points": 14,
+    "systems": 14,
+    "coverage": 0.8522,
+    "coverage_ci95": [
+     0.8123,
+     0.8872
+    ],
+    "above": 0.0474,
+    "below": 0.1004,
+    "median_half_width_log10": 0.6441,
+    "level_correlation_across_points": 0.7319,
+    "by_band": {
+     "bathing": {
+      "rows": 548,
+      "coverage": 0.8522,
+      "above": 0.0474
+     }
+    },
+    "rule_1_range": true,
+    "log_density_gain_over_n0": {
+     "value": 0.0534,
+     "ci95": [
+      0.0,
+      0.1103
+     ]
+    },
+    "rule_2_gain": false,
+    "pass": false,
+    "by_seasons_after": {
+     "same season": {
+      "rows": 4,
+      "coverage": 1.0,
+      "above": 0.0,
+      "below": 0.0
+     },
+     "next season": {
+      "rows": 281,
+      "coverage": 0.8327,
+      "above": 0.0605,
+      "below": 0.1068
+     },
+     "two or more later": {
+      "rows": 263,
+      "coverage": 0.8707,
+      "above": 0.0342,
+      "below": 0.0951
+     }
+    }
+   },
+   "5": {
+    "rows": 548,
+    "points": 14,
+    "systems": 14,
+    "coverage": 0.8358,
+    "coverage_ci95": [
+     0.7929,
+     0.8781
+    ],
+    "above": 0.042,
+    "below": 0.1223,
+    "median_half_width_log10": 0.6283,
+    "level_correlation_across_points": 0.6879,
+    "by_band": {
+     "bathing": {
+      "rows": 548,
+      "coverage": 0.8358,
+      "above": 0.042
+     }
+    },
+    "rule_1_range": true,
+    "log_density_gain_over_n0": {
+     "value": 0.0404,
+     "ci95": [
+      -0.0252,
+      0.1072
+     ]
+    },
+    "rule_2_gain": false,
+    "pass": false,
+    "by_seasons_after": {
+     "same season": {
+      "rows": 4,
+      "coverage": 1.0,
+      "above": 0.0,
+      "below": 0.0
+     },
+     "next season": {
+      "rows": 281,
+      "coverage": 0.8149,
+      "above": 0.0605,
+      "below": 0.1246
+     },
+     "two or more later": {
+      "rows": 263,
+      "coverage": 0.8555,
+      "above": 0.0228,
+      "below": 0.1217
+     }
+    }
+   },
+   "8": {
+    "rows": 548,
+    "points": 14,
+    "systems": 14,
+    "coverage": 0.8266,
+    "coverage_ci95": [
+     0.7811,
+     0.8728
+    ],
+    "above": 0.0547,
+    "below": 0.1186,
+    "median_half_width_log10": 0.6162,
+    "level_correlation_across_points": 0.6791,
+    "by_band": {
+     "bathing": {
+      "rows": 548,
+      "coverage": 0.8266,
+      "above": 0.0547
+     }
+    },
+    "rule_1_range": true,
+    "log_density_gain_over_n0": {
+     "value": 0.0463,
+     "ci95": [
+      -0.0365,
+      0.1231
+     ]
+    },
+    "rule_2_gain": false,
+    "pass": false,
+    "by_seasons_after": {
+     "same season": {
+      "rows": 4,
+      "coverage": 1.0,
+      "above": 0.0,
+      "below": 0.0
+     },
+     "next season": {
+      "rows": 281,
+      "coverage": 0.8007,
+      "above": 0.0783,
+      "below": 0.121
+     },
+     "two or more later": {
+      "rows": 263,
+      "coverage": 0.8517,
+      "above": 0.0304,
+      "below": 0.1179
+     }
+    }
+   },
+   "12": {
+    "rows": 548,
+    "points": 14,
+    "systems": 14,
+    "coverage": 0.8084,
+    "coverage_ci95": [
+     0.7569,
+     0.8611
+    ],
+    "above": 0.0639,
+    "below": 0.1277,
+    "median_half_width_log10": 0.6081,
+    "level_correlation_across_points": 0.6352,
+    "by_band": {
+     "bathing": {
+      "rows": 548,
+      "coverage": 0.8084,
+      "above": 0.0639
+     }
+    },
+    "rule_1_range": true,
+    "log_density_gain_over_n0": {
+     "value": 0.012,
+     "ci95": [
+      -0.0834,
+      0.0991
+     ]
+    },
+    "rule_2_gain": false,
+    "pass": false,
+    "by_seasons_after": {
+     "same season": {
+      "rows": 4,
+      "coverage": 1.0,
+      "above": 0.0,
+      "below": 0.0
+     },
+     "next season": {
+      "rows": 281,
+      "coverage": 0.7651,
+      "above": 0.0925,
+      "below": 0.1423
+     },
+     "two or more later": {
+      "rows": 263,
+      "coverage": 0.8517,
+      "above": 0.0342,
+      "below": 0.1141
+     }
+    }
+   },
+   "20": {
+    "rows": 548,
+    "points": 14,
+    "systems": 14,
+    "coverage": 0.7847,
+    "coverage_ci95": [
+     0.7204,
+     0.8477
+    ],
+    "above": 0.0493,
+    "below": 0.1661,
+    "median_half_width_log10": 0.6006,
+    "level_correlation_across_points": 0.6703,
+    "by_band": {
+     "bathing": {
+      "rows": 548,
+      "coverage": 0.7847,
+      "above": 0.0493
+     }
+    },
+    "rule_1_range": true,
+    "log_density_gain_over_n0": {
+     "value": -0.0384,
+     "ci95": [
+      -0.1694,
+      0.0693
+     ]
+    },
+    "rule_2_gain": false,
+    "pass": false,
+    "by_seasons_after": {
+     "same season": {
+      "rows": 4,
+      "coverage": 0.75,
+      "above": 0.0,
+      "below": 0.25
+     },
+     "next season": {
+      "rows": 281,
+      "coverage": 0.7509,
+      "above": 0.0712,
+      "below": 0.1779
+     },
+     "two or more later": {
+      "rows": 263,
+      "coverage": 0.8213,
+      "above": 0.0266,
+      "below": 0.1521
+     }
+    }
+   }
+  },
+  "first_n_reported": {
+   "3": {
+    "rows": 548,
+    "points": 14,
+    "systems": 14,
+    "coverage": 0.7464,
+    "coverage_ci95": [
+     0.6798,
+     0.8166
+    ],
+    "above": 0.0456,
+    "below": 0.208,
+    "median_half_width_log10": 0.6441,
+    "level_correlation_across_points": 0.1692,
+    "by_band": {
+     "bathing": {
+      "rows": 548,
+      "coverage": 0.7464,
+      "above": 0.0456
+     }
+    },
+    "rule_1_range": false,
+    "log_density_gain_over_n0": {
+     "value": -0.1544,
+     "ci95": [
+      -0.2556,
+      -0.0593
+     ]
+    },
+    "rule_2_gain": false,
+    "pass": false,
+    "by_seasons_after": {
+     "same season": {
+      "rows": 4,
+      "coverage": 0.75,
+      "above": 0.0,
+      "below": 0.25
+     },
+     "next season": {
+      "rows": 281,
+      "coverage": 0.7153,
+      "above": 0.0605,
+      "below": 0.2242
+     },
+     "two or more later": {
+      "rows": 263,
+      "coverage": 0.7795,
+      "above": 0.0304,
+      "below": 0.1901
+     }
+    }
+   },
+   "5": {
+    "rows": 548,
+    "points": 14,
+    "systems": 14,
+    "coverage": 0.7391,
+    "coverage_ci95": [
+     0.672,
+     0.8106
+    ],
+    "above": 0.042,
+    "below": 0.219,
+    "median_half_width_log10": 0.6283,
+    "level_correlation_across_points": 0.3758,
+    "by_band": {
+     "bathing": {
+      "rows": 548,
+      "coverage": 0.7391,
+      "above": 0.042
+     }
+    },
+    "rule_1_range": false,
+    "log_density_gain_over_n0": {
+     "value": -0.1557,
+     "ci95": [
+      -0.2747,
+      -0.0523
+     ]
+    },
+    "rule_2_gain": false,
+    "pass": false,
+    "by_seasons_after": {
+     "same season": {
+      "rows": 4,
+      "coverage": 0.75,
+      "above": 0.0,
+      "below": 0.25
+     },
+     "next season": {
+      "rows": 281,
+      "coverage": 0.694,
+      "above": 0.0569,
+      "below": 0.2491
+     },
+     "two or more later": {
+      "rows": 263,
+      "coverage": 0.7871,
+      "above": 0.0266,
+      "below": 0.1863
+     }
+    }
+   },
+   "8": {
+    "rows": 548,
+    "points": 14,
+    "systems": 14,
+    "coverage": 0.7336,
+    "coverage_ci95": [
+     0.6592,
+     0.8116
+    ],
+    "above": 0.0401,
+    "below": 0.2263,
+    "median_half_width_log10": 0.6162,
+    "level_correlation_across_points": 0.5868,
+    "by_band": {
+     "bathing": {
+      "rows": 548,
+      "coverage": 0.7336,
+      "above": 0.0401
+     }
+    },
+    "rule_1_range": false,
+    "log_density_gain_over_n0": {
+     "value": -0.1445,
+     "ci95": [
+      -0.2859,
+      -0.0272
+     ]
+    },
+    "rule_2_gain": false,
+    "pass": false,
+    "by_seasons_after": {
+     "same season": {
+      "rows": 4,
+      "coverage": 0.75,
+      "above": 0.0,
+      "below": 0.25
+     },
+     "next season": {
+      "rows": 281,
+      "coverage": 0.6904,
+      "above": 0.0569,
+      "below": 0.2527
+     },
+     "two or more later": {
+      "rows": 263,
+      "coverage": 0.7795,
+      "above": 0.0228,
+      "below": 0.1977
+     }
+    }
+   },
+   "12": {
+    "rows": 548,
+    "points": 14,
+    "systems": 14,
+    "coverage": 0.7391,
+    "coverage_ci95": [
+     0.6648,
+     0.8138
+    ],
+    "above": 0.0493,
+    "below": 0.2117,
+    "median_half_width_log10": 0.6081,
+    "level_correlation_across_points": 0.4681,
+    "by_band": {
+     "bathing": {
+      "rows": 548,
+      "coverage": 0.7391,
+      "above": 0.0493
+     }
+    },
+    "rule_1_range": false,
+    "log_density_gain_over_n0": {
+     "value": -0.1092,
+     "ci95": [
+      -0.2467,
+      0.0019
+     ]
+    },
+    "rule_2_gain": false,
+    "pass": false,
+    "by_seasons_after": {
+     "same season": {
+      "rows": 4,
+      "coverage": 0.75,
+      "above": 0.0,
+      "below": 0.25
+     },
+     "next season": {
+      "rows": 281,
+      "coverage": 0.7011,
+      "above": 0.0676,
+      "below": 0.2313
+     },
+     "two or more later": {
+      "rows": 263,
+      "coverage": 0.7795,
+      "above": 0.0304,
+      "below": 0.1901
+     }
+    }
+   },
+   "20": {
+    "rows": 548,
+    "points": 14,
+    "systems": 14,
+    "coverage": 0.7847,
+    "coverage_ci95": [
+     0.7204,
+     0.8477
+    ],
+    "above": 0.0493,
+    "below": 0.1661,
+    "median_half_width_log10": 0.6006,
+    "level_correlation_across_points": 0.6703,
+    "by_band": {
+     "bathing": {
+      "rows": 548,
+      "coverage": 0.7847,
+      "above": 0.0493
+     }
+    },
+    "rule_1_range": true,
+    "log_density_gain_over_n0": {
+     "value": -0.0384,
+     "ci95": [
+      -0.1694,
+      0.0693
+     ]
+    },
+    "rule_2_gain": false,
+    "pass": false,
+    "by_seasons_after": {
+     "same season": {
+      "rows": 4,
+      "coverage": 0.75,
+      "above": 0.0,
+      "below": 0.25
+     },
+     "next season": {
+      "rows": 281,
+      "coverage": 0.7509,
+      "above": 0.0712,
+      "below": 0.1779
+     },
+     "two or more later": {
+      "rows": 263,
+      "coverage": 0.8213,
+      "above": 0.0266,
+      "below": 0.1521
+     }
+    }
+   }
+  },
+  "running_reported": {
+   "rows": 548,
+   "points": 14,
+   "systems": 14,
+   "coverage": 0.8248,
+   "coverage_ci95": [
+    0.777,
+    0.872
+   ],
+   "above": 0.0547,
+   "below": 0.1204,
+   "median_half_width_log10": 0.5945,
+   "level_correlation_across_points": 0.767,
+   "by_band": {
+    "bathing": {
+     "rows": 548,
+     "coverage": 0.8248,
+     "above": 0.0547
+    }
+   },
+   "rule_1_range": true,
+   "log_density_gain_over_n0": {
+    "value": 0.073,
+    "ci95": [
+     0.003,
+     0.1432
+    ]
+   },
+   "rule_2_gain": true,
+   "pass": true,
+   "by_seasons_after": {
+    "same season": {
+     "rows": 4,
+     "coverage": 0.75,
+     "above": 0.0,
+     "below": 0.25
+    },
+    "next season": {
+     "rows": 281,
+     "coverage": 0.7758,
+     "above": 0.0747,
+     "below": 0.1495
+    },
+    "two or more later": {
+     "rows": 263,
+     "coverage": 0.8783,
+     "above": 0.0342,
+     "below": 0.0875
+    }
+   }
+  },
+  "answer": "not shown by 20",
+  "river_range_v0e_same_rows_in_sample": {
+   "rows": 548,
+   "coverage": 0.8303,
+   "above": 0.073,
+   "below": 0.0967
+  }
+ },
+ "outcome": "n = 5"
+}
