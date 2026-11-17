@@ -79,7 +79,7 @@ test('only a list address goes into the link', () => {
 });
 
 test('spotTop writes the link from backTo, escaped, and bindBack still goes back in the history', () => {
-  assert.match(between('function spotTop(', '// What Save did'), /const back = backTo\(history\.state\);\n\s*let h = `<div class="top-row"><a href="\$\{esc\(back\.href\)\}" class="back" id="back">\$\{back\.named \? `<span class="bn">\$\{esc\(back\.label\)\}<\/span>` : esc\(back\.label\)\}<\/a>\$\{saveButton\(d\)\}<\/div>`;/);
+  assert.match(between('function spotTop(', '// What Save did'), /const back = backTo\(history\.state\);\n\s*let h = `<div class="top-row"><a href="\$\{esc\(back\.href\)\}" class="back" id="back">\$\{back\.named \? `<span class="bn">\$\{esc\(back\.label\)\}<\/span>` : esc\(back\.label\)\}<\/a>\$\{saveButton\(d\)\}\$\{SHARE_TOP\}<\/div>`;/);
   // A list's name is up to 40 characters: it gives way to Save on a 320 px phone, on one line.
   assert.match(page, /\.top-row \.back:has\(\.bn\) \{ flex:0 1 auto; min-width:0; \}/);
   assert.match(page, /\.back \.bn \{ min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; \}/);

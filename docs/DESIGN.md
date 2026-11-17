@@ -2585,3 +2585,12 @@ request, #705): at a river spot in season, the E. coli tile's sentence gains one
 - Plain weight, as the lake's line.
 - Not done: the same word in the day-by-day table, a picked day's row, the organisers' page and the record; the
   test's sentence in the tile's corner fold.
+
+## Share at the top of a spot's page (17 November 2026)
+
+A first-visit review on 17 November 2026 found "Share this spot" only at the foot of a phone page some eleven
+screens long (Long Bridges measured 8,712 px). A second button now sits beside Save in the top row, opposite the
+back link: the stroke set's share glyph and "Share", at Save's size and style. It shares the same link as the one at
+the foot (`bindShare`): the share sheet on a phone, a copied link elsewhere, said under the row where Save says what
+it did. Under 400 px wide it is the glyph alone and keeps its name for a screen reader. Measured at 320, 375 and
+1024 px: the row keeps one line and nothing overflows. The button at the foot stays.
