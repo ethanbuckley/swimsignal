@@ -147,6 +147,11 @@ const ecoliLevel = (s, x) => ecoliUntested(x) ? null : ecoliBand(s, x);
 // day-by-day numbers, a folded table, keep them marked †. The band is out of the main view too ("Very
 // high risk" under a "Low risk" answer read as a contradiction).
 const ECOLI_OFF = 'Out of season';
+// At a river spot in season, whether the chance over 900 is higher or lower than usual there (river_usual.py: `ecoli_usual` on the day, against
+// the spot's own figures on 2023-26 season days; docs/RIVER-ORDER-LINE-PROPOSAL-2026-11.md). One sentence after the
+// figure's; the figure, its band and the level are unchanged. No safety, colour or level from it.
+const RIVER_USUAL = { higher: 'That is higher than usual here.', lower: 'That is lower than usual here.', about: 'That is about usual here.' };
+const riverUsual = x => RIVER_USUAL[(x || {}).ecoli_usual] || '';
 const ECOLI_EXPERIMENTAL = 'Experimental E. coli estimate', ECOLI_FOLD = 'Experimental estimate';
 const ECOLI_OFF_SAID = 'Out of season. The E. coli estimate is tested only for May to September, when the Environment Agency takes samples. From October to April it is experimental, so it is not given here and does not set the level.';
 const algaeAge = a => (Date.parse(today()) - Date.parse(a.date)) / 864e5;
@@ -863,6 +868,6 @@ if (typeof module === 'object' && module.exports) {
   module.exports = { nameCase, plainName, overflowNames, ORDER, NOT_COVERED, NO_FORECAST, NO_OVERFLOWS, NO_RIVER, OTHER_RISKS, SPILL_CUTS, ECOLI_CUTS, spillLevel, shownRisk, tooFar, allUpstream, tooFarSaid, WEIGHT_SAID, setToday, today, dayWord, readerDay, fromDay, rank, risk, nowUnknown, nowUnknownWhy, nowFew, nowWatched, NOW_WATCHED_SHARE, LIVE_NONE, liveCover, liveHead, liveLine, liveParts, MODELLED_FROM, level, dayLevel, headParts, headline, levelScope, nowBecause, dayBecause, dayHeadline, tileLine, weekNext, laterWords, coverage, COVER, FOUND_NONE, ISOLATED_WHY, plainLevel, inBathingSeason, poorReason, poorAdvice, daily, ecoliBand, ecoliLevel, ecoliUntested, bestDay, weekendWords, yoursLevelled, lowAnswerDay, lowAnswerWords, mostWords, clockWords, clearWords, RAIN_OLD_H, rainAgeLine, backToLow,
     ACTION, POOR_ACTION, ALGAE_ACTION, PLAIN_ACTION, actionFor, levelAction, dayAction, HEAD_SCOPE, spillSet, worstNear,
     SAMPLE_LINE, SAMPLE_DAYS, sampleLevel, standingLevel, eaUnchecked, EA_UNCHECKED, walesShare, walesWords, trialWords, ecoliNotes,
-    ECOLI_OFF, ECOLI_EXPERIMENTAL, ECOLI_FOLD, ECOLI_OFF_SAID,
+    ECOLI_OFF, ECOLI_EXPERIMENTAL, ECOLI_FOLD, ECOLI_OFF_SAID, RIVER_USUAL, riverUsual,
     companyName, atSpot, overflowWhere, travelSaid, SPILL_LONG_H, spillStart, longSpill, LONG_SPILL, isolated };
 }

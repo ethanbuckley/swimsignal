@@ -2564,3 +2564,24 @@ A measured tile under "Latest readings" (`sondeTile` in `index.html`; the data i
 
 **Checked:** headless Chrome at 375 and 1,440 px on the live data of 13 November with the run's readings (Dedham,
 Dosthill); `tests/site_sonde.test.cjs`. Not checked: 320 px, Safari, a screen reader.
+
+## Higher or lower than usual, at river spots (17 November 2026)
+
+Ethan's decision of 17 November 2026, from `docs/RIVER-ORDER-LINE-PROPOSAL-2026-11.md` (on the RIVER-UNSEEN pull
+request, #705): at a river spot in season, the E. coli tile's sentence gains one more after the percentage's.
+
+- The three forms: "That is higher than usual here.", "That is lower than usual here.", "That is about usual here."
+  (`RIVER_USUAL` in `levels.js`). After "Chance a water sample would show E. coli over 900 per 100 ml today; 9%
+  tomorrow." and before what the estimate counts. Today's only: tomorrow's figure gets no sentence.
+- **The percentage, its band, its scale and the level do not change.** Words in place of the percentage at spots
+  that are not bathing waters were proposed and not taken: with the estimate out of the level, 57% of season
+  spot-days at those spots would have shown a lower level, while the test that prompted this found E. coli there
+  running higher than the estimate says.
+- Usual is the middle third of the spot's own figures on May to September days of 2023 to 2026
+  (`river_usual.py`, `data/processed/river_usual.v1.json`). It compares the estimate with itself. It is not a
+  reading, a safety claim or a level, takes no colour, and uses none of "safe", "clean", "exceed" or "breach".
+- No sentence out of season, at a lake (which has its own line), on a point clicked on the map, at a spot with no
+  cut-points, or when the file is missing or is not the frozen one. The tile then reads as before.
+- Plain weight, as the lake's line.
+- Not done: the same word in the day-by-day table, a picked day's row, the organisers' page and the record; the
+  test's sentence in the tile's corner fold.
