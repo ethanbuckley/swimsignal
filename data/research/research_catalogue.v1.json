@@ -971,6 +971,13 @@
    "branch_exists": true,
    "date": "2026-11-13"
   },
+  "707": {
+   "n": 707,
+   "state": "open",
+   "branch": "claude/level-rise-check",
+   "branch_exists": true,
+   "date": "2026-11-16"
+  },
   "698": {
    "n": 698,
    "state": "open",
@@ -1462,6 +1469,30 @@
     342
    ],
    "register_note": "The register says the 235 line \"passed 6/7\", which reads as if only that line did; the doc says each line met six of the seven conditions."
+  },
+  {
+   "id": "level-rise-ecoli",
+   "title": "River level as an input to the E. coli estimate",
+   "section": "negative",
+   "topics": [
+    "e. coli",
+    "rivers",
+    "river level"
+   ],
+   "verdict": "Not supported, on 16 November 2026, on samples the models had already seen (development evidence). Adding the 24-hour rise at a river bathing water's own gauge to rain, season and upstream exposure did not improve how a site's samples were ordered: mean within-site rank correlation 0.437 against 0.445, difference −0.008 (95% interval −0.056 to +0.024), on 810 samples at 17 bathing waters. The rise alone ordered samples far worse than 48-hour rain (0.121 against 0.400). How high the river stood in its usual range did about as well as rain alone (0.361) and added nothing on top of it.",
+   "scope": "River bathing waters with a 15-minute level series in the Environment Agency's archive, May to September 2023 to 2026. One model form with one slope for all sites. Dry days alone were not settled either way (+0.059, interval −0.069 to +0.188). Says nothing about flow as dilution, which was tested apart.",
+   "stage": "archived",
+   "stage_note": "This form of the input is archived. Nothing on the site changes.",
+   "reopen_when": "Unseen river points with gauges are staged, so that the level on dry days can be tested under its own statement.",
+   "records": [
+    {
+     "doc": "docs/LEVEL-RISE-CHECK-2026-11.md",
+     "quote": "**Not supported, as stated.**"
+    }
+   ],
+   "prs": [
+    707
+   ]
   },
   {
    "id": "lake-own-rate",
