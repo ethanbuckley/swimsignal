@@ -978,6 +978,13 @@
    "branch_exists": true,
    "date": "2026-11-14"
   },
+  "705": {
+   "n": 705,
+   "state": "open",
+   "branch": "claude/river-unseen-staging",
+   "branch_exists": true,
+   "date": "2026-11-15"
+  },
   "699": {
    "n": 699,
    "state": "open",
@@ -3042,6 +3049,43 @@
    ],
    "prs": [
     588
+   ]
+  },
+  {
+   "id": "river-unseen",
+   "title": "River samples the river model never saw: the order holds, the range does not",
+   "section": "data",
+   "topics": [
+    "e. coli",
+    "rivers",
+    "evaluation",
+    "sources"
+   ],
+   "verdict": "Read once on 16 November 2026: the order passes and the range fails. On 6,322 river E. coli results from 2012 to 2022 at 59 Environment Agency sampling points that no model here had used, the frozen candidate put each point's days in the right order (mean within-point correlation 0.360, interval 0.314 to 0.394, against a bar of 0.15). Only 53.1% of results fell inside its 8-in-10 range, against a pass band of 72% to 88%: 44.3% were above it and 2.6% below. Rain in the last 48 hours alone scored 0.355, so the overflow exposure added little to the order.",
+   "scope": "Sampling points that are not bathing waters, kept purposes only (planned monitoring and planned investigations), May to September, hindcast on ERA5-Land rain at lead 0. 48 of the 59 points are in the South West and most are small streams; the median result was 818 per 100 ml against 320 at the bathing waters the model was fitted on. The split of the misses by stream size was made after the read and is development evidence.",
+   "stage": "waiting",
+   "stage_note": "Read on 16 November 2026. Nothing on the site changes. An order-only line at river spots (higher or lower than usual here) is proposed and waits on Ethan's decision.",
+   "next": "Two follow-ups fitted after the read (development evidence only). Giving each place a usual level from its own earlier samples put 75.7% of later results inside the range at the archive points, against 46% for the old range; stream size did not predict a place's level. At bathing-water rivers the same range held (81.1% of 544 samples) and did no better than the old one (83.3%), so no new shadow log is built there. What is missing is samples at swim spots that are not bathing waters.",
+   "records": [
+    {
+     "doc": "docs/RIVER-UNSEEN-PROTOCOL-2026-11.md",
+     "quote": "## The read, 16 November 2026: order passes, range fails"
+    },
+    {
+     "doc": "docs/RIVER-LEVEL-CANDIDATE-2026-11.md",
+     "quote": "## Result, 16 November 2026: L1 passes, L2 passes (development)"
+    },
+    {
+     "doc": "docs/RIVER-LEVEL-BATHING-BACKTEST-2026-11.md",
+     "quote": "**No shadow log for bathing rivers on this evidence.**"
+    },
+    {
+     "doc": "docs/RIVER-ORDER-LINE-PROPOSAL-2026-11.md",
+     "quote": "**It is a product\ndecision for Ethan. Nothing is built and nothing on the site changes.**"
+    }
+   ],
+   "prs": [
+    705
    ]
   },
   {
