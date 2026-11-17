@@ -8,6 +8,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts" / "river_unseen"))
@@ -239,3 +240,70 @@ def test_bathing_backtest_uses_only_earlier_seasons_and_scores_both_ranges():
     cand = json.loads((ROOT / "docs" / "river-unseen" / "river_range_v0e.json").read_text())
     res = bb.score(d, m, cand)
     assert res["L2"]["rows"] == len(new) and res["log_density_gain_over_v0e"]["value"] > 0
+
+
+def _made_up_place_rows(seed=7, shift=0.0):
+    """The made-up level rows with a sample time, and (with `shift`) a level that moves after each place's 20th late sample."""
+    d = _made_up_level_rows(seed=seed)
+    d["sample_time"] = pd.to_datetime(d["season"].astype(str) + "-05-01") + pd.to_timedelta(d.groupby(["bw_id", "season"]).cumcount() * 10, unit="D")
+    if shift:
+        late = d["season"] > 2016
+        d.loc[late & (d[late].groupby("bw_id").cumcount().reindex(d.index, fill_value=0) >= 20), "log_ecoli"] += shift
+    return d
+
+
+def test_place_level_read_splits_each_place_and_scores_every_n_on_the_same_samples(monkeypatch):
+    import level_candidate as lc
+    import place_level_read0 as pl
+    monkeypatch.setattr(pl, "DRAWS", 40)
+    monkeypatch.setattr(lc.rd.system_season_draws, "__defaults__", (40, lc.rd.SEED))
+    d = _made_up_place_rows()
+    fits = pl.system_fits(d)
+    own, scored = pl.split_places(d[d["season"] > lc.SPLIT])
+    assert len(own) == 40 * pl.OWN and len(scored) == 40 * (36 - pl.OWN)
+    for p, x in scored.groupby("bw_id"):                      # own samples come first in time
+        assert own.loc[own["bw_id"] == p, "sample_time"].max() < x["sample_time"].min()
+    assert set(scored["seasons_after"]) == {0, 1}
+    r = pl.all_ranges(own, scored, lambda x: fits[x["system"].iloc[0]])
+    assert all(v.index.equals(r["n0"].index) for k, v in r.items() if k != "running") and set(r["running"].index) == set(r["n0"].index)
+    width = lambda k: float((r[k]["high_log10"] - r[k]["mu_log10"]).median())  # noqa: E731
+    assert width("n0") > width("last3") > width("last8") > width("last20")
+    assert (r["n0"]["level_log10"] == 0).all() and r["last20"]["level_log10"].abs().mean() > r["last3"]["level_log10"].abs().mean() * 0.5
+    res = pl.score(own, scored, lambda x: fits[x["system"].iloc[0]])
+    assert res["places"] == 40 and res["scored"] == len(scored)
+    assert res["last_n"]["20"]["pass"] and res["last_n"]["20"]["log_density_gain_over_n0"]["value"] > res["last_n"]["3"]["log_density_gain_over_n0"]["value"]
+    assert res["answer"].startswith("n = ") and "log_density_gain_over_n0" not in res["n0"]
+
+
+def test_place_level_read_uses_only_the_named_own_samples_and_a_drifting_level_fails_rule_1(monkeypatch):
+    import level_candidate as lc
+    import place_level_read0 as pl
+    monkeypatch.setattr(pl, "DRAWS", 40)
+    monkeypatch.setattr(lc.rd.system_season_draws, "__defaults__", (40, lc.rd.SEED))
+    d = _made_up_place_rows(seed=9)
+    m = lc.fit(d[d["season"] <= lc.SPLIT])
+    own, scored = pl.split_places(d[d["season"] > lc.SPLIT])
+    x, o = scored[scored["bw_id"] == "P0"], own[own["bw_id"] == "P0"]
+    a = pl.level_ranges(x, o.iloc[pl.OWN - 5:], m)
+    moved = o.copy()
+    moved.iloc[:pl.OWN - 5, moved.columns.get_loc("log_ecoli")] += 5.0          # older own samples must not move a last-5 level
+    assert np.allclose(a["mu_log10"], pl.level_ranges(x, moved.iloc[pl.OWN - 5:], m)["mu_log10"])
+    run = pl.running_ranges(x, o, m)
+    later = x.copy()
+    later.iloc[-1, later.columns.get_loc("log_ecoli")] += 5.0                   # a later sample must not move an earlier running level
+    assert np.allclose(run["mu_log10"].iloc[:-1], pl.running_ranges(later, o, m)["mu_log10"].iloc[:-1])
+    drift = _made_up_place_rows(seed=9, shift=-1.2)
+    own, scored = pl.split_places(drift[drift["season"] > lc.SPLIT])
+    res = pl.score(own, scored, lambda t: m)
+    assert not res["last_n"]["20"]["rule_1_range"] and res["last_n"]["20"]["below"] > 0.18 and res["answer"] == "not shown by 20"
+
+
+def test_place_level_read_stops_when_the_folds_do_not_match_the_record(tmp_path):
+    import place_level_read0 as pl
+    fits = {"S0": {"tau": 0.3, "sigma": 0.45}, "S1": {"tau": 0.34, "sigma": 0.46}}
+    pl.check_fits(fits, {"fits": {"tau": [0.3, 0.32, 0.34], "sigma": [0.45, 0.455, 0.46]}})
+    with pytest.raises(SystemExit):
+        pl.check_fits(fits, {"fits": {"tau": [0.3, 0.33, 0.34], "sigma": [0.45, 0.455, 0.46]}})
+    (tmp_path / "result.json").write_text("{}")
+    with pytest.raises(SystemExit):
+        pl.check_committed(tmp_path)
