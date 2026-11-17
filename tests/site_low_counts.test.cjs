@@ -35,7 +35,7 @@ for (const f of ['experience.js', 'levels.js']) vm.runInContext(fs.readFileSync(
 vm.runInContext(`setToday("${DATES[0]}");`, ctx);
 vm.runInContext(fs.readFileSync(join(SITE, 'eatoday.js'), 'utf8'), ctx);
 vm.runInContext(defs(['esc', 'VIEW', 'issued', 'mapLevel', 'mapWhen', 'listHeadline', 'noticeVerb', 'overview',
-  'lowEligible', 'lowOn', 'stripCount', 'lowToChoose', 'areaHead', 'areaFold']), ctx);
+  'tone', 'lowEligible', 'lowOn', 'stripCount', 'LEVEL_WORDS', 'stripCell', 'lowToChoose', 'areaHead', 'areaFold']), ctx);
 vm.runInContext(`VIEW.day = "${DATES[0]}";`, ctx);
 const run = (f, ...a) => vm.runInContext(f, ctx)(...a);
 
@@ -73,3 +73,26 @@ test('the list\'s day strip counts the saved spots once any is saved, and never 
   vm.runInContext('SAVED = new Set();', ctx);
   assert.match(fs.readFileSync(join(SITE, 'index.html'), 'utf8'), /<b>\$\{stripCount\(iso\)\}<\/b> <span class="nw">low risk<\/span>/);
 });
+
+// 17 Nov 2026: with one spot saved the strip gives that spot's level for the day, not "0 of 1 low risk".
+test('with one spot saved the strip says its level; a low spot under advice, or no level, keeps the count', () => {
+  const html = fs.readFileSync(join(SITE, 'index.html'), 'utf8');
+  assert.match(html, /<span class="dd">\$\{stripCell\(iso\)\}<\/span>/);
+  const cell = () => run('stripCell', DATES[0]).replace(/<[^>]+>/g, '');
+  vm.runInContext('SAVED = new Set();', ctx);
+  assert.equal(cell(), `${run('lowOn', DATES[0])} low risk`);
+  vm.runInContext('SAVED = new Set(DATA.spots.map(s => s.id));', ctx);
+  assert.equal(cell(), `${run('lowOn', DATES[0])} of ${SPOTS.length} low risk`);
+  for (const s of SPOTS) {
+    ctx.one = s.id;
+    vm.runInContext('SAVED = new Set([one]);', ctx);
+    const l = run('dayLevel', s, DATES[0]), words = { low: 'Low', moderate: 'Moderate', high: 'High', 'very high': 'Very high' }[l];
+    if (words && !(l === 'low' && !run('lowEligible', s))) {
+      assert.equal(cell(), `${words} risk`, s.id);
+      // A raised level in its own colour, never the low one.
+      if (l !== 'low') assert.match(run('stripCell', DATES[0]), new RegExp(`^<b class="${l.replace(' ', '')}">`), s.id);
+    } else assert.match(cell(), /^0 of 1 low risk$/, s.id);
+  }
+  vm.runInContext('SAVED = new Set();', ctx);
+});
+

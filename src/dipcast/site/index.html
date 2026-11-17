@@ -311,6 +311,9 @@
   .list-days { flex:1 1 auto; background:var(--field); border:1px solid var(--line); border-radius:var(--radius); }
   .list-days .dd { line-height:1.2; text-align:center; }
   .list-days .dd b { font-weight:600; color:var(--k-low); }
+  /* One saved spot's level in the count's place (stripCell): in the level's own colour, never the low one, on one line. */
+  .list-days .dd b.moderate { color:var(--k-moderate); } .list-days .dd b.high { color:var(--k-high); } .list-days .dd b.veryhigh { color:var(--k-veryhigh); }
+  .list-days .dd b[class] { white-space:nowrap; }
   .list-days .nw { white-space:nowrap; }   /* "low risk" whole: on a 320 px phone the count takes a line of its own */
   .list-days input:checked + span .dd b { color:var(--on-fill); }
   /* A phone's opening, shorter: the lede without the map's clause, and the search at the height of a thumb. */
@@ -3369,6 +3372,13 @@ const lowOn = iso => DATA.spots.filter(s => dayLevel(s, iso) === 'low' && lowEli
 // strip counts every spot, as the map shows every spot.
 const stripCount = iso => { const mine = DATA.spots.filter(s => SAVED.has(s.id));
   return mine.length ? `${mine.filter(s => dayLevel(s, iso) === 'low' && lowEligible(s)).length} of ${mine.length}` : String(lowOn(iso)); };
+// What the strip says under a day. With one spot saved, that spot's level for the day, "High risk": "0 of 1 low risk"
+// five times over said nothing about it (17 Nov 2026). A level that is not one of the four (no forecast, no overflow
+// upstream), or a low spot under official advice restricting swimming, keeps the count, which is never "low" then.
+const LEVEL_WORDS = { low: 'Low', moderate: 'Moderate', high: 'High', 'very high': 'Very high' };
+const stripCell = iso => { const mine = DATA.spots.filter(s => SAVED.has(s.id)), l = mine.length === 1 ? dayLevel(mine[0], iso) : null;
+  return l && LEVEL_WORDS[l] && !(l === 'low' && !lowEligible(mine[0])) ? `<b class="${tone(l)}">${LEVEL_WORDS[l]}</b> <span class="nw">risk</span>`
+    : `<b>${stripCount(iso)}</b> <span class="nw">low risk</span>`; };
 const lowToChoose = xs => xs.filter(s => mapLevel(s) === 'low' && lowEligible(s)).length;
 // The button, with the dot before it, shows while another day is picked: setMapDay keeps it in step.
 const syncBestDay = () => document.querySelectorAll('[data-pick-day]').forEach(b => { b.parentElement.hidden = b.dataset.pickDay === VIEW.day; });
@@ -4020,7 +4030,7 @@ function renderList() {
     // choice and its answer in one place (29 October 2026: a select, "Today and tomorrow" first, and the
     // weekend's best day in a line under it). It opens on today (renderList).
     + `<div class="toolbar"><fieldset class="day-strip list-days" id="listday"><legend class="sr">When are you swimming?</legend>${fiveDays().map(iso => `<label><input type="radio" name="list-day" value="${iso}"${VIEW.day === iso ? ' checked' : ''}>`
-      + `<span>${shortDay(iso)} <span class="dd"><b>${stripCount(iso)}</b> <span class="nw">low risk</span></span></span></label>`).join('')}</fieldset></div>`
+      + `<span>${shortDay(iso)} <span class="dd">${stripCell(iso)}</span></span></label>`).join('')}</fieldset></div>`
     + `<p class="planner-note" id="low-note-list"${VIEW.lowOnly ? '' : ' hidden'}>${lowListNote()}</p>`;
   h += notices(null, true) + '</div>';
   // With spots saved, the title and the line under it are the visitor's own (homeYours); the same two elements, so
