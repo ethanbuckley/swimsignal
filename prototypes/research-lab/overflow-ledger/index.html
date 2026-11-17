@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<!-- The overflow ledger (LEDGER stage 1, docs/OVERFLOW-LEDGER-CONTRACT-v1.md). A Lab prototype: build_site.write_lab
+     leaves this folder out of the site, and no page links here. Whether it is published, and whether it names
+     overflows nationally, is Ethan's decision. -->
+<title>Overflow ledger · SwimSignal Research Lab</title>
+<meta name="description" content="What each monitored storm overflow contributes to SwimSignal's modelled exposure at listed swim spots. An account of the model, not of measured bacteria.">
+<link rel="stylesheet" href="../../../src/dipcast/pages/page.css">
+<link rel="stylesheet" href="../lab.css?v=11">
+<link rel="stylesheet" href="ledger.css?v=1">
+</head>
+<body class="lab">
+<header class="top"><a class="brand" href="https://swimsignal.co.uk/">SwimSignal</a></header>
+<nav class="labnav" aria-label="Research Lab"><div class="wrap">
+  <a href="../">Research Lab</a>
+  <a href="../lake-from-space/"><span class="n">1</span>Lake from space</a>
+  <a href="../pollution/"><span class="n">2</span>Where pollution goes</a>
+  <a href="../forecasts/"><span class="n">3</span>Forecast record</a>
+  <a href="../workspace/"><span class="n">4</span>Catchment workspace</a>
+  <a href="../sampling/"><span class="n">5</span>Sampling gaps</a>
+</div></nav>
+
+<div class="front"><div class="wrap">
+  <div>
+    <h1>The overflow ledger</h1>
+    <p class="q">Which overflows does the forecast model count most, across every listed swim spot?</p>
+    <div class="answer" id="front-answer">Loading…</div>
+    <details id="front-figs" hidden><summary>The figures behind it</summary><div id="front-figs-body"></div></details>
+    <p class="status"><b>An account of the model, not of measured bacteria.</b>
+      Exploratory. A prototype. Not published.</p>
+    <p class="status" id="asof"></p>
+  </div>
+</div></div>
+
+<main>
+  <section class="sec" id="s-read"><div class="wrap">
+    <div class="sec-head"><span class="no">1</span><h2>How to read it</h2><span class="aside">read this first</span></div>
+    <div class="lg-read">
+      <p><b>A weight is the model's factor, from 0 to 1.</b> For one overflow at one spot the forecast multiplies a survival
+        factor (how long the model thinks the water takes to arrive) by a dilution factor. That product is the weight. It is
+        not the share of a spill that arrives, and nobody measured it.</p>
+      <p><b>The ledger adds the weights up.</b> For each overflow: how many listed spots the model traces it to, its weights
+        added over those spots, and its largest weight at one spot. "Weighted spills a year" multiplies the summed weight by
+        the Environment Agency's long-term average spill count for the overflow.</p>
+      <p id="evidence"><b>How far to trust the chain.</b> <span id="evidence-text"></span></p>
+      <p><b>What no row says.</b> No row says an overflow caused a sample result, put any share of the bacteria at a spot, or
+        broke a permit. The model holds no spill volume, and no treated sewage, farm or road runoff.</p>
+    </div>
+  </div></section>
+
+  <section class="sec" id="s-table"><div class="wrap">
+    <div class="sec-head"><span class="no">2</span><h2>Every overflow the model traces to a listed spot</h2><span class="aside" id="table-aside"></span></div>
+    <div class="lg-controls">
+      <div class="lg-field">
+        <label class="lbl" for="company">Company</label>
+        <select id="company"></select>
+      </div>
+      <div class="lg-field">
+        <span class="lbl" id="sort-lbl">Order by</span>
+        <div class="seg" id="sort" role="group" aria-labelledby="sort-lbl"></div>
+      </div>
+    </div>
+    <div class="lg-table" id="table"></div>
+    <p class="note"><button type="button" id="more" hidden></button></p>
+  </div></section>
+
+  <section class="sec" id="s-company"><div class="wrap">
+    <div class="sec-head"><span class="no">3</span><h2>By company</h2><span class="aside">the same weights, added by company</span></div>
+    <div class="lg-table" id="companies"></div>
+    <p class="note">A company with more listed spots on its rivers has more rows here. The list of spots is SwimSignal's choice,
+      so these totals compare the model's accounting, not the companies.</p>
+  </div></section>
+
+  <section class="sec" id="s-group"><div class="wrap">
+    <div class="sec-head"><span class="no">4</span><h2>One catchment, as the model sees it</h2><span class="aside">spots joined by a shared upstream overflow</span></div>
+    <div class="lg-controls">
+      <div class="lg-field">
+        <label class="lbl" for="group">Catchment</label>
+        <select id="group"></select>
+      </div>
+    </div>
+    <p class="note" id="group-note"></p>
+    <div class="lg-table lg-grid" id="grid"></div>
+    <div class="chart-note" id="grid-key"></div>
+  </div></section>
+
+  <section class="sec" id="s-not"><div class="wrap">
+    <div class="sec-head"><span class="no">5</span><h2>What it cannot tell you</h2></div>
+    <ul class="lim" id="not"></ul>
+  </div></section>
+
+  <section class="sec"><div class="wrap">
+    <p class="back"><a href="../pollution/">Exhibit 2 shows these weights spot by spot</a></p>
+  </div></section>
+</main>
+
+<footer class="foot"><div class="wrap">
+  <p id="attrib"></p>
+  <p>Method: <a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/OVERFLOW-LEDGER-CONTRACT-v1.md">the ledger's contract</a>,
+     <a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/OVERFLOW-LEDGER-2026-11.md">its record</a>,
+     <a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/RESEARCH-RECOVERY-2026-10.md">the research register</a>.
+     Data: <a href="../../../data/research/overflow_ledger.v1.json">overflow_ledger.v1.json</a>, made by <code>scripts/export_overflow_ledger.py</code>.</p>
+  <p>It changes nothing in the forecast. Each spot's own page gives the forecast and official advice.</p>
+</div></footer>
+<script src="ledger.js?v=1"></script>
+</body>
+</html>
