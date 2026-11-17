@@ -984,6 +984,13 @@
    "branch": "claude/radar-shadow-logger-a011b5",
    "branch_exists": true,
    "date": "2026-11-14"
+  },
+  "704": {
+   "n": 704,
+   "state": "open",
+   "branch": "claude/swimsignal-world-class-6a9aed",
+   "branch_exists": true,
+   "date": "2026-11-15"
   }
  },
  "entries": [
@@ -3509,6 +3516,31 @@
    ],
    "prs": [
     699
+   ]
+  },
+  {
+   "id": "ambition-portfolio",
+   "title": "Ambition portfolio: eight further projects, each with a first test",
+   "section": "data",
+   "topics": [
+    "e. coli",
+    "rivers",
+    "evaluation",
+    "sources"
+   ],
+   "verdict": "Not a test. A ranked list written on 15 November 2026. Checks on samples the models had already seen (2023-26, development evidence) found: 54 of 199 river results over 900 came with under 2 mm of rain in 48 hours; rain and season alone order a river's samples nearly as well as the full chain (within-site rank correlation 0.385 against 0.427 at sites left out of the fit); a site's own past rate did not improve the river estimate with the season held out. The Environment Agency's archive returned at least 2,500 river E. coli results a year at points that are not bathing waters, which no model here has used.",
+   "scope": "Twenty river and eighteen lake bathing waters, May to September 2023-26, hindsight inputs on archive rain. No held-out sample was read and none of the eight first tests has been run. The archive count is a lower bound from two capped requests.",
+   "stage": "development",
+   "stage_note": "A document for Ethan's review. Nothing on the site changes. The top three (a held-out river set from the Environment Agency's archive, Yorkshire Water's four-a-week lab samples as a 2027 test, and dry-day levels at rivers) each have a drafted statement.",
+   "next": "After review: the staging PR for the held-out river set, with its statement pushed before any result is joined. Three emails are drafted for Ethan and unsent.",
+   "records": [
+    {
+     "doc": "docs/AMBITION-PORTFOLIO-2026-11.md",
+     "quote": "The river forecast can be tested on years it never saw, now."
+    }
+   ],
+   "prs": [
+    704
    ]
   }
  ]

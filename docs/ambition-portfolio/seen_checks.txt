@@ -1,0 +1,101 @@
+rows 2153 sites 38
+       rows  sites  over900  over500
+kind                                
+lake   1210     18       20       47
+river   943     20      199      331
+
+kinds: <ArrowStringArray>
+['lake', 'river']
+Length: 2, dtype: str
+
+River sites:
+                                        n  over  up    med
+name                                                      
+Sheep's Green, River Cam               57    29  22  930.0
+River Tone at French Weir Park         59    29  38  900.0
+River Ribble at Edisford Bridge        59    25  26  610.0
+Wharfe at Cromwheel, Ilkley            77    22  16  550.0
+Nidd at the Lido, Knaresborough        57    21  52  590.0
+River Frome at Farleigh Hungerford     57    11  38  350.0
+River Severn at Ironbridge             58    11  87  320.0
+River Severn in Shrewsbury             57    10  21  210.0
+Wharfe at Wilderness Carpark           56     8  53  320.0
+River Teme in Ludlow                   58     8  11  225.0
+Swale above Richmond Falls             17     5   6  470.0
+Friars Meadow, River Stour             58     5  16  130.0
+River Avon at Queen Elizabeth Gardens  17     4  18  390.0
+Wolvercote Mill Stream                 75     3  31  250.0
+River Avon at Fordingbridge            57     3  26  290.0
+Sandy Lane, Chester                    17     2  13  290.0
+Wallingford Beach, River Thames        56     2  44  215.0
+Ham and Kingston, River Thames         18     1  46  210.0
+Pangbourne Meadow, River Thames        16     0  31   64.0
+Falcon Meadow, River Waveney           17     0  26  100.0
+
+[rivers] results over 900: 199 of 943
+  with rain_48h < 1 mm: 37 (19%); all samples under that rain: 406, rate over 900 there 9.1%
+  with rain_48h < 2 mm: 54 (27%); all samples under that rain: 508, rate over 900 there 10.6%
+  with rain_48h < 5 mm: 83 (42%); all samples under that rain: 678, rate over 900 there 12.2%
+  with rain_48h < 10 mm: 120 (60%); all samples under that rain: 812, rate over 900 there 14.8%
+  over-900 with rain_48h<2 AND exposure at or below the site's median: 38
+
+[lakes] results over 900: 20 of 1210
+  with rain_48h < 1 mm: 4 (20%); all samples under that rain: 420, rate over 900 there 1.0%
+  with rain_48h < 2 mm: 4 (20%); all samples under that rain: 524, rate over 900 there 0.8%
+  with rain_48h < 5 mm: 6 (30%); all samples under that rain: 737, rate over 900 there 0.8%
+  with rain_48h < 10 mm: 11 (55%); all samples under that rain: 919, rate over 900 there 1.2%
+  over-900 with rain_48h<2 AND exposure at or below the site's median: 4
+
+River dry-day (rain_48h<2mm) rate over 900 by site (n>=10):
+                                        n  over    med     p90
+name                                                          
+River Tone at French Weir Park         32    12  770.0  1400.0
+Sheep's Green, River Cam               32    12  390.0  2160.0
+Nidd at the Lido, Knaresborough        25     7  420.0  2180.0
+River Severn in Shrewsbury             31     3  170.0   400.0
+Swale above Richmond Falls             12     3  305.0  1190.0
+River Severn at Ironbridge             31     3  240.0   780.0
+Wharfe at Wilderness Carpark           28     2  185.0   568.0
+River Frome at Farleigh Hungerford     32     2  300.0   640.0
+River Ribble at Edisford Bridge        23     2  190.0   428.0
+Friars Meadow, River Stour             34     2  105.0   396.0
+Sandy Lane, Chester                    10     2  330.0  1570.0
+Wharfe at Cromwheel, Ilkley            35     1  280.0   734.0
+Wolvercote Mill Stream                 42     1  220.0   579.0
+River Teme in Ludlow                   33     1  140.0   372.0
+River Avon at Queen Elizabeth Gardens  10     1  320.0  1138.0
+River Avon at Fordingbridge            29     0  220.0   482.0
+Wallingford Beach, River Thames        32     0  175.0   369.0
+Pangbourne Meadow, River Thames        11     0   91.0   270.0
+Ham and Kingston, River Thames         13     0  170.0   308.0
+Falcon Meadow, River Waveney           13     0  100.0   224.0
+
+Q2 yield of an after-rain trigger (rivers):
+  rain_48h > 5 mm: 263 samples (28% of river samples), over 900: 115 (44%); rest: 12.4%
+  rain_48h > 10 mm: 130 samples (14% of river samples), over 900: 79 (61%); rest: 14.8%
+  rain_48h > 15 mm: 64 samples (7% of river samples), over 900: 44 (69%); rest: 17.6%
+  rain_48h > 20 mm: 31 samples (3% of river samples), over 900: 25 (81%); rest: 19.1%
+  exposure in the site's top 20%: n 199, over 900 44%
+  exposure in the site's top 10%: n 100, over 900 56%
+  lakes: rain_48h>10: 289 over 900 0.028 ; rest 0.013
+
+Q3 [rivers] mean within-site Spearman with log10 count (sites with 15+ rows), groups 18:
+  lrain48              +0.391  (20 sites)
+  risk_model           +0.419  (20 sites)
+  rain_only            +0.385  (20 sites)
+  rain_plus_exposure   +0.427  (20 sites)
+  rain_plus_exposure minus rain_only, 95% (site-group bootstrap): [0.012 0.071]
+  rain_only minus exposure alone: [-0.076  0.005]
+  rivers with overflows upstream: 20 sites; rho rain_only 0.385 rain+exp 0.427
+  within-site AUC over 900, lrain48              0.760 (15 sites)
+  within-site AUC over 900, risk_model           0.760 (15 sites)
+  within-site AUC over 900, rain_only            0.769 (15 sites)
+  within-site AUC over 900, rain_plus_exposure   0.777 (15 sites)
+
+Q3 [lakes] mean within-site Spearman with log10 count (sites with 15+ rows), groups 16:
+  lrain48              +0.221  (18 sites)
+  risk_model           +0.279  (11 sites)
+  rain_only            +0.318  (18 sites)
+  rain_plus_exposure   +0.308  (18 sites)
+  rain_plus_exposure minus rain_only, 95% (site-group bootstrap): [-0.028  0.008]
+  rain_only minus exposure alone: [-0.096  0.166]
