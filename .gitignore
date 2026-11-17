@@ -73,6 +73,7 @@ data/raw/*
 !data/raw/places.json
 # The rivers and lakes the home page's search finds on the map (scripts/make_waters.py).
 !data/raw/waters.json
+!data/raw/postcodes.json
 !data/raw/outside_england.json
 # River and lake names where a click outside England is (OS Open Rivers, OGL v3.0, in os/; OpenStreetMap, ODbL, in osm/;
 # scripts/make_outside_names.py): read by the page's name for the point only.

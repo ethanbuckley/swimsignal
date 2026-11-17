@@ -113,7 +113,7 @@ test('the page lists the town\'s spots first among the offers, with the list\'s 
   const offers = PAGE.slice(PAGE.indexOf('async function offerOnMap('), PAGE.indexOf('const WATER_ZOOM'));
   // Each file on its own: the places still come when the rivers do not (the smoke fixture has no rivers file).
   assert.match(offers, /Promise\.allSettled\(\[loadWaters\(\)/);
-  assert.match(offers, /for \(const town of townsNamed\(places, t\)\)/);
+  assert.match(offers, /for \(const town of postcode \? places : townsNamed\(places, t\)\)/);   // a postcode is its own place (site_postcode_said)
   assert.match(offers, /spotsNear\(DATA\.spots\.filter\(listKept\), town, \(a, b\) => km\(a, b\) \/ MILE_KM, listed\)/);
   assert.match(offers, /const listed = new Set\(LISTED\.map\(s => s\.id\)\)/);       // never a spot twice
   assert.match(offers, /<li class="area-head"><h3>Near \$\{esc\(n\.town\.name\)\} <span>· \$\{nearSaid\(n\.rows\.length, n\.total\)\}<\/span><\/h3><\/li>/);

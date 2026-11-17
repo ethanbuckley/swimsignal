@@ -159,8 +159,8 @@ SITE_URL_ENV = "DIPCAST_SITE_URL"
 # string is the privacy notice's own lead, so the terms page's date is not touched.
 COUNTER_TOKEN_ENV = "DIPCAST_CF_BEACON_TOKEN"
 COUNTER_JS = TEMPLATE.parent / "counter.js"
-NO_COUNTER = ("and what it does not. Last updated 31 October 2026.", "There is no analytics script and no third-party tracking.")
-WITH_COUNTER = ("and what it does not. Last updated 31 October 2026 (page-view counter).",
+NO_COUNTER = ("and what it does not. Last updated 17 November 2026.", "There is no analytics script and no third-party tracking.")
+WITH_COUNTER = ("and what it does not. Last updated 17 November 2026 (page-view counter).",
                 ("Page views are counted with Cloudflare Web Analytics. Cloudflare states that it sets no cookies, "
                  "uses no local storage and does not fingerprint visitors. It sees your IP address when the counter "
                  "loads, as any web server would, and its "
@@ -740,7 +740,7 @@ def with_tiles(html: str, name: str, tiles: dict | None) -> str:
 
 
 def privacy_updated(html: str, what: str) -> str:
-    """Say after the privacy notice's date what a setting added: "Last updated 31 October 2026
+    """Say after the privacy notice's date what a setting added: "Last updated 17 November 2026
     (page-view counter, tips)"."""
     return re.sub(r"(Last updated [^.<(]*?)(?: \(([^)]*)\))?\.", lambda m: f"{m[1]} ({m[2] + ', ' if m[2] else ''}{what}).",
                   html, count=1)
@@ -2966,6 +2966,9 @@ PLACES = config.RAW / "places.json"
 # The rivers and lakes the home page's search finds on the map: OS Open Rivers' named rivers and the
 # WFD lakes in England (scripts/make_waters.py writes it; likewise only when run again).
 WATERS = config.RAW / "waters.json"
+# The postcode districts and sectors the search and Plan a swim understand, from OS Open Names
+# (scripts/make_postcodes.py writes it; likewise only when run again).
+POSTCODES = config.RAW / "postcodes.json"
 
 
 def plan_page(template: str, root: str) -> str:
@@ -3437,6 +3440,7 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     (site / "data").mkdir(exist_ok=True)
     shutil.copy(PLACES, site / "data" / "places.json")   # before the data page, which lists data/
     shutil.copy(WATERS, site / "data" / "waters.json")
+    shutil.copy(POSTCODES, site / "data" / "postcodes.json")
     shutil.rmtree(site / "spot", ignore_errors=True)   # a spot dropped from spots.csv loses its page
     tops = prerender_spots(site, root)
     issued = built_issue_time(site)   # the time the built answers are as at (the note without scripts)

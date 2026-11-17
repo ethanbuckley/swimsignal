@@ -220,8 +220,26 @@ function placeNamed(index, text) {
   const k = placeKey(text); if (!k) return null;
   return index.find(p => p.key === k) || index.find(p => p.bare === k) || null;
 }
-// "LA22 9", "SW1A": OS Open Names has postcodes, but not in the file the page fetches.
+// "LA22 9", "SW1A", "ls299bz": shaped like a postcode or the start of one.
 const looksLikePostcode = text => /^[a-z]{1,2}[0-9][0-9a-z]?(\s*[0-9][a-z]{0,2})?$/i.test(String(text).trim());
+// data/postcodes.json (scripts/make_postcodes.py): Great Britain's postcode districts ("LS29") and sectors
+// ("LS29 9"), each at the middle of its postcodes, to about a kilometre. No whole postcodes: 1.7 million are too
+// many to fetch, and a sector is not a house.
+const postcodeIndex = doc => ({ districts: (doc && doc.districts) || {}, sectors: (doc && doc.sectors) || {} });
+// The place a postcode typed stands for: its sector if what is typed reaches that far ("LS29 9", "ls299bz"),
+// else its district ("LS29"); a sector not in the file falls back to its district. Named by the sector or
+// district, never the whole postcode, so a plan's address and a shared link hold no more than that. Null if
+// it is not a postcode in the file (a mistyped one, or Northern Ireland's BT, which OS does not publish).
+function postcodePlace(index, text) {
+  const t = String(text ?? '').trim().toUpperCase(); if (!index || !looksLikePostcode(t)) return null;
+  const at = (code, from) => { const p = from[code]; return Array.isArray(p) && inGB(p[0], p[1]) ? { name: code, lat: p[0], lon: p[1], postcode: true } : null; };
+  const gap = t.match(/^(\S+)\s+(\d)/), bare = t.replace(/\s+/g, '');
+  // With a space the halves are as typed. Without one: a district as it stands ("LS29", "SW1A"), else the last
+  // digit and any letters after it are the second half ("LS299", "LS299BZ").
+  const cut = gap ? [gap[1], gap[2]] : index.districts[bare] ? [bare, ''] : (bare.match(/^(.+?)(\d)[A-Z]{0,2}$/) || []).slice(1);
+  if (!cut.length) return at(bare, index.districts);
+  return (cut[1] && at(`${cut[0]} ${cut[1]}`, index.sectors)) || at(cut[0], index.districts);
+}
 // The place typed in full when it is the only one offered (offers: placeMatches's): there is nothing left to
 // choose, so the plan can start as if it had been picked (index.html, planType). Typing "Ilkley" whole leaves
 // one offer, "Ilkley", and on an iPhone tapping it changes nothing in the field, so no plan would start until
@@ -369,7 +387,7 @@ function farFromSpots(place, spots, miles, within = FAR_MILES) {
 const farSaid = (far, within = FAR_MILES) => `No listed spot within ${within} miles. The nearest is ${far.name}, ${milesAway(far.miles)}.`;
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { FAR_MILES, farFromSpots, farSaid, MILE_KM, RADII, COMPARE_MAX, PLAN_WHEN, PLAN_DEFAULT, OUTING_ACTS, OUTING_MEETS, OUTING_FINISH_ACTS, PLAN_SENT, PLAN_LEVELS, readPlan, planDayOff, planHash, planKept, planOuting, planOutingKey, planInvited, planFromSpot, planHasOuting, ACTS_KEY, readActs, actDefault, planFromPlace, planCompareIds, planShared, planSharedWho, placeKey, placeIndex, placeMatches, placeNamed, placeOnly, looksLikePostcode, waterIndex, waterMatches,
+  module.exports = { FAR_MILES, farFromSpots, farSaid, MILE_KM, RADII, COMPARE_MAX, PLAN_WHEN, PLAN_DEFAULT, OUTING_ACTS, OUTING_MEETS, OUTING_FINISH_ACTS, PLAN_SENT, PLAN_LEVELS, readPlan, planDayOff, planHash, planKept, planOuting, planOutingKey, planInvited, planFromSpot, planHasOuting, ACTS_KEY, readActs, actDefault, planFromPlace, planCompareIds, planShared, planSharedWho, placeKey, placeIndex, placeMatches, placeNamed, placeOnly, looksLikePostcode, postcodeIndex, postcodePlace, waterIndex, waterMatches,
     planGroup, planAdvised, planSpots, betterDay, reachFor, milesAway, planStart, planAreas, planFromArea,
     NEAR_MILES, NEAR_MAX, townsNamed, spotsNear, nearSaid, milesFrom };
 }
