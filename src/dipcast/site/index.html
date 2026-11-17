@@ -4943,8 +4943,10 @@ async function offerOnMap() {
   // (plan.js, planFromPlace). A link, so it can be opened in a new tab or copied.
   const base = PLAN_READ ? { ...PLAN, day: VIEW.day || PLAN.day } : planKept(stored(PLAN_KEY), planDates(), VIEW.day);
   const reach = `The spots ${base.within ? `within ${base.within} miles` : 'at any distance'} ${base.day ? dayWord(base.day) : 'today'}, those at low risk first`;
+  // A place with no listed spot within the plan's reach (25 miles when it has none) says so, with the nearest, in place of what a plan would hold (plan.js, farFromSpots).
+  const reachMiles = base.within || FAR_MILES, far = p => farFromSpots(p, DATA.spots, (a, b) => km(a, b) / MILE_KM, reachMiles);
   const plans = !places.length ? '' : `<li class="area-head"><h3>Plan a swim <span>· from a town</span></h3></li>`
-    + places.map(p => `<li><a class="row" href="${esc(planPath() + planFromPlace(p, base, VIEW.filter))}" data-plan-place><span class="row-main"><span class="nm">From ${esc(p.name)}</span><span class="k">${reach}</span></span></a></li>`).join('');
+    + places.map(p => `<li><a class="row" href="${esc(planPath() + planFromPlace(p, base, VIEW.filter))}" data-plan-place><span class="row-main"><span class="nm">From ${esc(p.name)}</span><span class="k">${far(p) ? esc(farSaid(far(p), reachMiles)) : reach}</span></span></a></li>`).join('');
   box.innerHTML = nearRows + plans + `<li class="area-head"><h3>On the map <span>· ${TAP().toLowerCase()} the water for its forecast</span></h3></li>`
     + waters.map((w, i) => `<li><button type="button" class="row" data-water="${i}"><span class="row-main"><span class="nm">${esc(w.name)}</span><span class="k">${where(w)}</span></span>${GO}</button></li>`).join('')
     + places.map((p, i) => `<li><button type="button" class="row" data-place="${i}"><span class="row-main"><span class="nm">Rivers and lakes near ${esc(p.name)}</span><span class="k">Show on the map</span></span>${GO}</button></li>`).join('');

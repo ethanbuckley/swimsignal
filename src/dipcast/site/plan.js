@@ -355,9 +355,21 @@ const nearSaid = (shown, total, within = NEAR_MILES) => shown < total ? `the ${s
   : total === 1 ? `1 spot within ${within} miles` : `${total} spots within ${within} miles, nearest first`;
 // "1.7 miles from Ambleside", in milesAway's words: in that list a distance is from the town, not from you.
 const milesFrom = (m, name) => milesAway(m).replace(/ away$/, ` from ${name}`);
+// A place offered by the search with no listed spot near it (17 Nov 2026: "Cardiff" offered a plan and a map and never
+// said there is nothing to plan with). The nearest listed spot and how far, when none is within `within` miles;
+// otherwise null. `within` is the plan's own reach where it has one (20 miles unless changed), so the row never offers
+// a plan that would come back empty. `miles(a, b)` is the page's own distance between two [lat, lon] pairs.
+const FAR_MILES = 25;
+function farFromSpots(place, spots, miles, within = FAR_MILES) {
+  let best = null;
+  for (const s of spots) { if (!Number.isFinite(s.lat) || !Number.isFinite(s.lon)) continue;
+    const m = miles([place.lat, place.lon], [s.lat, s.lon]); if (!best || m < best.miles) best = { name: s.name, miles: m }; }
+  return best && best.miles > within ? best : null;
+}
+const farSaid = (far, within = FAR_MILES) => `No listed spot within ${within} miles. The nearest is ${far.name}, ${milesAway(far.miles)}.`;
 
 if (typeof module === 'object' && module.exports) {
-  module.exports = { MILE_KM, RADII, COMPARE_MAX, PLAN_WHEN, PLAN_DEFAULT, OUTING_ACTS, OUTING_MEETS, OUTING_FINISH_ACTS, PLAN_SENT, PLAN_LEVELS, readPlan, planDayOff, planHash, planKept, planOuting, planOutingKey, planInvited, planFromSpot, planHasOuting, ACTS_KEY, readActs, actDefault, planFromPlace, planCompareIds, planShared, planSharedWho, placeKey, placeIndex, placeMatches, placeNamed, placeOnly, looksLikePostcode, waterIndex, waterMatches,
+  module.exports = { FAR_MILES, farFromSpots, farSaid, MILE_KM, RADII, COMPARE_MAX, PLAN_WHEN, PLAN_DEFAULT, OUTING_ACTS, OUTING_MEETS, OUTING_FINISH_ACTS, PLAN_SENT, PLAN_LEVELS, readPlan, planDayOff, planHash, planKept, planOuting, planOutingKey, planInvited, planFromSpot, planHasOuting, ACTS_KEY, readActs, actDefault, planFromPlace, planCompareIds, planShared, planSharedWho, placeKey, placeIndex, placeMatches, placeNamed, placeOnly, looksLikePostcode, waterIndex, waterMatches,
     planGroup, planAdvised, planSpots, betterDay, reachFor, milesAway, planStart, planAreas, planFromArea,
     NEAR_MILES, NEAR_MAX, townsNamed, spotsNear, nearSaid, milesFrom };
 }
