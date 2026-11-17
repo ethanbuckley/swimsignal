@@ -132,6 +132,7 @@ def test_the_build_leaves_the_ledger_out(tmp_path):
     build_site.write_lab(tmp_path)
     lab = tmp_path / "lab"
     assert (lab / "pollution" / "index.html").is_file() and not (lab / "overflow-ledger").exists()
+    assert "lab/overflow-ledger/" not in build_site.lab_pages()   # nor in the sitemap
     for f in lab.rglob("*"):
         if f.suffix in (".html", ".js", ".css"):
             text = f.read_text(errors="ignore")

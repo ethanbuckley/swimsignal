@@ -4016,10 +4016,10 @@ def lab_pages(lab: Path = LAB) -> list[str]:
     """The Lab's pages as the sitemap gives them, relative to the site's root: lab/ and each exhibit's folder."""
     if not (lab / "index.html").is_file():
         return []
-    return ["lab/"] + sorted(f"lab/{d.name}/" for d in lab.iterdir() if (d / "index.html").is_file())
+    return ["lab/"] + sorted(f"lab/{d.name}/" for d in lab.iterdir() if (d / "index.html").is_file() and d.name not in LAB_UNPUBLISHED)
 
 
-LAB_UNPUBLISHED = ("whatif", "overflow-ledger")   # Lab folders the build leaves out: prototypes not to be published
+LAB_UNPUBLISHED = ("whatif", "overflow-ledger")   # Lab folders the build leaves out: prototypes not to be published, or listed in the sitemap
 
 
 def write_lab(site: Path, token: str | None = None, lab: Path = LAB, research: Path = ROOT / "data" / "research") -> int:
