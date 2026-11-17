@@ -8,7 +8,23 @@ decision for Ethan. Nothing is built and nothing on the site changes.** It follo
 Mock-up at 375 px, made from the page's own styles: [river-order-line/mockup-375.png](river-order-line/mockup-375.png).
 It has not been checked at 320 or 1440 px, in dark mode, or in the real page.
 
-## The words (proposed)
+## Decided by Ethan, 17 November 2026
+
+**Keep the percentage and add the sentence, at every river spot that carries the estimate (57 on the build of 30
+September 2026).** The level rule does not change. So nothing in the design reference is reversed: the first
+proposal below, words in place of the percentage at the 37 spots that are not bathing waters, is not taken, and
+decision 3 falls away. The mock-up shows the decided form. Its sentence is in bold only to show where it sits; on
+the page it is plain, as the lake's is.
+
+The sentence, after "Chance a water sample would show E. coli over 900 per 100 ml today; 9% tomorrow.":
+
+- "That is higher than usual here."
+- "That is lower than usual here."
+- "That is about usual here."
+
+Nothing is built yet. What the build still needs is at the end.
+
+## The words (as first proposed; superseded by the decision above)
 
 In season (May to September), on the E. coli tile of a river spot.
 
@@ -134,3 +150,22 @@ anything is built.
 That leaves a level set by a figure the tile no longer prints. The honest form of that is the tile saying so. The
 alternative, which keeps everything in view, is decision 2's second option: keep the percentage and add the
 sentence, at all 57 river spots.
+
+## What the build still needs (17 November 2026; nothing built)
+
+1. **Each spot's cut-points.** The two figures that split its May to September days of 2023 to 2026 into thirds.
+   Made once by a script and committed as a frozen file before 1 May 2027; the site build only reads it.
+2. **Which rain makes them. Open.** The site's daily figure comes from Open-Meteo forecast rain. The rain on disk
+   for 2023 to 2026 is ERA5-Land, which failed the match check against Open-Meteo's archive (12.1% lower, daily
+   correlation 0.879). Cut-points made on ERA5-Land would sit low beside the site's figures, so more days would
+   read "higher". Either the cut-points come from Open-Meteo archive rain (calls to be sized against the ration
+   first), or the 2026 season's own logged figures set them, which leaves no line until those exist. Not settled.
+3. **The site's own pin.** The hindcast for the count placed its own pin and lost 10 of the 37 spots. The script
+   must use the pin the build uses.
+4. **Soil moisture.** The hindcast figure left it out. The cut-points must come from the figure as deployed.
+5. **The page.** One sentence in the in-season river tile (`index.html`), the day's direction in `spots.json`,
+   the fallback (no sentence when a spot has no cut-points or an input is missing), tests, an entry in DESIGN.md,
+   and the test sentence in the tile's corner fold. Checked at 320, 375 and 1440 px.
+6. **The 2027 judgement**, as fixed above, logged from the first in-season build.
+
+Nothing shows before May 2027 whatever is built, since the sentence is in season only.
