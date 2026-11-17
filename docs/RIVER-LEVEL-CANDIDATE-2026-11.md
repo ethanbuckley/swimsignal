@@ -115,3 +115,17 @@ order:
    confirming evidence.
 
 Nothing shows on the site until both are in and Ethan decides. No further form is fitted on the read's rows.
+
+## Amendment 1, 17 November 2026: one further use of the read's rows
+
+Written before any new figure exists. "Limits known now" says a second run needs an amendment here first. This is
+that amendment, for [PLACE-LEVEL read 0](PLACE-LEVEL-READ-0-2026-11.md) ([#716](https://github.com/ethanbuckley/swimsignal/issues/716)).
+
+- **What is allowed.** One run that scores `river-level-v1` on the 2017 to 2022 samples with each place's level
+  taken from n of its own samples from 2017, for n = 0, 3, 5, 8, 12 and 20. Its rows, rule and outcomes are fixed
+  in that statement.
+- **What does not change.** The result above, its pass rules and its figures. The form, its inputs and its fitting
+  code. "No further form is fitted on the read's rows" still holds: this run fits the same form on the same folds
+  and changes only which of a place's samples set its level.
+- **Why it is not a rerun until it passes.** It answers a different question (how many samples a new place needs),
+  and the candidate's own L1 and L2 already pass. Its figures are development evidence, like the ones above.
