@@ -16,7 +16,7 @@ from dipcast.ingest.flows import nearest_level_station, reading_fields
 from dipcast.ingest.live import with_data_states
 from dipcast.ingest import soil
 from dipcast.ingest.rainfall import cells_for_sites, fetch_forecast, forecast_age
-from dipcast import lake_range, shadow_combined, shadow_radar, shadow_regional
+from dipcast import lake_range, river_usual, shadow_combined, shadow_radar, shadow_regional
 from dipcast.model import ecoli, live_status
 from dipcast.model.features import (
     ALL_FEATURES,
@@ -203,6 +203,7 @@ def reload_caches() -> None:
         shadow_combined.clear_cache()
         shadow_radar.models.cache_clear()   # not the build's radar, which prefetch set for this build
         lake_range.clear_cache()
+        river_usual.clear_cache()
         # the network itself is immutable at runtime; keep it loaded
 
 
@@ -574,6 +575,12 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
                 row["rain_48h_mm"] = None if np.isnan(r48[j]) else round(float(r48[j]), 1)
                 row["rain_48h_coverage"] = round(float(cov48[j]), 3)   # finite share of the window's 48 hours
                 row["p_ecoli_gt900"] = round(float(p_ec[j]), 3) if ok else None
+                # At a listed river spot in season, whether that figure is higher or lower than usual there
+                # (river_usual.py): a word beside the figure. It moves no level.
+                if pin.mode == "river":
+                    word = river_usual.direction(lat, lon, row["p_ecoli_gt900"], days[j].month)
+                    if word:
+                        row["ecoli_usual"] = word
                 if ranges is not None:   # E. coli per 100 ml, two significant figures; None where an input is missing
                     # In season at a sampled lake, also the lake's usual reading for the date and higher/lower/about.
                     row["ecoli_range"] = ({**{k: lake_range.sig2(ranges[k][j]) for k in ("low", "median", "high")},

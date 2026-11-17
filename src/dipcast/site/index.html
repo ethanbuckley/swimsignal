@@ -3134,7 +3134,7 @@ function facts(d, iso = null) {
       fold: ecoliFold(d, [x0, x1].filter(x => x && !nil(x.p_ecoli_gt900))), more: ecoliMore() });
     else out.push({ wide: true, icon: ICON.water, label: 'E.&nbsp;coli estimate', fig: pct(x0.p_ecoli_gt900) + '%', word: `${cap(b)} risk`, wordTone: tone(b),
       vis: scaleBar(x0.p_ecoli_gt900, ECOLI_CUTS, b), rel: tileLine(d, 'water', iso),
-      say: `Chance a water sample would show E.&nbsp;coli over 900 per 100&nbsp;ml ${when}${x1 && !nil(x1.p_ecoli_gt900) && !untested(x1) ? `; ${pct(x1.p_ecoli_gt900)}% tomorrow` : ''}. ${ecoliSaid(d, x0)}`,
+      say: `Chance a water sample would show E.&nbsp;coli over 900 per 100&nbsp;ml ${when}${x1 && !nil(x1.p_ecoli_gt900) && !untested(x1) ? `; ${pct(x1.p_ecoli_gt900)}% tomorrow` : ''}.${riverUsual(x0) ? ` ${riverUsual(x0)}` : ''} ${ecoliSaid(d, x0)}`,
       more: ecoliMore() }); }
   else if (d.ecoli_typical && !daily(d)) { const t = d.ecoli_typical;
     out.push({ wide: true, icon: ICON.water, label: 'E.&nbsp;coli in past samples', fig: t.median === '<10' ? 'Under 10' : ecoliReading(t.median),
