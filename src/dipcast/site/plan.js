@@ -368,9 +368,11 @@ function spotsNear(spots, place, milesBetween, skip = new Set(), within = NEAR_M
     .filter(x => x.miles <= within).sort((a, b) => a.miles - b.miles || a.s.name.localeCompare(b.s.name));
   return { rows: all.slice(0, n), total: all.length };
 }
-// The line beside "Near Ambleside": how many, and which, of the spots within reach.
-const nearSaid = (shown, total, within = NEAR_MILES) => shown < total ? `the ${shown} nearest of ${total} within ${within} miles`
-  : total === 1 ? `1 spot within ${within} miles` : `${total} spots within ${within} miles, nearest first`;
+// The heading over the spots near a place, and the line beside it: how many, and which, of the spots within reach.
+// The count leads (17 Nov 2026, outside design audit): "LS29 9BZ" listed four spots under "No listed spot matches.",
+// and the heading said "Near LS29 9" with the count after it. name: as the page shows it (escaped there).
+const nearHead = (shown, total, name, within = NEAR_MILES) => [`${shown === 1 ? '1 spot' : `${shown} spots`} near ${name}`,
+  shown < total ? `the nearest of ${total} within ${within} miles` : total === 1 ? `within ${within} miles` : `within ${within} miles, nearest first`];
 // "1.7 miles from Ambleside", in milesAway's words: in that list a distance is from the town, not from you.
 const milesFrom = (m, name) => milesAway(m).replace(/ away$/, ` from ${name}`);
 // A place offered by the search with no listed spot near it (17 Nov 2026: "Cardiff" offered a plan and a map and never
@@ -389,5 +391,5 @@ const farSaid = (far, within = FAR_MILES) => `No listed spot within ${within} mi
 if (typeof module === 'object' && module.exports) {
   module.exports = { FAR_MILES, farFromSpots, farSaid, MILE_KM, RADII, COMPARE_MAX, PLAN_WHEN, PLAN_DEFAULT, OUTING_ACTS, OUTING_MEETS, OUTING_FINISH_ACTS, PLAN_SENT, PLAN_LEVELS, readPlan, planDayOff, planHash, planKept, planOuting, planOutingKey, planInvited, planFromSpot, planHasOuting, ACTS_KEY, readActs, actDefault, planFromPlace, planCompareIds, planShared, planSharedWho, placeKey, placeIndex, placeMatches, placeNamed, placeOnly, looksLikePostcode, postcodeIndex, postcodePlace, waterIndex, waterMatches,
     planGroup, planAdvised, planSpots, betterDay, reachFor, milesAway, planStart, planAreas, planFromArea,
-    NEAR_MILES, NEAR_MAX, townsNamed, spotsNear, nearSaid, milesFrom };
+    NEAR_MILES, NEAR_MAX, townsNamed, spotsNear, nearHead, milesFrom };
 }
