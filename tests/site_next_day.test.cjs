@@ -94,7 +94,9 @@ test('at 00:30 the day after the build, a spot\'s second row is Today, and one l
   // The line, where the list, Saved and Plan show their notices; a spot's page says it at its issue time.
   assert.equal(text(run('freshness()')), "Issued yesterday at 23:24; today's update is due.");
   assert.equal(run('freshness(true)'), '');
-  assert.match(html, /<p class="issued">\$\{nextDay\(\) \? yesterdayLine\(\) : `Issued \$\{issued\(\)\}, \$\{agoSpan\(\)\} ago`\}<\/p>/);
+  assert.match(html, /stamp = nextDay\(\) \? yesterdayLine\(\) : `Issued \$\{issued\(\)\}, \$\{agoSpan\(\)\} ago`;/);
+  assert.match(html, /<p class="issued">\$\{stamp\}<\/p>/);
+  assert.match(html, /<p class="issued when">\$\{cardDay\(d, iso, m\)\} · \$\{cardStamp\}<\/p>/);   // with the card under the level
   // The days on offer are four, from today; the list's strip names them as the phone has them, each with its
   // count at low risk (lowOn, 29 Oct 2026; it replaced the answer line): Saturday is Today, not "Tomorrow".
   assert.equal(run('fiveDays().join()'), DAYS.slice(1).join());

@@ -41,7 +41,7 @@ const text = h => h.replace(/<[^>]+>/g, ' ').replace(/&nbsp;| /g, ' ').replace(
 // The helpers nearby() calls for each row's reason and the other-water rule (site_nearby_reasons.test.cjs).
 const NEAR_REASONS = ['joined', 'otherWater', 'unread', 'fewerUnread', 'nearWhy', 'otherAsWell'];
 const ANSWER = ['esc', 'tone', 'headTone', 'rainSaid', 'answerParts', 'flowLine', 'ageMin', 'ago', 'agoSpan', 'issued', 'nextDay', 'yesterdayLine', 'answerWords',
-  'sinceTime', 'spillFor', 'overflowSaid', 'longSpillLine', 'eaSaid', 'coverWords', 'coverLine', 'answerAfter', 'liveRow', 'polledMs', 'pollAt'];
+  'sinceTime', 'spillFor', 'overflowSaid', 'longSpillLine', 'eaSaid', 'coverWords', 'coverLine', 'eaAdviceLine', 'answerAfter', 'liveRow', 'polledMs', 'pollAt'];
 
 // ------------------------------------------------------------------------------ 1. the EA's advice for today
 // Frensham Great Pond: "Low risk for the next five days" and "Usual care", while the EA's own panel said
@@ -63,7 +63,7 @@ test('at every designated bathing water the answer says the EA advice could not 
   // on what it could read keeps the EA advice.
   assert.match(h, /^<h2 /);
   assert.equal(vm.runInContext('liveRow', ctx)(frensham), '<p class="live-row">Live status from the overflow upstream: not spilling at the last poll.</p>');
-  assert.match(h, /<p class="cover">Today's EA advice not checked: <a href="https:\/\/environment\.data\.gov\.uk\/bwq\/profiles\/profile\.html\?site=ukj2310-11945">see the EA's page<\/a> before you swim\.<\/p><p class="issued">/);
+  assert.match(h, /<p class="cover">Today's official advice was not checked\. <a href="https:\/\/environment\.data\.gov\.uk\/bwq\/profiles\/profile\.html\?site=ukj2310-11945">Check Environment Agency advice<\/a>\.<\/p><p class="issued">/);
   // The embed card says it under what to do, and links the EA's page.
   const card = Embed.card(frensham, { generated_at: GEN }, NOW);
   assert.match(text(card), /Usual care: [^.]+\. The Environment Agency's advice for today could not be checked\. The Environment Agency’s page says when bathing is not advised\./);

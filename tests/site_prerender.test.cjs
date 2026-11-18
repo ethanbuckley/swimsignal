@@ -51,14 +51,18 @@ test("a spot's opening: its name, its headline from levels.js, its five days, is
   assert.ok(h.includes('<button class="drow high" type="button" data-day="2026-10-01"'));
   assert.ok(h.includes('<p class="issued">Issued Tue 08:00</p>'), h.match(/<p class="issued">[^<]*/)[0]);
   assert.ok(!/ ago</.test(h));
-  // Raised by tomorrow's spills: the line under it says when, not the cause again.
+  // Raised by tomorrow's spills (option A, 18 Nov 2026): the grey line names tomorrow and the issue time, with no age; then
+  // what to do in its card, why and when, and the lower day the five days hold.
   const raised = {...SPOT, days: SPOT.days.map((x, i) => i === 1 ? {...x, risk: 0.5, label: 'high'} : x)};
-  assert.match(spots.prerender({generated_at: '2026-09-29T08:00:00+01:00', spots: [raised]}, 'https://example.org/swim/').a,
-    /<h2 class="big high" id="risk-headline">High risk from sewage spills<\/h2><div class="wn"><p class="why">Tomorrow<\/p>/);
+  const rh = spots.prerender({generated_at: '2026-09-29T08:00:00+01:00', spots: [raised]}, 'https://example.org/swim/').a;
+  assert.ok(rh.includes('<h2 class="big high" id="risk-headline">High risk from sewage spills</h2><p class="issued when">Tomorrow, Wednesday 30 September · Issued 08:00</p>'
+    + '<div class="act-card" id="act-card"><p class="act-do"><strong>Better to choose a lower day or spot.</strong> If you do swim, try not to swallow any water.</p>'
+    + '<p class="act-why">Sewage spills tomorrow. Low risk by Friday.</p>'
+    + '<div class="act-go"><a class="btn primary" href="#day=2026-10-02" data-act-day="2026-10-02">Low risk on Friday</a></div></div>'), rh);
   // Raised by a poor rating, which is not a forecast of spills: "High risk" over its cause, as before.
   const poor = {...SPOT, source: 'designated', classification: {class: 'poor', year: 2025}};
   assert.match(spots.prerender({generated_at: '2026-09-29T08:00:00+01:00', spots: [poor]}, 'https://example.org/swim/').a,
-    /<h2 class="big high" id="risk-headline">High risk<\/h2><div class="wn"><p class="why">Rated poor, advice against bathing<\/p>/);   // 29 Sept: in the bathing season
+    /<h2 class="big high" id="risk-headline">High risk<\/h2><p class="issued when">Today, Tuesday 29 September · Issued 08:00<\/p><div class="act-card" id="act-card"><p class="act-do"><strong>Choose a spot with a better rating if you can\.<\/strong><\/p><p class="act-why">Rated poor, advice against bathing\. At least high risk every day\.<\/p>/);   // 29 Sept: in the bathing season
 });
 
 // The Accuracy page's script, as tests/site_verification.test.cjs runs it, with <main>'s data-built.

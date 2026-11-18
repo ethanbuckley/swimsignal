@@ -570,6 +570,9 @@
   .answer:has(.hero) > .hero { order:-3; }
   .answer:has(.hero) > .spot-name { order:-2; margin:0; max-width:none; text-wrap:pretty; }
   .answer:has(.hero) > .kind { order:-1; margin:6px 0 0; }
+  /* Without a photo the same order (option A, 18 Nov 2026): the name, then the kind line, then the level and what to do. */
+  .answer:not(:has(.hero)) { display:flex; flex-direction:column; }
+  .answer:not(:has(.hero)) > .spot-name { order:-2; } .answer:not(:has(.hero)) > .kind { order:-1; margin:6px 0 0; }
   .answer:has(.hero) > :not(.hero), .answer:has(.hero) #answer-words > * { margin-left:0; margin-right:0; }
   .answer:has(.hero) .big, .answer:has(.hero) .big-head { margin-top:16px; text-wrap:pretty; }
   .answer:has(.hero) .save-msg { font-size:var(--fs-meta); }
@@ -621,6 +624,14 @@
   /* What to do at the level: in ink, as a sentence, never a level's colour or a box (levels.js, levelAction). */
   .answer .act { margin:10px auto 0; max-width:24em; line-height:1.35; color:var(--ink); text-wrap:balance; }
   .answer .issued { margin:10px 0 0; }
+  /* What to do under the level (actCard): a card on the paper, in ink, never a level's colour; the line's first
+     sentence bold, then why, a way on and today's advice. The day and issue time sit over it, grey. */
+  .answer .issued.when { margin:6px 0 0; font-size:var(--fs-note); }
+  .act-card { max-width:560px; box-sizing:border-box; margin:14px 0 0; padding:14px; border:1px solid var(--line); border-radius:var(--radius); background:var(--card); color:var(--ink); line-height:1.4; }
+  .act-card > * { margin:0; } .act-card > * + * { margin-top:10px; }
+  .act-card .act-why, .act-card .act-ea { font-size:var(--fs-note); }
+  .act-go { display:flex; flex-wrap:wrap; gap:8px; } .act-go:empty { display:none; }
+  .act-go .btn { flex:1 1 12em; min-height:48px; font-size:var(--fs-body); }
   /* What the level counts and what it does not (levels.js, levelScope): ink, the notes' size, once a page. */
   .answer .scope { margin:10px auto 0; max-width:30em; font-size:var(--fs-note); line-height:1.4; color:var(--ink); text-wrap:balance; }
   .answer .flow { margin:10px auto 0; max-width:30em; line-height:1.35; color:var(--ink); text-wrap:balance; }
@@ -3237,13 +3248,55 @@ function riverTile(rs, hist = null) {
 // a long introduction pushed them down. What to do and what the level counts follow the week, in its tile
 // (answerAfter); a spot with no five days (a failed forecast, an isolated lake) keeps what to do here.
 const answerWords = (d, iso = null) => { const m = answerParts(d, iso), spill = !iso || iso === today() ? longSpillLine(d) : '';
+  const card = typeof actCard === 'function' ? actCard(d, iso, m) : '', stamp = nextDay() ? yesterdayLine() : `Issued ${issued()}, ${agoSpan()} ago`;
+  // Beside "Today, Tuesday 17 November" the issue time drops its own "Tue" where it is the same day.
+  const cardStamp = nextDay() || DATA.generated_at.slice(0, 10) !== today() ? stamp : `Issued ${issued().replace(/^\S+ /, '')}, ${agoSpan()} ago`;
   return (m.live && m.blind ? `<p class="live live-off">${m.live}.</p>` : '') + (m.blind && m.word ? '<p class="modelled">Modelled forecast</p>' : '')
     + (m.word ? `<h2 class="big ${m.tone}" id="risk-headline">${m.word} ${m.noun || 'risk'}</h2>` : `<h2 class="big-head ${m.tone}" id="risk-headline">${m.head}</h2>`)
-    + (m.why || m.next ? `<div class="wn">${m.why ? `<p class="why">${m.why}</p>` : ''}${m.next ? `<p class="next">${m.next}</p>` : ''}</div>` : '')
+    // With the card (actCard): the level's day and the issue time on one grey line under it, and why and when in the card.
+    + (card ? `<p class="issued when">${cardDay(d, iso, m)} · ${cardStamp}</p>${card}`
+      : m.why || m.next ? `<div class="wn">${m.why ? `<p class="why">${m.why}</p>` : ''}${m.next ? `<p class="next">${m.next}</p>` : ''}</div>` : '')
     + (d.error && m.act ? `<p class="act">${m.act}</p>` : '')   // that the level is apart from official advice: said once, in its block (eaTodayOfficial)
     + (spill ? `<p class="gaps">${spill}</p>` : '') + flowLine(d)
-    + `<div class="ci">${coverLine(d, iso)}<p class="issued">${nextDay() ? yesterdayLine() : `Issued ${issued()}, ${agoSpan()} ago`}</p></div>`
+    + (card ? (coverLine(d, iso, true) ? `<div class="ci">${coverLine(d, iso, true)}</div>` : '')
+      : `<div class="ci">${coverLine(d, iso)}<p class="issued">${stamp}</p></div>`)
     + (rainAgeLine(d) ? `<p class="issued">${rainAgeLine(d)}</p>` : ''); };
+// What to do, under the level, in a card (option A of the 18 Nov 2026 mock-ups, Ethan's choice; docs/DESIGN.md, "What to do
+// under the level"). An outside audit measured Ilkley at 390 px: the level at about 427 px, "Avoid swimming here right now"
+// at about 1,159 px, under the five days. Only at moderate risk or higher, or at a water rated poor: a low level has no
+// action to bring forward, and a card over it would read as a warning. The words are the what-to-do line's own
+// (levelAction, dayAction), its first sentence in bold; then why and when, from the answer's own words (answerParts' sub
+// and next); then a way on, only where one exists (actGo); then today's official advice where it was not checked.
+const actRaised = (d, iso) => { const l = iso ? dayLevel(d, iso) : level(d); return ORDER[l] !== undefined && (rank(l) >= 1 || advisedAgainst(d)); };
+function actCard(d, iso = null, m = answerParts(d, iso)) {
+  if (d.error || !m.word || !m.act || !actRaised(d, iso)) return '';
+  const [first, ...rest] = m.act.split(/(?<=\.) /), why = actWhy(d, iso, m), ea = eaAdviceLine(d);
+  return `<div class="act-card" id="act-card"><p class="act-do"><strong>${first}</strong>${rest.length ? ' ' + rest.join(' ') : ''}</p>`
+    + (why ? `<p class="act-why">${why}</p>` : '') + `<div class="act-go">${actGo(d, iso)}</div>` + (ea ? `<p class="act-ea">${ea}</p>` : '') + '</div>'; }
+// The day the level is for, for the grey line under it: "Today, Tuesday 17 November", or tomorrow's where tomorrow sets
+// the headline (worstNear), or the picked day (answerParts' next).
+const longDay = iso => (iso === today() ? 'Today, ' : iso === addDays(today(), 1) ? 'Tomorrow, ' : '')
+  + new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+const cardDay = (d, iso, m) => iso && daily(d) ? m.next : longDay(daily(d) && worstNear(d)[1] === 'tomorrow' ? addDays(today(), 1) : today());
+// Why and when, as sentences: the answer's own (answerParts' sub, "Recent sewage spills"; next, where the week goes).
+// At a water rated poor, its floor is said with its reason, as the mock-up Ethan chose has it.
+const POOR_FLOOR = 'Rated poor, so every day here is at least high risk';
+function actWhy(d, iso, m) {
+  let sub = m.sub || '', next = iso ? '' : m.next || '';   // a picked day's next is its date, on the grey line
+  // "Rated poor, advice against bathing" (in the season) keeps its words, and where the week goes after it.
+  if (advisedAgainst(d) && !/^Rated poor,/.test(sub)) { next = next.replace(/^At least high risk every day/, POOR_FLOOR);
+    if (sub === 'Rated poor') sub = next.startsWith(POOR_FLOOR) ? '' : POOR_FLOOR; }
+  return [sub, next].filter(Boolean).map(t => cap(t) + (/[.!?]$/.test(t) ? '' : '.')).join(' '); }
+// The ways on, from what is there. Here: the first of the five days after the one shown at low risk, or else at moderate (never
+// high or very high, as "Lower risk nearby"), which opens that day here; so it is the day "Low risk by Saturday" names. "Find another spot" is added once the page is drawn (actPlan),
+// as "Plan a swim here" is: the build's copy (scripts/prerender_spots.js) has no planner. Neither: no button, rather than one
+// that leads nowhere.
+function actGo(d, iso) {
+  const shown = iso || today(), mine = rank(iso ? dayLevel(d, iso) : level(d));
+  const after = daily(d) ? d.days.slice(0, 5).filter(x => x.date > shown && hasData(x) && ORDER[risk(d, x).level] !== undefined
+    && rank(risk(d, x).level) < Math.min(mine, rank('high'))) : [];
+  const day = after.find(x => risk(d, x).level === 'low') || after[0];
+  return day ? `<a class="btn primary" href="#day=${day.date}" data-act-day="${day.date}">${cap(risk(d, day).level)} risk ${dayWord(day.date)}</a>` : ''; }
 // The live status's counts (levels.js, liveLine) at the foot of the five days, where they say how much of the week the
 // feeds can see. Over the level they put a grey sentence before the answer (Medway at Tonbridge, 31 Oct 2026). "Live
 // sewage spill status unavailable" stays over the level (answerWords), since it makes the level the modelled forecast.
@@ -3257,7 +3310,7 @@ const liveRow = d => { const m = liveParts(d, true); return m.live && !m.blind ?
 // counts: over the five days they pushed the rows below a phone's first screen (Windermere, Tonbridge).
 const answerAfter = (d, iso = null) => { if (d.error) return ''; const m = answerParts(d, iso);
   const far = overflows(d) && tooFarSaid(d) ? esc(tooFarSaid(d)) : '', scope = [m.scope, far].filter(Boolean).join(' ');
-  return (m.act ? `<p class="act">${m.act}</p>` : '') + (scope ? `<p class="scope">${scope}</p>` : ''); };
+  return (m.act && !(typeof actCard === 'function' && actCard(d, iso, m)) ? `<p class="act">${m.act}</p>` : '') + (scope ? `<p class="scope">${scope}</p>` : ''); };
 // An overflow's spill under way, from its event's start (levels.js, spillStart): "since Tue 6 Oct, 11:46"
 // in UK time, and for how long.
 const sinceTime = ms => new Date(ms).toLocaleString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London' });
@@ -3338,7 +3391,7 @@ const flowLine = d => { const f = flowFacts(d, Date.now(), DATA.generated_at); i
 //  - today's EA advice at a bathing water, not checked, with where to look (beside the level, where
 //    "Low risk" and "Usual care" would stand in for it).
 // A missing input is said as missing, never as low.
-function coverWords(d, iso = null) {
+function coverWords(d, iso = null, carded = false) {
   const out = [], total = overflows(d), now = d.now || {}, mon = Math.min(total, now.monitored_upstream ?? total);
   const said = !iso && nowUnknown(d) && rank(level(d)) === 0;   // "Forecast only: ..." under the level
   // With how many of those reporting are spilling now (30 Oct 2026, from a swimmer's question: the level did not say), and
@@ -3352,13 +3405,18 @@ function coverWords(d, iso = null) {
   if (walesWords(d, true)) out.push(esc(walesWords(d, true)));
   if (trialWords(d, true)) out.push(esc(trialWords(d, true)));
   // A reviewed notice above (eatoday.js, eaTodayCover) has its check date and link in its own block, so the line leaves it
-  // out (31 Oct 2026: the block, a line under the level and this line each said it apart from the level).
-  const reviewed = typeof eaTodayCover === 'function' ? eaTodayCover(d) : '';
-  if (!reviewed && eaUnchecked(d)) { const url = (d.classification || {}).url, fold = typeof eaTodayFold === 'function' && eaTodayFold(d);
-    out.push(`Today's EA advice not checked: ${fold ? '<a href="#ea-today">open it</a>' : /^https:\/\//.test(url || '') ? `<a href="${esc(url)}">see the EA's page</a>` : "see the EA's page"} before you swim`); }
+  // out (31 Oct 2026: the block, a line under the level and this line each said it apart from the level): eaAdviceLine.
+  if (!carded && eaAdviceLine(d)) out.push(eaAdviceLine(d, false));
   return out;
 }
-const coverLine = (d, iso = null) => { const w = coverWords(d, iso); return w.length ? `<p class="cover">${w.join('. ')}.</p>` : ''; };
+// carded: the card under the level (actCard) holds the advice line, so the cover line leaves it out.
+const coverLine = (d, iso = null, carded = false) => { const w = coverWords(d, iso, carded); return w.length ? `<p class="cover">${w.join('. ')}.</p>` : ''; };
+// Today's EA advice at a bathing water, not checked here (option A, 18 Nov 2026; until then "Today's EA advice not checked: open
+// it before you swim"): two sentences, the link on the second. '' where a reviewed notice shows (eaTodayCover) or there is none.
+const eaAdviceLine = (d, stop = true) => { const reviewed = typeof eaTodayCover === 'function' ? eaTodayCover(d) : '';
+  if (reviewed || !eaUnchecked(d)) return '';
+  const url = (d.classification || {}).url, fold = typeof eaTodayFold === 'function' && eaTodayFold(d), words = 'Check Environment Agency advice';
+  return `Today's official advice was not checked. ${fold ? `<a href="#ea-today">${words}</a>` : /^https:\/\//.test(url || '') ? `<a href="${esc(url)}">${words}</a>` : words}${stop ? '.' : ''}`; };
 
 // "Lowest pollution risk this week": the day with the most low spots (levels.js, bestDay), a tap
 // away, as a phrase, on the Saved page, with how many of your spots are low. While the five days
@@ -3550,7 +3608,7 @@ const dayFromURL = () => { const m = location.hash.match(/^#day=(\d{4}-\d{2}-\d{
 function showDay(d, iso) {
   const x = iso ? d.days.slice(0, 5).find(y => y.date === iso) : null;
   DAY = x ? iso : null;
-  document.getElementById('answer-words').innerHTML = answerWords(d, DAY);
+  document.getElementById('answer-words').innerHTML = answerWords(d, DAY); actPlan(d);   // the card's way to Plan a swim
   const after = document.getElementById('answer-after'); if (after) after.innerHTML = answerAfter(d, DAY);   // what to do that day, under the week
   // The sentence over the rows, for that day (pickedSentence), measured again on a phone (phoneShort, from phoneFolds).
   const sent = document.querySelector('#days-h + .t-sent');
@@ -5725,9 +5783,31 @@ const paddleFromHere = d => {
 function planHere(d) {
   const days = document.getElementById('days-h');
   if (days && canPlanHere(d) && !document.querySelector('.plan-here-line')) days.closest('section').insertAdjacentHTML('beforeend', planHereLine(d));
-  document.querySelectorAll('[data-plan-here]').forEach(a => a.addEventListener('click', e => {
-    if (!plainClick(e)) return; e.preventDefault(); PLAN_NEW = true; openPlan(planHereHash(d, a.dataset.finish || null)); }));
+  actPlan(d);
+  document.querySelectorAll('[data-plan-here]').forEach(a => { if (!a.closest('#act-card')) a.addEventListener('click', e => {   // the card's: bindAct
+    if (!plainClick(e)) return; e.preventDefault(); PLAN_NEW = true; openPlan(planHereHash(d, a.dataset.finish || null)); }); });
 }
+// The card under the level (actCard), which showDay draws again: one listener on the answer. Its day opens that day here, as
+// a row of the five days does; "Find another spot" opens Plan a swim as "Plan a swim here" does.
+// "Find another spot" in the card (actCard), first, where Plan a swim from here on the day shown would offer a listed spot
+// lower that day (lowerReach). A day in the card is then the second way, without the fill. planHere and showDay call it.
+function actPlan(d) {
+  const go = document.querySelector('#act-card .act-go'); if (!go || go.querySelector('[data-plan-here]') || !canPlanHere(d) || !lowerReach(d, DAY)) return;
+  go.querySelectorAll('.btn.primary').forEach(b => b.classList.remove('primary'));
+  go.insertAdjacentHTML('afterbegin', `<a class="btn primary" href="${esc(planPath() + planHereHash(d))}" data-plan-here>Find another spot</a>`); }
+// Whether Plan a swim would offer a lower spot: a listed one within the plan's reach (planBase), lower that day, not under advice
+// against bathing or a notice restricting swimming, and not itself high or very high.
+const lowerReach = (d, iso) => { const lv = s => iso ? dayLevel(s, iso) : level(s), mine = rank(lv(d)), within = planBase().within || PLAN_DEFAULT.within;
+  return DATA.spots.some(s => s.id !== d.id && Number.isFinite(s.lat) && !advisedAgainst(s) && !(typeof eaTodayRestricts === 'function' && eaTodayRestricts(s))
+    && ORDER[lv(s)] !== undefined && rank(lv(s)) < Math.min(mine, rank('high')) && km([d.lat, d.lon], [s.lat, s.lon]) / MILE_KM <= within); };
+// Bound once to an element, which a later draw can keep (overBuilt), for the spot drawn last (ACT_SPOT).
+let ACT_SPOT = null; const ACT_BOUND = new WeakSet();   // not an attribute: overBuilt's patchNode would take it off
+function bindAct(d) {
+  const box = document.getElementById('risk-hero'); ACT_SPOT = d; if (!box || ACT_BOUND.has(box)) return; ACT_BOUND.add(box);
+  box.addEventListener('click', e => { const a = e.target.closest('#act-card a'), d = ACT_SPOT; if (!a || !d || !plainClick(e)) return;
+    if (a.dataset.actDay) { e.preventDefault(); showDay(d, a.dataset.actDay);
+      const row = document.querySelector(`#day-strip [data-day="${a.dataset.actDay}"]`); if (row) row.focus(); }
+    else if (a.hasAttribute('data-plan-here') && typeof planHereHash === 'function') { e.preventDefault(); PLAN_NEW = true; openPlan(planHereHash(d)); } }); }
 // The day a raised spot is forecast low (11 Nov 2026; docs/DESIGN.md, "The day it is forecast low"): the first of the
 // five days at low risk after a raised one, as the five days' sentence finds it (levels.js, backToLow), and never today.
 function clearDay(d) {
@@ -6193,8 +6273,11 @@ function backTo(st) {
 // and the sky show before the forecast arrives and render() redraws them in the same place.
 function spotTop(d) {
   const loc = d.location || {};
-  const tags = [cap(d.kind), d.source === 'designated' ? 'Environment Agency designated bathing water' : null,
-    loc.watercourse ? esc(loc.watercourse) : null, loc.lake_area_km2 ? `${loc.lake_area_km2} km²` : null,
+  // One kind line (option A, 18 Nov 2026): "River Wharfe · Designated bathing water", not "River · Environment Agency
+  // designated bathing water · River Wharfe". The kind only where the water's name does not say it ("Lake · Windermere").
+  const named = loc.watercourse && d.kind && new RegExp(`\\b${d.kind}\\b`, 'i').test(loc.watercourse);
+  const tags = [named ? null : cap(d.kind), loc.watercourse ? esc(loc.watercourse) : null, loc.lake_area_km2 ? `${loc.lake_area_km2} km²` : null,
+    d.source === 'designated' ? 'Designated bathing water' : null,
     d.notes && d.notes !== 'Environment Agency designated bathing water' ? esc(d.notes) : null].filter(Boolean);
   // The back link names where it goes (backTo): Saved, or the list it showed, a plan, the full map a
   // marker was tapped on (bindBack goes back to any of them), or all the spots. Save sits opposite it.
@@ -6360,7 +6443,7 @@ function render(d) {
       : deskSections(d, { lead: `<div class="tile">${factors(d)}${check(d)}</div>${unknownTile(d)}`, map: here, cond: conditionsSummary(d),
           today: tiles, more, waterTop, guide, where });
     h += actions(d);
-    setPanel(h); bindBack(); bindSave(d); planHere(d); bindShare(d); bindShareImage(d); bindSwim(d); placeMap(); miniMap(d); reviewsFor(d);
+    setPanel(h); bindBack(); bindSave(d); planHere(d); bindAct(d); bindShare(d); bindShareImage(d); bindSwim(d); placeMap(); miniMap(d); reviewsFor(d);
     if (ARRIVE) mountArrival(d); return;
   }
   // Two columns on a desktop (col-go: should I go, and the water; col-why: the map and why), one on a
@@ -6391,7 +6474,7 @@ function render(d) {
   h += table + '</div></div>';
   }
   h += actions(d) + tech(d);
-  setPanel(h); bindBack(); bindSave(d); planHere(d); bindShare(d); bindShareImage(d); bindSwim(d); bindNearby(); bindDays(d); miniMap(d); reviewsFor(d); lakeTempFor(d); localSamplesFor(d);
+  setPanel(h); bindBack(); bindSave(d); planHere(d); bindAct(d); bindShare(d); bindShareImage(d); bindSwim(d); bindNearby(); bindDays(d); miniMap(d); reviewsFor(d); lakeTempFor(d); localSamplesFor(d);
   const moreBtn = document.getElementById('more-contrib');
   if (moreBtn) moreBtn.addEventListener('click', () => { const t = document.getElementById('contrib'), all = t.classList.toggle('all');
     moreBtn.setAttribute('aria-expanded', String(all)); moreBtn.textContent = all ? `Show the top 3` : `Show all ${d.contributors.length}`; });

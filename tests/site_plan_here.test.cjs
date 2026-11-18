@@ -29,12 +29,13 @@ test('it replaces nothing silently: an outing still to come keeps it waiting for
   assert.equal(P.planHasOuting(P.planKept(`#day=2026-10-20&spot=thames-henley`, DATES), DATES), false);       // its day has gone
   const app = fs.readFileSync(path.join(__dirname, '../src/dipcast/site/index.html'), 'utf8');
   assert.match(app, /PLAN_PREVIEW = planInvited\(PLAN, keptNow, location\.hash\.length > 1, PLAN_PREVIEW\) && !\(PLAN_NEW && !planHasOuting\(keptNow, planDates\(\)\)\);/);
-  assert.match(app, /e\.preventDefault\(\); PLAN_NEW = true; openPlan\(planHereHash\(d, a\.dataset\.finish \|\| null\)\); \}\)\);/);
+  assert.match(app, /e\.preventDefault\(\); PLAN_NEW = true; openPlan\(planHereHash\(d, a\.dataset\.finish \|\| null\)\); \}\); \}\);/);
+  assert.match(app, /else if \(a\.hasAttribute\('data-plan-here'\) && typeof planHereHash === 'function'\) \{ e\.preventDefault\(\); PLAN_NEW = true; openPlan\(planHereHash\(d\)\); \}/);   // the card's (bindAct)
   // The page's actions: the plan first, then sharing; and a button under the five days. A spot with no position has neither.
   assert.match(app, /<a class="btn primary" id="plan-here" href="\$\{esc\(planPath\(\) \+ planHereHash\(d\)\)\}" data-plan-here>\$\{planHereWords\(\)\}<\/a>/);
   assert.match(app, /<p class="plan-here-line"><a class="btn primary" href="\$\{esc\(planPath\(\) \+ planHereHash\(d\)\)\}" data-plan-here>\$\{planHereWords\(\)\}<\/a><\/p>/);
   assert.match(app, /if \(days && canPlanHere\(d\) && !document\.querySelector\('\.plan-here-line'\)\) days\.closest\('section'\)\.insertAdjacentHTML\('beforeend', planHereLine\(d\)\);/);
-  assert.match(app, /planHere\(d\); bindShare\(d\);/);
+  assert.match(app, /planHere\(d\); bindAct\(d\); bindShare\(d\);/);
 });
 
 test('waiting for Keep, it is a new outing, not one from a link', () => {
