@@ -2627,3 +2627,24 @@ is a place, as a town is (`postcodePlace` in `plan.js`; `offerOnMap` and `planTy
   postcodes are not in OS Open Names, and SwimSignal has no spot there.
 - Checked in a local preview at 375 px and desktop width with LS29 9BZ, LA22, OX1 4, CF10 1AA, EH1, BT1 5GS and
   ZZ99. Not checked: 320 px, dark mode, a real phone's keyboard.
+
+## The answer first on Accuracy, Research and For organisations (17 November 2026)
+
+An outside design audit of 17 November 2026 (sections 9 to 11) found these three pages slow to reach their answer.
+Order and wording only: no figure, anchor or tool changed.
+
+- **Accuracy.** The lede is its first sentence. Under it, "Issued forecasts: live results" opens with one paragraph
+  in the page's own numbers: how many spill forecasts for monitored overflows were scored, from and to which day, on
+  how many days, the share of spills warned of and the share of warnings that came true, and that these describe
+  monitored overflows, not whether the water at a spot is safe (`liveMeaning`). Then the two warning figures, the
+  line by company, and the two simple rules in the verdicts' own words (`rulesLine`). The error read as a chance has
+  its own h3 naming its reference ("against a flat forecast at this period's own rate", or "against each overflow's
+  long-run rate" without one), over its figure. The held-out test, In short and the rest follow as before. The rest
+  of the lede and its caveat paragraph follow the summary, word for word. Still four figures in ruled lists
+  ("Accuracy page", above).
+- **Research and data** opens "Explore satellite images, river maps and lab results." Each item keeps its status line.
+- **For organisations** opens on two tasks, "Brief a session" (the organisers' page) and "Compare your venues" (its
+  sites fold, which `#sites-maker` now opens), then one line: "It is a forecast, not a water test. It misses many
+  spills, and your organisation makes the decision." "What it cannot do" follows at once, word for word with its
+  build-time figures. Who the page is for moved under "Tools for planning a session". The worked example's briefing
+  step no longer names `scripts/briefing.py`; the "Free today" box is unchanged.
