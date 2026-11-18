@@ -49,3 +49,14 @@ test('the page looks a postcode up and no longer says postcodes do not work', ()
   assert.match(PAGE, /No postcode found for “\$\{t\}”: type a town, a village or a river\./);
   assert.match(PAGE, /PLAN\.from = \{ name: pc\.name, lat: pc\.lat, lon: pc\.lon \}/);         // a plan starts from the sector or district
 });
+
+test('spots found near a postcode are the first line, never under "No listed spot matches."', () => {
+  // 17 Nov 2026, outside design audit: "LS29 9BZ" listed four spots near LS29 9 under "No listed spot matches.".
+  // Where spots near the place were found, the list's empty line is hidden and their heading leads ("4 spots near LS29 9").
+  const offers = PAGE.slice(PAGE.indexOf('async function offerOnMap('), PAGE.indexOf('const WATER_ZOOM'));
+  assert.match(offers, /if \(empty\) empty\.hidden = near\.length > 0;/);
+  assert.match(offers, /box\.classList\.toggle\('after-empty', Boolean\(empty\)\);/);
+  assert.match(offers, /if \(!near\.length\) empty\.innerHTML = `<p class="below">No listed spot matches\./);
+  // Named by the sector (postcodePlace), so the heading never holds the whole postcode.
+  assert.deepEqual(P.nearHead(4, 4, P.postcodePlace(index, 'LS29 9BZ').name), ['4 spots near LS29 9', 'within 10 miles, nearest first']);
+});

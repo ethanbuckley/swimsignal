@@ -234,13 +234,14 @@ for (const [w, h, mobile] of [[375, 812, true], [1440, 900, false]]) {
         return (top >= 0 && top < innerHeight) || 'after Cancel the opener is out of view (' + Math.round(top) + ' px)'; })()` }, s);
       const v = r.result?.result?.value; if (v !== true) errors.push(String(v));
     }
-    // "Marlow" names no spot; Henley-on-Thames is 5.6 miles away, so it is listed under "Near Marlow" with its own level.
+    // "Marlow" names no spot; Henley-on-Thames is 5.6 miles away, so it is listed under "1 spot near Marlow" (the count
+    // first since 17 Nov 2026, plan.js nearHead) with its own level.
     if (shown && saved === 'search') {
       const r = await send('Runtime.evaluate', { awaitPromise: true, returnByValue: true, expression: `(async () => {
         const q = document.getElementById('q'); q.value = 'Marlow'; q.dispatchEvent(new Event('input', { bubbles: true }));
         for (let t = 0; t < 20 && !document.querySelector('#on-map a[data-id]'); t++) await new Promise(r => setTimeout(r, 150));
         const a = document.querySelector('#on-map a[data-id="thames-henley"]'), h = document.querySelector('#on-map .area-head h3');
-        return !!a && /5\\.6 miles from Marlow/.test(a.textContent) && !!a.querySelector('.hl') && !!h && /^Near Marlow/.test(h.textContent); })()` }, s);
+        return !!a && /5\\.6 miles from Marlow/.test(a.textContent) && !!a.querySelector('.hl') && !!h && /^\\d+ spots? near Marlow/.test(h.textContent); })()` }, s);
       if (!r.result?.result?.value) errors.push('Searching a town did not list the spot near it');
     }
     await sleep(400);

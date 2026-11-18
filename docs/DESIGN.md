@@ -2686,6 +2686,35 @@ and cancelled at 375 and 1,440 px, which fail on the code before this change); a
 17 November 2026 at 390 and 320 px, by pointer and by keyboard (Enter on "Log a swim here", Enter on Cancel). Not
 checked: Safari, a screen reader, a real phone.
 
+## Four states that misled (17 November 2026)
+
+An outside design audit of the live site (17 November 2026, sections 2, 4 and 5) found four states that said
+something the page did not mean. Presentation only: no level, forecast or alert changes.
+
+- **A picked day's sentence over the five days.** Saturday picked at Henley still read "4 upstream overflows are
+  discharging now: moderate risk from them right now. About 14 of the 49 overflows upstream are expected to spill
+  today", over Saturday's answer. The sentence was drawn once with the tile and a picked day never drew it again.
+  Now a day other than today gets its own ("About 3 of the 49 overflows upstream are expected to spill on Saturday.",
+  `pickedSentence`). Today's view is unchanged. The live status keeps its line under the rows, with the poll's time
+  (`liveRow`, "The live status before the level" above). This completes "One date on a spot's page" (22 October).
+- **"Plan a swim here" for a paddler.** The link carries the activity this browser chose (`act=`, kept since 31
+  October), so it opened Kayak/canoe under the words "Plan a swim here". The words now follow what the link opens:
+  "Plan kayaking or canoeing here", "Plan paddleboarding here" (`planHereWords`, from `OUTING_ACT_WORDS`). A first
+  visit and a swim keep "Plan a swim here". The other choice, a swim link that drops the chosen activity, would undo
+  the 31 October rule that a paddler's next plan starts as paddling. Not changed here: Saved's one-spot line, "Going?
+  Plan a swim here" (`savedOneNext`), which has the same fault.
+- **A postcode with spots near it.** "LS29 9BZ" listed four spots under "No listed spot matches.". Where spots near
+  the place are found, that line is hidden and their heading leads with the count: "4 spots near LS29 9 · within 10
+  miles, nearest first" (`nearHead`, which replaced `nearSaid`). Towns take the same heading ("5 spots near
+  Ambleside · the nearest of 6 within 10 miles"). The postcode is still named by its sector.
+- **A day's words for a screen reader, where the rain runs' band shows.** "Saturday 21 November: moderate risk.
+  Three Met Office rain forecasts give low risk." read as two answers. Now: "Saturday 21 November: forecast moderate
+  risk. Range from three other Met Office rain runs: low risk." (`bandSaid`, `dayRows`).
+
+**Checked:** a local preview built from the live data of 17 November 2026, headless Chrome at 390 and 320 px with the
+clock at 21:00 that evening; `tests/site_honest_headlines`, `site_plan_here`, `site_postcode_said`, `site_town_search`,
+`site_ensemble_band`. Not checked: a screen reader, Safari, a real phone.
+
 ## What to do under the level (18 November 2026)
 
 An outside audit of the live site (17 November 2026) measured Wharfe at Cromwheel, Ilkley at 390 px: the level at
