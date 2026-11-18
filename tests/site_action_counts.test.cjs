@@ -75,7 +75,7 @@ test("the redesign's six: each counted where it happens, none with a spot", () =
     countAt = clear.indexOf("if (turnOn) countAction(kind === 'low' ? 'lowalert' : 'dayalert');"), catchAt = clear.indexOf('} catch (e) { b.disabled = false;');
   assert.ok(tryAt > 0 && sentAt > tryAt && countAt > sentAt && catchAt > countAt, 'the alert count sits after the send, before the catch');
   // "Log a swim here": counted on the press.
-  assert.match(page, /querySelector\('#log-here button'\)\.addEventListener\('click', \(\) => \{ document\.getElementById\('swam'\)\.click\(\); countAction\('logswim'\);/);
+  assert.match(page, /querySelector\('#log-here button'\)\.addEventListener\('click', e => \{ if \(!\(typeof journalLogFrom === 'function' && journalLogFrom\(e\.currentTarget\)\)\) document\.getElementById\('swam'\)\.click\(\); countAction\('logswim'\);/);
   // A row of the home spill feed: each link, as the feed is drawn (the spot it opens also counts 'spot').
   assert.match(page, /bindItems\(host\);\n  host\.querySelectorAll\('a\[data-id\]'\)\.forEach\(a => a\.addEventListener\('click', \(\) => countAction\('feed'\)\)\);/);
   assert.match(page, /async function mountHomeFeed\(saved\) \{[\s\S]*?countAction\('feed'\)[\s\S]*?\n\}/);

@@ -1023,9 +1023,10 @@ swam here today", and reads its entries.
   already the page about what this device keeps, and the one-tap log was there. The journal is its last
   tile.
 - **"Log a swim"** takes the log's place in a spot's four actions and opens a form in a tile under them,
-  the reviews' form: the day and the time side by side (one above the other at 360 px and under), the
-  minutes in the water, a note of 280 characters, up to three photos, then "Kept with the swim", what will
-  be kept, in the journal's words. The day and the time are filled in, so logging is two taps where it
+  the reviews' form: the day, a note of 280 characters, up to three photos, then the time and the minutes in
+  the water side by side (one above the other at 360 px and under), then "Kept with the swim", what will
+  be kept, in the journal's words. Until 17 November 2026 the time and the minutes came before the note
+  (see "Saved and the journal, less in the way"). The day and the time are filled in, so logging is two taps where it
   was one. No health questions: the illness reports are separate.
 - **"Only on this device."** in bold leads the form's line and the journal's: reviews and notes on a visit,
   further up the same page, are public.
@@ -1041,7 +1042,8 @@ swam here today", and reads its entries.
   size, the note, the photos as 72 px squares that open full size, then Delete. No link that sends anything,
   since the journal is private (Ethan, 4 October 2026: the one-tap log's "How was it?" went). Five show,
   newest first; "Show all" opens the rest. A one-tap log entry shows its level "in the day's forecast".
-- **A copy**: "Save a copy" makes a file of the swims, notes and photos (a phone offers its share sheet);
+- **A copy**: over the swims, under the journal's first line (17 November 2026; it was under the swims, with Delete
+  all, which stays at the foot). "Save a copy" makes a file of the swims, notes and photos (a phone offers its share sheet);
   "Add swims from a copy" reads one back, leaving out swims already there. It is how the journal moves to
   another phone, or between Safari and the Home Screen app on an iPhone, which keep separate storage.
 
@@ -2023,7 +2025,8 @@ colour, radius or box.
 
 **Since you last looked.** The summary uses the cards' own rules (`sinceLine`), so it never says more than they do,
 and it never says why something changed.
-- First look: "This browser has not shown these spots before, so there is nothing to compare yet."
+- First look: no tile (17 November 2026). Until then it said "This browser has not shown these spots before, so there is
+  nothing to compare yet.", above the places. `sinceSummary` still gives it, state `none`, and `renderSaved` draws nothing.
 - Same forecast as last time: "No new forecast since you looked on Friday at 18:20."
 - Newer forecast, nothing the cards would say: it lists what was checked: no level, rating or official notice
   changed, and no overflow upstream was reported starting or stopping. It never says "safe" or "all clear".
@@ -2648,3 +2651,37 @@ Order and wording only: no figure, anchor or tool changed.
   spills, and your organisation makes the decision." "What it cannot do" follows at once, word for word with its
   build-time figures. Who the page is for moved under "Tools for planning a session". The worked example's briefing
   step no longer names `scripts/briefing.py`; the "Free today" box is unchanged.
+
+## Saved and the journal, less in the way (17 November 2026)
+
+An outside design audit of the live site (17 November 2026, section 7) found the Saved page and the journal opened on
+setup words, not on what is saved. Six changes, nothing stored changes, and the privacy notice is untouched.
+
+1. **A first look shows no "Since you last looked" tile.** It said there was nothing to compare yet, above the one
+   spot just saved. The cards already say nothing on a first look ("Since you last looked", 4 October 2026), and a part
+   that cannot be used yet is not shown (Compare, above). This changes the first-look line of "Saved as a starting
+   page" (2 November 2026), which gave no reason for it.
+2. **Where saved spots are kept is said once.** With nothing saved and one list, the lede ("Spots you save are kept in
+   this browser.") went: the empty tile from #600 already says "Saved spots stay in this browser: nothing is sent to
+   SwimSignal." With several lists the lede stays, since the tile does not say it then.
+3. **One saved spot:** "Its page has why, and what it is like at the water: <name>." went. The card's name links to
+   the page. "Going? Plan a swim here." stays.
+4. **Cancel goes back to what opened the form.** On a phone's low day "Log a swim here" sits over the five days and
+   the form opens under the spot's actions, about 6,000 px further down. Cancel moved focus to "Log a swim" there.
+   Now it goes to the control pressed (`journalLogFrom`, `jnBackTo` in `journal.js`) and scrolls it to the middle of
+   the screen. Saving still goes to "Log a swim", where "Logged in your swim journal" is said.
+5. **The form: day, note and photos first,** then the optional time and minutes, then "Kept with the swim". The time
+   is still filled in, so what is kept with a swim is unchanged. The notice about unsent answers sits over the buttons
+   (`data-draft-note`, `draftTrack`), not over the first field. The reviews', visit notes' and illness forms keep it
+   at the top. At 320 px the day, the note and Add photos fit on the screen under the heading.
+6. **The copy is over the swims.** "Save a copy" and "Add swims from a copy" moved from under the list to under the
+   journal's first line, with one more sentence: "Clearing this browser's data deletes the journal, so a copy is its
+   backup." Delete all stays at the foot, in its own row.
+
+**Not built, and why:** the audit's map of visited places, monthly photo strip and moving Water-wise behind an opt-in.
+The passport beside the journal is a decision of PR #458; a map and a strip are new features, not friction.
+
+**Checked:** `tests/site_saved_friction.test.cjs`; `tests/browser_smoke.mjs` (one spot, empty, and the form opened
+and cancelled at 375 and 1,440 px, which fail on the code before this change); a local build on the live forecast of
+17 November 2026 at 390 and 320 px, by pointer and by keyboard (Enter on "Log a swim here", Enter on Cancel). Not
+checked: Safari, a screen reader, a real phone.
