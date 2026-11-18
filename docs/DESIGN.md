@@ -2685,3 +2685,51 @@ The passport beside the journal is a decision of PR #458; a map and a strip are 
 and cancelled at 375 and 1,440 px, which fail on the code before this change); a local build on the live forecast of
 17 November 2026 at 390 and 320 px, by pointer and by keyboard (Enter on "Log a swim here", Enter on Cancel). Not
 checked: Safari, a screen reader, a real phone.
+
+## What to do under the level (18 November 2026)
+
+An outside audit of the live site (17 November 2026) measured Wharfe at Cromwheel, Ilkley at 390 px: the level at
+about 427 px, and "Avoid swimming here right now: choose a lower day or spot." at about 1,159 px, under the five days.
+Ethan was shown three mock-ups and chose option A: the action under the level. The photo opening is unchanged (212 px
+on a phone, "A spot's page: the place first").
+
+- **The kind line** (`spotTop`): the water's name, the kind only where the name does not say it, then "Designated
+  bathing water". "River Wharfe · Designated bathing water", not "River · Environment Agency designated bathing water ·
+  River Wharfe"; "Lake · Windermere · 14.7 km² · Designated bathing water". Without a photo it now sits under the name
+  too, drawn with `order` as with one; the page's own order, and a screen reader's, is unchanged.
+- **The level, then one grey line**: the level's day and the issue time, "Today, Tuesday 17 November · Issued 19:40, 1 h
+  ago" (`cardDay`). Tomorrow's date where tomorrow sets the headline; the picked day's on a picked day. The issue time
+  drops its weekday where it is the same day. The build's copy has no age, as before.
+- **The card** (`actCard`), at moderate risk or higher, or at a water rated poor:
+  - the what-to-do line, word for word ("What to do", 4 October), its first sentence in bold;
+  - why and when, from the answer's own words (`actWhy`: `sub` and `next`): "Recent sewage spills. Rated poor, so every
+    day here is at least high risk." "Rated poor, so every day here is at least high risk" is the mock-up's; the rest is
+    the page's. "Rated poor, advice against bathing" keeps its words;
+  - a way on, only where one exists (`actGo`, `actPlan`): "Find another spot", Plan a swim from here on the day shown,
+    where the plan's reach (20 miles unless changed) holds a listed spot at low or moderate risk that day, not rated poor
+    and not under a notice restricting swimming, as "Lower risk nearby" chooses; and the first of the five days at low
+    risk, or else at moderate, after the one shown ("Low risk on Saturday"), which opens that day. Neither: no button.
+    At Ilkley on 17 November every listed spot within 20 miles was high or very high, so the card had no button;
+  - today's official advice, where it was not checked (`eaAdviceLine`).
+- **No card at low risk, or with no level.** A low level has no action to bring forward: its line is "Usual care", and a
+  card over it would read as a warning. It keeps its place under the five days, as does a plain level's.
+- **Said once.** With the card, what to do is not said again under the five days (`answerAfter`), and the advice is not
+  in the line by the issue time.
+- **An official notice** stays above the level, in its own block, as before. With one that restricts swimming, the
+  card's line is "Follow the official advice above first." (`eaTodayAct`).
+- **Today's advice, not checked**, everywhere the answer says it: "Today's official advice was not checked. Check
+  Environment Agency advice", the link on the second sentence. It was "Today's EA advice not checked: open it before you
+  swim" ("A tighter opening", 20 October). The share picture and the sites view keep their own short words.
+- **Reverses:** "What to do" (4 October) kept the line "never a level's colour, a box or a bold lead", and "A tighter
+  opening" (20 October) put it under the five days. Ethan chose option A knowing both. The card is in ink on white with
+  a hairline, never a level's colour.
+- **Contrast** of what is new: ink on the card 15.9:1, links 7.9:1, white on the button 7.9:1, the grey line on the paper
+  5.7:1. No level colour is used under 30 px.
+
+**Measured** in a local preview of the live data of 17 November 2026 (clock 21:00 that evening), the what-to-do line's
+top, before and after, at 390 px: Ilkley 1,159 to 554; Linton Falls (high) 1,043 to 521; Devil's Bridge (moderate)
+1,076 to 554; Henley with Saturday picked 1,073 to 532; Houghton Mill (no photo) 899 to 388; Wye at Hereford (no live
+status) 1,050 to 640; Frensham Great Pond with a notice (its level raised in a copy of the data) 1,205 to 736; Ilkley
+with the stale notice 1,333 to 727. Windermere at Millerground (low) has no card: 1,367 and 1,370.
+`tests/site_act_card.test.cjs`. Not checked: a point clicked on the map in the browser (the card is tested in
+`site_act_card`), Safari, a screen reader, a real phone.
