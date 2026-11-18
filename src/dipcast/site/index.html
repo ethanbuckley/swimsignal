@@ -814,7 +814,7 @@
      text colour, never a filled label), the note and the photos; on a spot's page, the reviews' form
      in a tile under the buttons. */
   #alerts-h { scroll-margin-top:calc(var(--header-h) + 24px); } #alerts-h:focus { outline:none; }   /* "Go to alerts" after a shared list is added */
-  #journal { scroll-margin-top:calc(var(--header-h) + 8px); } #journal:focus, #jn-box-h:focus { outline:none; }
+  #journal, #jn-box { scroll-margin-top:calc(var(--header-h) + 8px); } #journal:focus, #jn-box-h:focus { outline:none; }
   .jn-where { margin:2px 0 0; font-size:var(--fs-note); line-height:1.4; overflow-wrap:anywhere; }
   .jn-where a { font-weight:600; }
   .jn-seen { margin:6px 0 0; font-size:var(--fs-note); line-height:1.4; }
@@ -823,12 +823,11 @@
   .jn-file { display:flex; flex-wrap:wrap; align-items:center; gap:0 16px; margin:8px 0 0; padding-top:4px; border-top:1px solid var(--hair); }
   .jn-said:empty { display:none; }
   .jn-when { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); gap:0 8px; max-width:440px; }
-  .rv-form .jn-when input[type=date] { max-width:none; }
   .rv-form input[type=time], .rv-form input[type=number] { display:block; width:100%; min-height:44px; margin:0; padding:9px 12px;
     font:inherit; font-size:var(--fs-body); color:var(--ink); background:var(--field); border:1px solid var(--line); border-radius:var(--radius); }
   .rv-form #jn-min { max-width:140px; }
   .actions .btn[aria-expanded=true] { background:var(--active); }   /* "Log a swim" while its form is open */
-  @media (max-width: 360px) { .jn-when { grid-template-columns:minmax(0, 1fr); } }   /* the day did not fit beside the time at 320 px */
+  @media (max-width: 360px) { .jn-when { grid-template-columns:minmax(0, 1fr); } }   /* the time and the minutes, one above the other at 320 px */
   .jn-kept { margin:16px 0 0; padding-top:4px; border-top:1px solid var(--hair); }
   .jn-kept .rv-q { margin-top:8px; }
   /* A phone's spot page: where the spot is, at a glance, under the answer. */
@@ -4638,9 +4637,9 @@ function refreshComparison() {
 }
 // Whether "Your lists" is open, and what the opening says once after a shared list is added (said).
 const LISTS_UI = { open: false, said: '' };
-// Under a list of one: the spot's page for why and what is at the water, and the planner on it (planHere).
-const savedOneNext = s => `<p class="small saved-one-next">Its page has why, and what it is like at the water: <a href="${esc(spotPath(s.id))}" data-id="${esc(s.id)}">${esc(s.name)}</a>.`
-  + (typeof canPlanHere === 'function' && canPlanHere(s) ? ` Going? <a href="${esc(planPath() + planHereHash(s))}" data-plan-here>Plan a swim here</a>.` : '') + '</p>';
+// Under a list of one: the planner on it (planHere). The card's name already links to its page (17 Nov 2026).
+const savedOneNext = s => typeof canPlanHere === 'function' && canPlanHere(s)
+  ? `<p class="small saved-one-next">Going? <a href="${esc(planPath() + planHereHash(s))}" data-plan-here>Plan a swim here</a>.</p>` : '';
 function renderSaved() {
   contribLayer.clearLayers(); selLayer.clearLayers(); current = null; shown = 'saved';
   setView('saved');
@@ -4653,9 +4652,10 @@ function renderSaved() {
   // filled; then the cards on the glass.
   let h = `<div class="lead"><a href="${esc(ROOT.pathname)}" class="back" id="back">All spots</a><h1 class="page-h" tabindex="-1">Saved spots</h1>`
     + (many ? `<div class="chips-row lists-row" role="group" aria-label="Your lists">${LISTS.lists.map(x => `<button type="button" class="chip-btn" data-list="${esc(x.id)}" aria-pressed="${x.id === l.id}">${esc(x.name)}</button>`).join('')}</div>` : '')
-    + `<p class="lede">${!spots.length ? (many ? `Spots you save to ${named} are` : 'Spots you save are')
+    // Said once: with one list and nothing saved, the empty tile says where saved spots are kept (17 Nov 2026).
+    + (!spots.length && !many ? '' : `<p class="lede">${!spots.length ? `Spots you save to ${named} are`
       : `The next five days at ${many ? `the ${spots.length === 1 ? 'spot' : `${spots.length} spots`} in ${named}` : spots.length === 1 ? 'your spot' : `your ${spots.length} spots`},`} `
-    + `kept ${navigator.standalone ? 'in this Home Screen app, not in Safari' : 'in this browser'}.</p>`;
+    + `kept ${navigator.standalone ? 'in this Home Screen app, not in Safari' : 'in this browser'}.</p>`);
   if (LISTS_UI.said) { h += `<p class="planner-note" role="status">${LISTS_UI.said}</p>`; LISTS_UI.said = ''; }
   h += notices();
   const best = spots.length ? bestDayNote(spots, true) : '';
@@ -4671,7 +4671,8 @@ function renderSaved() {
   let v = '', below = '';
   if (spots.length) {
     const sum = typeof sinceSummaryFor === 'function' ? sinceSummaryFor(spots, DATA.generated_at) : null;
-    if (sum) v += `<section class="sec tile since-sum ${sum.state}" aria-labelledby="since-h"><h2 class="sec-h" id="since-h">Since you last looked</h2><p class="sub">${esc(sum.text)}</p></section>`;
+    // Nothing until there is something to compare (outside audit, 17 Nov 2026): a first look leads with the places.
+    if (sum && sum.state !== 'none') v += `<section class="sec tile since-sum ${sum.state}" aria-labelledby="since-h"><h2 class="sec-h" id="since-h">Since you last looked</h2><p class="sub">${esc(sum.text)}</p></section>`;
     v += `<div id="scards">${savedGroups(spots, many ? l.name : null).map(([head, xs], i) => `<section class="group tile places-group" aria-labelledby="pg-${i}">`
       + `<h2 class="sec-h" id="pg-${i}">${esc(head)}</h2><ul class="places">${xs.map(s => savedCard(s, true, null, false, from, false, one, true)).join('')}</ul></section>`).join('')}</div>`
       + (one ? savedOneNext(spots[0]) : '')
@@ -6422,7 +6423,7 @@ function phoneFolds() {
   if (log && !calm) log.remove();
   if (cond && calm && !log && document.getElementById('swam')) {
     cond.insertAdjacentHTML('afterend', '<p class="log-here" id="log-here"><button type="button" class="btn">Log a swim here</button></p>');
-    document.querySelector('#log-here button').addEventListener('click', () => { document.getElementById('swam').click(); countAction('logswim');
+    document.querySelector('#log-here button').addEventListener('click', e => { if (!(typeof journalLogFrom === 'function' && journalLogFrom(e.currentTarget))) document.getElementById('swam').click(); countAction('logswim');
       const box = document.getElementById('jn-box'); if (box) box.scrollIntoView({ block: 'start', ...(STILL ? {} : { behavior: 'smooth' }) }); });
   }
   let at = at0;
@@ -6717,7 +6718,9 @@ function draftTrack(form, spot) {
     fields.forEach((el, i) => { const v = saved.fields[i]; if (el.type === 'checkbox' || el.type === 'radio') el.checked = v.checked; else el.value = v.value; });
     fields.forEach(el => el.dispatchEvent(new Event('change', {bubbles: true})));
   }
-  form.insertAdjacentHTML('afterbegin', `<p class="small muted" role="status">${restored ? `Draft restored.${saved.photos ? ' Please add photos again.' : ''} ` : ''}Unsent answers stay in this tab's memory until it is closed or reloaded. Photos must be added again after leaving the page.</p>`);
+  // Over the buttons where the form has a place for it (the journal's, data-draft-note), not over the first field.
+  const noteAt = typeof form.querySelector === 'function' && form.querySelector('[data-draft-note]');
+  (noteAt || form).insertAdjacentHTML(noteAt ? 'beforeend' : 'afterbegin', `<p class="small muted" role="status">${restored ? `Draft restored.${saved.photos ? ' Please add photos again.' : ''} ` : ''}Unsent answers stay in this tab's memory until it is closed or reloaded. Photos must be added again after leaving the page.</p>`);
   let photos = !!(saved && saved.photos);
   const save = () => DRAFTS.set(key, {photos, fields: fields.map(el => ({value: el.value, checked: !!el.checked}))});
   form.addEventListener('input', save);
