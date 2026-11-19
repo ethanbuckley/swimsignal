@@ -1005,6 +1005,13 @@
    "branch": "claude/swimsignal-world-class-6a9aed",
    "branch_exists": true,
    "date": "2026-11-15"
+  },
+  "718": {
+   "n": 718,
+   "state": "open",
+   "branch": "claude/overflow-ledger-stage-1",
+   "branch_exists": true,
+   "date": "2026-11-17"
   }
  },
  "entries": [
@@ -3620,6 +3627,38 @@
    ],
    "prs": [
     704
+   ]
+  },
+  {
+   "id": "overflow-ledger",
+   "title": "The overflow ledger: what each overflow contributes to the model's exposure at listed spots, and the Ilkley audit statement",
+   "section": "promising",
+   "topics": [
+    "model",
+    "overflows",
+    "samples"
+   ],
+   "verdict": "No test and no new result, 17 Nov 2026. A table of model accounting: 1,414 overflows traced to 89 of the 121 listed spots through 2,099 links, added up from the forecast's own weights. The audit statement for Ilkley is written and not run.",
+   "scope": "An account of the forecast model, not of measured bacteria. The weights are the model's settings, and at 59 unseen river points the production estimate ordered days at 0.376 against 0.355 for rain alone. No row says an overflow caused a sample result or broke a permit. The Ilkley audit is one seen site with 17 samples in 2026.",
+   "stage": "development",
+   "stage_note": "A research file with a contract and a Lab prototype page (prototypes/research-lab/overflow-ledger/), left out of the site build. Not published.",
+   "next": "Ethan decides whether it is public and whether it names overflows nationally. Then a season figure with its protocol first (by 15 Dec 2026), and the Ilkley audit after option B's read on or after 2 Dec 2026.",
+   "records": [
+    {
+     "doc": "docs/OVERFLOW-LEDGER-2026-11.md",
+     "quote": "1,414 overflows traced to 89 of the 121 listed spots, through 2,099 links."
+    },
+    {
+     "doc": "docs/OVERFLOW-LEDGER-CONTRACT-v1.md",
+     "quote": "The script makes no exposure calculation of its own."
+    },
+    {
+     "doc": "docs/RESTORE-ILKLEY-STATEMENT-2026-11.md",
+     "quote": "**Result: not run.** Nothing in this file is a finding about 2026 samples."
+    }
+   ],
+   "prs": [
+    718
    ]
   }
  ]

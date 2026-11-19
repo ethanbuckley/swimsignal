@@ -4016,10 +4016,10 @@ def lab_pages(lab: Path = LAB) -> list[str]:
     """The Lab's pages as the sitemap gives them, relative to the site's root: lab/ and each exhibit's folder."""
     if not (lab / "index.html").is_file():
         return []
-    return ["lab/"] + sorted(f"lab/{d.name}/" for d in lab.iterdir() if (d / "index.html").is_file())
+    return ["lab/"] + sorted(f"lab/{d.name}/" for d in lab.iterdir() if (d / "index.html").is_file() and d.name not in LAB_UNPUBLISHED)
 
 
-LAB_UNPUBLISHED = ("whatif",)   # Lab folders the build leaves out: prototypes not to be published
+LAB_UNPUBLISHED = ("whatif", "overflow-ledger")   # Lab folders the build leaves out: prototypes not to be published, or listed in the sitemap
 
 
 def write_lab(site: Path, token: str | None = None, lab: Path = LAB, research: Path = ROOT / "data" / "research") -> int:
@@ -4031,6 +4031,8 @@ def write_lab(site: Path, token: str | None = None, lab: Path = LAB, research: P
         return 0
     # whatif/: the catchment workspace's what-if mode (CATCH-SIM, docs/CATCH-SIM-2026-12.md), a prototype kept off the site
     # until Ethan decides whether a scenario view is shown at all.
+    # overflow-ledger/: the overflow ledger (LEDGER stage 1, docs/OVERFLOW-LEDGER-2026-11.md), kept off the site until Ethan decides
+    # whether it is published and whether it names overflows nationally.
     shutil.copytree(lab, out, ignore=shutil.ignore_patterns("shots", "*.md", *LAB_UNPUBLISHED))
     for name in LAB_DATA:
         src, dst = research / name, out / "data" / name
