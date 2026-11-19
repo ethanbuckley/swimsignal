@@ -88,6 +88,31 @@ def test_save_live_keeps_blank_start_rows_per_day_and_carries_a_failed_feed(tmp_
     assert pd.read_parquet(tmp_path / "live_latest.parquet")["feed_down_since"].isna().all()
 
 
+def test_history_keeps_the_first_poll_that_saw_a_state_and_never_guesses_it(tmp_path, monkeypatch):
+    config = _state(tmp_path, monkeypatch)
+    from dipcast.ingest import live
+    monkeypatch.setattr(config, "LIVE_FEEDS", {"Y": "v"})
+    t = lambda s: pd.Timestamp(s, tz="UTC")
+    # A file from before the column: one spill at C, last seen at 06:00.
+    pd.DataFrame({"site_id": ["C"], "company": ["Y"], "status": [1], "status_start": [t("2026-09-28 22:00")],
+                  "latest_event_start": pd.NaT, "latest_event_end": pd.NaT,
+                  "fetched_at": [t("2026-09-29 06:00")]}).to_parquet(tmp_path / "live_history.parquet", index=False)
+    spill = lambda site, start: (site, "Y", 1, start)
+    live.save_live(_poll("2026-09-29 08:00", [spill("C", "2026-09-28 22:00"), spill("D", "2026-09-29 07:40")]))
+    live.save_live(_poll("2026-09-29 12:00", [spill("C", "2026-09-28 22:00"), spill("D", "2026-09-29 07:40")]))
+    live.save_live(_poll("2026-09-30 08:00", [("D", "Y", 1, None)]))   # no status start: keyed by the day polled
+    live.save_live(_poll("2026-09-30 12:00", [("D", "Y", 1, None)]))
+    hist = pd.read_parquet(tmp_path / "live_history.parquet")
+    c = hist[hist.site_id == "C"].iloc[0]
+    assert len(hist[hist.site_id == "C"]) == 1 and c.fetched_at == t("2026-09-29 12:00")
+    assert pd.isna(c[live.FIRST_SEEN])        # first seen before the column: unknown, not 08:00
+    d = hist[(hist.site_id == "D") & hist.status_start.notna()].iloc[0]
+    assert d[live.FIRST_SEEN] == t("2026-09-29 08:00") and d.fetched_at == t("2026-09-29 12:00")
+    blank = hist[(hist.site_id == "D") & hist.status_start.isna()].iloc[0]
+    assert blank[live.FIRST_SEEN] == t("2026-09-30 08:00") and blank.fetched_at == t("2026-09-30 12:00")
+    assert (hist[live.FIRST_SEEN].dropna() <= hist.fetched_at[hist[live.FIRST_SEEN].notna()]).all()
+
+
 def test_forecast_says_which_feeds_are_down():
     from dipcast.ingest.live import FEED_DOWN
     from dipcast.model.forecast import feed_down_summary

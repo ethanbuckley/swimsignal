@@ -474,6 +474,26 @@ def history_key(h: pd.DataFrame) -> pd.Series:
     return day.where(pd.to_datetime(h["status_start"], utc=True).isna())
 
 
+FIRST_SEEN = "first_fetched_at"
+
+
+def merge_history(keep: pd.DataFrame) -> pd.DataFrame:
+    """One row per distinct (site, status, status_start) from old rows followed by a poll's: an
+    event log, not an observation log. Observation counts live in the coverage file. Rows with no
+    status start are kept once per local day polled (history_key). The newest row of a key wins,
+    so `fetched_at` is the last poll that saw the state.
+
+    `first_fetched_at` is the first poll that saw it: the earliest over the key's rows. It is
+    missing where any of them has none, which is every key first seen before the column was
+    kept. A later sighting never fills it in, since the state was already there by then."""
+    keep = keep.assign(_day=history_key(keep))
+    key = ["site_id", "status", "status_start", "_day"]
+    first = pd.to_datetime(keep[FIRST_SEEN], utc=True)
+    g = keep.assign(_first=first, _unknown=first.isna()).groupby(key, dropna=False, sort=False)
+    keep[FIRST_SEEN] = g["_first"].transform("min").where(~g["_unknown"].transform("any"))
+    return keep.drop_duplicates(subset=key, keep="last").drop(columns="_day")
+
+
 def save_live(df: pd.DataFrame, expected: dict[str, float] | None = None) -> None:
     """Store a poll (fetch_live). `expected` is expected_rows, worked out from the poll log
     before this poll is added to it when not given."""
@@ -483,16 +503,14 @@ def save_live(df: pd.DataFrame, expected: dict[str, float] | None = None) -> Non
     write_parquet(carry_forward(df, previous, expected=expected), config.state_write("live_latest.parquet"))
     hist_read = config.state_read("live_history.parquet")
     keep = df[["site_id", "company", "status", "status_start", "latest_event_start",
-               "latest_event_end", "fetched_at"]]
+               "latest_event_end", "fetched_at"]].copy()
+    keep[FIRST_SEEN] = pd.to_datetime(keep["fetched_at"], utc=True)
     if hist_read.exists():
         old = pd.read_parquet(hist_read)
+        if FIRST_SEEN not in old:   # a file from before the column: when those rows were first seen is not known
+            old[FIRST_SEEN] = pd.Series(pd.NaT, index=old.index, dtype="datetime64[ns, UTC]")
         keep = pd.concat([old, keep], ignore_index=True)
-    # The history keeps one row per distinct (site, status, status_start): an event
-    # log, not an observation log. Observation counts live in the coverage file. Rows
-    # with no status start are kept once per local day polled (history_key).
-    keep = keep.assign(_day=history_key(keep)).drop_duplicates(
-        subset=["site_id", "status", "status_start", "_day"], keep="last").drop(columns="_day")
-    write_parquet(keep, config.state_write("live_history.parquet"))
+    write_parquet(merge_history(keep), config.state_write("live_history.parquet"))
     update_coverage(df)
     log_poll(df)
 
