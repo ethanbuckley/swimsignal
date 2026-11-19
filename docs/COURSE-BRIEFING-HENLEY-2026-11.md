@@ -171,9 +171,10 @@ keeps it out of the pass count.
 1. A spill, or a spell with no status, at `TWL00222`, polled by SwimSignal: a `poll_log` row for each poll, the
    `live_coverage` slots for `TWL00222` on that day, and a `live_history` row for the event.
 2. The page record issued for `thames-henley` at or just before the chosen decision time.
-3. Better still, a first-received time for each state. `live_history` keeps the last. One more column,
-   `first_fetched_at`, would make every spill's receipt provable. That is a change to the live poller, so I did not
-   make it.
+3. Better still, a first-received time for each state. `live_history` kept only the last. From 19 November 2026
+   the poller also keeps `first_fetched_at`, the first poll that saw a state. It is empty for every state first seen
+   before the column was kept, so it proves receipt only for spills that begin after that. The replay here does not
+   read it yet.
 
 Until the works spills again, or reports nothing, no archived day can show a same-time difference along this
 course. That is a fact about the river and the records, not about the tool.
@@ -261,7 +262,8 @@ in the file.
 - **Publishing.** The page is outside the site build. Publishing it, or linking it, is his call.
 - **Contacting Henley Swim.** Nothing has been sent. The outreach rules in `docs/ORGANISER-PIVOT-2026-10.md` §5
   item 10 apply.
-- **Whether to keep a first-received time** in the live poller (section 4, record 3).
+- **Whether the replay should read the first-received time**, now that the live poller keeps it (section 4,
+  record 3). It can only matter once a spill on the course has been polled.
 - **The three walkthroughs**, with the sheet in `docs/COURSE-BRIEFING-WALKTHROUGH-2026-11.md`. The pass test is
   his: at least two of three organisers name a checkpoint they would add, an extra check, or a change they would
   communicate.
