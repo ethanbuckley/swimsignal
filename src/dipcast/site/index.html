@@ -37,6 +37,8 @@
      here (build_site.SKY_PRELOAD; a spot's page draws it from 801 px). -->
 <link rel="preload" href="icons/fells-wide.webp" as="image" fetchpriority="high" media="(min-width: 1100px)">
 <script>window.FORECAST = fetch('data/spots-lite.json', { cache: 'no-cache' }); FORECAST.catch(() => {});
+  // The trial home page (HOME_BOLD): its class before the first paint, so the built opening is not shown and then swapped.
+  try { if (/[?&]home=bold\b/.test(location.search) || (!/[?&]home=/.test(location.search) && localStorage.getItem('dipcast.home') === 'bold')) document.documentElement.classList.add('home-bold'); } catch (e) {}
   { const m = location.pathname.match(/\/spot\/([A-Za-z0-9_-]+)\/?$/);
     if (m) { window.DETAIL = { id: m[1], res: fetch(`data/spot/${m[1]}.json`, { cache: 'no-cache' }) }; DETAIL.res.catch(() => {}); } }
   // Spots saved in this browser (dipcast.saved): the home page then opens on them (renderList, homeHead), so the
@@ -274,6 +276,52 @@
   /* A first visit: the day's count of the listed spots as one bar and its figures (homeNow), then the spots at very
      high risk (homeWorst). The bar's parts are steps in the level colours, square, as every bar here. */
   #home-first[hidden] { display:none; }
+  /* trial:home-bold */
+  /* The trial home page (?home=bold; HOME_BOLD): the opening on deep water, the title large, the five days as one
+     white pill on a track, and the poster, a band a level, filled in the level's colour (each darkened until white
+     text on it passes 4.5 to 1). The picture's own layer (.lead::before) carries the colour, so it runs edge to edge
+     and up to the header wherever the page's padding changes. */
+  html.home-bold #result[data-built] .lead { visibility:hidden; }
+  body.view-list .lead.bh { display:block; margin-bottom:24px; padding:8px 0 24px; color:#fff; --bh:#0c2a32; }
+  body.view-list .lead.bh::before { background:var(--bh); opacity:1; bottom:0; }
+  body.view-list .bh .intro h1 { font:600 clamp(46px, 14vw, 76px)/.95 var(--font-display); letter-spacing:-.025em; color:#fff; }
+  body.view-list .bh .intro .lede { margin-top:14px; max-width:44ch; color:rgba(255,255,255,.8); text-wrap:pretty; }
+  .bh .lede a { color:#fff; }
+  body.view-list .bh > .toolbar { margin-top:18px; }
+  .bh .list-days { padding:4px; border:0; border-radius:999px; background:rgba(255,255,255,.12); }
+  .bh .day-strip input + span { min-height:44px; border-radius:999px; color:#fff; font-size:var(--fs-note); }
+  .bh .day-strip .dd { display:none; }   /* the bands say the counts */
+  .bh .day-strip input:checked + span { background:#fff; color:var(--bh); }
+  .bh .day-strip input:focus-visible + span { outline-color:#fff; }
+  @media (hover: hover) { .bh .day-strip input:not(:checked):hover + span { background:rgba(255,255,255,.14); } }
+  .bh-bands { display:flex; flex-direction:column; gap:3px; height:min(52vh, 420px); margin-top:14px; border-radius:22px; overflow:hidden; }
+  .bh-bands[hidden], .bh-band[hidden], .bh-rest[hidden], .bh-open[hidden] { display:none; }
+  .bh-band { flex:1 1 58px; min-height:58px; display:grid; grid-template-columns:auto minmax(0, 1fr); column-gap:14px; align-content:center; align-items:center;
+    padding:6px 18px; border:0; border-radius:0; color:#fff; text-align:left; font:inherit; cursor:pointer; transition:flex-grow .55s cubic-bezier(.2,.8,.2,1), box-shadow .15s ease; }
+  .bh-band b { grid-row:1 / 3; min-width:1.7ch; font:600 34px/1 var(--font-display); font-variant-numeric:tabular-nums; letter-spacing:-.02em; transition:font-size .55s cubic-bezier(.2,.8,.2,1); }
+  .bh-band .bl { align-self:end; font-weight:600; font-size:var(--fs-head); line-height:1.15; }
+  .bh-band .bn { align-self:start; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:var(--fs-note); line-height:1.3; color:rgba(255,255,255,.88); }
+  .bh-band.low { background:#2c6a41; } .bh-band.moderate { background:#8f5d0c; } .bh-band.high { background:#ad461d; } .bh-band.veryhigh { background:#8c2222; } .bh-band.clear { background:#266f68; }
+  .bh-band[aria-expanded=true] { box-shadow:inset 8px 0 0 #fff; }
+  .bh-band:focus-visible { outline:3px solid #fff; outline-offset:-5px; }
+  @media (hover: hover) { .bh-band:hover { box-shadow:inset 8px 0 0 rgba(255,255,255,.6); } }
+  .bh-rest { margin:10px 2px 0; font-size:var(--fs-note); color:rgba(255,255,255,.8); }
+  .bh-open { margin-top:12px; padding:14px 14px 6px; border-radius:16px; background:var(--card); color:var(--ink); }
+  .bh-open-h { margin:0 0 4px; font:600 var(--fs-head)/1.25 var(--font-display); }
+  .bh-open ul.spots { border-bottom:0; }
+  .bh-all { display:block; width:100%; min-height:44px; margin:4px 0 8px; border:1px solid var(--line); border-radius:999px; background:var(--field); color:var(--ink); font-weight:600; cursor:pointer; }
+  body.view-list .bh .search { margin-top:16px; }
+  body.view-list .bh .search input { border-radius:999px; }
+  .bh .planner-note, .bh .geo { color:rgba(255,255,255,.8); }
+  @media (min-width: 760px) {
+    .bh-bands { flex-direction:row; height:300px; }
+    .bh-band { flex-basis:120px; min-height:0; min-width:120px; grid-template-columns:minmax(0, 1fr); align-content:end; padding:18px; }
+    .bh-band b { grid-row:auto; margin-bottom:8px; }
+    .bh-band .bn { white-space:normal; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; }
+    .bh-band[aria-expanded=true] { box-shadow:inset 0 -8px 0 #fff; }
+    body.view-list .bh .search { max-width:520px; }
+  }
+  /* /trial:home-bold */
   .near-first { margin:0 0 8px; } .near-first .btn { width:100%; } .near-first svg { width:18px; height:18px; color:var(--link); }
   .rec { margin:8px 0 0; }
   .home-now { padding-bottom:14px; }
@@ -2069,6 +2117,13 @@ window.addEventListener('resize', setHeaderHeight);
 // shown: the view on screen ('list' or 'saved') when a spot is opened, for the spot's back link.
 let DATA = null, current = null, shown = null;
 const VIEW = { q: '', filter: 'all', sort: 'low', here: null, geoMsg: '', geoAt: 'sort', lowOnly: false, day: null, quiet: new Set(), areas: new Set() };   // lowest risk first (29 October 2026; it was A–Z by area)
+// A trial of another home page (19 Nov 2026), behind ?home=bold: the day's spots as one poster of coloured bands, one a
+// level, each as tall as its share of the spots. The choice stays in this browser until ?home=now. It sets aside
+// docs/DESIGN.md's rules on fills, pills and the sky for this one screen, on purpose, so it can be judged whole.
+const HOME_BOLD = (() => { try { const p = new URLSearchParams(location.search).get('home');
+  if (p === 'bold') localStorage.setItem('dipcast.home', 'bold'); else if (p) localStorage.removeItem('dipcast.home');
+  return localStorage.getItem('dipcast.home') === 'bold'; } catch (e) { return false; } })();
+let BAND = null, BAND_ALL = false;   // the band whose spots are open under the poster, and whether all of them show
 const SORT0 = VIEW.sort;   // how the list opens: the Filter button counts a sort that differs
 // Names and descriptions come from spots.csv and the water companies' feeds: escape them.
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'})[c]);
@@ -4110,15 +4165,18 @@ function renderList() {
   // level in words. Everything down to the caveat's line is also in the built home page, so it and the
   // picture paint before the forecast arrives (scripts/build_site.py, home_lead): what depends on the
   // forecast comes after it, so that nothing above it moves when the script draws this.
-  let h = `<div class="lead"><section class="intro"><h1>Check the water before you go</h1><p class="lede">Pollution risk for the next five days at ${DATA.spots.length} river and lake swim spots ${spotsWhere()}<span class="lede-map">, and anywhere you ${TOUCH ? 'tap' : 'click'} on the map</span>. <a href="#about">How it works</a></p>`
-    + `<div class="search">${SEARCH_ICON}<label class="sr" for="q">Find a spot</label><input type="search" id="q" placeholder="River, lake or town" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" value="${esc(VIEW.q)}">${'geolocation' in navigator ? NEAR_PIN : ''}</div>`
-    + ('geolocation' in navigator ? `<p class="small muted geo" id="geo-cta" aria-live="polite"${VIEW.geoMsg && VIEW.geoAt === 'cta' ? '' : ' hidden'}>${VIEW.geoAt === 'cta' ? esc(VIEW.geoMsg) : ''}</p>` : '') + '</section>'
+  const searchBox = `<div class="search">${SEARCH_ICON}<label class="sr" for="q">Find a spot</label><input type="search" id="q" placeholder="River, lake or town" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" value="${esc(VIEW.q)}">${'geolocation' in navigator ? NEAR_PIN : ''}</div>`
+    + ('geolocation' in navigator ? `<p class="small muted geo" id="geo-cta" aria-live="polite"${VIEW.geoMsg && VIEW.geoAt === 'cta' ? '' : ' hidden'}>${VIEW.geoAt === 'cta' ? esc(VIEW.geoMsg) : ''}</p>` : '');
+
     // The five days as a strip, as Plan has them, each with how many spots are at low risk that day: the day's
     // choice and its answer in one place (29 October 2026: a select, "Today and tomorrow" first, and the
     // weekend's best day in a line under it). It opens on today (renderList).
-    + `<div class="toolbar"><fieldset class="day-strip list-days" id="listday"><legend class="sr">When are you swimming?</legend>${fiveDays().map(iso => `<label><input type="radio" name="list-day" value="${iso}"${VIEW.day === iso ? ' checked' : ''}>`
-      + `<span>${shortDay(iso)} <span class="dd">${stripCell(iso)}</span></span></label>`).join('')}</fieldset></div>`
-    + `<p class="planner-note" id="low-note-list"${VIEW.lowOnly ? '' : ' hidden'}>${lowListNote()}</p>`;
+  const dayStrip = `<div class="toolbar"><fieldset class="day-strip list-days" id="listday"><legend class="sr">When are you swimming?</legend>${fiveDays().map(iso => `<label><input type="radio" name="list-day" value="${iso}"${VIEW.day === iso ? ' checked' : ''}>`
+      + `<span>${shortDay(iso)} <span class="dd">${stripCell(iso)}</span></span></label>`).join('')}</fieldset></div>`;
+  const lowNote = `<p class="planner-note" id="low-note-list"${VIEW.lowOnly ? '' : ' hidden'}>${lowListNote()}</p>`;
+  let h = `<div class="lead"><section class="intro"><h1>Check the water before you go</h1><p class="lede">Pollution risk for the next five days at ${DATA.spots.length} river and lake swim spots ${spotsWhere()}<span class="lede-map">, and anywhere you ${TOUCH ? 'tap' : 'click'} on the map</span>. <a href="#about">How it works</a></p>`
+    + searchBox + '</section>' + dayStrip + lowNote;
+  if (HOME_BOLD) h = boldLead(searchBox, dayStrip, lowNote);
   h += notices(null, true) + '</div>';
   // With spots saved, the title and the line under it are the visitor's own (homeYours); the same two elements, so
   // the build's copy is patched in place (overBuilt). The field opens from the header's button on a phone.
@@ -4167,6 +4225,9 @@ function renderList() {
   if (saved.length) bindItems(document.getElementById('saved-list'));
   if (saved.length) mountHomeFeed(saved);
   document.getElementById('listday').addEventListener('change', e => setMapDay(e.target.value));
+  { const bands = document.getElementById('bh-bands');
+    if (bands) bands.addEventListener('click', e => { const b = e.target.closest('[data-band]'); if (!b) return;
+      BAND = BAND === b.dataset.band ? null : b.dataset.band; BAND_ALL = false; drawBold(); }); }
   bindBestDay();
   // Only the list redraws as you type; redrawing the box itself dropped the focus after one letter.
   document.getElementById('q').addEventListener('input', e => { VIEW.q = e.target.value; drawSpots(); });
@@ -4275,6 +4336,54 @@ function homeWorst(spots) {
   if (!xs.length) return '';
   return `<section class="group tile home-worst" id="home-worst" aria-labelledby="worst-h"><h2 class="t-lab" id="worst-h">${ICON.spills}<span>Very high risk ${dayWord(VIEW.day || today())}</span></h2>`
     + `<ul class="spots">${xs.slice(0, WORST_ROWS).map(spotItem).join('')}</ul>${more > 0 ? `<p class="t-key">And ${more} more at very high risk ${dayWord(VIEW.day || today())}.</p>` : ''}</section>`;
+}
+// The trial home page's opening (HOME_BOLD): the title, the five days, the poster and the search, on the deep water
+// colour. The title and its line are the same two elements as the other home page's, so a visitor with spots saved
+// gets their own words in them (homeYours) and drawSpots keeps them current.
+const boldTitle = () => `The water ${dayWord(VIEW.day || today())}`;
+function boldLead(searchBox, dayStrip, lowNote) {
+  return `<div class="lead bh"><section class="intro"><h1>${boldTitle()}</h1><p class="lede">Sewage pollution risk at ${DATA.spots.length} river and lake swim spots ${spotsWhere()}. A forecast, not a water test. <a href="#about">How it works</a></p></section>`
+    + dayStrip + `<div class="bh-bands" id="bh-bands" role="group" aria-label="Spots by risk level"></div><p class="bh-rest" id="bh-rest"></p>`
+    + `<div class="bh-open" id="bh-open"></div>` + searchBox + lowNote;
+}
+// The day's spots by level, as homeNow counts them: low is the spots a visitor can choose (lowToChoose), so a spot at
+// low risk under official advice restricting swimming is said apart, with the spots that have no level.
+const BANDS = [['low', 'Low risk'], ['moderate', 'Moderate risk'], ['high', 'High risk'], ['very high', 'Very high risk'], ['clear', 'No monitored overflow found upstream']];
+function boldGroups(spots) {
+  const g = { low: [], moderate: [], high: [], 'very high': [], clear: [], barred: [], none: [] };
+  for (const s of spots) { const l = mapLevel(s);
+    if (l === 'low') (lowEligible(s) ? g.low : g.barred).push(s);
+    else if (ORDER[l] !== undefined) g[l].push(s);
+    else (plainLevel(l) ? g.clear : g.none).push(s); }
+  return g;
+}
+// The poster: one band a level, its height its share of the spots and its figure larger with it. Drawn once and then
+// changed in place, so a day picked moves the bands instead of replacing them. A band pressed opens its spots under
+// the poster, as the list's own rows. Hidden while the list is narrowed, as the first visit's tiles are.
+const BAND_ROWS = 5;
+function drawBold() {
+  const host = document.getElementById('bh-bands'); if (!host) return;
+  const narrowed = Boolean(VIEW.q.trim() || VIEW.filter !== 'all' || VIEW.lowOnly), g = boldGroups(DATA.spots);
+  const most = Math.max(1, ...BANDS.map(([k]) => g[k].length)), day = dayWord(VIEW.day || today());
+  if (!host.children.length) host.innerHTML = BANDS.map(([k, t]) => `<button type="button" class="bh-band ${k.replace(' ', '')}" data-band="${k}" aria-expanded="false"><b></b><span class="bl">${t}</span><span class="bn"></span></button>`).join('');
+  if (BAND && !g[BAND].length) BAND = null;
+  for (const b of host.children) { const k = b.dataset.band, xs = [...g[k]].sort((x, y) => x.name.localeCompare(y.name)), more = xs.length - 2;
+    b.hidden = !xs.length; b.style.flexGrow = String(xs.length || 1); b.setAttribute('aria-expanded', String(BAND === k));
+    const fig = b.querySelector('b'); fig.textContent = xs.length; fig.style.fontSize = `${Math.round(34 + 46 * xs.length / most)}px`;
+    b.querySelector('.bn').textContent = xs.slice(0, 2).map(s => s.name).join(' · ') + (more > 0 ? ` and ${more} more` : ''); }
+  host.hidden = narrowed;
+  const rest = [g.barred.length ? `${g.barred.length} more at low risk ${g.barred.length === 1 ? 'is' : 'are'} under official advice restricting swimming` : '',
+    g.none.length ? `${g.none.length} ${g.none.length === 1 ? 'has' : 'have'} no level` : ''].filter(Boolean);
+  const restEl = document.getElementById('bh-rest'); restEl.textContent = rest.length ? cap(rest.join('; ')) + '.' : ''; restEl.hidden = narrowed || !rest.length;
+  const h1 = document.querySelector('.bh .intro h1'); if (h1 && !SAVED.size && h1.textContent !== boldTitle()) h1.textContent = boldTitle();
+  const open = document.getElementById('bh-open'); open.hidden = narrowed || !BAND;
+  if (open.hidden) { open.innerHTML = ''; return; }
+  const xs = [...g[BAND]].sort(BAND === 'low' || BAND === 'clear' ? lowOrder : riskOrder), label = BANDS.find(([k]) => k === BAND)[1];
+  const said = BAND === 'clear' ? `${xs.length} with no monitored overflow found upstream` : `${xs.length} at ${label.toLowerCase()} ${day}`;
+  open.innerHTML = `<h2 class="bh-open-h">${said}</h2><ul class="spots">${(BAND_ALL ? xs : xs.slice(0, BAND_ROWS)).map(spotItem).join('')}</ul>`
+    + (!BAND_ALL && xs.length > BAND_ROWS ? `<button type="button" class="bh-all" data-bh-all>Show all ${xs.length}</button>` : '');
+  bindItems(open);
+  const all = open.querySelector('[data-bh-all]'); if (all) all.addEventListener('click', () => { BAND_ALL = true; drawBold(); });
 }
 // Upstream of the saved spots, the last 48 hours: each overflow among the ten that count most at a saved spot whose
 // latest reported spill began in that time, or that is discharging now, the ones discharging first, then the newest.
@@ -4441,8 +4550,11 @@ function drawSpots() {
     if (hl && hl.textContent !== y.lede) hl.textContent = y.lede; }
   const first = document.getElementById('home-first');
   if (first) { first.hidden = Boolean(VIEW.q.trim() || VIEW.filter !== 'all' || VIEW.lowOnly);
-    first.innerHTML = first.hidden ? '' : homeNear() + homeNow(DATA.spots) + homeWorst(DATA.spots); bindItems(first);
+    first.innerHTML = first.hidden ? '' : homeNear() + homeNow(DATA.spots) + homeWorst(DATA.spots);
+    if (HOME_BOLD && !first.hidden) first.innerHTML = homeNear();   // the poster says the count and the very high spots
+    bindItems(first);
     const nf = first.querySelector('[data-near-first]'); if (nf) nf.addEventListener('click', () => locate('cta')); }
+  drawBold();
   const feed = document.getElementById('home-feed');
   if (feed) feed.hidden = !feed.innerHTML || Boolean(VIEW.q.trim() || VIEW.filter !== 'all' || VIEW.lowOnly);
   const placesGroup = document.getElementById('places-group');   // Your places: hidden with both its parts
