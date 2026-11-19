@@ -205,3 +205,147 @@ ledger v1's file, contract and script; `docs/RESTORE-ILKLEY-STATEMENT-2026-11.md
 window; `data/eval2027/`; the forecast model and its calibration; the main checkout's caches, which are read only.
 The output goes to `data/research/overflow_ledger_season.v1.json` with its own contract. Nothing is published: the
 prototype page stays in `build_site.LAB_UNPUBLISHED`, and the new file is not in `LAB_DATA`.
+
+---
+
+## Results (run 19 November 2026, after the statement was pushed in c06bc356 and the code in 073372d6)
+
+Development evidence on seen data. One run of `scripts/export_overflow_ledger_season.py` at 073372d6, 77 seconds on one
+core, 20:42 to 20:44 UTC. The 10 EA event files, 1,002 rain files, the committed model, calibration and returns,
+ledger v1 and CATCH-SIM's two series files were hashed before and after: unchanged. Nothing was fetched. No file was
+written into the scratch root other than the two model copies. File: `data/research/overflow_ledger_season.v1.json`
+(250 kB). Nothing above this line was changed after the run.
+
+### Checks
+
+| Check | Result |
+|---|---|
+| 1. Inputs | Passed |
+| 2. No missing day | Passed: every overflow has a chance on all 153 grid days in both seasons |
+| 3. Removal never raises a level | Passed |
+| 4. Reproduction | **Failed as stated.** Cromwheel 2025: 139 of 139 levels equal, 137 of 139 shown scores equal, largest difference 1 point. The rule asked for at least 99% equal, which is 138 of 139. Cromwheel 2024 and Waterhead in both seasons: every score equal |
+| 5. The file adds up | Passed (`--check` and the tests) |
+
+**The cause of check 4 (the statement's next step for a fail, done here).** I rebuilt Cromwheel 2025 in run B with the
+forecast log's unrounded weights and travel times, the values CATCH-SIM used. The log is the copy CATCH-SIM read
+(SHA-256 `3d8e70c9…`), hashed before and after: unchanged. Established:
+
+- With the log's travel times, 139 of 139 shown scores equal CATCH-SIM's. With ledger v1's weights and the log's
+  travel times, also 139 of 139.
+- Ledger v1 rounds travel times to 0.1 hours (largest difference from the log 0.049 hours). That moves the risk by
+  0.00008 on 11 June 2025 (0.46443 against 0.46451) and by 0.00013 on 11 September 2025 (0.41457 against 0.41445).
+  Both days sit at a rounding edge of the shown score, so the score moves by 1 point. No level moves.
+
+So the season code reproduces CATCH-SIM day for day, and the difference comes from the export's rounding. The
+tolerance I set allowed one such day in 139, and two occurred. The verdict stays "failed as stated" and the threshold
+is not changed. As the statement says, no page shows the figure. Whether to accept the diagnosis is Ethan's call
+(below). How many spot-days at other spots sit within rounding of a level cut is not measured.
+
+### Corrections to the statement's input counts
+
+- **Covariates filled: 57 for 2025 and 156 for 2024, not 51 and 62.** The statement counted only overflows absent from
+  the return. CATCH-SIM's code also fills a gap inside a return row: 6 overflows for 2025, and 94 for 2024, 89 of
+  which have no long-term average in the 2023 return. They are marked in `covariates_filled`.
+- Usable records: 1,277 for 2025 and 1,245 for 2024, as stated. Every company's file covers both seasons.
+- Events over 60 days at used records that touch a season: none, so the training label's 60-day cap changed nothing.
+
+### The season figure
+
+Run A, recorded where usable (the headline):
+
+| | 2025 | 2024 |
+|---|---|---|
+| Spot-days at high level or above, all spots | 986, at 52 of 89 spots | 1,276, at 67 |
+| Of those, days no single removal brings below high | 588 (60%) | 768 (60%) |
+| Overflows with a `high` figure above 0 | 182 of 1,414 | 311 |
+| Those figures added | 671 | 964 |
+| Largest figure; median of those above 0 | 35; 2 | 34; 2 |
+| Recorded spill days in the season, used records | 6,438 (median 1 an overflow; 488 with none) | 10,904 (median 7; 188 with none) |
+
+Run B, modelled throughout: 925 high spot-days at 49 spots in 2025 and 1,139 at 58 in 2024. 354 and 419 overflows have
+a figure above 0.
+
+At Cromwheel, run A gives 21 high days in 2025 (16 of them need two or more overflows out) and run B gives 39. In 2024,
+26 and 38. Waterhead has no high day in either run or season.
+
+**What this shows (established, from the file).** In run A, 60% of the spots' high days need two or more overflows
+taken out before they fall below high, in both seasons. The removal rule puts those days down to no overflow. So an
+overflow's season figure counts only the days it carries alone. At a spot with many overflows it leaves most high
+days out.
+
+### Reported beside the figures, deciding nothing
+
+Recorded ÷ expected spill days over used records, by company:
+
+| Company | 2025 | 2024 |
+|---|---|---|
+| Anglian Water | 0.76 | 1.68 |
+| Dŵr Cymru Welsh Water | 1.15 | 1.40 |
+| Northumbrian Water | 1.35 | 1.21 |
+| Severn Trent Water | 1.41 | 1.48 |
+| South West Water | 1.08 | 1.13 |
+| Southern Water | 1.26 | 1.62 |
+| Thames Water | **0.18** (136 recorded, 745 expected) | 1.16 |
+| United Utilities (in-sample) | 1.00 | 0.91 |
+| Wessex Water | 0.71 | 1.15 |
+| Yorkshire Water | 1.14 | 1.39 |
+
+Spearman correlation of the overflows' `high` figures: run A against run B 0.14 (2025) and 0.11 (2024); 2024 against
+2025 in run A 0.18.
+
+### What the outcomes lead to, as stated
+
+- **Run A and run B disagree a lot** (correlations 0.14 and 0.11, and Thames 2025 at 0.18, outside 0.5 to 2). Run A
+  stays the headline where records are usable. Next deliverable: a diagnosis of which overflows and companies carry the
+  gap. No change to the forecast follows from this record.
+- **2024 and 2025 correlate at 0.18, below 0.5.** Both seasons are shown, and a single season's per-overflow figure is
+  called unstable here and in the contract.
+- **Check 4 failed.** No page shows the figure. The cause is found (above).
+
+### A first look at the gap (added after the run, exploratory)
+
+- **Spots agree; overflows do not.** Over the 89 spots, the high days of run A and run B correlate at 0.90 (2025) and
+  0.88 (2024). The two runs agree on which spots have high days. They disagree on which overflow a high day is put
+  down to.
+- In 2025, 218 overflows have a figure in run B only. 202 of them have usable records and 68 recorded no spill day in
+  the season. Their median is 2 recorded days against 4.5 expected. 46 overflows have a figure in run A only, with a
+  median of 9 recorded days against 3.5 expected.
+- Why Thames recorded so few spill days in summer 2025 against the model's expectation is not checked. A dry summer,
+  overflow upgrades and gaps in the records are candidates (inferred).
+
+### Established and inferred
+
+- **Established (from the file and the diagnosis run):** the figures above; the season code gives CATCH-SIM's levels
+  at both spots in both seasons and its scores exactly once rounding is removed; 60% of high spot-days depend on no
+  single overflow; the per-overflow figure correlates at 0.18 between seasons and 0.11 to 0.14 between runs; spot
+  high days correlate at 0.88 to 0.90 between runs.
+- **Inferred, not checked:** that the per-overflow figure's instability comes mostly from days that need several
+  overflows together and from the difference between a certain recorded spill and a fractional chance; the Thames
+  candidates above; that the 0.1-hour rounding moves few levels at other spots.
+
+### Limits
+
+- The level is the model's. No sample is joined, and the chain's support at rivers is weak (0.376 against 0.355).
+- Weights and travel times are v1's, from the overflow table of 30 October 2026, for both seasons. Upgrades between
+  2024 and 2026 are not in them.
+- Recorded days compare better within a company than across. United Utilities' modelled chances are in-sample.
+- Two seasons are a spread, not an interval.
+
+### Needs Ethan (not decided here)
+
+1. **Check 4.** Accept the diagnosis (the export's 0.1-hour rounding, with every level equal) and let the season figure
+   go onto the prototype page, still unpublished. Or ask for a rebuild with unrounded travel times first, which needs
+   exhibit 2's export to carry more decimals, a change outside the ledger.
+2. **What a page shows.** The per-overflow figure is unstable (0.18 between seasons). Spot high days are steadier
+   between runs (0.88 to 0.90). A page could show spot high days per season, with each overflow's recorded spill days
+   and its `high` figure beside them, labelled as one season's model accounting.
+
+### Next (register row)
+
+| Field | Content |
+|---|---|
+| Identity | LEDGER stage 2; Claude session for Ethan; this PR; `scripts/export_overflow_ledger_season.py`, `data/research/overflow_ledger_season.v1.json`, [contract](OVERFLOW-LEDGER-SEASON-CONTRACT-v1.md) |
+| Evidence | Development, seen data. Check 4 failed as stated (137 of 139 scores at Cromwheel 2025; cause: rounding; every level equal). Per-overflow figure unstable: 0.18 between seasons, 0.11 to 0.14 between runs. 60% of high spot-days depend on no single overflow |
+| Stage and claim | Exploration, research file, not published. Claim: in a named past season, the spot-days the model would have put at high with an overflow and below high without it |
+| Next deliverable | The gap diagnosis the statement names: which overflows and companies carry the difference between runs A and B, Thames 2025 first, from the same file and inputs, by 15 December 2026. Then the Ilkley audit on or after 2 December 2026 |
+| Release route | Ethan's two decisions above. Rollback: delete the season file, its script, contract and tests |

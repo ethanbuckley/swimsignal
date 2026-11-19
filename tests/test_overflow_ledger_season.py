@@ -136,3 +136,52 @@ def test_the_script_holds_no_transport_code():
                  "import transport", "np.prod"):
         assert name not in code, name
     assert "lab_catch_sim" in code and "lcs.Hindcast" in code and "overflow_ledger.v1.json" in code
+
+
+FILE = ROOT / "data" / "research" / "overflow_ledger_season.v1.json"
+LEDGER = ROOT / "data" / "research" / "overflow_ledger.v1.json"
+
+
+@pytest.fixture(scope="module")
+def doc() -> dict:
+    return __import__("json").loads(FILE.read_text())
+
+
+def test_the_committed_file_holds_its_contract(doc):
+    ledger = __import__("json").loads(LEDGER.read_text())
+    assert season.check(doc, ledger) == []
+    assert doc["schema"] == "swimsignal.overflow-ledger-season" and doc["version"] == "1.0.0"
+    assert doc["ledger"]["sha256"] == season.sha256(LEDGER)   # built on ledger v1 as it is, and v1 is unchanged
+    assert doc["inputs"]["unchanged_after"] and doc["inputs"]["fetches"] == 0 and len(doc["inputs"]["events"]) == 10
+    assert sorted(doc["seasons"]) == ["2024", "2025"] and all(s["days"] == 139 for s in doc["seasons"].values())
+    assert all(r["covers_season"] for s in doc["seasons"].values() for r in s["records"].values())
+    assert doc["statement"]["commit"] == "c06bc356" and (ROOT / doc["statement"]["doc"]).is_file()
+
+
+def test_the_failed_reproduction_is_kept_with_every_level_equal(doc):
+    """Check 4 failed as stated (137 of 139 scores at Cromwheel 2025). The cause is the export's rounding; every level
+    is equal. The record keeps the failure."""
+    rep = doc["checks"]["reproduction"]
+    assert rep["passed"] is False and len(rep["spots"]) == 4
+    assert all(v["levels_equal"] == v["days"] == 139 and v["max_score_diff"] <= 1 for v in rep["spots"].values())
+    assert rep["spots"]["bw-uke4100-08901 2025"]["scores_equal"] == 137
+    record = (ROOT / season.STATEMENT).read_text()
+    assert "**Failed as stated.**" in record and "the threshold\nis not changed" in record
+
+
+def test_the_file_says_it_is_model_accounting(doc):
+    claim = doc["claim"]
+    assert "An account of SwimSignal's forecast model, not of measured bacteria" in claim["public_wording"]
+    assert any("share of the bacteria" in t for t in claim["not_claimed"]) and any("permit" in t for t in claim["not_claimed"])
+    assert any("ranking of companies" in t for t in claim["not_claimed"])
+    record = (ROOT / claim["evidence"]["record"]).read_text()
+    assert "| Production as deployed | 0.376 |" in record and "| Rain in the last 48 hours alone | 0.355 |" in record
+    assert "development" in doc["stage"] and "not a measurement" in doc["stage"]
+
+
+def test_the_build_leaves_the_season_file_out():
+    import build_site
+    assert "overflow_ledger_season.v1.json" not in build_site.LAB_DATA
+    for f in [*(ROOT / "src" / "dipcast").rglob("*.html"), *(ROOT / "src" / "dipcast").rglob("*.js"),
+              *(ROOT / "prototypes").rglob("*.html"), *(ROOT / "prototypes").rglob("*.js")]:
+        assert "overflow_ledger_season" not in f.read_text(errors="ignore"), f

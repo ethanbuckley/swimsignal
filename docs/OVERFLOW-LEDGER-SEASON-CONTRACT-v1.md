@@ -109,6 +109,13 @@ v1's rules hold, and these:
 - Every figure says which run it is from, and a recorded figure says where the record was not usable.
 - No figure is shown as a share or a percentage of a spot's days.
 - A season is always named. One season's figure is not called typical.
+- **A single season's per-overflow figure is unstable.** In the run of 19 November 2026 the overflows' `high` figures
+  correlated at 0.18 between 2024 and 2025 (run A), and at 0.14 (2025) and 0.11 (2024) between runs A and B. A page
+  shows both seasons and says so. The statement fixed this rule before the run, for a correlation below 0.5.
+- Most high spot-days count at no overflow: 60% in both seasons need two or more overflows out. A page says so beside
+  the figures.
+- Until Ethan accepts the diagnosis of the reproduction check (`checks.reproduction.passed` is false: the export's
+  rounding of travel times, every level equal), no page shows the figure.
 
 ## Limits
 
