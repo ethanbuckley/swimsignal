@@ -2762,3 +2762,13 @@ status) 1,050 to 640; Frensham Great Pond with a notice (its level raised in a c
 with the stale notice 1,333 to 727. Windermere at Millerground (low) has no card: 1,367 and 1,370.
 `tests/site_act_card.test.cjs`. Not checked: a point clicked on the map in the browser (the card is tested in
 `site_act_card`), Safari, a screen reader, a real phone.
+
+## Tried and removed: the poster home page (19 to 20 November 2026)
+
+A trial home page ran behind `?home=bold` for one day (PR #726). It showed the day's spots as five coloured bands, sized
+by how many spots sat at each level, above the same search box, day strip and list. Ethan rejected it on 20 November:
+"kind of the same but just massive color blocks for no reason at the top". The code is removed.
+
+What it taught: a count of spots per level across the country answers a question no swimmer asks. Changing how the home
+page looks, while it still does the same job with the same parts, does not read as a new page. Do not bring the bands
+back as a restyle.
