@@ -1,0 +1,192 @@
+/* SwimSignal, the trial at /next/ (docs/DESIGN.md, "A second site at /next/"). Its own look, set like a printed
+   timetable: white paper, black ink, one sans in two weights, black rules between parts and hairlines within them.
+   Colour is kept for two things only: a level (its bar, its square, the rule beside the answer) and the water (the
+   line upstream). One corner radius, 3px. No shadows, no gradients, no capitals for labels. Light only. */
+@font-face { font-family: "Source Sans 3"; font-style: normal; font-weight: 200 900; font-display: swap;
+             src: url(../fonts/SourceSans3-latin.woff2) format("woff2"); }
+
+:root {
+  color-scheme: light;
+  --ink: #101820; --grey: #55606a; --hair: #d5dade; --wash: #f1f3f5; --paper: #fff; --link: #0b4a6f; --water: #2d6f95;
+  --low: #3b7d4f; --moderate: #b7791f; --high: #c2552a; --veryhigh: #a32d2d; --none: #98a2aa;
+  --notice: #e5a53a; --notice-wash: #fdf4dd;
+  --r: 3px;
+  --font: "Source Sans 3", "Helvetica Neue", Arial, sans-serif;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 400 17px/1.45 var(--font); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+a { color: var(--link); text-underline-offset: 2px; }
+h1, h2, h3, p, ul, ol, dl, dd, figure { margin: 0; padding: 0; }
+ul, ol { list-style: none; }
+:focus-visible { outline: 3px solid var(--link); outline-offset: 2px; }
+h1:focus { outline: none; }
+.vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.quiet { color: var(--grey); font-size: 14px; line-height: 1.4; }
+.note { font-size: 15px; line-height: 1.45; margin-top: 12px; }
+.noscript { max-width: 34rem; margin: 24px auto; padding: 0 16px; }
+
+#app { max-width: 36rem; margin: 0 auto; padding: 0 16px 96px; }
+
+/* ------------------------------------------------------------------ the name, on every screen */
+.brand { padding: 14px 0 0; font-size: 15px; font-weight: 700; }
+.brand a { color: var(--ink); text-decoration: none; }
+.trial { font-weight: 400; color: var(--grey); }
+
+/* ------------------------------------------------------------------ buttons, links that are buttons, fields */
+.btn { display: inline-block; font: 700 16px/1.2 var(--font); color: #fff; background: var(--ink); border: 2px solid var(--ink); border-radius: var(--r); padding: 12px 16px; text-decoration: none; cursor: pointer; }
+.link { font: inherit; color: var(--link); background: none; border: 0; padding: 0; text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
+.tools { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 10px; font-size: 15px; }
+.tools .link { padding: 6px 0; }
+
+/* ------------------------------------------------------------------ the opening */
+.find h1 { font-size: 40px; line-height: 1.04; font-weight: 800; letter-spacing: -0.01em; margin: 28px 0 18px; }
+.ask label { display: block; font-size: 15px; color: var(--grey); margin-bottom: 6px; }
+.ask-row { display: grid; gap: 10px; }
+.ask input { width: 100%; font: 400 19px/1.2 var(--font); color: var(--ink); background: #fff; border: 2px solid var(--ink); border-radius: var(--r); padding: 12px; appearance: none; }
+.ask .quiet { margin-top: 8px; }
+.block { margin-top: 28px; }
+.block h2, .view h3 { font-size: 15px; font-weight: 700; border-top: 2px solid var(--ink); padding-top: 8px; }
+.view h3 { margin-top: 26px; }
+.none { margin-top: 20px; }
+.what { margin-top: 32px; font-size: 15px; color: var(--grey); }
+
+.rows li:first-child .row { border-top: 0; }
+.row { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; padding: 11px 0; min-height: 48px; border-top: 1px solid var(--hair); color: var(--ink); text-decoration: none; }
+.row-main { min-width: 0; }
+.row-main b { display: block; font-weight: 700; line-height: 1.25; }
+.row-sub { display: block; font-size: 14px; color: var(--grey); }
+.row-notice { display: block; font-size: 14px; font-weight: 600; }
+.row-level { flex: none; font-size: 15px; text-align: right; max-width: 46%; }
+.dot { display: inline-block; width: 10px; height: 10px; margin-right: 7px; background: var(--none); }
+.dot.lv-low { background: var(--low); } .dot.lv-moderate { background: var(--moderate); } .dot.lv-high { background: var(--high); } .dot.lv-veryhigh { background: var(--veryhigh); }
+.dot.lv-none { background: none; box-shadow: inset 0 0 0 2px var(--none); }
+
+.browse { border-top: 2px solid var(--ink); }
+.browse .areas { padding-left: 14px; border-left: 4px solid var(--ink); margin-bottom: 8px; }
+.areas > li { border-top: 1px solid var(--hair); }
+.areas > li:first-child { border-top: 0; }
+.area { display: flex; justify-content: space-between; width: 100%; min-height: 48px; align-items: center; font: 600 17px/1.2 var(--font); color: var(--ink); background: none; border: 0; padding: 10px 0; text-align: left; cursor: pointer; }
+.area.is-on { font-weight: 800; }
+.areas .rows { padding: 0 0 10px 14px; border-left: 1px solid var(--ink); margin-bottom: 10px; }
+
+/* ------------------------------------------------------------------ a place: its name, then four views */
+.top h1 { font-size: 28px; line-height: 1.1; font-weight: 800; letter-spacing: -0.005em; margin-top: 16px; }
+.top .sub { color: var(--grey); font-size: 15px; margin-top: 4px; }
+.mine { margin-top: 8px; font-size: 14px; color: var(--grey); display: flex; flex-wrap: wrap; gap: 4px 14px; }
+.mine a { color: var(--ink); }
+.place { margin-top: 18px; border-top: 2px solid var(--ink); padding-top: 18px; }
+.view { display: none; }
+.place[data-view="when"] .v-when, .place[data-view="upstream"] .v-upstream, .place[data-view="place"] .v-place, .place[data-view="elsewhere"] .v-elsewhere { display: block; }
+.view > h2 { font-size: 22px; line-height: 1.15; font-weight: 800; }
+.lede { font-size: 18px; line-height: 1.35; margin-top: 8px; }
+
+.tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; display: grid; grid-template-columns: repeat(4, 1fr); background: #fff; border-top: 2px solid var(--ink); padding-bottom: env(safe-area-inset-bottom); }
+.tabs a { padding: 13px 2px 14px; text-align: center; font-size: 15px; font-weight: 600; color: var(--ink); text-decoration: none; border-left: 1px solid var(--hair); }
+.tabs a:first-child { border-left: 0; }
+.tabs a[aria-current] { background: var(--ink); color: #fff; }
+
+/* ------------------------------------------------------------------ when */
+.official, .stale { border-left: 8px solid var(--notice); background: var(--notice-wash); padding: 12px 14px; margin-bottom: 18px; }
+.stale { border-left-color: var(--grey); background: var(--wash); font-size: 15px; }
+.official h3 { font-size: 17px; font-weight: 800; border: 0; padding: 0; margin: 0 0 4px; }
+.o-line { font-weight: 700; }
+.o-src { font-size: 15px; }
+.o-first { font-size: 15px; margin-top: 8px; }
+
+.answer { border-left: 8px solid var(--none); padding: 2px 0 2px 14px; }
+.answer.lv-low { border-color: var(--low); } .answer.lv-moderate { border-color: var(--moderate); } .answer.lv-high { border-color: var(--high); } .answer.lv-veryhigh { border-color: var(--veryhigh); }
+.kicker { font-size: 15px; color: var(--grey); }
+.lead { font-size: 17px; font-weight: 700; margin-top: 2px; }
+.head { font-size: 30px; line-height: 1.08; font-weight: 800; letter-spacing: -0.01em; margin-top: 2px; text-wrap: balance; }
+.because { font-size: 17px; font-weight: 600; margin-top: 4px; }
+.score { font-size: 15px; color: var(--grey); margin-top: 6px; }
+.score b { color: var(--ink); font-weight: 700; }
+.act { font-size: 18px; line-height: 1.35; margin-top: 10px; }
+.answer .quiet { margin-top: 6px; }
+.best { font-size: 18px; line-height: 1.3; font-weight: 700; margin-top: 18px; }
+
+.days { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin-top: 16px; border-top: 2px solid var(--ink); }
+.day { display: block; padding: 8px 2px 10px; text-align: center; color: var(--ink); text-decoration: none; border-top: 4px solid transparent; margin-top: -2px; }
+.day.is-on { background: var(--wash); border-top-color: var(--ink); }
+.d-name { display: block; font-size: 15px; font-weight: 600; }
+.day.is-on .d-name { font-weight: 800; }
+.d-bar { display: block; position: relative; height: 88px; margin: 6px 20% 4px; border-bottom: 2px solid var(--ink); background: #e3e7ea; }
+.d-bar i { position: absolute; left: 0; right: 0; bottom: 0; background: var(--none); }
+.d-bar b { position: absolute; left: 50%; width: 3px; margin-left: -1.5px; background: var(--ink); outline: 1.5px solid #fff; }
+.lv-low .d-bar i { background: var(--low); } .lv-moderate .d-bar i { background: var(--moderate); } .lv-high .d-bar i { background: var(--high); } .lv-veryhigh .d-bar i { background: var(--veryhigh); }
+.d-score { display: block; font-size: 20px; line-height: 1.1; font-weight: 700; }
+.d-level { display: block; font-size: 13px; line-height: 1.15; min-height: 2.3em; }
+.axis { margin-top: 4px; }
+.live { font-size: 16px; margin-top: 14px; }
+.unchecked { font-size: 15px; font-weight: 600; margin-top: 12px; }
+
+.facts { margin-top: 14px; border-bottom: 1px solid var(--hair); }
+.facts > div { display: grid; grid-template-columns: 5.6rem minmax(0, 1fr); gap: 10px; padding: 9px 0; border-top: 1px solid var(--hair); }
+.facts dt { font-size: 15px; font-weight: 700; }
+.facts dd { font-size: 16px; line-height: 1.4; }
+.facts.wide > div { grid-template-columns: 1fr; gap: 1px; }
+.facts.wide dd + dd { margin-top: 8px; }
+
+/* ------------------------------------------------------------------ upstream: the water as a line */
+.below { font-size: 15px; margin-top: 12px; }
+.line { margin: 22px 0 0 9px; padding: 0 0 4px 24px; border-left: 4px solid var(--water); }
+.stop { position: relative; }
+.stop b { display: block; font-weight: 700; line-height: 1.25; }
+.stop a { color: var(--ink); }
+.st { display: block; font-size: 15px; line-height: 1.4; }
+.is-spilling .st-status { font-weight: 700; color: var(--veryhigh); }
+.is-unknown .st-status { color: var(--grey); }
+.more { font-size: 14px; padding: 6px 0; }
+.more-box { display: block; font-size: 14px; line-height: 1.5; color: var(--grey); padding-bottom: 4px; }
+.more-box[hidden] { display: none; }
+.gap-said { position: absolute; top: -23px; left: 0; font-size: 13px; color: var(--water); }
+.mk { position: absolute; top: 4px; left: -26px; transform: translateX(-50%); width: 12px; height: 12px; border-radius: 50%; background: var(--ink); box-shadow: 0 0 0 3px #fff; }
+.mk-here { width: 16px; height: 16px; border-radius: 0; top: 3px; }
+.mk-spilling { width: 18px; height: 18px; top: 1px; background: var(--veryhigh); }
+.mk-quiet { width: 10px; height: 10px; top: 6px; }
+.mk-unknown { background: #fff; box-shadow: 0 0 0 3px #fff, inset 0 0 0 2px var(--grey); }
+.mk-place { border-radius: 0; background: #fff; box-shadow: 0 0 0 3px #fff, inset 0 0 0 3px var(--ink); transform: translateX(-50%) rotate(45deg); }
+.mk-end { width: 18px; height: 4px; border-radius: 0; top: 9px; background: var(--water); box-shadow: none; }
+.is-end .st { color: var(--grey); }
+.is-rest .st b { display: block; }
+.key { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 18px; font-size: 13px; color: var(--grey); }
+.key .mk { position: static; display: inline-block; transform: none; vertical-align: -1px; margin-right: 6px; box-shadow: none; }
+.key .mk-unknown { box-shadow: inset 0 0 0 2px var(--grey); }
+.key .mk-spilling { width: 12px; height: 12px; }
+
+/* ------------------------------------------------------------------ the place */
+.photos { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 10px; margin-top: 12px; align-items: start; }
+.photos figure:first-child { grid-column: 1 / -1; }
+.photos img { display: block; width: 100%; height: auto; background: var(--wash); }
+.photos figcaption { font-size: 13px; line-height: 1.4; color: var(--grey); margin-top: 5px; }
+
+/* ------------------------------------------------------------------ elsewhere */
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.chip { min-width: 56px; text-align: center; font-size: 15px; font-weight: 600; color: var(--ink); text-decoration: none; border: 2px solid var(--ink); border-radius: var(--r); padding: 8px 10px; }
+.chip.is-on { background: var(--ink); color: #fff; }
+
+/* ------------------------------------------------------------------ the foot */
+.foot { margin-top: 44px; border-top: 2px solid var(--ink); padding-top: 12px; font-size: 14px; color: var(--grey); display: grid; gap: 8px; }
+.foot summary { cursor: pointer; color: var(--link); text-decoration: underline; }
+.foot details p { margin-top: 8px; font-size: 13px; }
+
+@media (min-width: 560px) {
+  .ask-row { grid-template-columns: 1fr auto; }
+  .find h1 { font-size: 52px; margin-top: 44px; }
+}
+
+/* A wide screen shows the place whole: when and the place, the water upstream, and somewhere else, side by side.
+   The tabs are a phone's way of holding the same four parts. */
+@media (min-width: 1100px) {
+  #app { max-width: 1360px; padding: 0 40px 64px; }
+  main.find { max-width: 40rem; margin: 0 auto; padding-top: 8vh; }
+  #app > .foot { max-width: 40rem; }
+  .tabs { display: none; }
+  .top h1 { font-size: 44px; margin-top: 22px; }
+  .place { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "when upstream elsewhere" "place upstream elsewhere"; gap: 36px 56px; align-items: start; }
+  .place .view { display: block; }
+  .v-when { grid-area: when; } .v-upstream { grid-area: upstream; } .v-place { grid-area: place; } .v-elsewhere { grid-area: elsewhere; }
+  .head { font-size: 38px; }
+  .d-bar { height: 120px; }
+}

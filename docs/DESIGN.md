@@ -2772,3 +2772,51 @@ by how many spots sat at each level, above the same search box, day strip and li
 What it taught: a count of spots per level across the country answers a question no swimmer asks. Changing how the home
 page looks, while it still does the same job with the same parts, does not read as a new page. Do not bring the bands
 back as a restyle.
+
+## A second site at /next/ (20 November 2026, a trial, not a decision)
+
+Ethan asked for "a complete rethink and brainstorm of how people will engage with the site and how to design the site
+from the ground up", after a redesign (11 November) and a poster home page (19 November) both read to him as the same
+site. So a second swimmer site is built from an empty file and published beside the live one at `/next/`, for him to
+judge on a phone. It is a trial. Nothing here is decided, and the live pages are unchanged.
+
+**The visual and layout rules in this file do not apply to `/next/`.** Its type, colour, spacing, navigation and page
+parts are its own (`src/dipcast/site/next/next.css`). The rules that are about truth apply in full:
+
+- The level is `levels.js`'s own, loaded from the live site, never a second copy. Its four names and their order stay.
+- An official notice is drawn before the forecast and is never folded into it (`eatoday.js`, also loaded from the live
+  site, for the reviewed words). Under advice that restricts swimming no "lowest day" is offered, and a place is never
+  listed among the low ones.
+- "No monitored overflow found upstream" is its own answer and its own group, never low.
+- Missing data is said as missing: a day with no forecast, a rain figure that is partly missing, a feed over six hours
+  old (never "not discharging"), an overflow with no current reading (never drawn as dry), a forecast over eight hours old.
+- The 0 to 100 figure is the "sewage spill risk". A level always has its noun.
+- Never "safe" or "clean". `tests/site_next.test.cjs` holds each of these.
+
+**What it is.** A site about one person's water, not a list of every spot.
+
+- It opens on one question, "Where do you swim?": a river, lake, town or postcode, or the browser's location. The
+  first place picked is kept on the device, and the next visit opens on it.
+- A place has four views, each for one job. **When**: the five days as the main object, the picked day's level and
+  what to do, and one sentence for the lowest of the five. **Upstream**: the water as a line to move along, each
+  monitored overflow in order with its live status, and the other listed places on the same water as stops. **The
+  place**: photos, rating, last sample, river level, access and practical notes. **Elsewhere**: other listed places
+  within 30 miles on a picked day, low ones first.
+- On a phone the four views are four tabs for the place. From 1,100 px they sit side by side and there are no tabs.
+- There is no map, no Saved page, no Plan page and no journal. Those are left out on purpose, to test whether the
+  smaller site is the more useful one.
+
+**How it is kept apart.** Three files, copied as they are by `build_site.write_next`. The page is marked `noindex`, is
+in no sitemap, and no live page links to it (`tests/test_next_site.py`). It has no visit counter and stores only the
+kept places, in `localStorage`. To remove the trial, delete the folder, `write_next` and its two test files.
+
+**Not settled, for Ethan.** The typeface is still Source Sans 3 (heavier, with no serif), because the repository holds
+no other and adding one means choosing and downloading a font. Whether leaving out the map is right. Whether the first
+place picked should be kept without asking.
+
+**Checked:** a local preview built by `write_pages` from the live data of 20 November 2026 (clock 14:00), headless
+Chrome at 375 x 812 and 1440 x 900: no sideways scroll, no console errors, every control acted on. States read: a low
+day (Coquet at Rothbury), a very high day (Avon at Warleigh Weir, 185 overflows upstream), official advice (Frensham
+Great Pond), no overflow found (Loughrigg Tarn, the Serpentine), no live status (Wye at Hereford), a water rated poor
+(Wharfe at Ilkley). Not checked: Safari, a real phone, a screen reader, a location that is granted (only a refusal),
+the system share sheet, a day in the bathing season (the E. coli figure's wording in season), a company feed that is down.
