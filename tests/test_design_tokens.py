@@ -107,11 +107,6 @@ def test_rules_use_the_tokens():
               "samples.html": styles(APP.parent / "samples.html"),
               "profile.html": styles(APP.parent / "profile.html"), "durations.html": styles(APP.parent / "durations.html"),
               "sampling-planner.html": styles(APP.parent / "sampling-planner.html")}
-    # The trial home page (?home=bold, 19 Nov 2026) sets these rules aside on purpose, for one screen, so it can be
-    # judged whole. Its block is left out here and nowhere else. If the trial becomes the home page, its values
-    # become tokens in docs/DESIGN.md and this exemption goes; if it is dropped, the block goes with it.
-    assert sheets["index.html"].count("/* trial:home-bold */") == 1 and sheets["index.html"].count("/* /trial:home-bold */") == 1
-    sheets["index.html"] = re.sub(r"/\* trial:home-bold \*/.*?/\* /trial:home-bold \*/", "", sheets["index.html"], flags=re.S)
     for name, css in sheets.items():
         body = rules(css)
         # One radius (and the mark's and a link's focus ring, as tokens); circles and round badges.
