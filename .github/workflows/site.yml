@@ -163,6 +163,10 @@ jobs:
           # Radar shadow (docs/RADAR-SHADOW-2026-11.md): 1 fetches the Met Office radar for the build's rain cells and logs
           # shadow_radar_v1 in state only, publishes nothing; unset = off.
           DIPCAST_RADAR_SHADOW: ${{ vars.DIPCAST_RADAR_SHADOW }}
+          # Live-status switch (docs/LIVE-STATUS-BACKTEST-2026-11.md): 1 publishes the live-status candidate for the nine
+          # English companies' overflows where the polled status is known; unset = off, production published. Ethan
+          # decides; its record says to switch only after the 23 Nov 2026 shadow read, which the switch would end.
+          DIPCAST_LIVE_STATUS: ${{ vars.DIPCAST_LIVE_STATUS }}
           # Open-Meteo's paid plan (README, "Rainfall API"): its key; unset = the free, non-commercial API.
           # In this step only, so the tests never hold it; the code keeps it out of logs and pages.
           DIPCAST_OPEN_METEO_KEY: ${{ secrets.DIPCAST_OPEN_METEO_KEY }}
