@@ -2602,6 +2602,31 @@ def copy_app_files(site: Path, stamp: str | None = None) -> None:
     shutil.copytree(TEMPLATE.parent / "vendor", site / "vendor", dirs_exist_ok=True)
 
 
+# The trial at /next/ (docs/DESIGN.md, "A second site at /next/"): a second swimmer site, built from an empty file
+# and published beside the live one so the two can be compared on a phone. Its own page, stylesheet and script, in
+# src/dipcast/site/next/. It reads the data files the live pages read, and loads two of their scripts from the site's
+# root, levels.js and eatoday.js (copy_app_files), so a level or an official notice cannot read differently there.
+NEXT = TEMPLATE.parent / "next"
+NEXT_FILES = ("index.html", "next.css", "next.js")
+
+
+def write_next(site: Path) -> list[str]:
+    """site/next/: the trial's three files, copied as they are. The page is marked noindex, is in no sitemap and
+    is linked from no live page; this raises if it has lost that mark or one of the two shared scripts."""
+    page = (NEXT / "index.html").read_text()
+    if '<meta name="robots" content="noindex, nofollow">' not in page:
+        raise ValueError("next/index.html has lost its noindex mark: the trial must stay out of search engines")
+    for tag in ('<script src="../levels.js"></script>', '<script src="../eatoday.js"></script>'):
+        if tag not in page:
+            raise ValueError(f"next/index.html has lost {tag}, the live site's own rules")
+    out = site / "next"
+    shutil.rmtree(out, ignore_errors=True)   # a file dropped from the trial leaves the site
+    out.mkdir(parents=True)
+    for name in NEXT_FILES:
+        shutil.copy(NEXT / name, out / name)
+    return list(NEXT_FILES)
+
+
 def site_url() -> str:
     """The published address, for canonical links, share previews and the sitemap. A custom
     domain sets DIPCAST_SITE_URL; otherwise it is this repository's GitHub Pages address, so a
@@ -3426,6 +3451,7 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     shutil.copy(STATIC / "page.css", site / "page.css")
     shutil.copytree(STATIC / "fonts", site / "fonts", dirs_exist_ok=True)   # declared in page.css and index.html
     copy_app_files(site, stamp)
+    write_next(site)   # the trial at next/, beside the live pages: after the app files, two of whose scripts it loads
     (site / "app.js").write_text(app_js)
     feeds = (site / "data" / "alerts.json").is_file()   # write_feeds writes them from it, after the spot pages
     home = PAGE_META.sub(lambda m: page_meta(HOME_TITLE, DESCRIPTION, root, root, base="./",
