@@ -2762,33 +2762,3 @@ status) 1,050 to 640; Frensham Great Pond with a notice (its level raised in a c
 with the stale notice 1,333 to 727. Windermere at Millerground (low) has no card: 1,367 and 1,370.
 `tests/site_act_card.test.cjs`. Not checked: a point clicked on the map in the browser (the card is tested in
 `site_act_card`), Safari, a screen reader, a real phone.
-
-## Trial: the poster home page, behind `?home=bold` (19 November 2026)
-
-Not a decision. A trial Ethan asked for on 19 November 2026, with this document's rules set aside for one screen so
-the page can be judged whole. Nothing changes for a visitor who does not open `?home=bold`. `?home=now` turns it off.
-The choice stays in that browser between visits.
-
-What it is: the home page opens on deep water (`#0c2a32`), the title "The water today" at up to 76 px, the five days as
-one white pill on a track, and a poster of five filled bands. Each band is a level, as tall as its share of the listed
-spots, with its count in a figure that grows with it. A day picked moves the bands. A band pressed lists its spots
-under the poster, as the list's own rows.
-
-What it reverses, each on purpose and only on this screen:
-
-- "The sky and the glass": no picture behind the opening.
-- Level colour as a filled surface. The rule elsewhere is the level's text colour with a rule, never a fill.
-- One corner radius and six type sizes. The bands, the pill and the title use their own.
-- The first visit's count and its very high rows (`homeNow`, `homeWorst`). The poster says both.
-
-What it keeps: the counts are `homeNow`'s, so a spot at low risk under official advice restricting swimming is not
-counted as low and is said apart; "No monitored overflow found upstream" keeps its full name; "A forecast, not a water
-test" is in the opening line.
-
-The styles sit between `/* trial:home-bold */` marks in `index.html`. `tests/test_design_tokens.py` leaves that block
-out and says why. If the trial becomes the home page, its values become tokens here and the exemption goes. If it is
-dropped, the block, `HOME_BOLD`, `boldLead`, `boldGroups` and `drawBold` go with it.
-
-Checked in the browser pane at 375 x 812 and 1440 x 900: all five bands fit a phone's first screen, a day change moves
-them, a band opens its rows, no console error, no sideways scroll. Not checked: Safari, a real phone, a screen reader,
-a visitor with spots saved, colour contrast by measurement, and the built page's first paint on a slow connection.
