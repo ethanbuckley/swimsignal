@@ -1597,6 +1597,14 @@ the line says it in full.
   Scottish Environment Protection Agency's page for the rest. An Irish row shows a restriction in
   force, or DAERA's advice against bathing, in semibold before the sample, in the source's own words
   with its date; nothing on the page is coloured by a SwimSignal level. A sample more than 30 days old says so.
+- **Sewage overflows near each English beach (22 November 2026, new).** An English coastal row ends with the
+  overflows near or upstream of its sampling point and how many reported a spill in the 48 hours to the build
+  (`coastal_spills.py`, the coastal baselines' rule: within 2 km in a straight line, or upstream on a river that
+  reaches within 2 km, up to 30 km along it). One note above the list says what "near or upstream" means, that
+  the counts are the monitors' reports and not volumes, and that this is not a water test, a forecast or the EA's
+  advice; the row repeats none of it. Plain text like the rest of the row, no colour, no level. Overflows that are
+  not reporting live are counted as able to have spilled unseen, never as quiet. Asked for by a windsurfer on
+  Facebook (15 Nov) who wanted her own beaches compared after a storm; the page has no coastal forecast to do it.
 - Opening the Welsh list asks Natural Resources Wales's data service for current samples and
   forecasts, from the reader's browser, and the privacy notice names it. Rule 8 under Rules for
   changes does not yet list this request.
