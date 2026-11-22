@@ -2240,6 +2240,21 @@ def attach_water_temperature_estimate(results: list[dict], forecast=None, model=
 BATHING_WATER_POINTS = ROOT / "data" / "raw" / "bathing_water_points.json"   # scripts/refresh_bathing_water_points.py
 
 
+def attach_coastal_spills(sites: list[dict], now: pd.Timestamp, points_file: Path | None = None) -> dict:
+    """The English coastal directory's sewage overflows near each sampling point and which reported a spill in the
+    last 48 hours (coastal_spills.attach), from the overflow table this build already holds: no request. A failure
+    leaves the directory as it was and never stops the build."""
+    from dipcast import coastal_spills
+    try:
+        points = json.loads((points_file or BATHING_WATER_POINTS).read_text()).get("england") or {}
+        return coastal_spills.attach(sites, points, _overflows(), _net(), pd.Timestamp(now).tz_convert("UTC"))
+    except Exception as e:  # noqa: BLE001 - an observation beside the directory must not sink the build
+        log.warning("coastal spills nearby: %s", e)
+        for s in sites:
+            s.pop("spills_nearby", None)
+        return {"error": str(e)}
+
+
 def site_point(s: dict, points: dict) -> tuple[float, float] | None:
     """A directory site's (lat, lon): its own where its source gives one (Scotland, Ireland, Northern Ireland), else
     its sampling point on file (BATHING_WATER_POINTS: England, Wales), else None."""
@@ -5535,11 +5550,13 @@ def build(refresh: bool = True) -> dict:
     coastal = attach_samples(fetch_coastal(), cache=config.CACHE / "coastal_samples.json")
     n_coastal_typical = attach_coastal_typical(coastal)   # a committed export: no request
     coastal_water = attach_directory_water_temp(coastal["sites"], anypoint_water_air(SITE))
+    coastal_spills = attach_coastal_spills(coastal["sites"], generated)
     (SITE / "data" / "coastal.json").write_text(json.dumps(coastal))
     health["coastal"] = {"status": coastal["status"], "sites": len(coastal["sites"]),
                          "samples": coastal.get("samples", {}).get("state"),
                          "with_sample": sum((s.get("sample") or {}).get("state") == "ok" for s in coastal["sites"]),
-                         "water_temperature_estimate": coastal_water, "typical_readings": n_coastal_typical}
+                         "water_temperature_estimate": coastal_water, "typical_readings": n_coastal_typical,
+                         "spills_nearby": coastal_spills}
     # Welsh bathing waters: NRW's sites and latest samples, live or from the dated snapshot (wales.py).
     from dipcast.wales import fetch as fetch_wales
     wales = fetch_wales()
