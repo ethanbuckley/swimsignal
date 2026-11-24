@@ -416,17 +416,52 @@ function findTowns(places, q, max = 2) {
 }
 const nearest = (spots, from, iso, n = 5) => spots.map(p => placeRow(p, iso, from)).sort((a, b) => a.km - b.km).slice(0, n);
 
+// ------------------------------------------------------------------------------------------------ saved, plan and map
+// The saved places on a day, in the order they were saved. An id the forecast no longer lists is counted, not shown.
+function savedRows(spots, ids, iso) {
+  const by = new Map(spots.map(p => [p.id, p])), rows = ids.filter(id => by.has(id)).map(id => placeRow(by.get(id), iso));
+  return { rows, gone: ids.length - rows.length, low: rows.filter(r => r.group === 'low').length };
+}
+// A plan's places as rows, in the live site's four groups (plan.js, planSpots: low risk; no monitored overflow found
+// upstream; moderate or higher; no level). `found` is planSpots' answer; each row says how far it is from the start.
+const PLAN_HEADS = ['Low risk', 'No monitored overflow found upstream', 'Moderate risk or higher', 'No level'];
+function planRows(found, iso, from) {
+  const far = o => { const m = o.miles, n = m < 10 ? Math.round(m * 10) / 10 : Math.round(m);
+    return `${m < 1 ? 'under a mile' : `${n} mile${n === 1 ? '' : 's'}`}${from ? ' ' + compass(from, o.s) : ''}`; };
+  return found.groups.map((g, i) => ({ key: ['low', 'plain', 'raised', 'none'][i], head: PLAN_HEADS[i], rows: g.map(o => ({ ...placeRow(o.s, iso), km: o.miles * KM_PER_MILE, said: far(o) })) })).filter(g => g.rows.length);
+}
+// Every place as a point for the map, on one day: where it is, its level's class and whether official advice rings it.
+const mapPoints = (spots, iso) => spots.filter(p => Number.isFinite(p.lat) && Number.isFinite(p.lon)).map(p => { const l = dayLevel(p, iso);
+  return { id: p.id, name: p.name, lat: p.lat, lon: p.lon, level: l, cls: cls(l), words: levelWords(l), advised: !!official(p) }; });
+// The overflows upstream as points for the map: the line's own items (riverLine) at their positions in the upstream
+// file, so the map's mark, name and words for an overflow are the line's and the two cannot disagree.
+function overflowPoints(items, up) {
+  const at = new Map((Array.isArray(up) ? up : []).filter(c => Number.isFinite(c.lat) && Number.isFinite(c.lon)).map(c => [String(c.site_id ?? ''), c]));
+  return (items || []).filter(i => i.kind === 'overflow' && at.has(i.id)).map(i => ({ id: i.id, name: i.name, lat: at.get(i.id).lat, lon: at.get(i.id).lon, mark: i.mark,
+    said: `${capFirst(i.status)}. ${i.kmSaid === 'Here' ? 'At this place' : `${i.kmSaid} upstream`}.`, company: i.company }));
+}
+// An encoded line (src/dipcast/trace.py, encode) as [lat, lon] points: the river the forecast traced upstream.
+function decodeLine(str) {
+  const pts = []; let i = 0, lat = 0, lon = 0; str = String(str || '');
+  const next = () => { let shift = 0, res = 0, b; do { b = str.charCodeAt(i++) - 63; res |= (b & 31) << shift; shift += 5; } while (b >= 32 && i <= str.length); return res & 1 ? ~(res >> 1) : res >> 1; };
+  while (i < str.length) { lat += next(); lon += next(); pts.push([lat / 1e5, lon / 1e5]); }
+  return pts;
+}
+
 // ------------------------------------------------------------------------------------------------ the address
-// "?spot=<id>&day=<date>" for a place, "?q=<text>&day=<date>" or "?area=<name>" for the opening. A link someone
-// shares keeps its day, so the person who opens it sees the day that was meant; a day that has passed is said.
+// "?spot=<id>&day=<date>" for a place, "?q=<text>&day=<date>" or "?area=<name>" for the opening, and "?view=map",
+// "?view=saved" or "?view=plan" for the opening's three other views. A link someone shares keeps its day, so the
+// person who opens it sees the day that was meant; a day that has passed is said. A plan's own choices (where it
+// starts, how far, which waters) sit after the #, as on the live site (plan.js), so they never reach a server.
+const VIEWS = ['map', 'plan', 'saved'];
 function parseQuery(search) {
   const q = new URLSearchParams(String(search || '').replace(/^\?/, '')), d = /^\d{4}-\d{2}-\d{2}$/.test(q.get('day') || '') ? q.get('day') : null;
-  const id = /^[A-Za-z0-9_-]+$/.test(q.get('spot') || '') ? q.get('spot') : null;
-  return id ? { screen: 'place', id, day: d } : { screen: 'find', day: d, q: q.get('q') || '', area: q.get('area') || '' };
+  const id = /^[A-Za-z0-9_-]+$/.test(q.get('spot') || '') ? q.get('spot') : null, view = VIEWS.includes(q.get('view')) ? q.get('view') : '';
+  return id ? { screen: 'place', id, day: d } : { screen: 'find', view, day: d, q: view ? '' : q.get('q') || '', area: view ? '' : q.get('area') || '' };
 }
 function queryFor(r) {
   const q = new URLSearchParams();
-  if (r.id) q.set('spot', r.id); else { if (r.q) q.set('q', r.q); if (r.area) q.set('area', r.area); }
+  if (r.id) q.set('spot', r.id); else if (VIEWS.includes(r.view)) q.set('view', r.view); else { if (r.q) q.set('q', r.q); if (r.area) q.set('area', r.area); }
   if (r.day && r.day !== today()) q.set('day', r.day);
   const s = q.toString();
   return s ? '?' + s : './';
@@ -434,7 +469,8 @@ function queryFor(r) {
 
 const api = { esc, capFirst, fold, list, num, longDate, weekday, shortDate, tabName, headDay, dayNm, kmBetween, compass, milesSaid, ageSpot, prepare, dates, issuedWords,
   official, levelWords, shortLevel, cls, dayRows, dayTabs, lowerDay, spillingSaid, waterTemp, answer, ledger, statusSaid, markOf, riverLine, placeRow, elsewhere,
-  nextSteps, waters, areas, findSpots, postcodeKeys, findTowns, nearest, parseQuery, queryFor, pollAt, httpsLink, isNil };
+  nextSteps, waters, areas, findSpots, postcodeKeys, findTowns, nearest, parseQuery, queryFor, pollAt, httpsLink, isNil,
+  savedRows, planRows, PLAN_HEADS, mapPoints, overflowPoints, decodeLine, VIEWS };
 if (typeof module === 'object' && module.exports) module.exports = api;
 else window.PV = api;
 })();

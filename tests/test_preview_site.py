@@ -44,20 +44,42 @@ def test_the_build_publishes_the_preview_beside_the_live_pages(tmp_path):
     bs = _build_site()
     bs.write_pages(tmp_path, SPOTS, root="https://example.org/")
     out = tmp_path / "preview"
-    assert sorted(p.name for p in out.iterdir()) == ["app.js", "hero-photos.json", "index.html", "model.js", "preview.css"]
+    assert sorted(p.name for p in out.iterdir()) == ["alerts.js", "app.js", "hero-photos.json", "index.html", "map.js", "map.json", "model.js",
+                                                     "preview.css"]
     for name in bs.PREVIEW_FILES:   # copied as they are: no stamp, no counter, no tile key
         assert (out / name).read_bytes() == (bs.PREVIEW / name).read_bytes(), name
     assert list(json.loads((out / "hero-photos.json").read_text())) == ["a"]
     page, css, js = ((out / n).read_text() for n in ("index.html", "preview.css", "app.js"))
     assert bs.PREVIEW_NOINDEX in page
     # What it loads from the live site exists where it asks for it.
-    for src in ("../levels.js", "../eatoday.js", "../fonts/SourceSans3-latin.woff2", "../fonts/SourceSerif4-latin.woff2", "../icons/icon.svg",
+    for src in ("../levels.js", "../eatoday.js", "../experience.js", "../lists.js", "../plan.js", "../fonts/SourceSans3-latin.woff2", "../fonts/SourceSerif4-latin.woff2", "../icons/icon.svg",
                 "../icons/fells.webp", "../icons/fells-wide.webp"):
         assert src in page or src in css, src
         assert (out / src).resolve().is_file(), src
     for asked in ("'../data/spots-lite.json'", "'hero-photos.json'", "'../data/postcodes.json'", "'../data/places.json'", "../guides/photos/"):
         assert asked in js, asked
     assert (tmp_path / "data" / "places.json").is_file() and (tmp_path / "data" / "postcodes.json").is_file()
+    # The map library, the worker the alerts arrive through and the pages the views link to are the live site's own.
+    for asked in ("vendor/leaflet/leaflet.js", "vendor/leaflet/leaflet.css", "sw.js", "privacy.html"):
+        assert (tmp_path / asked).is_file(), asked
+    for asked in ("'../vendor/leaflet/leaflet.js'", "'../vendor/leaflet/leaflet.css'"):
+        assert asked in (out / "map.js").read_text(), asked
+    tiles = json.loads((out / "map.json").read_text())   # no provider chosen: OpenStreetMap's, in index.html's own colours
+    assert tiles["url"] == bs.TILE_PROVIDERS["osm"]["url"] and tiles["credit"] == bs.OSM_ATTRIBUTION
+    assert tiles["filter"].startswith('<filter id="tiles"') and tiles["filter"] in bs.TEMPLATE.read_text()
+
+
+def test_the_previews_maps_take_the_live_maps_tile_provider(tmp_path):
+    bs = _build_site()
+    tiles = {**bs.TILE_PROVIDERS["carto-voyager"], "id": "carto-voyager",
+             "url": bs.TILE_PROVIDERS["carto-voyager"]["url"].replace("__KEY__", "abcdefgh12345678")}
+    bs.write_pages(tmp_path, SPOTS, root="https://example.org/", tiles=tiles)
+    got = json.loads((tmp_path / "preview" / "map.json").read_text())
+    assert got == {"url": tiles["url"], "credit": tiles["credit"], "filter": bs.CARTO_FILTERS["voyager"]}
+    assert tiles["url"] in (tmp_path / "app.js").read_text()   # the same address the live map draws from (the page's script)
+    # A provider with no filter of its own keeps the one index.html carries, as the live map does.
+    plain = bs.preview_map({**bs.TILE_PROVIDERS["thunderforest-atlas"]})
+    assert plain["filter"].startswith('<filter id="tiles"')
 
 
 def test_the_preview_is_in_no_sitemap_and_linked_from_no_live_page(tmp_path):
@@ -85,4 +107,15 @@ def test_a_preview_page_that_lost_its_noindex_mark_stops_the_build(tmp_path, mon
         (src / name).write_text((bs.PREVIEW / name).read_text().replace(bs.PREVIEW_NOINDEX, ""))
     monkeypatch.setattr(bs, "PREVIEW", src)
     with pytest.raises(ValueError, match="noindex"):
+        bs.write_preview(tmp_path / "site", SPOTS)
+
+
+def test_a_preview_page_that_lost_the_live_sites_rules_stops_the_build(tmp_path, monkeypatch):
+    bs = _build_site()
+    src = tmp_path / "preview"
+    src.mkdir()
+    for name in bs.PREVIEW_FILES:
+        (src / name).write_text((bs.PREVIEW / name).read_text().replace('<script src="../lists.js"></script>', ""))
+    monkeypatch.setattr(bs, "PREVIEW", src)
+    with pytest.raises(ValueError, match="lists.js"):
         bs.write_preview(tmp_path / "site", SPOTS)

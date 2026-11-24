@@ -2784,7 +2784,7 @@ back as a restyle.
 ## A redesign kept as a preview (24 November 2026, for Ethan's review)
 
 A working redesign of the swimmer's journey, in `src/dipcast/site/preview/` (`index.html`, `preview.css`, `model.js`,
-`app.js`). Ethan asked for it to be published once checked ("get it live", 24 November 2026): the build copies it to
+`app.js`, and from later the same day `map.js` and `alerts.js`: "The map, alerts, Plan and Saved" below). Ethan asked for it to be published once checked ("get it live", 24 November 2026): the build copies it to
 `preview/` beside the live pages (`build_site.write_preview`), marked `noindex`, in no sitemap and linked from no live
 page, so it is reached only by its address, `https://swimsignal.co.uk/preview/`. The live pages are unchanged but for one
 line in `sw.js`, which leaves `preview/` to the browser: the offline copy would otherwise hand a slow first visit the
@@ -2832,16 +2832,19 @@ home page", 11 November) are not in the preview; the five days are tabs, not App
 live status sentence before the level (30 October) moved into Behind the level, except where no overflow reports,
 which still leads the answer in bold; the E. coli estimate is a row, not a tile.
 
-**Where the live site is better, and the preview does not replace it** (so it is a second way in, not the site): the map of the river and its overflows; alerts;
-Plan a swim, Saved and the journal; the record of how the forecast has done here; past spills by month; a page built
-without scripts, with its own link preview; the offline copy. The preview links to the live page for each.
+**Where the live site is better, and the preview does not replace it** (so it is a second way in, not the site): a
+forecast for any river or lake tapped on the map; an outing with a backup, a time and a link to send; sharing a list and
+finding a low-risk day across saved places; the swim journal and passport; swimmers' reviews and visit notes; the record
+of how the forecast has done here; past spills by month; a page built without scripts, which is what a search engine and
+a link preview read; the offline copy. The preview links to the live page for each. The map, alerts, Plan a swim and
+Saved were on this list until they were added (below).
 
 **Each area's photo** is one place's, picked by eye from the photos the guides hold (`AREA_PHOTO` in `app.js`): open
 water in good light. The first build took each area's first landscape photo, and Cumbria's was the bow of a kayak.
 
-**Its own storage:** saved places are kept under `swimsignal.preview.places` in the browser, apart from the live
-site's `dipcast.saved`, so the preview changes nothing the live pages keep. Nothing is sent. The privacy notice is
-not changed here: it is Ethan's to word if the preview stays.
+**Its own storage, until the same evening:** saved places were first kept under `swimsignal.preview.places`, apart from
+the live site's `dipcast.saved`. That is reversed below: the preview now keeps what the live site keeps, under the live
+site's keys.
 
 **Checked:** headless Chrome on the live issue of 24 November 2026 13:21 at 320, 390, 820 and 1,440 px; keyboard and
 pointer in the in-app browser; Safari on an iPhone 17 simulator (iOS 27): the opening of Ilkley, a day picked by tap,
@@ -2853,3 +2856,54 @@ Falls (low), Frensham Great Pond (official advice), Janet's Foss (no daily forec
 Shrewsbury (no photo, Wales not counted), the forecast read nine hours late, and a link for a day that has passed. No
 sideways scroll at 320 px on the four pages measured. Not checked: a real phone, a screen reader, an iPhone older
 than the simulator's, dark mode (the site is light only), a location actually given to "Places near me".
+
+### The map, alerts, Plan and Saved (24 November 2026, evening)
+
+Ethan, told these four were why the preview could not stand in for the site: "lets add these to it and then get it
+live". They are in the preview now, each made from the live site's own rules and data, not a second copy of them.
+Pictures 9 to 14 in `docs/redesign-preview-2026-11/`.
+
+- **The four places** (already decided: "Plan a swim", four places in a phone's bar at the bottom, each icon over its
+  label). Today, Map, Plan, Saved: the bar at the bottom on a phone, links in the header from 960 px. `?view=map`,
+  `?view=plan` and `?view=saved` are their addresses, so each can be linked and Back works.
+- **One set of saved places** (reverses this section's "Its own storage"). `lists.js` reads and writes the lists under
+  `dipcast.lists` and `dipcast.saved`, the live page's keys, so a place saved on one page is saved on the other, and a
+  list made on the live site shows here. What the preview had kept under its own key is moved across once. Saved shows
+  the list on the day picked, lets a place be taken off, and makes, renames and deletes lists. Sharing a list, Find a
+  window and the journal stay on the live Saved page, which it links to.
+- **Alerts are the live site's alerts** (new here; the words already decided). The same alert service, the same record
+  in the browser (`dipcast.push`), the same body sent, so they are one setting. What is sent, to whom and how to take it
+  back is the live tile's text word for word, and a test holds the two together. Nothing is asked of the browser, and
+  the worker is not started, until "Turn on alerts" is pressed. On an iPhone alerts need the Home Screen app, which
+  opens the live site and keeps its own saved places, so there the tile sends the reader to the live Saved page.
+- **Plan a swim is the live plan's rules** (`plan.js`: `planSpots`, `betterDay`, `planAreas`), and its choices sit after
+  the `#` in the live site's own form, so they reach no server and the same link opens on either page. The plan kept
+  in the browser is the live site's (`dipcast.plan`); a plan opened from a link is shown and not kept until it is
+  changed. **Reverses, in part:** the kinds of water are a menu beside the distance, not the list's chips ("Plan a
+  swim": "the kinds of water as the list's chips"): as chips the two choices took four rows on a 375 px screen; as two menus
+  they take one, and the first place begins 608 px down (measured; the live plan's first option: 789 px). An outing, with its backup,
+  time and link to send, stays on the live plan, which the page links to on the same plan.
+- **The map** (new). Every listed place as a dot in its level's colour on the day picked, ringed where there is an
+  official notice, in the live map's colours and on the live map's tiles: the build writes the provider's address,
+  credit and colour filter to `preview/map.json` (`build_site.preview_map`). A tap picks the nearest place within
+  26 px, so a 16 px dot is not a 16 px target, and its row opens under the map; the key is under the map in words, not
+  on it. The library is the live site's copy of Leaflet, asked for only when a map is opened. A forecast for any water
+  tapped stays on the live map.
+- **Upstream, "As a line" or "On a map"** (new). The map draws the water the forecast traced
+  (`data/spot/<id>-trace.json`) and each monitored overflow with the line's own mark and words, so the two cannot
+  disagree. On a touch screen one finger scrolls the page and two move the map, as on the live spot page.
+
+**Still not a replacement for the home page.** What the list above ("Where the live site is better") names is still
+only on the live pages. Two of them decide it: the pages built without scripts are what search engines index and what
+a shared link previews, and the offline copy is what works at the water's edge. A swap needs the redesign's place pages
+prerendered by the build and stored by the worker first.
+
+**Checked, 24 November 2026, evening:** in-app browser at 375 and 1,280 px and headless Chrome at 375 and 1,440 px, on
+the 13:21 issue: the map drawn and a place picked; Saved on Saturday with a place saved from its page, a list made,
+renamed and deleted, a place removed; a plan from Ilkley typed and picked by Enter, its distance, waters and day
+changed, a shared `from=here` link (asks, and leaves the kept plan alone); Ilkley's water upstream on a map. No page
+error, and no sideways scroll at 320 px on Map, Saved or Plan. The alerts tile was walked with the browser and the alert service stood in for (on, the weekly note, off, a
+refusal, the service not answering); viewing the page registered no worker. Safari on an iPhone 17 simulator (iOS 27): the map drawn in the live colours, a place
+picked by tap, Saved with the iPhone's own alerts line. **Not checked:** turning alerts on for
+real in any browser, a real phone, a screen reader, the CARTO tiles the live build uses (locally the map drew
+OpenStreetMap's).
