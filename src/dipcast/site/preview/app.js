@@ -422,6 +422,71 @@ function listOpen() {
   if (got.why) { said.textContent = OPEN_WHY[got.why]; box.focus(); return; }
   listForm = null; history.pushState(null, '', link({ view: 'saved', day: route.day }) + got.hash); draw({ focus: true });
 }
+// Compare your places: up to three saved places side by side, a column each. The five days first, the day shown
+// shaded; then the water today, and what each level rests on and leaves out. The rules and the words are the live
+// site's own (experience.js, compareDays and compareRows; plan.js, planCompareIds), so every cell says something:
+// where the data is missing it says it is not known. No column is called the best: the reader decides which to look
+// into further. Opens on the first three places of the list shown, until others are chosen; the choice is kept
+// while the page is open, not stored.
+let cmpIds = null, cmpOpen = false;
+const vt = (kind, words) => `<span class="vt vt-${kind}">${words}</span>`;
+window.valueTag = vt;   // compareRows marks each value's kind with the page's own tag
+// The water today, as two cells: the temperature (model.js, waterTemp: measured, or an estimate said as one) and the
+// level at the place's gauge, which is named, since places on one river often share one.
+function compareWater(s) {
+  const w = P.waterTemp(s, today(), now()), rs = s.river_state, at = rs && rs.station ? ` at ${esc(rs.station)}` : '';
+  const word = rs && ({ low: 'low', normal: 'normal', high: 'high', 'very high': 'very high' })[rs.label];
+  return [w ? `${esc(w.value)} ${vt(/^Measured/.test(w.note) ? 'measured' : 'estimate', esc(w.note.replace(/\.$/, '')))}` : vt('none', 'No reading'),
+    !rs || P.isNil(rs.level_m) ? vt('none', 'No gauge') : rs.stale ? `${vt('none', 'No current reading')} ${vt('stale', `Last reading${at}: too old to use`)}`
+      : `${num(rs.level_m, 2)}&nbsp;m${word ? `, ${word}` : ''} ${vt('measured', `Measured${at}`)}`];
+}
+function compareHtml(mine, day) {
+  if (mine.length < 2 || typeof compareRows !== 'function' || typeof evidenceRows !== 'function') return '';
+  const ids = cmpIds = planCompareIds(cmpIds, mine), ds = dates();
+  // A place as its own file fills it out (its guide, for Access); until the file comes the cell says so.
+  const full = s => { const got = details.get(s.id); return got ? { ...s, ...(got.detail || {}), detail_loaded: true, detail_missing: !got.detail && !!s.detail_file } : s; };
+  const spots = ids.map(spotOf).filter(Boolean).map(full), n = spots.length;
+  const opts = i => mine.map(s => `<option value="${esc(s.id)}"${s.id === ids[i] ? ' selected' : ''}>${esc(s.name)}</option>`).join('');
+  // On a phone the three selects fold under "Choose the places" once two are chosen: open, they put the first day's
+  // levels off the first screen (the live page's finding, 6 November 2026). The table's heads name the places chosen.
+  const fold = !matchMedia('(min-width: 700px)').matches && ids.length >= 2 && !cmpOpen;
+  const picks = `<details class="cmp-choose"${fold ? '' : ' open'}><summary>Choose the places</summary><p class="picks cmp-picks">${[0, 1, 2].map(i => `<label for="cmp-${i}">Place ${i + 1}${i === 2 ? ' (optional)' : ''}<select id="cmp-${i}" data-cmp="${i}"><option value="">Choose a place</option>${opts(i)}</select></label>`).join('')}</p></details>`;
+  const head = `<section class="compare" id="compare" aria-labelledby="compare-h"><h2 id="compare-h">Compare your places</h2>
+    <p class="sec-lede">Up to three saved places side by side: the next ${ds.length === 4 ? 'four' : 'five'} days, and what each level rests on.</p>${picks}`;
+  if (n < 2) return `${head}<p class="meta" role="status">Choose at least two different places.</p></section>`;
+  const days = spots.map(s => compareDays(s, ds)), facts = spots.map(s => compareRows(s, day, DATA.generated_at)), water = spots.map(compareWater);
+  const cell = x => `<span class="lvl ${P.cls(x.level)}">${esc(x.words)}</span>`, hd = (r, j) => ` headers="${r} cmp-s${j}"`;
+  // A row's label is a band across the columns, with what every column shares said once under it.
+  const lab = (id, t, note = '') => `<tr class="lab"><th colspan="${n}" id="${id}"><span>${t}${note ? `<span class="lab-note">${note}</span>` : ''}</span></th></tr>`;
+  // A row whose cells all say the same is one cell across the columns.
+  const across = (id, cells) => cells.every(c => c === cells[0]) ? `<tr><td colspan="${n}" headers="${id} ${spots.map((s, j) => `cmp-s${j}`).join(' ')}">${cells[0]}</td></tr>`
+    : `<tr>${cells.map((c, j) => `<td${hd(id, j)}>${c}</td>`).join('')}</tr>`;
+  return `${head}<p class="meta">${esc(P.issuedWords(DATA, now()).text)}. A lower level is the forecast for sewage pollution, not a safety check: check the signs at the water.</p>
+    <div class="cmp-scroll" tabindex="0" role="region" aria-label="Place comparison"><table class="cmp" style="--cols:${n}">
+    <thead><tr>${spots.map((s, j) => `<th scope="col" id="cmp-s${j}"><a href="${link({ id: s.id, day: daily(s) ? day : null })}">${esc(s.name)}</a></th>`).join('')}</tr></thead><tbody>
+    ${lab('cmp-days', `Pollution risk, next ${ds.length === 4 ? 'four' : 'five'} days`)}
+    ${ds.map((iso, i) => `<tr${iso === day ? ' class="on" aria-current="true"' : ''}>${days.map((d, j) => !d.same
+        ? `<td${hd('cmp-days', j)}><span class="day">${shortDay(iso)}</span>${cell(d.days[i])}</td>`
+        : i ? '' : `<td class="same" rowspan="${ds.length}"${hd('cmp-days', j)}>${cell(d.days[0])}. The same on every day.</td>`).join('')}</tr>`).join('')}
+    ${lab('cmp-temp', 'Water temperature', 'Today')}${across('cmp-temp', water.map(w => w[0]))}
+    ${lab('cmp-level', 'Water level', 'Now. Not part of the level')}${across('cmp-level', water.map(w => w[1]))}
+    ${facts[0].map(([label, , note], k) => lab(`cmp-r${k}`, label, note) + across(`cmp-r${k}`, facts.map(f => f[k][1]))).join('')}
+    </tbody></table></div></section>`;
+}
+// The comparison drawn again where it is, the table kept where it was scrolled to: a place chosen, or a place's own
+// file arrived. The files of the places compared are asked for once each.
+function redrawCompare() {
+  const el = document.getElementById('compare'); if (!el || route.view !== 'saved') return;
+  const sc = el.querySelector('.cmp-scroll'), left = sc ? sc.scrollLeft : 0, focus = document.activeElement && document.activeElement.id;
+  const t = document.createElement('template'); t.innerHTML = compareHtml(shownList(LISTS).spots.map(spotOf).filter(Boolean), homeDay());
+  el.replaceWith(t.content); mountCompare();
+  const sc2 = document.querySelector('#compare .cmp-scroll'); if (sc2) sc2.scrollLeft = left;
+  if (focus && /^cmp-\d$/.test(focus)) { const f = document.getElementById(focus); if (f) f.focus({ preventScroll: true }); }
+}
+function mountCompare() {
+  if (!document.getElementById('compare')) return;
+  for (const id of cmpIds || []) if (!details.has(id)) loadDetail(id).then(redrawCompare);
+}
 function savedHtml() {
   const sh = readShared(location.hash, dates()); if (sh) return sharedHtml(sh);
   const day = homeDay(), cur = shownList(LISTS), many = LISTS.lists.length > 1, S = P.savedRows(DATA.spots, cur.spots, day);
@@ -455,6 +520,7 @@ function savedHtml() {
         ${tools}<p class="meta" id="list-said" role="status"></p>
       </section>
       ${mine.length > 1 && typeof fwSection === 'function' ? fwSection(mine, dates(), s => link({ id: s.id })) : ''}
+      ${compareHtml(mine, day)}
       ${alertsHtml()}
       ${mine.length ? `<section class="sharelist" aria-labelledby="share-list-h"><h2 id="share-list-h">Share this list</h2>
         <p class="sec-lede">A link that opens this list on another phone or browser, or for a friend, who can then add it to their own lists. It holds the list's name, ${esc(cur.name)}, and which spots are in it, nothing else.</p>
@@ -874,7 +940,7 @@ function draw(opts = {}) {
   if (s) { const typing = swim && swim.id === s.id && active && swim.el.contains(active) ? active : null;
     const writing = jlog && jlog.id === s.id && active && jlog.el.contains(active) ? active : null;
     mountRecord(s); mountLog(s); mountSwimmers(s); if (typing || writing) (typing || writing).focus({ preventScroll: true }); } else { swim = null; rec = null; jlog = null; }
-  if (route.view === 'saved' && !readShared(location.hash, dates())) mountJournal(); else jsaved = null;
+  if (route.view === 'saved' && !readShared(location.hash, dates())) { mountJournal(); mountCompare(); } else jsaved = null;
   // Whether alerts are on is the browser's to say, and it answers a moment after the page is drawn.
   if (route.view === 'saved' && DATA.push && alertsOn === null && window.PVAlerts.can() === 'yes') window.PVAlerts.isOn().catch(() => false).then(on => { alertsOn = on; redrawAlerts(); });
   if (key !== lastKey) {
@@ -919,9 +985,12 @@ function jump(id) { const el = document.getElementById(id); if (!el) return;
   const h = el.querySelector('h2') || el; el.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); h.focus({ preventScroll: true }); }
 
 app.addEventListener('input', e => { if (e.target.id === 'q') typed(e.target.value); else if (e.target.id === 'from') planTyping(e.target.value); });
+document.addEventListener('toggle', e => { if (e.target && e.target.classList && e.target.classList.contains('cmp-choose')) cmpOpen = e.target.open; }, true);
 app.addEventListener('change', async e => {
   if (e.target.id === 'plan-within') { planSet({ within: Number(e.target.value) || 0 }); return; }
   if (e.target.id === 'plan-kind') { planSet({ kind: e.target.value }); return; }
+  if (e.target.dataset.cmp) { cmpIds = comparisonIds([...app.querySelectorAll('[data-cmp]')].map(x => x.value), shownList(LISTS).spots.map(spotOf).filter(Boolean)); redrawCompare();
+    const n = cmpIds.length; say(n < 2 ? 'Choose at least two different places.' : `${n} places side by side.`); return; }
   if (e.target.id !== 'alerts-week') return;
   const box = e.target, want = box.checked; box.disabled = true;
   try { await window.PVAlerts.setWeekly(DATA.push, knownSaved(), want); alertsSaid = want ? 'The weekly note is on: Thursday evenings.' : 'The weekly note is off.'; }

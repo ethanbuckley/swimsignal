@@ -3135,6 +3135,27 @@ Both were in the live page's "Your lists" fold and only at `classic/` after the 
 pasted link, a good link opening the shared list, and Back returning to Saved. **Not checked:** the Home Screen
 app on an iPhone, where the paste matters most.
 
+### Ported: compare your places (24 November 2026, night)
+
+The live page's "Compare your spots", which was only at `classic/` after the switch. Marked:
+
+- **Already decided** (experience.js, compareDays and compareRows; "Compare" in this document): up to three saved
+  places side by side, a column each; the five days first, the day shown shaded; then the water today and what
+  each level rests on and leaves out. Every cell says something. No column is called the best. It opens on the
+  first three places of the list shown. On a phone the three selects fold once two are chosen (6 November 2026).
+- **New:** it is a section of Saved, after "Find a window", and not a fold: the redesign's Saved has no folds
+  around its sections. Drawn only with two places or more in the list shown.
+- **Reversing, in one sentence:** the live table's note says a lower level "does not mean safe water". The redesign
+  never uses that word (its test refuses it), so the note is its own: "A lower level is the forecast for sewage
+  pollution, not a safety check".
+- **Not carried:** the names pinned under the header while a phone reads the table down (the redesign's header is
+  not fixed, so there is nothing to pin under), and "Plan here" in a column (outings are not ported yet).
+
+**Checked:** in-app browser at 375 px and 1,280 px on four saved places: Ilkley, Wastwater (one cell for the five
+days) and a second Wharfe place side by side; a third place removed and another chosen; the Access row filled in
+when the places' own files arrived; the table scrolls sideways inside itself at 375 px with three columns and the
+page does not. **Not checked:** a screen reader's reading of the table.
+
 ### Ported: the swim journal and the passport (24 November 2026, night)
 
 The fourth port from `classic/`. Marked: the journal's rules and words are already decided ("The swim journal", the
