@@ -449,8 +449,10 @@ function decodeLine(str) {
 }
 
 // ------------------------------------------------------------------------------------------------ the address
-// "?spot=<id>&day=<date>" for a place, "?q=<text>&day=<date>" or "?area=<name>" for the opening, and "?view=map",
-// "?view=saved" or "?view=plan" for the opening's three other views. A link someone shares keeps its day, so the
+// A place has an address of its own, "spot/<id>/?day=<date>", under where these pages are published, so the build can
+// write a page there for a reader without scripts and for a link's preview (build_site.write_preview). The opening is
+// "?q=<text>&day=<date>" or "?area=<name>", and "?view=map", "?view=saved" or "?view=plan" its three other views.
+// "?spot=<id>" still opens a place: the links made before places had addresses. A link someone shares keeps its day, so the
 // person who opens it sees the day that was meant; a day that has passed is said. A plan's own choices (where it
 // starts, how far, which waters) sit after the #, as on the live site (plan.js), so they never reach a server.
 const VIEWS = ['map', 'plan', 'saved'];
@@ -459,17 +461,24 @@ function parseQuery(search) {
   const id = /^[A-Za-z0-9_-]+$/.test(q.get('spot') || '') ? q.get('spot') : null, view = VIEWS.includes(q.get('view')) ? q.get('view') : '';
   return id ? { screen: 'place', id, day: d } : { screen: 'find', view, day: d, q: view ? '' : q.get('q') || '', area: view ? '' : q.get('area') || '' };
 }
+// The address in the bar, read against where the pages are published (base, a path ending in "/").
+function parseAddress(pathname, search, base) {
+  const path = String(pathname || ''), rel = base && path.startsWith(base) ? path.slice(base.length) : '';
+  const m = rel.match(/^spot\/([A-Za-z0-9_-]+)\/(?:index\.html)?$/), r = parseQuery(search);
+  return m ? { screen: 'place', id: m[1], day: r.day } : r;
+}
+// An address for a link, relative to where the pages are published: every page carries a <base> there.
 function queryFor(r) {
   const q = new URLSearchParams();
-  if (r.id) q.set('spot', r.id); else if (VIEWS.includes(r.view)) q.set('view', r.view); else { if (r.q) q.set('q', r.q); if (r.area) q.set('area', r.area); }
+  if (!r.id) { if (VIEWS.includes(r.view)) q.set('view', r.view); else { if (r.q) q.set('q', r.q); if (r.area) q.set('area', r.area); } }
   if (r.day && r.day !== today()) q.set('day', r.day);
   const s = q.toString();
-  return s ? '?' + s : './';
+  return r.id ? `spot/${r.id}/${s ? '?' + s : ''}` : s ? '?' + s : './';
 }
 
 const api = { esc, capFirst, fold, list, num, longDate, weekday, shortDate, tabName, headDay, dayNm, kmBetween, compass, milesSaid, ageSpot, prepare, dates, issuedWords,
   official, levelWords, shortLevel, cls, dayRows, dayTabs, lowerDay, spillingSaid, waterTemp, answer, ledger, statusSaid, markOf, riverLine, placeRow, elsewhere,
-  nextSteps, waters, areas, findSpots, postcodeKeys, findTowns, nearest, parseQuery, queryFor, pollAt, httpsLink, isNil,
+  nextSteps, waters, areas, findSpots, postcodeKeys, findTowns, nearest, parseQuery, parseAddress, queryFor, pollAt, httpsLink, isNil,
   savedRows, planRows, PLAN_HEADS, mapPoints, overflowPoints, decodeLine, VIEWS };
 if (typeof module === 'object' && module.exports) module.exports = api;
 else window.PV = api;

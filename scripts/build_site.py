@@ -2640,9 +2640,80 @@ def preview_map(tiles: dict | None, template: str | None = None) -> dict:
     return {"url": src["url"], "credit": src["credit"], "filter": src.get("filter") or (own.group(0) if own else "")}
 
 
-def write_preview(site: Path, results: list[dict], tiles: dict | None = None) -> int:
-    """site/preview/: the preview's files, copied as they are, with hero-photos.json and map.json. Returns how many
-    spots have an opening photo. A page that has lost its noindex mark, or the live site's own rules, stops the build."""
+PREVIEW_TITLE = re.compile(r"<title>.*?</title>")
+PREVIEW_APP = re.compile(r'<div id="app">.*?</div>\n(?=<p id="said")', re.DOTALL)
+PREVIEW_NOSCRIPT = re.compile(r'<noscript><p class="noscript">.*?</p></noscript>\n?', re.DOTALL)
+PREVIEW_MAIN = re.compile(r'<main id="main"[^>]*>')
+
+
+def prerender_preview(site: Path) -> dict:
+    """The preview's opening and each place's page as its own script draws them, {"home": html, "spots": {id: html}},
+    from the data this build has written (scripts/prerender_preview.js runs preview/app.js in Node, in UK time, as at
+    the moment the forecast was issued). Without Node, or the data, {}: the pages keep their loading line, and the
+    build says why."""
+    if not (site / "data" / "spots-lite.json").exists():
+        return {}
+    try:
+        run = subprocess.run(["node", str(ROOT / "scripts" / "prerender_preview.js"), str(site), "-"], check=True,
+                             capture_output=True, text=True, timeout=180, env={**os.environ, "TZ": "Europe/London"})
+        return json.loads(run.stdout)
+    except (OSError, ValueError, subprocess.SubprocessError) as e:
+        log.warning("the preview's pages without their forecast in the HTML (%s)", getattr(e, "stderr", "") or e)
+        return {}
+
+
+# What the preview's built pages lack without scripts. Their overflows upstream and places nearby are in the HTML,
+# so the live note's ending (NOSCRIPT) would be wrong here. The buttons that only a script answers are hidden.
+PREVIEW_NOSCRIPT_END = "With JavaScript on, the page updates it and shows the other days, the map and your saved places."
+PREVIEW_NOSCRIPT_STYLE = "<style>button,.picks{display:none!important}</style>"
+# The opening without scripts: its search and its areas' lists are the script's, so both are hidden and the reader is
+# sent to spots.html, whose links to every spot's page work without it (the Saved and Plan pages say the same).
+PREVIEW_HOME_NOSCRIPT = ('<noscript><style>button,.ask,.daytabs,.home-body .block{display:none!important}</style>'
+                         '<p class="notice">This page needs JavaScript to search for a place and to list an area\'s places. '
+                         '<a href="../spots.html">Every spot</a> has a page of its own with its forecast, which works without it.</p></noscript>')
+
+
+def preview_built(shell: str, built: str | None, issued: pd.Timestamp | None, home: bool = False) -> str:
+    """The preview's page with what its script would draw already in it (built), marked data-built so the script
+    keeps it if the forecast cannot be read. A reader without scripts is told what they are seeing and when it was
+    issued, as on the live pages (noscript_note) but for what this page lacks, in place of the line saying the page
+    needs JavaScript. home: the opening, which without scripts can only point to the list of every spot.
+    Unchanged without built."""
+    if not built:
+        return shell
+    said = noscript_note(issued).replace(NOSCRIPT.split(". ", 1)[1], PREVIEW_NOSCRIPT_END)
+    note = PREVIEW_HOME_NOSCRIPT if home else f'<noscript>{PREVIEW_NOSCRIPT_STYLE}<p class="notice">{escape(said)}</p></noscript>'
+    built = PREVIEW_MAIN.sub(lambda m: m.group(0) + note, built, count=1)
+    if not PREVIEW_APP.search(shell):
+        raise ValueError('preview/index.html has lost <div id="app">, which the built page fills')
+    return PREVIEW_NOSCRIPT.sub("", PREVIEW_APP.sub(lambda _: f'<div id="app" data-built>{built}</div>\n', shell, count=1), count=1)
+
+
+def preview_place_page(shell: str, spot: dict, root: str, built: str | None = None, card: tuple[str, str] | None = None,
+                       issued: pd.Timestamp | None = None, live: bool = False) -> str:
+    """A place's own page in the preview, preview/spot/<id>/: the preview's page with the place's name, description,
+    address and share card in its <head> (page_meta, as a live spot page has them) and a <base> back to preview/,
+    so every address in it means what it means on the opening. built: the page as its script draws it.
+    live: the page as it would be if it were the site's own page for the place: its address is spot/<id>/ at the
+    site's root, search engines may index it, and it carries the live page's structured data. The build does not
+    ask for that: the preview stays out of search engines (docs/DESIGN.md)."""
+    url = f"{root}spot/{spot['id']}/" if live else f"{root}preview/spot/{spot['id']}/"
+    blurb = spot_description(spot)
+    head = page_meta(spot_title(spot), blurb, url, root, base="../../", image=card)
+    if live:
+        head += "\n" + spot_structured_data(spot, root, blurb)
+        shell = shell.replace(PREVIEW_NOINDEX + "\n", "", 1)
+    if not PREVIEW_TITLE.search(shell):
+        raise ValueError("preview/index.html has lost its <title>, which a place's page replaces")
+    return preview_built(PREVIEW_TITLE.sub(lambda _: head, shell, count=1), built, issued)
+
+
+def write_preview(site: Path, results: list[dict], tiles: dict | None = None, root: str | None = None,
+                  spot_cards: dict[str, str] | None = None, cards_v: str = "") -> int:
+    """site/preview/: the preview's files, copied as they are, with hero-photos.json and map.json; then its opening
+    and a page for each place at preview/spot/<id>/, each with what its script would draw already in the HTML
+    (prerender_preview) and, for a place, its own <head>. Returns how many spots have an opening photo. A page that
+    has lost its noindex mark, or the live site's own rules, stops the build."""
     page = (PREVIEW / "index.html").read_text()
     if PREVIEW_NOINDEX not in page:
         raise ValueError("preview/index.html has lost its noindex mark: the preview must stay out of search engines")
@@ -2650,6 +2721,7 @@ def write_preview(site: Path, results: list[dict], tiles: dict | None = None) ->
         tag = f'<script src="../{name}"></script>'
         if tag not in page:
             raise ValueError(f"preview/index.html has lost {tag}, the live site's own rules")
+    root = root or site_url()
     out = site / "preview"
     out.mkdir(parents=True, exist_ok=True)
     for name in PREVIEW_FILES:
@@ -2657,6 +2729,16 @@ def write_preview(site: Path, results: list[dict], tiles: dict | None = None) ->
     photos = hero_photos.index(results)
     (out / "hero-photos.json").write_text(json.dumps(photos, separators=(",", ":")))
     (out / "map.json").write_text(json.dumps(preview_map(tiles), separators=(",", ":")))
+    built, issued = prerender_preview(site), built_issue_time(site)   # after hero-photos.json, which the built pages show
+    (out / "index.html").write_text(preview_built(page, built.get("home"), issued, home=True))
+    shutil.rmtree(out / "spot", ignore_errors=True)   # a spot dropped from spots.csv loses its page
+    for r in results:
+        if not SPOT_ID.fullmatch(str(r["id"])):
+            continue   # as the live pages: no page of its own, it keeps ?spot=
+        card = (f"cards/spot/{r['id']}.png?v={cards_v}", spot_cards[r["id"]]) if r["id"] in (spot_cards or {}) else None
+        (out / "spot" / r["id"]).mkdir(parents=True, exist_ok=True)
+        (out / "spot" / r["id"] / "index.html").write_text(
+            preview_place_page(page, r, root, (built.get("spots") or {}).get(r["id"]), card, issued))
     return len(photos)
 
 
@@ -3485,7 +3567,7 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     shutil.copytree(STATIC / "fonts", site / "fonts", dirs_exist_ok=True)   # declared in page.css and index.html
     copy_app_files(site, stamp)
     (site / "app.js").write_text(app_js)
-    write_preview(site, results, tiles)   # the redesign preview at preview/, beside the live pages; after the scripts it loads
+    write_preview(site, results, tiles, root, spot_cards, cards_v)   # the redesign preview at preview/, beside the live pages; after the scripts it loads
     feeds = (site / "data" / "alerts.json").is_file()   # write_feeds writes them from it, after the spot pages
     home = PAGE_META.sub(lambda m: page_meta(HOME_TITLE, DESCRIPTION, root, root, base="./",
                                              feed=("feed.xml", f"{BRAND} · every spot") if feeds else None), template, count=1)
