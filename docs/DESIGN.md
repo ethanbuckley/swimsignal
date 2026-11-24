@@ -3071,3 +3071,26 @@ overflow-days, 16 with a spill; 27 of 70 forecasts for those spills reached the 
 with November marked, the fold kept open through a day picked; Wastwater, with no overflow upstream, has no such
 section. Headless Chrome at 1,440 px. **Not checked:** a place whose entry in the record file is missing.
 
+### Ported: Saved's extras (24 November 2026, night)
+
+The third port from `classic/`. Marked: the rules and words are already decided ("Saved as a starting page", the
+lists, Find a window); their place in the redesign's Saved is new.
+
+- **Since you last looked** (`since.js`): one sentence over the places and a line under each place that changed,
+  only while today is shown, and nothing over them on a first look. The note of what a place showed is the live
+  site's own (`dipcast.seen`), so the two sites share one. It is written when a saved place's level is on screen
+  with today picked: on Saved and on the place's own page.
+- **Find a window** (`findwindow.js`): the live section, for two saved places or more, its links to the redesign's
+  addresses.
+- **Share this list**, and **a list someone shared**: the live link's own form (`saved/#list=...&spots=...`) and
+  words. A shared list is shown, not kept, with one thing to do, "Add to my lists"; one already held says so. It
+  was passed on to `classic/` until this port; an outing someone sent still is.
+- **Still only at `classic/` on Saved:** the swim journal and passport, comparing places day by day, moving a place
+  between lists, and pasting a list's link.
+
+**Checked:** in-app browser at 375 px, with three places saved and a note written a day earlier that Linton Falls
+was at high risk: the sentence names it, its row says "Was high risk when you looked on Monday at 18:19; now low
+risk", and the notes are rewritten for the forecast on screen. Find a window's three rows. The link copied. A shared
+list of three, one not in the forecast: shown with two, added, then said to be held already, with "Show it".
+**Not checked:** a phone's own share sheet, 1,440 px by eye.
+

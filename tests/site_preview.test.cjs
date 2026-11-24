@@ -37,7 +37,7 @@ test('the page is out of search engines, shares only the rules, and keeps the li
   assert.match(PAGE, /<meta name="robots" content="noindex, nofollow">/);
   assert.deepEqual([...PAGE.matchAll(/<script src="([^"]+)"/g)].map(m => m[1]),
     ['levels.js', 'eatoday.js', 'experience.js', 'lists.js', 'plan.js', 'preview/host.js', 'reviews.js', 'visits.js', 'illness.js',
-      'spotscores.js', 'seasonal.js', 'preview/model.js', 'preview/alerts.js', 'preview/map.js', 'preview/app.js']);
+      'spotscores.js', 'seasonal.js', 'since.js', 'findwindow.js', 'preview/model.js', 'preview/alerts.js', 'preview/map.js', 'preview/app.js']);
   // Every address is read against the site's root, as the live pages' are: the page says where that is, and where it is under it.
   assert.match(PAGE, /<html lang="en-GB" data-home="preview\/">/); assert.match(PAGE, /<base href="\.\.\/">\n<title>/);
   assert.ok(PAGE.indexOf('<base href="../">') < PAGE.indexOf('href="fonts/'), 'the <base> comes before the first relative address');
@@ -330,12 +330,13 @@ test('the build draws each page with the page\'s own script, as at the moment th
   assert.match(JS, /if \(!DATA \|\| e\.metaKey/);
 });
 
-test('as the site\'s own pages: the app is "the earlier version" at classic/, and two kinds of link are passed on to it', () => {
+test('as the site\'s own pages: the app is "the earlier version" at classic/, and a sent outing is passed on to it', () => {
   assert.match(JS, /const classic = \(path = ''\) => \(\(PREVIEW \? '' : 'classic\/'\) \+ path\) \|\| '\.\/';/);
   assert.match(JS, /const link = r => \{ const a = P\.queryFor\(r\); return a === '\.\/' \? HOME \|\| '\.\/' : HOME \+ a; \};/);
-  // A shared list and a sent outing are things only the app can show: passed on, but never for this page's own Plan.
-  assert.match(JS, /const shared = route\.view === 'saved' && readShared\(location\.hash, dates\(\)\), outing = route\.view === 'plan' && \/\[#&\]spot=\/\.test\(location\.hash\);/);
+  // A sent outing is a thing only the app can show: passed on, but never for this page's own Plan. A shared list is shown here.
+  assert.match(JS, /if \(!\(route\.view === 'plan' && \/\[#&\]spot=\/\.test\(location\.hash\)\)\) return false;\n  location\.replace\(classic\('plan\/'\) \+ location\.hash\); return true;/);
   assert.match(JS, /if \(PREVIEW \|\| !route \|\| !DATA\) return false;/);
+  assert.match(JS, /const sh = readShared\(location\.hash, dates\(\)\); if \(sh\) return sharedHtml\(sh\);/);
   assert.match(JS, /if \(opts\.first && passOn\(\)\) return;/);
   assert.equal(typeof LISTS.readShared, 'function');
   assert.ok(LISTS.readShared('#list=Weekend&spots=a,b', DAYS), 'a shared list is read from the address');
@@ -384,4 +385,30 @@ test('the record at a place is the live site\'s own: how the forecast has done t
   // Kept when the page is drawn again, so a fold opened stays open; and every class they write has a rule here.
   assert.match(JS, /if \(rec && rec\.key === key\) \{ if \(slot !== rec\.el\) slot\.replaceWith\(rec\.el\); return; \}/);
   for (const c of ['record', 'mchart', 's-now', 's-more', 's-bar', 'seasonal', 'fold']) assert.match(CSS, new RegExp(`\\.${c}\\b`), c);
+});
+
+test('Saved has the live site\'s own: what changed since you last looked, each place\'s low-risk days, and a list to share', () => {
+  const SI = require(path.join(SITE, 'since.js')), FW = require(path.join(SITE, 'findwindow.js'));
+  // Since you last looked: the page asks the live rules for the words, only while today is shown, and notes what it showed.
+  assert.match(JS, /const sum = isToday && mine\.length && typeof sinceSummaryFor === 'function' \? sinceSummaryFor\(mine, DATA\.generated_at\) : null;/);
+  assert.match(JS, /const since = id => isToday && typeof sinceSaid === 'function' \? sinceSaid\(spotOf\(id\), DATA\.generated_at\) : '';/);
+  assert.match(JS, /if \(s && placeDay\(s\) === today\(\)\) lookedAt\(\[s\], DATA\.generated_at, saved\);/);
+  assert.match(JS, /writeSeen\(new Set\(allSaved\(LISTS\)\)\)/, 'a place unsaved loses its note');
+  assert.equal(SI.SEEN_KEY, 'dipcast.seen');   // the live site's own note, so the two pages share one
+  // Nothing over the places on a first look, as on the live page.
+  assert.equal(SI.sinceSummary([{name: 'A', was: undefined, now: null}]).state, 'none'); assert.match(JS, /sum && sum\.state !== 'none'/);
+  // Find a window: the live section, for two places or more, its links to this page's own addresses.
+  assert.match(JS, /mine\.length > 1 && typeof fwSection === 'function' \? fwSection\(mine, dates\(\), s => link\(\{ id: s\.id \}\)\) : ''/);
+  data([spot(ALL), spot(['low', 'low', 'low', 'low', 'low'], {id: 'b', name: 'B'})]);
+  const sec = FW.fwSection([spot(ALL), spot(['low', 'low', 'low', 'low', 'low'], {id: 'b', name: 'B'})], DAYS, s => M.queryFor({id: s.id}));
+  assert.match(sec, /<a href="spot\/a\/" data-id="a" class="fw-nm">/); assert.match(sec, /Low risk: Tue 24 Nov to Sat 28 Nov\./); assert.match(sec, /Low risk is not a safety check/);
+  // Sharing: the live link's own form, and its words for what the link holds.
+  assert.equal(LISTS.shareHash('Weekend', ['a', 'b']), '#list=Weekend&spots=a,b');
+  assert.match(JS, /new URL\(link\(\{ view: 'saved' \}\), document\.baseURI\)\.href \+ shareHash\(cur\.name, ids\)/);
+  for (const said of ['A link that opens this list on another phone or browser, or for a friend, who can then add it to their own lists.', "It is not kept on this device unless you add it.",
+    'Once added, it stays under Saved, where you can set up alerts for its spots.', 'None of the spots in this link is in the forecast now, or the link was cut short.']) {
+    assert.ok(JS.includes(said), said); assert.ok(LIVE.includes(said), `the live page no longer says: ${said}`); }
+  assert.match(JS, /addSharedList\(LISTS, sh\.name, ids\)/); assert.match(JS, /sameList\(LISTS, sh\.name, spots\.map\(s => s\.id\)\)/);
+  assert.match(HOST, /const spotPath = id => `\$\{document\.documentElement\.dataset\.home \|\| ''\}spot\/\$\{encodeURIComponent\(id\)\}\/`;/);
+  for (const c of ['place-since', 'since-ev', 'since-sum', 'fw-list', 'fw-nm', 'fw-note', 'fw-apart', 'o-tag', 'sharelist']) assert.match(CSS, new RegExp(`\\.${c}\\b`), c);
 });

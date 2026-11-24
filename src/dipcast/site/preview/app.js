@@ -32,7 +32,9 @@ const savedIds = () => allSaved(LISTS), knownSaved = () => savedIds().filter(id 
 // Change the lists. Returns false when the browser would not keep them. The alert service is told a second later.
 let syncTimer = null;
 const syncSoon = () => { clearTimeout(syncTimer); syncTimer = setTimeout(() => { if (DATA && DATA.push) window.PVAlerts.sync(DATA.push, knownSaved()).catch(() => {}); }, 1000); };
-function setLists(next) { LISTS = next; const ok = storeLists(); syncSoon(); return ok; }
+function setLists(next) { LISTS = next; const ok = storeLists(); syncSoon();
+  if (typeof writeSeen === 'function') writeSeen(new Set(allSaved(LISTS)));   // since.js: a place unsaved loses its note
+  return ok; }
 // Another tab changed them (the live site, say): follow it, or this tab's next change would undo that one.
 window.addEventListener('storage', e => {
   if (e.key === LISTS_KEY) { if (!listsReadable(e.newValue)) return; LISTS = readLists(e.newValue, null); }
@@ -283,9 +285,47 @@ async function alertsToggle() {
   redrawAlerts();
   const to = document.getElementById('alerts-blocked') || document.querySelector('[data-do="alerts"]'); if (to) to.focus({ preventScroll: true });
 }
+// A list someone shared (saved/#list=...&spots=..., lists.js, readShared): shown, not kept, with one thing to do,
+// add it to my lists. It stays in the address while it is shown, so a reload or Back shows it again. The words are
+// the live page's (index.html, renderShared).
+function sharedHtml(sh) {
+  const day = dates().includes(sh.day) ? sh.day : homeDay(), spots = sh.spots.map(spotOf).filter(Boolean), gone = sh.spots.length - spots.length;
+  const have = spots.length ? sameList(LISTS, sh.name, spots.map(s => s.id)) : null, inApp = window.PVAlerts.where.inApp, own = window.PVAlerts.where.ios ? 'Safari' : 'your own browser';
+  return `${bar()}<main id="main" class="home view-saved">
+    <section class="opening slim"><p class="backline"><a href="${link({ view: 'saved' })}">${IC.back}Saved</a></p><h1 id="title" tabindex="-1">${esc(sh.name)}</h1>
+      <p class="lede">Someone shared this list${spots.length ? ` of ${spots.length === 1 ? 'one spot' : `${spots.length} spots`}` : ''} with you.${spots.length ? ' It is not kept on this device unless you add it.' : ''}${spots.length && !have && DATA.push ? ' Once added, it stays under Saved, where you can set up alerts for its spots.' : ''}</p></section>
+    ${stale()}
+    <div class="home-body">
+      ${inApp && spots.length && !have ? `<p class="notice" role="note">You are in the ${esc(inApp)} app's browser. A list added here stays in the ${esc(inApp)} app, not in ${own}, and alerts cannot be turned on here. To keep it in ${own}, open this page there: the ${esc(inApp)} app's menu has an option for it.</p>` : ''}
+      ${have ? `<p class="shared-act" role="status">It is in your lists already, as ${esc(have.name)}. <button type="button" class="textbtn" data-do="shared-show" data-list="${esc(have.id)}">Show it</button></p>`
+        : spots.length ? '<p class="shared-act"><button type="button" class="btn primary" data-do="shared-add">Add to my lists</button></p>' : ''}
+      <section class="block">
+        ${spots.length ? `<h2>${spots.length === 1 ? 'The place' : `The ${spots.length} places`} <span class="meta">${esc(dayWord(day))}</span></h2>${rows(spots.map(p => P.placeRow(p, day)), day)}`
+          : `<h2>No spots to show</h2><p class="sec-lede">None of the spots in this link is in the forecast now, or the link was cut short.</p><p><a class="btn primary" href="${link({ day })}">Find a place</a></p>`}
+        ${gone && spots.length ? `<p class="meta">${gone === 1 ? 'One spot in the link is' : `${gone} spots in the link are`} not in the forecast now, so ${gone === 1 ? 'it is' : 'they are'} left out.</p>` : ''}
+      </section>
+      <p class="issued">${esc(P.issuedWords(DATA, now()).text)}. Forecasts, not water tests: check the signs at the water before you swim.</p>
+    </div>
+    ${foot()}
+  </main>${tabbar()}`;
+}
+// Share the list shown: a link that opens it on another phone or for a friend (lists.js, shareHash). The phone's own
+// share sheet where there is one, else the link is copied; if neither can be done the link is written out.
+async function shareList() {
+  const cur = shownList(LISTS), ids = cur.spots.filter(spotOf), msg = document.getElementById('share-list-msg');
+  const url = new URL(link({ view: 'saved' }), document.baseURI).href + shareHash(cur.name, ids), say = t => { if (msg) msg.textContent = t; };
+  try { if (TOUCH && navigator.share) await navigator.share({ title: `${cur.name} · SwimSignal`, url }); else { await navigator.clipboard.writeText(url); say('Link copied.'); } }
+  catch (e) { if (e.name !== 'AbortError') say(url); }
+}
 function savedHtml() {
+  const sh = readShared(location.hash, dates()); if (sh) return sharedHtml(sh);
   const day = homeDay(), cur = shownList(LISTS), many = LISTS.lists.length > 1, S = P.savedRows(DATA.spots, cur.spots, day);
-  const row = r => `<li class="has-x">${rowLink(r, day)}<button type="button" class="x" data-do="unsave" data-id="${esc(r.id)}" aria-label="Remove ${esc(r.name)} from ${many ? esc(cur.name) : 'your saved places'}">${IC.x}</button></li>`;
+  const mine = cur.spots.map(spotOf).filter(Boolean), isToday = day === today();
+  // What changed since this browser last showed each place (since.js): a line under a place's row and one over them
+  // all, only while today is shown, since the note kept is of today's level. Nothing over them on a first look.
+  const sum = isToday && mine.length && typeof sinceSummaryFor === 'function' ? sinceSummaryFor(mine, DATA.generated_at) : null;
+  const since = id => isToday && typeof sinceSaid === 'function' ? sinceSaid(spotOf(id), DATA.generated_at) : '';
+  const row = r => `<li class="has-x">${rowLink(r, day)}<button type="button" class="x" data-do="unsave" data-id="${esc(r.id)}" aria-label="Remove ${esc(r.name)} from ${many ? esc(cur.name) : 'your saved places'}">${IC.x}</button>${since(r.id)}</li>`;
   const tools = listForm === 'new' || listForm === 'rename' ? `<form class="listform" onsubmit="return false"><label for="list-name">${listForm === 'new' ? 'Name the new list' : 'A new name for this list'}</label>
       <div class="field"><input id="list-name" type="text" maxlength="40" autocomplete="off" enterkeyhint="done" value="${listForm === 'rename' ? esc(cur.name) : ''}"></div>
       <p class="chips"><button type="button" class="btn" data-do="list-save">${listForm === 'new' ? 'Make the list' : 'Rename'}</button><button type="button" class="textbtn" data-do="list-cancel">Cancel</button></p></form>`
@@ -298,14 +338,19 @@ function savedHtml() {
     <div class="home-body">
       ${dayTabsHtml(plainTabs(), day, 'Day shown', d => link({ view: 'saved', day: d }))}
       ${many ? `<p class="chips" role="group" aria-label="Which list">${LISTS.lists.map(l => `<button type="button" class="chip${l.id === cur.id ? ' on' : ''}" data-do="list" data-list="${esc(l.id)}" aria-pressed="${l.id === cur.id}">${esc(l.name)} <span class="chip-n">${l.spots.filter(spotOf).length}</span></button>`).join('')}</p>` : ''}
+      ${sum && sum.state !== 'none' ? `<section class="since-sum ${sum.state}" aria-labelledby="since-h"><h2 id="since-h">Since you last looked</h2><p>${esc(sum.text)}</p></section>` : ''}
       <section class="block">
         <h2>${many ? esc(cur.name) : 'Your places'}${S.rows.length ? ` <span class="meta">${S.low} of ${S.rows.length} at low risk ${esc(dayWord(day))}</span>` : ''}</h2>
         ${S.rows.length ? `<ul class="rows">${S.rows.map(row).join('')}</ul>` : `<p class="none">Nothing saved ${many ? 'in this list ' : ''}yet. Open a place and press Save. <a href="${link({ day })}">Find a place</a></p>`}
         ${S.gone ? `<p class="meta">${S.gone === 1 ? 'One saved place is' : `${S.gone} saved places are`} no longer in the forecast, so ${S.gone === 1 ? 'it is' : 'they are'} not shown.</p>` : ''}
         ${tools}<p class="meta" id="list-said" role="status"></p>
       </section>
+      ${mine.length > 1 && typeof fwSection === 'function' ? fwSection(mine, dates(), s => link({ id: s.id })) : ''}
       ${alertsHtml()}
-      <p class="meta">A place saved here is saved on <a href="${classic('saved/')}">${OLD}</a> too, in this browser. Sharing a list, finding a low-risk day across your places and the swim journal are there.</p>
+      ${mine.length ? `<section class="sharelist" aria-labelledby="share-list-h"><h2 id="share-list-h">Share this list</h2>
+        <p class="sec-lede">A link that opens this list on another phone or browser, or for a friend, who can then add it to their own lists. It holds the list's name, ${esc(cur.name)}, and which spots are in it, nothing else.</p>
+        <p><button type="button" class="btn" data-do="share-list">${TOUCH && navigator.share ? 'Share this list' : 'Copy link to this list'}</button></p><p class="meta" id="share-list-msg" role="status"></p></section>` : ''}
+      <p class="meta">A place saved here is saved on <a href="${classic('saved/')}">${OLD}</a> too, in this browser. The swim journal is there.</p>
     </div>
     ${foot()}
   </main>${tabbar()}`;
@@ -645,6 +690,10 @@ function draw(opts = {}) {
   document.title = `${s ? s.name : ({ map: 'Map', plan: 'Plan a swim', saved: 'Saved' })[route.view] || 'Where do you swim?'} · SwimSignal${PREVIEW ? ' preview' : ''}`;
   if (route.view === 'map') mountHomeMap();
   if (s && upView === 'map') mountPlaceMap();
+  // since.js: these places' levels are on screen, with no other day picked, so the note of what they showed is kept.
+  if (typeof lookedAt === 'function') { const saved = new Set(savedIds());
+    if (s && placeDay(s) === today()) lookedAt([s], DATA.generated_at, saved);
+    else if (route.view === 'saved' && homeDay() === today() && !readShared(location.hash, dates())) lookedAt(shownList(LISTS).spots.map(spotOf).filter(Boolean), DATA.generated_at, saved); }
   if (s) { const typing = swim && swim.id === s.id && active && swim.el.contains(active) ? active : null;
     mountRecord(s); mountSwimmers(s); if (typing) typing.focus({ preventScroll: true }); } else { swim = null; rec = null; }
   // Whether alerts are on is the browser's to say, and it answers a moment after the page is drawn.
@@ -748,6 +797,12 @@ app.addEventListener('click', e => {
     if (act === 'list-delete') { const gone = shownList(LISTS).name; setLists(deleteList(LISTS, shownList(LISTS).id)); listForm = null; draw();
       const t = document.getElementById('list-said'); if (t) t.textContent = `“${gone}” was deleted.`; const h = document.getElementById('title'); if (h) h.focus({ preventScroll: true }); return; }
     if (act === 'alerts') { alertsToggle(); return; }
+    if (act === 'share-list') { shareList(); return; }
+    if (act === 'shared-add' || act === 'shared-show') { const sh = readShared(location.hash, dates()); if (!sh) return;
+      const ids = sh.spots.filter(spotOf), kept = setLists(act === 'shared-add' ? addSharedList(LISTS, sh.name, ids) : pickList(LISTS, b.dataset.list));
+      history.replaceState(null, '', link({ view: 'saved', day: route.day })); draw({ focus: true });
+      const t = document.getElementById('list-said'); if (t && act === 'shared-add') t.textContent = kept ? `Added to your lists as ${shownList(LISTS).name}.` : 'This browser is not keeping site data, so this list is kept only for this visit.';
+      const h = document.getElementById('title'); if (h) h.focus({ preventScroll: true }); return; }
     if (act === 'plan-here') { const go = () => planSet({ from: { here: true } }); if (here) go(); else locate(go); return; }
     if (act === 'plan-from') { const lat = Number(b.dataset.lat), lon = Number(b.dataset.lon); if (Number.isFinite(lat) && Number.isFinite(lon)) planSet({ from: { name: String(b.dataset.name).slice(0, 80), lat, lon } });
       const h = app.querySelector('#results h2'); if (h) { h.tabIndex = -1; h.focus({ preventScroll: true }); } return; }
@@ -779,18 +834,17 @@ document.addEventListener('click', e => {
 // Back returns to where the page was left: the list of places elsewhere, not the top of the page.
 const leftAt = new Map();
 if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
-// Two links these pages cannot yet show for what they are, when they are the site's own: a list someone shared
-// (saved/#list=...&spots=...) and an outing someone sent (plan/#...&spot=...). Both open on the earlier version, which
-// can. Only a link that opened the page, or an address put over this one: never this page's own Plan, whose address
-// carries an outing made there so that it is not lost.
+// One link these pages cannot yet show for what it is, when they are the site's own: an outing someone sent
+// (plan/#...&spot=...). It opens on the earlier version, which can. Only a link that opened the page, or an address
+// put over this one: never this page's own Plan, whose address carries an outing made there so that it is not lost.
+// (A list someone shared was passed on too, until Saved could show one: sharedHtml.)
 function passOn() {
   if (PREVIEW || !route || !DATA) return false;
-  const shared = route.view === 'saved' && readShared(location.hash, dates()), outing = route.view === 'plan' && /[#&]spot=/.test(location.hash);
-  if (!shared && !outing) return false;
-  location.replace(classic(route.view + '/') + location.hash); return true;
+  if (!(route.view === 'plan' && /[#&]spot=/.test(location.hash))) return false;
+  location.replace(classic('plan/') + location.hash); return true;
 }
-// A plan's choices are after the #: an address typed or pasted over this one is drawn.
-window.addEventListener('hashchange', () => { if (passOn()) return; if (route && route.view === 'plan') draw(); });
+// A plan's choices, and a shared list, are after the #: an address typed or pasted over this one is drawn.
+window.addEventListener('hashchange', () => { if (passOn()) return; if (route && (route.view === 'plan' || route.view === 'saved')) draw(); });
 window.addEventListener('popstate', () => { const at = leftAt.get(location.pathname + location.search) || { y: 0 };
   draw({ focus: true, y: at.y });
   // A keyboard comes back to the link it followed, so the next Tab goes on from there.
