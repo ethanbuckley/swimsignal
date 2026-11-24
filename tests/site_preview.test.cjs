@@ -152,8 +152,8 @@ test('a shared link keeps its day, and a day that has passed falls back to today
   assert.deepEqual(M.parseQuery('?spot=bw-uke4100-08901&day=2026-11-28'), {screen: 'place', id: 'bw-uke4100-08901', day: SAT});
   assert.deepEqual(M.parseQuery('?spot=<script>'), {screen: 'find', view: '', day: null, q: '', area: ''});
   data([spot(ALL)]);
-  assert.equal(M.queryFor({id: 'a', day: SAT}), '?spot=a&day=2026-11-28');
-  assert.equal(M.queryFor({id: 'a', day: DAYS[0]}), '?spot=a', "today's link carries no date, so it never goes out of date");
+  assert.equal(M.queryFor({id: 'a', day: SAT}), 'spot/a/?day=2026-11-28');
+  assert.equal(M.queryFor({id: 'a', day: DAYS[0]}), 'spot/a/', "today's link carries no date, so it never goes out of date");
   assert.equal(M.queryFor({day: DAYS[0]}), './');
   assert.match(JS, /This link was for \$\{esc\(P\.longDate\(route\.day\)\)\}/);
 });
@@ -264,4 +264,48 @@ test('the maps use the live map\'s own library and credit, and open only when as
   assert.doesNotMatch(PAGE, /leaflet/);   // not in the page: asked for by map.js when a map is first opened
   assert.match(MAP, /fetch\('map\.json'\)/); assert.match(MAP, /attribution: CONF\.credit/);
   assert.match(MAP, /The same places are in the list/); assert.match(JS, /The same places as a list/);   // the list is the map's other way in
+});
+
+test('a place has an address of its own, and the links made before it had one still open it', () => {
+  const at = (path, search = '') => M.parseAddress(path, search, '/preview/');
+  assert.deepEqual(at('/preview/spot/bw-uke4100-08901/', '?day=2026-11-28'), {screen: 'place', id: 'bw-uke4100-08901', day: SAT});
+  assert.deepEqual(at('/preview/spot/a/index.html'), {screen: 'place', id: 'a', day: null});
+  assert.deepEqual(at('/preview/', '?spot=a&day=2026-11-28'), {screen: 'place', id: 'a', day: SAT});   // an old link
+  assert.equal(at('/preview/', '?view=map').view, 'map');
+  assert.equal(at('/preview/spot/<script>/').screen, 'find');
+  assert.equal(at('/elsewhere/spot/a/').screen, 'find', 'only under where the pages are published');
+  assert.equal(M.parseAddress('/spot/a/', '', '/').id, 'a', 'and at the root of a site, were they published there');
+  // Every address the page writes is relative to where the pages are published, and every page has a <base> there.
+  assert.match(JS, /const BASE = new URL\('\.\/', document\.baseURI\)\.pathname;/);
+  assert.match(JS, /if \(!document\.querySelector\('base'\)\)/);
+  assert.doesNotMatch(JS, /'\?spot='|q\.set\('spot'/);
+});
+
+test('the build draws each page with the page\'s own script, as at the moment the forecast was issued', () => {
+  const os = require('node:os');
+  const {prerender, ageless} = require(path.join(__dirname, '../scripts/prerender_preview.js'));
+  const site = fs.mkdtempSync(path.join(os.tmpdir(), 'pv-built-'));
+  fs.mkdirSync(path.join(site, 'data', 'upstream'), {recursive: true}); fs.mkdirSync(path.join(site, 'data', 'spot')); fs.mkdirSync(path.join(site, 'preview'));
+  const a = spot(ALL, {id: 'a', detail_file: 'spot/a.json'}), lake = tarn({id: 'tarn'});
+  fs.writeFileSync(path.join(site, 'data', 'spots-lite.json'), JSON.stringify({generated_at: GEN, build: {live_feeds: {polled_at: '2026-11-24 13:15:08+00:00'}}, spots: [a, lake, spot(ALL, {id: 'not an id'})]}));
+  fs.writeFileSync(path.join(site, 'data', 'spot', 'a.json'), JSON.stringify({id: 'a', contributors: []}));
+  fs.writeFileSync(path.join(site, 'data', 'upstream', 'a.json'), JSON.stringify({id: 'a', overflows: [
+    {site_id: 'X1', site_name: 'NEAR CSO', company: 'Yorkshire Water', distance_km: 2, lat: 53.95, lon: -1.9, status: 0, data_state: 'live', feed_updated_at: '2026-11-24T13:10:00+00:00'}]}));
+  fs.writeFileSync(path.join(site, 'preview', 'hero-photos.json'), JSON.stringify({a: {file: 'geograph-1.jpg', w: 640, h: 427, taken: '2021-06-14', credit: 'A Walker', caption: 'The river.'}}));
+  const tz = process.env.TZ; let built;
+  try { built = prerender(site); } finally { process.env.TZ = tz; fs.rmSync(site, {recursive: true, force: true}); }
+  assert.deepEqual(Object.keys(built.spots), ['a', 'tarn'], 'a place whose id cannot be a folder has no page');
+  const page = built.spots.a;
+  assert.match(page, /<h1 id="title" tabindex="-1">River Aire, Somewhere<\/h1>/);
+  assert.match(page, /<h2 class="level lv-moderate" id="answer-h">Moderate risk from sewage spills<\/h2>/);   // today, as issued
+  assert.match(page, /guides\/photos\/geograph-1\.jpg/);
+  assert.match(page, /One monitored storm overflow within 60 km upstream/); assert.doesNotMatch(page, /Reading the overflows upstream|Reading what is known/);
+  assert.match(page, /Issued 13:21 ·/); assert.doesNotMatch(page, / ago\b/, 'an age would be wrong by the time the page is read');
+  assert.equal(ageless('Issued 13:21, 0 min ago · A forecast'), 'Issued 13:21 · A forecast'); assert.equal(ageless('Issued Tue 13:21, 3 days ago.'), 'Issued Tue 13:21.');
+  // Its links are the places' own addresses and the opening's, each a page the build writes.
+  assert.match(page, /href="spot\/a\/\?day=2026-11-28" data-day="2026-11-28"/); assert.match(page, /<a class="brand" href="\.\/">/);
+  assert.match(built.spots.tarn, /No monitored overflow found upstream/);
+  assert.match(built.home, /<h1 id="title" tabindex="-1">Where do you swim\?<\/h1>/); assert.match(built.home, /Yorkshire/);
+  // Until the forecast is read, a built page's links are plain links: the script leaves them to the browser.
+  assert.match(JS, /if \(!DATA \|\| e\.metaKey/);
 });

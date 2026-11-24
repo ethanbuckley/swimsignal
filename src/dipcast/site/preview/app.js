@@ -60,6 +60,12 @@ const IC = {
 };
 const MARK = '<svg viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" fill="#0f5a61"/><path d="M430-20C330 110 470 230 300 290S110 380 190 540" fill="none" stroke="#5CC2B5" stroke-width="70" stroke-linecap="round"/><circle cx="318" cy="138" r="38" fill="#F08A4B"/><circle cx="165" cy="358" r="46" fill="none" stroke="#fff" stroke-width="22"/></svg>';
 const link = r => P.queryFor(r);
+// Where these pages are published: every address here is under it. A place's own page (spot/<id>/) carries a
+// <base> back to it, so one relative address means the same page wherever it is written.
+const BASE = new URL('./', document.baseURI).pathname;
+// The opening's own file has no <base>, and without one a relative address is read against the address in the bar,
+// which this script changes as places are opened. So it is given one here, once.
+if (!document.querySelector('base')) { const b = document.createElement('base'); b.setAttribute('href', BASE); document.head.prepend(b); }
 const dates = () => P.dates(DATA);
 // The plan kept in this browser, as the live site keeps it (plan.js, planKept): never your own position.
 const keptPlan = () => planKept(stored(PLAN_KEY), dates());
@@ -564,7 +570,9 @@ let lastKey = '';
 // Draw the screen for the address. Focus is kept on the control that was used (a day's tab, a distance), found
 // again by what it does, so a keyboard stays where it was; a new screen puts focus on its heading.
 function draw(opts = {}) {
-  route = P.parseQuery(location.search);
+  route = P.parseAddress(location.pathname, location.search, BASE);
+  // A link from before places had addresses ("?spot=<id>"): the same place, at its address.
+  if (route.screen === 'place' && !location.pathname.startsWith(BASE + 'spot/')) history.replaceState(null, '', link(route) + location.hash);
   if (route.screen === 'place' && spotOf(route.id) && !details.has(route.id)) loadDetail(route.id);
   if (route.screen === 'find' && route.q) nearWords(route.q);
   // A plan's day is the plan's own, from its address or the plan kept in this browser.
@@ -650,7 +658,8 @@ app.addEventListener('keydown', e => {
     if (to) { e.preventDefault(); to.focus(); } }
 });
 app.addEventListener('click', e => {
-  if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button) return;
+  // Before the forecast is read a built page's links are plain links, and each has a page of its own to open.
+  if (!DATA || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button) return;
   const a = e.target.closest('a[href]'), b = e.target.closest('[data-do]');
   if (b) { const act = b.dataset.do;
     if (act === 'jump') { e.preventDefault(); jump(b.dataset.to); return; }
@@ -685,7 +694,7 @@ app.addEventListener('click', e => {
       const h = app.querySelector('#results h2'); if (h) { h.tabIndex = -1; h.focus({ preventScroll: true }); } return; }
     if (act === 'plan-within') { planSet({ within: Number(b.dataset.within) || 0 }); return; }
 
-    if (act === 'share') { const s = spotOf(route.id), day = placeDay(s), url = location.origin + location.pathname + link({ id: s.id, day }).replace(/^\.\//, ''), t = document.getElementById('tool-said');
+    if (act === 'share') { const s = spotOf(route.id), day = placeDay(s), url = new URL(link({ id: s.id, day }), document.baseURI).href, t = document.getElementById('tool-said');
       const done = msg => { if (t) t.textContent = msg; };
       const title = `${s.name}: ${P.levelWords(dayLevel(s, day)).toLowerCase()} ${dayWord(day)} (SwimSignal forecast)`;
       if (navigator.share) navigator.share({ title, url }).catch(() => {});
@@ -693,28 +702,51 @@ app.addEventListener('click', e => {
       else done('Copy the address from the bar above.');
       return; }
   }
-  // Only this page's own addresses are drawn here; a link to the live site, or out, is left to the browser.
-  const dir = location.pathname.replace(/[^/]*$/, '');
-  if (!a || a.target || a.origin !== location.origin || (a.pathname !== location.pathname && a.pathname !== dir)) return;
+  // Only these pages' own addresses are drawn here (the opening and its views, and a place); a link to the live
+  // site, or out, is left to the browser.
+  const rel = a && !a.target && a.origin === location.origin && a.pathname.startsWith(BASE) ? a.pathname.slice(BASE.length) : null;
+  if (rel === null || !(rel === '' || /^spot\/[A-Za-z0-9_-]+\/$/.test(rel))) return;
   if (a.getAttribute('href').startsWith('#')) return;
   if (a.dataset.day) { e.preventDefault(); setDay(a.dataset.day); return; }
-  e.preventDefault(); leftAt.set(location.search, { y: window.scrollY, href: a.getAttribute('href') }); history.pushState(null, '', a.getAttribute('href')); draw({ focus: true });
+  e.preventDefault(); leftAt.set(location.pathname + location.search, { y: window.scrollY, href: a.getAttribute('href') }); history.pushState(null, '', a.getAttribute('href')); draw({ focus: true });
+});
+// A link to a part of this page ("#main", the skip link): with a <base> the browser would read it as a link to the
+// opening, so it is followed here.
+document.addEventListener('click', e => {
+  const a = e.target.closest && e.target.closest('a[href^="#"]'); if (!a || a.dataset.do || e.defaultPrevented) return;
+  const el = document.getElementById(a.getAttribute('href').slice(1)); e.preventDefault(); if (!el) return;
+  el.scrollIntoView(); if (!el.hasAttribute('tabindex')) el.tabIndex = -1; el.focus({ preventScroll: true });
 });
 // Back returns to where the page was left: the list of places elsewhere, not the top of the page.
 const leftAt = new Map();
 if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 // A plan's choices are after the #: an address typed or pasted over this one is drawn.
 window.addEventListener('hashchange', () => { if (route && route.view === 'plan') draw(); });
-window.addEventListener('popstate', () => { const at = leftAt.get(location.search) || { y: 0 };
+window.addEventListener('popstate', () => { const at = leftAt.get(location.pathname + location.search) || { y: 0 };
   draw({ focus: true, y: at.y });
   // A keyboard comes back to the link it followed, so the next Tab goes on from there.
   const from = at.href && [...app.querySelectorAll('a[href]')].find(x => x.getAttribute('href') === at.href);
   if (from) from.focus({ preventScroll: true }); });
 
+// For the build (scripts/prerender_preview.js runs this file in Node): the opening and each place's page as this
+// script draws them, at the moment the forecast was issued. The build writes them into the pages, so a page has its
+// answer before this script runs, and for a reader or a crawler without scripts. files: the place's own file and
+// its overflows upstream, which the page would otherwise fetch.
+window.PVBuilt = {
+  load(data, hero) { DATA = P.prepare(data, now()); HERO = hero || {}; },
+  home() { route = { screen: 'find', view: '', day: null, q: '', area: '' }; return homeHtml(); },
+  place(id, files) { route = { screen: 'place', id, day: null }; details.set(id, files || { detail: null, up: null }); return placeHtml(); },
+};
+
 (async function start() {
   try { const [data, hero] = await Promise.all([loadJson('../data/spots-lite.json'), loadJson('hero-photos.json').catch(() => ({}))]);
     DATA = P.prepare(data, now()); HERO = hero || {}; }
-  catch (e) { app.innerHTML = '<header class="bar"><a class="brand" href="./">SwimSignal</a></header><main id="main" class="home"><section class="opening"><h1>The forecast could not be read</h1><p class="lede">Check the connection and load the page again. <a href="../">The current site</a> keeps a copy for offline use.</p></section></main>'; return; }
+  catch (e) {
+    // A page the build wrote keeps what it says, with a line on what it is: the forecast as at the build.
+    if (app.hasAttribute && app.hasAttribute('data-built')) { const m = app.querySelector('main');
+      if (m) m.insertAdjacentHTML('afterbegin', '<p class="notice" role="note"><b>The latest forecast could not be read.</b> This page shows the forecast as it was when the page was made. Check the connection and load it again.</p>');
+      return; }
+    app.innerHTML = '<header class="bar"><a class="brand" href="./">SwimSignal</a></header><main id="main" class="home"><section class="opening"><h1>The forecast could not be read</h1><p class="lede">Check the connection and load the page again. <a href="../">The current site</a> keeps a copy for offline use.</p></section></main>'; return; }
   draw(); syncSoon();
 })();
 })();

@@ -45,7 +45,7 @@ def test_the_build_publishes_the_preview_beside_the_live_pages(tmp_path):
     bs.write_pages(tmp_path, SPOTS, root="https://example.org/")
     out = tmp_path / "preview"
     assert sorted(p.name for p in out.iterdir()) == ["alerts.js", "app.js", "hero-photos.json", "index.html", "map.js", "map.json", "model.js",
-                                                     "preview.css"]
+                                                     "preview.css", "spot"]
     for name in bs.PREVIEW_FILES:   # copied as they are: no stamp, no counter, no tile key
         assert (out / name).read_bytes() == (bs.PREVIEW / name).read_bytes(), name
     assert list(json.loads((out / "hero-photos.json").read_text())) == ["a"]
@@ -93,10 +93,93 @@ def test_the_preview_is_in_no_sitemap_and_linked_from_no_live_page(tmp_path):
         assert 'href="preview/' not in text and 'href="../preview/' not in text and "example.org/preview" not in text, page
 
 
-def test_the_offline_copy_leaves_the_preview_to_the_browser():
+def test_the_offline_copy_keeps_a_preview_page_once_opened_and_stores_none_at_install():
+    """What the worker does with them is tested where it runs (tests/site_cache.test.cjs). Here: it no longer leaves
+    preview/ to the browser, the preview has its own stand-in page, and no visitor stores its files at install."""
     sw = (ROOT / "src/dipcast/site/sw.js").read_text()
-    assert "if (url.pathname.includes('/preview/')) return;" in sw
-    assert "preview/" not in sw.split("const SHELL")[1].split("];")[0]   # and stores none of its files
+    assert "if (url.pathname.includes('/preview/')) return;" not in sw
+    assert "const root = inPreview(req.url) ? PREVIEW_ROOT() : self.registration.scope;" in sw
+    assert "preview/" not in sw.split("const SHELL")[1].split("];")[0]
+
+
+RISK = {"low": 0.05, "moderate": 0.2, "high": 0.5}
+DAYS = ["2026-11-24", "2026-11-25", "2026-11-26", "2026-11-27", "2026-11-28"]
+
+
+def _forecast_spot(**extra):
+    """A spot as data/spots-lite.json holds one, with five days: enough for the page's script to draw its answer."""
+    labels = ["moderate", "moderate", "low", "high", "moderate"]
+    return {"id": "a", "name": "River Aire, Somewhere", "kind": "river", "river": "River Aire", "area": "Yorkshire", "source": "curated",
+            "lat": 53.9, "lon": -1.8, "upstream_summary": {"overflows": 10}, "location": {"mode": "river"},
+            "assumptions": {"max_upstream_km": 60, "recent_spill_hours": 48}, "detail_file": "spot/a.json",
+            "now": {"label": "low", "risk": 0.02, "discharging_upstream": 0, "recent_upstream": 0, "monitored_upstream": 8},
+            "days": [{"date": d, "label": lab, "risk": RISK[lab], "rain_48h_mm": 4, "expected_spilling_overflows": 0.2,
+                      "in_validated_season": False} for d, lab in zip(DAYS, labels)],
+            "weather": {"days": [{"date": d, "tmax": 7, "sunrise": "07:43", "sunset": "16:01", "wind_kmh": 15, "gust_kmh": 33} for d in DAYS]},
+            **extra}
+
+
+def test_each_place_has_a_page_of_its_own_with_its_head_and_a_base(tmp_path):
+    bs = _build_site()
+    bs.write_pages(tmp_path, SPOTS, root="https://example.org/", spot_cards={"a": "River A: low risk today"}, cards_v="202611241321")
+    out = tmp_path / "preview"
+    assert sorted(p.name for p in (out / "spot").iterdir()) == ["a", "b"]
+    page = (out / "spot" / "a" / "index.html").read_text()
+    head = page.split("</head>")[0]
+    # The <base> comes before every relative address, so each means what it means on the opening.
+    assert head.index('<base href="../../">') < head.index('href="../fonts/') < head.index('href="preview.css"')
+    assert f"<title>{bs.spot_title(SPOTS[0])}</title>" in head and "SwimSignal preview" not in head   # the live page's own title
+    assert '<link rel="canonical" href="https://example.org/preview/spot/a/">' in head
+    assert '<meta property="og:image" content="https://example.org/cards/spot/a.png?v=202611241321">' in head
+    assert '<meta property="og:image:alt" content="River A: low risk today">' in head
+    assert bs.PREVIEW_NOINDEX in head and "application/ld+json" not in page   # a preview: out of search engines
+    assert (tmp_path / "spot" / "a" / "index.html").is_file()   # the live page is still the place's page
+    assert 'href="https://example.org/preview/' not in (tmp_path / "sitemap.xml").read_text()
+    # No forecast was written here, so nothing is built in: the pages keep their loading line.
+    assert "data-built" not in page and "Reading the forecast" in page
+    assert (out / "index.html").read_bytes() == (bs.PREVIEW / "index.html").read_bytes()
+
+
+def test_a_place_page_as_the_sites_own_would_be_indexed_at_the_sites_address():
+    """The form a swap of the home page would publish. The build does not ask for it."""
+    bs = _build_site()
+    shell = (bs.PREVIEW / "index.html").read_text()
+    page = bs.preview_place_page(shell, _forecast_spot(), "https://example.org/", live=True)
+    assert '<link rel="canonical" href="https://example.org/spot/a/">' in page
+    assert "noindex" not in page
+    assert '"@type":"Place"' in page and '"@id":"https://example.org/spot/a/#place"' in page
+    assert "noindex" in bs.preview_place_page(shell, _forecast_spot(), "https://example.org/")
+
+
+def test_the_built_pages_hold_what_the_script_would_draw(tmp_path):
+    import shutil
+    if not shutil.which("node"):
+        pytest.skip("node is not installed")
+    bs = _build_site()
+    spot = _forecast_spot()
+    (tmp_path / "data" / "spot").mkdir(parents=True)
+    (tmp_path / "data" / "spots-lite.json").write_text(json.dumps({"generated_at": "2026-11-24T13:21:00+00:00", "spots": [spot]}))
+    (tmp_path / "data" / "spots.json").write_text(json.dumps({"generated_at": "2026-11-24T13:21:00+00:00", "spots": [spot]}))
+    (tmp_path / "data" / "spot" / "a.json").write_text(json.dumps({"id": "a", "contributors": []}))
+    bs.write_preview(tmp_path, [spot], root="https://example.org/")
+    place = (tmp_path / "preview" / "spot" / "a" / "index.html").read_text()
+    assert '<div id="app" data-built>' in place
+    assert '<h1 id="title" tabindex="-1">River Aire, Somewhere</h1>' in place
+    assert "Moderate risk from sewage spills" in place and "Issued 13:21 ·" in place and " ago" not in place.split('<div id="app"')[1].split("<script")[0]
+    # A reader without scripts is told when the forecast was issued, and is not told the page needs JavaScript.
+    assert "<p class=\"notice\">This forecast was issued on Tuesday 24 November 2026 at 13:21 UK time." in place
+    assert "With JavaScript on, the page updates it and shows the other days, the map and your saved places.</p></noscript>" in place
+    assert "the overflows upstream and the rest of the detail" not in place   # they are in this page's HTML
+    assert "<noscript><style>button,.picks{display:none!important}</style>" in place   # nothing to press that would do nothing
+    assert "This preview needs JavaScript" not in place
+    assert place.count('<main id="main"') == 1 and place.count('<p id="said"') == 1
+    home = (tmp_path / "preview" / "index.html").read_text()
+    assert '<div id="app" data-built>' in home and "Where do you swim?" in home and "Yorkshire" in home
+    # The opening's search and lists are the script's: without it, the reader is sent to the list of every spot.
+    assert 'This page needs JavaScript to search for a place' in home and '<a href="../spots.html">Every spot</a>' in home
+    assert bs.PREVIEW_NOINDEX in home and bs.PREVIEW_NOINDEX in place
+    for tag in ('<script src="../levels.js"></script>', '<script src="app.js"></script>'):
+        assert tag in place and tag in home
 
 
 def test_a_preview_page_that_lost_its_noindex_mark_stops_the_build(tmp_path, monkeypatch):

@@ -2913,9 +2913,9 @@ Pictures 9 to 14 in `docs/redesign-preview-2026-11/`.
   disagree. On a touch screen one finger scrolls the page and two move the map, as on the live spot page.
 
 **Still not a replacement for the home page.** What the list above ("Where the live site is better") names is still
-only on the live pages. Two of them decide it: the pages built without scripts are what search engines index and what
-a shared link previews, and the offline copy is what works at the water's edge. A swap needs the redesign's place pages
-prerendered by the build and stored by the worker first.
+only on the live pages. Two of them decided it on the evening of 24 November: the pages built without scripts are what
+search engines index and what a shared link previews, and the offline copy is what works at the water's edge. Both are
+answered for the preview in the next section; what a swap still needs is at its end.
 
 **Checked, 24 November 2026, evening:** in-app browser at 375 and 1,280 px and headless Chrome at 375 and 1,440 px, on
 the 13:21 issue: the map drawn and a place picked; Saved on Saturday with a place saved from its page, a list made,
@@ -2926,3 +2926,50 @@ refusal, the service not answering); viewing the page registered no worker. Safa
 picked by tap, Saved with the iPhone's own alerts line. **Not checked:** turning alerts on for
 real in any browser, a real phone, a screen reader, the CARTO tiles the live build uses (locally the map drew
 OpenStreetMap's).
+
+### A page for each place, written by the build (24 November 2026, night)
+
+Ethan chose the home-page swap as the next work. This is the part of it that can be built and checked at `preview/`
+without touching a live page. Marked: all new, none reversing a decision here.
+
+- **A place has an address of its own**, `preview/spot/<id>/?day=<date>`, as a live spot page has. Every address the
+  page writes is relative to where the pages are published, and every page carries a `<base>` there, so the same
+  script would work at the site's root. A link from earlier in the day (`?spot=<id>`) opens the same place and the
+  address in the bar becomes the new one.
+- **The build writes each of those pages with its answer in the HTML** (`build_site.write_preview`,
+  `scripts/prerender_preview.js`), as it does for the live spot pages: the preview's own `app.js` is run in Node on
+  the build's data, as at the moment the forecast was issued, and what it draws is put in the page. The script then
+  draws the same markup in the same place. 133 pages, 3.8 MB in all on the 13:21 issue of 24 November. The whole page
+  is built, down to the overflows upstream and the places elsewhere. A live spot page has its top built.
+- **Without scripts** a place's page reads in full. A note says when the forecast was issued and what scripts would
+  add (the other days, the map, saved places), and the buttons only a script answers are hidden. The day tabs stay:
+  they show the five levels.
+- **Each place's `<head>` is the live spot page's** (`page_meta`): its title, description and share card. While it is
+  a preview it keeps `noindex` and stays out of the sitemap. `preview_place_page(..., live=True)` gives the form a swap
+  would publish (the site's own address as canonical, no `noindex`, the live page's structured data); a test holds it
+  and the build does not ask for it.
+- **The offline copy keeps a preview page once it has been opened** (`sw.js`), the network first as for the site's
+  own pages. A preview page never opened before gets the preview's opening as its stand-in, never the app's home
+  page, which is why the preview had been left to the browser. The preview's files are not among those every visitor
+  stores at install, and the preview does not start the worker itself: only a browser that already has it (from the
+  live site, or from turning alerts on) keeps these pages.
+- **If the forecast cannot be read**, a built page keeps what it says and adds a line that it is the forecast as it
+  was when the page was made.
+
+**What a swap still needs, in the order I would do it.** None of it is built.
+1. A switch in the build that publishes these pages at the site's root (`/`, `spot/<id>/`) in place of the app's, with
+   `plan/` and `saved/` opening the redesign's Plan and Saved, so every address already shared keeps working.
+2. Somewhere for the app to live on after that (`classic/`, say), because a forecast for any water tapped on the map,
+   outings, the journal, reviews and visit notes exist only there. Each then needs a decision: port it, link to it,
+   or let it go.
+3. The worker to store the redesign's files at install, and the redesign to start the worker (with the existing
+   "turn off the offline copy" choice honoured).
+4. The page-view counter and the action counter, which the preview does not have.
+5. Ethan's yes or no on the five reversals listed above.
+
+**Checked, 24 November 2026, night:** every place page built from the 13:21 issue (133 of 133 with their answer).
+Ilkley's page in headless Chrome with scripts off at 375 and 1,440 px, and with scripts on: the two differ in height
+by the note alone, so nothing moves when the script draws. In the in-app browser on the built pages: a link opened on
+Saturday, a day picked, a place opened from Elsewhere, Back. An old `?spot=` link. The skip link. No page error.
+**Not checked:** the worker in a real browser (its rules are tested in Node with a stand-in cache, as the site's
+others are), a link preview in a messaging app, a crawler.
