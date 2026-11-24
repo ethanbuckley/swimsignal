@@ -160,3 +160,33 @@ python scripts/river_winter/winter_read.py read <private out dir> <RIVER-UNSEEN'
 `docs/river-winter/result.json` and appends to `docs/river-winter/reads.jsonl` whatever it shows. Built rows hold
 results and stay out of git, in the session's scratch folder. They rebuild from the sealed table with the commands
 above, and `result.json` records their SHA-256.
+
+---
+
+## Amendment 1, 24 November 2026: two builder fixes, before any winter result is scored
+
+Pushed before the rows were built. It changes no row rule other than the one named below, no point, no figure, no
+condition, no bar and no outcome.
+
+**What happened.** The first `build` (statement commit `bcdb9155`) stopped with an error inside the row builder at
+one of the first points: "Cannot infer dst time from 2015-10-25 01:00:00". It had loaded the read half's results
+into memory to shape the rows. It wrote no row and printed, summarised and scored no result. `read` then found no
+rows and stopped. Nothing is in `docs/river-winter/`.
+
+**Cause.** `lake_range_hindcast.build_rows` finds the first day of a hindcast by stepping back multiples of 24 hours
+from a local midnight. Across the October clock change that lands on 01:00, which cannot be placed; across the March
+change it lands on 23:00, which matches no sample day and would have silently dropped rows. May to September rows
+never cross a clock change, so RIVER-UNSEEN's read was not affected.
+
+**Fix 1: calendar days.** `winter_read.build_rows_calendar_days` is that function with one line changed: it steps
+back whole calendar days. `lake_range_hindcast.py` and `river_unseen/build_rows.py` are untouched. Check, on rows
+already read: `winter_read.py selftest` rebuilds RIVER-UNSEEN's 6,322 summer rows with the changed builder and
+matches the stored rows on every input (6,322 of 6,322; largest difference 4e-16 in exposure, 0 in rain).
+
+**Fix 2: no row sampled before 1 February 2012.** The ERA5-Land files on disk start on 1 January 2012. One spill
+model input is the rain of the last 30 days, summed over whatever days exist, so a January 2012 row would be fed a
+short sum. Those rows are left out before the build: 101 of the read half's 2,855 rows at the kept points and 42 of
+1,184 at the no-overflow points (counted from sample times, no result). The read half is then 2,754 rows before the
+builder's own drops. The "not run" rule is unchanged (20 points with 15 or more rows, 1,500 rows).
+
+**Run time.** The intervals take about 15 minutes for the read half. No change to the 2,000 resamples.

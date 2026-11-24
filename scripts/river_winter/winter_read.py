@@ -3,6 +3,7 @@ samples that no model here has scored.
 
     export DIPCAST_ROOT=<scratch copy of data/> DIPCAST_STATE=<scratch>/state DIPCAST_CACHE=<ERA5-Land cells>/cache
     python scripts/river_winter/winter_read.py counts <samples.parquet>
+    python scripts/river_winter/winter_read.py selftest <samples.parquet> <RIVER-UNSEEN's held-out summer rows>
     python scripts/river_winter/winter_read.py build <samples.parquet> <out dir>
     python scripts/river_winter/winter_read.py read <out dir> <summer held-out rows> [--dev <rows.parquet>]
 
@@ -46,6 +47,7 @@ MATERIAL = "RIVER / RUNNING SURFACE WATER"
 PURPOSES = {"MS", "MP", "MU", "MN", "PI", "PN"}
 RHO_BAR, MIN_ROWS, MIN_MONTH_ROWS, DRAWS, SEED = 0.15, 15, 3, 2000, 20261124
 MIN_POINTS, MIN_READ_ROWS = 20, 1500
+FIRST_DAY = "2012-02-01"   # amendment 1: the rain on disk starts 1 January 2012 and one spill input sums 30 days
 DOY = ("doy_sin", "doy_cos")
 MONTH_GROUPS = {"oct_nov": (10, 11), "dec_feb": (12, 1, 2), "mar_apr": (3, 4)}
 
@@ -69,10 +71,18 @@ def load_half(sealed: Path, half: str) -> pd.DataFrame:
     never loaded: the mask is made from the other columns, then results are read for the chosen ids only."""
     assert half == "read", "the reserve half is not opened by this script"
     assert sha(sealed) == SEALED_SHA, "not the sealed table the statement names"
+    s = without_results(sealed)
+    return with_results(sealed, s[winter_mask(s) & (winter_of(s["year"], s["month"]) % 2 == 0)])
+
+
+def without_results(sealed: Path) -> pd.DataFrame:
     import pyarrow.dataset as ds
-    names = [c for c in ds.dataset(sealed).schema.names if c != "result"]
-    s = pd.read_parquet(sealed, columns=names)
-    s = s[winter_mask(s) & (winter_of(s["year"], s["month"]) % 2 == 0)]
+    return pd.read_parquet(sealed, columns=[c for c in ds.dataset(sealed).schema.names if c != "result"])
+
+
+def with_results(sealed: Path, s: pd.DataFrame) -> pd.DataFrame:
+    """`s` with the result column, read for its row ids only."""
+    import pyarrow.dataset as ds
     res = ds.dataset(sealed).to_table(columns=["id", "result"], filter=ds.field("id").isin(s["id"].tolist())).to_pandas()
     assert len(res) == len(s) and res["id"].is_unique
     return s.merge(res, on="id", validate="one_to_one")
@@ -80,9 +90,7 @@ def load_half(sealed: Path, half: str) -> pd.DataFrame:
 
 def counts(sealed: Path) -> dict:
     """Row counts for both halves by set. No result is read."""
-    import pyarrow.dataset as ds
-    names = [c for c in ds.dataset(sealed).schema.names if c != "result"]
-    s = pd.read_parquet(sealed, columns=names)
+    s = without_results(sealed)
     s = s[winter_mask(s)].assign(winter=lambda d: winter_of(d["year"], d["month"]))
     pts = pd.read_csv(POINTS)
     out = {}
@@ -90,26 +98,99 @@ def counts(sealed: Path) -> dict:
         x = s[s["point"].isin(br.which_points(pts, which)["point"])]
         for half, m in (("read", x["winter"] % 2 == 0), ("reserve", x["winter"] % 2 == 1)):
             c = x[m].groupby("point").size()
-            out[f"{which}_{half}"] = {"rows": int(m.sum()), "points": int(len(c)), "points_15_or_more": int((c >= MIN_ROWS).sum()),
+            out[f"{which}_{half}"] = {"rows": int(m.sum()), "before_first_day": int((x[m]["time"].str.slice(0, 10) < FIRST_DAY).sum()), "points": int(len(c)), "points_15_or_more": int((c >= MIN_ROWS).sum()),
                                       "rows_at_them": int(c[c >= MIN_ROWS].sum()),
                                       "by_winter": {str(int(k)): int(v) for k, v in x[m].groupby("winter").size().items()}}
     return out
 
 
+def build_rows_calendar_days(samples: pd.DataFrame, net, ov, model, rain_hourly, daily) -> tuple[pd.DataFrame, dict]:
+    """lake_range_hindcast.build_rows with one change (amendment 1): the hindcast's first day is found by stepping
+    back whole calendar days, not multiples of 24 hours. Stepping back 24-hour blocks across a clock change lands on
+    01:00 or 23:00, which either cannot be placed (October) or matches no sample day (March). May to September
+    rows never cross a clock change, so they build exactly as before (`selftest`)."""
+    from validate_ecoli import hindcast
+
+    from dipcast.ingest.rainfall import grid_cell
+    from dipcast.model.ecoli import rain_windows
+    from dipcast.model.forecast import MAX_MISSING_SHARE
+    from dipcast.model.transport import history_days
+    import lake_range_hindcast as lrh
+    out, drops = [], {"no_upstream": 0, "no_site_rain": 0, "rain_window": 0, "exposure_missing": 0}
+    for bw_id, g in samples.groupby("bw_id"):
+        s = g.iloc[0]
+        try:
+            _, up = lrh._site_up(net, ov, bw_id, float(s.lat), float(s.lon))
+        except KeyError:
+            drops["no_upstream"] += len(g); continue
+        if not len(up):
+            drops["no_upstream"] += len(g); continue
+        cl, cn = (float(v) for v in grid_cell(float(s.lat), float(s.lon)))
+        try:
+            site_rain = rain_hourly.loc[(cl, cn)].set_index("time")["precip_mm"].sort_index()
+        except KeyError:
+            drops["no_site_rain"] += len(g); continue
+        g = g.sort_values("sample_time").reset_index(drop=True)
+        risk = pd.Series(dtype=float); miss = pd.Series(dtype=float)
+        sample_days = pd.DatetimeIndex(sorted(g["day"].unique()))
+        lead_days = history_days(up["travel_h"])
+        for y in sorted(g["sample_time"].dt.year.unique()):   # one calendar year at a time: days stay consecutive
+            sd = sample_days[sample_days.year == y]
+            days = pd.date_range(sd.min() - pd.DateOffset(days=lead_days), sd.max(), freq="D")
+            r, m = hindcast(up, daily, days, model)
+            risk, miss = pd.concat([risk, r]), pd.concat([miss, m])
+        r48, r24 = rain_windows(site_rain, pd.DatetimeIndex(g["sample_time"]))
+        g["rain_48h"], g["rain_24h"] = r48, r24
+        g["risk_model"] = risk.reindex(g["day"]).to_numpy()
+        g["missing_share"] = miss.reindex(g["day"]).to_numpy()
+        g["upstream"] = len(up)
+        bad_rain = g["rain_48h"].isna() | g["rain_24h"].isna()
+        drops["rain_window"] += int(bad_rain.sum())
+        bad_exp = ~bad_rain & (g["risk_model"].isna() | (g["missing_share"] > MAX_MISSING_SHARE))
+        drops["exposure_missing"] += int(bad_exp.sum())
+        out.append(g[~bad_rain & ~bad_exp])
+    return pd.concat(out, ignore_index=True), drops
+
+
+def build_set(samples: pd.DataFrame, no_overflow: bool) -> tuple[pd.DataFrame, dict]:
+    """build_rows.build with the calendar-day builder in place of lake_range_hindcast's."""
+    sys.path.insert(0, str(HERE.parent))
+    import lake_range_hindcast as lrh
+    lrh.build_rows = build_rows_calendar_days
+    return br.build(samples, at_points=True, no_overflow=no_overflow)
+
+
+def selftest(sealed: Path, stored: Path) -> dict:
+    """The summer rows RIVER-UNSEEN read on 16 November, rebuilt with the calendar-day builder and compared with the
+    stored rows, input by input. Those rows are already read; nothing here is a result."""
+    s = without_results(sealed)
+    s = with_results(sealed, s[s["kept"] & (s["span"] == "held_out")])    # May to September rows, read on 16 November
+    samples, _ = br.point_samples(s, pd.read_csv(POINTS), pd.read_csv(SYSTEMS), "held_out", "kept")
+    rows, built = build_set(samples, no_overflow=False)
+    m = rows.merge(pd.read_parquet(stored), on=["bw_id", "sample_time"], suffixes=("_new", "_stored"))
+    return {"rows_new": int(len(rows)), "rows_matched": int(len(m)), "drops": built["drops"],
+            "largest_difference": {c: float((m[c + "_new"] - m[c + "_stored"]).abs().max())
+                                   for c in ("rain_48h", "rain_24h", "risk_model", "missing_share", "logit_risk")}}
+
+
 def build(sealed: Path, out: Path) -> dict:
-    """The read half's rows at the kept points and at the no-overflow points, built as the summer read built its rows."""
+    """The read half's rows at the kept points and at the no-overflow points, built as the summer read built its rows
+    apart from amendment 1's two changes: calendar-day steps, and no row sampled before FIRST_DAY."""
     s = load_half(sealed, "read")
+    early = s["time"].str.slice(0, 10) < FIRST_DAY
+    s = s[~early].copy()
     s["kept"] = True       # point_samples keeps rows flagged kept in the named span; the winter rule is applied above
     pts, sysm = pd.read_csv(POINTS), pd.read_csv(SYSTEMS)
     audit = {}
     for which in ("kept", "no_overflow"):
         samples, a = br.point_samples(s, pts, sysm, "held_out", which)
-        rows, built = br.build(samples, at_points=True, no_overflow=which == "no_overflow")
+        rows, built = build_set(samples, no_overflow=which == "no_overflow")
         rows["season"] = winter_of(rows["sample_time"].dt.year, rows["sample_time"].dt.month)
         rows.to_parquet(out / f"winter_rows_{which}.parquet", index=False)
         a.update(built)
         a["rows_by_winter"] = {str(int(k)): int(v) for k, v in rows.groupby("season").size().items()}
         audit[which] = a
+    audit["left_out_before_first_day_all_points"] = int(early.sum())
     (out / "winter_rows.audit.json").write_text(json.dumps(audit, indent=1) + "\n")
     return audit
 
@@ -247,6 +328,9 @@ def check_committed() -> None:
 def main(argv: list[str]) -> None:
     if argv[0] == "counts":
         print(json.dumps(counts(Path(argv[1])), indent=1))
+        return
+    if argv[0] == "selftest":
+        print(json.dumps(selftest(Path(argv[1]), Path(argv[2])), indent=1))
         return
     if argv[0] == "build":
         check_committed()
