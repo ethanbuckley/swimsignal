@@ -1,0 +1,564 @@
+{
+ "rule": "river-usual-winter-v1",
+ "made": "2026-11-24",
+ "what": "Per river spot, the cut-points at one third and two thirds of its chance of a sample over 900 on October to April days from February 2023 to November 2026, hindcast at lead 0 with the river model that has no soil moisture (scripts/river_usual_winter.py). A figure under `low` is lower than usual there, over `high` higher, else about usual.",
+ "inputs": "Open-Meteo archive rain; lead-0 hindcast exposure; data/processed/ecoli_model.json",
+ "model_sha256": "7daf7c8e407a82ba1344ab1b925092953791c138d690d5dc18093221d49ca09c",
+ "first_day": "2023-02-01",
+ "last_day": "2026-11-11",
+ "no_cut_points": [],
+ "spots": {
+  "50.43940,-3.69136": {
+   "id": "osm-dart-dartington",
+   "low": 0.329,
+   "high": 0.725,
+   "days": 768,
+   "lower": 0.333,
+   "higher": 0.332
+  },
+  "50.44041,-4.67798": {
+   "id": "fowey-respryn",
+   "low": 0.264,
+   "high": 0.554,
+   "days": 768,
+   "lower": 0.331,
+   "higher": 0.333
+  },
+  "50.49045,-4.50608": {
+   "id": "fowey-golitha-falls",
+   "low": 0.183,
+   "high": 0.526,
+   "days": 768,
+   "lower": 0.332,
+   "higher": 0.333
+  },
+  "50.52530,-3.81450": {
+   "id": "dart-spitchwick",
+   "low": 0.238,
+   "high": 0.562,
+   "days": 768,
+   "lower": 0.333,
+   "higher": 0.332
+  },
+  "50.53010,-3.84010": {
+   "id": "dart-sharrah-pool",
+   "low": 0.252,
+   "high": 0.583,
+   "days": 768,
+   "lower": 0.332,
+   "higher": 0.332
+  },
+  "50.69205,-3.81044": {
+   "id": "osm-teign-drogo-weir",
+   "low": 0.156,
+   "high": 0.503,
+   "days": 768,
+   "lower": 0.331,
+   "higher": 0.333
+  },
+  "50.69600,-3.77800": {
+   "id": "teign-fingle-bridge",
+   "low": 0.165,
+   "high": 0.525,
+   "days": 768,
+   "lower": 0.329,
+   "higher": 0.333
+  },
+  "50.90860,0.02980": {
+   "id": "ouse-barcombe-mills",
+   "low": 0.14,
+   "high": 0.458,
+   "days": 768,
+   "lower": 0.333,
+   "higher": 0.333
+  },
+  "50.92632,-1.78854": {
+   "id": "bw-ukj3308-19001",
+   "low": 0.186,
+   "high": 0.505,
+   "days": 768,
+   "lower": 0.333,
+   "higher": 0.332
+  },
+  "51.01809,-3.11285": {
+   "id": "bw-ukk2304-35201",
+   "low": 0.175,
+   "high": 0.532,
+   "days": 768,
+   "lower": 0.332,
+   "higher": 0.332
+  },
+  "51.02718,-1.32219": {
+   "id": "osm-itchen-compton-lock",
+   "low": 0.057,
+   "high": 0.213,
+   "days": 768,
+   "lower": 0.323,
+   "higher": 0.333
+  },
+  "51.06767,-1.80218": {
+   "id": "bw-ukk1500-19002",
+   "low": 0.082,
+   "high": 0.244,
+   "days": 735,
+   "lower": 0.328,
+   "higher": 0.333
+  },
+  "51.15903,-1.44483": {
+   "id": "osm-test-chilbolton",
+   "low": 0.052,
+   "high": 0.198,
+   "days": 768,
+   "lower": 0.327,
+   "higher": 0.333
+  },
+  "51.19600,0.27400": {
+   "id": "medway-tonbridge",
+   "low": 0.149,
+   "high": 0.46,
+   "days": 768,
+   "lower": 0.333,
+   "higher": 0.333
+  },
+  "51.20760,-0.76378": {
+   "id": "osm-wey-waverley",
+   "low": 0.098,
+   "high": 0.316,
+   "days": 768,
+   "lower": 0.332,
+   "higher": 0.332
+  },
+  "51.29790,-2.28080": {
+   "id": "frome-tellisford-weir",
+   "low": 0.203,
+   "high": 0.548,
+   "days": 768,
+   "lower": 0.333,
+   "higher": 0.333
+  },
+  "51.31791,-2.28093": {
+   "id": "bw-ukk2301-36051",
+   "low": 0.19,
+   "high": 0.518,
+   "days": 768,
+   "lower": 0.332,
+   "higher": 0.331
+  },
+  "51.34377,-2.25620": {
+   "id": "avon-barton-farm",
+   "low": 0.245,
+   "high": 0.616,
+   "days": 768,
+   "lower": 0.333,
+   "higher": 0.333
+  },
+  "51.37660,-2.30060": {
+   "id": "avon-warleigh-weir",
+   "low": 0.26,
+   "high": 0.64,
+   "days": 768,
+   "lower": 0.332,
+   "higher": 0.332
+  },
+  "51.42702,-0.31074": {
+   "id": "bw-uki2203-11942",
+   "low": 0.119,
+   "high": 0.325,
+   "days": 768,
+   "lower": 0.333,
+   "higher": 0.333
+  },
+  "51.48683,-1.08394": {
+   "id": "bw-ukj1102-11941",
+   "low": 0.104,
+   "high": 0.299,
+   "days": 768,
+   "lower": 0.333,
+   "higher": 0.331
+  },
+  "51.53830,-0.90050": {
+   "id": "thames-henley",
+   "low": 0.116,
+   "high": 0.324,
+   "days": 768,
+   "lower": 0.333,
+   "higher": 0.333
+  },
+  "51.54900,-0.81200": {
+   "id": "thames-hurley",
+   "low": 0.102,
+   "high": 0.281,
+   "days": 768,
+   "lower": 0.332,
+   "higher": 0.331
+  },
+  "51.60005,-1.12032": {
+   "id": "bw-ukj1403-11947",
+   "low": 0.112,
+   "high": 0.33,
+   "days": 768,
+   "lower": 0.332,
+   "higher": 0.333
+  },
+  "51.65400,-1.21000": {
+   "id": "thames-clifton-hampden",
+   "low": 0.128,
+   "high": 0.36,
+   "days": 735,
+   "lower": 0.331,
+   "higher": 0.333
+  },
+  "51.67900,-1.66500": {
+   "id": "thames-buscot-weir",
+   "low": 0.125,
+   "high": 0.367,
+   "days": 732,
+   "lower": 0.329,
+   "higher": 0.331
+  },
+  "51.69200,-1.68900": {
+   "id": "thames-lechlade",
+   "low": 0.127,
+   "high": 0.366,
+   "days": 732,
+   "lower": 0.332,
+   "higher": 0.333
+  },
+  "51.73783,-1.24522": {
+   "id": "osm-thames-long-bridges",
+   "low": 0.141,
+   "high": 0.387,
+   "days": 733,
+   "lower": 0.332,
+   "higher": 0.33
+  },
+  "51.77150,-1.29050": {
+   "id": "thames-port-meadow",
+   "low": 0.151,
+   "high": 0.385,
+   "days": 733,
+   "lower": 0.333,
+   "higher": 0.333
+  },
+  "51.78082,-1.29596": {
+   "id": "bw-ukj1402-11946",
+   "low": 0.153,
+   "high": 0.391,
+   "days": 733,
+   "lower": 0.33,
+   "higher": 0.332
+  },
+  "51.79930,-1.53119": {
+   "id": "windrush-minster-lovell",
+   "low": 0.043,
+   "high": 0.106,
+   "days": 732,
+   "lower": 0.247,
+   "higher": 0.329
+  },
+  "51.84400,-2.64200": {
+   "id": "wye-symonds-yat",
+   "low": 0.137,
+   "high": 0.444,
+   "days": 768,
+   "lower": 0.333,
+   "higher": 0.333
+  },
+  "51.96000,0.99500": {
+   "id": "stour-dedham",
+   "low": 0.08,
+   "high": 0.197,
+   "days": 768,
+   "lower": 0.327,
+   "higher": 0.333
+  },
+  "52.03408,0.73489": {
+   "id": "bw-ukh1401-11051",
+   "low": 0.102,
+   "high": 0.257,
+   "days": 768,
+   "lower": 0.323,
+   "higher": 0.329
+  },
+  "52.05100,-2.71700": {
+   "id": "wye-hereford",
+   "low": 0.148,
+   "high": 0.427,
+   "days": 768,
+   "lower": 0.332,
+   "higher": 0.333
+  },
+  "52.18740,0.10210": {
+   "id": "cam-grantchester",
+   "low": 0.144,
+   "high": 0.352,
+   "days": 732,
+   "lower": 0.331,
+   "higher": 0.333
+  },
+  "52.19607,0.11683": {
+   "id": "bw-ukh1201-09801",
+   "low": 0.14,
+   "high": 0.346,
+   "days": 733,
+   "lower": 0.326,
+   "higher": 0.332
+  },
+  "52.32303,-0.00390": {
+   "id": "osm-great-ouse-overcote",
+   "low": 0.136,
+   "high": 0.317,
+   "days": 768,
+   "lower": 0.331,
+   "higher": 0.333
+  },
+  "52.32830,-0.11430": {
+   "id": "great-ouse-houghton",
+   "low": 0.13,
+   "high": 0.314,
+   "days": 768,
+   "lower": 0.332,
+   "higher": 0.333
+  },
+  "52.36643,-2.72537": {
+   "id": "bw-ukg2200-36060",
+   "low": 0.133,
+   "high": 0.331,
+   "days": 768,
+   "lower": 0.329,
+   "higher": 0.333
+  },
+  "52.45247,0.68665": {
+   "id": "little-ouse-santon-downham",
+   "low": 0.074,
+   "high": 0.162,
+   "days": 768,
+   "lower": 0.329,
+   "higher": 0.333
+  },
+  "52.45648,1.44304": {
+   "id": "bw-ukh1406-10712",
+   "low": 0.106,
+   "high": 0.261,
+   "days": 768,
+   "lower": 0.329,
+   "higher": 0.332
+  },
+  "52.45900,1.43000": {
+   "id": "waveney-outney-common",
+   "low": 0.086,
+   "high": 0.21,
+   "days": 768,
+   "lower": 0.329,
+   "higher": 0.333
+  },
+  "52.59095,-1.69768": {
+   "id": "osm-tame-dosthill",
+   "low": 0.193,
+   "high": 0.48,
+   "days": 768,
+   "lower": 0.333,
+   "higher": 0.331
+  },
+  "52.62933,-2.49179": {
+   "id": "bw-ukg2100-36070",
+   "low": 0.178,
+   "high": 0.437,
+   "days": 768,
+   "lower": 0.331,
+   "higher": 0.332
+  },
+  "52.71037,-2.75671": {
+   "id": "bw-ukg2200-36071",
+   "low": 0.19,
+   "high": 0.489,
+   "days": 768,
+   "lower": 0.333,
+   "higher": 0.333
+  },
+  "53.05400,-1.78600": {
+   "id": "dove-dovedale",
+   "low": 0.093,
+   "high": 0.321,
+   "days": 768,
+   "lower": 0.332,
+   "higher": 0.333
+  },
+  "53.18744,-2.87007": {
+   "id": "bw-ukd6300-40752",
+   "low": 0.138,
+   "high": 0.378,
+   "days": 768,
+   "lower": 0.333,
+   "higher": 0.333
+  },
+  "53.25426,-1.81488": {
+   "id": "osm-wye-chee-dale",
+   "low": 0.173,
+   "high": 0.488,
+   "days": 768,
+   "lower": 0.333,
+   "higher": 0.332
+  },
+  "53.86847,-2.41728": {
+   "id": "bw-ukd4308-46501",
+   "low": 0.325,
+   "high": 0.641,
+   "days": 768,
+   "lower": 0.331,
+   "higher": 0.329
+  },
+  "53.88136,-2.39829": {
+   "id": "ribble-brungerley",
+   "low": 0.3,
+   "high": 0.626,
+   "days": 768,
+   "lower": 0.331,
+   "higher": 0.332
+  },
+  "53.92277,-1.74892": {
+   "id": "osm-wharfe-greenholme",
+   "low": 0.285,
+   "high": 0.65,
+   "days": 768,
+   "lower": 0.333,
+   "higher": 0.333
+  },
+  "53.92655,-1.38542": {
+   "id": "bw-uke4200-08904",
+   "low": 0.256,
+   "high": 0.537,
+   "days": 768,
+   "lower": 0.332,
+   "higher": 0.333
+  },
+  "53.93189,-1.81618": {
+   "id": "bw-uke4100-08901",
+   "low": 0.223,
+   "high": 0.526,
+   "days": 768,
+   "lower": 0.333,
+   "higher": 0.332
+  },
+  "53.98700,-1.88900": {
+   "id": "wharfe-bolton-abbey",
+   "low": 0.17,
+   "high": 0.465,
+   "days": 768,
+   "lower": 0.333,
+   "higher": 0.333
+  },
+  "53.99820,-1.45145": {
+   "id": "bw-uke2203-08903",
+   "low": 0.266,
+   "high": 0.577,
+   "days": 768,
+   "lower": 0.333,
+   "higher": 0.333
+  },
+  "54.03310,-1.92070": {
+   "id": "wharfe-appletreewick",
+   "low": 0.193,
+   "high": 0.513,
+   "days": 768,
+   "lower": 0.333,
+   "higher": 0.333
+  },
+  "54.04700,-1.95300": {
+   "id": "wharfe-burnsall",
+   "low": 0.177,
+   "high": 0.495,
+   "days": 768,
+   "lower": 0.332,
+   "higher": 0.333
+  },
+  "54.06800,-2.00000": {
+   "id": "wharfe-linton-falls",
+   "low": 0.132,
+   "high": 0.398,
+   "days": 768,
+   "lower": 0.332,
+   "higher": 0.333
+  },
+  "54.07470,-2.73150": {
+   "id": "lune-crook-o-lune",
+   "low": 0.374,
+   "high": 0.701,
+   "days": 768,
+   "lower": 0.333,
+   "higher": 0.332
+  },
+  "54.10200,-2.27900": {
+   "id": "ribble-stainforth-force",
+   "low": 0.189,
+   "high": 0.519,
+   "days": 768,
+   "lower": 0.333,
+   "higher": 0.333
+  },
+  "54.19840,-2.59070": {
+   "id": "lune-devils-bridge",
+   "low": 0.212,
+   "high": 0.483,
+   "days": 768,
+   "lower": 0.332,
+   "higher": 0.333
+  },
+  "54.29250,-1.98550": {
+   "id": "ure-aysgarth",
+   "low": 0.179,
+   "high": 0.471,
+   "days": 768,
+   "lower": 0.332,
+   "higher": 0.333
+  },
+  "54.40058,-1.73468": {
+   "id": "bw-uke2204-08905",
+   "low": 0.198,
+   "high": 0.467,
+   "days": 768,
+   "lower": 0.333,
+   "higher": 0.333
+  },
+  "54.75500,-2.70200": {
+   "id": "eden-lazonby",
+   "low": 0.444,
+   "high": 0.791,
+   "days": 768,
+   "lower": 0.332,
+   "higher": 0.333
+  },
+  "54.80680,-2.76820": {
+   "id": "eden-armathwaite",
+   "low": 0.359,
+   "high": 0.69,
+   "days": 768,
+   "lower": 0.333,
+   "higher": 0.333
+  },
+  "54.94305,-2.51393": {
+   "id": "south-tyne-featherstone",
+   "low": 0.145,
+   "high": 0.365,
+   "days": 768,
+   "lower": 0.331,
+   "higher": 0.332
+  },
+  "54.95300,-2.32150": {
+   "id": "allen-plankey-mill",
+   "low": 0.181,
+   "high": 0.389,
+   "days": 768,
+   "lower": 0.333,
+   "higher": 0.333
+  },
+  "55.30900,-1.91100": {
+   "id": "coquet-rothbury",
+   "low": 0.102,
+   "high": 0.281,
+   "days": 768,
+   "lower": 0.332,
+   "higher": 0.333
+  }
+ }
+}
