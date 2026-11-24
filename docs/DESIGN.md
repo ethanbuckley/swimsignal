@@ -3094,6 +3094,25 @@ risk", and the notes are rewritten for the forecast on screen. Find a window's t
 list of three, one not in the forecast: shown with two, added, then said to be held already, with "Show it".
 **Not checked:** a phone's own share sheet, 1,440 px by eye.
 
+### Ported: a place moved between lists, and a list opened from a pasted link (24 November 2026, night)
+
+Both were in the live page's "Your lists" fold and only at `classic/` after the switch. Marked:
+
+- **Already decided** (the phone audit of 25 October 2026): the Home Screen app on an iPhone has no address bar
+  and keeps its lists apart from Safari's, so a list's link is pasted into the page. Only a link to a Saved page
+  of this site that holds a list is taken (`lists.js`, `pastedList`), and it opens as a shared list, read only,
+  with its own "Add to my lists". Nothing is read from the clipboard.
+- **Already decided:** a place can be moved or copied between lists (`moveToList`, `copyToList`), with the live
+  page's words for what happened.
+- **New:** where they sit. The redesign has no "Your lists" fold. Its list tools are a row of text buttons under
+  the list, and these are two more: "Move or copy a place" (with two lists or more) and "Open a list from a
+  link" (always, an empty Saved included, since that is where a new Home Screen app starts). Each opens a small
+  form in the row's place. The move form stays up after a move, since sorting a list takes several.
+
+**Checked:** in-app browser at 375 px on two lists: a move, a copy, "is in Club already", the four refusals of a
+pasted link, a good link opening the shared list, and Back returning to Saved. **Not checked:** the Home Screen
+app on an iPhone, where the paste matters most.
+
 ### Ported: the swim journal and the passport (24 November 2026, night)
 
 The fourth port from `classic/`. Marked: the journal's rules and words are already decided ("The swim journal", the

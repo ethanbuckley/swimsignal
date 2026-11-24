@@ -334,6 +334,44 @@ async function shareList() {
   try { if (TOUCH && navigator.share) await navigator.share({ title: `${cur.name} · SwimSignal`, url }); else { await navigator.clipboard.writeText(url); say('Link copied.'); } }
   catch (e) { if (e.name !== 'AbortError') say(url); }
 }
+// Move or copy a place between lists (the live page's "Your lists": lists.js moveToList, copyToList). Offered with
+// two lists or more. It opens from the list shown to the next one, or into the list shown when that is empty, as a
+// list just made is. The form stays up after a move, since sorting a list is several moves.
+let moveSaid = '';
+function moveFormHtml(cur, movable) {
+  const here = cur.spots.some(spotOf), to = here ? LISTS.lists.find(l => l.id !== cur.id) : cur;
+  return `<form class="listform moveform" onsubmit="return false"><h3 id="mv-h">Move or copy a place</h3>
+      <p class="picks"><label for="mv-spot">Place<select id="mv-spot">${movable.map(x => `<optgroup label="${esc(x.l.name)}">${x.spots.map((s, i) => `<option value="${esc(x.l.id)} ${esc(s.id)}"${here && x.l.id === cur.id && !i ? ' selected' : ''}>${esc(s.name)}</option>`).join('')}</optgroup>`).join('')}</select></label>
+        <label for="mv-to">To<select id="mv-to">${LISTS.lists.map(l => `<option value="${esc(l.id)}"${l.id === to.id ? ' selected' : ''}>${esc(l.name)}</option>`).join('')}</select></label></p>
+      <p class="chips"><button type="button" class="btn" data-do="list-move">Move</button><button type="button" class="btn" data-do="list-copy">Copy</button><button type="button" class="textbtn" data-do="list-cancel">Done</button></p>
+      <p class="meta" id="mv-said" role="status">${esc(moveSaid)}</p></form>`;
+}
+function listMove(copy) {
+  const pick = document.getElementById('mv-spot'), dest = document.getElementById('mv-to'); if (!pick || !dest) return;
+  const v = pick.value, at = v.indexOf(' '), fromId = v.slice(0, at), id = v.slice(at + 1), s = spotOf(id), to = listById(LISTS, dest.value), from = listById(LISTS, fromId);
+  if (!s || !to || !from) return;
+  const say = t => { moveSaid = t; draw(); const b = app.querySelector(`[data-do="${copy ? 'list-copy' : 'list-move'}"]`) || app.querySelector('[data-do="list-open"]'); if (b) b.focus({ preventScroll: true }); };
+  if (to.spots.includes(id)) { say(`${s.name} is in ${to.name} already.`); return; }
+  const kept = setLists(copy ? copyToList(LISTS, id, to.id) : moveToList(LISTS, id, fromId, to.id));
+  say(!kept ? 'This browser is not keeping site data, so this change lasts only for this visit.' : `${copy ? 'Copied' : 'Moved'} ${s.name} ${copy ? 'to' : `from ${from.name} to`} ${to.name}.`);
+}
+// Open a list from its link (lists.js pastedList): the Home Screen app on an iPhone has no address bar, so a list
+// sent to someone, or copied in Safari, is pasted here and opens as a shared list with its own "Add to my lists".
+// Nothing is read from the clipboard: the reader pastes. Only a link to a Saved page of this site is taken.
+const OPEN_WHY = { empty: 'Paste a link to a SwimSignal list first.', long: 'That is too long to be a link to a list.',
+  notlink: 'That is not a link. Paste the whole link, starting https://.', site: 'That is a link to another website, not SwimSignal.',
+  notlist: "That link has no list of spots in it. A list's link has saved/#list= in it." };
+const openFormHtml = () => `<form class="listform" onsubmit="return false"><label for="list-link">Open a list from a link</label>
+      <p class="meta">Paste a link to a list, sent to you or copied with Share this list${navigator.standalone ? ' in Safari' : ''}, to see it and add it here.</p>
+      <div class="field"><input id="list-link" type="text" inputmode="url" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="${PASTE_MAX}" enterkeyhint="go" placeholder="https://swimsignal.co.uk/saved/#list=…"></div>
+      <p class="chips"><button type="button" class="btn" data-do="list-opened">Open</button><button type="button" class="textbtn" data-do="list-cancel">Cancel</button></p>
+      <p class="meta" id="list-link-said" role="status"></p></form>`;
+function listOpen() {
+  const box = document.getElementById('list-link'), said = document.getElementById('list-link-said'); if (!box) return;
+  const got = pastedList(box.value, location.origin);
+  if (got.why) { said.textContent = OPEN_WHY[got.why]; box.focus(); return; }
+  listForm = null; history.pushState(null, '', link({ view: 'saved', day: route.day }) + got.hash); draw({ focus: true });
+}
 function savedHtml() {
   const sh = readShared(location.hash, dates()); if (sh) return sharedHtml(sh);
   const day = homeDay(), cur = shownList(LISTS), many = LISTS.lists.length > 1, S = P.savedRows(DATA.spots, cur.spots, day);
@@ -343,12 +381,16 @@ function savedHtml() {
   const sum = isToday && mine.length && typeof sinceSummaryFor === 'function' ? sinceSummaryFor(mine, DATA.generated_at) : null;
   const since = id => isToday && typeof sinceSaid === 'function' ? sinceSaid(spotOf(id), DATA.generated_at) : '';
   const row = r => `<li class="has-x">${rowLink(r, day)}<button type="button" class="x" data-do="unsave" data-id="${esc(r.id)}" aria-label="Remove ${esc(r.name)} from ${many ? esc(cur.name) : 'your saved places'}">${IC.x}</button>${since(r.id)}</li>`;
+  const movable = LISTS.lists.map(l => ({ l, spots: l.spots.map(spotOf).filter(Boolean) })).filter(x => x.spots.length);
   const tools = listForm === 'new' || listForm === 'rename' ? `<form class="listform" onsubmit="return false"><label for="list-name">${listForm === 'new' ? 'Name the new list' : 'A new name for this list'}</label>
       <div class="field"><input id="list-name" type="text" maxlength="40" autocomplete="off" enterkeyhint="done" value="${listForm === 'rename' ? esc(cur.name) : ''}"></div>
       <p class="chips"><button type="button" class="btn" data-do="list-save">${listForm === 'new' ? 'Make the list' : 'Rename'}</button><button type="button" class="textbtn" data-do="list-cancel">Cancel</button></p></form>`
     : listForm === 'delete' ? `<p class="confirm" role="group" aria-label="Delete this list">Delete “${esc(cur.name)}”${cur.spots.length ? ` and what is saved in it? A place saved in another list stays there.` : '?'}
       <span class="chips"><button type="button" class="btn" data-do="list-delete">Delete the list</button><button type="button" class="textbtn" data-do="list-cancel">Keep it</button></span></p>`
-    : S.rows.length || many ? `<p class="chips listtools"><button type="button" class="textbtn" data-do="list-new">New list</button><button type="button" class="textbtn" data-do="list-rename">Rename this list</button>${many ? '<button type="button" class="textbtn" data-do="list-del">Delete this list</button>' : ''}</p>` : '';
+    : listForm === 'move' && movable.length ? moveFormHtml(cur, movable)
+    : listForm === 'open' ? openFormHtml()
+    : `<p class="chips listtools">${S.rows.length || many ? `<button type="button" class="textbtn" data-do="list-new">New list</button><button type="button" class="textbtn" data-do="list-rename">Rename this list</button>${many ? '<button type="button" class="textbtn" data-do="list-del">Delete this list</button>' : ''}` : ''}${
+        many && movable.length ? '<button type="button" class="textbtn" data-do="list-mv">Move or copy a place</button>' : ''}<button type="button" class="textbtn" data-do="list-open">Open a list from a link</button></p>`;
   return `${bar()}<main id="main" class="home view-saved">
     <section class="opening slim"><h1 id="title" tabindex="-1">Saved</h1><p class="lede">Your places, kept in this browser and nowhere else.</p></section>
     ${stale()}
@@ -842,6 +884,8 @@ app.addEventListener('keydown', e => {
   if (e.target.id === 'q' && e.key === 'Enter') { const first = app.querySelector('#results a.row'); if (first) { e.preventDefault(); first.click(); } }
   if (e.target.id === 'from' && e.key === 'Enter') { const first = app.querySelector('#offers button'); if (first) { e.preventDefault(); first.click(); } }
   if (e.target.id === 'list-name' && e.key === 'Enter') { e.preventDefault(); listSave(); }
+  if (e.target.id === 'list-link' && e.key === 'Enter') { e.preventDefault(); listOpen(); }
+  if (e.target.id === 'list-link' && e.key === 'Escape') { listForm = null; draw(); const b = app.querySelector('[data-do="list-open"]'); if (b) b.focus(); }
   if (e.target.id === 'list-name' && e.key === 'Escape') { listForm = null; draw(); const b = app.querySelector('[data-do="list-new"]'); if (b) b.focus(); }
   // Left and right move along the days, as tabs do.
   const tab = e.target.closest && e.target.closest('.daytab');
@@ -875,7 +919,12 @@ app.addEventListener('click', e => {
     if (act === 'list') { setLists(pickList(LISTS, b.dataset.list)); draw(); return; }
     if (act === 'list-new' || act === 'list-rename' || act === 'list-del') { listForm = act === 'list-new' ? 'new' : act === 'list-rename' ? 'rename' : 'delete'; draw();
       const to = document.getElementById('list-name') || app.querySelector('[data-do="list-delete"]'); if (to) { to.focus(); if (to.select) to.select(); } return; }
-    if (act === 'list-cancel') { listForm = null; draw(); const to = app.querySelector('[data-do="list-new"]'); if (to) to.focus(); return; }
+    if (act === 'list-mv' || act === 'list-open') { listForm = act === 'list-mv' ? 'move' : 'open'; moveSaid = ''; draw();
+      const to = document.getElementById(act === 'list-mv' ? 'mv-spot' : 'list-link'); if (to) to.focus(); return; }
+    if (act === 'list-move' || act === 'list-copy') { listMove(act === 'list-copy'); return; }
+    if (act === 'list-opened') { listOpen(); return; }
+    if (act === 'list-cancel') { const was = listForm; listForm = null; moveSaid = ''; draw();
+      const to = app.querySelector(`[data-do="${was === 'move' ? 'list-mv' : was === 'open' ? 'list-open' : 'list-new'}"]`) || app.querySelector('[data-do="list-open"]'); if (to) to.focus(); return; }
     if (act === 'list-save') { listSave(); return; }
     if (act === 'list-delete') { const gone = shownList(LISTS).name; setLists(deleteList(LISTS, shownList(LISTS).id)); listForm = null; draw();
       const t = document.getElementById('list-said'); if (t) t.textContent = `“${gone}” was deleted.`; const h = document.getElementById('title'); if (h) h.focus({ preventScroll: true }); return; }
