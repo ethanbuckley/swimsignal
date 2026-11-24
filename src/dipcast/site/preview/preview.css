@@ -380,6 +380,35 @@ button { font: inherit; color: inherit; }
 .view-plan .block h3 { margin-top: 20px; font: 700 var(--fs-note)/1.3 var(--font-text); }
 .view-plan .block h3 + .meta { margin-top: 2px; }
 
+/* ---------------------------------------------------------------- the record here */
+/* How the forecast has done at the overflows upstream (spotscores.js) and past spills by month (seasonal.js): the
+   live site's own markup, dressed as this page's sections. The months are bars in grey, this month in ink: history
+   takes no level's colour. */
+.record { margin: 36px var(--gutter) 0; padding-top: 20px; border-top: 1px solid var(--line); }
+.record > h2 { font: 600 var(--fs-head)/1.2 var(--font-display); }
+.record .tile { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line); }
+.record .t-say { max-width: 44em; }
+details.fold > summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; list-style: none; }
+details.fold > summary::-webkit-details-marker { display: none; }
+details.fold > summary::after { content: ""; flex: none; width: 9px; height: 9px; margin-left: 10px; border-right: 1.75px solid var(--muted); border-bottom: 1.75px solid var(--muted); transform: rotate(45deg) translateY(-3px); }
+details.fold[open] > summary::after { transform: rotate(-135deg) translateY(-3px); }
+.s-now { font-weight: 600; }
+.mchart { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 4px; margin-top: 12px; max-width: 420px; }
+.mchart span { display: flex; flex-direction: column; height: 84px; }
+.mchart em { position: relative; flex: 1; }
+.mchart i { position: absolute; left: 0; right: 0; bottom: 0; background: var(--unknown); }
+.mchart b { margin-top: 4px; font-size: var(--fs-meta); font-weight: 400; text-align: center; color: var(--muted); }
+.mchart .on i { background: var(--ink); } .mchart .on b { color: var(--ink); font-weight: 600; }
+.s-more { margin-top: 8px; font-size: var(--fs-note); }
+.s-more > summary { cursor: pointer; min-height: 44px; display: inline-flex; align-items: center; font-weight: 600; color: var(--link); }
+table.seasonal { width: 100%; max-width: 420px; border-collapse: collapse; font-size: var(--fs-note); font-variant-numeric: tabular-nums; }
+table.seasonal th, table.seasonal td { padding: 6px 0; border-top: 1px solid var(--hair); text-align: left; font-weight: 400; }
+table.seasonal tr:first-child th { border-top: 0; font-size: var(--fs-meta); color: var(--muted); }
+table.seasonal .num { text-align: right; white-space: nowrap; }
+.s-bar { display: inline-block; width: 56px; height: 6px; margin-right: 8px; vertical-align: middle; background: var(--line); }
+.s-bar > span { display: block; height: 100%; background: var(--muted); }
+.record .small { margin-top: 8px; font-size: var(--fs-meta); } .record .muted { color: var(--muted); }
+
 /* ---------------------------------------------------------------- from swimmers */
 /* Notes on a visit, reviews and reports of illness are drawn by the live site's own scripts (visits.js, reviews.js,
    illness.js), in the live page's markup. Here they are dressed as this page's sections are: no tile, a hairline
@@ -512,6 +541,6 @@ dialog.rv-view figcaption { padding: 8px 12px; font-size: var(--fs-meta); line-h
   .top > .tools { grid-area: tools; padding: 0 0 16px; }
   .first .daytabs { position: static; padding: 0; }
   .more { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 40px; margin-top: 8px; }
-  .theplace, .swimmers { max-width: 760px; }
+  .theplace, .swimmers, .record { max-width: 760px; }
   .foot { max-width: 1184px; margin-left: auto; margin-right: auto; }
 }
