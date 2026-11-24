@@ -349,6 +349,11 @@ button { font: inherit; color: inherit; }
 .listtools .textbtn, .confirm .textbtn, .listform .textbtn { min-height: 44px; font-size: var(--fs-note); margin-left: 0; }
 .listform { margin-top: 16px; max-width: 420px; display: grid; gap: 6px; }
 .listform label { font-size: var(--fs-note); font-weight: 600; }
+/* Move or copy a place, and open a list from a link (app.js, moveFormHtml and openFormHtml): the plan's own selects. */
+.listform h3 { font-size: var(--fs-note); font-weight: 600; margin: 0; }
+.listform .picks { margin-top: 0; }
+.listform .picks label { font-size: var(--fs-meta); }
+.listform > .meta { margin: 0; }
 .confirm { margin-top: 16px; font-size: var(--fs-note); }
 .confirm .chips { margin-top: 8px; }
 .alerts { margin-top: 36px; padding-top: 20px; border-top: 1px solid var(--line); max-width: 720px; }

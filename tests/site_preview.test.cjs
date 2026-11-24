@@ -449,6 +449,32 @@ test('Saved has the live site\'s own: what changed since you last looked, each p
   for (const c of ['place-since', 'since-ev', 'since-sum', 'fw-list', 'fw-nm', 'fw-note', 'fw-apart', 'o-tag', 'sharelist']) assert.match(CSS, new RegExp(`\\.${c}\\b`), c);
 });
 
+test('Saved moves or copies a place between lists and opens a list from a pasted link, by the live site\'s own rules', () => {
+  // The rules are lists.js's, which the page calls: nothing about a list is worked out twice.
+  assert.match(JS, /const kept = setLists\(copy \? copyToList\(LISTS, id, to\.id\) : moveToList\(LISTS, id, fromId, to\.id\)\);/);
+  assert.match(JS, /const got = pastedList\(box\.value, location\.origin\);/);
+  const two = {current: 'l1', lists: [{id: 'l1', name: 'Weekend', spots: ['a', 'b']}, {id: 'l2', name: 'Club', spots: ['c']}]};
+  assert.deepEqual(LISTS.moveToList(two, 'a', 'l1', 'l2').lists.map(l => l.spots), [['b'], ['c', 'a']]);
+  assert.deepEqual(LISTS.copyToList(two, 'a', 'l2').lists.map(l => l.spots), [['a', 'b'], ['c', 'a']]);
+  // Offered with two lists or more and a place to move; opening a link is offered always, an empty Saved included,
+  // since the Home Screen app on an iPhone has no address bar to paste into.
+  assert.match(JS, /many && movable\.length \? '<button type="button" class="textbtn" data-do="list-mv">Move or copy a place<\/button>' : ''\}<button type="button" class="textbtn" data-do="list-open">Open a list from a link<\/button>/);
+  // What is said is what the live page says.
+  for (const said of ['Paste a link to a SwimSignal list first.', 'That is too long to be a link to a list.', 'That is not a link. Paste the whole link, starting https://.',
+    'That is a link to another website, not SwimSignal.', "That link has no list of spots in it. A list's link has saved/#list= in it.",
+    'Open a list from a link', 'Paste a link to a list, sent to you or copied with Share this list', ' is in ${to.name} already.',
+    'This browser is not keeping site data, so this change lasts only for this visit.']) {
+    assert.ok(LIVE.includes(said), `the live page says: ${said}`); assert.ok(JS.includes(said), `and so does this one: ${said}`);
+  }
+  assert.match(JS, /`\$\{copy \? 'Copied' : 'Moved'\} \$\{s\.name\} \$\{copy \? 'to' : `from \$\{from\.name\} to`\} \$\{to\.name\}\.`/);
+  // Only a link to a Saved page of this site that holds a list is taken, and it opens as a shared list: read only.
+  assert.equal(LISTS.pastedList('https://example.com/saved/#list=A&spots=a', 'https://swimsignal.co.uk').why, 'site');
+  assert.equal(LISTS.pastedList('https://swimsignal.co.uk/plan/', 'https://swimsignal.co.uk').why, 'notlist');
+  assert.equal(LISTS.pastedList('https://swimsignal.co.uk/saved/#list=A&spots=a,b', 'https://swimsignal.co.uk').hash, '#list=A&spots=a,b');
+  assert.match(JS, /listForm = null; history\.pushState\(null, '', link\(\{ view: 'saved', day: route\.day \}\) \+ got\.hash\); draw\(\{ focus: true \}\);/);
+  assert.doesNotMatch(JS, /clipboard\.read/, 'nothing is read from the clipboard: the reader pastes');
+});
+
 test('the swim journal and the passport are the live site\'s own, on this device only', () => {
   const JN = require(path.join(SITE, 'journal.js')), JS_JN = fs.readFileSync(path.join(SITE, 'journal.js'), 'utf8');
   assert.equal(JN.JOURNAL_KEY, 'dipcast.swims');   // the live site's own, so a swim logged on either page is in both journals
