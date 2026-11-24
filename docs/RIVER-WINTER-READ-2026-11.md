@@ -190,3 +190,118 @@ short sum. Those rows are left out before the build: 101 of the read half's 2,85
 builder's own drops. The "not run" rule is unchanged (20 points with 15 or more rows, 1,500 rows).
 
 **Run time.** The intervals take about 15 minutes for the read half. No change to the 2,000 resamples.
+
+---
+
+## The read, 24 November 2026: both conditions pass
+
+Run once, at 16:29 UTC on 24 November 2026, at commit `89ba609d`, on the even winters. Logged in
+`docs/river-winter/reads.jsonl`; every figure is in `docs/river-winter/result.json`. The builder took 2,754 samples
+in and gave 2,754 rows out at 39 points, with no row dropped (`winter_rows.audit.json`). 28 points have 15 or more
+rows; they sit in 8 river systems. 1,330 results (48.3%) were over 900. 0.3% sat at a lab limit.
+
+| Condition | Result | Pass rule | Verdict |
+|---|---|---|---|
+| 1. Raw order: mean within-point correlation | 0.485 (0.393 to 0.525) | interval wholly above 0.15 | pass |
+| 2. Order beyond the calendar (month means removed) | 0.484 (0.354 to 0.531) | interval wholly above 0.15 | pass |
+
+**What is supported.** At these river monitoring points, in six winters that no model here had scored,
+production's E. coli chance as deployed puts a point's winter days in the right order, and the order is not the
+calendar. This is confirmation evidence for the order, at these points, at lead 0 with reanalysis rain: the file was
+frozen before RIVER-UNSEEN's read, the winter results had not been joined to anything, and the conditions were
+pushed first. The figure the site hides from October to April is not noise.
+
+**What is not supported.**
+
+- A percentage, a count or a level from the estimate. Production's mean chance was 35.5% where 48.3% of results were
+  over 900. These points read higher than bathing waters, as in summer.
+- That the overflow chain adds anything in winter. Rain alone does as well (below).
+- Anything at a swim spot, at a lake, days ahead, or from forecast rain.
+- The river model with soil moisture, which is the one the site uses in season. The file scored is the one
+  without it.
+
+### Reported, deciding nothing
+
+Month means removed, same resamples:
+
+| Figure | Within-point correlation | Production less this figure |
+|---|---|---|
+| Production as deployed | 0.484 (0.354 to 0.531) | |
+| Rain in the last 48 hours alone | 0.473 (0.347 to 0.521) | +0.011 (−0.022 to +0.032) |
+| Exposure alone (what drives the live winter level) | 0.471 (0.367 to 0.530) | +0.013 (−0.032 to +0.015) |
+| Candidate `river-range-v0e` | 0.476 (0.350 to 0.524) | +0.008 (−0.002 to +0.009) |
+| Production without its day-of-year terms | 0.484 (0.354 to 0.531) | 0.000 |
+
+- Production is **not shown better than rain alone**. The interval includes zero. In a hindcast the exposure is
+  itself worked out from the same rain, so the three figures are close to one signal.
+- **Exposure alone orders winter days**: 0.471 (0.367 to 0.530). This is the first measurement of whether the
+  level a winter reader is shown tracks bacteria. At these points, at lead 0, it does.
+- The extrapolated day-of-year terms neither help nor hurt.
+
+Level, on the read half: median count 838 per 100 ml. Production's Brier score for a result over 900 is 0.219. A
+constant set to this half's own rate scores 0.250, and that constant uses the results.
+
+| Rows | Samples | Points with 15 or more | Raw | Month means removed | Over 900 |
+|---|---|---|---|---|---|
+| October and November | 785 | 16 | 0.432 | 0.455 | 53.9% |
+| December to February | 1,167 | 24 | 0.444 | 0.446 | 51.0% |
+| March and April | 802 | 26 | 0.500 | 0.499 | 38.9% |
+| Winters to 2016 | 2,036 | 26 | 0.495 | 0.502 | 46.7% |
+| Winters from 2018 | 718 | 9 | 0.470 | 0.472 | 52.8% |
+| Large catchment | 891 | 8 | 0.565 | 0.610 | 52.6% |
+| Medium | 1,693 | 17 | 0.436 | 0.427 | 46.3% |
+| Small | 170 | 3 | 0.552 | 0.472 | 45.3% |
+| Purpose MU | 2,295 | 26 | 0.511 | 0.500 | 47.7% |
+| Purpose MS | 229 | 4 | 0.376 | 0.296 | 53.7% |
+| Purpose PN | 176 | 2 | 0.116 | 0.389 | 45.5% |
+
+Each system left out in turn: both conditions' values stay between 0.475 and 0.517, except without the Hampshire
+Avon and Dorset Stour system (11 points), where they are 0.395 and 0.406. The result does not rest on one system,
+and that system is its strongest part.
+
+**Points with no monitored overflow upstream** (1,122 rows built from 1,142, 12 points, 8 with 15 or more; 20 rows
+had no full rain window). Rain alone: 0.458 (0.326 to 0.521) with month means removed, 0.439 raw. Production with
+exposure 0: 0.424 (0.289 to 0.499). 45.5% of results were over 900 and the median was 740, where production's mean
+chance was 8.7% (Brier 0.365 against 0.248 for the constant). So where no overflow is found upstream, rain orders
+winter days about as well as anywhere, and production's chance is far too low in level.
+
+**Summer, by the same code, rows already read (development).** At all 59 points: production 0.376 raw (the 16
+November record's figure) and 0.385 with month means removed; rain 0.355 and 0.383. At this read's points: 0.392 and
+0.397. So at the same points the winter order (0.485) is stronger than the summer order, and production's Brier is
+better in winter (0.219) than in summer (0.300). I did not test the difference; it is a description.
+
+Shared inputs had the same fingerprints before and after (`docs/river-winter/shared_inputs_fingerprint.txt`): the
+main checkout's `river_network.pkl`, `overflows.parquet`, `lakes.parquet` and data listings, the sealed sample
+table, the ERA5-Land cache listing and the private RIVER-UNSEEN folder. Built rows: `winter_rows_kept.parquet`
+SHA-256 `6b8e0af3…`, `winter_rows_no_overflow.parquet` `b340a642…`, in the session's scratch folder.
+
+### What this leads to
+
+By the statement: **a proposal for Ethan, and nothing on the site until he decides.**
+
+1. **Run the river line from October to April.** "That is higher than usual here." (or lower, or about usual) at
+   river spots, as #709 does in season. Marked against DESIGN: this reverses one part of the 20 October decision
+   ("No percentage in view out of season"), and only as far as one order word. The reason: that decision rested on
+   the estimate being untested out of season, and its order is now tested.
+2. **The percentage stays hidden** and the level rule stays as it is. The level figures above do not support a
+   number.
+3. **Make the word from the figure that passed**: production's river chance without soil moisture
+   (`ecoli_model.json`). In season the page uses the soil-moisture model. Whether that model orders winter days is
+   untested; winter soil moisture sits outside most of what it was fitted on [inferred].
+4. **Winter cut-points** made as #709 made the summer ones: thirds of each spot's own figure on October to April
+   days of 2023 to 2026, hindcast at lead 0. The rain is already on disk for whole years
+   (`dipcast-scratch/river-usual/cache`, 340 cells, 2023 to 2026), so no request is needed.
+5. **Say what it rests on**, on the method page: 28 monitoring points, mostly in the South West; not swim spots;
+   the same day's rain, not a forecast made days ahead.
+
+**Next deliverable** (owner: this session's family; by 1 December 2026): one PR with the winter cut-points file,
+`river_usual.direction` extended to October to April behind a switch that is off, tests, and the method-page
+sentence. Ethan switches it on or not.
+
+**The reserve half** (2,561 rows, odd winters) stays sealed. It is for one thing: a frozen change to the winter
+figure (the soil-moisture model, a winter refit, or a rain-only word for spots with no overflow upstream), scored
+once under its own statement.
+
+**For the owner of the winter level.** Exposure alone ordered winter days at these points. The level is not blind
+in winter. Rain alone did as well, so this does not show that live spill status, which a hindcast cannot use, adds
+or loses anything.
