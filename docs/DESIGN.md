@@ -3022,6 +3022,28 @@ site's root); `plan/#...`, `saved/`, a shared list, a sent outing, `?map=1` and 
 **Not checked:** the live tile provider and the counter on the redesign's pages at the root, alerts, the Home
 Screen app, a search engine's or a messaging app's reading of the new pages.
 
+### A gap the switch opened: "Saved spots, offline use and your data" (24 November 2026, night)
+
+**Reversing nothing; restoring a thing the switch dropped.** The privacy notice tells a visitor that the offline
+copy can be turned off, and "Don't count my visits" chosen, 'under "Saved spots, offline use and your data" at the
+bottom of the home page'. The redesign had no such fold. From 19:53 UTC on 24 November, when it became the home
+page, until this was published, the two controls were only at `classic/`, where the notice did not send anyone.
+The counter still honoured a choice already made, Global Privacy Control and Do Not Track (`counter.js`), and the
+worker was still not started in a browser that had turned it off. What was missing was the way to make the choice.
+
+- **Already decided** (PECR, Schedule A1; the comments in `index.html` and `counter.js`): storage and a counter the
+  site works without need clear information and a free, simple way to object. So where the redesign is the site
+  it has the fold, by the notice's name, with the live page's words, keys and order of work: alerts off first,
+  then the worker, then everything it stored, a kept outing included.
+- **New:** it is on the foot of every redesign page and not the home page alone, since a place's page is where
+  most visits land. It is not drawn at `/preview/`, where the home page is still the app's.
+- **New:** the alerts card's "Turn it back on" opens this fold on the same page.
+- The footer's sentence about what is still on the earlier version no longer lists the forecast for any river or
+  lake, which the redesign has had since that port.
+
+**Checked:** in a browser on a local build with the switch on (below, in the pull request). **Not checked:** the
+counter's row on the live site, which needs the build's token.
+
 ### Ported: reviews, notes on a visit and reports of illness (24 November 2026, night)
 
 The redesign went live at 19:53 UTC on 24 November 2026 (`DIPCAST_REDESIGN=1`, #738), and Ethan said to port what

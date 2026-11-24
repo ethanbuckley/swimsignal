@@ -108,10 +108,60 @@ function dayTabsHtml(tabs, day, label, hrefFor) {
       + `<span class="dt-top"><span class="dt-name">${esc(t.name)}</span> <span class="dt-dom">${t.dom}</span></span>${t.short ? `<span class="dt-mark" aria-hidden="true"></span><span class="dt-level">${esc(t.short)}</span>` : ''}</a></li>`; }).join('')}</ol></nav>`;
 }
 const stale = () => { const i = P.issuedWords(DATA, now()); return i.stale ? `<p class="notice" role="note"><b>Older forecast.</b> ${esc(i.note)}</p>` : ''; };
+// "Saved spots, offline use and your data": what is kept in this browser, and the two things a visitor can turn off,
+// the offline copy and the page-view counter. The privacy notice sends people here by this name, "at the bottom of
+// the home page", for both, and the law asks for a free, simple way to object to each (PECR, Schedule A1). So where
+// these pages are the site's own they carry it, on every page's foot, in the live page's words and with the live
+// page's keys ('dipcast.offline', 'dipcast.count'), which the worker's start (below) and the counter (counter.js)
+// already read. From 19:53 to the evening of 24 November 2026 the redesign was the home page without it.
+let dataOpen = false, offlineSaid = '', countSaid = '';
+const stayOff = key => { try { return localStorage.getItem(key) === 'off'; } catch (e) { return false; } };
+const startWorker = () => navigator.serviceWorker.register(new URL('sw.js', document.baseURI)).catch(() => {});
+const noTrack = () => navigator.globalPrivacyControl === true || navigator.doNotTrack === '1';
+function yourDataHtml() {
+  if (PREVIEW) return '';   // beside a preview the home page is the app's, which has it
+  // The counter's row only where the build put the counter in. Its script is asked for by name: the build's stand-in
+  // for a browser (prerender_preview.js) answers every id, and the built page must not say visits are counted there.
+  const c = document.getElementById('page-counter'), counted = !!c && c.tagName === 'SCRIPT';
+  return `<details class="yourdata" id="your-data"${dataOpen ? ' open' : ''}><summary>Saved spots, offline use and your data</summary>
+    <p>Saved spots, the names of your lists and your swim journal are kept in this browser, and sent nowhere unless you turn on alerts on the Saved page (alerts send which spots are saved, not the lists' names or the journal). After a first visit the page and the latest forecast are stored on your device, so the site opens without signal at the water's edge; it then says how old the forecast is. <a href="privacy.html">Privacy notice</a>.</p>
+    ${'serviceWorker' in navigator ? `<p><button type="button" class="textbtn" data-do="offline">${stayOff('dipcast.offline') ? 'Turn the offline copy back on' : 'Turn off the offline copy'}</button> <span id="offline-msg" role="status">${esc(offlineSaid)}</span></p>` : ''}
+    ${counted ? `<p>Page views are counted, without cookies. ${noTrack() ? '' : `<button type="button" class="textbtn" data-do="count">${stayOff('dipcast.count') ? 'Count my visits again' : "Don't count my visits"}</button> `}<span id="count-msg" role="status">${esc(noTrack() ? 'Your browser asks sites not to track it, so your visits are not counted.' : countSaid)}</span></p>` : ''}
+  </details>`;
+}
+// Turn the offline copy off or on (index.html, setOffline). Off removes the worker and everything it stored, an
+// outing kept for offline use with it, and turns alerts off first, since they arrive through the worker: the alert
+// service then deletes its record now. Returns false when the browser would not keep the choice.
+async function setOffline(on) {
+  let kept = true;
+  try { if (on) localStorage.removeItem('dipcast.offline'); else localStorage.setItem('dipcast.offline', 'off'); } catch (e) { kept = false; }
+  if (on) { startWorker(); return kept; }
+  for (const r of await navigator.serviceWorker.getRegistrations()) await r.unregister();
+  if ('caches' in window) for (const k of await caches.keys()) if (k.startsWith('dipcast-') || k === 'swimsignal-outing') await caches.delete(k);
+  try { localStorage.removeItem('dipcast.outingpack'); } catch (e) { /* nothing kept */ }
+  return kept;
+}
+async function offlineToggle() {
+  const on = stayOff('dipcast.offline');
+  const alerts = !on && DATA && DATA.push && window.PVAlerts.can() === 'yes' ? await window.PVAlerts.turnOff(DATA.push).catch(() => false) : false;
+  const kept = await setOffline(on).catch(() => false);
+  if (alerts) { alertsOn = false; alertsSaid = ''; }
+  offlineSaid = !kept ? 'This browser is not keeping site data, so this lasts only until you close the page.'
+    : on ? 'The offline copy is on again.' : `The offline copy is off, and deleted from this device.${alerts ? ' Alerts are off too: they need it.' : ''}`;
+  dataOpen = true; draw(); const b = app.querySelector('[data-do="offline"]'); if (b) b.focus({ preventScroll: true });
+}
+function countToggle() {
+  const was = stayOff('dipcast.count'); let kept = true;
+  try { if (was) localStorage.removeItem('dipcast.count'); else localStorage.setItem('dipcast.count', 'off'); } catch (e) { kept = false; }
+  countSaid = !kept ? 'This browser is not keeping site data, so it cannot keep this choice.'
+    : was ? 'Your visits will be counted again from the next page you open.' : 'Your visits from this browser are not counted from the next page you open.';
+  dataOpen = true; draw(); const b = app.querySelector('[data-do="count"]'); if (b) b.focus({ preventScroll: true });
+}
 const foot = () => { const c = (DATA && DATA.credits) || {};
   return `<footer class="foot"><p>${PREVIEW ? `This is a preview of a redesign, kept beside <a href="${classic()}">the current SwimSignal</a>. Both read the same forecast, and a place saved on one is saved on the other.`
-      : `A forecast for any river or lake on the map and outings are still on <a href="${classic()}">the earlier version of SwimSignal</a>, which reads the same forecast. A place saved on one is saved on the other.`} Saved places stay on this device.</p>
+      : `Outings and the map of a spill's spread are still on <a href="${classic()}">the earlier version of SwimSignal</a>, which reads the same forecast. A place saved on one is saved on the other.`} Saved places stay on this device.</p>
     <p><a href="methods.html">Method and limits</a> · <a href="verification.html">How accurate it has been</a> · <a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a></p>
+    ${yourDataHtml()}
     <details><summary>Data sources and licences</summary><p>${esc(c.attribution || '')}</p><p>${esc(c.modified || '')} ${esc(c.endorsement || '')} <a href="terms.html#data">Full credits</a></p></details></footer>`; };
 // One quiet line under a photo, the day first since the photo is of that day. Each part keeps to one line with its
 // dot after it, so a narrow phone's second line never starts with a dot (the live page's rule).
@@ -277,7 +327,7 @@ function alertsHtml() {
   const what = 'A notification when one of your saved spots reaches high or very high risk, at most once a day for each.' + (push.advice ? ' Another when official advice is newly shown at one of them, also at most once a day for each.' : '');
   const sends = 'Turning alerts on sends your browser\'s push address and the list of your saved spots, and nothing else about you, to SwimSignal\'s alert service. Ticking the weekly note adds only that you want it. ' + (push.clears === true ? 'Asking, on a spot\'s page, to hear when it is back to low risk adds only that spot. ' : '') + 'Alerts reach you through your browser maker\'s push service (Google, Apple, Mozilla or Microsoft), encrypted so it cannot read them. '
     + 'You can turn them off here at any time, which deletes what the alert service holds. An alert can be late or not come at all, so no alert does not mean the water is clean. <a href="privacy.html">Privacy notice</a>.';
-  const body = can === 'offline' ? '<p class="meta">Alerts need the offline copy, which is turned off in this browser. <a href="' + classic('#your-data') + '">Turn it back on</a> to use them.</p>'
+  const body = can === 'offline' ? '<p class="meta">Alerts need the offline copy, which is turned off in this browser. <a href="' + (PREVIEW ? classic('#your-data') : '#your-data') + '" data-do="to-data">Turn it back on</a> to use them.</p>'
     : can === 'blocked' ? `<p class="meta" id="alerts-blocked" tabindex="-1">Notifications are blocked for this site in your browser settings, so alerts cannot be turned on. ${esc(unblockHow(w))}</p>`
     : can === 'yes' ? `<p class="alerts-go"><button type="button" class="btn" data-do="alerts"${alertsOn === null ? ' disabled' : ''}>${alertsOn ? 'Turn off alerts' : 'Turn on alerts'}</button></p>`
       + `<label class="tick"${alertsOn ? '' : ' hidden'}><input type="checkbox" id="alerts-week"${alertsOn && A.weeklyOn() ? ' checked' : ''}><span>Also a weekly note on Thursday evenings: the days with the lowest pollution risk, Friday to Monday, at each saved spot.</span></label>`
@@ -880,6 +930,9 @@ app.addEventListener('click', e => {
     if (act === 'list-delete') { const gone = shownList(LISTS).name; setLists(deleteList(LISTS, shownList(LISTS).id)); listForm = null; draw();
       const t = document.getElementById('list-said'); if (t) t.textContent = `“${gone}” was deleted.`; const h = document.getElementById('title'); if (h) h.focus({ preventScroll: true }); return; }
     if (act === 'alerts') { alertsToggle(); return; }
+    if (act === 'offline') { offlineToggle(); return; }
+    if (act === 'to-data' && !PREVIEW) { e.preventDefault(); dataOpen = true; draw(); const d = document.getElementById('your-data'); if (d) { d.scrollIntoView(); const b = d.querySelector('button'); if (b) b.focus({ preventScroll: true }); } return; }
+    if (act === 'count') { countToggle(); return; }
     if (act === 'share-list') { shareList(); return; }
     if (act === 'shared-add' || act === 'shared-show') { const sh = readShared(location.hash, dates()); if (!sh) return;
       const ids = sh.spots.filter(spotOf), kept = setLists(act === 'shared-add' ? addSharedList(LISTS, sh.name, ids) : pickList(LISTS, b.dataset.list));
@@ -926,6 +979,8 @@ function passOn() {
   if (!(route.view === 'plan' && /[#&]spot=/.test(location.hash))) return false;
   location.replace(classic('plan/') + location.hash); return true;
 }
+// The fold over a visitor's data stays as they left it when the page is drawn again (a details' toggle does not bubble).
+document.addEventListener('toggle', e => { if (e.target && e.target.id === 'your-data') dataOpen = e.target.open; }, true);
 // A plan's choices, and a shared list, are after the #: an address typed or pasted over this one is drawn.
 window.addEventListener('hashchange', () => { if (passOn()) return; if (route && (route.view === 'plan' || route.view === 'saved' || route.point || /^#point=/.test(location.hash))) draw({ focus: true }); });
 window.addEventListener('popstate', () => { const at = leftAt.get(location.pathname + location.search) || { y: 0 };
@@ -948,7 +1003,7 @@ window.PVBuilt = {
 // the offline copy has been turned off in this browser (the app's "Your data"). A preview starts no worker: it is
 // kept only where the worker is already running.
 if (!PREVIEW && 'serviceWorker' in navigator) { let off = false; try { off = localStorage.getItem('dipcast.offline') === 'off'; } catch (e) { off = false; }
-  if (!off) navigator.serviceWorker.register(new URL('sw.js', document.baseURI)).catch(() => {}); }
+  if (!off) startWorker(); }
 
 (async function start() {
   try { const [data, hero] = await Promise.all([loadJson('data/spots-lite.json'), loadJson('preview/hero-photos.json').catch(() => ({}))]);
