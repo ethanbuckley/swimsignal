@@ -4,6 +4,9 @@
 // (app.js, mountSwimmers). On the live page these few names are the page's own (index.html and guide.js); a plain
 // script, so they are globals here too, as those scripts expect.
 
+// A place's address, from the site's root, wherever these pages are published (since.js links a line to it).
+const spotPath = id => `${document.documentElement.dataset.home || ''}spot/${encodeURIComponent(id)}/`;
+
 // "Show all": the rest show, the button goes, and focus moves to the first one shown (guide.js, showRest).
 function showRest(rows, button) {
   const first = rows[0];
