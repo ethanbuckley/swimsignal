@@ -395,6 +395,34 @@ button { font: inherit; color: inherit; }
 .fw-list summary { cursor: pointer; min-height: 44px; display: inline-flex; align-items: center; font-size: var(--fs-note); font-weight: 600; color: var(--link); }
 .o-tag { display: block; margin: 3px 0 4px; padding-left: 7px; border-left: 3px solid var(--notice-line); font-size: var(--fs-meta); line-height: 1.35; color: var(--ink); }
 .sharelist p + p { margin-top: 10px; }
+/* Compare your places (app.js, compareHtml): a column a place, of equal widths and at least 150 px, so two sit side by
+   side on a phone and a third is reached by scrolling the table, not the page. A row's label is a band across the
+   columns; the day shown is shaded. A level's words are in its colour; nothing else in the table is coloured. */
+.compare { margin-top: 36px; padding-top: 20px; border-top: 1px solid var(--line); }
+.compare h2 { font: 600 var(--fs-head)/1.2 var(--font-display); }
+.cmp-choose { margin-top: 10px; }
+.cmp-choose > summary { cursor: pointer; padding: 12px 0; font-size: var(--fs-note); font-weight: 600; color: var(--link); }
+.compare .cmp-picks { grid-template-columns: minmax(0, 1fr); max-width: 720px; margin-top: 2px; }
+@media (min-width: 700px) { .compare .cmp-picks { grid-template-columns: repeat(3, minmax(0, 1fr)); } .cmp-choose > summary { display: none; } }
+.compare > .meta { margin-top: 14px; }
+.cmp-scroll { margin-top: 10px; overflow-x: auto; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); max-width: 960px; }
+.cmp-scroll:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+table.cmp { width: 100%; min-width: calc(var(--cols, 2) * 150px); table-layout: fixed; border-collapse: collapse; font-size: var(--fs-note); font-variant-numeric: tabular-nums; }
+table.cmp th, table.cmp td { padding: 10px; border-bottom: 1px solid var(--hair); text-align: left; vertical-align: top; }
+table.cmp tbody tr:last-child td { border-bottom: 0; }
+table.cmp thead th { font-weight: 600; }
+table.cmp thead th a { display: block; min-height: 44px; }
+table.cmp tr.lab th { padding: 14px 10px 2px; border-bottom: 0; font-size: var(--fs-meta); font-weight: 600; color: var(--muted); }
+table.cmp tr.lab th > span { display: inline-block; position: sticky; left: 10px; }
+table.cmp .lab-note { display: block; max-width: calc(100vw - 80px); font-weight: 400; }
+table.cmp .day { display: block; font-size: var(--fs-meta); color: var(--muted); }
+table.cmp .lvl { font-weight: 600; }
+table.cmp tr.on > td { background: var(--field); }
+table.cmp tr.on > td.same { background: none; }
+table.cmp td a { text-decoration: underline; text-underline-offset: 2px; }
+.vt { display: block; font-size: var(--fs-meta); color: var(--muted); font-weight: 400; }
+.vt.vt-none { display: inline; font-size: inherit; color: var(--ink); font-weight: 600; }
+.vt-stale::before { content: "\2014\00a0"; }   /* a dash before an old reading's words: it is not the value */
 #share-list-msg { overflow-wrap: anywhere; }
 .shared-act { margin-top: 16px; font-size: var(--fs-note); }
 .opening .backline a { color: var(--ink); }

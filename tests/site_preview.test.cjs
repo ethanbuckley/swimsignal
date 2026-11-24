@@ -475,6 +475,39 @@ test('Saved moves or copies a place between lists and opens a list from a pasted
   assert.doesNotMatch(JS, /clipboard\.read/, 'nothing is read from the clipboard: the reader pastes');
 });
 
+test('Saved compares up to three places by the live site\'s own rules, and every cell says something', () => {
+  const X = require(path.join(SITE, 'experience.js'));
+  // The rules are experience.js's and plan.js's, which the page calls; the table is this page's own markup.
+  assert.match(JS, /const days = spots\.map\(s => compareDays\(s, ds\)\), facts = spots\.map\(s => compareRows\(s, day, DATA\.generated_at\)\), water = spots\.map\(compareWater\);/);
+  assert.match(JS, /const ids = cmpIds = planCompareIds\(cmpIds, mine\), ds = dates\(\);/);
+  assert.match(JS, /cmpIds = comparisonIds\(\[\.\.\.app\.querySelectorAll\('\[data-cmp\]'\)\]\.map\(x => x\.value\), /);
+  assert.match(JS, /if \(mine\.length < 2 \|\| typeof compareRows !== 'function' \|\| typeof evidenceRows !== 'function'\) return '';/, 'nothing to compare until two places are saved');
+  // Up to three, the first three until others are chosen, and a choice of one filled up again.
+  const three = ['a', 'b', 'c', 'd'].map(id => ({id}));
+  assert.deepEqual(PLAN.planCompareIds(null, three), ['a', 'b', 'c']);
+  assert.deepEqual(PLAN.planCompareIds(['d', 'b'], three), ['d', 'b']);
+  assert.deepEqual(X.comparisonIds(['a', 'a', 'zz', 'b'], three), ['a', 'b']);
+  // A place with a daily forecast has a cell a day; one without has one cell for the five, in its headline's words.
+  const d = X.compareDays(spot(ALL), DAYS);
+  assert.equal(d.same, false); assert.deepEqual(d.days.map(x => x.level), ALL);
+  const t = X.compareDays(tarn(), DAYS);
+  assert.equal(t.same, true); assert.doesNotMatch(t.days[0].words, /\blow\b/i);
+  assert.match(JS, /: i \? '' : `<td class="same" rowspan="\$\{ds\.length\}"\$\{hd\('cmp-days', j\)\}>\$\{cell\(d\.days\[0\]\)\}\. The same on every day\.<\/td>`/);
+  // Every row of facts has words in every column: missing data says it is not known.
+  for (const s of [spot(ALL), tarn()]) for (const [label, html] of X.compareRows(s, DAYS[0], GEN, NOW)) assert.ok(String(html).trim().length > 3, `${s.id}: ${label}`);
+  // The water today: a missing reading or gauge is said, never left blank.
+  assert.match(JS, /: vt\('none', 'No reading'\),/); assert.match(JS, /\? vt\('none', 'No gauge'\) : rs\.stale \?/);
+  // A level's words carry its colour; the day shown is the row shaded; no column is called the best.
+  assert.match(JS, /const cell = x => `<span class="lvl \$\{P\.cls\(x\.level\)\}">\$\{esc\(x\.words\)\}<\/span>`/);
+  assert.match(JS, /<tr\$\{iso === day \? ' class="on" aria-current="true"' : ''\}>/);
+  assert.doesNotMatch(JS.slice(JS.indexOf('function compareHtml'), JS.indexOf('function redrawCompare')), /\b(best|winner|recommended)\b/i);
+  // What a lower level is not, in this page's own words (the live table's sentence uses a word this page never does).
+  assert.match(JS, /A lower level is the forecast for sewage pollution, not a safety check: check the signs at the water\./);
+  // A place's own file is asked for once, for its guide; the table is drawn again where it was scrolled to.
+  assert.match(JS, /for \(const id of cmpIds \|\| \[\]\) if \(!details\.has\(id\)\) loadDetail\(id\)\.then\(redrawCompare\);/);
+  assert.match(CSS, /table\.cmp \{ width: 100%; min-width: calc\(var\(--cols, 2\) \* 150px\); table-layout: fixed;/);
+});
+
 test('the swim journal and the passport are the live site\'s own, on this device only', () => {
   const JN = require(path.join(SITE, 'journal.js')), JS_JN = fs.readFileSync(path.join(SITE, 'journal.js'), 'utf8');
   assert.equal(JN.JOURNAL_KEY, 'dipcast.swims');   // the live site's own, so a swim logged on either page is in both journals
