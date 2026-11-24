@@ -1173,7 +1173,8 @@ def test_the_outline_cache_sits_in_the_state_the_workflow_saves():
     assert env["DIPCAST_CACHE"].startswith(env["DIPCAST_STATE"] + "/")
     step = wf.split("- name: Save mutable state", 1)[1].split("- name:", 1)[0]
     assert re.search(r"^\s+uses: actions/cache/save@v\d+\s*$", step, re.M)
-    assert re.search(r"^\s+if: always\(\)\s*$", step, re.M)
+    # after a failed build too; not after a page-only build, which changes no state (tests/test_page_only.py)
+    assert re.search(r"^\s+if: always\(\) && steps\.build\.outputs\.pages_only != 'true'\s*$", step, re.M)
     assert re.search(r"^\s+path: state\s*$", step, re.M)
     bs = _build_site()
     cache = config.CACHE / bs.FLOOD_OUTLINES_DIR

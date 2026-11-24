@@ -45,7 +45,9 @@ def test_the_limits_cover_the_slowest_runs_seen():
 def test_no_other_step_of_the_build_job_runs_the_tests_or_the_build():
     # The limits are found by step name; a second step doing either would have none.
     assert BUILD.count("uv run pytest") == 1
-    assert BUILD.count("scripts/build_site.py") == 1
+    # The build step runs it page-only first where that is allowed, then in full (tests/test_page_only.py).
+    step = BUILD.split(f"      - name: {BUILD_STEP}\n", 1)[1].split("\n      - ", 1)[0]
+    assert BUILD.count("uv run python scripts/build_site.py") == step.count("uv run python scripts/build_site.py") == 2
 
 
 def test_a_push_build_also_asks_whether_test_python_passed_its_commit():

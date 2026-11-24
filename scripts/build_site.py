@@ -5648,6 +5648,115 @@ def plume_files(site: Path, results: list[dict], upstream: dict[str, list[dict]]
     return out
 
 
+def write_site_pages(site: Path, results: list[dict], generated: pd.Timestamp, spot_cards: dict[str, str], *, coastal: dict,
+                     wales: dict, scotland: dict, ireland: dict, northern_ireland: dict) -> int:
+    """write_pages with this run's settings. build() and rebuild_pages() both write the pages through here, so a
+    page-only build cannot be given different arguments from a full one."""
+    push, email, ask = push_config(), email_config(), ask_config()
+    return write_pages(site, results, os.environ.get(COUNTER_TOKEN_ENV, "").strip(), day=generated.date().isoformat(),
+                       push=push is not None, coastal=coastal, wales=wales, scotland=scotland, email=email is not None,
+                       ireland=ireland, northern_ireland=northern_ireland, support=support_url(), tiles=tile_config(),
+                       push_dates=bool(push and push.get("dates")), ask=ask is not None,
+                       push_advice=bool(push and push.get("advice")), push_clears=bool(push and push.get("clears")),
+                       actions=actions_url(), spot_cards=spot_cards, cards_v=generated.strftime("%Y%m%d%H%M"),
+                       overflows=_overflows(), generated=generated)
+
+
+# A page-only build (docs/PAGE-ONLY-BUILDS-2026-11.md). A push to main that changes only what the pages are made from
+# (scripts/page_only.py decides) need not forecast again: rebuild_pages writes the pages over the last build's
+# published site, whose data/ it leaves as it is, so every page gives that forecast's own issue time. BUILT_FILE is
+# the full build's note to it, kept with the state: which forecast the state belongs to, and the settings it had.
+BUILT_FILE = "site_build.json"
+NATIONS = ("wales", "scotland", "ireland", "northern_ireland")
+# Settings that are paths on the machine, not choices about the site. The Open-Meteo key is a secret: only whether
+# it is set goes into the hash.
+WRITTEN_AFTER_PAGES = ("since-last.json",)   # issue_history.record_and_publish, the last thing build() writes
+SETTINGS_NOT_HASHED = ("DIPCAST_ROOT", "DIPCAST_STATE", "DIPCAST_CACHE")
+SETTINGS_SET_ONLY = ("DIPCAST_OPEN_METEO_KEY",)
+
+
+class PagesOnlyUnsafe(RuntimeError):
+    """The pages cannot be written from the published data as a full build would write them: build in full."""
+
+
+def build_settings() -> str:
+    """A hash of the DIPCAST_ settings this run has, names and values (for a secret, only whether it is set). A
+    setting changed since the forecast was made can change the data as well as the pages, so a page-only build
+    whose hash differs from the full build's is not safe."""
+    h = hashlib.sha256()
+    for k in sorted(os.environ):
+        if not k.startswith("DIPCAST_") or k in SETTINGS_NOT_HASHED or not os.environ[k].strip():
+            continue
+        h.update(f"{k}={'set' if k in SETTINGS_SET_ONLY else os.environ[k].strip()}\n".encode())
+    return h.hexdigest()[:16]
+
+
+def rebuild_pages(site: Path = SITE, built: Path | None = None) -> dict:
+    """Every page again, over a published site whose data/ stays as it is: the last build's forecast with this
+    commit's pages. Raises PagesOnlyUnsafe, before anything is written, unless the state is that forecast's and
+    the settings are the ones it was made with. It asks the network for the reviews alone, as a build does.
+    What it runs again is what reads the page sources (src/dipcast/site, src/dipcast/pages, the prerender scripts
+    and alerts.js): alerts.json and the cards, by the page's own rules, the pages, and the reviews' sections in
+    them. The Lab's paths, which a build makes from its own network, are the last build's, put back."""
+    t0 = time.time()
+    data = site / "data"
+    try:
+        doc = json.loads((data / "spots.json").read_text())
+        results, generated = doc["spots"], pd.Timestamp(doc["generated_at"])
+        coastal = json.loads((data / "coastal.json").read_text())
+        nations = {name: json.loads((data / f"{name}.json").read_text()) for name in NATIONS}
+    except (OSError, KeyError, TypeError, ValueError) as e:
+        raise PagesOnlyUnsafe(f"the published data cannot be read ({e})") from e
+    try:
+        note = json.loads((built or config.state_read(BUILT_FILE)).read_text())
+    except (OSError, ValueError) as e:
+        raise PagesOnlyUnsafe(f"no note from the full build in the state ({e})") from e
+    if note.get("generated_at") != doc["generated_at"]:
+        raise PagesOnlyUnsafe(f"the state is the forecast of {note.get('generated_at')}, the published data that of {doc['generated_at']}")
+    if note.get("settings") != build_settings():
+        raise PagesOnlyUnsafe("a DIPCAST_ setting has changed since the forecast was made")
+    push, email, ask = push_config(), email_config(), ask_config()
+    for key, now in (("push", push), ("email", email), ("ask", ask), ("credits", data_credits(site_url()))):
+        if doc.get(key) != now:
+            raise PagesOnlyUnsafe(f"spots.json was written with another {key} setting")
+    health: dict = {"pages_only": True, "generated_at": doc["generated_at"], "forecast_commit": doc.get("commit")}
+    paths, kept = site / "lab" / "assets" / "paths", None
+    if paths.is_dir():   # write_lab puts the repository's copy there; the last build's own goes back below
+        kept = site / ".lab-paths-kept"
+        shutil.rmtree(kept, ignore_errors=True)
+        shutil.copytree(paths, kept)
+    # What a build writes into data/ after the pages, so the data page, which lists data/, does not list it:
+    # set aside while the pages are written, as it was not there when the full build wrote them.
+    later = [(data / name, site / f".{name}.kept") for name in WRITTEN_AFTER_PAGES if (data / name).is_file()]
+    for f, aside in later:
+        f.replace(aside)
+    try:
+        alerts_ok = write_alerts(site, site_url(), push is not None or email is not None)
+        spot_cards = write_spot_cards(site, results, generated.isoformat(), alerts_ok)
+        health["spot_cards"] = len(spot_cards)
+        health["spot_pages"] = write_site_pages(site, results, generated, spot_cards, coastal=coastal, **nations)
+    finally:
+        for f, aside in later:
+            aside.replace(f)
+    from dipcast.reviews import write_reviews
+    try:
+        health["reviews"] = write_reviews(site, spot_ids=[r["id"] for r in results], fetch=True)
+    except Exception as e:  # noqa: BLE001 - as in build(): reviews must never stop the site publishing
+        health["reviews"] = {"warning": f"reviews not written, so the site shows none this time: {e}"}
+    if health["reviews"].get("warning"):
+        announce(health["reviews"]["warning"])
+    if kept is not None:
+        if paths.is_dir():
+            shutil.rmtree(paths)
+            shutil.copytree(kept, paths)
+            write_lab_refresh(site, paths_from_build=True)
+        shutil.rmtree(kept)
+    health["cards"] = write_cards(site, results, generated.isoformat(), site_url(), alerts_ok)
+    summary = {**health, "seconds": round(time.time() - t0, 1)}
+    log.info("pages rebuilt on the forecast of %s: %s", doc["generated_at"], summary)
+    return summary
+
+
 def build(refresh: bool = True) -> dict:
     t0 = time.time()
     require_spill_model()
@@ -5877,14 +5986,7 @@ def build(refresh: bool = True) -> dict:
     # How the forecast has done at each spot's upstream overflows, from that CSV: before the pages, for data.html.
     from dipcast import spot_scores
     health["spot_scores"] = spot_scores.write(SITE, upstream, generated, credits)
-    token = os.environ.get(COUNTER_TOKEN_ENV, "").strip()
-    health["spot_pages"] = write_pages(SITE, results, token, day=generated.date().isoformat(), push=push is not None,
-                                       coastal=coastal, wales=wales, scotland=scotland, email=email is not None,
-                                       ireland=ireland, northern_ireland=northern_ireland, support=support_url(), tiles=tile_config(),
-                                       push_dates=bool(push and push.get("dates")), ask=ask is not None,
-                                       push_advice=bool(push and push.get("advice")), push_clears=bool(push and push.get("clears")), actions=actions_url(),
-                                       spot_cards=spot_cards, cards_v=generated.strftime("%Y%m%d%H%M"),
-                                       overflows=_overflows(), generated=generated)
+    health["spot_pages"] = write_site_pages(SITE, results, generated, spot_cards, coastal=coastal, **nations)
     # Swimmers' reviews: the published ones into site/reviews/, and their sections into the pages just written.
     from dipcast.reviews import write_reviews
     try:
@@ -5914,6 +6016,8 @@ def build(refresh: bool = True) -> dict:
     except Exception as e:  # noqa: BLE001 - the history beside the forecast must never stop it publishing
         health["issue_history"] = {"warning": f"issue history not kept or published this time: {e}"}
         announce(health["issue_history"]["warning"])
+    if refresh:   # what rebuild_pages checks before it writes pages from this build's data
+        config.state_write(BUILT_FILE).write_text(json.dumps({"generated_at": generated.isoformat(), "settings": build_settings()}))
     summary = {**health, "seconds": round(time.time() - t0, 1), "generated_at": generated.isoformat()}
     summary.pop("failed_spots", None)
     if refresh and config.SCOTTISH_WATER:
@@ -5937,6 +6041,13 @@ def build(refresh: bool = True) -> dict:
 
 
 if __name__ == "__main__":
+    if "--pages-only" in sys.argv:   # the pages again from the data already in site/; exit 3 = not safe, build in full
+        try:
+            print(rebuild_pages())
+        except PagesOnlyUnsafe as e:
+            log.warning("pages not rebuilt from the published data: %s", e)
+            sys.exit(3)
+        sys.exit(0)
     try:
         print(build(refresh="--no-refresh" not in sys.argv))
     except BuildUnhealthy as e:
