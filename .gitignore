@@ -108,3 +108,6 @@ node_modules/
 
 # Wrangler local cache (account id and name): never commit
 .wrangler/
+
+# The redesign preview server keeps its copy of the forecast here (scripts/preview_redesign.py).
+.preview-data/
