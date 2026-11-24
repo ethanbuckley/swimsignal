@@ -3160,3 +3160,20 @@ ten overflows upstream, Saturday picked), Windermere's north basin (a lake, thre
 a near tap (the point's page), and Map back from it. **Not checked:** 1,440 px by eye, a point in Scotland during
 the trial, a link to a point opened on another device.
 
+### Ported: what the level rests on, lab results and the evidence timeline (24 November 2026, night)
+
+The sixth port from `classic/`. Marked: the content is already decided ("What the level rests on", the evidence
+timeline, lab results an organisation sent); its place in "The record here" is new.
+
+- **"The record here" is on every listed place's page.** Before this port it was on those with an overflow
+  upstream. In order:
+  what the level rests on (`evidence.js`: each item's age and whose it is, and the gaps), lab results an
+  organisation sent (`measured.js`, where there are any), how the forecast has done here, past spills by month, and
+  the evidence timeline (`timeline.js`), which reads its files when it is opened.
+- **A point tapped on the map has no record**, as on the live page.
+
+**Checked:** in-app browser at 375 px: Ilkley's five items (overflows upstream, rain here, the rating, algae at the
+last check, the latest lab sample), its timeline of 82 dated items with "Show all", both folds kept open through a
+day picked; Wastwater, with no overflow upstream, has the items, the months' note and the timeline, and no forecast
+score. **Not checked:** a place with a lab result from an organisation (none exists on 24 November), 1,440 px by eye.
+
