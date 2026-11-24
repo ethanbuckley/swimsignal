@@ -47,3 +47,43 @@ test('out of season the tile has no figure and no sentence, even if a day carrie
   for (const t of vm.runInContext('facts', page(oct))(river(['higher'], { dates: oct, season: false })))
     assert.doesNotMatch(text(t.say) + text(t.fold), /than usual|about usual/);
 });
+
+// The winter word (docs/RIVER-WINTER-LINE-2026-11.md): behind the build's switch, which is off, today's day at a
+// river spot can carry `ecoli_usual_winter` from October to April. The out-of-season tile then says the word and
+// what it rests on. No figure, no band, and nothing at all without the field.
+const OCT = ['2026-10-04', '2026-10-05', '2026-10-06', '2026-10-07', '2026-10-08'];
+const winterRiver = (word, extra = {}) => { const d = river([null], { dates: OCT, season: false });
+  if (word) d.days[0].ecoli_usual_winter = word;
+  Object.assign(d.days[0], extra); return d; };
+const offTile = (ctx, d) => vm.runInContext('facts', ctx)(d).find(t => /Experimental E.&nbsp;coli estimate/.test(t.label)) || {};
+
+test('winter: the three sentences, out of season only, and nothing for any other word', () => {
+  const line = vm.runInContext('riverUsualWinter', page(OCT));
+  const x = w => ({ in_validated_season: false, ecoli_usual_winter: w });
+  assert.equal(line(x('higher')), 'Today the estimate is higher than usual here for October to April.');
+  assert.equal(line(x('lower')), 'Today the estimate is lower than usual here for October to April.');
+  assert.equal(line(x('about')), 'Today the estimate is about usual here for October to April.');
+  for (const v of [x('sideways'), x(null), { in_validated_season: false }, { in_validated_season: true, ecoli_usual_winter: 'higher' }, {}, null])
+    assert.equal(line(v), '');
+});
+
+test('winter: without the field the out-of-season tile is exactly as before', () => {
+  const ctx = page(OCT), t = offTile(ctx, winterRiver(null));
+  assert.equal(t.fig, 'Out of season');
+  assert.match(text(t.say), /^The level above counts sewage spills\. This estimate counts E\. coli from any source, but it is tested only for May to September/);
+  assert.doesNotMatch(text(t.say) + text(t.fold), /than usual|about usual|winter/);
+});
+
+test('winter: with the field the tile says the word and what it rests on, with no figure and no band', () => {
+  const ctx = page(OCT), with_ = offTile(ctx, winterRiver('higher')), without = offTile(ctx, winterRiver(null));
+  assert.match(text(with_.say), /^Today the estimate is higher than usual here for October to April\. In winter only its order is tested: .* Its size is untested, so no figure is given and it is not part of the level\.$/);
+  assert.doesNotMatch(text(with_.say), /%|tested only for May to September/);
+  for (const k of ['fig', 'label', 'word', 'wordTone', 'vis', 'rel', 'fold']) assert.equal(with_[k], without[k], k);
+  assert.match(text(offTile(ctx, winterRiver('lower')).say), /^Today the estimate is lower than usual here/);
+  // A word on a later day does nothing: the build puts it on today only, and the tile reads today's day.
+  const later = winterRiver(null); later.days[1].ecoli_usual_winter = 'higher';
+  assert.equal(offTile(ctx, later).say, without.say);
+  // The level and the answer do not move.
+  const levelOf = d => vm.runInContext('level', ctx)(d, d.days[0]);
+  assert.equal(levelOf(winterRiver('higher')), levelOf(winterRiver(null)));
+});
