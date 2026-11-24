@@ -343,6 +343,42 @@ test('as the site\'s own pages: the app is "the earlier version" at classic/, an
   assert.equal(LISTS.readShared('', DAYS), null);
 });
 
+test('as the site\'s own pages they carry the two things the privacy notice says a visitor can turn off, under its name for them', () => {
+  // The notice names the place: 'under "Saved spots, offline use and your data" at the bottom of the home page'.
+  const NOTICE = fs.readFileSync(path.join(SITE, '../pages/privacy.html'), 'utf8');
+  assert.match(NOTICE, /Saved spots, offline use and your data/);
+  assert.match(JS, /<details class="yourdata" id="your-data"\$\{dataOpen \? ' open' : ''\}><summary>Saved spots, offline use and your data<\/summary>/);
+  assert.match(JS, /\$\{yourDataHtml\(\)\}\n    <details><summary>Data sources and licences<\/summary>/, 'on every page\'s foot');
+  assert.match(JS, /if \(PREVIEW\) return '';   \/\/ beside a preview the home page is the app's, which has it/);
+  // The live page's words, each of them: the labels and what is said after a press.
+  for (const said of ['Turn the offline copy back on', 'Turn off the offline copy', 'Count my visits again', "Don't count my visits",
+    'Page views are counted, without cookies.', 'Your browser asks sites not to track it, so your visits are not counted.',
+    'This browser is not keeping site data, so this lasts only until you close the page.', 'The offline copy is on again.',
+    'The offline copy is off, and deleted from this device.', ' Alerts are off too: they need it.',
+    'This browser is not keeping site data, so it cannot keep this choice.', 'Your visits will be counted again from the next page you open.',
+    'Your visits from this browser are not counted from the next page you open.']) {
+    assert.ok(LIVE.includes(said), `the live page says: ${said}`); assert.ok(JS.includes(said), `and so does this one: ${said}`);
+  }
+  // The same keys the worker's start and the counter read, so a choice made on either design holds on both.
+  const COUNTER = fs.readFileSync(path.join(SITE, 'counter.js'), 'utf8');
+  assert.match(COUNTER, /var COUNT_KEY = 'dipcast\.count';/); assert.match(LIVE, /const OFFLINE_KEY = 'dipcast\.offline';/);
+  assert.match(JS, /localStorage\.setItem\('dipcast\.count', 'off'\)/); assert.match(JS, /localStorage\.setItem\('dipcast\.offline', 'off'\)/);
+  assert.match(JS, /if \(!off\) startWorker\(\); \}/, 'the worker is not started again once turned off');
+  assert.match(JS, /if \(on\) \{ startWorker\(\); return kept; \}/);
+  // Off means gone: the worker, what it stored, a kept outing, and alerts first, since they arrive through the worker.
+  assert.match(JS, /for \(const r of await navigator\.serviceWorker\.getRegistrations\(\)\) await r\.unregister\(\);/);
+  assert.match(JS, /if \(k\.startsWith\('dipcast-'\) \|\| k === 'swimsignal-outing'\) await caches\.delete\(k\);/);
+  assert.match(fs.readFileSync(path.join(SITE, 'outingpack.js'), 'utf8'), /const CACHE = 'swimsignal-outing', KEY = 'dipcast\.outingpack'/);
+  assert.match(JS, /localStorage\.removeItem\('dipcast\.outingpack'\)/);
+  assert.ok(JS.indexOf('await window.PVAlerts.turnOff(DATA.push)') < JS.indexOf('const kept = await setOffline(on)'), 'alerts are turned off before the worker goes');
+  // The counter's row only where the build put the counter in, and no button where the browser has objected already.
+  assert.match(JS, /const c = document\.getElementById\('page-counter'\), counted = !!c && c\.tagName === 'SCRIPT';/);
+  assert.match(JS, /const noTrack = \(\) => navigator\.globalPrivacyControl === true \|\| navigator\.doNotTrack === '1';/);
+  // Alerts' own line, when the copy is off, points at this page's fold and not at the earlier version's.
+  assert.match(JS, /\(PREVIEW \? classic\('#your-data'\) : '#your-data'\) \+ '" data-do="to-data">Turn it back on<\/a>/);
+  assert.match(CSS, /\.foot summary \{ cursor: pointer; padding: 12px 0; \}/); assert.match(CSS, /\.yourdata \.textbtn \{ min-height: 44px; \}/);
+});
+
 test('reviews, notes on a visit and reports of illness are the live site\'s own scripts, drawn into the place\'s page', () => {
   // Loaded as they are, after the few names they expect of their page; the page gives them the place they look for.
   const order = [...PAGE.matchAll(/<script src="([^"]+)"/g)].map(m => m[1]);
