@@ -432,6 +432,19 @@ table.seasonal .num { text-align: right; white-space: nowrap; }
 .s-bar { display: inline-block; width: 56px; height: 6px; margin-right: 8px; vertical-align: middle; background: var(--line); }
 .s-bar > span { display: block; height: 100%; background: var(--muted); }
 .record .small { margin-top: 8px; font-size: var(--fs-meta); } .record .muted { color: var(--muted); }
+/* What the level rests on, lab results and the evidence timeline (evidence.js, measured.js, timeline.js): each item a
+   row, what it is and how old on one line, what it says under it, then whose it is. No colour: an age is not a level. */
+.factors { margin-top: 12px; max-width: 44em; }
+.factor { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; align-items: baseline; padding: 12px 0; border-top: 1px solid var(--hair); }
+.f-l { font-size: var(--fs-note); font-weight: 600; color: var(--muted); }
+.f-v { font-size: var(--fs-note); font-weight: 700; text-align: right; color: var(--k-na); }
+.f-d { grid-column: 1 / -1; margin-top: 2px; font-size: var(--fs-note); line-height: 1.45; }
+.f-src { grid-column: 1 / -1; margin-top: 2px; font-size: var(--fs-meta); line-height: 1.4; color: var(--muted); }
+.f-src a { color: var(--muted); }
+.ev-gap { padding-top: 10px; border-top: 1px solid var(--hair); font-size: var(--fs-note); line-height: 1.45; max-width: 44em; }
+.ev-gap p + p { margin-top: 6px; }
+.record details.tile { margin-top: 20px; padding-top: 8px; border-top: 1px solid var(--line); }
+.record .btn.quiet { margin-top: 10px; cursor: pointer; }
 
 /* ---------------------------------------------------------------- your swims */
 /* The swim journal and the passport (journal.js, passport.js): the live site's own markup. The form is the reviews'

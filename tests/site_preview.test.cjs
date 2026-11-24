@@ -37,7 +37,7 @@ test('the page is out of search engines, shares only the rules, and keeps the li
   assert.match(PAGE, /<meta name="robots" content="noindex, nofollow">/);
   assert.deepEqual([...PAGE.matchAll(/<script src="([^"]+)"/g)].map(m => m[1]),
     ['levels.js', 'eatoday.js', 'experience.js', 'lists.js', 'plan.js', 'preview/host.js', 'reviews.js', 'visits.js', 'illness.js',
-      'spotscores.js', 'seasonal.js', 'since.js', 'findwindow.js', 'journal.js', 'passport.js', 'anypoint.js', 'preview/model.js', 'preview/alerts.js', 'preview/map.js', 'preview/app.js']);
+      'spotscores.js', 'seasonal.js', 'evidence.js', 'measured.js', 'timeline.js', 'since.js', 'findwindow.js', 'journal.js', 'passport.js', 'anypoint.js', 'preview/model.js', 'preview/alerts.js', 'preview/map.js', 'preview/app.js']);
   // Every address is read against the site's root, as the live pages' are: the page says where that is, and where it is under it.
   assert.match(PAGE, /<html lang="en-GB" data-home="preview\/">/); assert.match(PAGE, /<base href="\.\.\/">\n<title>/);
   assert.ok(PAGE.indexOf('<base href="../">') < PAGE.indexOf('href="fonts/'), 'the <base> comes before the first relative address');
@@ -370,10 +370,10 @@ test('the record at a place is the live site\'s own: how the forecast has done t
   const SC = require(path.join(SITE, 'spotscores.js')), SE = require(path.join(SITE, 'seasonal.js'));
   // The page calls the live scripts for the markup, from the live site's own files.
   assert.match(JS, /scoresLoad\(\)\.then\(d => \{ SCORES = d \|\| null; scoresRead = true;/);
-  assert.match(JS, /scoresTile\(s, SCORES\)/); assert.match(JS, /seasonalTile\(\{ \.\.\.s, seasonal: \(got\.detail \|\| \{\}\)\.seasonal \}\)/);
+  assert.match(JS, /scoresTile\(s, SCORES\)/); assert.match(JS, /const full = got \? \{ \.\.\.s, \.\.\.\(got\.detail \|\| \{\}\) \} : null/); assert.match(JS, /seasonalTile\(full\)/);
   assert.match(fs.readFileSync(path.join(SITE, 'spotscores.js'), 'utf8'), /const SCORES_FILE = 'data\/spot_scores\.json';/);
-  // Only where the forecast counts an overflow upstream, as on the live page: never at a place with none.
-  assert.match(JS, /const recordHtml = s => typeof scoresTile !== 'function' \|\| !scoresWanted\(s\) \? ''/);
+  // How the forecast has done: only where it counts an overflow upstream, as on the live page, never at a place with none.
+  assert.match(JS, /const wanted = typeof scoresWanted === 'function' && scoresWanted\(s\);/); assert.match(JS, /!wanted \? '' : !scoresRead \?/);
   assert.equal(SC.scoresWanted(spot(ALL)), true); assert.equal(SC.scoresWanted(tarn()), false);
   // What they give is what the page shows: the counts in words, and twelve months.
   const tile = SC.scoresTile(spot(ALL), {min_spills: 10, first_day: '2026-09-29', spots: {a: {overflows: 10, scored_overflows: 10, overflow_days: 300, spill_days: 12, forecasts: 1400, hits: 20, misses: 30, false_alarms: 40, days: 37, first_day: '2026-09-29'}}});
@@ -459,4 +459,17 @@ test('any river or lake tapped on the map has a forecast: the live site\'s own a
   assert.match(JS, /const need = AnyPoint\.POINT_ZOOM \|\| 9;/); assert.match(JS, /That point is outside Britain and Ireland/);
   assert.match(MAP, /if \(best \|\| !HOME\.onWater\) HOME\.onPick\(best \? best\.id : null\); else HOME\.onWater\(e\.latlng\.lat, e\.latlng\.lng, HOME\.map\.getZoom\(\)\);/);
   for (const said of ["A listed spot is checked by hand and gets its own rain forecast and E.&nbsp;coli estimate.", 'Request this as a spot']) { assert.ok(JS.includes(said), said); assert.ok(AP.includes(said), `anypoint.js no longer says: ${said}`); }
+});
+
+test('what the level rests on, lab results and the evidence timeline are the live site\'s own, for a listed place', () => {
+  const EV = require(path.join(SITE, 'evidence.js')), TL = fs.readFileSync(path.join(SITE, 'timeline.js'), 'utf8');
+  assert.match(JS, /evidenceTile\(full, at, DATA\.generated_at\)/); assert.match(JS, /measuredTile\(full, at\)/); assert.match(JS, /timelineTile\(full\)/);
+  assert.match(JS, /const recordHtml = s => typeof evidenceTile !== 'function' \|\| s\.unlisted \? ''/, 'a point tapped on the map has no record');
+  // The timeline reads its files when its fold is opened, by its own listener, and names the forecast's time from the page's.
+  assert.match(TL, /document\.addEventListener\('toggle', timelineOpen, true\);/); assert.match(TL, /typeof DATA === 'object' && DATA \? DATA\.generated_at : null/);
+  // What the live script gives for a place: its items as rows, each with its age and whose it is.
+  const tile = EV.evidenceTile({...spot(ALL), contributors: []}, NOW, GEN);
+  assert.match(tile, /<details class="tile fold" id="evidence">/); assert.match(tile, /<div class="factor"><div class="f-l">/); assert.match(tile, /<div class="f-src">/);
+  assert.equal(EV.evidenceTile({...spot(ALL), unlisted: true}, NOW, GEN), '');
+  for (const c of ['factors', 'factor', 'f-l', 'f-v', 'f-d', 'f-src', 'ev-gap']) assert.match(CSS, new RegExp(`\\.${c}\\b`), c);
 });

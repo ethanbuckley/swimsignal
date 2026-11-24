@@ -663,27 +663,33 @@ function placeHtml() {
     ${foot()}
   </main>${tabbar()}`;
 }
-// The record here: how the forecast has done at the overflows upstream since live scoring began, and on how many
-// days of each month a spill was reported upstream. History, not a forecast, and neither changes with the day
-// picked. Both are the live site's own scripts (spotscores.js, seasonal.js), which give their part as markup: the
-// first from data/spot_scores.json, asked for once a visit, the second from the place's own file. What is drawn is
-// kept and put back when the page is drawn again, so a fold opened stays open. Only where the forecast counts an
-// overflow upstream, as on the live page.
+// The record here: what the level rests on (evidence.js: each item's age and source, and the gaps), how the forecast
+// has done at the overflows upstream since live scoring began (spotscores.js), on how many days of each month a spill
+// was reported upstream (seasonal.js), lab results an organisation sent (measured.js), and everything dated the site
+// holds about the water here (timeline.js, read when its fold is opened). Sources and history, not a forecast, and
+// none of it changes with the day picked. Each is the live site's own script giving its part as markup, from the
+// place's own file and data/spot_scores.json. What is drawn is kept and put back when the page is drawn again, so a
+// fold opened stays open. For a listed place; a point tapped on the map has no record.
 let rec = null, SCORES = null, scoresAsked = false, scoresRead = false;   // rec: { key, el }
-const recordHtml = s => typeof scoresTile !== 'function' || !scoresWanted(s) ? ''
+const recordHtml = s => typeof evidenceTile !== 'function' || s.unlisted ? ''
   : `<section class="record" id="record" aria-labelledby="record-h"><h2 id="record-h">The record here</h2>
-    <p class="sec-lede">What has happened before at the overflows upstream. History, not a forecast: it does not change with the day picked.</p><div id="record-slot"></div></section>`;
+    <p class="sec-lede">What the level rests on, and what has happened here before. Sources and history, not a forecast: it does not change with the day picked.</p><div id="record-slot"></div></section>`;
 function mountRecord(s) {
   const slot = document.getElementById('record-slot') || document.getElementById('record-body'); if (!slot) return;
-  if (!scoresAsked) { scoresAsked = true;
+  const wanted = typeof scoresWanted === 'function' && scoresWanted(s);
+  if (wanted && !scoresAsked) { scoresAsked = true;
     scoresLoad().then(d => { SCORES = d || null; scoresRead = true; const now = route && route.id && spotOf(route.id); if (now) mountRecord(now); }); }
-  const got = details.get(s.id), key = `${s.id}|${got ? 1 : 0}|${scoresRead ? 1 : 0}`;
+  const got = details.get(s.id), key = `${s.id}|${got ? 1 : 0}|${!wanted || scoresRead ? 1 : 0}`;
   if (rec && rec.key === key) { if (slot !== rec.el) slot.replaceWith(rec.el); return; }
   const open = rec && rec.el.isConnected ? [...rec.el.querySelectorAll('details[open]')].map(d => d.id || d.className) : [];
   const el = document.createElement('div'); el.id = 'record-body';
-  const scores = !scoresRead ? '<p class="meta">Reading how the forecast has done here…</p>' : scoresTile(s, SCORES);
-  const months = !got ? '' : typeof seasonalTile === 'function' ? seasonalTile({ ...s, seasonal: (got.detail || {}).seasonal }) : '';
-  el.innerHTML = scores + months || '<p class="meta">Nothing is recorded for this place yet.</p>';
+  // The place as its own file fills it out: the overflows that count most, its samples and its monthly history.
+  const full = got ? { ...s, ...(got.detail || {}) } : null, at = now();
+  const parts = !full ? ['<p class="meta">Reading the record…</p>'] : [evidenceTile(full, at, DATA.generated_at),
+    typeof measuredTile === 'function' ? measuredTile(full, at) : '',
+    !wanted ? '' : !scoresRead ? '<p class="meta">Reading how the forecast has done here…</p>' : scoresTile(s, SCORES),
+    typeof seasonalTile === 'function' ? seasonalTile(full) : '', typeof timelineTile === 'function' ? timelineTile(full) : ''];
+  el.innerHTML = parts.join('') || '<p class="meta">Nothing is recorded for this place yet.</p>';
   el.querySelectorAll('details').forEach(d => { if (open.includes(d.id || d.className)) d.open = true; });
   slot.replaceWith(el); rec = { key, el };
 }
