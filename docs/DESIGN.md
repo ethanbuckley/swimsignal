@@ -3005,8 +3005,9 @@ until each thing only it has is in the redesign. Marked: new, and it supersedes 
   the top what it is, with a link to the new site.
 - **Words.** As the site the redesign says nothing of a preview. It calls the app "the earlier version".
 
-**Only at `classic/` until ported** (the order I would port them): swimmers' reviews, visit notes and illness
-reports on a place; the record of how the forecast has done there, past spills by month and lab results; sharing a
+**Only at `classic/` until ported** (the order I would port them; the first is done, below): swimmers' reviews,
+visit notes and illness reports on a place; the record of how the forecast has done there, past spills by month and
+lab results; sharing a
 list, Find a window and what changed since you last looked, on Saved; the swim journal and passport; a forecast for
 any water tapped on the map; outings. The action counter is not in the redesign.
 
@@ -3020,4 +3021,32 @@ a place opened and reloaded, Saved, Plan, the list, the map with its 133 places;
 site's root); `plan/#...`, `saved/`, a shared list, a sent outing, `?map=1` and an old `preview/?spot=` link.
 **Not checked:** the live tile provider and the counter on the redesign's pages at the root, alerts, the Home
 Screen app, a search engine's or a messaging app's reading of the new pages.
+
+### Ported: reviews, notes on a visit and reports of illness (24 November 2026, night)
+
+The redesign went live at 19:53 UTC on 24 November 2026 (`DIPCAST_REDESIGN=1`, #738), and Ethan said to port what
+was only at `classic/`. This is the first. Marked: the words and rules are already decided ("Swimmer reviews",
+"Visit notes"); the section and its look are new.
+
+- **The live scripts, as they are.** `reviews.js`, `visits.js` and `illness.js` are loaded by the redesign and draw
+  themselves into the place's page, in a section named "From swimmers" under "The place". What a swimmer is asked,
+  told and sent is one set of code for both sites. `preview/host.js` gives those scripts the few names they expect
+  of their page (`showRest`, `draftTrack`, `draftForget`, and the question before leaving a form half written), with
+  the live page's own sentences; a test holds each sentence to the live page's.
+- **This is how the rest can be ported.** The redesign reads from the site's root as the app does, so a live
+  script's own requests work here unchanged. Each needs a place to draw into, named as the live page names it, and
+  rules in `preview.css` for the classes it writes.
+- **Kept when the page is drawn again.** The page redraws when a day is picked or the place's file arrives. What the
+  three have drawn is one element, put back each time, so a form half written keeps its words and the cursor.
+- **The look.** No tile: each is a block under a hairline, its name in the serif, the figure in the level's size but
+  in ink, since a review is not a level. Every class the scripts write has a rule; a test lists them.
+- **Not in a built page.** The list of reviews is read in the browser, as on the live page, so the section appears
+  when the script runs. On 24 November the live list held no review and no note: the section then offers the two
+  forms.
+
+**Checked:** in-app browser at 375 px with a stand-in list (four reviews, one note) and a stand-in for the service:
+the notes and reviews drawn, "Show all", the review form opened, a day picked with the form open (same form, words
+and cursor kept), the question before leaving, a review sent and kept as this browser's own. With the live list
+(empty): both forms offered. Headless Chrome at 375 and 1,440 px. **Not checked:** a review really sent, a photo
+added, the illness tile (off on the live site), the report form.
 

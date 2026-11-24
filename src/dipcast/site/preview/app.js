@@ -105,7 +105,7 @@ function dayTabsHtml(tabs, day, label, hrefFor) {
 const stale = () => { const i = P.issuedWords(DATA, now()); return i.stale ? `<p class="notice" role="note"><b>Older forecast.</b> ${esc(i.note)}</p>` : ''; };
 const foot = () => { const c = (DATA && DATA.credits) || {};
   return `<footer class="foot"><p>${PREVIEW ? `This is a preview of a redesign, kept beside <a href="${classic()}">the current SwimSignal</a>. Both read the same forecast, and a place saved on one is saved on the other.`
-      : `A forecast for any river or lake on the map, outings, the swim journal and swimmers' reviews are still on <a href="${classic()}">the earlier version of SwimSignal</a>, which reads the same forecast. A place saved on one is saved on the other.`} Saved places stay on this device.</p>
+      : `A forecast for any river or lake on the map, outings and the swim journal are still on <a href="${classic()}">the earlier version of SwimSignal</a>, which reads the same forecast. A place saved on one is saved on the other.`} Saved places stay on this device.</p>
     <p><a href="methods.html">Method and limits</a> · <a href="verification.html">How accurate it has been</a> · <a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a></p>
     <details><summary>Data sources and licences</summary><p>${esc(c.attribution || '')}</p><p>${esc(c.modified || '')} ${esc(c.endorsement || '')} <a href="terms.html#data">Full credits</a></p></details></footer>`; };
 // One quiet line under a photo, the day first since the photo is of that day. Each part keeps to one line with its
@@ -550,7 +550,7 @@ function placeFactsHtml(s) {
     ${facts.length ? dl(facts) : got === undefined ? '' : '<p class="sec-lede">No rating, sample or gauge is recorded for this place.</p>'}
     ${guide.length ? `<details class="guide"><summary>Getting there and getting in: ${guide.length} checked notes</summary>${dl(guide)}${g.checked ? `<p class="meta">Checked on ${esc(P.shortDate(g.checked))}${g.how === 'desk' ? ', from published sources, not on a visit' : ''}.</p>` : ''}</details>` : ''}
     ${photos.length ? `<div class="photos">${photos.map(p => `<figure><img src="guides/photos/${encodeURIComponent(p.file)}" width="${Number(p.w) || 640}" height="${Number(p.h) || 480}" alt="${esc(p.caption || s.name)}" loading="lazy" decoding="async"><figcaption>${esc(p.caption || '')} ${credit({ ...p, licence_name: p.licence && /by-sa\/2\.0/.test(p.licence) ? 'CC BY-SA 2.0' : '' })}</figcaption></figure>`).join('')}</div>` : ''}
-    <p class="meta">${esc(s.source === 'openstreetmap' ? 'This place is from OpenStreetMap, © OpenStreetMap contributors.' : String(s.notes || '').replace(/([^.])$/, '$1.'))} A listing is not a right to swim or a check that it is allowed. <a href="${classic(`spot/${encodeURIComponent(s.id)}/`)}">This place on ${OLD}</a>, with swimmers' reviews and its record</p></section>`;
+    <p class="meta">${esc(s.source === 'openstreetmap' ? 'This place is from OpenStreetMap, © OpenStreetMap contributors.' : String(s.notes || '').replace(/([^.])$/, '$1.'))} A listing is not a right to swim or a check that it is allowed. <a href="${classic(`spot/${encodeURIComponent(s.id)}/`)}">This place on ${OLD}</a>, with the record of how the forecast has done here</p></section>`;
 }
 function placeHtml() {
   const s = spotOf(route.id);
@@ -569,8 +569,30 @@ function placeHtml() {
     </div>
     <div class="more">${behindHtml(s, day)}${upstreamHtml(s, day)}${nearbyHtml(s, day)}</div>
     ${placeFactsHtml(s)}
+    ${swimmersHtml(s)}
     ${foot()}
   </main>${tabbar()}`;
+}
+// From swimmers: notes on a visit, reviews and reports of illness, each the live site's own script (visits.js,
+// reviews.js, illness.js), which draws its own part and takes what a swimmer sends. They look for the place they
+// draw into by the live page's names (#result .stack .tiles), so the slot here is given those. What they have drawn
+// is kept and put back each time the page is drawn again (a day picked, the place's file arriving), so a form half
+// written is not lost. Nothing is here until their list has been read; nothing at all if reviews are off.
+let swim = null;   // { id, el }: what the three have drawn for the place open
+const swimmersHtml = s => typeof mountReviews !== 'function' || !reviewable(s) ? ''
+  : `<section class="swimmers" id="swimmers" aria-labelledby="swimmers-h"><h2 id="swimmers-h">From swimmers</h2>
+    <p class="sec-lede">What people who have been here say. One person's day, not a water test: it does not change the forecast.</p><div id="swimmers-slot"></div></section>`;
+function mountSwimmers(s) {
+  const slot = document.getElementById('swimmers-slot'); if (!slot) return;
+  if (swim && swim.id === s.id) { slot.replaceWith(swim.el); return; }
+  const el = document.createElement('div'); el.id = 'result';
+  el.innerHTML = '<div class="stack"><div class="tiles" hidden></div><p class="meta swim-wait">Reading what swimmers have sent…</p></div>';
+  slot.replaceWith(el); swim = { id: s.id, el };
+  // Each draws only if another place has not been opened since (their own check), and removes nothing of ours.
+  const done = () => { const w = el.querySelector('.swim-wait'); if (w) w.remove(); if (!el.querySelector('.rv-tile')) el.insertAdjacentHTML('beforeend', '<p class="meta">Reviews and notes are not being taken just now.</p>'); };
+  Promise.resolve(typeof reviewsLoad === 'function' ? reviewsLoad() : null).then(() => {
+    mountReviews(s); if (typeof mountVisits === 'function') mountVisits(s); if (typeof mountIllness === 'function') mountIllness(s);
+    setTimeout(done, 400); });
 }
 
 // ------------------------------------------------------------------------------------------------ drawing and events
@@ -597,6 +619,8 @@ function draw(opts = {}) {
   document.title = `${s ? s.name : ({ map: 'Map', plan: 'Plan a swim', saved: 'Saved' })[route.view] || 'Where do you swim?'} · SwimSignal${PREVIEW ? ' preview' : ''}`;
   if (route.view === 'map') mountHomeMap();
   if (s && upView === 'map') mountPlaceMap();
+  if (s) { const typing = swim && swim.id === s.id && active && swim.el.contains(active) ? active : null;
+    mountSwimmers(s); if (typing) typing.focus({ preventScroll: true }); } else swim = null;
   // Whether alerts are on is the browser's to say, and it answers a moment after the page is drawn.
   if (route.view === 'saved' && DATA.push && alertsOn === null && window.PVAlerts.can() === 'yes') window.PVAlerts.isOn().catch(() => false).then(on => { alertsOn = on; redrawAlerts(); });
   if (key !== lastKey) {
