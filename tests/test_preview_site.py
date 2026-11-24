@@ -44,8 +44,8 @@ def test_the_build_publishes_the_preview_beside_the_live_pages(tmp_path):
     bs = _build_site()
     bs.write_pages(tmp_path, SPOTS, root="https://example.org/")
     out = tmp_path / "preview"
-    assert sorted(p.name for p in out.iterdir()) == ["alerts.js", "app.js", "hero-photos.json", "index.html", "map.js", "map.json", "model.js",
-                                                     "preview.css", "spot"]
+    assert sorted(p.name for p in out.iterdir()) == ["alerts.js", "app.js", "hero-photos.json", "host.js", "index.html", "map.js", "map.json",
+                                                     "model.js", "preview.css", "spot"]
     for name in bs.PREVIEW_FILES:   # copied as they are: no stamp, no counter, no tile key
         assert (out / name).read_bytes() == (bs.PREVIEW / name).read_bytes(), name
     assert list(json.loads((out / "hero-photos.json").read_text())) == ["a"]
@@ -54,8 +54,9 @@ def test_the_build_publishes_the_preview_beside_the_live_pages(tmp_path):
     # What it loads from the live site exists where it asks for it.
     # The page asks from the site's root, where its <base> points; its stylesheet asks from where it is, preview/.
     assert '<base href="../">' in page and 'data-home="preview/"' in page
-    for src in ("levels.js", "eatoday.js", "experience.js", "lists.js", "plan.js", "fonts/SourceSans3-latin.woff2", "fonts/SourceSerif4-latin.woff2",
-                "icons/icon.svg", "preview/preview.css", "preview/app.js", "preview/model.js", "preview/map.js", "preview/alerts.js"):
+    for src in ("levels.js", "eatoday.js", "experience.js", "lists.js", "plan.js", "reviews.js", "visits.js", "illness.js",
+                "fonts/SourceSans3-latin.woff2", "fonts/SourceSerif4-latin.woff2", "icons/icon.svg", "preview/preview.css", "preview/host.js",
+                "preview/app.js", "preview/model.js", "preview/map.js", "preview/alerts.js"):
         assert f'"{src}"' in page, src
         assert (tmp_path / src).is_file(), src
     for src in ("../icons/fells.webp", "../icons/fells-wide.webp", "../fonts/SourceSerif4-latin.woff2"):

@@ -15,7 +15,7 @@ Object.assign(globalThis, L, EA);   // in the page the two files' names are glob
 const M = require(path.join(SITE, 'preview/model.js'));
 const PLAN = require(path.join(SITE, 'plan.js')), LISTS = require(path.join(SITE, 'lists.js'));   // the live site's own rules, which the page calls
 const read = f => fs.readFileSync(path.join(SITE, 'preview', f), 'utf8');
-const PAGE = read('index.html'), JS = read('app.js'), MODEL = read('model.js'), CSS = read('preview.css'), MAP = read('map.js'), ALERTS = read('alerts.js');
+const PAGE = read('index.html'), JS = read('app.js'), MODEL = read('model.js'), CSS = read('preview.css'), MAP = read('map.js'), ALERTS = read('alerts.js'), HOST = read('host.js');
 const LIVE = fs.readFileSync(path.join(SITE, 'index.html'), 'utf8');
 
 const GEN = '2026-11-24T13:21:00+00:00', NOW = Date.parse('2026-11-24T14:00:00Z');
@@ -36,7 +36,8 @@ const ALL = ['moderate', 'moderate', 'low', 'high', 'moderate'];
 test('the page is out of search engines, shares only the rules, and keeps the live look', () => {
   assert.match(PAGE, /<meta name="robots" content="noindex, nofollow">/);
   assert.deepEqual([...PAGE.matchAll(/<script src="([^"]+)"/g)].map(m => m[1]),
-    ['levels.js', 'eatoday.js', 'experience.js', 'lists.js', 'plan.js', 'preview/model.js', 'preview/alerts.js', 'preview/map.js', 'preview/app.js']);
+    ['levels.js', 'eatoday.js', 'experience.js', 'lists.js', 'plan.js', 'preview/host.js', 'reviews.js', 'visits.js', 'illness.js',
+      'preview/model.js', 'preview/alerts.js', 'preview/map.js', 'preview/app.js']);
   // Every address is read against the site's root, as the live pages' are: the page says where that is, and where it is under it.
   assert.match(PAGE, /<html lang="en-GB" data-home="preview\/">/); assert.match(PAGE, /<base href="\.\.\/">\n<title>/);
   assert.ok(PAGE.indexOf('<base href="../">') < PAGE.indexOf('href="fonts/'), 'the <base> comes before the first relative address');
@@ -48,7 +49,7 @@ test('the page is out of search engines, shares only the rules, and keeps the li
 });
 
 test('nothing in the scripts stops an older iPhone', () => {
-  for (const [name, text] of [['app.js', JS], ['model.js', MODEL], ['map.js', MAP], ['alerts.js', ALERTS]]) {
+  for (const [name, text] of [['app.js', JS], ['model.js', MODEL], ['map.js', MAP], ['alerts.js', ALERTS], ['host.js', HOST]]) {
     assert.doesNotMatch(text, /\(\?<[=!]/, `${name}: a lookbehind is refused by Safari before 16.4, and stops the whole script`);
     assert.doesNotMatch(text, /behavior:\s*'instant'/, `${name}: refused by Safari before 15.4`);
     assert.doesNotMatch(text, /\.at\(|structuredClone|\?\?=|\|\|=|&&=/, name);
@@ -60,8 +61,8 @@ test('nothing is called safe or clean, and no em-dash is written', () => {
   // One sentence may use the word: the alerts' own, the live page's, which says what no alert does not mean.
   const NOT_CLEAN = 'so no alert does not mean the water is clean';
   assert.ok(LIVE.includes(NOT_CLEAN) && JS.includes(NOT_CLEAN));
-  for (const [name, text] of [['index.html', PAGE], ['app.js', JS], ['model.js', MODEL], ['preview.css', CSS], ['map.js', MAP], ['alerts.js', ALERTS]]) {
-    assert.doesNotMatch(text.replace(/env\(safe-area-inset-(top|bottom)\)/g, '').replace(NOT_CLEAN, ''), /\b(safe|clean|safely|cleaner)\b/i, name);
+  for (const [name, text] of [['index.html', PAGE], ['app.js', JS], ['model.js', MODEL], ['preview.css', CSS], ['map.js', MAP], ['alerts.js', ALERTS], ['host.js', HOST]]) {
+    assert.doesNotMatch(text.replace(/env\(safe-area-inset-(top|bottom|right)\)/g, '').replace(NOT_CLEAN, ''), /\b(safe|clean|safely|cleaner)\b/i, name);
     assert.doesNotMatch(text, /—/, name);
   }
   assert.match(JS, /not a safety check/);
@@ -339,4 +340,27 @@ test('as the site\'s own pages: the app is "the earlier version" at classic/, an
   assert.equal(typeof LISTS.readShared, 'function');
   assert.ok(LISTS.readShared('#list=Weekend&spots=a,b', DAYS), 'a shared list is read from the address');
   assert.equal(LISTS.readShared('', DAYS), null);
+});
+
+test('reviews, notes on a visit and reports of illness are the live site\'s own scripts, drawn into the place\'s page', () => {
+  // Loaded as they are, after the few names they expect of their page; the page gives them the place they look for.
+  const order = [...PAGE.matchAll(/<script src="([^"]+)"/g)].map(m => m[1]);
+  assert.ok(order.indexOf('preview/host.js') < order.indexOf('reviews.js') && order.indexOf('reviews.js') < order.indexOf('visits.js') && order.indexOf('visits.js') < order.indexOf('preview/app.js'));
+  const RV = fs.readFileSync(path.join(SITE, 'reviews.js'), 'utf8'), VN = fs.readFileSync(path.join(SITE, 'visits.js'), 'utf8');
+  for (const s of [RV, VN]) assert.match(s, /document\.querySelector\('#result \.stack \.tiles'\)/, 'the live scripts still look for this place');
+  assert.match(JS, /el\.id = 'result';\n  el\.innerHTML = '<div class="stack"><div class="tiles" hidden><\/div>/);
+  assert.match(JS, /mountReviews\(s\); if \(typeof mountVisits === 'function'\) mountVisits\(s\); if \(typeof mountIllness === 'function'\) mountIllness\(s\);/);
+  // What they have drawn is kept and put back when the page is drawn again, so a form half written is not lost.
+  assert.match(JS, /if \(swim && swim\.id === s\.id\) \{ slot\.replaceWith\(swim\.el\); return; \}/);
+  // What they expect of the page: each is there, and each sentence a swimmer reads is the live page's.
+  for (const name of ['function showRest(rows, button)', 'function draftTrack(form, spot)', 'const draftForget = (form, spot)']) assert.ok(HOST.includes(name), name);
+  for (const said of ["Unsent answers stay in this tab's memory until it is closed or reloaded. Photos must be added again after leaving the page.",
+    'Leave this page? What you have written here will be lost.']) { assert.ok(HOST.includes(said), said); assert.ok(LIVE.includes(said), `the live page no longer says: ${said}`); }
+  for (const used of ['showRest(', 'draftTrack(', 'draftForget(']) assert.ok(RV.includes(used), `reviews.js no longer calls ${used}`);
+  // Nothing of theirs is in a page the build draws: the list of reviews is read in the browser, as on the live page.
+  assert.match(JS, /const swimmersHtml = s => typeof mountReviews !== 'function' \|\| !reviewable\(s\) \? ''/);
+  // Every class they write has a rule here, so nothing of theirs is left undressed.
+  for (const c of ['rv-tile', 't-lab', 't-fig', 't-say', 't-key', 't-more', 'rv-bar', 'rv-list', 'rv-v', 'rv-meta', 'rv-text', 'rv-pics', 'rv-pic', 'rv-acts', 'linkbtn', 'rv-write', 'rv-said',
+    'rv-form', 'rv-q', 'rv-opt', 'rv-choice', 'vn-kinds', 'rv-add', 'rv-file', 'rv-consent', 'rv-hp', 'rv-hint', 'rv-send', 'rv-msg', 'rv-report', 'rv-view', 'rv-close', 'rv-previews', 'rv-sure', 'vn-flag', 'vn-caveat'])
+    assert.match(CSS, new RegExp(`\\.${c}\\b`), c);
 });

@@ -2644,7 +2644,7 @@ def copy_app_files(site: Path, stamp: str | None = None) -> None:
 # from the build: each spot's opening photo, by guide.js's rule (dipcast.hero_photos), so a list of places can show a
 # photo beside each without reading every spot's file.
 PREVIEW = TEMPLATE.parent / "preview"
-PREVIEW_FILES = ("index.html", "preview.css", "model.js", "alerts.js", "map.js", "app.js")
+PREVIEW_FILES = ("index.html", "preview.css", "host.js", "model.js", "alerts.js", "map.js", "app.js")
 PREVIEW_NOINDEX = '<meta name="robots" content="noindex, nofollow">'
 # The redesign as the site (docs/DESIGN.md, "The switch"): with DIPCAST_REDESIGN=1 the build writes the redesign's
 # pages at the site's own addresses (/, spot/<id>/, plan/, saved/) and the app they replace at classic/. Unset, or

@@ -23,6 +23,8 @@
   --river: #b9dcd6;
   /* An overflow with no current reading: a dashed ring, 3.5:1 on the paper, so the mark can be seen as well as read. */
   --ov-none: #7b848c;
+  /* A field, the page dimmed behind a photo, and a control floating over one: the live site's. */
+  --field: #fff; --scrim: rgba(27, 35, 40, .55); --float: #fff;
   --gutter: 16px;
 }
 @media (max-width: 800px) { :root { --fs-title: 30px; } }
@@ -378,6 +380,95 @@ button { font: inherit; color: inherit; }
 .view-plan .block h3 { margin-top: 20px; font: 700 var(--fs-note)/1.3 var(--font-text); }
 .view-plan .block h3 + .meta { margin-top: 2px; }
 
+/* ---------------------------------------------------------------- from swimmers */
+/* Notes on a visit, reviews and reports of illness are drawn by the live site's own scripts (visits.js, reviews.js,
+   illness.js), in the live page's markup. Here they are dressed as this page's sections are: no tile, a hairline
+   between, the same sizes. A note or a review is not a level, so none takes a level's colour. */
+.swimmers { margin: 36px var(--gutter) 0; padding-top: 20px; border-top: 1px solid var(--line); }
+.swimmers > h2 { font: 600 var(--fs-head)/1.2 var(--font-display); }
+.rv-tile { position: relative; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line); }
+.rv-tile:focus { outline: none; }
+.t-lab { display: flex; align-items: center; gap: 8px; font: 600 var(--fs-body)/1.3 var(--font-display); color: var(--ink); }
+.t-lab .ic { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; color: var(--muted); }
+.t-fig { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 6px; margin-top: 8px; font: 300 var(--fs-level)/1 var(--font-text); font-variant-numeric: tabular-nums lining-nums; }
+.t-fig small { font: 600 var(--fs-note)/1.2 var(--font-text); color: var(--muted); }
+.t-say { margin-top: 8px; font-size: var(--fs-note); line-height: 1.45; }
+.t-key { margin-top: 8px; font-size: var(--fs-meta); color: var(--muted); }
+.t-more { margin-top: 4px; font-size: var(--fs-note); }
+.t-more summary { cursor: pointer; min-height: 44px; display: inline-flex; align-items: center; font-weight: 600; color: var(--link); list-style: none; }
+.t-more summary::-webkit-details-marker { display: none; }
+.t-more summary::after { content: "What this means"; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 2px; }
+.t-more[open] summary::after { content: "Hide what this means"; }
+.t-more p { max-width: 44em; color: var(--ink); }
+.rv-bar { height: 6px; margin-top: 12px; background: var(--track); max-width: 320px; }
+.rv-bar i { display: block; height: 100%; background: var(--ink); }
+ol.rv-list { margin-top: 12px; }
+.rv, .vn-caveat { padding: 12px 0 10px; border-top: 1px solid var(--hair); }
+.rv-v { font-size: var(--fs-note); font-weight: 700; line-height: 1.3; }
+.rv-meta { margin-top: 2px; font-size: var(--fs-meta); line-height: 1.35; color: var(--muted); }
+.rv-text { margin-top: 6px; font-size: var(--fs-note); line-height: 1.45; white-space: pre-line; overflow-wrap: anywhere; max-width: 44em; }
+ul.rv-pics, ul.rv-previews { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.rv-pic { display: block; padding: 0; border: 0; border-radius: var(--radius); overflow: hidden; background: var(--line); cursor: zoom-in; }
+.rv-pic img, .rv-previews img { display: block; width: 72px; height: 72px; object-fit: cover; }
+.rv-previews img { border-radius: var(--radius); }
+.rv-previews li { display: flex; flex-direction: column; align-items: flex-start; }
+.rv-acts { margin-top: 6px; font-size: var(--fs-meta); line-height: 1.4; color: var(--muted); }
+.linkbtn { font-size: var(--fs-note); font-weight: 600; color: var(--link); background: none; border: 0; padding: 6px 0; cursor: pointer; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 2px; }
+.linkbtn:not(.small) { display: inline-flex; align-items: center; min-height: 44px; }
+.linkbtn.small { font-size: inherit; padding: 10px 0; margin: -10px 0; }
+.rv-acts .linkbtn { padding: 12px 0; margin: -12px 0; font-size: var(--fs-meta); color: var(--muted); }
+.rv-sure { color: var(--ink); }
+.rv-write { margin-top: 12px; }
+.rv-said { margin-bottom: 10px; font-size: var(--fs-note); font-weight: 600; line-height: 1.4; }
+.rv-said:focus { outline: none; }
+.btn.quiet { min-height: 44px; font-size: var(--fs-note); }
+.swimmers .btn { cursor: pointer; }
+.vn-flag { margin-top: 2px; font-size: var(--fs-meta); font-weight: 600; line-height: 1.35; }
+.vn-caveat { font-size: var(--fs-note); line-height: 1.4; color: var(--muted); }
+/* The forms: a question to a field, in the order a swimmer answers them. Fields at the body size, or iOS zooms in on
+   them. A yes or no is a pair of radio buttons drawn as buttons, the chosen one filled, as a chosen chip is. */
+.rv-form { max-width: 560px; }
+.rv-form .small, .swimmers .small { font-size: var(--fs-meta); } .swimmers .muted { color: var(--muted); }
+.rv-q { display: block; margin: 16px 0 6px; padding: 0; font-size: var(--fs-note); font-weight: 600; line-height: 1.3; }
+.rv-form fieldset { min-width: 0; margin: 0; padding: 0; border: 0; }
+.rv-form fieldset .rv-q, .rv-report .rv-q { margin-top: 4px; }
+#vn-form fieldset + fieldset { margin-top: 16px; }
+.rv-opt { font-weight: 400; color: var(--muted); }
+.rv-choice { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; max-width: 320px; }
+.vn-kinds { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: none; }
+.rv-choice label { position: relative; display: block; }
+.rv-choice input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.rv-choice span { display: flex; align-items: center; justify-content: center; min-height: 44px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--card); font-size: var(--fs-note); font-weight: 600; }
+.vn-kinds span { padding: 6px 10px; text-align: center; line-height: 1.25; }
+.rv-choice input:checked + span { background: var(--brand); border-color: var(--brand); color: var(--on-fill); }
+.rv-choice input:focus-visible + span { outline: 2px solid var(--focus); outline-offset: 2px; }
+.rv-form input[type=date], .rv-form input[type=text], .rv-form input[type=time], .rv-form input[type=number], .rv-form textarea, .rv-report select {
+  display: block; width: 100%; min-height: 44px; margin: 0; padding: 9px 12px; font: inherit; font-size: var(--fs-body); color: var(--ink); background: var(--field); border: 1px solid var(--line); border-radius: var(--radius); }
+.rv-form input[type=date] { max-width: 220px; }
+.rv-form textarea { min-height: 112px; line-height: 1.45; resize: vertical; }
+.rv-add { position: relative; margin-top: 8px; }
+.rv-add[hidden], .rv-consent[hidden] { display: none; }
+.rv-add:focus-within { outline: 2px solid var(--focus); outline-offset: 2px; }
+.rv-file { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.rv-consent { display: flex; align-items: flex-start; gap: 10px; margin-top: 12px; font-size: var(--fs-note); line-height: 1.4; cursor: pointer; }
+.rv-consent input { flex: none; width: 22px; height: 22px; margin: 0; accent-color: var(--brand); }
+.rv-hp { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+.rv-hint { margin-top: 16px; font-size: var(--fs-meta); line-height: 1.45; color: var(--muted); }
+.rv-send { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.rv-msg { margin-top: 8px; font-size: var(--fs-note); line-height: 1.4; }
+.rv-msg:empty { display: none; }
+.rv-msg.bad { font-weight: 600; }
+.rv-report { margin: 4px 0 8px; max-width: 420px; }
+/* A photo at full size over the page: the photo and its caption on one white card, the page dimmed behind, and a
+   round close button in the corner, a 44 px target. */
+dialog.rv-view { max-width: calc(100vw - 24px); max-height: calc(100dvh - 24px); margin: auto; padding: 0; border: 0; background: transparent; overflow: visible; }
+dialog.rv-view::backdrop { background: var(--scrim); }
+dialog.rv-view figure { border-radius: var(--radius); overflow: hidden; background: var(--card); }
+dialog.rv-view img { display: block; width: auto; height: auto; max-width: calc(100vw - 24px); max-height: calc(100dvh - 112px); background: var(--line); }
+dialog.rv-view figcaption { padding: 8px 12px; font-size: var(--fs-meta); line-height: 1.35; color: var(--muted); }
+.rv-close { position: fixed; top: calc(8px + env(safe-area-inset-top)); right: calc(8px + env(safe-area-inset-right)); display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 50%; background: var(--float); color: var(--ink); cursor: pointer; }
+.rv-close .ic { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; }
+
 /* ---------------------------------------------------------------- wider screens */
 @media (min-width: 620px) {
   :root { --gutter: 24px; }
@@ -421,6 +512,6 @@ button { font: inherit; color: inherit; }
   .top > .tools { grid-area: tools; padding: 0 0 16px; }
   .first .daytabs { position: static; padding: 0; }
   .more { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 40px; margin-top: 8px; }
-  .theplace { max-width: 760px; }
+  .theplace, .swimmers { max-width: 760px; }
   .foot { max-width: 1184px; margin-left: auto; margin-right: auto; }
 }
