@@ -2624,17 +2624,30 @@ def copy_app_files(site: Path, stamp: str | None = None) -> None:
 # from the build: each spot's opening photo, by guide.js's rule (dipcast.hero_photos), so a list of places can show a
 # photo beside each without reading every spot's file.
 PREVIEW = TEMPLATE.parent / "preview"
-PREVIEW_FILES = ("index.html", "preview.css", "model.js", "app.js")
+PREVIEW_FILES = ("index.html", "preview.css", "model.js", "alerts.js", "map.js", "app.js")
 PREVIEW_NOINDEX = '<meta name="robots" content="noindex, nofollow">'
+# The live site's own rules, which the preview loads rather than copies: the levels and the official advice's words,
+# and the saved lists and the plan (lists.js reads a stored list with experience.js).
+PREVIEW_RULES = ("levels.js", "eatoday.js", "experience.js", "lists.js", "plan.js")
 
 
-def write_preview(site: Path, results: list[dict]) -> int:
-    """site/preview/: the preview's four files, copied as they are, and hero-photos.json. Returns how many spots
-    have an opening photo. A page that has lost its noindex mark, or the live site's own rules, stops the build."""
+def preview_map(tiles: dict | None, template: str | None = None) -> dict:
+    """preview/map.json: the live map's tiles for the preview's maps (preview/map.js). Their address and credit are
+    the provider's the build chose (tile_config), or OpenStreetMap's; the colour filter is that provider's, or the
+    one index.html carries, so the two maps are drawn in the same colours."""
+    src = tiles or TILE_PROVIDERS["osm"]
+    own = TILE_FILTER.search(template if template is not None else TEMPLATE.read_text())
+    return {"url": src["url"], "credit": src["credit"], "filter": src.get("filter") or (own.group(0) if own else "")}
+
+
+def write_preview(site: Path, results: list[dict], tiles: dict | None = None) -> int:
+    """site/preview/: the preview's files, copied as they are, with hero-photos.json and map.json. Returns how many
+    spots have an opening photo. A page that has lost its noindex mark, or the live site's own rules, stops the build."""
     page = (PREVIEW / "index.html").read_text()
     if PREVIEW_NOINDEX not in page:
         raise ValueError("preview/index.html has lost its noindex mark: the preview must stay out of search engines")
-    for tag in ('<script src="../levels.js"></script>', '<script src="../eatoday.js"></script>'):
+    for name in PREVIEW_RULES:
+        tag = f'<script src="../{name}"></script>'
         if tag not in page:
             raise ValueError(f"preview/index.html has lost {tag}, the live site's own rules")
     out = site / "preview"
@@ -2643,6 +2656,7 @@ def write_preview(site: Path, results: list[dict]) -> int:
         shutil.copy(PREVIEW / name, out / name)
     photos = hero_photos.index(results)
     (out / "hero-photos.json").write_text(json.dumps(photos, separators=(",", ":")))
+    (out / "map.json").write_text(json.dumps(preview_map(tiles), separators=(",", ":")))
     return len(photos)
 
 
@@ -3471,7 +3485,7 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     shutil.copytree(STATIC / "fonts", site / "fonts", dirs_exist_ok=True)   # declared in page.css and index.html
     copy_app_files(site, stamp)
     (site / "app.js").write_text(app_js)
-    write_preview(site, results)   # the redesign preview at preview/, beside the live pages; after the scripts it loads
+    write_preview(site, results, tiles)   # the redesign preview at preview/, beside the live pages; after the scripts it loads
     feeds = (site / "data" / "alerts.json").is_file()   # write_feeds writes them from it, after the spot pages
     home = PAGE_META.sub(lambda m: page_meta(HOME_TITLE, DESCRIPTION, root, root, base="./",
                                              feed=("feed.xml", f"{BRAND} · every spot") if feeds else None), template, count=1)

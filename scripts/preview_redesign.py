@@ -9,6 +9,7 @@ It serves the source files as they are, so an edit shows on reload:
 - /preview/, /levels.js, /eatoday.js, /icons/   from src/dipcast/site/
 - /fonts/                                       from src/dipcast/pages/fonts/
 - /guides/photos/                               from guides/photos/
+- /preview/map.json                             the map tiles: OpenStreetMap's, as a build with no provider
 - /preview/hero-photos.json                     made here from guides/*.toml by the build's own rule for the photo
                                                 that opens a place (src/dipcast/hero_photos.py)
 - /data/...                                     from DIR; a file DIR lacks is fetched once from swimsignal.co.uk
@@ -23,6 +24,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 import tomllib
 import urllib.request
@@ -37,6 +39,15 @@ GUIDES = ROOT / "guides"
 LIVE = "https://swimsignal.co.uk"
 sys.path.insert(0, str(ROOT / "src"))
 from dipcast.hero_photos import hero  # noqa: E402  (standard library only: the build's own rule for the photo)
+
+
+def map_tiles() -> dict:
+    """The map's tiles as the build writes them without a provider chosen (build_site.preview_map): OpenStreetMap's
+    own, with the colour filter index.html carries. The build's file names the live site's provider and its key."""
+    found = re.search(r'<filter id="tiles".*?</filter>', (SITE / "index.html").read_text(), re.DOTALL)
+    return {"url": "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+            "credit": '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+            "filter": found.group(0) if found else ""}
 
 
 def hero_photos() -> dict:
@@ -81,6 +92,8 @@ class Handler(SimpleHTTPRequestHandler):
             return self.redirect("/preview/")
         if rel == "preview/hero-photos.json":
             return self.send_json(hero_photos())
+        if rel == "preview/map.json":
+            return self.send_json(map_tiles())
         target = Path(self.translate_path(self.path))
         if rel.startswith("data/") and not target.is_file() and not self.offline:
             self.fetch_live(rel, target)

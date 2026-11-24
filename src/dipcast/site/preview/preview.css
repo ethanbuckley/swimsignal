@@ -280,6 +280,103 @@ button { font: inherit; color: inherit; }
 .foot { margin-top: 40px; padding: 20px var(--gutter) 32px; border-top: 1px solid var(--line); font-size: var(--fs-meta); color: var(--muted); display: grid; gap: 8px; }
 .foot summary { cursor: pointer; }
 
+/* ---------------------------------------------------------------- the four places: Today, Map, Plan, Saved */
+/* A phone's bar at the bottom, as the live site has it (docs/DESIGN.md, "Plan a swim"): each icon over its label. */
+.tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 1200; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); background: var(--card); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom); }
+.tabbar a { position: relative; display: grid; justify-items: center; align-content: center; gap: 2px; min-height: 56px; color: var(--muted); text-decoration: none; font-size: var(--fs-meta); font-weight: 600; }
+.tabbar a:hover { background: var(--hover); }
+.tabbar a[aria-current] { color: var(--brand); box-shadow: inset 0 3px 0 var(--brand); }
+.tabbar a:focus-visible { outline-offset: -3px; border-radius: var(--radius); }
+.tabbar .ic { width: 22px; height: 22px; }
+.tabbar .n { position: absolute; top: 6px; left: calc(50% + 8px); min-width: 20px; height: 20px; padding: 0 5px; border-radius: var(--radius); background: var(--brand); color: var(--on-fill); font-size: var(--fs-meta); line-height: 20px; text-align: center; }
+#app { padding-bottom: calc(56px + env(safe-area-inset-bottom)); }
+.hlink[aria-current] { color: var(--on-fill); box-shadow: inset 0 -2px 0 var(--on-fill); border-radius: 0; }
+.opening.slim { padding-top: 22px; padding-bottom: 20px; }
+.view-map .home-body { padding-top: 0; }
+
+/* The maps. The element Leaflet draws in is kept and moved into each new drawing of the page (map.js). */
+.mapbox { position: relative; margin-top: 12px; }
+.map-slot { position: relative; height: min(52vh, 520px); min-height: 280px; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; background: var(--sky); }
+.map-slot.place-map { height: 340px; margin-top: 12px; }
+.map-slot > .map-wait, .map-slot > .none { position: absolute; inset: 0; display: grid; place-items: center; margin: 0; padding: 16px; text-align: center; }
+/* Leaflet gives a container made off the page "position: relative", so the map takes its slot's size, not its edges. */
+.pv-map { width: 100%; height: 100%; z-index: 0; font-family: var(--font-text); }
+.map-near { position: absolute; top: 10px; right: 10px; z-index: 500; display: inline-flex; align-items: center; gap: 6px; box-shadow: var(--lift); }
+.map-near .ic { width: 16px; height: 16px; }
+.pv-map-hint { position: absolute; inset: 0; z-index: 600; display: grid; place-items: center; background: rgba(27, 35, 40, .45); color: #fff; font-weight: 600; opacity: 0; pointer-events: none; transition: opacity .2s; }
+.pv-map-hint.show { opacity: 1; }
+.map-tip { margin-top: 14px; }
+.picked .rows { margin-top: 4px; }
+.mapkey { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: var(--fs-meta); color: var(--ink); }
+.mapkey b { flex-basis: 100%; }
+.mapkey span { display: inline-flex; align-items: center; gap: 6px; }
+.mapkey i { width: 12px; height: 12px; border-radius: 50%; background: var(--unknown); flex: none; }
+.mapkey .lv-low { background: var(--low); } .mapkey .lv-moderate { background: var(--moderate); } .mapkey .lv-high { background: var(--high); } .mapkey .lv-veryhigh { background: var(--veryhigh); } .mapkey .lv-clear { background: var(--clear); }
+.mapkey .adv { background: var(--card); border: 3px solid var(--notice-line); }
+.key .is-water i { width: 18px; height: 3px; border: 0; border-radius: 2px; background: var(--brand); opacity: .6; }
+.pv-pop { display: grid; gap: 2px; font-size: var(--fs-meta); line-height: 1.35; }
+.pv-pop b { font-size: var(--fs-note); }
+.pv-pop span:last-child { color: var(--muted); }
+/* Leaflet's own parts in the site's dress, as on the live map. */
+.leaflet-container a { color: var(--link); }
+.leaflet-container .leaflet-bar { border: 0; border-radius: var(--radius); background: var(--card); box-shadow: var(--lift); }
+.leaflet-container .leaflet-bar a { width: 36px; height: 36px; font: 600 var(--fs-head)/1.8 var(--font-text); color: var(--ink); background: var(--card); border-bottom: 1px solid var(--line); }
+.leaflet-container .leaflet-bar a:first-child { border-radius: var(--radius) var(--radius) 0 0; } .leaflet-container .leaflet-bar a:last-child { border-bottom: 0; border-radius: 0 0 var(--radius) var(--radius); }
+.leaflet-container .leaflet-bar a:hover, .leaflet-container .leaflet-bar a:focus { background: var(--hover); }
+@media (pointer: coarse) { .leaflet-container .leaflet-bar a { width: 44px; height: 44px; line-height: 2.2; } .leaflet-container a.leaflet-popup-close-button { width: 44px; height: 44px; line-height: 2.2; } .leaflet-popup-content { margin-right: 44px; } }
+.leaflet-container .leaflet-control-attribution { font-size: var(--fs-meta); color: var(--muted); background: rgba(246, 244, 238, .86); padding: 2px 6px; border-radius: var(--radius) 0 0 0; }
+.leaflet-popup-content-wrapper { border-radius: var(--radius); }
+.leaflet-popup-content-wrapper, .leaflet-popup-tip { background: var(--card); color: var(--ink); box-shadow: var(--lift); }
+.leaflet-tooltip { padding: 4px 8px; border-color: var(--card); border-radius: var(--radius); background: var(--card); color: var(--ink); box-shadow: var(--lift); font-size: var(--fs-meta); }
+
+/* Saved: a row with a way to take it off the list, the lists, and the alerts. */
+.has-x { display: grid; grid-template-columns: minmax(0, 1fr) 44px; align-items: center; border-top: 1px solid var(--line); }
+.has-x .row { border-top: 0; }
+.x { display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: var(--radius); background: none; color: var(--muted); cursor: pointer; }
+.x:hover { background: var(--hover); color: var(--ink); }
+.chip-n { font-weight: 400; opacity: .8; }
+.block > h2 .meta { font: 400 var(--fs-meta)/1.3 var(--font-text); margin-left: 6px; white-space: nowrap; }
+.block > h2:focus { outline: none; }
+.listtools { gap: 4px 18px; }
+.listtools .textbtn, .confirm .textbtn, .listform .textbtn { min-height: 44px; font-size: var(--fs-note); margin-left: 0; }
+.listform { margin-top: 16px; max-width: 420px; display: grid; gap: 6px; }
+.listform label { font-size: var(--fs-note); font-weight: 600; }
+.confirm { margin-top: 16px; font-size: var(--fs-note); }
+.confirm .chips { margin-top: 8px; }
+.alerts { margin-top: 36px; padding-top: 20px; border-top: 1px solid var(--line); max-width: 720px; }
+.alerts h2 { font: 600 var(--fs-head)/1.2 var(--font-display); }
+.alerts .sec-lede { margin-top: 6px; }
+.consent { margin-top: 8px; font-size: var(--fs-note); }
+.consent summary { cursor: pointer; min-height: 44px; display: inline-flex; align-items: center; font-weight: 600; color: var(--link); }
+.consent p { color: var(--ink); max-width: 44em; }
+.alerts-go { margin-top: 10px; }
+.btn[disabled] { opacity: .55; cursor: default; }
+.tick { margin-top: 12px; display: flex; gap: 10px; align-items: flex-start; font-size: var(--fs-note); max-width: 40em; }
+.tick[hidden] { display: none; }
+.tick input { width: 22px; height: 22px; margin: 1px 0 0; flex: none; accent-color: var(--brand); }
+.alerts > .meta { margin-top: 10px; }
+#alerts-msg:not(:empty), #list-said:not(:empty) { color: var(--ink); font-size: var(--fs-note); }
+#alerts-blocked:focus { outline: none; }
+.view-saved .home-body > .meta, .view-plan .home-body > .meta, .map-side > .meta { margin-top: 16px; }
+
+.picks { margin-top: 12px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; max-width: 560px; }
+.picks label { display: grid; gap: 4px; font-size: var(--fs-meta); font-weight: 600; color: var(--muted); }
+.picks select { width: 100%; height: 48px; padding: 0 34px 0 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--card) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235a6166' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 9.5 7 7 7-7'/%3E%3C/svg%3E") right 10px center / 18px no-repeat; color: var(--ink); font: 600 var(--fs-note)/1 var(--font-text); appearance: none; -webkit-appearance: none; }
+/* Plan a swim: the places a town's name offers, the areas to start from, and a better day. */
+.offers { margin-top: 6px; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.offers li + li { border-top: 1px solid var(--line); }
+.offers button { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 48px; padding: 8px 14px; border: 0; background: none; text-align: left; font-size: var(--fs-body); cursor: pointer; }
+.offers button:hover { background: var(--hover); }
+.offers button:focus-visible { outline-offset: -3px; border-radius: var(--radius); }
+.offers .ic { color: var(--muted); width: 18px; height: 18px; }
+#offers > .none { margin-top: 8px; font-size: var(--fs-note); }
+.starts { margin-top: 4px; }
+.starts li { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 10px; min-height: 44px; border-top: 1px solid var(--line); }
+.starts a { font-weight: 600; }
+.better { margin-top: 12px; padding: 10px 14px; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); font-size: var(--fs-note); }
+.view-plan .block h3 { margin-top: 20px; font: 700 var(--fs-note)/1.3 var(--font-text); }
+.view-plan .block h3 + .meta { margin-top: 2px; }
+
 /* ---------------------------------------------------------------- wider screens */
 @media (min-width: 620px) {
   :root { --gutter: 24px; }
@@ -293,6 +390,14 @@ button { font: inherit; color: inherit; }
   html { scroll-padding-top: 24px; }
   .wide-only { display: inline-flex; }
   span.wide-only { display: inline; }
+  .tabbar { display: none; }
+  #app { padding-bottom: 0; }
+  .map-slot { height: min(66vh, 640px); }
+  .map-slot.place-map { height: 380px; }
+  .view-map .home-body { padding-top: 12px; display: grid; grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr); gap: 0 32px; align-items: start; }
+  .view-map .home-body > .daytabs, .view-map .home-body > .notice { grid-column: 1 / -1; }
+  .view-map .mapkey { flex-direction: column; gap: 6px; }
+  .map-side .meta { margin-top: 16px; }
   .opening { padding: 44px var(--gutter) 36px; background-image: url(../icons/fells-wide.webp); }
   .opening { padding-left: max(var(--gutter), calc((100% - 1120px) / 2)); padding-right: max(var(--gutter), calc((100% - 1120px) / 2)); }
   .home-body .daytabs { max-width: 560px; }

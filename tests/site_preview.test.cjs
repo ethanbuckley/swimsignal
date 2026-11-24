@@ -13,8 +13,10 @@ const SITE = path.join(__dirname, '../src/dipcast/site');
 const L = require(path.join(SITE, 'levels.js')), EA = require(path.join(SITE, 'eatoday.js'));
 Object.assign(globalThis, L, EA);   // in the page the two files' names are globals; model.js uses only what they export
 const M = require(path.join(SITE, 'preview/model.js'));
+const PLAN = require(path.join(SITE, 'plan.js')), LISTS = require(path.join(SITE, 'lists.js'));   // the live site's own rules, which the page calls
 const read = f => fs.readFileSync(path.join(SITE, 'preview', f), 'utf8');
-const PAGE = read('index.html'), JS = read('app.js'), MODEL = read('model.js'), CSS = read('preview.css');
+const PAGE = read('index.html'), JS = read('app.js'), MODEL = read('model.js'), CSS = read('preview.css'), MAP = read('map.js'), ALERTS = read('alerts.js');
+const LIVE = fs.readFileSync(path.join(SITE, 'index.html'), 'utf8');
 
 const GEN = '2026-11-24T13:21:00+00:00', NOW = Date.parse('2026-11-24T14:00:00Z');
 const DAYS = ['2026-11-24', '2026-11-25', '2026-11-26', '2026-11-27', '2026-11-28'], SAT = DAYS[4];
@@ -33,7 +35,8 @@ const ALL = ['moderate', 'moderate', 'low', 'high', 'moderate'];
 
 test('the page is out of search engines, shares only the rules, and keeps the live look', () => {
   assert.match(PAGE, /<meta name="robots" content="noindex, nofollow">/);
-  assert.deepEqual([...PAGE.matchAll(/<script src="([^"]+)"/g)].map(m => m[1]), ['../levels.js', '../eatoday.js', 'model.js', 'app.js']);
+  assert.deepEqual([...PAGE.matchAll(/<script src="([^"]+)"/g)].map(m => m[1]),
+    ['../levels.js', '../eatoday.js', '../experience.js', '../lists.js', '../plan.js', 'model.js', 'alerts.js', 'map.js', 'app.js']);
   assert.doesNotMatch(CSS, /text-transform:\s*uppercase|linear-gradient|border-radius:\s*(?:999|[1-9]\d)px|letter-spacing:\s*0?\.\d+em/);   // the looks Ethan named as machine-made
   assert.match(CSS, /"Source Serif 4"/); assert.match(CSS, /--bar: #3d5b5d/); assert.match(CSS, /--radius: 8px/);
   const sizes = new Set([...CSS.matchAll(/font(?:-size)?:[^;]*?(\d+)px/g)].map(m => m[1]));
@@ -41,7 +44,7 @@ test('the page is out of search engines, shares only the rules, and keeps the li
 });
 
 test('nothing in the scripts stops an older iPhone', () => {
-  for (const [name, text] of [['app.js', JS], ['model.js', MODEL]]) {
+  for (const [name, text] of [['app.js', JS], ['model.js', MODEL], ['map.js', MAP], ['alerts.js', ALERTS]]) {
     assert.doesNotMatch(text, /\(\?<[=!]/, `${name}: a lookbehind is refused by Safari before 16.4, and stops the whole script`);
     assert.doesNotMatch(text, /behavior:\s*'instant'/, `${name}: refused by Safari before 15.4`);
     assert.doesNotMatch(text, /\.at\(|structuredClone|\?\?=|\|\|=|&&=/, name);
@@ -50,8 +53,11 @@ test('nothing in the scripts stops an older iPhone', () => {
 });
 
 test('nothing is called safe or clean, and no em-dash is written', () => {
-  for (const [name, text] of [['index.html', PAGE], ['app.js', JS], ['model.js', MODEL], ['preview.css', CSS]]) {
-    assert.doesNotMatch(text.replace(/env\(safe-area-inset-top\)/g, ''), /\b(safe|clean|safely|cleaner)\b/i, name);
+  // One sentence may use the word: the alerts' own, the live page's, which says what no alert does not mean.
+  const NOT_CLEAN = 'so no alert does not mean the water is clean';
+  assert.ok(LIVE.includes(NOT_CLEAN) && JS.includes(NOT_CLEAN));
+  for (const [name, text] of [['index.html', PAGE], ['app.js', JS], ['model.js', MODEL], ['preview.css', CSS], ['map.js', MAP], ['alerts.js', ALERTS]]) {
+    assert.doesNotMatch(text.replace(/env\(safe-area-inset-(top|bottom)\)/g, '').replace(NOT_CLEAN, ''), /\b(safe|clean|safely|cleaner)\b/i, name);
     assert.doesNotMatch(text, /—/, name);
   }
   assert.match(JS, /not a safety check/);
@@ -144,7 +150,7 @@ test('an old forecast is said to be old, and old feeds stop counting as live', (
 
 test('a shared link keeps its day, and a day that has passed falls back to today', () => {
   assert.deepEqual(M.parseQuery('?spot=bw-uke4100-08901&day=2026-11-28'), {screen: 'place', id: 'bw-uke4100-08901', day: SAT});
-  assert.deepEqual(M.parseQuery('?spot=<script>'), {screen: 'find', day: null, q: '', area: ''});
+  assert.deepEqual(M.parseQuery('?spot=<script>'), {screen: 'find', view: '', day: null, q: '', area: ''});
   data([spot(ALL)]);
   assert.equal(M.queryFor({id: 'a', day: SAT}), '?spot=a&day=2026-11-28');
   assert.equal(M.queryFor({id: 'a', day: DAYS[0]}), '?spot=a', "today's link carries no date, so it never goes out of date");
@@ -165,4 +171,97 @@ test('search finds a place by name, river or area, and reads a postcode as its s
   assert.deepEqual(M.findSpots(all, 'yorkshire').length, 2);
   assert.deepEqual(M.postcodeKeys('ls29 9bz'), {district: 'LS29', sector: 'LS29 9'});
   assert.equal(M.postcodeKeys('Ilkley'), null);
+});
+
+test('the map, the plan and the saved places each have an address, and a place still comes first', () => {
+  assert.deepEqual(M.parseQuery('?view=map&day=2026-11-28'), {screen: 'find', view: 'map', day: SAT, q: '', area: ''});
+  assert.equal(M.parseQuery('?view=elsewhere').view, '');
+  assert.equal(M.parseQuery('?view=saved&spot=a').screen, 'place');   // a place's link wins
+  assert.equal(M.queryFor({view: 'saved', day: SAT}), '?view=saved&day=2026-11-28');
+  assert.equal(M.queryFor({view: 'plan'}), '?view=plan');
+  assert.equal(M.queryFor({view: 'other'}), './');
+  // A plan's choices go after the #, in the live site's own form, so they never reach a server and open there too.
+  assert.match(JS, /'\?view=plan' \+ planHash\(/);
+  assert.doesNotMatch(JS, /q\.set\('(from|at|within)'/);
+});
+
+test('saved places are the live site\'s own lists, in this browser only', () => {
+  // The same keys as the live page, so a place saved on one is saved on the other.
+  assert.equal(LISTS.LISTS_KEY, 'dipcast.lists');
+  assert.match(JS, /readLists\(stored\(LISTS_KEY\), stored\(SAVED_KEY\)\)/); assert.match(JS, /SAVED_KEY = 'dipcast\.saved'/);
+  assert.match(LIVE, /const SAVED_KEY = 'dipcast\.saved'/);
+  const spots = [spot(ALL, {id: 'a'}), spot(['low', 'low', 'low', 'low', 'low'], {id: 'b', name: 'B'}), spot(['low', 'low', 'low', 'low', 'low'], {id: 'c', name: 'C', official: NOTICE})];
+  const S = M.savedRows(spots, ['b', 'gone', 'a', 'c'], DAYS[0]);
+  assert.deepEqual(S.rows.map(r => r.id), ['b', 'a', 'c']);   // in the order they were saved
+  assert.equal(S.gone, 1);
+  assert.equal(S.low, 1, 'a place under official advice is not counted as low');
+  assert.equal(M.savedRows(spots, ['a'], SAT).rows[0].level, 'moderate');   // the day shown, not today
+});
+
+test('the alerts say what the live page says, and nothing is asked of the browser until they are turned on', () => {
+  // Each sentence of what is sent, to whom and how to take it back is the live page's, word for word.
+  for (const said of ["Turning alerts on sends your browser\\'s push address and the list of your saved spots, and nothing else about you, to SwimSignal\\'s alert service.",
+    "Alerts reach you through your browser maker\\'s push service (Google, Apple, Mozilla or Microsoft), encrypted so it cannot read them.",
+    'You can turn them off here at any time, which deletes what the alert service holds. An alert can be late or not come at all, so no alert does not mean the water is clean.',
+    'Also a weekly note on Thursday evenings: the days with the lowest pollution risk, Friday to Monday, at each saved spot.']) {
+    assert.ok(JS.includes(said), `the preview lost: ${said}`); assert.ok(LIVE.includes(said), `the live page no longer says: ${said}`);
+  }
+  // The two opening sentences are put together on the live page (a notification, or an email): their ends are its own.
+  for (const [mine, end] of [['A notification when one of your saved spots reaches', ' when one of your saved spots reaches high or very high risk, at most once a day for each.'],
+    [' Another when official advice is newly shown', ' when official advice is newly shown at one of them, also at most once a day for each.']]) {
+    assert.ok(JS.includes(mine) && JS.includes(end), mine); assert.ok(LIVE.includes(end), `the live page no longer says: ${end}`);
+  }
+  // One setting for both pages: the same record, the same service, the same body.
+  assert.match(ALERTS, /PUSH_KEY = 'dipcast\.push'/); assert.match(LIVE, /const PUSH_KEY = 'dipcast\.push'/);
+  assert.match(ALERTS, /body: JSON\.stringify\(\{ subscription: sub\.toJSON\(\), spots, weekly \}\)/);
+  assert.match(LIVE, /body: JSON\.stringify\(\{ subscription: sub\.toJSON\(\), spots, weekly \}\)/);
+  // The worker is started and permission asked only inside turnOn, which only the button calls.
+  assert.equal((ALERTS.match(/serviceWorker\.register\(/g) || []).length, 1); assert.match(ALERTS, /if \(start\) \{ await navigator\.serviceWorker\.register/);
+  assert.equal((ALERTS.match(/requestPermission\(/g) || []).length, 1); assert.doesNotMatch(JS + MAP, /serviceWorker\.register|requestPermission/);
+  assert.equal((JS.match(/A\.turnOn\(/g) || []).length, 1);
+});
+
+test('a plan keeps the live site\'s groups: low risk is never mixed with no daily level or a higher level', () => {
+  const at = (id, lat, extra, labels = ['low', 'low', 'low', 'low', 'low']) => spot(labels, {id, name: id, lat, lon: -1.8, ...extra});
+  const spots = [at('low-near', 53.92), at('low-far', 54.05), at('raised', 53.91, {}, ['high', 'high', 'low', 'high', 'high']), tarn({id: 'tarn', lat: 53.93, lon: -1.8}),
+    at('advised', 53.905, {official: NOTICE}), at('beyond', 55.5)];
+  const from = {lat: 53.9, lon: -1.8}, plan = {...PLAN.PLAN_DEFAULT, day: DAYS[0], within: 20, from: {name: 'Ilkley', ...from}};
+  const found = PLAN.planSpots(spots, plan, s => M.kmBetween(from, s) / PLAN.MILE_KM), G = M.planRows(found, DAYS[0], from);
+  const g = k => (G.find(x => x.key === k) || {rows: []}).rows.map(r => r.id);
+  assert.deepEqual(g('low'), ['low-near', 'low-far', 'advised']);   // nearest first; official advice last, with its notice on the row
+  assert.equal(G.find(x => x.key === 'low').rows[2].notice.length > 0, true);
+  assert.deepEqual(g('plain'), ['tarn']); assert.deepEqual(g('raised'), ['raised']);
+  assert.equal(found.count, 5, 'a place beyond the distance is left out');
+  assert.match(G[0].rows[0].said, /^(under a mile|[\d.]+ miles?) north$/);
+  // On the day the raised place is low it moves up, with the same date everywhere.
+  const thu = PLAN.planSpots(spots, {...plan, day: DAYS[2]}, s => M.kmBetween(from, s) / PLAN.MILE_KM);
+  assert.ok(M.planRows(thu, DAYS[2], from).find(x => x.key === 'low').rows.some(r => r.id === 'raised'));
+  // The page calls the live site's rules, not copies of them.
+  for (const name of ['planSpots', 'planHash', 'readPlan', 'planKept', 'betterDay', 'planAreas']) { assert.equal(typeof PLAN[name], 'function'); assert.match(JS, new RegExp(`\\b${name}\\(`)); }
+});
+
+test('the map shows each place at its level for the day, and an overflow as the line shows it', () => {
+  const spots = [spot(ALL, {id: 'a'}), tarn({id: 'tarn', lat: 54.4, lon: -3}), spot(ALL, {id: 'adv', official: NOTICE}), spot(ALL, {id: 'nowhere', lat: null})];
+  const pts = M.mapPoints(spots, DAYS[3]);
+  assert.deepEqual(pts.map(p => [p.id, p.cls, p.advised]), [['a', 'lv-high', false], ['tarn', 'lv-clear', false], ['adv', 'lv-high', true]]);
+  assert.equal(M.mapPoints(spots, DAYS[2])[0].cls, 'lv-low');
+  for (const c of ['lv-low', 'lv-moderate', 'lv-high', 'lv-veryhigh', 'lv-clear', 'lv-none']) assert.ok(MAP.includes(`'${c}'`), c);   // every class has a colour
+  // The overflows: the line's own items at the upstream file's positions.
+  const up = [{site_id: 'X1', site_name: 'NEAR CSO', company: 'Yorkshire Water', distance_km: 2, lat: 53.95, lon: -1.9, status: 1, data_state: 'live', feed_updated_at: '2026-11-24T13:10:00+00:00'},
+    {site_id: 'X2', site_name: 'FAR CSO', company: 'Yorkshire Water', distance_km: 9, lat: 54.0, lon: -2.0, status: 0, data_state: 'live', feed_updated_at: '2026-11-24T13:10:00+00:00'},
+    {site_id: 'X3', site_name: 'UNPLACED CSO', company: 'Yorkshire Water', distance_km: 12, status: 0, data_state: 'live', feed_updated_at: '2026-11-24T13:10:00+00:00'}];
+  const s = spots[0], line = M.riverLine(s, up, null, spots, NOW, DAYS[0]), o = M.overflowPoints(line.items, up);
+  assert.deepEqual(o.map(p => [p.id, p.mark]), [['X1', 'spilling'], ['X2', 'quiet']]);   // one with no position is on the line only
+  assert.equal(o[0].mark, line.items.find(i => i.id === 'X1').mark);
+  assert.match(o[1].said, /9\.0 km upstream\.$/);
+  // The traced water is read as the live map reads it.
+  assert.deepEqual(M.decodeLine('_p~iF~ps|U_ulLnnqC_mqNvxq`@'), [[38.5, -120.2], [40.7, -120.95], [43.252, -126.453]]);
+  assert.deepEqual(M.decodeLine(''), []);
+});
+
+test('the maps use the live map\'s own library and credit, and open only when asked for', () => {
+  for (const hash of ['sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=', 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=']) { assert.ok(MAP.includes(hash)); assert.ok(LIVE.includes(hash)); }
+  assert.doesNotMatch(PAGE, /leaflet/);   // not in the page: asked for by map.js when a map is first opened
+  assert.match(MAP, /fetch\('map\.json'\)/); assert.match(MAP, /attribution: CONF\.credit/);
+  assert.match(MAP, /The same places are in the list/); assert.match(JS, /The same places as a list/);   // the list is the map's other way in
 });
