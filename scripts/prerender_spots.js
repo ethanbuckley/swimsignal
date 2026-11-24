@@ -19,7 +19,7 @@ const SCRIPTS = ['eatoday.js', 'experience.js', 'levels.js', 'lists.js', 'guide.
 const ROOTS = ['spotTop', 'daysTile', 'ageReadings'];
 // Definitions that need a browser as they run, which the prerender gives itself instead (context):
 // where the site is, and the map (an object key "map" reaches it; nothing here draws one).
-const GIVEN = ['ROOT', 'map', 'TOUCH', 'STILL'];
+const GIVEN = ['ROOT', 'SITE_ROOT', 'map', 'TOUCH', 'STILL'];
 
 // Code without its comments, strings and regular expressions, so a word in a sentence ("Open map")
 // does not count as a use of the name (map). A template literal's ${...} parts stay: they are code.
@@ -103,7 +103,7 @@ function context(data, root) {
   // ROOT is where the site is (index.html: from the <base>), its path the back link's address.
   const ctx = vm.createContext({ console, URL, URLSearchParams, Intl, history: { state: null }, location: new URL(root),
     navigator: { onLine: true }, localStorage: store, sessionStorage: store, addEventListener() {}, setTimeout, clearTimeout,
-    ROOT: new URL(root), map: null, TOUCH: false, STILL: false });
+    ROOT: new URL(root), SITE_ROOT: new URL(root), map: null, TOUCH: false, STILL: false });
   ctx.window = ctx;
   vm.runInContext(`Date.now = () => ${issuedAt};`, ctx);
   for (const f of SCRIPTS) vm.runInContext(fs.readFileSync(path.join(SITE, f), 'utf8'), ctx, { filename: f });

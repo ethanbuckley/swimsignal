@@ -128,9 +128,9 @@ class Handler(SimpleHTTPRequestHandler):
         self.end_headers()
 
     def send_place(self) -> None:
-        """A place's own page, preview/spot/<id>/: the opening's file with a <base> back to preview/, as the build
+        """A place's own page, preview/spot/<id>/: the opening's file with its <base> back to the site's root from there, as the build
         writes it (build_site.preview_place_page), but without the place's own <head> or its built answer."""
-        page = (SITE / "preview" / "index.html").read_text().replace("<title>", '<base href="../../">\n<title>', 1)
+        page = (SITE / "preview" / "index.html").read_text().replace('<base href="../">', '<base href="../../../">', 1)
         self.send_page(page.encode())
 
     def send_page(self, body: bytes) -> None:

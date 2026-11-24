@@ -24,9 +24,9 @@ function deadline(work, message, ms = 20000) {
   let timer;
   return Promise.race([work, new Promise((_, reject) => { timer = setTimeout(() => reject(new Error(message)), ms); })]).finally(() => clearTimeout(timer));
 }
-// The site's worker (../sw.js, the live site's own, whose reach covers this page). Looked for, never started, when
+// The site's worker (sw.js at the site's root, whose reach covers this page). Looked for, never started, when
 // the page only needs to know whether alerts are on; started when alerts are turned on.
-const site = () => new URL('../', location.href);
+const site = () => new URL('./', document.baseURI);   // the site's root: every page's <base> points there
 async function worker(start) {
   if (!canPush() || offlineOff()) return null;
   if (start) { await navigator.serviceWorker.register(new URL('sw.js', site())).catch(() => {});

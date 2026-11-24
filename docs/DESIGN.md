@@ -2973,3 +2973,51 @@ by the note alone, so nothing moves when the script draws. In the in-app browser
 Saturday, a day picked, a place opened from Elsewhere, Back. An old `?spot=` link. The skip link. No page error.
 **Not checked:** the worker in a real browser (its rules are tested in Node with a stand-in cache, as the site's
 others are), a link preview in a messaging app, a crawler.
+
+### The switch: the redesign as the site (24 November 2026, night)
+
+Ethan, the same evening: "lets get the redesign site live rn and then lets add these features once the redesign is
+actually live". So the redesign takes the site's addresses now, and the app it replaces is kept whole at `classic/`
+until each thing only it has is in the redesign. Marked: new, and it supersedes "What a swap still needs" above.
+
+- **One build setting.** With the repository variable `DIPCAST_REDESIGN` set to `1`, the build writes the redesign at
+  `/`, `spot/<id>/`, `plan/` and `saved/` (`build_site.write_redesign`) and the app at `classic/`,
+  `classic/spot/<id>/`, `classic/plan/` and `classic/saved/` (`classic_page`). Unset, or any other value, and every
+  page is as before, with the redesign at `preview/`. Deleting the variable puts the app back at the next build.
+- **Checked that off changes nothing:** the site was built from `main` (9fc0c570) and from this change with the
+  switch off, on the same forecast. All 1,851 pages outside `preview/` are the same but for the build's stamp. Four
+  lines differ in the app's script, and they do the same thing while the app is at the root (next point).
+- **The app has two roots** (`index.html`): `ROOT`, where its own pages are, and `SITE_ROOT`, where the site's files
+  are. They are the same place unless the build writes `<html data-home="classic/">`. The app already read its page
+  from the end of the address (`/spot/<id>/`, `/saved/`, `/plan/`), so nothing else in it had to change. The build
+  rewrites the six links in its header and phone bar.
+- **The redesign reads everything from the site's root too**, where each page's `<base>` points, and
+  `<html data-home>` says where its own pages are under that: `preview/`, or nothing. Its files stay in `preview/`
+  either way (the app has an `app.js` of its own at the root).
+- **Addresses already in the world keep working.** A place, Plan a swim (`plan/#...`) and Saved open in the
+  redesign. A list someone shared (`saved/#list=...`) and an outing someone sent (`plan/#...&spot=...`) are passed on
+  to `classic/`, which can show them. `?map=1` opens the map. A `preview/` address opens the same page at the site's
+  address. An alert's link is `spot/<id>/`, which is now the redesign's page.
+- **As the site's own pages** they lose `noindex`, carry the app's page's title, description, share card and
+  structured data, the Home Screen app's manifest, and the page-view counter, and they start the offline worker
+  (unless the offline copy was turned off). The sitemap is unchanged: the same addresses.
+- **The app at `classic/`** is out of search engines, names the redesign's page as its canonical one, and says at
+  the top what it is, with a link to the new site.
+- **Words.** As the site the redesign says nothing of a preview. It calls the app "the earlier version".
+
+**Only at `classic/` until ported** (the order I would port them): swimmers' reviews, visit notes and illness
+reports on a place; the record of how the forecast has done there, past spills by month and lab results; sharing a
+list, Find a window and what changed since you last looked, on Saved; the swim journal and passport; a forecast for
+any water tapped on the map; outings. The action counter is not in the redesign.
+
+**Not right in this first cut, and known:** a few links inside the app at `classic/` are written without `ROOT`
+(the journal's links to a place, a kept outing's list of pages) and open the redesign's page for that address; the
+app's built pages point "All spots" at the redesign until its script has run.
+
+**Checked, 24 November 2026, night,** on a local build of the whole site from the 18:59 forecast with the switch on:
+the redesign at `/` (search, a place, a day, Saved, Plan, the map, the worker started); the app at `classic/` (home,
+a place opened and reloaded, Saved, Plan, the list, the map with its 133 places; every file asked for from the
+site's root); `plan/#...`, `saved/`, a shared list, a sent outing, `?map=1` and an old `preview/?spot=` link.
+**Not checked:** the live tile provider and the counter on the redesign's pages at the root, alerts, the Home
+Screen app, a search engine's or a messaging app's reading of the new pages.
+

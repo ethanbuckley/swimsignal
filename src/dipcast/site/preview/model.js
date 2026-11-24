@@ -462,10 +462,16 @@ function parseQuery(search) {
   return id ? { screen: 'place', id, day: d } : { screen: 'find', view, day: d, q: view ? '' : q.get('q') || '', area: view ? '' : q.get('area') || '' };
 }
 // The address in the bar, read against where the pages are published (base, a path ending in "/").
+// "plan/" and "saved/" are the live site's addresses for its Plan a swim and its Saved page: where these pages are the
+// site's own, a link to either opens that view here. So does "?map=1", the live site's link to its map.
 function parseAddress(pathname, search, base) {
   const path = String(pathname || ''), rel = base && path.startsWith(base) ? path.slice(base.length) : '';
   const m = rel.match(/^spot\/([A-Za-z0-9_-]+)\/(?:index\.html)?$/), r = parseQuery(search);
-  return m ? { screen: 'place', id: m[1], day: r.day } : r;
+  if (m) return { screen: 'place', id: m[1], day: r.day };
+  const v = rel.match(/^(plan|saved)\/(?:index\.html)?$/);
+  if (r.screen === 'find' && !r.view) { if (v) return { ...r, view: v[1], q: '', area: '' };
+    if (new URLSearchParams(String(search || '').replace(/^\?/, '')).get('map') === '1') return { ...r, view: 'map', q: '', area: '' }; }
+  return r;
 }
 // An address for a link, relative to where the pages are published: every page carries a <base> there.
 function queryFor(r) {

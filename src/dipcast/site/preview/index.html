@@ -1,33 +1,37 @@
 <!doctype html>
-<html lang="en-GB">
+<html lang="en-GB" data-home="preview/">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <!-- A redesign kept beside the live site for review: not for search engines, and not linked from the live pages. -->
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#3d5b5d">
+<!-- Every address below is read against the site's root, as the live pages' are: this page is in preview/, one
+     folder down. data-home (above) says where these pages are under that root. The build writes a place's own page
+     with its own <base> and <title> (build_site.redesign_page). -->
+<base href="../">
 <title>Where do you swim? · SwimSignal preview</title>
-<link rel="preload" href="../fonts/SourceSans3-latin.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="../fonts/SourceSerif4-latin.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="../data/spots-lite.json" as="fetch" crossorigin>
-<link rel="stylesheet" href="preview.css">
-<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<link rel="preload" href="fonts/SourceSans3-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/SourceSerif4-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="data/spots-lite.json" as="fetch" crossorigin>
+<link rel="stylesheet" href="preview/preview.css">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 </head>
 <body>
 <a class="skip" href="#main">Skip to the forecast</a>
-<div id="app"><header class="bar"><a class="brand" href="./">SwimSignal</a></header><main id="main" class="home"><section class="opening"><h1>Where do you swim?</h1><p class="lede">Reading the forecast…</p></section></main></div>
+<div id="app"><header class="bar"><a class="brand" href="preview/">SwimSignal</a></header><main id="main" class="home"><section class="opening"><h1>Where do you swim?</h1><p class="lede">Reading the forecast…</p></section></main></div>
 <p id="said" class="sr" role="status" aria-live="polite"></p>
-<noscript><p class="noscript">This preview needs JavaScript to read the forecast. <a href="../">The current SwimSignal</a> shows each place without it.</p></noscript>
+<noscript><p class="noscript">This preview needs JavaScript to read the forecast. <a href="./">The current SwimSignal</a> shows each place without it.</p></noscript>
 <!-- The level's rules and the official advice's reviewed words: the live site's own copies, so the two can never disagree. -->
-<script src="../levels.js"></script>
-<script src="../eatoday.js"></script>
+<script src="levels.js"></script>
+<script src="eatoday.js"></script>
 <!-- Saved lists and the plan are the live site's own rules too (lists.js reads a stored list with experience.js). -->
-<script src="../experience.js"></script>
-<script src="../lists.js"></script>
-<script src="../plan.js"></script>
-<script src="model.js"></script>
-<script src="alerts.js"></script>
-<script src="map.js"></script>
-<script src="app.js"></script>
+<script src="experience.js"></script>
+<script src="lists.js"></script>
+<script src="plan.js"></script>
+<script src="preview/model.js"></script>
+<script src="preview/alerts.js"></script>
+<script src="preview/map.js"></script>
+<script src="preview/app.js"></script>
 </body>
 </html>

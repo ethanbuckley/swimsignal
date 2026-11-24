@@ -36,7 +36,11 @@ const ALL = ['moderate', 'moderate', 'low', 'high', 'moderate'];
 test('the page is out of search engines, shares only the rules, and keeps the live look', () => {
   assert.match(PAGE, /<meta name="robots" content="noindex, nofollow">/);
   assert.deepEqual([...PAGE.matchAll(/<script src="([^"]+)"/g)].map(m => m[1]),
-    ['../levels.js', '../eatoday.js', '../experience.js', '../lists.js', '../plan.js', 'model.js', 'alerts.js', 'map.js', 'app.js']);
+    ['levels.js', 'eatoday.js', 'experience.js', 'lists.js', 'plan.js', 'preview/model.js', 'preview/alerts.js', 'preview/map.js', 'preview/app.js']);
+  // Every address is read against the site's root, as the live pages' are: the page says where that is, and where it is under it.
+  assert.match(PAGE, /<html lang="en-GB" data-home="preview\/">/); assert.match(PAGE, /<base href="\.\.\/">\n<title>/);
+  assert.ok(PAGE.indexOf('<base href="../">') < PAGE.indexOf('href="fonts/'), 'the <base> comes before the first relative address');
+  for (const [name, text] of [['index.html', PAGE], ['app.js', JS], ['map.js', MAP], ['alerts.js', ALERTS]]) assert.doesNotMatch(text.replace('<base href="../">', ''), /["'`(]\.\.\//, `${name}: nothing is asked for from "../"`);
   assert.doesNotMatch(CSS, /text-transform:\s*uppercase|linear-gradient|border-radius:\s*(?:999|[1-9]\d)px|letter-spacing:\s*0?\.\d+em/);   // the looks Ethan named as machine-made
   assert.match(CSS, /"Source Serif 4"/); assert.match(CSS, /--bar: #3d5b5d/); assert.match(CSS, /--radius: 8px/);
   const sizes = new Set([...CSS.matchAll(/font(?:-size)?:[^;]*?(\d+)px/g)].map(m => m[1]));
@@ -49,7 +53,7 @@ test('nothing in the scripts stops an older iPhone', () => {
     assert.doesNotMatch(text, /behavior:\s*'instant'/, `${name}: refused by Safari before 15.4`);
     assert.doesNotMatch(text, /\.at\(|structuredClone|\?\?=|\|\|=|&&=/, name);
   }
-  assert.match(PAGE, /<link rel="preload" href="\.\.\/data\/spots-lite\.json" as="fetch" crossorigin>/);
+  assert.match(PAGE, /<link rel="preload" href="data\/spots-lite\.json" as="fetch" crossorigin>/);
 });
 
 test('nothing is called safe or clean, and no em-dash is written', () => {
@@ -217,7 +221,10 @@ test('the alerts say what the live page says, and nothing is asked of the browse
   assert.match(LIVE, /body: JSON\.stringify\(\{ subscription: sub\.toJSON\(\), spots, weekly \}\)/);
   // The worker is started and permission asked only inside turnOn, which only the button calls.
   assert.equal((ALERTS.match(/serviceWorker\.register\(/g) || []).length, 1); assert.match(ALERTS, /if \(start\) \{ await navigator\.serviceWorker\.register/);
-  assert.equal((ALERTS.match(/requestPermission\(/g) || []).length, 1); assert.doesNotMatch(JS + MAP, /serviceWorker\.register|requestPermission/);
+  assert.equal((ALERTS.match(/requestPermission\(/g) || []).length, 1); assert.doesNotMatch(JS + MAP, /requestPermission/);
+  // The page itself starts the worker only as one of the site's own pages, and never over the "offline copy off" choice.
+  assert.doesNotMatch(MAP, /serviceWorker\.register/); assert.equal((JS.match(/serviceWorker\.register\(/g) || []).length, 1);
+  assert.match(JS, /if \(!PREVIEW && 'serviceWorker' in navigator\) \{ let off = false; try \{ off = localStorage\.getItem\('dipcast\.offline'\) === 'off'/);
   assert.equal((JS.match(/A\.turnOn\(/g) || []).length, 1);
 });
 
@@ -262,7 +269,7 @@ test('the map shows each place at its level for the day, and an overflow as the 
 test('the maps use the live map\'s own library and credit, and open only when asked for', () => {
   for (const hash of ['sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=', 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=']) { assert.ok(MAP.includes(hash)); assert.ok(LIVE.includes(hash)); }
   assert.doesNotMatch(PAGE, /leaflet/);   // not in the page: asked for by map.js when a map is first opened
-  assert.match(MAP, /fetch\('map\.json'\)/); assert.match(MAP, /attribution: CONF\.credit/);
+  assert.match(MAP, /fetch\('preview\/map\.json'\)/); assert.match(MAP, /attribution: CONF\.credit/);
   assert.match(MAP, /The same places are in the list/); assert.match(JS, /The same places as a list/);   // the list is the map's other way in
 });
 
@@ -276,8 +283,10 @@ test('a place has an address of its own, and the links made before it had one st
   assert.equal(at('/elsewhere/spot/a/').screen, 'find', 'only under where the pages are published');
   assert.equal(M.parseAddress('/spot/a/', '', '/').id, 'a', 'and at the root of a site, were they published there');
   // Every address the page writes is relative to where the pages are published, and every page has a <base> there.
-  assert.match(JS, /const BASE = new URL\('\.\/', document\.baseURI\)\.pathname;/);
-  assert.match(JS, /if \(!document\.querySelector\('base'\)\)/);
+  assert.match(JS, /const SITE = new URL\('\.\/', document\.baseURI\)\.pathname, HOME = document\.documentElement\.dataset\.home \|\| '', BASE = SITE \+ HOME;/);
+  // The live site's own addresses for Plan a swim, Saved and its map open those views, where these pages are the site's.
+  assert.equal(M.parseAddress('/plan/', '', '/').view, 'plan'); assert.equal(M.parseAddress('/saved/', '', '/').view, 'saved');
+  assert.equal(M.parseAddress('/', '?map=1', '/').view, 'map'); assert.equal(M.parseAddress('/', '?map=1&spot=a', '/').screen, 'place');
   assert.doesNotMatch(JS, /'\?spot='|q\.set\('spot'/);
 });
 
@@ -293,7 +302,8 @@ test('the build draws each page with the page\'s own script, as at the moment th
     {site_id: 'X1', site_name: 'NEAR CSO', company: 'Yorkshire Water', distance_km: 2, lat: 53.95, lon: -1.9, status: 0, data_state: 'live', feed_updated_at: '2026-11-24T13:10:00+00:00'}]}));
   fs.writeFileSync(path.join(site, 'preview', 'hero-photos.json'), JSON.stringify({a: {file: 'geograph-1.jpg', w: 640, h: 427, taken: '2021-06-14', credit: 'A Walker', caption: 'The river.'}}));
   const tz = process.env.TZ; let built;
-  try { built = prerender(site); } finally { process.env.TZ = tz; fs.rmSync(site, {recursive: true, force: true}); }
+  let own;
+  try { built = prerender(site); own = prerender(site, ''); } finally { process.env.TZ = tz; fs.rmSync(site, {recursive: true, force: true}); }
   assert.deepEqual(Object.keys(built.spots), ['a', 'tarn'], 'a place whose id cannot be a folder has no page');
   const page = built.spots.a;
   assert.match(page, /<h1 id="title" tabindex="-1">River Aire, Somewhere<\/h1>/);
@@ -303,9 +313,30 @@ test('the build draws each page with the page\'s own script, as at the moment th
   assert.match(page, /Issued 13:21 ·/); assert.doesNotMatch(page, / ago\b/, 'an age would be wrong by the time the page is read');
   assert.equal(ageless('Issued 13:21, 0 min ago · A forecast'), 'Issued 13:21 · A forecast'); assert.equal(ageless('Issued Tue 13:21, 3 days ago.'), 'Issued Tue 13:21.');
   // Its links are the places' own addresses and the opening's, each a page the build writes.
-  assert.match(page, /href="spot\/a\/\?day=2026-11-28" data-day="2026-11-28"/); assert.match(page, /<a class="brand" href="\.\/">/);
+  assert.match(page, /href="preview\/spot\/a\/\?day=2026-11-28" data-day="2026-11-28"/); assert.match(page, /<a class="brand" href="preview\/">/);
+  assert.match(page, /<span class="tag">Preview<\/span>/); assert.match(page, /href="\.\/">the current SwimSignal<\/a>/);
+  assert.match(page, /src="guides\/photos\/geograph-1\.jpg"/); assert.match(page, /href="methods\.html"/);
+  // As the site's own pages: the same page at the site's addresses, with no word of a preview, and the app it
+  // replaced named as the earlier version, at classic/.
+  const mine = own.spots.a;
+  assert.match(mine, /href="spot\/a\/\?day=2026-11-28" data-day="2026-11-28"/); assert.match(mine, /<a class="brand" href="\.\/">/);
+  assert.doesNotMatch(mine, /[Pp]review|current site|current SwimSignal/);
+  assert.match(mine, /href="classic\/">the earlier version of SwimSignal<\/a>/); assert.match(mine, /href="classic\/spot\/a\/">This place on the earlier version<\/a>/);
+  assert.match(own.home, /href="\?view=map"/); assert.match(built.home, /href="preview\/\?view=map"/);
   assert.match(built.spots.tarn, /No monitored overflow found upstream/);
   assert.match(built.home, /<h1 id="title" tabindex="-1">Where do you swim\?<\/h1>/); assert.match(built.home, /Yorkshire/);
   // Until the forecast is read, a built page's links are plain links: the script leaves them to the browser.
   assert.match(JS, /if \(!DATA \|\| e\.metaKey/);
+});
+
+test('as the site\'s own pages: the app is "the earlier version" at classic/, and two kinds of link are passed on to it', () => {
+  assert.match(JS, /const classic = \(path = ''\) => \(\(PREVIEW \? '' : 'classic\/'\) \+ path\) \|\| '\.\/';/);
+  assert.match(JS, /const link = r => \{ const a = P\.queryFor\(r\); return a === '\.\/' \? HOME \|\| '\.\/' : HOME \+ a; \};/);
+  // A shared list and a sent outing are things only the app can show: passed on, but never for this page's own Plan.
+  assert.match(JS, /const shared = route\.view === 'saved' && readShared\(location\.hash, dates\(\)\), outing = route\.view === 'plan' && \/\[#&\]spot=\/\.test\(location\.hash\);/);
+  assert.match(JS, /if \(PREVIEW \|\| !route \|\| !DATA\) return false;/);
+  assert.match(JS, /if \(opts\.first && passOn\(\)\) return;/);
+  assert.equal(typeof LISTS.readShared, 'function');
+  assert.ok(LISTS.readShared('#list=Weekend&spots=a,b', DAYS), 'a shared list is read from the address');
+  assert.equal(LISTS.readShared('', DAYS), null);
 });

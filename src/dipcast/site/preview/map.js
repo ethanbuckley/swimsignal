@@ -1,11 +1,11 @@
 // SwimSignal, the redesign preview: the maps. Two of them: every place on the day shown (the Map view), and one
 // place with the water that reaches it and the monitored overflows on that water (a place's Upstream section).
-// The map library is the live site's copy of Leaflet 1.9.4 (../vendor/leaflet/, with its licence) and is asked for
+// The map library is the live site's copy of Leaflet 1.9.4 (vendor/leaflet/, with its licence) and is asked for
 // only when a map is first opened. The tiles are the live map's: the build writes their address, credit and colour
-// filter to map.json (build_site.write_preview), so the two maps look the same. window.PVMap.
+// filter to preview/map.json (build_site.write_preview), so the two maps look the same. window.PVMap.
 (function () {
 'use strict';
-const LIB = { css: ['../vendor/leaflet/leaflet.css', 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY='], js: ['../vendor/leaflet/leaflet.js', 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo='] };
+const LIB = { css: ['vendor/leaflet/leaflet.css', 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY='], js: ['vendor/leaflet/leaflet.js', 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo='] };
 const OSM = { url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', credit: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>', filter: '' };
 // The level colours and the rings, as the live map has them (index.html, colour, PAPER, RING, ADVICE_RING).
 const FILL = { 'lv-low': '#3b7d4f', 'lv-moderate': '#b7791f', 'lv-high': '#c2552a', 'lv-veryhigh': '#a32d2d', 'lv-clear': '#4aa39a', 'lv-none': '#98a2aa' };
@@ -46,7 +46,7 @@ function load() {
     if (window.L) { resolve(); return; }
     const js = document.createElement('script'); js.src = LIB.js[0]; js.integrity = LIB.js[1]; js.onload = resolve; js.onerror = () => reject(new Error('the map could not be read'));
     document.head.appendChild(js);
-  }).then(() => fetch('map.json').then(r => r.ok ? r.json() : null).catch(() => null)).then(c => {
+  }).then(() => fetch('preview/map.json').then(r => r.ok ? r.json() : null).catch(() => null)).then(c => {
     if (c && /^https:\/\/[^\s"'<>]+$/.test(c.url || '') && typeof c.credit === 'string') CONF = { url: c.url, credit: c.credit, filter: typeof c.filter === 'string' ? c.filter : '' };
     tint = CONF.filter ? tinter(CONF.filter) : null;
   });
