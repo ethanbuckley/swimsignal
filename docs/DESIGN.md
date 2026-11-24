@@ -3094,3 +3094,21 @@ risk", and the notes are rewritten for the forecast on screen. Find a window's t
 list of three, one not in the forecast: shown with two, added, then said to be held already, with "Show it".
 **Not checked:** a phone's own share sheet, 1,440 px by eye.
 
+### Ported: the swim journal and the passport (24 November 2026, night)
+
+The fourth port from `classic/`. Marked: the journal's rules and words are already decided ("The swim journal", the
+passport); where they sit in the redesign is new.
+
+- **"Your swims" on a place's page**: one button, "Log a swim", whose form opens under it and keeps what the
+  forecast showed. The live script (`journal.js`) binds the button and draws the form.
+- **On Saved**: the journal, then the passport made from it (`passport.js`), each drawn and redrawn by its own
+  script. A swim just logged links to the journal there.
+- **One journal for both sites**: the live site's own key (`dipcast.swims`) and its photo store. Nothing in it is
+  sent anywhere; a test checks the script makes no request.
+- **Kept when the page is drawn again**, as the reviews are, so a form half written keeps its words.
+
+**Checked:** in-app browser at 375 px: a swim logged at Linton Falls (the form, "Kept with the swim: Low risk in
+the forecast issued Tue 24 Nov, 13:21", a day picked with the form open, the swim stored), the link to the journal,
+the journal's one entry and the passport's first badge on Saved, the entry's link back to the place.
+**Not checked:** a photo added, a copy saved and added back, the passport's lesson, 1,440 px by eye.
+

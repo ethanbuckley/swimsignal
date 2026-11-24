@@ -107,7 +107,7 @@ function dayTabsHtml(tabs, day, label, hrefFor) {
 const stale = () => { const i = P.issuedWords(DATA, now()); return i.stale ? `<p class="notice" role="note"><b>Older forecast.</b> ${esc(i.note)}</p>` : ''; };
 const foot = () => { const c = (DATA && DATA.credits) || {};
   return `<footer class="foot"><p>${PREVIEW ? `This is a preview of a redesign, kept beside <a href="${classic()}">the current SwimSignal</a>. Both read the same forecast, and a place saved on one is saved on the other.`
-      : `A forecast for any river or lake on the map, outings and the swim journal are still on <a href="${classic()}">the earlier version of SwimSignal</a>, which reads the same forecast. A place saved on one is saved on the other.`} Saved places stay on this device.</p>
+      : `A forecast for any river or lake on the map and outings are still on <a href="${classic()}">the earlier version of SwimSignal</a>, which reads the same forecast. A place saved on one is saved on the other.`} Saved places stay on this device.</p>
     <p><a href="methods.html">Method and limits</a> · <a href="verification.html">How accurate it has been</a> · <a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a></p>
     <details><summary>Data sources and licences</summary><p>${esc(c.attribution || '')}</p><p>${esc(c.modified || '')} ${esc(c.endorsement || '')} <a href="terms.html#data">Full credits</a></p></details></footer>`; };
 // One quiet line under a photo, the day first since the photo is of that day. Each part keeps to one line with its
@@ -350,7 +350,8 @@ function savedHtml() {
       ${mine.length ? `<section class="sharelist" aria-labelledby="share-list-h"><h2 id="share-list-h">Share this list</h2>
         <p class="sec-lede">A link that opens this list on another phone or browser, or for a friend, who can then add it to their own lists. It holds the list's name, ${esc(cur.name)}, and which spots are in it, nothing else.</p>
         <p><button type="button" class="btn" data-do="share-list">${TOUCH && navigator.share ? 'Share this list' : 'Copy link to this list'}</button></p><p class="meta" id="share-list-msg" role="status"></p></section>` : ''}
-      <p class="meta">A place saved here is saved on <a href="${classic('saved/')}">${OLD}</a> too, in this browser. The swim journal is there.</p>
+      ${journalHtml()}
+      <p class="meta">A place saved here is saved on <a href="${classic('saved/')}">${OLD}</a> too, in this browser, and so is the journal.</p>
     </div>
     ${foot()}
   </main>${tabbar()}`;
@@ -615,6 +616,7 @@ function placeHtml() {
     <div class="more">${behindHtml(s, day)}${upstreamHtml(s, day)}${nearbyHtml(s, day)}</div>
     ${recordHtml(s)}
     ${placeFactsHtml(s)}
+    ${logHtml(s)}
     ${swimmersHtml(s)}
     ${foot()}
   </main>${tabbar()}`;
@@ -642,6 +644,35 @@ function mountRecord(s) {
   el.innerHTML = scores + months || '<p class="meta">Nothing is recorded for this place yet.</p>';
   el.querySelectorAll('details').forEach(d => { if (open.includes(d.id || d.className)) d.open = true; });
   slot.replaceWith(el); rec = { key, el };
+}
+
+// Your swims: the swim journal (journal.js), a swimmer's own record, kept on this device and sent nowhere. On a
+// place's page it is one button, "Log a swim", whose form opens under it and keeps what the forecast showed. The
+// live script binds the button and draws the form; it looks for them by the live page's names (#swam, .actions,
+// #swam-msg). Kept and put back when the page is drawn again, as the reviews are, so a form half written stays.
+let jlog = null;   // { id, el }
+const logHtml = s => typeof journalLogBind !== 'function' || !reviewable(s) ? ''
+  : `<section class="yourswims" id="yourswims" aria-labelledby="yourswims-h"><h2 id="yourswims-h">Your swims</h2>
+    <p class="sec-lede">A private journal: where and when you swam, and what the forecast showed. Kept on this device only.</p><div id="log-slot"></div></section>`;
+function mountLog(s) {
+  const slot = document.getElementById('log-slot'); if (!slot) return;
+  if (jlog && jlog.id === s.id) { slot.replaceWith(jlog.el); return; }
+  const el = document.createElement('div'); el.id = 'log-body';
+  el.innerHTML = `<div class="actions"><button type="button" class="btn" id="swam" aria-expanded="false">Log a swim</button></div><p class="meta" id="swam-msg" role="status" aria-live="polite"></p>`;
+  slot.replaceWith(el); jlog = { id: s.id, el };
+  journalLogBind(s, DATA.generated_at);
+}
+// On Saved: the journal itself and the passport made from it (passport.js), each drawn and redrawn by its own
+// script. One element holds both and is put back when the page is drawn again.
+let jsaved = null;
+const journalHtml = () => typeof journalCard !== 'function' ? '' : '<div id="journal-slot"></div>';
+function mountJournal() {
+  const slot = document.getElementById('journal-slot'); if (!slot) return;
+  if (jsaved) { slot.replaceWith(jsaved); return; }
+  const el = document.createElement('div'); el.id = 'journal-body';
+  el.innerHTML = journalCard() + (typeof passportSection === 'function' ? passportSection(DATA.spots) : '');
+  slot.replaceWith(el); jsaved = el;
+  journalBindSection(); if (typeof passportBind === 'function') passportBind();
 }
 
 // From swimmers: notes on a visit, reviews and reports of illness, each the live site's own script (visits.js,
@@ -695,7 +726,9 @@ function draw(opts = {}) {
     if (s && placeDay(s) === today()) lookedAt([s], DATA.generated_at, saved);
     else if (route.view === 'saved' && homeDay() === today() && !readShared(location.hash, dates())) lookedAt(shownList(LISTS).spots.map(spotOf).filter(Boolean), DATA.generated_at, saved); }
   if (s) { const typing = swim && swim.id === s.id && active && swim.el.contains(active) ? active : null;
-    mountRecord(s); mountSwimmers(s); if (typing) typing.focus({ preventScroll: true }); } else { swim = null; rec = null; }
+    const writing = jlog && jlog.id === s.id && active && jlog.el.contains(active) ? active : null;
+    mountRecord(s); mountLog(s); mountSwimmers(s); if (typing || writing) (typing || writing).focus({ preventScroll: true }); } else { swim = null; rec = null; jlog = null; }
+  if (route.view === 'saved' && !readShared(location.hash, dates())) mountJournal(); else jsaved = null;
   // Whether alerts are on is the browser's to say, and it answers a moment after the page is drawn.
   if (route.view === 'saved' && DATA.push && alertsOn === null && window.PVAlerts.can() === 'yes') window.PVAlerts.isOn().catch(() => false).then(on => { alertsOn = on; redrawAlerts(); });
   if (key !== lastKey) {
@@ -707,6 +740,8 @@ function draw(opts = {}) {
     const again = sel && app.querySelector(sel);
     if (again) { again.focus({ preventScroll: true }); if (caret !== null && again.setSelectionRange) again.setSelectionRange(caret, caret); }
   }
+  // "Your journal", from a swim just logged or from a link (saved/#journal): the journal, not the top of Saved.
+  if (key !== lastKey && route.view === 'saved' && location.hash === '#journal' && typeof journalFocus === 'function') journalFocus();
   lastKey = key;
   watchTabs();
 }
@@ -869,7 +904,8 @@ if (!PREVIEW && 'serviceWorker' in navigator) { let off = false; try { off = loc
 
 (async function start() {
   try { const [data, hero] = await Promise.all([loadJson('data/spots-lite.json'), loadJson('preview/hero-photos.json').catch(() => ({}))]);
-    DATA = P.prepare(data, now()); HERO = hero || {}; }
+    DATA = P.prepare(data, now()); HERO = hero || {};
+    window.DATA = DATA; }   // journal.js names a swim's place from the forecast the page holds, by this name, as on the live page
   catch (e) {
     // A page the build wrote keeps what it says, with a line on what it is: the forecast as at the build.
     if (app.hasAttribute && app.hasAttribute('data-built')) { const m = app.querySelector('main');
