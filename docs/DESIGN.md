@@ -3072,6 +3072,23 @@ and cursor kept), the question before leaving, a review sent and kept as this br
 (empty): both forms offered. Headless Chrome at 375 and 1,440 px. **Not checked:** a review really sent, a photo
 added, the illness tile (off on the live site), the report form.
 
+### Ported: the links for a group, the decision record, and telling Ethan (24 November 2026, night)
+
+The redesign's place page had no way to the event page, the clubs' tools, the decision record or the feedback
+form, and Saved had none to the sites view. All five are pages of their own that were never part of the app, so
+this is five links, in the live page's words. Marked:
+
+- **Already decided:** the two lines under a place's buttons ("Taking a group in the water here, or running an
+  event?" and "Did the forecast change where or when you swam? Tell Ethan."), and the line under Share this list
+  ("For a club or a centre: these spots on one page to print").
+- **New:** where they sit. The two lines close "The place"; the sites view's line closes "Share this list".
+- **New:** one decision record link, for the day shown ("a decision record for Thursday"). The live page has a
+  link under each of the five days; the redesign shows one day at a time.
+- Not on a point tapped on the map, which those pages cannot open.
+
+**Checked:** in-app browser, Ilkley on Thursday: the four addresses, the record's with the day shown; all five
+pages answer on the live site. **Not checked:** each page opened from the link on a phone.
+
 ### Ported: the record at a place (24 November 2026, night)
 
 The second port from `classic/`. Marked: the words and the counts are already decided ("How the forecast has done
