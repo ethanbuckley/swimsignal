@@ -3112,3 +3112,29 @@ the forecast issued Tue 24 Nov, 13:21", a day picked with the form open, the swi
 the journal's one entry and the passport's first badge on Saved, the entry's link back to the place.
 **Not checked:** a photo added, a copy saved and added back, the passport's lesson, 1,440 px by eye.
 
+### Ported: a forecast for any river or lake on the map (24 November 2026, night)
+
+The fifth port from `classic/`. Marked: the arithmetic and its words are already decided ("Click anywhere"); how the
+redesign shows a point is new, and one thing differs from the live page on purpose (the address).
+
+- **A tap on the map that is on no listed place** is read as a river or lake to forecast. `anypoint.js` is loaded as
+  it is and its own arithmetic is called (`AnyPoint.point`), from the same files under `data/anypoint/`. Its page
+  wiring is for the live page's map and does not run here.
+- **Further out than the live map's own zoom** a tap zooms in and the line under the map asks for another, as the live
+  map does. A tap outside Britain and Ireland is said to be.
+- **A point is drawn as a place is**, by the same page: its name, "Unlisted point: not hand-checked", the five days,
+  the answer, Behind the level, the overflows upstream as a line, and the places elsewhere. It has no Save, no
+  journal, no reviews and no record, and a section "This point" says what it lacks beside a listed place, with the
+  live page's "Request this as a spot".
+- **A point with no forecast** (outside England, off the network, an isolated lake) says why in the live script's own
+  words, gives the official source for where it is, and lists the places near it.
+- **The address differs from the live page's, on purpose.** The live page keeps a point out of the address
+  altogether. Here it is after the `#` (`#point=<lat>,<lon>`), which a browser never sends to a server, so a point
+  can be reloaded, kept or sent and where someone tapped still reaches nobody. A point in the query is not read.
+
+**Checked:** in-app browser at 375 px against the live point files: a point on the Wharfe above Ilkley (five days,
+ten overflows upstream, Saturday picked), Windermere's north basin (a lake, three overflows), a point in Wales
+("England only", with the official sources), a point in the sea (no forecast), a far tap (zooms in and asks again),
+a near tap (the point's page), and Map back from it. **Not checked:** 1,440 px by eye, a point in Scotland during
+the trial, a link to a point opened on another device.
+

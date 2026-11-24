@@ -37,7 +37,7 @@ test('the page is out of search engines, shares only the rules, and keeps the li
   assert.match(PAGE, /<meta name="robots" content="noindex, nofollow">/);
   assert.deepEqual([...PAGE.matchAll(/<script src="([^"]+)"/g)].map(m => m[1]),
     ['levels.js', 'eatoday.js', 'experience.js', 'lists.js', 'plan.js', 'preview/host.js', 'reviews.js', 'visits.js', 'illness.js',
-      'spotscores.js', 'seasonal.js', 'since.js', 'findwindow.js', 'journal.js', 'passport.js', 'preview/model.js', 'preview/alerts.js', 'preview/map.js', 'preview/app.js']);
+      'spotscores.js', 'seasonal.js', 'since.js', 'findwindow.js', 'journal.js', 'passport.js', 'anypoint.js', 'preview/model.js', 'preview/alerts.js', 'preview/map.js', 'preview/app.js']);
   // Every address is read against the site's root, as the live pages' are: the page says where that is, and where it is under it.
   assert.match(PAGE, /<html lang="en-GB" data-home="preview\/">/); assert.match(PAGE, /<base href="\.\.\/">\n<title>/);
   assert.ok(PAGE.indexOf('<base href="../">') < PAGE.indexOf('href="fonts/'), 'the <base> comes before the first relative address');
@@ -430,4 +430,33 @@ test('the swim journal and the passport are the live site\'s own, on this device
   // It makes no request: nothing in the journal leaves the browser.
   assert.doesNotMatch(JS_JN, /\bfetch\(/);
   for (const c of ['yourswims', 'jn-where', 'jn-seen', 'jn-file', 'jn-when', 'jn-kept', 'pp-sum', 'pp-badge']) assert.match(CSS, new RegExp(`\\.${c}\\b`), c);
+});
+
+test('any river or lake tapped on the map has a forecast: the live site\'s own arithmetic, at an address that reaches no server', () => {
+  const AP = fs.readFileSync(path.join(SITE, 'anypoint.js'), 'utf8');
+  // The live script's page wiring is for the live page's own map and does not run here; its arithmetic is what is called.
+  assert.match(AP, /if \(typeof window !== 'undefined' && typeof map !== 'undefined'\) \{\n  map\.on\('click', AnyPoint\.onMapClick\);/);
+  assert.doesNotMatch(PAGE + JS + MAP, /id="map"/, 'no element named map here, or the live wiring would wake');
+  assert.match(JS, /AnyPoint\.point\(route\.point\[0\], route\.point\[1\]\)\.then\(d => \{ P\.prepareOne\(d, DATA, now\(\)\); d\.id = id; POINTS\.set\(id, d\);/);
+  assert.match(AP, /squares, point, open, onMapClick, POINT_ZOOM \};/);
+  // Where someone tapped is after the #, which a browser never sends; a link to it still opens the same point.
+  const at = M.parseAddress('/', '?day=2026-11-28', '/', '#point=53.94820,-1.87950');
+  assert.deepEqual(at, {screen: 'place', id: 'point-53.94820,-1.87950', point: [53.9482, -1.8795], day: SAT});
+  data([spot(ALL)]);
+  assert.equal(M.queryFor({id: at.id, day: SAT}), '?day=2026-11-28#point=53.94820,-1.87950'); assert.equal(M.queryFor({id: at.id}), './#point=53.94820,-1.87950');
+  assert.doesNotMatch(M.queryFor({id: at.id, day: SAT}).split('#')[0], /5[0-9]\.\d|point/, 'nothing of the place before the #');
+  assert.equal(M.parseAddress('/', '?point=53.9,-1.8', '/', '').screen, 'find', 'a point in the query is not read: it would reach the server');
+  for (const far of ['#point=10,20', '#point=53.9,4.2', '#point=x,y', '#point=53.9', '#point=53.9,-1.8&x=1']) assert.equal(M.parseAddress('/', '', '/', far).screen, 'find', far);
+  assert.equal(M.parseAddress('/spot/a/', '', '/', '#point=53.9,-1.8').id, 'a', 'a place\'s own page stays that place');
+  assert.equal(M.pointOf('54.36,-2.935').id, 'point-54.36000,-2.93500');
+  // A point is made ready as a listed place is, and is never offered what only a listed place has.
+  const d = M.prepareOne({id: 'point-53.94820,-1.87950', unlisted: true, name: 'River Wharfe', kind: 'river', lat: 53.9482, lon: -1.8795, upstream_summary: {overflows: 10},
+    now: {label: 'low', risk: 0.02}, days: DAYS.map(x => ({date: x, label: 'low', risk: 0.05})), contributors: []}, {generated_at: GEN}, NOW);
+  assert.equal(d.days.length, 5); assert.equal(M.answer(d, SAT, data([spot(ALL)]), NOW).level, 'low');
+  assert.match(JS, /if \(s\.unlisted\) return \['Unlisted point: not hand-checked'/); assert.match(JS, /\$\{s\.unlisted \? '' : `<button type="button" class="tool" data-do="keep"/);
+  assert.match(JS, /Not one of the listed places: nobody has checked it by hand, and it has no rain forecast of its own and no E\.&nbsp;coli estimate\./);
+  // Further out than the live map's own zoom a tap zooms in and asks again; outside the area it says so.
+  assert.match(JS, /const need = AnyPoint\.POINT_ZOOM \|\| 9;/); assert.match(JS, /That point is outside Britain and Ireland/);
+  assert.match(MAP, /if \(best \|\| !HOME\.onWater\) HOME\.onPick\(best \? best\.id : null\); else HOME\.onWater\(e\.latlng\.lat, e\.latlng\.lng, HOME\.map\.getZoom\(\)\);/);
+  for (const said of ["A listed spot is checked by hand and gets its own rain forecast and E.&nbsp;coli estimate.", 'Request this as a spot']) { assert.ok(JS.includes(said), said); assert.ok(AP.includes(said), `anypoint.js no longer says: ${said}`); }
 });

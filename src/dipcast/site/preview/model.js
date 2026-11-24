@@ -76,6 +76,12 @@ function prepare(data, nowMs) {
   for (const s of data.spots) { ageSpot(s, nowMs); fromDay(s, day, built); }
   return data;
 }
+// One place that is not in the forecast's list (a point tapped on the map, worked out in the browser by anypoint.js),
+// made ready as the listed ones are: its readings aged, its days from the reader's own day.
+function prepareOne(s, data, nowMs) {
+  ageSpot(s, nowMs); fromDay(s, readerDay(data.generated_at, nowMs), String(data.generated_at).slice(0, 10));
+  return s;
+}
 // The dates the forecast covers, from the first spot with a daily forecast.
 const dates = data => ((data.spots.find(daily) || {}).days || []).slice(0, 5).map(d => d.date);
 // When the companies' live feeds were last read by the build, in ms; NaN without it. The file writes a space where
@@ -456,6 +462,16 @@ function decodeLine(str) {
 // person who opens it sees the day that was meant; a day that has passed is said. A plan's own choices (where it
 // starts, how far, which waters) sit after the #, as on the live site (plan.js), so they never reach a server.
 const VIEWS = ['map', 'plan', 'saved'];
+// "#point=<lat>,<lon>" is a point tapped on the map that is not a listed place: its forecast is worked out in the
+// browser (anypoint.js). Where someone tapped is theirs, so it sits after the #, which never reaches a server (the
+// live page keeps it out of the address altogether; here a link to it can be kept or sent). To five places, within
+// Britain and Ireland.
+const POINT_ID = /^point-(-?\d{1,2}\.\d{1,5}),(-?\d{1,2}\.\d{1,5})$/;
+function pointOf(text) {
+  const m = String(text || '').match(/^(-?\d{1,2}(?:\.\d{1,6})?),(-?\d{1,2}(?:\.\d{1,6})?)$/); if (!m) return null;
+  const lat = Number(m[1]), lon = Number(m[2]);
+  return lat > 49 && lat < 61.5 && lon > -11 && lon < 2.5 ? { lat, lon, id: `point-${lat.toFixed(5)},${lon.toFixed(5)}` } : null;
+}
 function parseQuery(search) {
   const q = new URLSearchParams(String(search || '').replace(/^\?/, '')), d = /^\d{4}-\d{2}-\d{2}$/.test(q.get('day') || '') ? q.get('day') : null;
   const id = /^[A-Za-z0-9_-]+$/.test(q.get('spot') || '') ? q.get('spot') : null, view = VIEWS.includes(q.get('view')) ? q.get('view') : '';
@@ -464,10 +480,12 @@ function parseQuery(search) {
 // The address in the bar, read against where the pages are published (base, a path ending in "/").
 // "plan/" and "saved/" are the live site's addresses for its Plan a swim and its Saved page: where these pages are the
 // site's own, a link to either opens that view here. So does "?map=1", the live site's link to its map.
-function parseAddress(pathname, search, base) {
+function parseAddress(pathname, search, base, hash = '') {
   const path = String(pathname || ''), rel = base && path.startsWith(base) ? path.slice(base.length) : '';
   const m = rel.match(/^spot\/([A-Za-z0-9_-]+)\/(?:index\.html)?$/), r = parseQuery(search);
   if (m) return { screen: 'place', id: m[1], day: r.day };
+  const pt = rel === '' || rel === 'index.html' ? pointOf((String(hash || '').match(/^#point=([^&]+)$/) || [])[1]) : null;
+  if (pt) return { screen: 'place', id: pt.id, point: [pt.lat, pt.lon], day: r.day };
   const v = rel.match(/^(plan|saved)\/(?:index\.html)?$/);
   if (r.screen === 'find' && !r.view) { if (v) return { ...r, view: v[1], q: '', area: '' };
     if (new URLSearchParams(String(search || '').replace(/^\?/, '')).get('map') === '1') return { ...r, view: 'map', q: '', area: '' }; }
@@ -475,16 +493,17 @@ function parseAddress(pathname, search, base) {
 }
 // An address for a link, relative to where the pages are published: every page carries a <base> there.
 function queryFor(r) {
-  const q = new URLSearchParams();
+  const q = new URLSearchParams(), pt = r.id ? String(r.id).match(POINT_ID) : null;
   if (!r.id) { if (VIEWS.includes(r.view)) q.set('view', r.view); else { if (r.q) q.set('q', r.q); if (r.area) q.set('area', r.area); } }
   if (r.day && r.day !== today()) q.set('day', r.day);
   const s = q.toString();
+  if (pt) return `${s ? '?' + s : './'}#point=${pt[1]},${pt[2]}`;
   return r.id ? `spot/${r.id}/${s ? '?' + s : ''}` : s ? '?' + s : './';
 }
 
 const api = { esc, capFirst, fold, list, num, longDate, weekday, shortDate, tabName, headDay, dayNm, kmBetween, compass, milesSaid, ageSpot, prepare, dates, issuedWords,
   official, levelWords, shortLevel, cls, dayRows, dayTabs, lowerDay, spillingSaid, waterTemp, answer, ledger, statusSaid, markOf, riverLine, placeRow, elsewhere,
-  nextSteps, waters, areas, findSpots, postcodeKeys, findTowns, nearest, parseQuery, parseAddress, queryFor, pollAt, httpsLink, isNil,
+  nextSteps, waters, areas, findSpots, postcodeKeys, findTowns, nearest, parseQuery, parseAddress, queryFor, pointOf, prepareOne, pollAt, httpsLink, isNil,
   savedRows, planRows, PLAN_HEADS, mapPoints, overflowPoints, decodeLine, VIEWS };
 if (typeof module === 'object' && module.exports) module.exports = api;
 else window.PV = api;
