@@ -37,7 +37,7 @@ test('the page is out of search engines, shares only the rules, and keeps the li
   assert.match(PAGE, /<meta name="robots" content="noindex, nofollow">/);
   assert.deepEqual([...PAGE.matchAll(/<script src="([^"]+)"/g)].map(m => m[1]),
     ['levels.js', 'eatoday.js', 'experience.js', 'lists.js', 'plan.js', 'preview/host.js', 'reviews.js', 'visits.js', 'illness.js',
-      'preview/model.js', 'preview/alerts.js', 'preview/map.js', 'preview/app.js']);
+      'spotscores.js', 'seasonal.js', 'preview/model.js', 'preview/alerts.js', 'preview/map.js', 'preview/app.js']);
   // Every address is read against the site's root, as the live pages' are: the page says where that is, and where it is under it.
   assert.match(PAGE, /<html lang="en-GB" data-home="preview\/">/); assert.match(PAGE, /<base href="\.\.\/">\n<title>/);
   assert.ok(PAGE.indexOf('<base href="../">') < PAGE.indexOf('href="fonts/'), 'the <base> comes before the first relative address');
@@ -363,4 +363,25 @@ test('reviews, notes on a visit and reports of illness are the live site\'s own 
   for (const c of ['rv-tile', 't-lab', 't-fig', 't-say', 't-key', 't-more', 'rv-bar', 'rv-list', 'rv-v', 'rv-meta', 'rv-text', 'rv-pics', 'rv-pic', 'rv-acts', 'linkbtn', 'rv-write', 'rv-said',
     'rv-form', 'rv-q', 'rv-opt', 'rv-choice', 'vn-kinds', 'rv-add', 'rv-file', 'rv-consent', 'rv-hp', 'rv-hint', 'rv-send', 'rv-msg', 'rv-report', 'rv-view', 'rv-close', 'rv-previews', 'rv-sure', 'vn-flag', 'vn-caveat'])
     assert.match(CSS, new RegExp(`\\.${c}\\b`), c);
+});
+
+test('the record at a place is the live site\'s own: how the forecast has done there, and past spills by month', () => {
+  const SC = require(path.join(SITE, 'spotscores.js')), SE = require(path.join(SITE, 'seasonal.js'));
+  // The page calls the live scripts for the markup, from the live site's own files.
+  assert.match(JS, /scoresLoad\(\)\.then\(d => \{ SCORES = d \|\| null; scoresRead = true;/);
+  assert.match(JS, /scoresTile\(s, SCORES\)/); assert.match(JS, /seasonalTile\(\{ \.\.\.s, seasonal: \(got\.detail \|\| \{\}\)\.seasonal \}\)/);
+  assert.match(fs.readFileSync(path.join(SITE, 'spotscores.js'), 'utf8'), /const SCORES_FILE = 'data\/spot_scores\.json';/);
+  // Only where the forecast counts an overflow upstream, as on the live page: never at a place with none.
+  assert.match(JS, /const recordHtml = s => typeof scoresTile !== 'function' \|\| !scoresWanted\(s\) \? ''/);
+  assert.equal(SC.scoresWanted(spot(ALL)), true); assert.equal(SC.scoresWanted(tarn()), false);
+  // What they give is what the page shows: the counts in words, and twelve months.
+  const tile = SC.scoresTile(spot(ALL), {min_spills: 10, first_day: '2026-09-29', spots: {a: {overflows: 10, scored_overflows: 10, overflow_days: 300, spill_days: 12, forecasts: 1400, hits: 20, misses: 30, false_alarms: 40, days: 37, first_day: '2026-09-29'}}});
+  assert.match(tile, /<section class="tile" id="scores"/); assert.match(tile, /href="verification\.html#warnings"/);
+  const months = SE.seasonalTile({...spot(ALL), seasonal: {years: [2024, 2025], overflows: 10, covered_min: 10, days: [62, 57, 62, 60, 62, 60, 62, 62, 60, 62, 60, 62],
+    spill: [33, 21, 24, 25, 21, 30, 33, 32, 27, 22, 29, 23], short: {}, made: '2026-10-27'}});
+  assert.match(months, /<details class="tile fold" id="seasonal">/); assert.equal((months.match(/<span[^>]*><em>/g) || []).length, 12);
+  assert.match(months, /History, not a forecast\./);
+  // Kept when the page is drawn again, so a fold opened stays open; and every class they write has a rule here.
+  assert.match(JS, /if \(rec && rec\.key === key\) \{ if \(slot !== rec\.el\) slot\.replaceWith\(rec\.el\); return; \}/);
+  for (const c of ['record', 'mchart', 's-now', 's-more', 's-bar', 'seasonal', 'fold']) assert.match(CSS, new RegExp(`\\.${c}\\b`), c);
 });

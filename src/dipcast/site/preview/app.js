@@ -550,7 +550,7 @@ function placeFactsHtml(s) {
     ${facts.length ? dl(facts) : got === undefined ? '' : '<p class="sec-lede">No rating, sample or gauge is recorded for this place.</p>'}
     ${guide.length ? `<details class="guide"><summary>Getting there and getting in: ${guide.length} checked notes</summary>${dl(guide)}${g.checked ? `<p class="meta">Checked on ${esc(P.shortDate(g.checked))}${g.how === 'desk' ? ', from published sources, not on a visit' : ''}.</p>` : ''}</details>` : ''}
     ${photos.length ? `<div class="photos">${photos.map(p => `<figure><img src="guides/photos/${encodeURIComponent(p.file)}" width="${Number(p.w) || 640}" height="${Number(p.h) || 480}" alt="${esc(p.caption || s.name)}" loading="lazy" decoding="async"><figcaption>${esc(p.caption || '')} ${credit({ ...p, licence_name: p.licence && /by-sa\/2\.0/.test(p.licence) ? 'CC BY-SA 2.0' : '' })}</figcaption></figure>`).join('')}</div>` : ''}
-    <p class="meta">${esc(s.source === 'openstreetmap' ? 'This place is from OpenStreetMap, © OpenStreetMap contributors.' : String(s.notes || '').replace(/([^.])$/, '$1.'))} A listing is not a right to swim or a check that it is allowed. <a href="${classic(`spot/${encodeURIComponent(s.id)}/`)}">This place on ${OLD}</a>, with the record of how the forecast has done here</p></section>`;
+    <p class="meta">${esc(s.source === 'openstreetmap' ? 'This place is from OpenStreetMap, © OpenStreetMap contributors.' : String(s.notes || '').replace(/([^.])$/, '$1.'))} A listing is not a right to swim or a check that it is allowed. <a href="${classic(`spot/${encodeURIComponent(s.id)}/`)}">This place on ${OLD}</a></p></section>`;
 }
 function placeHtml() {
   const s = spotOf(route.id);
@@ -568,11 +568,37 @@ function placeHtml() {
       ${condsHtml(s, day)}
     </div>
     <div class="more">${behindHtml(s, day)}${upstreamHtml(s, day)}${nearbyHtml(s, day)}</div>
+    ${recordHtml(s)}
     ${placeFactsHtml(s)}
     ${swimmersHtml(s)}
     ${foot()}
   </main>${tabbar()}`;
 }
+// The record here: how the forecast has done at the overflows upstream since live scoring began, and on how many
+// days of each month a spill was reported upstream. History, not a forecast, and neither changes with the day
+// picked. Both are the live site's own scripts (spotscores.js, seasonal.js), which give their part as markup: the
+// first from data/spot_scores.json, asked for once a visit, the second from the place's own file. What is drawn is
+// kept and put back when the page is drawn again, so a fold opened stays open. Only where the forecast counts an
+// overflow upstream, as on the live page.
+let rec = null, SCORES = null, scoresAsked = false, scoresRead = false;   // rec: { key, el }
+const recordHtml = s => typeof scoresTile !== 'function' || !scoresWanted(s) ? ''
+  : `<section class="record" id="record" aria-labelledby="record-h"><h2 id="record-h">The record here</h2>
+    <p class="sec-lede">What has happened before at the overflows upstream. History, not a forecast: it does not change with the day picked.</p><div id="record-slot"></div></section>`;
+function mountRecord(s) {
+  const slot = document.getElementById('record-slot') || document.getElementById('record-body'); if (!slot) return;
+  if (!scoresAsked) { scoresAsked = true;
+    scoresLoad().then(d => { SCORES = d || null; scoresRead = true; const now = route && route.id && spotOf(route.id); if (now) mountRecord(now); }); }
+  const got = details.get(s.id), key = `${s.id}|${got ? 1 : 0}|${scoresRead ? 1 : 0}`;
+  if (rec && rec.key === key) { if (slot !== rec.el) slot.replaceWith(rec.el); return; }
+  const open = rec && rec.el.isConnected ? [...rec.el.querySelectorAll('details[open]')].map(d => d.id || d.className) : [];
+  const el = document.createElement('div'); el.id = 'record-body';
+  const scores = !scoresRead ? '<p class="meta">Reading how the forecast has done here…</p>' : scoresTile(s, SCORES);
+  const months = !got ? '' : typeof seasonalTile === 'function' ? seasonalTile({ ...s, seasonal: (got.detail || {}).seasonal }) : '';
+  el.innerHTML = scores + months || '<p class="meta">Nothing is recorded for this place yet.</p>';
+  el.querySelectorAll('details').forEach(d => { if (open.includes(d.id || d.className)) d.open = true; });
+  slot.replaceWith(el); rec = { key, el };
+}
+
 // From swimmers: notes on a visit, reviews and reports of illness, each the live site's own script (visits.js,
 // reviews.js, illness.js), which draws its own part and takes what a swimmer sends. They look for the place they
 // draw into by the live page's names (#result .stack .tiles), so the slot here is given those. What they have drawn
@@ -620,7 +646,7 @@ function draw(opts = {}) {
   if (route.view === 'map') mountHomeMap();
   if (s && upView === 'map') mountPlaceMap();
   if (s) { const typing = swim && swim.id === s.id && active && swim.el.contains(active) ? active : null;
-    mountSwimmers(s); if (typing) typing.focus({ preventScroll: true }); } else swim = null;
+    mountRecord(s); mountSwimmers(s); if (typing) typing.focus({ preventScroll: true }); } else { swim = null; rec = null; }
   // Whether alerts are on is the browser's to say, and it answers a moment after the page is drawn.
   if (route.view === 'saved' && DATA.push && alertsOn === null && window.PVAlerts.can() === 'yes') window.PVAlerts.isOn().catch(() => false).then(on => { alertsOn = on; redrawAlerts(); });
   if (key !== lastKey) {

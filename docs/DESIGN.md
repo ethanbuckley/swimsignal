@@ -3050,3 +3050,24 @@ and cursor kept), the question before leaving, a review sent and kept as this br
 (empty): both forms offered. Headless Chrome at 375 and 1,440 px. **Not checked:** a review really sent, a photo
 added, the illness tile (off on the live site), the report form.
 
+### Ported: the record at a place (24 November 2026, night)
+
+The second port from `classic/`. Marked: the words and the counts are already decided ("How the forecast has done
+here", "Past spills upstream, by month"); the section is new.
+
+- **"The record here"**, a section of a place's page under the three about the forecast, for a place where the
+  forecast counts an overflow upstream. Two parts, both the live site's own scripts giving their markup:
+  `spotscores.js` (how the forecast has done at the overflows upstream since live scoring began, from
+  `data/spot_scores.json`) and `seasonal.js` (on how many days of each month a spill was reported upstream, from the
+  place's own file, folded).
+- **It does not follow the day picked**, and says so: it is history. What is drawn is kept when the page is drawn
+  again, so the months stay open.
+- **The look.** The months are grey bars with this month in ink. History takes no level's colour.
+- **Still only at `classic/` from this group:** lab results an organisation sent (`measured.js`). No place has any on
+  24 November 2026, and it needs the evidence script's ages, so it waits for the evidence timeline's port.
+
+**Checked:** in-app browser at 375 px on the 13:21 issue and the live record file: Ilkley's counts (531
+overflow-days, 16 with a spill; 27 of 70 forecasts for those spills reached the High risk line), its twelve months
+with November marked, the fold kept open through a day picked; Wastwater, with no overflow upstream, has no such
+section. Headless Chrome at 1,440 px. **Not checked:** a place whose entry in the record file is missing.
+
