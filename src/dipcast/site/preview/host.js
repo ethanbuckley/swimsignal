@@ -7,6 +7,10 @@
 // A place's address, from the site's root, wherever these pages are published (since.js links a line to it).
 const spotPath = id => `${document.documentElement.dataset.home || ''}spot/${encodeURIComponent(id)}/`;
 
+// The Saved page's address, from the site's root (journal.js links a logged swim to the journal there): the live
+// site's own "saved/" where these pages are the site's, the Saved view under preview/ where they are a preview.
+const savedPath = () => { const home = document.documentElement.dataset.home || ''; return home ? `${home}?view=saved` : 'saved/'; };
+
 // "Show all": the rest show, the button goes, and focus moves to the first one shown (guide.js, showRest).
 function showRest(rows, button) {
   const first = rows[0];

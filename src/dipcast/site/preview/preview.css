@@ -433,6 +433,44 @@ table.seasonal .num { text-align: right; white-space: nowrap; }
 .s-bar > span { display: block; height: 100%; background: var(--muted); }
 .record .small { margin-top: 8px; font-size: var(--fs-meta); } .record .muted { color: var(--muted); }
 
+/* ---------------------------------------------------------------- your swims */
+/* The swim journal and the passport (journal.js, passport.js): the live site's own markup. The form is the reviews'
+   (rv-form, below); these are what is the journal's own. */
+.yourswims { margin: 36px var(--gutter) 0; padding-top: 20px; border-top: 1px solid var(--line); }
+.yourswims > h2 { font: 600 var(--fs-head)/1.2 var(--font-display); }
+.yourswims .actions { margin-top: 12px; }
+.yourswims .btn { cursor: pointer; }
+#swam-msg:not(:empty) { margin-top: 10px; font-size: var(--fs-note); color: var(--ink); max-width: 44em; }
+#jn-box { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--hair); }
+#jn-box-h, #journal .sec-h, #passport .sec-h { font: 600 var(--fs-body)/1.3 var(--font-display); }
+#jn-box-h:focus, #journal:focus { outline: none; }
+#journal-body > .sec, #journal-body > details.sec { margin-top: 36px; padding-top: 20px; border-top: 1px solid var(--line); max-width: 720px; }
+#journal-body .sec-h { font: 600 var(--fs-head)/1.2 var(--font-display); }
+#journal-body .sub { margin-top: 6px; font-size: var(--fs-note); }
+#journal-body .small, .yourswims .small { font-size: var(--fs-meta); } #journal-body .muted, .yourswims .muted { color: var(--muted); }
+#journal-body .btn { cursor: pointer; }
+#journal-body .msg:empty { display: none; }
+.jn-where { margin-top: 2px; font-size: var(--fs-note); line-height: 1.4; overflow-wrap: anywhere; }
+.jn-where a { font-weight: 600; }
+.jn-seen { margin-top: 6px; font-size: var(--fs-note); line-height: 1.4; }
+.jn-k { color: var(--muted); }
+.jn-file { display: flex; flex-wrap: wrap; align-items: center; gap: 0 16px; margin-top: 8px; padding-top: 4px; border-top: 1px solid var(--hair); }
+.jn-said:empty { display: none; }
+.jn-when { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 8px; max-width: 440px; }
+@media (max-width: 360px) { .jn-when { grid-template-columns: minmax(0, 1fr); } }
+.rv-form #jn-min { max-width: 140px; }
+.jn-kept { margin-top: 16px; padding-top: 4px; border-top: 1px solid var(--hair); }
+.jn-kept .rv-q { margin-top: 8px; }
+.outing-acts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.pp-sum { margin: 8px 0; font-size: var(--fs-note); }
+.pp-badges { margin-bottom: 8px; }
+.pp-badge { padding: 8px 0; border-top: 1px solid var(--hair); font-size: var(--fs-note); }
+.pp-badge:not(.on) b { color: var(--muted); font-weight: 600; }
+#journal-body input[type=text] { display: block; width: 100%; max-width: 320px; min-height: 44px; padding: 9px 12px; font: inherit; font-size: var(--fs-body); color: var(--ink); background: var(--field); border: 1px solid var(--line); border-radius: var(--radius); }
+#journal-body label { font-size: var(--fs-note); }
+#journal-body fieldset { min-width: 0; margin: 12px 0 0; padding: 0; border: 0; }
+#journal-body legend { padding: 0; font-size: var(--fs-note); font-weight: 600; }
+
 /* ---------------------------------------------------------------- from swimmers */
 /* Notes on a visit, reviews and reports of illness are drawn by the live site's own scripts (visits.js, reviews.js,
    illness.js), in the live page's markup. Here they are dressed as this page's sections are: no tile, a hairline
@@ -565,6 +603,6 @@ dialog.rv-view figcaption { padding: 8px 12px; font-size: var(--fs-meta); line-h
   .top > .tools { grid-area: tools; padding: 0 0 16px; }
   .first .daytabs { position: static; padding: 0; }
   .more { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 40px; margin-top: 8px; }
-  .theplace, .swimmers, .record { max-width: 760px; }
+  .theplace, .swimmers, .record, .yourswims { max-width: 760px; }
   .foot { max-width: 1184px; margin-left: auto; margin-right: auto; }
 }

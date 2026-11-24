@@ -54,7 +54,7 @@ def test_the_build_publishes_the_preview_beside_the_live_pages(tmp_path):
     # What it loads from the live site exists where it asks for it.
     # The page asks from the site's root, where its <base> points; its stylesheet asks from where it is, preview/.
     assert '<base href="../">' in page and 'data-home="preview/"' in page
-    for src in ("levels.js", "eatoday.js", "experience.js", "lists.js", "plan.js", "reviews.js", "visits.js", "illness.js", "spotscores.js", "seasonal.js", "since.js", "findwindow.js",
+    for src in ("levels.js", "eatoday.js", "experience.js", "lists.js", "plan.js", "reviews.js", "visits.js", "illness.js", "spotscores.js", "seasonal.js", "since.js", "findwindow.js", "journal.js", "passport.js",
                 "fonts/SourceSans3-latin.woff2", "fonts/SourceSerif4-latin.woff2", "icons/icon.svg", "preview/preview.css", "preview/host.js",
                 "preview/app.js", "preview/model.js", "preview/map.js", "preview/alerts.js"):
         assert f'"{src}"' in page, src

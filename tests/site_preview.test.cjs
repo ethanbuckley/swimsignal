@@ -37,7 +37,7 @@ test('the page is out of search engines, shares only the rules, and keeps the li
   assert.match(PAGE, /<meta name="robots" content="noindex, nofollow">/);
   assert.deepEqual([...PAGE.matchAll(/<script src="([^"]+)"/g)].map(m => m[1]),
     ['levels.js', 'eatoday.js', 'experience.js', 'lists.js', 'plan.js', 'preview/host.js', 'reviews.js', 'visits.js', 'illness.js',
-      'spotscores.js', 'seasonal.js', 'since.js', 'findwindow.js', 'preview/model.js', 'preview/alerts.js', 'preview/map.js', 'preview/app.js']);
+      'spotscores.js', 'seasonal.js', 'since.js', 'findwindow.js', 'journal.js', 'passport.js', 'preview/model.js', 'preview/alerts.js', 'preview/map.js', 'preview/app.js']);
   // Every address is read against the site's root, as the live pages' are: the page says where that is, and where it is under it.
   assert.match(PAGE, /<html lang="en-GB" data-home="preview\/">/); assert.match(PAGE, /<base href="\.\.\/">\n<title>/);
   assert.ok(PAGE.indexOf('<base href="../">') < PAGE.indexOf('href="fonts/'), 'the <base> comes before the first relative address');
@@ -411,4 +411,23 @@ test('Saved has the live site\'s own: what changed since you last looked, each p
   assert.match(JS, /addSharedList\(LISTS, sh\.name, ids\)/); assert.match(JS, /sameList\(LISTS, sh\.name, spots\.map\(s => s\.id\)\)/);
   assert.match(HOST, /const spotPath = id => `\$\{document\.documentElement\.dataset\.home \|\| ''\}spot\/\$\{encodeURIComponent\(id\)\}\/`;/);
   for (const c of ['place-since', 'since-ev', 'since-sum', 'fw-list', 'fw-nm', 'fw-note', 'fw-apart', 'o-tag', 'sharelist']) assert.match(CSS, new RegExp(`\\.${c}\\b`), c);
+});
+
+test('the swim journal and the passport are the live site\'s own, on this device only', () => {
+  const JN = require(path.join(SITE, 'journal.js')), JS_JN = fs.readFileSync(path.join(SITE, 'journal.js'), 'utf8');
+  assert.equal(JN.JOURNAL_KEY, 'dipcast.swims');   // the live site's own, so a swim logged on either page is in both journals
+  // The live script binds "Log a swim" and draws the form; the page gives it the names it looks for.
+  assert.match(JS_JN, /const b = document\.getElementById\('swam'\); if \(!b\) return;/); assert.match(JS_JN, /const acts = b\.closest\('\.actions'\); if \(!acts\) return;/);
+  assert.match(JS, /<div class="actions"><button type="button" class="btn" id="swam" aria-expanded="false">Log a swim<\/button><\/div><p class="meta" id="swam-msg" role="status" aria-live="polite"><\/p>/);
+  assert.match(JS, /journalLogBind\(s, DATA\.generated_at\);/);
+  // The journal names a swim's place from the forecast the page holds, by the live page's name for it.
+  assert.match(JS_JN, /typeof DATA !== 'undefined' && DATA \? new Map\(DATA\.spots\.map/); assert.match(JS, /window\.DATA = DATA;/);
+  // On Saved: the journal and the passport, each drawn by its own script; a logged swim's link goes to the journal there.
+  assert.match(JS, /el\.innerHTML = journalCard\(\) \+ \(typeof passportSection === 'function' \? passportSection\(DATA\.spots\) : ''\);/);
+  assert.match(JS, /journalBindSection\(\); if \(typeof passportBind === 'function'\) passportBind\(\);/);
+  assert.match(HOST, /const savedPath = \(\) => \{ const home = document\.documentElement\.dataset\.home \|\| ''; return home \? `\$\{home\}\?view=saved` : 'saved\/'; \};/);
+  assert.match(JS, /location\.hash === '#journal' && typeof journalFocus === 'function'\) journalFocus\(\);/);
+  // It makes no request: nothing in the journal leaves the browser.
+  assert.doesNotMatch(JS_JN, /\bfetch\(/);
+  for (const c of ['yourswims', 'jn-where', 'jn-seen', 'jn-file', 'jn-when', 'jn-kept', 'pp-sum', 'pp-badge']) assert.match(CSS, new RegExp(`\\.${c}\\b`), c);
 });
