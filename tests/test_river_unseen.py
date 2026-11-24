@@ -211,8 +211,16 @@ def _made_up_level_rows(seed=3, points=40, tau=0.4, sigma=0.5):
     return lc.with_place_inputs(d, systems)
 
 
-def test_level_fit_recovers_the_spreads_and_ranges_cover_eight_in_ten():
+def _few_draws(monkeypatch, lc):
+    """40 resamples for the intervals, not the statement's 2,000, as the place-level tests below use. Only for a
+    test that asserts no interval: with 2,000 the two tests below took 110 s of a Mac's time (24 Nov 2026), and the
+    site build's tests about twice what they took before (tests/test_site_limits.py)."""
+    monkeypatch.setattr(lc.rd.system_season_draws, "__defaults__", (40, lc.rd.SEED))
+
+
+def test_level_fit_recovers_the_spreads_and_ranges_cover_eight_in_ten(monkeypatch):
     import level_candidate as lc
+    _few_draws(monkeypatch, lc)
     d = _made_up_level_rows()
     m = lc.fit(d[d["season"] <= lc.SPLIT])
     assert abs(m["sigma"] - 0.5) < 0.03 and abs(m["tau"] - 0.4) < 0.12
@@ -225,9 +233,10 @@ def test_level_fit_recovers_the_spreads_and_ranges_cover_eight_in_ten():
     assert s["pass"] and abs(s["above"] - s["below"]) < 0.05
 
 
-def test_bathing_backtest_uses_only_earlier_seasons_and_scores_both_ranges():
+def test_bathing_backtest_uses_only_earlier_seasons_and_scores_both_ranges(monkeypatch):
     import level_bathing_backtest as bb
     import level_candidate as lc
+    _few_draws(monkeypatch, lc)
     d = _made_up_level_rows(seed=5, points=12)
     m = lc.fit(_made_up_level_rows(seed=6))
     new = bb.earlier_samples_ranges(d, m)
