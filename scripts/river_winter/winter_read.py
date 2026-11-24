@@ -27,7 +27,6 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from scipy.stats import spearmanr
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[1]
@@ -122,16 +121,19 @@ def build_rows_calendar_days(samples: pd.DataFrame, net, ov, model, rain_hourly,
         try:
             _, up = lrh._site_up(net, ov, bw_id, float(s.lat), float(s.lon))
         except KeyError:
-            drops["no_upstream"] += len(g); continue
+            drops["no_upstream"] += len(g)
+            continue
         if not len(up):
-            drops["no_upstream"] += len(g); continue
+            drops["no_upstream"] += len(g)
+            continue
         cl, cn = (float(v) for v in grid_cell(float(s.lat), float(s.lon)))
         try:
             site_rain = rain_hourly.loc[(cl, cn)].set_index("time")["precip_mm"].sort_index()
         except KeyError:
-            drops["no_site_rain"] += len(g); continue
+            drops["no_site_rain"] += len(g)
+            continue
         g = g.sort_values("sample_time").reset_index(drop=True)
-        risk = pd.Series(dtype=float); miss = pd.Series(dtype=float)
+        risk, miss = pd.Series(dtype=float), pd.Series(dtype=float)
         sample_days = pd.DatetimeIndex(sorted(g["day"].unique()))
         lead_days = history_days(up["travel_h"])
         for y in sorted(g["sample_time"].dt.year.unique()):   # one calendar year at a time: days stay consecutive
