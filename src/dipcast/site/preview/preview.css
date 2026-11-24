@@ -1,0 +1,320 @@
+/* SwimSignal, the redesign preview. The live site's own system (docs/DESIGN.md): Source Serif 4 for places and
+   headings, Source Sans 3 for everything read quickly, the paper, the slate bar, one teal accent, four level colours,
+   one 8 px radius, hairlines, six type sizes. What is new is the composition, not the palette. */
+@font-face { font-family: "Source Sans 3"; font-style: normal; font-weight: 200 900; font-display: swap; src: url(../fonts/SourceSans3-latin.woff2) format("woff2"); }
+@font-face { font-family: "Source Serif 4"; font-style: normal; font-weight: 600; font-display: swap; src: url(../fonts/SourceSerif4-latin.woff2) format("woff2"); }
+
+:root {
+  color-scheme: light;
+  --font-text: "Source Sans 3", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --bg: #f6f4ee; --card: #fff; --ink: #1b2328; --muted: #5a6166; --line: #e0dbd0; --hair: rgba(27, 35, 40, .1);
+  --hover: #efebe2; --active: #e8e3d8;
+  --brand: #0f5a61; --brand-deep: #0b474d; --link: #0f5a61;
+  --bar: #3d5b5d; --bar-ink: rgba(255, 255, 255, .86); --bar-hover: rgba(255, 255, 255, .12);
+  --low: #3b7d4f; --moderate: #b7791f; --high: #c2552a; --veryhigh: #a32d2d; --unknown: #98a2aa; --clear: #4aa39a;
+  --k-low: #326a43; --k-moderate: #855817; --k-high: #a04623; --k-veryhigh: #992a2a; --k-na: #4f5a62; --k-clear: #0f5a61;
+  --notice-bg: #fff6e8; --notice-line: #e5a53a; --focus: #0f5a61;
+  --radius: 8px; --radius-mark: 6px; --radius-ring: 4px; --on-fill: #fff;
+  --fs-meta: 13px; --fs-note: 15px; --fs-body: 17px; --fs-head: 20px; --fs-level: 30px; --fs-title: 36px;
+  --sky: #dfe6e7; --track: rgba(27, 35, 40, .13); --ov-quiet: #5b6470; --ov-off: #b3bac2;
+  --lift: 0 1px 2px rgba(0, 0, 0, .12), 0 0 0 1px var(--hair);
+  /* The river of the line upstream: the mark's river, let down into the paper. */
+  --river: #b9dcd6;
+  /* An overflow with no current reading: a dashed ring, 3.5:1 on the paper, so the mark can be seen as well as read. */
+  --ov-none: #7b848c;
+  --gutter: 16px;
+}
+@media (max-width: 800px) { :root { --fs-title: 30px; } }
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; font-optical-sizing: auto; scroll-padding-top: 84px; }
+body { margin: 0; font: 400 var(--fs-body)/1.5 var(--font-text); color: var(--ink); background: var(--bg); }
+a { color: var(--link); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+a:hover { text-decoration-thickness: 2px; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+a:focus-visible { border-radius: var(--radius-ring); }
+h1:focus, h2:focus { outline: none; }
+b, strong { font-weight: 600; }
+h1, h2, h3, p, ul, ol, dl, dd, figure { margin: 0; }
+ul, ol { padding: 0; list-style: none; }
+img { display: block; max-width: 100%; height: auto; }
+button { font: inherit; color: inherit; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.skip { position: fixed; top: -100px; left: 16px; z-index: 3000; background: var(--card); border: 1px solid var(--line); padding: 12px 16px; border-radius: var(--radius); }
+.skip:focus { top: 8px; }
+.ic { width: 20px; height: 20px; flex: none; }
+.meta { font-size: var(--fs-meta); color: var(--muted); }
+.noscript { padding: 16px; }
+
+/* The levels' text colours, wherever a level is words. */
+.lv-low { color: var(--k-low); } .lv-moderate { color: var(--k-moderate); } .lv-high { color: var(--k-high); } .lv-veryhigh { color: var(--k-veryhigh); }
+.lv-clear { color: var(--k-clear); } .lv-none, .lv-gap { color: var(--k-na); } .lv-ink { color: var(--ink); }
+
+/* ---------------------------------------------------------------- the bar */
+.bar { display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 10px var(--gutter); padding-top: max(10px, env(safe-area-inset-top)); background: var(--bar); color: var(--on-fill); }
+.brand { display: inline-flex; align-items: center; gap: 10px; color: var(--on-fill); text-decoration: none; font: 600 var(--fs-head)/1 var(--font-display); min-height: 44px; margin: -8px 0; }
+.brand svg { width: 28px; height: 28px; border-radius: var(--radius-mark); }
+.tag { font-size: var(--fs-meta); color: var(--bar-ink); }
+.bar nav { margin-left: auto; display: flex; align-items: center; gap: 4px; }
+.hbtn, .hlink { margin: -6px 0; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; min-width: 44px; justify-content: center; padding: 8px 10px; border-radius: var(--radius); color: var(--bar-ink); text-decoration: none; font-size: var(--fs-note); font-weight: 600; white-space: nowrap; }
+.hbtn:hover, .hlink:hover { color: var(--on-fill); background: var(--bar-hover); }
+.bar :focus-visible { outline-color: var(--on-fill); }
+.wide-only { display: none; }
+
+/* ---------------------------------------------------------------- the opening */
+.opening { padding: 28px var(--gutter) 24px; background: var(--sky) url(../icons/fells.webp) center top / cover no-repeat; }
+.opening h1 { font: 600 var(--fs-title)/1.12 var(--font-display); letter-spacing: -.01em; }
+.lede { margin-top: 8px; max-width: 34em; color: var(--ink); }
+.ask { margin-top: 20px; max-width: 560px; }
+.field { display: flex; align-items: center; gap: 10px; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 0 14px; color: var(--muted); }
+.field:focus-within { outline: 2px solid var(--focus); outline-offset: 2px; }
+.field input { flex: 1; min-width: 0; height: 52px; border: 0; background: none; font: inherit; color: var(--ink); outline: none; }
+.field input::placeholder { color: var(--muted); }
+.near { margin-top: 6px; display: flex; flex-wrap: wrap; align-items: center; gap: 2px 14px; }
+.near .textbtn { min-height: 44px; font-size: var(--fs-note); }
+.near .ic { width: 18px; height: 18px; }
+#here-note { color: var(--ink); }
+.home-body { padding: 0 var(--gutter); max-width: 1184px; margin: 0 auto; }
+.block { margin-top: 28px; }
+.block > h2, .more h2, .theplace > h2 { font: 600 var(--fs-head)/1.2 var(--font-display); }
+.block > .meta { margin-top: 8px; }
+.none { margin-top: 16px; }
+.backline a { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; font-weight: 600; text-decoration: none; }
+.area-h:focus { outline: none; }
+.water { margin-top: 20px; }
+.water h3 { font: 600 var(--fs-body)/1.3 var(--font-display); margin-bottom: 4px; }
+.water h3 .meta { font: 400 var(--fs-meta)/1.3 var(--font-text); margin-left: 6px; }
+
+/* The day control. On the opening it carries no level; on a place each day carries that place's. */
+.daytabs { margin-top: 16px; }
+.daytabs ol { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+.daytabs li + li { border-left: 1px solid var(--line); }
+.daytab { display: grid; gap: 3px; align-content: start; padding: 9px 4px 8px; min-height: 48px; text-align: center; text-decoration: none; color: var(--ink); line-height: 1.2; position: relative; }
+.daytab:hover { background: var(--hover); }
+.daytab:focus-visible { outline-offset: -3px; border-radius: var(--radius); }
+.dt-name { font-size: var(--fs-note); font-weight: 600; color: var(--ink); }
+.dt-dom { font-size: var(--fs-meta); color: var(--muted); }
+.dt-top { display: block; }
+.dt-mark { display: block; height: 4px; margin: 3px 8px 1px; border-radius: 2px; background: currentColor; }
+.dt-level { font-size: var(--fs-meta); font-weight: 600; }
+.daytab.lv-low .dt-mark { background: var(--low); } .daytab.lv-moderate .dt-mark { background: var(--moderate); } .daytab.lv-high .dt-mark { background: var(--high); }
+.daytab.lv-veryhigh .dt-mark { background: var(--veryhigh); } .daytab.lv-clear .dt-mark { background: var(--clear); } .daytab.lv-none .dt-mark { background: var(--unknown); }
+.daytab.on { background: var(--active); box-shadow: inset 0 3px 0 var(--ink); }
+.daytab.on .dt-dom { color: var(--ink); }
+
+/* A place as a row: its photo, its name, its level on the day shown, and its five days as marks. */
+.rows { margin-top: 8px; border-bottom: 1px solid var(--line); }
+.row { display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 12px 0; border-top: 1px solid var(--line); color: var(--ink); text-decoration: none; }
+.row:hover { background: var(--hover); }
+.row:focus-visible { outline-offset: -2px; border-radius: var(--radius); }
+.thumb { width: 64px; height: 64px; border-radius: var(--radius); object-fit: cover; background: var(--sky); }
+.thumb.none { display: grid; place-items: center; color: var(--muted); }
+.row-main { display: grid; gap: 1px; line-height: 1.3; }
+.row-main b { font-size: var(--fs-body); }
+.row-level { font-size: var(--fs-note); font-weight: 600; }
+.row-notice { font-size: var(--fs-meta); font-weight: 600; }
+.row-sub { font-size: var(--fs-meta); color: var(--muted); }
+.week { display: inline-flex; align-items: flex-end; gap: 3px; height: 24px; }
+.week i { width: 6px; height: 16px; border-radius: 2px; background: var(--unknown); }
+.week i.on { height: 24px; outline: 1.5px solid var(--ink); outline-offset: 1px; }
+.week .lv-low { background: var(--low); } .week .lv-moderate { background: var(--moderate); } .week .lv-high { background: var(--high); } .week .lv-veryhigh { background: var(--veryhigh); }
+
+/* The areas, each under a photo of one of its places. */
+.areas { margin-top: 12px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 12px; }
+.area { display: grid; gap: 2px; color: var(--ink); text-decoration: none; line-height: 1.3; }
+.area img, .area .noimg { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; border-radius: var(--radius); background: var(--sky); margin-bottom: 6px; }
+.area .noimg { display: grid; place-items: center; color: var(--muted); }
+.area-name { font: 600 var(--fs-body)/1.25 var(--font-display); }
+.area:hover .area-name { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 2px; }
+.area-n { font-size: var(--fs-meta); color: var(--muted); }
+.credits { margin-top: 16px; font-size: var(--fs-meta); color: var(--muted); }
+.credits summary { cursor: pointer; min-height: 32px; display: inline-flex; align-items: center; }
+.credits li { margin-top: 4px; }
+.issued { margin-top: 16px; font-size: var(--fs-meta); color: var(--muted); }
+
+/* Notices keep their box: they are read first. */
+.notice { margin: 16px var(--gutter) 0; padding: 12px 14px; background: var(--notice-bg); border: 1px solid var(--notice-line); border-radius: var(--radius); font-size: var(--fs-note); }
+.official { padding: 14px 16px; background: var(--notice-bg); border: 1px solid var(--notice-line); border-radius: var(--radius); }
+.official h2 { font: 700 var(--fs-note)/1.3 var(--font-text); }
+.o-line { margin-top: 2px; font-weight: 600; }
+.o-src, .o-first { margin-top: 6px; font-size: var(--fs-note); }
+
+/* ---------------------------------------------------------------- a place */
+.place { padding-bottom: 8px; }
+.hero { position: relative; }
+.hero img { width: 100%; height: 216px; object-fit: cover; background: var(--sky); }
+.hero figcaption { padding: 6px var(--gutter) 0; font-size: var(--fs-meta); color: var(--muted); }
+.hero figcaption a { color: inherit; }
+.cr { white-space: nowrap; }
+.tools { display: flex; justify-content: space-between; gap: 8px; padding: 12px var(--gutter) 0; }
+.hero .tools { position: absolute; inset: 12px 12px auto 12px; padding: 0; }
+.tools-r { display: flex; gap: 8px; }
+.tool { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; min-width: 44px; justify-content: center; padding: 0 12px; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); color: var(--ink); font-size: var(--fs-note); font-weight: 600; text-decoration: none; cursor: pointer; }
+.hero .tool { border: 0; box-shadow: var(--lift); }
+.tool:hover { background: var(--hover); }
+.tool[aria-pressed="true"] .ic { fill: currentColor; }
+.head { padding: 14px var(--gutter) 0; }
+.head h1 { font: 600 var(--fs-title)/1.12 var(--font-display); letter-spacing: -.01em; text-wrap: balance; }
+.kind { margin-top: 4px; font-size: var(--fs-note); color: var(--muted); }
+#tool-said:empty { display: none; }
+#tool-said { margin-top: 6px; color: var(--ink); }
+/* On a phone the page is one stack, and the day tabs stay at the top of the screen all the way down it. */
+.top, .first { display: contents; }
+.first > .notice, .first > .official { margin: 14px var(--gutter) 0; }
+.tabs-top { display: block; height: 8px; }
+.first .daytabs { margin: 0; padding: 6px var(--gutter); position: sticky; top: 0; z-index: 5; background: var(--bg); }
+.first .daytabs.stuck { box-shadow: 0 1px 0 var(--line); }
+.daytabs.stuck .dt-level { display: none; }
+.daytabs.stuck .daytab { padding: 7px 4px 6px; min-height: 44px; }
+.answer { padding: 8px var(--gutter) 0; }
+.condbox { padding: 0 var(--gutter); }
+.conds-h { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.when { font-weight: 600; }
+.when-note { display: block; font-weight: 400; font-size: var(--fs-note); color: var(--muted); }
+.lead { margin-top: 8px; font-weight: 700; }
+.level { margin-top: 2px; font: 700 var(--fs-level)/1.15 var(--font-text); letter-spacing: -.01em; text-wrap: balance; }
+.why { margin-top: 6px; max-width: 38em; }
+.apart { margin-top: 6px; font-size: var(--fs-note); color: var(--muted); }
+.act { margin-top: 14px; padding: 16px; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); }
+.act-go { margin-top: 12px; display: grid; gap: 8px; }
+.act-none { margin-top: 10px; font-size: var(--fs-note); }
+.act-plain { margin-top: 12px; max-width: 38em; }
+.unchecked { margin-top: 12px; font-size: var(--fs-note); }
+.act-plain + .unchecked { margin-top: 8px; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 8px 16px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--card); color: var(--ink); font-weight: 600; text-decoration: none; text-align: center; line-height: 1.25; cursor: pointer; }
+.btn:hover { background: var(--hover); }
+.btn.primary { background: var(--brand); border-color: var(--brand); color: var(--on-fill); }
+.btn.primary:hover { background: var(--brand-deep); }
+.conds { margin-top: 16px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 16px; padding-top: 12px; border-top: 1px solid var(--line); }
+.conds dt { font-size: var(--fs-meta); color: var(--muted); }
+.conds dd { font-weight: 600; line-height: 1.3; }
+.conds dd span { display: block; font-weight: 400; font-size: var(--fs-meta); color: var(--muted); }
+.scope { margin-top: 12px; font-size: var(--fs-note); }
+.answer .issued { margin-top: 14px; }
+
+.more { padding: 0 var(--gutter); }
+.more > section, .theplace { margin-top: 32px; padding-top: 20px; border-top: 1px solid var(--line); }
+.theplace { margin-left: var(--gutter); margin-right: var(--gutter); }
+.sec-lede { margin-top: 6px; font-size: var(--fs-note); }
+.more h3 { margin-top: 20px; font: 700 var(--fs-note)/1.3 var(--font-text); }
+.more h3 + .meta { margin-top: 2px; }
+.more section > .meta { margin-top: 12px; }
+
+/* Behind the level: the level, the modelled score and what was not seen, each on its own line. */
+.ledger { margin-top: 4px; }
+.lg { padding: 14px 0; border-bottom: 1px solid var(--line); }
+.lg dt { font-size: var(--fs-note); color: var(--muted); }
+.lg dd { display: grid; gap: 4px; }
+.lg-value { font-size: var(--fs-head); font-weight: 700; line-height: 1.25; }
+.lg-word { font-size: var(--fs-note); font-weight: 600; }
+.lg-line { font-size: var(--fs-note); }
+.lg-line.dim { color: var(--muted); }
+.lg-gaps .lg-line.dim { color: var(--ink); }
+.lg-ecoli .lg-value, .lg-cover .lg-value { font-size: var(--fs-body); }
+.meter { position: relative; display: flex; gap: 2px; height: 8px; margin-top: 6px; }
+.meter .seg { background: var(--track); }
+.meter .seg:first-child { border-radius: 2px 0 0 2px; } .meter .seg:nth-child(4) { border-radius: 0 2px 2px 0; }
+.meter .seg.on.lv-low { background: var(--low); } .meter .seg.on.lv-moderate { background: var(--moderate); } .meter .seg.on.lv-high { background: var(--high); } .meter .seg.on.lv-veryhigh { background: var(--veryhigh); }
+.meter .at { position: absolute; top: -4px; width: 3px; height: 16px; margin-left: -1.5px; border-radius: 2px; background: var(--ink); box-shadow: 0 0 0 2px var(--bg); }
+.meter .band { position: absolute; top: 13px; height: 2px; background: var(--ink); }
+.meter-key { display: flex; gap: 2px; font-size: var(--fs-meta); color: var(--muted); line-height: 1.2; margin-top: 6px; }
+.meter-key span { overflow: hidden; white-space: nowrap; }
+.spark { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; margin: 10px 0 4px; padding-top: 10px; border-top: 1px dashed var(--line); }
+.sp { display: grid; grid-template-rows: 56px auto auto; justify-items: center; align-items: end; font-size: var(--fs-meta); line-height: 1.25; color: var(--muted); padding: 4px 0; border-radius: var(--radius-ring); }
+.sp i { width: 18px; border-radius: 2px 2px 0 0; background: var(--unknown); }
+.sp i.lv-low { background: var(--low); } .sp i.lv-moderate { background: var(--moderate); } .sp i.lv-high { background: var(--high); } .sp i.lv-veryhigh { background: var(--veryhigh); }
+.sp b { color: var(--ink); font-variant-numeric: tabular-nums; }
+.sp.on { background: var(--active); color: var(--ink); }
+
+/* Upstream: the river as a line. This place is the mark's ring; each overflow is a stop, set off by the water
+   between it and the last. */
+/* While the list is read its place is held, so the places elsewhere do not jump when it arrives. */
+.upstream.loading { min-height: 560px; }
+.line { position: relative; margin-top: 16px; }
+.line::before { content: ""; position: absolute; left: 68px; top: 12px; bottom: 8px; width: 6px; border-radius: 3px; background: var(--river); }
+.stop { position: relative; display: grid; grid-template-columns: 52px 26px minmax(0, 1fr); column-gap: 6px; align-items: start; }
+.km { padding-top: 1px; text-align: right; font-size: var(--fs-meta); color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.node { justify-self: center; width: 16px; height: 16px; margin-top: 3px; border-radius: 50%; background: var(--card); border: 2px solid var(--ov-quiet); position: relative; z-index: 1; }
+.is-here .node { width: 24px; height: 24px; margin-top: 0; border: 6px solid var(--brand); background: var(--bg); }
+.is-spilling .node { background: var(--veryhigh); border-color: var(--veryhigh); box-shadow: 0 0 0 3px var(--bg); }
+.is-unknown .node { background: var(--bg); border: 2px dashed var(--ov-none); }
+.is-place .node { width: 12px; height: 12px; margin-top: 6px; background: var(--brand); border: 2px solid var(--bg); }
+.is-rest .node { width: 6px; height: 6px; margin-top: 8px; border: 0; background: var(--ov-quiet); }
+.is-end .node { width: 18px; height: 3px; margin-top: 10px; border: 0; border-radius: 2px; background: var(--ov-quiet); }
+.stop-body { display: grid; gap: 1px; line-height: 1.35; padding-bottom: 2px; }
+.stop-body b { font-size: var(--fs-note); }
+.is-here .stop-body b { font: 600 var(--fs-body)/1.3 var(--font-display); }
+.st { font-size: var(--fs-meta); color: var(--muted); }
+.st-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0 12px; }
+.is-spilling .st:first-of-type { color: var(--k-veryhigh); font-weight: 600; }
+.textbtn { justify-self: start; display: inline-flex; align-items: center; gap: 4px; min-height: 32px; padding: 0; border: 0; background: none; color: var(--link); font-size: var(--fs-meta); font-weight: 600; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 2px; cursor: pointer; }
+.textbtn .ic { width: 16px; height: 16px; }
+.more-box { font-size: var(--fs-meta); color: var(--ink); padding-bottom: 6px; }
+.key { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: var(--fs-meta); color: var(--muted); }
+.key .k { display: inline-flex; align-items: center; gap: 6px; }
+.key i { width: 12px; height: 12px; border-radius: 50%; background: var(--card); border: 2px solid var(--ov-quiet); }
+.key .is-spilling i { background: var(--veryhigh); border-color: var(--veryhigh); } .key .is-unknown i { background: var(--bg); border: 2px dashed var(--ov-none); }
+.below { margin-top: 12px; font-size: var(--fs-note); }
+
+/* Elsewhere on the day shown. */
+.chips { margin-top: 12px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.chip { min-height: 40px; padding: 0 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--card); font-size: var(--fs-note); font-weight: 600; cursor: pointer; }
+.chip:hover { background: var(--hover); }
+.chip.on { background: var(--brand); border-color: var(--brand); color: var(--on-fill); }
+.chips .textbtn { margin-left: 4px; font-size: var(--fs-note); min-height: 40px; }
+.raised { margin-top: 16px; }
+.raised summary, .guide summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; font-weight: 600; font-size: var(--fs-note); color: var(--link); }
+
+/* The place: what is known at the water. */
+.facts { margin-top: 8px; }
+.facts > div { padding: 12px 0; border-bottom: 1px solid var(--line); display: grid; gap: 4px; }
+.facts dt { font-size: var(--fs-note); font-weight: 600; }
+.facts dd { font-size: var(--fs-note); }
+.guide { margin-top: 4px; }
+.photos { margin-top: 20px; display: grid; gap: 20px; }
+.photos img { width: 100%; border-radius: var(--radius); }
+.photos figcaption { margin-top: 6px; font-size: var(--fs-meta); color: var(--muted); }
+.theplace > .meta { margin-top: 16px; }
+
+.foot { margin-top: 40px; padding: 20px var(--gutter) 32px; border-top: 1px solid var(--line); font-size: var(--fs-meta); color: var(--muted); display: grid; gap: 8px; }
+.foot summary { cursor: pointer; }
+
+/* ---------------------------------------------------------------- wider screens */
+@media (min-width: 620px) {
+  :root { --gutter: 24px; }
+  .areas { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .act-go { display: flex; flex-wrap: wrap; }
+  .conds { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .hero img { height: 300px; }
+}
+@media (min-width: 960px) {
+  :root { --gutter: 32px; }
+  html { scroll-padding-top: 24px; }
+  .wide-only { display: inline-flex; }
+  span.wide-only { display: inline; }
+  .opening { padding: 44px var(--gutter) 36px; background-image: url(../icons/fells-wide.webp); }
+  .opening { padding-left: max(var(--gutter), calc((100% - 1120px) / 2)); padding-right: max(var(--gutter), calc((100% - 1120px) / 2)); }
+  .home-body .daytabs { max-width: 560px; }
+  .areas { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 28px 20px; }
+  .home-body .rows { max-width: 720px; }
+  .place { max-width: 1184px; margin: 0 auto; }
+  .top { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); grid-template-areas: "hero head" "hero first" "conds first"; grid-template-rows: auto auto 1fr; gap: 0 40px; padding: 28px var(--gutter) 0; align-items: start; }
+  .place:not(.has-photo) .top { grid-template-columns: minmax(0, 720px); grid-template-areas: "tools" "head" "first" "conds"; }
+  .first { display: block; }
+  .first > .notice, .first > .official { margin: 0 0 12px; }
+  .tabs-top { display: none; }
+  .answer { padding: 14px 0 0; }
+  .condbox { grid-area: conds; padding: 0; }
+  .has-photo .condbox .conds { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .hero { grid-area: hero; }
+  .hero img { height: auto; aspect-ratio: 4 / 3; border-radius: var(--radius); }
+  .hero figcaption { padding-left: 0; padding-right: 0; }
+  .head { grid-area: head; padding: 0; }
+  .first { grid-area: first; padding: 16px 0 0; }
+  .top > .tools { grid-area: tools; padding: 0 0 16px; }
+  .first .daytabs { position: static; padding: 0; }
+  .more { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 40px; margin-top: 8px; }
+  .theplace { max-width: 760px; }
+  .foot { max-width: 1184px; margin-left: auto; margin-right: auto; }
+}

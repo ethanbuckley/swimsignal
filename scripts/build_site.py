@@ -32,7 +32,7 @@ from dipcast.algae import by_site, refresh_algae
 from dipcast.forecast_log import describe_fetch, latest_samples, load_poll_log, load_verification, samples_status
 from dipcast.guides import attach_guides, boat_note, copy_photos
 from dipcast.openings import attach_openings
-from dipcast import official_advice, shadow_radar
+from dipcast import hero_photos, official_advice, shadow_radar
 from dipcast.samples import attach_measured
 from dipcast.ingest import rainfall
 from dipcast.ingest.live import expected_rows, is_short
@@ -2617,6 +2617,35 @@ def copy_app_files(site: Path, stamp: str | None = None) -> None:
     shutil.copytree(TEMPLATE.parent / "vendor", site / "vendor", dirs_exist_ok=True)
 
 
+# The redesign preview (docs/DESIGN.md, "A redesign kept as a preview"): a second set of swimmer pages, published
+# beside the live ones at preview/ so they can be judged on a phone. Marked noindex, in no sitemap, linked from no live
+# page, and left alone by the offline copy (sw.js). It reads the data files the live pages read, loads levels.js and
+# eatoday.js from the site's root so a level and an official notice read the same in both, and gets one file of its own
+# from the build: each spot's opening photo, by guide.js's rule (dipcast.hero_photos), so a list of places can show a
+# photo beside each without reading every spot's file.
+PREVIEW = TEMPLATE.parent / "preview"
+PREVIEW_FILES = ("index.html", "preview.css", "model.js", "app.js")
+PREVIEW_NOINDEX = '<meta name="robots" content="noindex, nofollow">'
+
+
+def write_preview(site: Path, results: list[dict]) -> int:
+    """site/preview/: the preview's four files, copied as they are, and hero-photos.json. Returns how many spots
+    have an opening photo. A page that has lost its noindex mark, or the live site's own rules, stops the build."""
+    page = (PREVIEW / "index.html").read_text()
+    if PREVIEW_NOINDEX not in page:
+        raise ValueError("preview/index.html has lost its noindex mark: the preview must stay out of search engines")
+    for tag in ('<script src="../levels.js"></script>', '<script src="../eatoday.js"></script>'):
+        if tag not in page:
+            raise ValueError(f"preview/index.html has lost {tag}, the live site's own rules")
+    out = site / "preview"
+    out.mkdir(parents=True, exist_ok=True)
+    for name in PREVIEW_FILES:
+        shutil.copy(PREVIEW / name, out / name)
+    photos = hero_photos.index(results)
+    (out / "hero-photos.json").write_text(json.dumps(photos, separators=(",", ":")))
+    return len(photos)
+
+
 def site_url() -> str:
     """The published address, for canonical links, share previews and the sitemap. A custom
     domain sets DIPCAST_SITE_URL; otherwise it is this repository's GitHub Pages address, so a
@@ -3442,6 +3471,7 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     shutil.copytree(STATIC / "fonts", site / "fonts", dirs_exist_ok=True)   # declared in page.css and index.html
     copy_app_files(site, stamp)
     (site / "app.js").write_text(app_js)
+    write_preview(site, results)   # the redesign preview at preview/, beside the live pages; after the scripts it loads
     feeds = (site / "data" / "alerts.json").is_file()   # write_feeds writes them from it, after the spot pages
     home = PAGE_META.sub(lambda m: page_meta(HOME_TITLE, DESCRIPTION, root, root, base="./",
                                              feed=("feed.xml", f"{BRAND} · every spot") if feeds else None), template, count=1)

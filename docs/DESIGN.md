@@ -2780,3 +2780,76 @@ by how many spots sat at each level, above the same search box, day strip and li
 What it taught: a count of spots per level across the country answers a question no swimmer asks. Changing how the home
 page looks, while it still does the same job with the same parts, does not read as a new page. Do not bring the bands
 back as a restyle.
+
+## A redesign kept as a preview (24 November 2026, for Ethan's review)
+
+A working redesign of the swimmer's journey, in `src/dipcast/site/preview/` (`index.html`, `preview.css`, `model.js`,
+`app.js`). Ethan asked for it to be published once checked ("get it live", 24 November 2026): the build copies it to
+`preview/` beside the live pages (`build_site.write_preview`), marked `noindex`, in no sitemap and linked from no live
+page, so it is reached only by its address, `https://swimsignal.co.uk/preview/`. The live pages are unchanged but for one
+line in `sw.js`, which leaves `preview/` to the browser: the offline copy would otherwise hand a slow first visit the
+app's home page in its place. `python3 scripts/preview_redesign.py` serves the same files locally on the live forecast at
+`http://localhost:8797/preview/`. It loads the live `levels.js` and `eatoday.js`, so a level and an official notice read
+the same in both. The build writes it one file, `preview/hero-photos.json`: each spot's opening photo by `guideHero`'s
+rule (`src/dipcast/hero_photos.py`), so a list can show a photo beside each place without reading 133 files.
+`tests/site_preview.test.cjs` and `tests/test_preview_site.py` hold the rules below.
+
+**What prompted it.** Walked on a phone on 24 November 2026: the home page's first screen named no place; at Ilkley the
+day rows began 728 px down and Saturday sat at 1,092 px; picking it changed a headline that was off the screen; "Find
+another spot" opened Plan a swim, whose first option was 789 px down a 7,813 px page; the spot's page was
+8,739 px and 1,971 words (the preview's: 5,761 px and 956 words, the day tabs 409 px down). Two layouts were built on that day's data and compared: A (photo, day tabs, one answer) and B (the week as a
+table, nearby places as a grid of days, the photo a thumbnail). A was taken. B lost the photo and the action card,
+which are what the live page does best. Two of B's parts were kept: the score for all five days, and places by river.
+
+**Kept, as already decided here:** the two typefaces, six sizes, paper, slate bar, teal, four level colours, one 8 px
+radius, hairlines and no shadows ("Decisions"); the photo from the header down with the back link and Save on it, one
+quiet credit line, words down the left edge ("A spot's page: the place first", 11 November); the action in a white card
+under the level, its first sentence bold ("What to do under the level", 18 November); an official notice in its own
+block before the level, and the level said to be apart from it; "No monitored overflow found upstream" in teal, never
+counted or listed as low; a level always with "risk"; plain overflow names; miles for a swimmer, km for the water;
+"Lower risk nearby never offers a spot at high or very high risk" (11 November); the stale notice from 8 hours.
+
+**New:**
+- **The opening asks "Where do you swim?"** (the /next/ trial's question, PR #729): a search for a river, lake, town or
+  postcode, "Places near me" in words, saved places, then the 13 areas under a photo of one of their places. An area's
+  page lists its places by river, from the top of the river down where each place's `downstream` list links the next.
+- **The five days are tabs over the answer**, each with the day, a mark in its level's colour and the level's word. On a
+  phone they stay at the top of the screen for the whole page. The day shown is in the address (`?spot=<id>&day=<date>`),
+  so a shared link opens on the day that was meant; a day that has passed falls back to today and says so.
+- **One date for the whole page** ("One date on a spot's page", 22 October, taken further): the answer, the conditions,
+  Behind the level, each overflow's chance of a spill, and Elsewhere all follow the tab.
+- **Behind the level**: three things a level word runs together, on separate rows. The level and what set it; the
+  sewage spill risk, modelled, as "27 of 100", with its own word, its four bands and the five days' scores; live
+  readings upstream, as how many report and what the rest could hide. Then what is not counted.
+- **Upstream is the river as a line**, drawn in the mark's own terms: this place is the ring, each monitored overflow a
+  stop set off by the water between, the nearest first, all of them behind "Show all". One discharging is always drawn.
+- **Elsewhere is on the place's page**, on the day shown: low risk first, then moderate where this place is high or
+  very high ("lower than here"), then places with no daily level under their own heading, then official advice. The
+  action card's button says how many and goes there.
+
+**Reverses, for Ethan to accept or not:** the home page's count across all spots and its very high rows ("Today: the
+home page", 11 November) are not in the preview; the five days are tabs, not Apple's rows ("Shape and surface"); the
+live status sentence before the level (30 October) moved into Behind the level, except where no overflow reports,
+which still leads the answer in bold; the E. coli estimate is a row, not a tile.
+
+**Where the live site is better, and the preview does not replace it** (so it is a second way in, not the site): the map of the river and its overflows; alerts;
+Plan a swim, Saved and the journal; the record of how the forecast has done here; past spills by month; a page built
+without scripts, with its own link preview; the offline copy. The preview links to the live page for each.
+
+**Each area's photo** is one place's, picked by eye from the photos the guides hold (`AREA_PHOTO` in `app.js`): open
+water in good light. The first build took each area's first landscape photo, and Cumbria's was the bow of a kayak.
+
+**Its own storage:** saved places are kept under `swimsignal.preview.places` in the browser, apart from the live
+site's `dipcast.saved`, so the preview changes nothing the live pages keep. Nothing is sent. The privacy notice is
+not changed here: it is Ethan's to word if the preview stays.
+
+**Checked:** headless Chrome on the live issue of 24 November 2026 13:21 at 320, 390, 820 and 1,440 px; keyboard and
+pointer in the in-app browser; Safari on an iPhone 17 simulator (iOS 27): the opening of Ilkley, a day picked by tap,
+the tabs pinned while scrolling. Every control: an overflow's details, "Show all", the three distances, Save, Share
+(the copied-link fallback), a search with no match, a postcode not in the file, a place that is not listed, a location
+refused. Contrast: every text colour is 4.5:1 or more on each surface it sits on; the dashed ring for "no current
+reading" is 3.5:1. The scripts use no syntax Safari before 16.4 refuses. Ilkley (rated poor), Dartington (very high), Bolton Abbey (moderate on Saturday), Linton
+Falls (low), Frensham Great Pond (official advice), Janet's Foss (no daily forecast), Symonds Yat (no live reading),
+Shrewsbury (no photo, Wales not counted), the forecast read nine hours late, and a link for a day that has passed. No
+sideways scroll at 320 px on the four pages measured. Not checked: a real phone, a screen reader, an iPhone older
+than the simulator's, dark mode (the site is light only), a location actually given to "Places near me".
