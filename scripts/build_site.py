@@ -2646,6 +2646,26 @@ def copy_app_files(site: Path, stamp: str | None = None) -> None:
 PREVIEW = TEMPLATE.parent / "preview"
 PREVIEW_FILES = ("index.html", "preview.css", "model.js", "alerts.js", "map.js", "app.js")
 PREVIEW_NOINDEX = '<meta name="robots" content="noindex, nofollow">'
+# The redesign as the site (docs/DESIGN.md, "The switch"): with DIPCAST_REDESIGN=1 the build writes the redesign's
+# pages at the site's own addresses (/, spot/<id>/, plan/, saved/) and the app they replace at classic/. Unset, or
+# anything else, and every page is as before: the app at the site's addresses, the redesign at preview/.
+REDESIGN_ENV = "DIPCAST_REDESIGN"
+# What the preview's own file says of where it is, which the build rewrites for each page it writes from it.
+PREVIEW_BASE = '<base href="../">'
+PREVIEW_HOME = '<html lang="en-GB" data-home="preview/">'
+PREVIEW_BRAND = '<a class="brand" href="preview/">'
+# The head a page of the site's own carries and the preview's file does not: the Home Screen app's manifest and icon.
+REDESIGN_HEAD = ('<link rel="manifest" href="manifest.webmanifest">\n<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">\n'
+                 '<meta name="mobile-web-app-capable" content="yes">\n<meta name="apple-mobile-web-app-capable" content="yes">\n'
+                 '<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">\n'
+                 f'<meta name="apple-mobile-web-app-title" content="{BRAND}">')
+REDESIGN_NOSCRIPT = ('<noscript><p class="noscript">This page needs JavaScript to read the forecast. <a href="spots.html">Every spot</a> '
+                     'has a page of its own with its forecast, which works without it.</p></noscript>')
+
+
+def redesign_on() -> bool:
+    """Whether this build publishes the redesign as the site (REDESIGN_ENV is exactly "1")."""
+    return os.environ.get(REDESIGN_ENV, "").strip() == "1"
 # The live site's own rules, which the preview loads rather than copies: the levels and the official advice's words,
 # and the saved lists and the plan (lists.js reads a stored list with experience.js).
 PREVIEW_RULES = ("levels.js", "eatoday.js", "experience.js", "lists.js", "plan.js")
@@ -2666,7 +2686,7 @@ PREVIEW_NOSCRIPT = re.compile(r'<noscript><p class="noscript">.*?</p></noscript>
 PREVIEW_MAIN = re.compile(r'<main id="main"[^>]*>')
 
 
-def prerender_preview(site: Path) -> dict:
+def prerender_preview(site: Path, home: str = "preview/") -> dict:
     """The preview's opening and each place's page as its own script draws them, {"home": html, "spots": {id: html}},
     from the data this build has written (scripts/prerender_preview.js runs preview/app.js in Node, in UK time, as at
     the moment the forecast was issued). Without Node, or the data, {}: the pages keep their loading line, and the
@@ -2674,7 +2694,7 @@ def prerender_preview(site: Path) -> dict:
     if not (site / "data" / "spots-lite.json").exists():
         return {}
     try:
-        run = subprocess.run(["node", str(ROOT / "scripts" / "prerender_preview.js"), str(site), "-"], check=True,
+        run = subprocess.run(["node", str(ROOT / "scripts" / "prerender_preview.js"), str(site), "-", home], check=True,
                              capture_output=True, text=True, timeout=180, env={**os.environ, "TZ": "Europe/London"})
         return json.loads(run.stdout)
     except (OSError, ValueError, subprocess.SubprocessError) as e:
@@ -2690,7 +2710,7 @@ PREVIEW_NOSCRIPT_STYLE = "<style>button,.picks{display:none!important}</style>"
 # sent to spots.html, whose links to every spot's page work without it (the Saved and Plan pages say the same).
 PREVIEW_HOME_NOSCRIPT = ('<noscript><style>button,.ask,.daytabs,.home-body .block{display:none!important}</style>'
                          '<p class="notice">This page needs JavaScript to search for a place and to list an area\'s places. '
-                         '<a href="../spots.html">Every spot</a> has a page of its own with its forecast, which works without it.</p></noscript>')
+                         '<a href="spots.html">Every spot</a> has a page of its own with its forecast, which works without it.</p></noscript>')
 
 
 def preview_built(shell: str, built: str | None, issued: pd.Timestamp | None, home: bool = False) -> str:
@@ -2709,20 +2729,37 @@ def preview_built(shell: str, built: str | None, issued: pd.Timestamp | None, ho
     return PREVIEW_NOSCRIPT.sub("", PREVIEW_APP.sub(lambda _: f'<div id="app" data-built>{built}</div>\n', shell, count=1), count=1)
 
 
+def redesign_shell(shell: str, base: str, live: bool = False) -> str:
+    """The preview's file for a page written somewhere else: its <base> back to the site's root from there, and,
+    live, as one of the site's own pages: no word of a preview, nothing keeping search engines out, the Home
+    Screen app's manifest and icon, and where its own pages are (data-home, which app.js reads) the root."""
+    for mark in (PREVIEW_BASE, PREVIEW_HOME, PREVIEW_BRAND, PREVIEW_NOINDEX):
+        if mark not in shell:
+            raise ValueError(f"preview/index.html has lost {mark}, which the build rewrites for each page")
+    shell = shell.replace(PREVIEW_BASE, f'<base href="{escape(base)}">', 1)
+    if not live:
+        return shell
+    shell = shell.replace(PREVIEW_HOME, '<html lang="en-GB" data-home="">', 1).replace(PREVIEW_BRAND, '<a class="brand" href="./">', 1)
+    for note in (r"<!-- A redesign kept beside the live site.*?-->\n", r"<!-- Every address below is read against.*?-->\n"):
+        shell = re.sub(note, "", shell, count=1, flags=re.DOTALL)   # what the preview's file says of being a preview
+    shell = shell.replace(PREVIEW_NOINDEX + "\n", "", 1).replace("</title>", "</title>\n" + REDESIGN_HEAD, 1)
+    shell = shell.replace(f"Where do you swim? · {BRAND} preview", HOME_TITLE, 1)
+    return PREVIEW_NOSCRIPT.sub(REDESIGN_NOSCRIPT + "\n", shell, count=1)
+
+
 def preview_place_page(shell: str, spot: dict, root: str, built: str | None = None, card: tuple[str, str] | None = None,
                        issued: pd.Timestamp | None = None, live: bool = False) -> str:
-    """A place's own page in the preview, preview/spot/<id>/: the preview's page with the place's name, description,
-    address and share card in its <head> (page_meta, as a live spot page has them) and a <base> back to preview/,
-    so every address in it means what it means on the opening. built: the page as its script draws it.
-    live: the page as it would be if it were the site's own page for the place: its address is spot/<id>/ at the
-    site's root, search engines may index it, and it carries the live page's structured data. The build does not
-    ask for that: the preview stays out of search engines (docs/DESIGN.md)."""
+    """A place's own page in the redesign: the preview's page with the place's name, description, address and share
+    card in its <head> (page_meta, as the app's spot page has them) and a <base> back to the site's root. built: the
+    page as its script draws it. As a preview it is preview/spot/<id>/ and stays out of search engines. live: the
+    site's own page for the place, spot/<id>/: search engines may index it, and it carries the app's page's
+    structured data."""
     url = f"{root}spot/{spot['id']}/" if live else f"{root}preview/spot/{spot['id']}/"
     blurb = spot_description(spot)
-    head = page_meta(spot_title(spot), blurb, url, root, base="../../", image=card)
+    head = page_meta(spot_title(spot), blurb, url, root, image=card)
     if live:
         head += "\n" + spot_structured_data(spot, root, blurb)
-        shell = shell.replace(PREVIEW_NOINDEX + "\n", "", 1)
+    shell = redesign_shell(shell, "../../" if live else "../../../", live)
     if not PREVIEW_TITLE.search(shell):
         raise ValueError("preview/index.html has lost its <title>, which a place's page replaces")
     return preview_built(PREVIEW_TITLE.sub(lambda _: head, shell, count=1), built, issued)
@@ -2730,7 +2767,8 @@ def preview_place_page(shell: str, spot: dict, root: str, built: str | None = No
 
 def write_preview(site: Path, results: list[dict], tiles: dict | None = None, root: str | None = None,
                   spot_cards: dict[str, str] | None = None, cards_v: str = "") -> int:
-    """site/preview/: the preview's files, copied as they are, with hero-photos.json and map.json; then its opening
+    """site/preview/: the redesign's files, copied as they are, with hero-photos.json and map.json. Then, unless the
+    redesign is the site (redesign_on: write_redesign then writes its pages at the site's own addresses), its opening
     and a page for each place at preview/spot/<id>/, each with what its script would draw already in the HTML
     (prerender_preview) and, for a place, its own <head>. Returns how many spots have an opening photo. A page that
     has lost its noindex mark, or the live site's own rules, stops the build."""
@@ -2738,9 +2776,10 @@ def write_preview(site: Path, results: list[dict], tiles: dict | None = None, ro
     if PREVIEW_NOINDEX not in page:
         raise ValueError("preview/index.html has lost its noindex mark: the preview must stay out of search engines")
     for name in PREVIEW_RULES:
-        tag = f'<script src="../{name}"></script>'
+        tag = f'<script src="{name}"></script>'
         if tag not in page:
             raise ValueError(f"preview/index.html has lost {tag}, the live site's own rules")
+    redesign_shell(page, "../")   # every mark the build rewrites is there
     root = root or site_url()
     out = site / "preview"
     out.mkdir(parents=True, exist_ok=True)
@@ -2749,9 +2788,13 @@ def write_preview(site: Path, results: list[dict], tiles: dict | None = None, ro
     photos = hero_photos.index(results)
     (out / "hero-photos.json").write_text(json.dumps(photos, separators=(",", ":")))
     (out / "map.json").write_text(json.dumps(preview_map(tiles), separators=(",", ":")))
+    shutil.rmtree(out / "spot", ignore_errors=True)   # a spot dropped from spots.csv loses its page
+    if redesign_on():
+        # The redesign has the site's addresses: an address under preview/ opens the same page there.
+        (out / "index.html").write_text(PREVIEW_MOVED)
+        return len(photos)
     built, issued = prerender_preview(site), built_issue_time(site)   # after hero-photos.json, which the built pages show
     (out / "index.html").write_text(preview_built(page, built.get("home"), issued, home=True))
-    shutil.rmtree(out / "spot", ignore_errors=True)   # a spot dropped from spots.csv loses its page
     for r in results:
         if not SPOT_ID.fullmatch(str(r["id"])):
             continue   # as the live pages: no page of its own, it keeps ?spot=
@@ -2760,6 +2803,61 @@ def write_preview(site: Path, results: list[dict], tiles: dict | None = None, ro
         (out / "spot" / r["id"] / "index.html").write_text(
             preview_place_page(page, r, root, (built.get("spots") or {}).get(r["id"]), card, issued))
     return len(photos)
+
+
+# preview/index.html once the redesign is the site: the address someone kept from the preview opens the same page
+# at the site's own address ("?spot=<id>" is a place, anything else the opening with the same question).
+PREVIEW_MOVED = ('<!doctype html>\n<html lang="en-GB">\n<head>\n<meta charset="utf-8">\n<meta name="robots" content="noindex">\n'
+                 f'<title>{BRAND}</title>\n<script>(function () {{ var q = new URLSearchParams(location.search), id = q.get("spot"); q.delete("spot");\n'
+                 '  var rest = q.toString(); location.replace("../" + (/^[A-Za-z0-9_-]+$/.test(id || "") ? "spot/" + id + "/" : "") + (rest ? "?" + rest : "") + location.hash); })();</script>\n'
+                 f'</head>\n<body><p><a href="../">{BRAND}</a> has moved to the site\'s own address.</p></body>\n</html>\n')
+CLASSIC_NOTE = ('<p class="classic-note" style="margin:0;padding:10px 16px;background:#fff6e8;border-bottom:1px solid #e5a53a;font:400 15px/1.4 system-ui,sans-serif;color:#1b2328">'
+                f'This is the earlier version of {BRAND}, kept for what the new one does not have yet. <a href="./" style="color:#0f5a61;font-weight:600">Open the new {BRAND}</a></p>')
+CLASSIC_BASE = re.compile(r'<base href="([^"]*)">')
+
+
+def classic_page(page: str) -> str:
+    """One of the app's pages as it is published under classic/, while the redesign has the site's addresses: its
+    <base> one folder further from the site's root; data-home, from which the app makes its own pages' addresses
+    (index.html, ROOT); its links to its own home, Plan a swim and Saved under classic/; out of search engines, whose
+    page for each address is now the redesign's (its canonical link already names it); and a line at the top saying
+    what it is, with the way to the new site."""
+    if not CLASSIC_BASE.search(page) or '<html lang="en">' not in page or "<body" not in page:
+        raise ValueError("an app page has no <base>, <html lang> or <body>, which classic_page rewrites")
+    page = CLASSIC_BASE.sub(lambda m: f'<base href="../{m.group(1)[2:] if m.group(1).startswith("./") else m.group(1)}">', page, count=1)
+    page = page.replace('<html lang="en">', '<html lang="en" data-home="classic/">', 1)
+    if '<meta name="robots" content="noindex">' not in page:
+        page = page.replace("<link rel=\"canonical\"", '<meta name="robots" content="noindex">\n<link rel="canonical"', 1)
+    for a in ("./", "plan/", "saved/"):
+        page = page.replace(f'href="{a}"', f'href="classic/{"" if a == "./" else a}"')
+    return re.sub(r"(<body[^>]*>)", lambda m: m.group(1) + CLASSIC_NOTE, page, count=1)
+
+
+def write_redesign(site: Path, results: list[dict], root: str, spot_cards: dict[str, str] | None = None, cards_v: str = "",
+                   token: str | None = None, feeds: bool = False) -> int:
+    """The redesign as the site (redesign_on): its opening at index.html, a page for each place at spot/<id>/, and
+    its Plan a swim and Saved at plan/ and saved/, the app's own addresses, each with the app's page's <head> and
+    the page-view counter, and the opening and the places with what the script would draw already in the HTML.
+    Called after the app's pages are written (under classic/) and after spot/ is cleared. Returns the place pages."""
+    page = (PREVIEW / "index.html").read_text()
+    built, issued = prerender_preview(site, home=""), built_issue_time(site)
+    head = page_meta(HOME_TITLE, DESCRIPTION, root, root, feed=("feed.xml", f"{BRAND} · every spot") if feeds else None)
+    home = PREVIEW_TITLE.sub(lambda _: head, redesign_shell(page, "./", live=True), count=1)
+    (site / "index.html").write_text(with_counter(preview_built(home, built.get("home"), issued, home=True), token))
+    for folder, title, blurb, noindex in (("plan", PLAN_TITLE, PLAN_DESCRIPTION, False), ("saved", SAVED_TITLE, SAVED_DESCRIPTION, True)):
+        head = page_meta(title, blurb, f"{root}{folder}/", root, noindex=noindex)
+        (site / folder).mkdir(exist_ok=True)
+        (site / folder / "index.html").write_text(with_counter(PREVIEW_TITLE.sub(lambda _: head, redesign_shell(page, "../", live=True), count=1), token))
+    n = 0
+    for r in results:
+        if not SPOT_ID.fullmatch(str(r["id"])):
+            continue
+        card = (f"cards/spot/{r['id']}.png?v={cards_v}", spot_cards[r["id"]]) if r["id"] in (spot_cards or {}) else None
+        (site / "spot" / r["id"]).mkdir(parents=True, exist_ok=True)
+        (site / "spot" / r["id"] / "index.html").write_text(with_counter(
+            preview_place_page(page, r, root, (built.get("spots") or {}).get(r["id"]), card, issued, live=True), token))
+        n += 1
+    return n
 
 
 def site_url() -> str:
@@ -3595,11 +3693,17 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
                                              feed=("feed.xml", f"{BRAND} · every spot") if feeds else None), template, count=1)
     five = [(pd.Timestamp(day) + pd.Timedelta(days=i)).date().isoformat() for i in range(5)] if day else None
     home = home.replace(LOADING, home_lead(len(results), five, spots_where(results)), 1)
-    (site / "index.html").write_text(with_counter(home, token))
-    (site / "saved").mkdir(exist_ok=True)
-    (site / "saved" / "index.html").write_text(with_counter(saved_page(template, root), token))
-    (site / "plan").mkdir(exist_ok=True)
-    (site / "plan" / "index.html").write_text(with_counter(plan_page(template, root), token))
+    # The app's own pages: at the site's addresses, or, while the redesign has those (redesign_on), under classic/,
+    # each rewritten for where it is (classic_page). write_redesign then writes the site's addresses, below.
+    redesign = redesign_on()
+    shutil.rmtree(site / "classic", ignore_errors=True)   # none left behind when the switch goes off
+    app, placed = (site / "classic", classic_page) if redesign else (site, lambda page: page)
+    app.mkdir(exist_ok=True)
+    (app / "index.html").write_text(placed(with_counter(home, token)))
+    (app / "saved").mkdir(exist_ok=True)
+    (app / "saved" / "index.html").write_text(placed(with_counter(saved_page(template, root), token)))
+    (app / "plan").mkdir(exist_ok=True)
+    (app / "plan" / "index.html").write_text(placed(with_counter(plan_page(template, root), token)))
     (site / "data").mkdir(exist_ok=True)
     shutil.copy(PLACES, site / "data" / "places.json")   # before the data page, which lists data/
     shutil.copy(WATERS, site / "data" / "waters.json")
@@ -3612,12 +3716,15 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
         if not SPOT_ID.fullmatch(str(r["id"])):
             log.warning("spot id %r is not letters, digits and hyphens: no page of its own, it keeps ?spot=", r["id"])
             continue
-        (site / "spot" / r["id"]).mkdir(parents=True, exist_ok=True)
-        (site / "spot" / r["id"] / "index.html").write_text(with_counter(spot_page(template, r, root, tops.get(r["id"]),
+        (site / "spot" / r["id"]).mkdir(parents=True, exist_ok=True)   # also holds its sign, profile and feed, whoever has its page
+        (app / "spot" / r["id"]).mkdir(parents=True, exist_ok=True)
+        (app / "spot" / r["id"] / "index.html").write_text(placed(with_counter(spot_page(template, r, root, tops.get(r["id"]),
             (f"cards/spot/{r['id']}.png?v={cards_v}", spot_cards[r["id"]]) if r["id"] in (spot_cards or {}) else None, feeds,
-            issued=issued), token))
+            issued=issued), token)))
         write_sign(site, r, root, token)   # spot/<id>/sign/, and the QR code the live sign shows
         ids.append(r["id"])
+    if redesign:
+        write_redesign(site, results, root, spot_cards, cards_v, token, feeds)
     paged = [r for r in results if r["id"] in set(ids)]
     write_spill_durations(site, paged)   # data/research/spill_durations*, before the profiles that show them and the data page
     write_profiles(site, paged, token, root=root)   # spot/<id>/profile/, from data/upstream/

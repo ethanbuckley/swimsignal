@@ -1830,15 +1830,20 @@ const FEEDBACK = 'feedback.html?type=feedback';
 // The site root. Built pages set a relative <base> at it ("./" on the home page, "../" in saved/,
 // "../../" in spot/<id>/), resolved once as the page loads, so pushState to spot/<id>/ does not
 // move relative links; relative, so the site works at any address.
-const ROOT = new URL('./', document.querySelector('base') ? document.baseURI
+const SITE_ROOT = new URL('./', document.querySelector('base') ? document.baseURI
   : new URL(location.pathname.replace(/(spot\/[^/]+|saved|plan)\/?$/, ''), location.origin));
+// Where this app's own pages are: the site root, unless the build has published the app under a folder of it
+// (<html data-home="classic/">, build_site.classic_page: the redesign then has the root's addresses, and this app
+// keeps its own under classic/). Its pages' addresses are made from ROOT; the site's files are asked for from
+// SITE_ROOT, where the <base> points.
+const ROOT = new URL(document.documentElement.dataset.home || './', SITE_ROOT);
 // Spot ids that get their own page; scripts/build_site.py uses the same rule. Others keep ?spot=.
 const PAGE_ID = /^[A-Za-z0-9_-]+$/;
 const spotPath = id => PAGE_ID.test(id) ? `${ROOT.pathname}spot/${id}/` : `${ROOT.pathname}?spot=${encodeURIComponent(id)}`;
 const spotFromURL = () => { const m = location.pathname.match(/\/spot\/([A-Za-z0-9_-]+)\/?$/);
   return m ? m[1] : new URLSearchParams(location.search).get('spot'); };
 const savedPath = () => `${ROOT.pathname}saved/`;
-const sitesURL = (l, spots) => new URL('sites.html', ROOT).href + sitesHash(l.name, spots.map(s => s.id));   // a list as one printable page (sites.js)
+const sitesURL = (l, spots) => new URL('sites.html', SITE_ROOT).href + sitesHash(l.name, spots.map(s => s.id));   // a list as one printable page (sites.js)
 const onSavedPage = () => /\/saved\/?$/.test(location.pathname);
 const plainClick = e => !(e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0);   // not a new tab or window
 
@@ -3598,7 +3603,7 @@ function dayDetail(d, x) {
   rows.push(howSure(d, j));
   return `<div class="dd-head"><h3 class="dd-t">${when}</h3><button type="button" class="linkbtn" id="day-close">Close<span class="sr"> ${when}</span></button></div>`
     + `<div class="factors">${rows.join('')}${standing(d, x.date)}</div>`
-    + (d.unlisted ? '' : `<p class="sub dd-rec"><a href="${esc(ROOT.pathname)}record.html#spot=${esc(encodeURIComponent(d.id))}&amp;day=${x.date}">Print a decision record</a></p>`);   // record.js
+    + (d.unlisted ? '' : `<p class="sub dd-rec"><a href="${esc(SITE_ROOT.pathname)}record.html#spot=${esc(encodeURIComponent(d.id))}&amp;day=${x.date}">Print a decision record</a></p>`);   // record.js
 }
 // The open day is in the address (spot/<id>/#day=2026-10-01), so a link can open it. After the #,
 // so it never reaches a server; a day that has left the forecast opens the summary.
@@ -6874,7 +6879,7 @@ window.addEventListener('appinstalled', () => { INSTALL = null; document.getElem
 // kept in this browser; turning the copy off removes the worker and everything it stored.
 const OFFLINE_KEY = 'dipcast.offline';
 const offlineOff = () => { try { return localStorage.getItem(OFFLINE_KEY) === 'off'; } catch (e) { return false; } };
-const registerSW = () => navigator.serviceWorker.register(new URL('sw.js', ROOT)).catch(() => {});
+const registerSW = () => navigator.serviceWorker.register(new URL('sw.js', SITE_ROOT)).catch(() => {});
 async function setOffline(on) {   // returns false when the browser would not keep the choice
   let kept = true;
   try { if (on) localStorage.removeItem(OFFLINE_KEY); else localStorage.setItem(OFFLINE_KEY, 'off'); } catch (e) { kept = false; }

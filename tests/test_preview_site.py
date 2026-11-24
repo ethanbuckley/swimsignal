@@ -52,17 +52,21 @@ def test_the_build_publishes_the_preview_beside_the_live_pages(tmp_path):
     page, css, js = ((out / n).read_text() for n in ("index.html", "preview.css", "app.js"))
     assert bs.PREVIEW_NOINDEX in page
     # What it loads from the live site exists where it asks for it.
-    for src in ("../levels.js", "../eatoday.js", "../experience.js", "../lists.js", "../plan.js", "../fonts/SourceSans3-latin.woff2", "../fonts/SourceSerif4-latin.woff2", "../icons/icon.svg",
-                "../icons/fells.webp", "../icons/fells-wide.webp"):
-        assert src in page or src in css, src
-        assert (out / src).resolve().is_file(), src
-    for asked in ("'../data/spots-lite.json'", "'hero-photos.json'", "'../data/postcodes.json'", "'../data/places.json'", "../guides/photos/"):
+    # The page asks from the site's root, where its <base> points; its stylesheet asks from where it is, preview/.
+    assert '<base href="../">' in page and 'data-home="preview/"' in page
+    for src in ("levels.js", "eatoday.js", "experience.js", "lists.js", "plan.js", "fonts/SourceSans3-latin.woff2", "fonts/SourceSerif4-latin.woff2",
+                "icons/icon.svg", "preview/preview.css", "preview/app.js", "preview/model.js", "preview/map.js", "preview/alerts.js"):
+        assert f'"{src}"' in page, src
+        assert (tmp_path / src).is_file(), src
+    for src in ("../icons/fells.webp", "../icons/fells-wide.webp", "../fonts/SourceSerif4-latin.woff2"):
+        assert src in css and (out / src).resolve().is_file(), src
+    for asked in ("'data/spots-lite.json'", "'preview/hero-photos.json'", "'data/postcodes.json'", "'data/places.json'", "guides/photos/"):
         assert asked in js, asked
     assert (tmp_path / "data" / "places.json").is_file() and (tmp_path / "data" / "postcodes.json").is_file()
     # The map library, the worker the alerts arrive through and the pages the views link to are the live site's own.
     for asked in ("vendor/leaflet/leaflet.js", "vendor/leaflet/leaflet.css", "sw.js", "privacy.html"):
         assert (tmp_path / asked).is_file(), asked
-    for asked in ("'../vendor/leaflet/leaflet.js'", "'../vendor/leaflet/leaflet.css'"):
+    for asked in ("'vendor/leaflet/leaflet.js'", "'vendor/leaflet/leaflet.css'", "'preview/map.json'"):
         assert asked in (out / "map.js").read_text(), asked
     tiles = json.loads((out / "map.json").read_text())   # no provider chosen: OpenStreetMap's, in index.html's own colours
     assert tiles["url"] == bs.TILE_PROVIDERS["osm"]["url"] and tiles["credit"] == bs.OSM_ATTRIBUTION
@@ -126,8 +130,9 @@ def test_each_place_has_a_page_of_its_own_with_its_head_and_a_base(tmp_path):
     assert sorted(p.name for p in (out / "spot").iterdir()) == ["a", "b"]
     page = (out / "spot" / "a" / "index.html").read_text()
     head = page.split("</head>")[0]
-    # The <base> comes before every relative address, so each means what it means on the opening.
-    assert head.index('<base href="../../">') < head.index('href="../fonts/') < head.index('href="preview.css"')
+    # The <base> is the site's root from there, before every relative address, so each means what it means on the opening.
+    assert head.index('<base href="../../../">') < head.index('href="fonts/') < head.index('href="preview/preview.css"')
+    assert head.count("<base ") == 1 and 'data-home="preview/"' in page
     assert f"<title>{bs.spot_title(SPOTS[0])}</title>" in head and "SwimSignal preview" not in head   # the live page's own title
     assert '<link rel="canonical" href="https://example.org/preview/spot/a/">' in head
     assert '<meta property="og:image" content="https://example.org/cards/spot/a.png?v=202611241321">' in head
@@ -146,8 +151,10 @@ def test_a_place_page_as_the_sites_own_would_be_indexed_at_the_sites_address():
     shell = (bs.PREVIEW / "index.html").read_text()
     page = bs.preview_place_page(shell, _forecast_spot(), "https://example.org/", live=True)
     assert '<link rel="canonical" href="https://example.org/spot/a/">' in page
-    assert "noindex" not in page
+    assert "noindex" not in page and "SwimSignal preview" not in page and "A redesign kept beside" not in page and "one\n     folder down" not in page
     assert '"@type":"Place"' in page and '"@id":"https://example.org/spot/a/#place"' in page
+    assert '<base href="../../">' in page and '<html lang="en-GB" data-home="">' in page and page.count("<base ") == 1
+    assert '<link rel="manifest" href="manifest.webmanifest">' in page   # the Home Screen app opens these pages
     assert "noindex" in bs.preview_place_page(shell, _forecast_spot(), "https://example.org/")
 
 
@@ -176,10 +183,11 @@ def test_the_built_pages_hold_what_the_script_would_draw(tmp_path):
     home = (tmp_path / "preview" / "index.html").read_text()
     assert '<div id="app" data-built>' in home and "Where do you swim?" in home and "Yorkshire" in home
     # The opening's search and lists are the script's: without it, the reader is sent to the list of every spot.
-    assert 'This page needs JavaScript to search for a place' in home and '<a href="../spots.html">Every spot</a>' in home
+    assert 'This page needs JavaScript to search for a place' in home and '<a href="spots.html">Every spot</a>' in home
     assert bs.PREVIEW_NOINDEX in home and bs.PREVIEW_NOINDEX in place
-    for tag in ('<script src="../levels.js"></script>', '<script src="app.js"></script>'):
+    for tag in ('<script src="levels.js"></script>', '<script src="preview/app.js"></script>'):
         assert tag in place and tag in home
+    assert 'href="preview/spot/a/?day=2026-11-28"' in place   # its links, from the site's root
 
 
 def test_a_preview_page_that_lost_its_noindex_mark_stops_the_build(tmp_path, monkeypatch):
@@ -198,7 +206,88 @@ def test_a_preview_page_that_lost_the_live_sites_rules_stops_the_build(tmp_path,
     src = tmp_path / "preview"
     src.mkdir()
     for name in bs.PREVIEW_FILES:
-        (src / name).write_text((bs.PREVIEW / name).read_text().replace('<script src="../lists.js"></script>', ""))
+        (src / name).write_text((bs.PREVIEW / name).read_text().replace('<script src="lists.js"></script>', ""))
     monkeypatch.setattr(bs, "PREVIEW", src)
     with pytest.raises(ValueError, match="lists.js"):
         bs.write_preview(tmp_path / "site", SPOTS)
+
+
+# ------------------------------------------------------------------------------------------------ the switch
+def _site(tmp_path, monkeypatch, on):
+    bs = _build_site()
+    if on:
+        monkeypatch.setenv(bs.REDESIGN_ENV, "1")
+    else:
+        monkeypatch.delenv(bs.REDESIGN_ENV, raising=False)
+    out = tmp_path / ("on" if on else "off")
+    out.mkdir()
+    bs.write_pages(out, SPOTS, root="https://example.org/", spot_cards={"a": "River A: low risk today"}, cards_v="1")
+    return bs, out
+
+
+def test_the_switch_is_one_value_and_anything_else_is_off(monkeypatch):
+    bs = _build_site()
+    for value, on in (("1", True), (" 1 ", True), ("", False), ("0", False), ("true", False), ("yes", False)):
+        monkeypatch.setenv(bs.REDESIGN_ENV, value)
+        assert bs.redesign_on() is on, value
+    monkeypatch.delenv(bs.REDESIGN_ENV)
+    assert bs.redesign_on() is False
+    assert "DIPCAST_REDESIGN: ${{ vars.DIPCAST_REDESIGN }}" in (ROOT / ".github/workflows/site.yml").read_text()
+
+
+def test_switched_off_the_app_has_the_sites_addresses_and_there_is_no_classic(tmp_path, monkeypatch):
+    bs, site = _site(tmp_path, monkeypatch, False)
+    assert not (site / "classic").exists()
+    for page in ("index.html", "spot/a/index.html", "plan/index.html", "saved/index.html"):
+        text = (site / page).read_text()
+        assert '<html lang="en">' in text and "data-home" not in text.split("</head>")[0] and "classic" not in text.split("<script")[0], page
+    assert (site / "preview" / "spot" / "a" / "index.html").is_file()
+
+
+def test_switched_on_the_redesign_has_the_sites_addresses_and_the_app_is_under_classic(tmp_path, monkeypatch):
+    bs, site = _site(tmp_path, monkeypatch, True)
+    home = (site / "index.html").read_text()
+    place = (site / "spot" / "a" / "index.html").read_text()
+    for name, page, base in (("home", home, "./"), ("place", place, "../../"), ("plan", (site / "plan" / "index.html").read_text(), "../"),
+                             ("saved", (site / "saved" / "index.html").read_text(), "../")):
+        head = page.split("</head>")[0]
+        assert '<html lang="en-GB" data-home="">' in page and head.count("<base ") == 1 and f'<base href="{base}">' in head, name
+        assert '<script src="preview/app.js"></script>' in page and '<link rel="manifest" href="manifest.webmanifest">' in head, name
+        assert "SwimSignal preview" not in page and "This preview" not in page, name
+        assert ("noindex" in head) is (name == "saved"), name   # Saved is this browser's own list, as the app's page is
+    assert f"<title>{bs.HOME_TITLE}</title>" in home and '<link rel="canonical" href="https://example.org/">' in home
+    assert '<link rel="canonical" href="https://example.org/spot/a/">' in place and '"@type":"Place"' in place
+    assert '<meta property="og:image" content="https://example.org/cards/spot/a.png?v=1">' in place
+    assert '<link rel="canonical" href="https://example.org/plan/">' in (site / "plan" / "index.html").read_text()
+    # The same addresses are in the sitemap as before, and the place still has its sign beside its page.
+    assert "<loc>https://example.org/spot/a/</loc>" in (site / "sitemap.xml").read_text()
+    assert (site / "spot" / "a" / "sign" / "index.html").is_file()
+    # The app, whole, one folder down: its files asked for from the site's root, its own pages under classic/.
+    for page, base in (("index.html", "../"), ("spot/a/index.html", "../../../"), ("plan/index.html", "../../"), ("saved/index.html", "../../")):
+        text = (site / "classic" / page).read_text()
+        head = text.split("</head>")[0]
+        assert f'<base href="{base}">' in head and head.count("<base ") == 1, page
+        assert '<html lang="en" data-home="classic/">' in text and '<meta name="robots" content="noindex">' in head, page
+        assert "This is the earlier version of SwimSignal" in text and 'href="classic/plan/"' in text and 'href="classic/saved/"' in text, page
+        assert 'href="plan/"' not in text and 'href="saved/"' not in text and 'href="./" id="nav-list"' not in text, page
+    assert '<link rel="canonical" href="https://example.org/spot/a/">' in (site / "classic" / "spot" / "a" / "index.html").read_text()
+    # An address kept from the preview opens the same page at the site's own address; its files stay where they were.
+    moved = (site / "preview" / "index.html").read_text()
+    assert 'location.replace("../"' in moved and "noindex" in moved
+    assert not (site / "preview" / "spot").exists() and (site / "preview" / "app.js").is_file()
+    # Switched off again, the next build is as it was: nothing of classic/ is left.
+    monkeypatch.delenv(bs.REDESIGN_ENV)
+    bs.write_pages(site, SPOTS, root="https://example.org/")
+    assert not (site / "classic").exists() and '<html lang="en">' in (site / "index.html").read_text()
+
+
+def test_the_app_makes_its_own_addresses_from_one_root_and_asks_the_site_from_another():
+    """index.html: ROOT is where the app's pages are (the site's root, or classic/), SITE_ROOT where the site's
+    files are. The worker, the printable list, the record page and a kept outing's files are the site's."""
+    app = (ROOT / "src/dipcast/site/index.html").read_text()
+    assert "const ROOT = new URL(document.documentElement.dataset.home || './', SITE_ROOT);" in app
+    for line in ("navigator.serviceWorker.register(new URL('sw.js', SITE_ROOT))", "new URL('sites.html', SITE_ROOT).href",
+                 "${esc(SITE_ROOT.pathname)}record.html#spot="):
+        assert line in app, line
+    assert "new URL('sw.js', ROOT)" not in app
+    assert "fetch(new URL(p, SITE_ROOT).href" in (ROOT / "src/dipcast/site/outingpack.js").read_text()

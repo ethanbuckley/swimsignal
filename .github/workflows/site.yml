@@ -175,6 +175,9 @@ jobs:
           # River line in winter (docs/RIVER-WINTER-LINE-2026-11.md): 1 adds one word to today's day at river spots from
           # October to April and a paragraph to the method page; unset = off, and nothing differs. Ethan's decision.
           DIPCAST_RIVER_WINTER_LINE: ${{ vars.DIPCAST_RIVER_WINTER_LINE }}
+          # The redesign as the site: 1 publishes it at /, spot/<id>/, plan/ and saved/, and the app under classic/
+          # (docs/DESIGN.md, "The switch"). Unset, every page is as before and the redesign stays at preview/.
+          DIPCAST_REDESIGN: ${{ vars.DIPCAST_REDESIGN }}
           # Open-Meteo's paid plan (README, "Rainfall API"): its key; unset = the free, non-commercial API.
           # In this step only, so the tests never hold it; the code keeps it out of logs and pages.
           DIPCAST_OPEN_METEO_KEY: ${{ secrets.DIPCAST_OPEN_METEO_KEY }}
