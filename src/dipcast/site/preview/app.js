@@ -675,6 +675,39 @@ function behindHtml(s, day) {
 // The space before a stop on the line, in px, from the water between it and the one before: the square root keeps a
 // 30 km gap readable beside a 300 m one.
 const gapPx = km => Math.round(Math.min(72, 6 + 16 * Math.sqrt(Math.max(0, km))));
+// The spill map (plume.js, the live site's own; docs/PLUME-MAP-2026-10.md): where water from the spills reported
+// upstream in the last 48 hours may be, moved at the forecast's travel time, with a slider from 48 hours before the
+// update to 48 after. A model estimate, said so on every line. After "Upstream" on a listed place with a daily
+// forecast. The script, the map's library and the place's three files (its routes, the replay and the trace) are
+// asked for when its place on the page comes within a screen of view, not before. A place with no routes file (a
+// lake, or one the build could not place) loses the section quietly. What is drawn is kept and put back when the
+// page is drawn again, so the slider stays where it was left.
+let plume = null, plumeLib = null;   // plume: { id, el, map }
+const plumeWanted = s => !s.unlisted && !!s.detail_file && daily(s);
+const plumeGone = () => { if (plume && plume.map) plume.map.remove(); plume = null; };
+function mountPlume(s) {
+  const slot = document.getElementById('plume-slot'); if (!slot) { plumeGone(); return; }
+  if (plume && plume.id === s.id) { slot.replaceWith(plume.el); return; }
+  plumeGone();
+  // Empty, it takes no room and draws no rule, but is still on the page for the browser to say when it is near.
+  const el = document.createElement('div'); el.id = 'plume-host'; el.className = 'spill'; slot.replaceWith(el);
+  const mine = plume = { id: s.id, el, map: null };
+  const go = () => {
+    plumeLib = plumeLib || new Promise((ok, no) => { const sc = document.createElement('script'); sc.src = 'plume.js'; sc.onload = ok; sc.onerror = no; document.head.appendChild(sc); });
+    plumeLib.catch(() => { plumeLib = null; });
+    const get = p => loadJson(`data/${s.detail_file.replace(/\.json$/, p)}`).catch(() => null);
+    Promise.all([plumeLib, window.PVMap.load(), get('-plume.json'), get('-replay.json'), get('-trace.json')]).then(([, , doc, replay, trace]) => {
+      if (plume !== mine) return;
+      if (!doc || !replay) return;
+      const gen = Date.parse((replay.window && replay.window.to) || doc.generated_at);
+      window.tiles = window.PVMap.tiles;   // plume.js draws on the page's own tiles where the page has them, by this name
+      plumeStyle(document); el.classList.add('on'); el.innerHTML = plumeTile(s, doc, replay, gen, now()); mine.map = plumeBind(el, s, doc, replay, trace, gen);
+    }).catch(() => { if (plume === mine) { el.classList.add('on'); el.innerHTML = '<p class="meta">The map of where spill water may be could not be loaded.</p>'; } });
+  };
+  if (!('IntersectionObserver' in window)) { go(); return; }
+  const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { io.disconnect(); go(); } }, { rootMargin: '100% 0px' });
+  io.observe(el);
+}
 function upstreamHtml(s, day) {
   const got = details.get(s.id), head = '<h2 id="upstream-h">Upstream</h2>';
   if (!daily(s)) return `<section class="upstream" id="upstream" aria-labelledby="upstream-h">${head}<p class="sec-lede">${isolated(s) ? 'No river or beck is drawn into this lake, so no monitored overflow can be traced to it.' : 'The trace found no monitored storm overflow on the river network upstream of here.'}</p>
@@ -813,7 +846,7 @@ function placeHtml() {
         ${answerHtml(s, day)}</div>
       ${condsHtml(s, day)}
     </div>
-    <div class="more">${behindHtml(s, day)}${upstreamHtml(s, day)}${nearbyHtml(s, day)}</div>
+    <div class="more">${behindHtml(s, day)}${upstreamHtml(s, day)}${plumeWanted(s) ? '<div id="plume-slot"></div>' : ''}${nearbyHtml(s, day)}</div>
     ${recordHtml(s)}
     ${s.unlisted ? `<section class="theplace" aria-labelledby="place-h"><h2 id="place-h">This point</h2><p class="sec-lede">Not one of the listed places: nobody has checked it by hand, and it has no rain forecast of its own and no E.&nbsp;coli estimate.${s.rain_km ? ` Rain is from the forecast for the area next to this point's, about ${esc(s.rain_km)} km away.` : ''}</p>${requestHtml(s)}</section>` : placeFactsHtml(s)}
     ${logHtml(s)}
@@ -939,7 +972,7 @@ function draw(opts = {}) {
     else if (route.view === 'saved' && homeDay() === today() && !readShared(location.hash, dates())) lookedAt(shownList(LISTS).spots.map(spotOf).filter(Boolean), DATA.generated_at, saved); }
   if (s) { const typing = swim && swim.id === s.id && active && swim.el.contains(active) ? active : null;
     const writing = jlog && jlog.id === s.id && active && jlog.el.contains(active) ? active : null;
-    mountRecord(s); mountLog(s); mountSwimmers(s); if (typing || writing) (typing || writing).focus({ preventScroll: true }); } else { swim = null; rec = null; jlog = null; }
+    mountPlume(s); mountRecord(s); mountLog(s); mountSwimmers(s); if (typing || writing) (typing || writing).focus({ preventScroll: true }); } else { swim = null; rec = null; jlog = null; plumeGone(); }
   if (route.view === 'saved' && !readShared(location.hash, dates())) { mountJournal(); mountCompare(); } else jsaved = null;
   // Whether alerts are on is the browser's to say, and it answers a moment after the page is drawn.
   if (route.view === 'saved' && DATA.push && alertsOn === null && window.PVAlerts.can() === 'yes') window.PVAlerts.isOn().catch(() => false).then(on => { alertsOn = on; redrawAlerts(); });

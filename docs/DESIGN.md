@@ -3044,6 +3044,24 @@ worker was still not started in a browser that had turned it off. What was missi
 **Checked:** in a browser on a local build with the switch on (below, in the pull request). **Not checked:** the
 counter's row on the live site, which needs the build's token.
 
+### Ported: the spill map, "Where spill water may be" (24 November 2026, night)
+
+The live page's spill map (`plume.js`, docs/PLUME-MAP-2026-10.md), which was only at `classic/` after the switch.
+
+- **Already decided:** everything it shows and says. It is the live script, loaded unchanged: the official notice
+  first, "A model estimate of where water from reported spills may be, not a measurement of pollution", the
+  slider from 48 hours before the update to 48 after, the key, the words under the map, the two folds. The script,
+  the map's library and the place's three files are asked for when its place on the page is within a screen of
+  view, as on the live page.
+- **New:** its place, after "Upstream" and before "Elsewhere today", with its heading as a section's on this page.
+  It draws on the redesign's own map tiles. Kept through a redraw, so a day picked does not move the slider.
+- For a listed place with a daily forecast. A place with no routes file (a lake) shows nothing, with no rule or gap.
+
+**Checked:** in-app browser at 375 px on the live forecast: Ilkley's map with its two overflows, the slider moved
+and its words following, a day picked with the slider and the map staying put; Wastwater has none. **Not checked:**
+Play, which did not advance in the hidden browser pane (it runs on animation frames, which a hidden page does not
+get); a place with a spill's water drawn (none was reported upstream of the places tried); 1,440 px by eye.
+
 ### Ported: reviews, notes on a visit and reports of illness (24 November 2026, night)
 
 The redesign went live at 19:53 UTC on 24 November 2026 (`DIPCAST_REDESIGN=1`, #738), and Ethan said to port what
