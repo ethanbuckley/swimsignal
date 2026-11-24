@@ -72,6 +72,9 @@ self.addEventListener('fetch', e => {
   if (!here) return;                                            // tiles, the page-view counter: not ours to keep
   if (url.pathname.endsWith('/data/overflows.geojson') || url.pathname.includes('/data/overflows/') || url.pathname.includes('/reviews/photos/')) return;
   if (url.pathname.endsWith('.xml')) return;                    // the Atom feeds and the sitemap: for readers and crawlers, not the app
+  // The redesign preview (preview/, docs/DESIGN.md): its own page beside the app, not part of the offline copy. Left
+  // to the browser, or a slow first visit would be handed the app's home page in its place (the stand-in below).
+  if (url.pathname.includes('/preview/')) return;
   // The stylesheet changes with the pages; a library in vendor/ changes only with its version.
   const fresh = req.mode === 'navigate' || (/\.(html|json|js|css)$/.test(url.pathname) && !url.pathname.includes('/vendor/'));
   e.respondWith(fresh ? networkFirst(req) : storedFirst(req));

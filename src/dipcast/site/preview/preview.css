@@ -21,6 +21,8 @@
   --lift: 0 1px 2px rgba(0, 0, 0, .12), 0 0 0 1px var(--hair);
   /* The river of the line upstream: the mark's river, let down into the paper. */
   --river: #b9dcd6;
+  /* An overflow with no current reading: a dashed ring, 3.5:1 on the paper, so the mark can be seen as well as read. */
+  --ov-none: #7b848c;
   --gutter: 16px;
 }
 @media (max-width: 800px) { :root { --fs-title: 30px; } }
@@ -227,6 +229,8 @@ button { font: inherit; color: inherit; }
 
 /* Upstream: the river as a line. This place is the mark's ring; each overflow is a stop, set off by the water
    between it and the last. */
+/* While the list is read its place is held, so the places elsewhere do not jump when it arrives. */
+.upstream.loading { min-height: 560px; }
 .line { position: relative; margin-top: 16px; }
 .line::before { content: ""; position: absolute; left: 68px; top: 12px; bottom: 8px; width: 6px; border-radius: 3px; background: var(--river); }
 .stop { position: relative; display: grid; grid-template-columns: 52px 26px minmax(0, 1fr); column-gap: 6px; align-items: start; }
@@ -234,7 +238,7 @@ button { font: inherit; color: inherit; }
 .node { justify-self: center; width: 16px; height: 16px; margin-top: 3px; border-radius: 50%; background: var(--card); border: 2px solid var(--ov-quiet); position: relative; z-index: 1; }
 .is-here .node { width: 24px; height: 24px; margin-top: 0; border: 6px solid var(--brand); background: var(--bg); }
 .is-spilling .node { background: var(--veryhigh); border-color: var(--veryhigh); box-shadow: 0 0 0 3px var(--bg); }
-.is-unknown .node { background: var(--bg); border: 2px dashed var(--unknown); }
+.is-unknown .node { background: var(--bg); border: 2px dashed var(--ov-none); }
 .is-place .node { width: 12px; height: 12px; margin-top: 6px; background: var(--brand); border: 2px solid var(--bg); }
 .is-rest .node { width: 6px; height: 6px; margin-top: 8px; border: 0; background: var(--ov-quiet); }
 .is-end .node { width: 18px; height: 3px; margin-top: 10px; border: 0; border-radius: 2px; background: var(--ov-quiet); }
@@ -250,7 +254,7 @@ button { font: inherit; color: inherit; }
 .key { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: var(--fs-meta); color: var(--muted); }
 .key .k { display: inline-flex; align-items: center; gap: 6px; }
 .key i { width: 12px; height: 12px; border-radius: 50%; background: var(--card); border: 2px solid var(--ov-quiet); }
-.key .is-spilling i { background: var(--veryhigh); border-color: var(--veryhigh); } .key .is-unknown i { background: var(--bg); border: 2px dashed var(--unknown); }
+.key .is-spilling i { background: var(--veryhigh); border-color: var(--veryhigh); } .key .is-unknown i { background: var(--bg); border: 2px dashed var(--ov-none); }
 .below { margin-top: 12px; font-size: var(--fs-note); }
 
 /* Elsewhere on the day shown. */

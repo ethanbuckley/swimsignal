@@ -40,6 +40,15 @@ test('the page is out of search engines, shares only the rules, and keeps the li
   assert.deepEqual([...sizes], [], 'every font size is one of the six tokens');
 });
 
+test('nothing in the scripts stops an older iPhone', () => {
+  for (const [name, text] of [['app.js', JS], ['model.js', MODEL]]) {
+    assert.doesNotMatch(text, /\(\?<[=!]/, `${name}: a lookbehind is refused by Safari before 16.4, and stops the whole script`);
+    assert.doesNotMatch(text, /behavior:\s*'instant'/, `${name}: refused by Safari before 15.4`);
+    assert.doesNotMatch(text, /\.at\(|structuredClone|\?\?=|\|\|=|&&=/, name);
+  }
+  assert.match(PAGE, /<link rel="preload" href="\.\.\/data\/spots-lite\.json" as="fetch" crossorigin>/);
+});
+
 test('nothing is called safe or clean, and no em-dash is written', () => {
   for (const [name, text] of [['index.html', PAGE], ['app.js', JS], ['model.js', MODEL], ['preview.css', CSS]]) {
     assert.doesNotMatch(text.replace(/env\(safe-area-inset-top\)/g, ''), /\b(safe|clean|safely|cleaner)\b/i, name);

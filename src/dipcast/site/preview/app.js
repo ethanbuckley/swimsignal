@@ -87,6 +87,12 @@ function homeHtml() {
     ${foot()}
   </main>`;
 }
+// The place whose photo stands for each area, picked by eye on 24 November 2026 from the photos the guides hold: open
+// water in good light, level horizon, no boat or sign filling the frame. An area not named here, or whose place has
+// gone, takes its first landscape photo.
+const AREA_PHOTO = { 'Cumbria and the Lake District': 'wastwater', Yorkshire: 'bw-uke4100-08901', Scotland: 'scot-lomond-rowardennan', 'Thames Valley': 'thames-lechlade',
+  'South West': 'teign-fingle-bridge', 'Severn and the Welsh borders': 'bw-ukg2200-36060', 'East of England': 'cam-grantchester', 'South and South East': 'bw-ukj3308-19001',
+  'Peak District and Sheffield': 'derwent-slippery-stones', London: 'bw-uki1101-11920', Midlands: 'bw-ukf2208-09701', 'North East': 'tees-low-force', Lancashire: 'lune-crook-o-lune' };
 // Everything under the day control: what was searched for, or a picked area, or the first look.
 function resultsHtml(day) {
   const q = (route.q || '').trim(); let out = '';
@@ -100,7 +106,9 @@ function resultsHtml(day) {
     if (!points.length && PLACES) points = P.findTowns(PLACES.places, q);
     const shown = new Set(hits.map(p => p.id));
     for (const t of points) out += `<section class="block"><h2>Near ${esc(t.name)}</h2>${rows(P.nearest(DATA.spots.filter(p => !shown.has(p.id)), t, day, 5), day)}<p class="meta">Miles in a straight line from ${esc(t.name)}.</p></section>`;
-    if (!hits.length && !points.length) out += `<p class="none">${(pc ? POSTCODES : PLACES) ? `Nothing found for “${esc(q)}”. Try a river, a lake, a town or the first half of a postcode.` : 'Looking…'}</p>`;
+    // A postcode that is not in the file (Northern Ireland's are not) is said as that, in the live page's words.
+    if (!hits.length && !points.length) out += `<p class="none">${!(pc ? POSTCODES : PLACES) ? 'Looking…' : pc ? `No postcode found for “${esc(q)}”: type a town, a village or a river.`
+      : `Nothing found for “${esc(q)}”. Try a river, a lake, a town or the first half of a postcode.`}</p>`;
     return out;
   }
   if (route.area) {
@@ -112,7 +120,8 @@ function resultsHtml(day) {
   if (mine.length) out += `<section class="block"><h2>Your places</h2>${rows(mine.map(p => P.placeRow(p, day)), day)}</section>`;
   const used = [];
   out += `<section class="block"><h2>${mine.length || here ? 'Every area' : 'Or pick an area'}</h2><ul class="areas">${P.areas(DATA.spots, day).map(a => {
-    const id = a.ids.find(i => photoOf(i) && photoOf(i).w / photoOf(i).h >= 1.3) || a.ids.find(photoOf), p = id && photoOf(id);
+    const id = (AREA_PHOTO[a.name] && a.ids.includes(AREA_PHOTO[a.name]) && photoOf(AREA_PHOTO[a.name]) ? AREA_PHOTO[a.name] : '')
+      || a.ids.find(i => photoOf(i) && photoOf(i).w / photoOf(i).h >= 1.3) || a.ids.find(photoOf), p = id && photoOf(id);
     if (p) used.push([id, p]);
     return `<li><a class="area" href="${link({ area: a.name, day })}">${p ? `<img src="../guides/photos/${encodeURIComponent(p.file)}" width="${p.w}" height="${p.h}" alt="" loading="lazy" decoding="async">` : `<span class="noimg">${IC.water}</span>`}
       <span class="area-name">${esc(a.name)}</span><span class="area-n">${a.n} places · ${a.low} at low risk ${esc(dayWord(day))}</span></a></li>`; }).join('')}</ul>
@@ -120,16 +129,21 @@ function resultsHtml(day) {
   return out;
 }
 const loadJson = async path => { const r = await fetch(path); if (!r.ok) throw new Error(`${path}: ${r.status}`); return r.json(); };
-async function typed(v) {
+// The towns or the postcodes, read the first time one is searched for, then the results drawn again with them. A
+// search that arrives in the address (a link, or Back from a place) needs them as much as one being typed.
+async function nearWords(v) {
+  if (v.trim().length < 2 || (P.postcodeKeys(v) ? POSTCODES : PLACES)) return;
+  try {
+    if (P.postcodeKeys(v)) POSTCODES = await loadJson('../data/postcodes.json');
+    else PLACES = await loadJson('../data/places.json');
+  } catch (e) { PLACES = PLACES || { places: [] }; POSTCODES = POSTCODES || { sectors: {}, districts: {} }; }
+  const again = document.getElementById('results'); if (again && route.screen === 'find' && (route.q || '') === v) again.innerHTML = resultsHtml(homeDay());
+}
+function typed(v) {
   route.q = v; route.area = '';
   history.replaceState(null, '', link(route));
-  const day = homeDay(), box = document.getElementById('results'); if (box) box.innerHTML = resultsHtml(day);
-  if (v.trim().length < 2) return;
-  try {
-    if (P.postcodeKeys(v) && !POSTCODES) POSTCODES = await loadJson('../data/postcodes.json');
-    else if (!PLACES) PLACES = await loadJson('../data/places.json');
-  } catch (e) { PLACES = PLACES || { places: [] }; POSTCODES = POSTCODES || { sectors: {}, districts: {} }; }
-  const again = document.getElementById('results'); if (again && route.q === v) again.innerHTML = resultsHtml(day);
+  const box = document.getElementById('results'); if (box) box.innerHTML = resultsHtml(homeDay());
+  nearWords(v);
 }
 function locate(after) {
   const note = t => { hereNote = t; const n = document.getElementById('here-note'); if (n) n.textContent = t; };
@@ -152,7 +166,10 @@ function officialHtml(o) {
 }
 function answerHtml(s, day) {
   const a = P.answer(s, day, DATA, now()), o = P.official(s), issued = P.issuedWords(DATA, now()), steps = P.nextSteps(s, day, DATA.spots, miles);
-  const [first, ...rest] = String(a.act || '').split(/(?<=[.:])\s+/), raised = rank(a.level) >= 1 || !!o;
+  // The action's first sentence, up to its first full stop or colon, is the bold one. Split without a lookbehind:
+  // Safari before 16.4 refuses that pattern, and one refused pattern stops the whole script.
+  const act = String(a.act || ''), cut = act.search(/[.:]\s/), first = cut < 0 ? act : act.slice(0, cut + 1), rest = cut < 0 ? '' : act.slice(cut + 2);
+  const raised = rank(a.level) >= 1 || !!o;
   const btn = (st, primary) => st.kind === 'nearby' ? `<a class="btn${primary ? ' primary' : ''}" href="#nearby" data-do="jump" data-to="nearby">${esc(st.label)}${IC.down}</a>`
     : st.kind === 'day' ? `<a class="btn${primary ? ' primary' : ''}" href="${link({ id: s.id, day: st.date })}" data-day="${st.date}">${esc(st.label)}</a>`
     : `<p class="act-none">${esc(st.label)}. <a href="#nearby" data-do="jump" data-to="nearby">See what is nearby</a></p>`;
@@ -165,7 +182,7 @@ function answerHtml(s, day) {
     ${a.why.length ? `<p class="why">${a.why.map(esc).join(' ')}</p>` : ''}
     ${a.clears ? `<p class="why">${esc(a.clears)}</p>` : ''}
     ${a.apart ? `<p class="apart">${esc(a.apart)}</p>` : ''}
-    ${raised ? `<div class="act"><p class="act-line"><b>${esc(first)}</b>${rest.length ? ' ' + esc(rest.join(' ')) : ''}</p>${steps.length ? `<div class="act-go">${steps.map((st, i) => btn(st, i === 0)).join('')}</div>` : ''}${unchecked}</div>`
+    ${raised ? `<div class="act"><p class="act-line"><b>${esc(first)}</b>${rest ? ' ' + esc(rest) : ''}</p>${steps.length ? `<div class="act-go">${steps.map((st, i) => btn(st, i === 0)).join('')}</div>` : ''}${unchecked}</div>`
       : `<p class="act-plain">${esc(a.act)} <a href="#nearby" data-do="jump" data-to="nearby">Compare places nearby</a></p>${unchecked}`}
     ${a.notes.map(t => `<p class="scope">${esc(t)}</p>`).join('')}
     <p class="issued">${esc(issued.text)} · A forecast, not a water test: check the signs at the water.</p>
@@ -202,7 +219,7 @@ function upstreamHtml(s, day) {
   if (!daily(s)) return `<section class="upstream" id="upstream" aria-labelledby="upstream-h">${head}<p class="sec-lede">${isolated(s) ? 'No river or beck is drawn into this lake, so no monitored overflow can be traced to it.' : 'The trace found no monitored storm overflow on the river network upstream of here.'}</p>
     <ol class="line"><li class="stop is-here"><span class="km"></span><span class="node" aria-hidden="true"></span><span class="stop-body"><b>${esc(s.name)}</b><span class="st">This place.</span></span></li>
     <li class="stop is-end" style="margin-top:28px"><span class="km"></span><span class="node" aria-hidden="true"></span><span class="stop-body"><span class="st">Nothing monitored upstream within ${(s.assumptions || {}).max_upstream_km ?? 60} km. Unmonitored outfalls and runoff are not traced.</span></span></li></ol></section>`;
-  if (got === undefined) return `<section class="upstream" id="upstream" aria-labelledby="upstream-h">${head}<p class="meta">Reading the overflows upstream…</p></section>`;
+  if (got === undefined) return `<section class="upstream loading" id="upstream" aria-labelledby="upstream-h">${head}<p class="meta">Reading the overflows upstream…</p></section>`;
   const L = P.riverLine(s, got && got.up, got && got.detail, DATA.spots, now(), day);
   if (!L.items.length) return `<section class="upstream" id="upstream" aria-labelledby="upstream-h">${head}<p class="sec-lede">The list of overflows upstream could not be read just now. Try again in a minute.</p></section>`;
   // A long line is cut after the nearest few: the Avon at Warleigh Weir has 185 overflows upstream. What is left out
@@ -305,6 +322,7 @@ let lastKey = '';
 function draw(opts = {}) {
   route = P.parseQuery(location.search);
   if (route.screen === 'place' && spotOf(route.id) && !details.has(route.id)) loadDetail(route.id);
+  if (route.screen === 'find' && route.q) nearWords(route.q);
   const y = window.scrollY, key = route.screen === 'place' ? `place/${route.id}` : `find/${route.area || ''}`;
   const active = document.activeElement, sel = active && active !== document.body && app.contains(active)
     ? (active.dataset.day ? `.daytabs [data-day="${active.dataset.day}"]` : active.dataset.miles ? `[data-miles="${active.dataset.miles}"]` : active.dataset.do ? `[data-do="${active.dataset.do}"]` : active.id ? `#${active.id}` : '') : '';
@@ -313,11 +331,11 @@ function draw(opts = {}) {
   const s = route.screen === 'place' ? spotOf(route.id) : null;
   document.title = s ? `${s.name} · SwimSignal preview` : 'Where do you swim? · SwimSignal preview';
   if (key !== lastKey) {
-    window.scrollTo({ top: opts.y || 0, behavior: 'instant' });
+    window.scrollTo(0, opts.y || 0);
     if (location.hash === '#find') { const q = document.getElementById('q'); if (q) q.focus(); }
     else if (opts.focus) { const h = app.querySelector(route.area ? '.area-h' : 'h1'); if (h) h.focus({ preventScroll: true }); }
   } else {
-    window.scrollTo({ top: y, behavior: 'instant' });
+    window.scrollTo(0, y);
     const again = sel && app.querySelector(sel);
     if (again) { again.focus({ preventScroll: true }); if (caret !== null && again.setSelectionRange) again.setSelectionRange(caret, caret); }
   }
@@ -366,10 +384,12 @@ app.addEventListener('click', e => {
     if (act === 'locate') { locate(() => draw()); return; }
     if (act === 'unlocate') { here = null; hereNote = ''; draw(); return; }
     if (act === 'miles') { miles = Number(b.dataset.miles) || 20; draw(); return; }
-    if (act === 'all' && route.id) { expanded.add(route.id); draw(); return; }
+    if (act === 'all' && route.id) { expanded.add(route.id); draw();
+      // The button has gone: focus moves to the first overflow it brought, so a keyboard carries on down the line.
+      const next = app.querySelectorAll('.line .stop .textbtn')[LINE_FIRST]; if (next) next.focus({ preventScroll: true }); return; }
     if (act === 'more') { const box = b.nextElementSibling, open = b.getAttribute('aria-expanded') === 'true'; b.setAttribute('aria-expanded', String(!open)); b.textContent = open ? 'Details' : 'Hide details'; const box2 = b.closest('.st-row') ? b.closest('.st-row').nextElementSibling : box; if (box2) box2.hidden = open; return; }
     if (act === 'keep' && route.id) { const ids = kept(), on = ids.includes(route.id); keep(on ? ids.filter(x => x !== route.id) : [...ids, route.id]); draw();
-      const t = document.getElementById('tool-said'); if (t) t.textContent = on ? 'Removed from your places.' : 'Saved on this device. It now opens the first page.'; return; }
+      const t = document.getElementById('tool-said'); if (t) t.textContent = on ? 'Removed from your places.' : 'Saved on this device. It is now under Your places on the opening page.'; return; }
     if (act === 'share') { const s = spotOf(route.id), day = placeDay(s), url = location.origin + location.pathname + link({ id: s.id, day }).replace(/^\.\//, ''), t = document.getElementById('tool-said');
       const done = msg => { if (t) t.textContent = msg; };
       const title = `${s.name}: ${P.levelWords(dayLevel(s, day)).toLowerCase()} ${dayWord(day)} (SwimSignal forecast)`;
@@ -395,7 +415,7 @@ window.addEventListener('popstate', () => { const at = leftAt.get(location.searc
   if (from) from.focus({ preventScroll: true }); });
 
 (async function start() {
-  try { const [data, hero] = await Promise.all([loadJson('../data/spots-lite.json'), loadJson('../data/hero-photos.json').catch(() => ({}))]);
+  try { const [data, hero] = await Promise.all([loadJson('../data/spots-lite.json'), loadJson('hero-photos.json').catch(() => ({}))]);
     DATA = P.prepare(data, now()); HERO = hero || {}; }
   catch (e) { app.innerHTML = '<header class="bar"><a class="brand" href="./">SwimSignal</a></header><main id="main" class="home"><section class="opening"><h1>The forecast could not be read</h1><p class="lede">Check the connection and load the page again. <a href="../">The current site</a> keeps a copy for offline use.</p></section></main>'; return; }
   draw();

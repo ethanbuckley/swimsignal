@@ -2784,9 +2784,15 @@ back as a restyle.
 ## A redesign kept as a preview (24 November 2026, for Ethan's review)
 
 A working redesign of the swimmer's journey, in `src/dipcast/site/preview/` (`index.html`, `preview.css`, `model.js`,
-`app.js`). The build does not copy it, so merging this publishes nothing. `python3 scripts/preview_redesign.py` serves it
-on the live forecast at `http://localhost:8797/preview/`. It loads the live `levels.js` and `eatoday.js`, so a level and
-an official notice read the same in both. `tests/site_preview.test.cjs` holds the rules below.
+`app.js`). Ethan asked for it to be published once checked ("get it live", 24 November 2026): the build copies it to
+`preview/` beside the live pages (`build_site.write_preview`), marked `noindex`, in no sitemap and linked from no live
+page, so it is reached only by its address, `https://swimsignal.co.uk/preview/`. The live pages are unchanged but for one
+line in `sw.js`, which leaves `preview/` to the browser: the offline copy would otherwise hand a slow first visit the
+app's home page in its place. `python3 scripts/preview_redesign.py` serves the same files locally on the live forecast at
+`http://localhost:8797/preview/`. It loads the live `levels.js` and `eatoday.js`, so a level and an official notice read
+the same in both. The build writes it one file, `preview/hero-photos.json`: each spot's opening photo by `guideHero`'s
+rule (`src/dipcast/hero_photos.py`), so a list can show a photo beside each place without reading 133 files.
+`tests/site_preview.test.cjs` and `tests/test_preview_site.py` hold the rules below.
 
 **What prompted it.** Walked on a phone on 24 November 2026: the home page's first screen named no place; at Ilkley the
 day rows began 728 px down and Saturday sat at 1,092 px; picking it changed a headline that was off the screen; "Find
@@ -2826,13 +2832,24 @@ home page", 11 November) are not in the preview; the five days are tabs, not App
 live status sentence before the level (30 October) moved into Behind the level, except where no overflow reports,
 which still leads the answer in bold; the E. coli estimate is a row, not a tile.
 
-**Where the live site is better, and the preview does not replace it:** the map of the river and its overflows; alerts;
+**Where the live site is better, and the preview does not replace it** (so it is a second way in, not the site): the map of the river and its overflows; alerts;
 Plan a swim, Saved and the journal; the record of how the forecast has done here; past spills by month; a page built
 without scripts, with its own link preview; the offline copy. The preview links to the live page for each.
 
+**Each area's photo** is one place's, picked by eye from the photos the guides hold (`AREA_PHOTO` in `app.js`): open
+water in good light. The first build took each area's first landscape photo, and Cumbria's was the bow of a kayak.
+
+**Its own storage:** saved places are kept under `swimsignal.preview.places` in the browser, apart from the live
+site's `dipcast.saved`, so the preview changes nothing the live pages keep. Nothing is sent. The privacy notice is
+not changed here: it is Ethan's to word if the preview stays.
+
 **Checked:** headless Chrome on the live issue of 24 November 2026 13:21 at 320, 390, 820 and 1,440 px; keyboard and
-pointer in the in-app browser. Ilkley (rated poor), Dartington (very high), Bolton Abbey (moderate on Saturday), Linton
+pointer in the in-app browser; Safari on an iPhone 17 simulator (iOS 27): the opening of Ilkley, a day picked by tap,
+the tabs pinned while scrolling. Every control: an overflow's details, "Show all", the three distances, Save, Share
+(the copied-link fallback), a search with no match, a postcode not in the file, a place that is not listed, a location
+refused. Contrast: every text colour is 4.5:1 or more on each surface it sits on; the dashed ring for "no current
+reading" is 3.5:1. The scripts use no syntax Safari before 16.4 refuses. Ilkley (rated poor), Dartington (very high), Bolton Abbey (moderate on Saturday), Linton
 Falls (low), Frensham Great Pond (official advice), Janet's Foss (no daily forecast), Symonds Yat (no live reading),
 Shrewsbury (no photo, Wales not counted), the forecast read nine hours late, and a link for a day that has passed. No
-sideways scroll at 320 px on the four pages measured. Not checked: Safari, a real phone, a screen reader, dark mode
-(the site is light only), a location actually given to "Places near me".
+sideways scroll at 320 px on the four pages measured. Not checked: a real phone, a screen reader, an iPhone older
+than the simulator's, dark mode (the site is light only), a location actually given to "Places near me".

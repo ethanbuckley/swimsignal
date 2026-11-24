@@ -1,4 +1,4 @@
-"""A local preview of the redesign in src/dipcast/site/preview/, on the live forecast.
+"""A local copy of the redesign preview in src/dipcast/site/preview/, on the live forecast.
 
     python3 scripts/preview_redesign.py            # then open http://localhost:8797/preview/
     python3 scripts/preview_redesign.py --data DIR  # keep the forecast files in DIR (default: .preview-data/)
@@ -9,19 +9,21 @@ It serves the source files as they are, so an edit shows on reload:
 - /preview/, /levels.js, /eatoday.js, /icons/   from src/dipcast/site/
 - /fonts/                                       from src/dipcast/pages/fonts/
 - /guides/photos/                               from guides/photos/
-- /data/hero-photos.json                        made here from guides/*.toml, by the live page's own rule for the
-                                                photo that opens a spot (guide.js, guideHero)
+- /preview/hero-photos.json                     made here from guides/*.toml by the build's own rule for the photo
+                                                that opens a place (src/dipcast/hero_photos.py)
 - /data/...                                     from DIR; a file DIR lacks is fetched once from swimsignal.co.uk
                                                 and kept, so the levels and times are a real issue of the forecast
 - anything else (about.html, plan/, ...)        a redirect to the live site, so the preview's links to it work
 
-Nothing here is part of the build, and nothing is published by it.
+The build publishes the same files at <site>/preview/ (scripts/build_site.py, write_preview). This script is not
+part of the build.
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+import sys
 import tomllib
 import urllib.request
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -33,22 +35,17 @@ SITE = ROOT / "src" / "dipcast" / "site"
 FONTS = ROOT / "src" / "dipcast" / "pages" / "fonts"
 GUIDES = ROOT / "guides"
 LIVE = "https://swimsignal.co.uk"
-LICENCES = {"https://creativecommons.org/licenses/by-sa/2.0/": "CC BY-SA 2.0"}
+sys.path.insert(0, str(ROOT / "src"))
+from dipcast.hero_photos import hero  # noqa: E402  (standard library only: the build's own rule for the photo)
 
 
 def hero_photos() -> dict:
-    """Each spot's opening photo: an overview, historical, unlabelled, credited and dated (guideHero's rule)."""
+    """Each spot's opening photo, from guides/<id>.toml by the build's rule, for the files that exist."""
     out = {}
     for path in sorted(GUIDES.glob("*.toml")):
-        guide = tomllib.loads(path.read_text())
-        for p in guide.get("photo", []):
-            if (p.get("topic") == "overview" and p.get("status") == "historical" and not p.get("labels")
-                    and p.get("credit") and p.get("taken") and (GUIDES / "photos" / str(p.get("file"))).is_file()):
-                out[path.stem] = {"file": p["file"], "w": p.get("width", 640), "h": p.get("height", 480), "credit": p["credit"],
-                                  "taken": str(p["taken"]), "caption": p.get("caption", ""), "title": p.get("title", ""),
-                                  "source": p.get("source", ""), "licence": p.get("licence", ""),
-                                  "licence_name": LICENCES.get(p.get("licence", ""), "")}
-                break
+        h = hero(tomllib.loads(path.read_text()).get("photo"))
+        if h and (GUIDES / "photos" / h["file"]).is_file():
+            out[path.stem] = h
     return out
 
 
@@ -82,7 +79,7 @@ class Handler(SimpleHTTPRequestHandler):
         rel = unquote(urlsplit(self.path).path).lstrip("/")
         if rel == "":
             return self.redirect("/preview/")
-        if rel == "data/hero-photos.json":
+        if rel == "preview/hero-photos.json":
             return self.send_json(hero_photos())
         target = Path(self.translate_path(self.path))
         if rel.startswith("data/") and not target.is_file() and not self.offline:
