@@ -14,7 +14,10 @@ const expanded = new Set(), LINE_FIRST = 6;   // the places whose line upstream 
 const traces = new Map();                     // id -> the traced water's lines, null if there is none; undefined while reading
 const details = new Map();                    // id -> { detail, up } once fetched; undefined while reading
 const now = () => Date.now();
-const spotOf = id => DATA.spots.find(p => p.id === id);
+// A point tapped on the map that is no listed place (anypoint.js): its forecast, worked out here, by its id
+// ("point-<lat>,<lon>"). undefined while it is being worked out; { failed } if it could not be.
+const POINTS = new Map();
+const spotOf = id => DATA.spots.find(p => p.id === id) || (POINTS.get(id) && !POINTS.get(id).failed ? POINTS.get(id) : undefined);
 const say = t => { saidEl.textContent = ''; setTimeout(() => { saidEl.textContent = t; }, 60); };
 
 // Saved places, kept on this device only, as the live site keeps them: named lists under 'dipcast.lists', and every
@@ -221,7 +224,7 @@ const KEYS = [['lv-low', 'Low'], ['lv-moderate', 'Moderate'], ['lv-high', 'High'
 function mapCardHtml(day) {
   const s = mapPick && spotOf(mapPick);
   return s ? `<div class="picked"><ul class="rows"><li class="has-x">${rowLink(P.placeRow(s, day, here), day)}<button type="button" class="x" data-do="map-close" aria-label="Close ${esc(s.name)}">${IC.x}</button></li></ul></div>`
-    : `<p class="meta map-tip">${TOUCH ? 'Tap' : 'Click'} a place for its forecast ${esc(dayWord(day))}.</p>`;
+    : `<p class="meta map-tip" id="map-tip" role="status">${esc(mapSaid || `${TOUCH ? 'Tap' : 'Click'} a place for its forecast ${dayWord(day)}${typeof AnyPoint === 'object' ? ', or any river or lake' : ''}.`)}</p>`;
 }
 function mapViewHtml() {
   const day = homeDay();
@@ -235,17 +238,31 @@ function mapViewHtml() {
       <div class="map-side"><div id="map-card" aria-live="polite">${mapCardHtml(day)}</div>
       <p class="mapkey"><b>Pollution risk ${esc(dayWord(day))}</b>${KEYS.map(([c, w]) => `<span><i class="${c}"></i>${w}</span>`).join('')}<span><i class="adv"></i>Ringed: an official notice</span></p>
       <p class="meta" id="here-note">${esc(hereNote)}</p>
-      <p class="meta">The map shows the ${DATA.spots.length} listed places. <a href="${link({ day })}">The same places as a list</a>. For any other river or lake, <a href="${classic('?map=1')}">tap the water on ${OLD}'s map</a>.</p></div>
+      <p class="meta">The map shows the ${DATA.spots.length} listed places. <a href="${link({ day })}">The same places as a list</a>. A river or lake that is not listed has a forecast too: zoom in and ${TOUCH ? 'tap' : 'click'} the water.</p></div>
     </div>
     ${foot()}
   </main>${tabbar()}`;
 }
-let mapGoHere = false;
+let mapGoHere = false, mapSaid = '';
+// A tap on the map that is on no listed place: a river or lake to forecast. Further out than this a pixel is half a
+// kilometre or more and only the big rivers are drawn, so the map zooms in on the tap and asks again (anypoint.js,
+// POINT_ZOOM and CLOSER, the live map's own rule).
+function tapWater(lat, lon, zoom) {
+  if (typeof AnyPoint !== 'object') return;
+  const need = AnyPoint.POINT_ZOOM || 9;
+  if (zoom < need) { window.PVMap.homeTo({ lat, lon }, need + 2); mapSaid = `Zoomed in. Now ${TOUCH ? 'tap' : 'click'} a river or lake for its forecast.`;
+    const said = document.getElementById('map-tip'); if (said) said.textContent = mapSaid; return; }
+  const pt = P.pointOf(`${lat.toFixed(5)},${lon.toFixed(5)}`), tip = document.getElementById('map-tip');
+  if (!pt) { mapSaid = 'That point is outside Britain and Ireland, so there is no forecast to work out for it.'; if (tip) tip.textContent = mapSaid; return; }
+  mapSaid = '';
+  leftAt.set(location.pathname + location.search, { y: window.scrollY, href: '' });
+  history.pushState(null, '', link({ id: pt.id, day: route.day })); draw({ focus: true });
+}
 function mountHomeMap() {
   const slot = document.getElementById('home-map'); if (!slot) return;
   const day = homeDay(), points = P.mapPoints(DATA.spots, day);
-  const pick = id => { mapPick = id; const card = document.getElementById('map-card'); if (card) card.innerHTML = mapCardHtml(day); window.PVMap.home(slot, points, mapPick, pick, here).catch(() => {}); };
-  window.PVMap.home(slot, points, mapPick, pick, here).then(() => { const w = slot.querySelector('.map-wait'); if (w) w.remove();
+  const pick = id => { mapPick = id; mapSaid = ''; const card = document.getElementById('map-card'); if (card) card.innerHTML = mapCardHtml(day); window.PVMap.home(slot, points, mapPick, pick, here, tapWater).catch(() => {}); };
+  window.PVMap.home(slot, points, mapPick, pick, here, tapWater).then(() => { const w = slot.querySelector('.map-wait'); if (w) w.remove();
     if (mapGoHere && here) { mapGoHere = false; window.PVMap.homeTo(here); } })
     .catch(() => { slot.innerHTML = `<p class="none">The map could not be read just now. <a href="${link({ day })}">The same places as a list</a></p>`; });
 }
@@ -441,6 +458,7 @@ function planTyping(v) {
 // ------------------------------------------------------------------------------------------------ one place
 const placeDay = s => { const ds = P.dates(DATA); return ds.includes(route.day) ? route.day : ds[0] || today(); };
 function kindLine(s) {
+  if (s.unlisted) return ['Unlisted point: not hand-checked', s.kind === 'lake' ? 'Lake' : s.kind === 'river' ? 'River' : ''].filter(Boolean).join(' · ');
   const lake = s.kind === 'lake' && !/\b(water|mere|tarn|lake|loch|pond|reservoir|llyn)\b/i.test(s.name + ' ' + (s.river || ''));
   return [s.river, lake ? 'Lake' : '', s.area, s.source === 'designated' ? 'Designated bathing water' : ''].filter(Boolean).join(' · ');
 }
@@ -598,12 +616,36 @@ function placeFactsHtml(s) {
     ${photos.length ? `<div class="photos">${photos.map(p => `<figure><img src="guides/photos/${encodeURIComponent(p.file)}" width="${Number(p.w) || 640}" height="${Number(p.h) || 480}" alt="${esc(p.caption || s.name)}" loading="lazy" decoding="async"><figcaption>${esc(p.caption || '')} ${credit({ ...p, licence_name: p.licence && /by-sa\/2\.0/.test(p.licence) ? 'CC BY-SA 2.0' : '' })}</figcaption></figure>`).join('')}</div>` : ''}
     <p class="meta">${esc(s.source === 'openstreetmap' ? 'This place is from OpenStreetMap, © OpenStreetMap contributors.' : String(s.notes || '').replace(/([^.])$/, '$1.'))} A listing is not a right to swim or a check that it is allowed. <a href="${classic(`spot/${encodeURIComponent(s.id)}/`)}">This place on ${OLD}</a></p></section>`;
 }
+// A point's request to be listed, as the live page's (anypoint.js, request): a GitHub form with its position filled in.
+function requestHtml(s) {
+  const q = new URLSearchParams({ template: 'spot-request.yml', title: `Spot request: ${s.name}`, name: s.name, location: `${s.lat.toFixed(5)}, ${s.lon.toFixed(5)}`, kind: s.kind === 'lake' ? 'lake' : 'river' });
+  return `<p><a class="btn" href="https://github.com/ethanbuckley/swimsignal/issues/new?${esc(q.toString())}" rel="noopener">Request this as a spot</a></p>
+    <p class="meta">Opens a request on GitHub with this point's position filled in. A listed spot is checked by hand and gets its own rain forecast and E.&nbsp;coli estimate.</p>`;
+}
+// A point with no forecast: outside England, off the river network, or an isolated lake. Its reason in the live
+// script's own words, the official source for where it is, and the listed places near it.
+function pointNoneHtml(s, day) {
+  const see = s.outside && typeof AnyPoint === 'object' && (AnyPoint.OUTSIDE[s.outside] || {}).see;
+  return `${bar(true)}<main id="main" class="place">
+    <div class="top"><div class="tools"><a class="tool" href="${link({ view: 'map', day })}">${IC.back}<span>Map</span></a></div>
+      <div class="head"><h1 id="title" tabindex="-1">${esc(s.name || 'This point')}</h1><p class="kind">${esc(kindLine(s))}</p></div>
+      <div class="first"><section class="answer"><h2 class="level lv-none" id="answer-h">No forecast here</h2><p class="why">${esc(s.error)}</p>
+        ${see ? `<p class="why">${see}</p>` : ''}<p class="issued">A forecast, not a water test: check the signs at the water before you swim.</p></section></div></div>
+    <div class="more">${nearbyHtml(s, day)}</div>
+    ${s.location && s.location.mode === 'isolated' ? `<section class="theplace">${requestHtml(s)}</section>` : ''}
+    ${foot()}
+  </main>${tabbar()}`;
+}
 function placeHtml() {
-  const s = spotOf(route.id);
+  const s = spotOf(route.id), pt = route.point ? POINTS.get(route.id) : null;
+  if (!s && route.point) return `${bar(true)}<main id="main" class="home"><section class="opening"><p class="backline"><a href="${link({ view: 'map', day: route.day })}">${IC.back}Map</a></p>
+    <h1 id="title" tabindex="-1">${pt && pt.failed ? 'No forecast could be made' : 'Working out the forecast'}</h1>
+    <p class="lede" role="status">${pt && pt.failed ? `Could not make a forecast for this point: ${esc(pt.failed)}.` : 'For the point you picked on the map…'}</p></section>${foot()}</main>${tabbar()}`;
+  if (s && s.unlisted && s.error) return pointNoneHtml(s, placeDay(s));
   if (!s) return `${bar(true)}<main id="main" class="home"><section class="opening"><h1 id="title" tabindex="-1">That place is not listed</h1><p class="lede">The link names a place this forecast does not cover, or one that has been removed.</p><p><a class="btn primary" href="${HOME || './'}">Find a place</a></p></section>${foot()}</main>${tabbar()}`;
   const day = placeDay(s), hero = photoOf(s.id), isKept = shownList(LISTS).spots.includes(s.id), o = P.official(s);
   const missed = route.day && route.day !== day ? `<p class="notice" role="note"><b>This link was for ${esc(P.longDate(route.day))}.</b> That day is no longer in the forecast, so this shows today.</p>` : '';
-  const tools = `<div class="tools"><a class="tool" href="${link({ day })}">${IC.back}<span>All places</span></a><span class="tools-r"><button type="button" class="tool" data-do="keep" aria-pressed="${isKept}">${IC.save}<span>${isKept ? 'Saved' : 'Save'}</span></button><button type="button" class="tool" data-do="share" aria-label="Share this forecast">${IC.share}</button></span></div>`;
+  const tools = `<div class="tools"><a class="tool" href="${s.unlisted ? link({ view: 'map', day }) : link({ day })}">${IC.back}<span>${s.unlisted ? 'Map' : 'All places'}</span></a><span class="tools-r">${s.unlisted ? '' : `<button type="button" class="tool" data-do="keep" aria-pressed="${isKept}">${IC.save}<span>${isKept ? 'Saved' : 'Save'}</span></button>`}<button type="button" class="tool" data-do="share" aria-label="Share this forecast">${IC.share}</button></span></div>`;
   return `${bar(true)}<main id="main" class="place${hero ? ' has-photo' : ''}">
     <div class="top">
       ${hero ? `<figure class="hero"><img src="guides/photos/${encodeURIComponent(hero.file)}" width="${hero.w}" height="${hero.h}" alt="${esc(String(hero.caption || s.name).replace(/[.\s]+$/, ''))}." decoding="async" fetchpriority="high">${tools}<figcaption>${credit(hero)}</figcaption></figure>` : tools}
@@ -615,7 +657,7 @@ function placeHtml() {
     </div>
     <div class="more">${behindHtml(s, day)}${upstreamHtml(s, day)}${nearbyHtml(s, day)}</div>
     ${recordHtml(s)}
-    ${placeFactsHtml(s)}
+    ${s.unlisted ? `<section class="theplace" aria-labelledby="place-h"><h2 id="place-h">This point</h2><p class="sec-lede">Not one of the listed places: nobody has checked it by hand, and it has no rain forecast of its own and no E.&nbsp;coli estimate.${s.rain_km ? ` Rain is from the forecast for the area next to this point's, about ${esc(s.rain_km)} km away.` : ''}</p>${requestHtml(s)}</section>` : placeFactsHtml(s)}
     ${logHtml(s)}
     ${swimmersHtml(s)}
     ${foot()}
@@ -702,9 +744,15 @@ let lastKey = '';
 // Draw the screen for the address. Focus is kept on the control that was used (a day's tab, a distance), found
 // again by what it does, so a keyboard stays where it was; a new screen puts focus on its heading.
 function draw(opts = {}) {
-  route = P.parseAddress(location.pathname, location.search, BASE);
+  route = P.parseAddress(location.pathname, location.search, BASE, location.hash);
   // A link from before places had addresses ("?spot=<id>"): the same place, at its address.
-  if (route.screen === 'place' && !location.pathname.startsWith(BASE + 'spot/')) history.replaceState(null, '', link(route) + location.hash);
+  if (route.screen === 'place' && !route.point && !location.pathname.startsWith(BASE + 'spot/')) history.replaceState(null, '', link(route) + location.hash);
+  // A point on the map: worked out once, by the live site's own arithmetic, then drawn as a place is.
+  if (route.point && !POINTS.has(route.id) && typeof AnyPoint === 'object') { const id = route.id; POINTS.set(id, undefined);
+    AnyPoint.point(route.point[0], route.point[1]).then(d => { P.prepareOne(d, DATA, now()); d.id = id; POINTS.set(id, d);
+      details.set(id, { detail: { contributors: d.contributors || [] }, up: null }); })
+      .catch(e => { POINTS.set(id, { failed: (e && e.message) || 'the files could not be read' }); })
+      .then(() => { if (route && route.id === id) draw({ focus: true }); }); }
   if (route.screen === 'place' && spotOf(route.id) && !details.has(route.id)) loadDetail(route.id);
   if (route.screen === 'find' && route.q) nearWords(route.q);
   // A plan's day is the plan's own, from its address or the plan kept in this browser.
@@ -765,7 +813,7 @@ async function loadDetail(id) {
 }
 function setDay(d) {
   if (route.view === 'plan') { planSet({ day: d }); say(`The plan now shows ${P.headDay(d) === 'today' ? 'today' : P.longDate(d)}.`); return; }
-  const r = { ...route, day: d }; history.replaceState(null, '', link(r) + (location.hash && location.hash !== '#find' ? location.hash : '')); draw();
+  const r = { ...route, day: d }; history.replaceState(null, '', link(r) + (!route.point && location.hash && location.hash !== '#find' ? location.hash : '')); draw();
   const s = route.id && spotOf(route.id);
   say(s ? `${P.dayTabs(s, DATA).find(t => t.date === d).said}. The page now shows ${P.headDay(d) === 'today' ? 'today' : P.longDate(d)}.` : `Levels shown for ${P.headDay(d) === 'today' ? 'today' : P.longDate(d)}.`);
 }
@@ -879,7 +927,7 @@ function passOn() {
   location.replace(classic('plan/') + location.hash); return true;
 }
 // A plan's choices, and a shared list, are after the #: an address typed or pasted over this one is drawn.
-window.addEventListener('hashchange', () => { if (passOn()) return; if (route && (route.view === 'plan' || route.view === 'saved')) draw(); });
+window.addEventListener('hashchange', () => { if (passOn()) return; if (route && (route.view === 'plan' || route.view === 'saved' || route.point || /^#point=/.test(location.hash))) draw({ focus: true }); });
 window.addEventListener('popstate', () => { const at = leftAt.get(location.pathname + location.search) || { y: 0 };
   draw({ focus: true, y: at.y });
   // A keyboard comes back to the link it followed, so the next Tab goes on from there.
