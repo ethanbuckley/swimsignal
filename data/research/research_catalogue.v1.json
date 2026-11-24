@@ -1012,6 +1012,13 @@
    "branch": "claude/overflow-ledger-stage-1",
    "branch_exists": true,
    "date": "2026-11-17"
+  },
+  "733": {
+   "n": 733,
+   "state": "open",
+   "branch": "claude/river-winter-read",
+   "branch_exists": true,
+   "date": "2026-11-24"
   }
  },
  "entries": [
@@ -3659,6 +3666,57 @@
    ],
    "prs": [
     718
+   ]
+  },
+  {
+   "id": "river-winter",
+   "title": "River E. coli in winter: the hidden estimate orders a river's days",
+   "section": "data",
+   "topics": [
+    "e. coli",
+    "rivers",
+    "evaluation",
+    "winter"
+   ],
+   "verdict": "Read once on 24 November 2026: both conditions pass. On 2,754 October to April river E. coli results from six winters (2012 to 2022) at Environment Agency sampling points, never scored by any model here, production's river chance as deployed put each point's days in the right order (mean within-point correlation 0.485, interval 0.393 to 0.525) and still did with each point's month means removed (0.484, interval 0.354 to 0.531), against a bar of 0.15 fixed before the read. Rain in the last 48 hours alone scored 0.473, and production was not shown better than it (difference +0.011, interval −0.022 to +0.032). The estimate's level was too low: a mean chance of 35.5% where 48.3% of results were over 900.",
+   "scope": "28 monitoring points with 15 or more rows, in 8 river systems, 18 of them in the South West; not swim spots. Hindcast at lead 0 on ERA5-Land rain, the model file without soil moisture. Supports an order within a place in winter. Does not support a percentage, a count or a level, any gain from the overflow chain over rain, lakes, or a forecast made days ahead. Half the winters (2,561 rows) were held back unread.",
+   "stage": "waiting",
+   "stage_note": "Read on 24 November 2026. Nothing on the site changes. A river line from October to April (higher or lower than usual here, no percentage) is proposed and waits on Ethan's decision.",
+   "next": "One PR by 1 December 2026 with winter cut-points and the line behind a switch that is off. The held-back winters are kept for one frozen test, first proposed for a rain-only word at river spots with no overflow upstream.",
+   "read_on": "2026-12-01",
+   "records": [
+    {
+     "doc": "docs/RIVER-WINTER-READ-2026-11.md",
+     "quote": "## The read, 24 November 2026: both conditions pass"
+    }
+   ],
+   "prs": [
+    733
+   ]
+  },
+  {
+   "id": "next-research-shortlist",
+   "title": "Next research shortlist: seven things the site could tell people next",
+   "section": "data",
+   "topics": [
+    "e. coli",
+    "rivers",
+    "sources",
+    "product"
+   ],
+   "verdict": "Not a test. A ranked list written on 24 November 2026, with one check run (the winter river read, which passed and has its own entry). Two small measurements on data already seen: what the estimate leaves unexplained is correlated between bathing waters under 50 km apart sampled on the same day (rivers 0.21, interval 0.13 to 0.29; lakes 0.32, interval 0.18 to 0.44) and not beyond; and 29 of 48 listed lakes have a confirmed or plausible Bloomin' Algae record within 1 km, 16 of them with no Environment Agency algae check.",
+   "scope": "Feeds were probed with a few requests each; licences are as read on the day, several by a research agent and not by the author. The same-day figure uses seen samples and hindsight estimates and is development evidence. No idea on the list other than the winter read has been tested.",
+   "stage": "development",
+   "stage_note": "A document for Ethan's review. Nothing on the site changes. Its three picks are a river line in winter, a rain word for river spots with no overflow upstream, and a same-day sentinel update as the long bet.",
+   "next": "After review: the winter line's PR, then a statement and one read of the held-back winter rows for the rain word. Two drafted emails are Ethan's to send.",
+   "records": [
+    {
+     "doc": "docs/NEXT-RESEARCH-SHORTLIST-2026-11.md",
+     "quote": "**The check run today passed.**"
+    }
+   ],
+   "prs": [
+    733
    ]
   }
  ]
