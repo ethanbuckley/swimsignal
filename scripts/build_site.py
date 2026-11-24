@@ -1229,6 +1229,26 @@ SCOTLAND_CREDIT = {"use": "always", "credit": "Contains Scottish Water data: ove
 FOOTER_COMPANIES = "via the National Storm Overflow Hub"
 
 
+RIVER_WINTER_MARK = "<!-- RIVER_WINTER_LINE -->\n"
+RIVER_WINTER_METHOD = (
+    '<p id="winter-river-line">From October to April a river spot\'s page says whether today\'s E. coli estimate is higher or lower '
+    "than usual there for those months. It gives no figure, and the word does not change the risk level. The word comes from the "
+    "estimate without soil moisture. On 2,754 winter samples from 2012 to 2022 at river monitoring points, which it had never "
+    "seen, that estimate put the days at a place in the right order (a correlation within each place of 0.49, where 0 is no "
+    "order; 28 places, most of them in the South West, none a swim spot). Rain in the last two days did as well alone. The test "
+    "used the rain measured on the day, so the word is given for today only, and its size was not tested. "
+    '<a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/RIVER-WINTER-READ-2026-11.md">The test</a>.</p>\n')
+
+
+def with_river_winter(html: str) -> str:
+    """methods.html with the winter river line's paragraph while its switch is on (river_usual.winter_on), and without
+    its marker either way. With the switch off the page is as it was before the marker was added."""
+    from dipcast import river_usual
+    if html.count(RIVER_WINTER_MARK) != 1:
+        raise ValueError("methods.html has lost its RIVER_WINTER_LINE marker")
+    return html.replace(RIVER_WINTER_MARK, RIVER_WINTER_METHOD if river_usual.winter_on() else "")
+
+
 def with_scotland_credit(html: str) -> str:
     """The page's footer credit with Scottish Water's data added while the Scotland trial is on."""
     from dipcast import scotland_trial
@@ -3434,6 +3454,8 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
             s = with_verification_figures(s, site / "data" / "verification.json")   # build() writes it before the pages
         for a, b in REWRITES:
             s = s.replace(a, b)
+        if name == "methods.html":
+            s = with_river_winter(s)   # the winter river line's paragraph, only while its switch is on
         if name == "about.html":
             s = with_counts(s, results)
         if name in ("clubs.html", "about.html"):   # about.html since 5 Nov 2026: its "How good it is" gave no figure

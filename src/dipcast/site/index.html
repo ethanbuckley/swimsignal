@@ -2534,7 +2534,7 @@ function water(d, days) {
     // level (levels.js, ecoliLevel): no band, and no figure but under the fold (ECOLI_OFF).
     const ds = days.filter(x => !nil(x.p_ecoli_gt900)), off = ds.some(ecoliUntested);
     const wq = off ? null : ds.map(x => ecoliBand(d, x)).reduce(higher, null);
-    if (ds.length && off) return factorRow(ecoliName(true), null, ECOLI_OFF, ecoliNotes(d, ecoliCheck(), ds[0])[0] + ecoliFold(d, ds, true));
+    if (ds.length && off) return factorRow(ecoliName(true), null, ECOLI_OFF, ecoliOffSaid(d, ecoliCheck(), ds[0]) + ecoliFold(d, ds, true));
     // The value is a risk, said so: a bare "Very high" read as very good water.
     return factorRow('E.&nbsp;coli estimate', wq, !ds.length ? 'No data' : `${cap(wq)} risk`, !ds.length ? 'No rainfall forecast has arrived, so there is no estimate.'
       : `Chance a water sample would show E.&nbsp;coli over 900 per 100&nbsp;ml: ${ds.map(x => `<b>${Math.round(x.p_ecoli_gt900 * 100)}%</b> ${dayWord(x.date)}`).join(', ')}. ${ecoliSaid(d, ds[0])}`
@@ -3161,7 +3161,7 @@ function facts(d, iso = null) {
       say: `${rangeLine(x0, when)}${usualLine(x0) ? ` ${usualLine(x0)}` : ''}${x1 && rangeOf(x1) && !ecoliUntested(x1) ? ` Tomorrow ${likely(rangeOf(x1))}, 8 in 10 between ${ecoliReading(rangeOf(x1).low)} and ${ecoliReading(rangeOf(x1).high)}.` : ''} ${rangeBasis(d)}`,
       more: RANGE_MORE }); }
   else if (!d.error && ecoliTested(d) && x0 && !nil(x0.p_ecoli_gt900)) { const off = untested(x0), b = off ? null : ecoliBand(d, x0);
-    if (off) out.push({ wide: true, late: true, icon: ICON.water, label: ecoliName(true), fig: ECOLI_OFF, say: ecoliNotes(d, ecoliCheck(), x0)[0],
+    if (off) out.push({ wide: true, late: true, icon: ICON.water, label: ecoliName(true), fig: ECOLI_OFF, say: ecoliOffSaid(d, ecoliCheck(), x0),
       fold: ecoliFold(d, [x0, x1].filter(x => x && !nil(x.p_ecoli_gt900))), more: ecoliMore() });
     else out.push({ wide: true, icon: ICON.water, label: 'E.&nbsp;coli estimate', fig: pct(x0.p_ecoli_gt900) + '%', word: `${cap(b)} risk`, wordTone: tone(b),
       vis: scaleBar(x0.p_ecoli_gt900, ECOLI_CUTS, b), rel: tileLine(d, 'water', iso),

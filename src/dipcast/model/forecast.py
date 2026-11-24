@@ -560,6 +560,7 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
             r48, r24, cov48, _ = ecoli.rain_windows(hourly, ends, return_coverage=True)
             X = ecoli.features(r48, r24, risk, np.full(len(days), 1.0 if pin.mode == "lake" else 0.0), days)
             p_ec = em.predict(X)
+            p_plain = p_ec   # the river model without soil moisture: the figure the winter read scored
             p_ec, soil_state = river_ecoli(pin.mode, lat, lon, X, p_ec, now)
             # At a lake with overflows upstream (the population it was fitted and tested on), lake-range-v1's likely
             # reading and range from the same inputs (lake_range.py): each day's `ecoli_range`, and its own table for
@@ -581,6 +582,12 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
                     word = river_usual.direction(lat, lon, row["p_ecoli_gt900"], days[j].month)
                     if word:
                         row["ecoli_usual"] = word
+                    # From October to April, behind a switch that is off (config.RIVER_WINTER_LINE): the same kind
+                    # of word for today only, from the figure without soil moisture. It moves no level and no figure.
+                    if days[j] == now.floor("D") and not (np.isnan(r48[j]) or np.isnan(p_plain[j])):
+                        winter = river_usual.winter_direction(lat, lon, round(float(p_plain[j]), 3), days[j].month)
+                        if winter:
+                            row["ecoli_usual_winter"] = winter
                 if ranges is not None:   # E. coli per 100 ml, two significant figures; None where an input is missing
                     # In season at a sampled lake, also the lake's usual reading for the date and higher/lower/about.
                     row["ecoli_range"] = ({**{k: lake_range.sig2(ranges[k][j]) for k in ("low", "median", "high")},

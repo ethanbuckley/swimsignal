@@ -2597,6 +2597,25 @@ request, #705): at a river spot in season, the E. coli tile's sentence gains one
 - Not done: the same word in the day-by-day table, a picked day's row, the organisers' page and the record; the
   test's sentence in the tile's corner fold.
 
+### The same word in winter, built and switched off (24 November 2026)
+
+Built on Ethan's word of 24 November 2026 ("Build it, switched off. Decide on switching it on when you can see
+it."), from `docs/RIVER-WINTER-READ-2026-11.md`. Record: `docs/RIVER-WINTER-LINE-2026-11.md`. **Off unless the
+repository variable `DIPCAST_RIVER_WINTER_LINE` is 1. Not decided: whether to switch it on.**
+
+- Switched on, it **reverses part of "The E. coli estimate out of season" (20 October 2026)**: from October to
+  April the out-of-season tile at a river spot says "Today the estimate is higher than usual here for October to
+  April." (or lower, or about usual), then one sentence on what that rests on (`RIVER_USUAL_WINTER`,
+  `RIVER_USUAL_WINTER_SAID`, `ecoliOffSaid` in `levels.js`). The reason: that rule kept the estimate out of view
+  because it was untested out of season, and its order has since been tested on winter samples it never saw.
+- What the 20 October rule keeps: the tile's figure still reads "Out of season"; no percentage, band or scale;
+  the estimate is not part of the level; the organisers' page, the decision record, the shared picture and the
+  day-by-day table do not change.
+- Today's day only, from the river model without soil moisture, against the spot's own October to April days
+  (`river_usual.winter_direction`, `data/processed/river_usual_winter.v1.json`). The method page gains one
+  paragraph only while the switch is on (`build_site.with_river_winter`).
+- Switched off, which is now: the page's words are as before, and no day carries the field.
+
 ## Share at the top of a spot's page (17 November 2026)
 
 A first-visit review on 17 November 2026 found "Share this spot" only at the foot of a phone page some eleven

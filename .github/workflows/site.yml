@@ -171,6 +171,9 @@ jobs:
           # Radar shadow (docs/RADAR-SHADOW-2026-11.md): 1 fetches the Met Office radar for the build's rain cells and logs
           # shadow_radar_v1 in state only, publishes nothing; unset = off.
           DIPCAST_RADAR_SHADOW: ${{ vars.DIPCAST_RADAR_SHADOW }}
+          # River line in winter (docs/RIVER-WINTER-LINE-2026-11.md): 1 adds one word to today's day at river spots from
+          # October to April and a paragraph to the method page; unset = off, and nothing differs. Ethan's decision.
+          DIPCAST_RIVER_WINTER_LINE: ${{ vars.DIPCAST_RIVER_WINTER_LINE }}
           # Open-Meteo's paid plan (README, "Rainfall API"): its key; unset = the free, non-commercial API.
           # In this step only, so the tests never hold it; the code keeps it out of logs and pages.
           DIPCAST_OPEN_METEO_KEY: ${{ secrets.DIPCAST_OPEN_METEO_KEY }}
