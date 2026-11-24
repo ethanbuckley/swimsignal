@@ -115,7 +115,8 @@ The word changes from one day to the next on 28% of days.
 
 Not checked: a full site build with the switch on (the six spots ran through `forecast_point`, not `build_site`);
 the organisers' page, the decision record, the day-by-day table and the shared picture, which do not show the word;
-the redesign preview at `/preview/`, which does not read the new field; a screen reader.
+the redesign preview at `/preview/`, which does not read the new field; a screen reader. The data page
+(`data.html`) does not describe the new field `ecoli_usual_winter`; it does not describe the in-season one either.
 
 ## What stays as it was
 
