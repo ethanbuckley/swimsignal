@@ -2903,6 +2903,7 @@ the 13:21 issue: the map drawn and a place picked; Saved on Saturday with a plac
 renamed and deleted, a place removed; a plan from Ilkley typed and picked by Enter, its distance, waters and day
 changed, a shared `from=here` link (asks, and leaves the kept plan alone); Ilkley's water upstream on a map. No page
 error, and no sideways scroll at 320 px on Map, Saved or Plan. The alerts tile was walked with the browser and the alert service stood in for (on, the weekly note, off, a
-refusal, the service not answering); viewing the page registered no worker. **Not checked:** turning alerts on for
-real in any browser, a real phone, Safari, a screen reader, the CARTO tiles the live build uses (locally the map drew
+refusal, the service not answering); viewing the page registered no worker. Safari on an iPhone 17 simulator (iOS 27): the map drawn in the live colours, a place
+picked by tap, Saved with the iPhone's own alerts line. **Not checked:** turning alerts on for
+real in any browser, a real phone, a screen reader, the CARTO tiles the live build uses (locally the map drew
 OpenStreetMap's).
