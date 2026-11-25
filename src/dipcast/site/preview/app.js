@@ -765,7 +765,8 @@ async function sharePicture(s, day) {
   if (p.why.length) { g.fillStyle = v('--muted'); g.font = `600 36px ${F}`; y = wrapText(g, p.why.join(' '), 60, y + 6, W - 120, 46); }
   if (p.notes.length) { g.fillStyle = v('--ink'); g.font = `500 30px ${F}`; y = wrapText(g, p.notes.join('. ') + '.', 60, y + 10, W - 120, 40); }
   // The five days: a bar in the level's colour, the day, the level with "risk" under it, and the rain.
-  const cw = (W - 120) / 5; y += 30;
+  // As many columns as there are days: after midnight, before the next forecast, there are four.
+  const cw = (W - 120) / Math.max(1, p.days.length); y += 30;
   p.days.forEach((d, i) => { const lx = 60 + i * cw;
     if (i) { g.fillStyle = v('--line'); g.fillRect(lx, y, 2, 230); }
     g.fillStyle = d.level ? v(`--${d.tone}`) : v('--unknown'); g.fillRect(lx, y, cw, 12);
