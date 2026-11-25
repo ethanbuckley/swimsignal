@@ -235,24 +235,26 @@ function journalItem(e, o = {}) {
     + `<div class="rv-acts"><button type="button" class="linkbtn small" data-jn-delete="${jnEsc(e.key)}">Delete</button></div></li>`;
 }
 
-// The journal on the Saved page: one tile, "Only on this device" first, the swims newest first (five,
-// then "Show all"), and the copy. o: { all (every swim shown), say (a line after an action), spots
-// (a Map of the listed spots by id), href (a spot's page), now }.
+// The journal on the Saved page: one tile, "Only on this device" first, then the copy, then the swims newest
+// first (five, then "Show all"), and Delete all at the foot. The copy is the journal's only backup, so it sits
+// over the swims, not under them (outside audit, 17 Nov 2026: make the backup easy to find from the journal).
+// o: { all (every swim shown), say (a line after an action), spots (a Map of the listed spots by id),
+// href (a spot's page), now }.
 function journalSection(list, o = {}) {
   const swims = journalSort(list), n = swims.length, spots = o.spots || new Map();
   let h = '<section class="sec tile" id="journal" tabindex="-1" aria-labelledby="jn-h"><h2 class="sec-h" id="jn-h">Swim journal</h2>'
     + `<p class="sub"><b>Only on this device.</b> ${n ? `${n === 1 ? 'One swim' : `${n} swims`}, newest first, each with what the forecast showed when you logged it.`
       : 'Log a swim from a spot\'s page: the day, a note, photos and what the forecast showed are kept here.'} Nothing in it is sent anywhere.</p>`;
-  if (n) h += `<ol class="rv-list" id="jn-list">${swims.map((e, i) => journalItem(e, { hidden: !o.all && i >= JOURNAL_SHOW, spot: spots.get(e.id),
-      href: o.href ? o.href(e.id) : '', now: o.now })).join('')}</ol>`
-    + (!o.all && n > JOURNAL_SHOW ? `<button type="button" class="btn quiet" id="jn-all" aria-expanded="false">Show all ${n}</button>` : '');
   h += `<div class="jn-file" id="jn-file-row">${n ? '<button type="button" class="linkbtn" id="jn-export">Save a copy</button>' : ''}`
     + '<button type="button" class="linkbtn" id="jn-import">Add swims from a copy</button>'
-    + (n ? '<button type="button" class="linkbtn" id="jn-clear">Delete all</button>' : '')
     + '<input type="file" id="jn-file" accept=".json,application/json" hidden></div>'
-    + `<p class="small muted msg">${n ? 'A copy is a file of your swims, notes and photos: keep it private. Adding it on another phone or browser moves the journal there'
+    + `<p class="small muted msg">${n ? 'Clearing this browser\'s data deletes the journal, so a copy is its backup. A copy is a file of your swims, notes and photos: keep it private. Adding it on another phone or browser moves the journal there'
       : 'A copy saved on another phone or browser brings that journal here'}; on an iPhone, Safari and the Home Screen app keep separate journals.</p>`
     + (o.say ? `<p class="rv-said jn-said" id="jn-said" tabindex="-1" role="status">${o.say}</p>` : '<p class="rv-said jn-said" id="jn-said" tabindex="-1" role="status" hidden></p>');
+  if (n) h += `<ol class="rv-list" id="jn-list">${swims.map((e, i) => journalItem(e, { hidden: !o.all && i >= JOURNAL_SHOW, spot: spots.get(e.id),
+      href: o.href ? o.href(e.id) : '', now: o.now })).join('')}</ol>`
+    + (!o.all && n > JOURNAL_SHOW ? `<button type="button" class="btn quiet" id="jn-all" aria-expanded="false">Show all ${n}</button>` : '')
+    + '<div class="jn-file" id="jn-clear-row"><button type="button" class="linkbtn" id="jn-clear">Delete all</button></div>';
   return h + '</section>';
 }
 
@@ -262,20 +264,23 @@ function journalKeptHtml(seen, why = '') {
   return '<div class="jn-kept" id="jn-kept"><p class="rv-q">Kept with the swim</p>'
     + (seen ? journalSeenHtml(seen) : `<p class="rv-meta">${jnEsc(why)}</p>`) + '</div>';
 }
-// The form, in a tile after the spot's buttons: the day and time, the minutes, a note, photos (where the
-// browser can keep them) and what will be kept with it. Nothing in it is sent.
+// The form, in a tile after the spot's buttons: the day, a note and photos (where the browser can keep them)
+// first, then the optional time and minutes, then what will be kept with it. Nothing in it is sent. The draft's
+// notice (index.html, draftTrack) goes in #jn-draft, over the buttons, not over the first field (outside audit,
+// 17 Nov 2026: a quick entry on one screen, the timing below).
 function journalFormHtml(today, clock, photos = true) {
   return '<section class="sec tile jn-box" id="jn-box" aria-labelledby="jn-box-h"><h2 class="sec-h" id="jn-box-h" tabindex="-1">Log a swim</h2>'
     + '<p class="sub"><b>Only on this device.</b> Your journal stays in this browser and is sent nowhere. It is on the Saved page.</p>'
     // data-keep-page: the page does not reload itself for a newer forecast while this is open (index.html).
-    + '<form class="rv-form" id="jn-form" novalidate data-keep-page><div class="jn-when">'
-    + `<label><span class="rv-q">Day</span><input type="date" id="jn-date" value="${today}" min="2000-01-01" max="${today}"></label>`
-    + `<label><span class="rv-q">Time <span class="rv-opt">Optional</span></span><input type="time" id="jn-time" value="${clock}"></label></div>`
-    + `<label class="rv-q" for="jn-min">Minutes in the water <span class="rv-opt">Optional</span></label><input type="number" id="jn-min" inputmode="numeric" min="1" max="${JOURNAL_LIMITS.minutes}" step="1">`
+    + '<form class="rv-form" id="jn-form" novalidate data-keep-page>'
+    + `<label class="rv-q" for="jn-date">Day</label><input type="date" id="jn-date" value="${today}" min="2000-01-01" max="${today}">`
     + `<label class="rv-q" for="jn-note">Note <span class="rv-opt">Optional</span></label><textarea id="jn-note" rows="3" maxlength="${JOURNAL_LIMITS.note}" placeholder="The water, the weather, getting in"></textarea>`
     + (photos ? `<p class="rv-q" id="jn-ph">Photos <span class="rv-opt">Up to ${JOURNAL_LIMITS.photos}, optional</span></p><ul class="rv-previews" id="jn-previews" aria-labelledby="jn-ph"></ul>`
       + '<label class="btn rv-add" id="jn-add"><input type="file" class="rv-file" id="jn-pick" accept="image/*" multiple>Add photos</label>' : '')
-    + '<div id="jn-kept-host"></div>'
+    + '<div class="jn-when">'
+    + `<label><span class="rv-q">Time <span class="rv-opt">Optional</span></span><input type="time" id="jn-time" value="${clock}"></label>`
+    + `<label><span class="rv-q">Minutes in the water <span class="rv-opt">Optional</span></span><input type="number" id="jn-min" inputmode="numeric" min="1" max="${JOURNAL_LIMITS.minutes}" step="1"></label></div>`
+    + '<div id="jn-kept-host"></div><div id="jn-draft" data-draft-note></div>'
     + '<div class="rv-send"><button type="submit" class="btn primary">Save to journal</button><button type="button" class="btn" id="jn-cancel">Cancel</button></div>'
     + '<p class="rv-msg" id="jn-msg" role="status"></p></form></section>';
 }
@@ -325,20 +330,35 @@ const journalNow = () => { try { return journalEntries(localStorage.getItem(JOUR
 const journalKeep = list => { try { localStorage.setItem(JOURNAL_KEY, JSON.stringify(list)); return true; } catch (e) { return false; } };
 
 // "Log a swim" on a spot's page (index.html, actions): the form opens in a tile under the buttons.
-// issued: the forecast's time, kept with the swim.
+// issued: the forecast's time, kept with the swim. journalLogFrom opens it from another control, "Log a swim here"
+// over a phone's five days on a low day (index.html, phoneFolds), and Cancel then goes back to that control.
+let jnLogOpen = null;
 function journalLogBind(d, issued) {
   const b = document.getElementById('swam'); if (!b) return;
-  b.addEventListener('click', () => {
+  jnLogOpen = (from = b) => {
+    if (!b.isConnected) return false;
     const open = document.getElementById('jn-box');
-    if (open) { open.querySelector('#jn-box-h').focus(); return; }
-    journalOpenForm(d, issued, b);
-  });
+    if (open) { open.querySelector('#jn-box-h').focus(); return true; }
+    journalOpenForm(d, issued, b, from); return true;
+  };
+  b.addEventListener('click', () => jnLogOpen(b));
 }
-function journalOpenForm(d, issued, b) {
+const journalLogFrom = from => Boolean(jnLogOpen && jnLogOpen(from));
+// Where focus goes when the form closes without a swim: the control that opened it, else "Log a swim", else
+// nowhere (the spot was redrawn). Before 17 Nov 2026 it was always "Log a swim", which on a phone's low day is about
+// 6,000 px under "Log a swim here" (outside audit, 17 Nov 2026).
+const jnBackTo = (from, b) => [from, b].find(x => x && x.isConnected) || null;
+function jnFocusBack(el) {
+  if (!el) return;
+  el.scrollIntoView({ block: 'center', behavior: typeof SCROLL === 'function' ? SCROLL() : 'auto' });
+  el.focus({ preventScroll: true });
+}
+function journalOpenForm(d, issued, b, from = b) {
   const acts = b.closest('.actions'); if (!acts) return;
   const today = jnLocal(), photosOn = typeof reviewShrink === 'function' && typeof indexedDB !== 'undefined';
   acts.insertAdjacentHTML('afterend', journalFormHtml(today, jnClock(), photosOn));
-  b.setAttribute('aria-expanded', 'true'); b.setAttribute('aria-controls', 'jn-box');
+  const openers = from === b ? [b] : [b, from];
+  for (const x of openers) { x.setAttribute('aria-expanded', 'true'); x.setAttribute('aria-controls', 'jn-box'); }
   const box = document.getElementById('jn-box'), f = box.querySelector('form'), $ = s => f.querySelector(s);
   const msg = $('#jn-msg'), send = f.querySelector('[type=submit]'), photos = [];
   let busy = 0;
@@ -347,7 +367,8 @@ function journalOpenForm(d, issued, b) {
     $('#jn-kept-host').innerHTML = journalKeptHtml(journalSeen(d, date, today, issued, time), journalSeenWhy(d, date, time, today, issued)); };
   kept();
   for (const el of [$('#jn-date'), $('#jn-time')]) { el.addEventListener('change', kept); el.addEventListener('input', kept); }
-  const close = () => { photos.forEach(p => URL.revokeObjectURL(p.url)); box.remove(); b.setAttribute('aria-expanded', 'false'); b.removeAttribute('aria-controls'); };
+  const close = () => { photos.forEach(p => URL.revokeObjectURL(p.url)); box.remove();
+    for (const x of openers) { x.setAttribute('aria-expanded', 'false'); x.removeAttribute('aria-controls'); } };
   if (photosOn) {
     const list = $('#jn-previews'), pick = $('#jn-pick');
     const draw = () => { list.innerHTML = photos.map((p, i) => `<li><img src="${p.url}" alt="Photo ${i + 1}"><button type="button" class="linkbtn small" data-drop="${i}">Remove</button></li>`).join('');
@@ -367,7 +388,7 @@ function journalOpenForm(d, issued, b) {
       busy--; send.disabled = busy > 0; say(note, Boolean(note));
     });
   }
-  $('#jn-cancel').addEventListener('click', () => { close(); b.focus(); });
+  $('#jn-cancel').addEventListener('click', () => { close(); jnFocusBack(jnBackTo(from, b)); });
   f.addEventListener('submit', async e => {
     e.preventDefault(); if (busy) return;
     const draft = { date: $('#jn-date').value, time: $('#jn-time').value, minutes: $('#jn-min').value, note: $('#jn-note').value.trim() };
@@ -442,7 +463,7 @@ function journalClick(e, sec) {
   if (t.id === 'jn-export') return journalSave(t, said);
   if (t.id === 'jn-import') return sec.querySelector('#jn-file').click();
   if (t.id === 'jn-clear') {
-    const n = journalNow().length, row = sec.querySelector('#jn-file-row');
+    const n = journalNow().length, row = sec.querySelector('#jn-clear-row');
     row.innerHTML = `<span class="rv-sure">Delete ${n === 1 ? 'the one swim' : `all ${n} swims`} and their photos from this device?</span> <button type="button" class="linkbtn" data-jn-wipe="1">Delete all</button> <button type="button" class="linkbtn" data-jn-keep="1">Keep them</button>`;
     row.querySelector('[data-jn-wipe]').focus(); return;
   }
@@ -539,5 +560,5 @@ if (typeof window !== 'undefined' && window.addEventListener) {
 
 if (typeof module === 'object' && module.exports) {
   module.exports = { JOURNAL_KEY, JOURNAL_LIMITS, JOURNAL_SHOW, journalEntry, journalEntries, journalSort, journalPhotoCount, journalSeen, journalSeenWords,
-    journalSeenWhy, journalProblem, journalNew, jnPhotoOk, journalFile, journalRead, journalMerge, journalItem, journalSection, journalKeptHtml, journalFormHtml };
+    journalSeenWhy, journalProblem, journalNew, jnPhotoOk, journalFile, journalRead, journalMerge, journalItem, journalSection, journalKeptHtml, journalFormHtml, jnBackTo };
 }

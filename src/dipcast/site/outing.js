@@ -664,7 +664,7 @@ async function outingStretchDraw(start, fin) {
   try {
     if (typeof spotDetail === 'function' && start.detail_file && !start.detail_loaded) await spotDetail(start);
     st = (start.stretches || []).find(x => x && x.to === fin.id) || null;
-    const r = await fetch(new URL(`data/upstream/${encodeURIComponent(fin.id)}.json`, ROOT).href);
+    const r = await fetch(new URL(`data/upstream/${encodeURIComponent(fin.id)}.json`, SITE_ROOT).href);
     if (!r.ok) throw new Error(`the finish's overflows answered ${r.status}`);
     rows = new Map(((await r.json()).overflows || []).map(o => [o.site_id, o]));
   } catch (e) { state = 'missing'; }

@@ -333,7 +333,9 @@ test('live and historical headline results are grouped before the full report, I
   const liveHead = body.indexOf('id="live-summary-h"'), historicalHead = body.indexOf('id="history-summary-h"'), toc = body.indexOf('id="toc-h"');
   assert.equal(tiles.length, 4);
   assert.ok(liveHead < tiles[0] && tiles[2] < historicalHead && historicalHead < tiles[3] && tiles[3] < body.indexOf('id="short-h"') && body.indexOf('id="short-h"') < toc);
-  assert.ok(body.indexOf('<p>By company,') > tiles[2] && body.indexOf('<p>By company,') < historicalHead);
+  // By company follows the two warning tiles; the live error has its own heading after it (17 Nov 2026).
+  assert.ok(body.indexOf('<p>By company,') > tiles[1] && body.indexOf('<p>By company,') < body.indexOf('id="live-error-h"')
+    && body.indexOf('id="live-error-h"') < tiles[2] && tiles[2] < historicalHead);
   assert.match(body, /A warning can miss a spill/);
   // Then In short, the contents list, the warnings, how to read the numbers, live, offline (5 Nov 2026).
   const at = s => body.indexOf(s);
@@ -420,5 +422,33 @@ test('the simple rules sit beside the forecast, and a rule it does not beat is n
 test('without simple rules in the data, the page has no such section or line', async () => {
   const els = await render(live({n_scored: 100, overall: {...OVERALL, calibrated: {brier: 0.0415, base_rate: 0.05}, raw: {brier: 0.05}}, warning_table: SPILL}));
   assert.ok(!els.live.innerHTML.includes('simple-rules'));
+  assert.ok(!text(els.top.innerHTML).includes('simple rules'));
   assert.ok(!text(els.short.innerHTML).includes('simple rules'));
+});
+
+// The design audit of 17 Nov 2026, section 9: the page opens on what the live figures mean, then the two simple rules,
+// then the error under a heading that names its reference; the held-out test and the rest stay below.
+test('17 Nov 2026: the live figures are read first, the simple rules next, and the error under its own heading', async () => {
+  const els = await render(live({n_scored: 162005, overall: {...OVERALL, calibrated: {brier: 0.0415, base_rate: 0.05}, raw: {brier: 0.05},
+    period_base_rate_brier: 0.045}, warning_table: SPILL, simple_refs: REFS({p: 'unclear', r: 'beats'}, {p: 'unclear', r: 'unclear'})}));
+  const h = els.top.innerHTML, t = text(h);
+  assert.match(t, /^ Issued forecasts: live results 23,395 spill forecasts for monitored overflows were scored against what the overflows then did, from 29 Sept 2026 to 3 Oct 2026, on 5 days with scores\. It warned of 21% of spills, and 42% of its warnings came true\. These figures describe monitored overflows, not whether the water at a particular spot is safe\. /);
+  assert.match(t, /Against two simple rules anyone could use \(spilling now or in the last 48 hours; over 10 mm of rain forecast in two days\): on the same day, SwimSignal is not shown better or worse than persistence and beats the rain rule; in advance, it is not shown better or worse than either rule\. Details/);
+  assert.match(t, /Error read as a chance, against a flat forecast at this period's own rate A different measure from the warnings above\. Lower error, live 7\.8%/);
+  const at = x => h.indexOf(x);
+  assert.ok(at('<p>23,395') < at('class="stat"') && at('Spills warned of') < at('Warnings that came true') && at('Warnings that came true') < at('Against two simple rules anyone')
+    && at('Against two simple rules anyone') < at('id="live-error-h"') && at('id="live-error-h"') < at('Lower error, live') && at('Lower error, live') < at('id="history-summary-h"'), 'order');
+  assert.ok(h.includes('href="#simple-rules"'));
+  // Without the flat forecast, the heading names the long-run rate.
+  const t2 = text((await render(live({n_scored: 100, overall: {...OVERALL, calibrated: {brier: 0.0415, base_rate: 0.05}, raw: {brier: 0.05}}, warning_table: SPILL}))).top.innerHTML);
+  assert.match(t2, /Error read as a chance, against each overflow's long-run rate/);
+});
+
+test('17 Nov 2026: the lede keeps one sentence above the figures, and the rest of it and its caveats follow them word for word', () => {
+  const body = html.slice(html.indexOf('<main'), html.indexOf('<script>'));
+  const top = body.indexOf('<div id="top">');
+  assert.ok(body.indexOf('<p class="lead">Every forecast SwimSignal issues is logged and scored later against what the overflows actually did.</p>') < top);
+  for (const s of ['This page updates itself. It also shows the offline tests the model was built on.', 'href="models.html">model scorecard</a>',
+    'A warning can miss a spill, and a warning does not always precede one. These scores describe monitored overflows, not whether the water at a particular spot is safe. An older ranking test measures how well days were ordered; it is not a percentage of forecasts correct.'])
+    assert.ok(body.indexOf(s) > top, s);
 });

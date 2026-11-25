@@ -50,7 +50,364 @@
     "A": 0.5155,
     "C": 0.6466
    }
+  },
+  {
+   "source": "pilot",
+   "site": "bw-ukf2208-09702",
+   "item_id": "S2A_T30UXD_20261113T111553_L2A",
+   "tile": "MGRS-30UXD",
+   "acquired": "2026-11-13T11:16:39.482000Z",
+   "read_at": "2026-11-16T15:55:15+00:00",
+   "model_version": "1.0.0",
+   "inputs": {
+    "reading": 0.107917,
+    "core_brightness": -0.00095,
+    "index_iqr": 0.17047,
+    "low_signal": true
+   },
+   "values": {
+    "fallback": 1.0177,
+    "B0": 1.2032,
+    "A": null,
+    "C": 0.5456
+   }
+  },
+  {
+   "source": "pilot",
+   "site": "bw-ukf2208-09702",
+   "item_id": "S2B_T30UXD_20261116T111239_L2A",
+   "tile": "MGRS-30UXD",
+   "acquired": "2026-11-16T11:16:35.121000Z",
+   "read_at": "2026-11-16T15:55:15+00:00",
+   "model_version": "1.0.0",
+   "inputs": {
+    "reading": 0.1104,
+    "core_brightness": -0.00315,
+    "index_iqr": 0.19908,
+    "low_signal": true
+   },
+   "values": {
+    "fallback": 1.0177,
+    "B0": 1.2072,
+    "A": null,
+    "C": 0.5203
+   }
+  },
+  {
+   "source": "pilot",
+   "site": "bw-ukd1101-45800",
+   "item_id": "S2A_T30UVF_20261109T113557_L2A",
+   "tile": "MGRS-30UVF",
+   "acquired": "2026-11-09T11:36:13.214000Z",
+   "read_at": "2026-11-16T15:55:15+00:00",
+   "model_version": "1.0.0",
+   "inputs": {
+    "reading": 0.533352,
+    "core_brightness": 2e-05,
+    "index_iqr": 0.32721,
+    "low_signal": true
+   },
+   "values": {
+    "fallback": 1.0177,
+    "B0": 1.8793,
+    "A": null,
+    "C": -0.0366
+   }
+  },
+  {
+   "source": "pilot",
+   "site": "bw-ukd1101-45800",
+   "item_id": "S2B_T30UVF_20261112T113316_L2A",
+   "tile": "MGRS-30UVF",
+   "acquired": "2026-11-12T11:36:07.685000Z",
+   "read_at": "2026-11-16T15:55:15+00:00",
+   "model_version": "1.0.0",
+   "inputs": {
+    "reading": 0.430168,
+    "core_brightness": 0.00114,
+    "index_iqr": 0.40942,
+    "low_signal": true
+   },
+   "values": {
+    "fallback": 1.0177,
+    "B0": 1.7153,
+    "A": null,
+    "C": 0.0093
+   }
+  },
+  {
+   "source": "pilot",
+   "site": "bw-ukj2310-11945",
+   "item_id": "S2A_T30UXB_20261113T111553_L2A",
+   "tile": "MGRS-30UXB",
+   "acquired": "2026-11-13T11:17:08.433000Z",
+   "read_at": "2026-11-16T15:55:15+00:00",
+   "model_version": "1.0.0",
+   "inputs": {
+    "reading": -0.309493,
+    "core_brightness": 0.00683,
+    "index_iqr": 0.28752,
+    "low_signal": true
+   },
+   "values": {
+    "fallback": 1.0177,
+    "B0": 0.5399,
+    "A": null,
+    "C": 0.5418
+   }
+  },
+  {
+   "source": "pilot",
+   "site": "wqa-SW-50900003",
+   "item_id": "S2A_T30UWB_20261113T111553_L2A",
+   "tile": "MGRS-30UWB",
+   "acquired": "2026-11-13T11:17:11.983000Z",
+   "read_at": "2026-11-16T15:55:15+00:00",
+   "model_version": "1.0.0",
+   "inputs": {
+    "reading": 0.178675,
+    "core_brightness": 0.07705,
+    "index_iqr": 0.02449,
+    "low_signal": false
+   },
+   "values": {
+    "fallback": 1.0177,
+    "B0": 1.3157,
+    "A": 1.5061,
+    "C": 1.4847
+   }
+  },
+  {
+   "source": "pilot",
+   "site": "wqa-AN-ANT160",
+   "item_id": "S2B_T31UCU_20261113T110242_L2A",
+   "tile": "MGRS-31UCU",
+   "acquired": "2026-11-13T11:06:32.644000Z",
+   "read_at": "2026-11-16T15:55:15+00:00",
+   "model_version": "1.0.0",
+   "inputs": {
+    "reading": 0.086012,
+    "core_brightness": 0.1666,
+    "index_iqr": 0.03316,
+    "low_signal": false
+   },
+   "values": {
+    "fallback": 1.0177,
+    "B0": 1.1684,
+    "A": 1.1805,
+    "C": 1.3144
+   }
+  },
+  {
+   "source": "pilot",
+   "site": "wqa-AN-ANT160",
+   "item_id": "S2B_T30UYD_20261113T110242_L2A",
+   "tile": "MGRS-30UYD",
+   "acquired": "2026-11-13T11:06:33.540000Z",
+   "read_at": "2026-11-16T15:55:15+00:00",
+   "model_version": "1.0.0",
+   "inputs": {
+    "reading": 0.085313,
+    "core_brightness": 0.17563,
+    "index_iqr": 0.03498,
+    "low_signal": false
+   },
+   "values": {
+    "fallback": 1.0177,
+    "B0": 1.1673,
+    "A": 1.178,
+    "C": 1.3178
+   }
+  },
+  {
+   "source": "pilot",
+   "site": "wqa-AN-ANT160",
+   "item_id": "S2A_T31UCU_20261113T111553_L2A",
+   "tile": "MGRS-31UCU",
+   "acquired": "2026-11-13T11:16:34.766000Z",
+   "read_at": "2026-11-16T15:55:15+00:00",
+   "model_version": "1.0.0",
+   "inputs": {
+    "reading": 0.04514,
+    "core_brightness": 0.02672,
+    "index_iqr": 0.07135,
+    "low_signal": false
+   },
+   "values": {
+    "fallback": 1.0177,
+    "B0": 1.1035,
+    "A": 1.0369,
+    "C": 0.9476
+   }
+  },
+  {
+   "source": "pilot",
+   "site": "wqa-AN-ANT160",
+   "item_id": "S2A_T30UYD_20261113T111553_L2A",
+   "tile": "MGRS-30UYD",
+   "acquired": "2026-11-13T11:16:35.694000Z",
+   "read_at": "2026-11-16T15:55:15+00:00",
+   "model_version": "1.0.0",
+   "inputs": {
+    "reading": 0.043644,
+    "core_brightness": 0.02714,
+    "index_iqr": 0.07519,
+    "low_signal": false
+   },
+   "values": {
+    "fallback": 1.0177,
+    "B0": 1.1011,
+    "A": 1.0316,
+    "C": 0.9434
+   }
+  },
+  {
+   "source": "pilot",
+   "site": "bw-ukf2208-09702",
+   "item_id": "S2A_T30UXD_20261116T112248_L2A",
+   "tile": "MGRS-30UXD",
+   "acquired": "2026-11-16T11:26:36.020000Z",
+   "read_at": "2026-11-23T18:19:19+00:00",
+   "model_version": "1.0.0",
+   "inputs": {
+    "reading": 0.144043,
+    "core_brightness": -0.00273,
+    "index_iqr": 0.17518,
+    "low_signal": true
+   },
+   "values": {
+    "fallback": 1.0177,
+    "B0": 1.2606,
+    "A": null,
+    "C": 0.503
+   }
+  },
+  {
+   "source": "pilot",
+   "site": "bw-ukf2208-09702",
+   "item_id": "S2C_T30UXD_20261121T111351_L2A",
+   "tile": "MGRS-30UXD",
+   "acquired": "2026-11-21T11:16:33.207000Z",
+   "read_at": "2026-11-23T18:19:19+00:00",
+   "model_version": "1.0.0",
+   "inputs": {
+    "reading": 0.130227,
+    "core_brightness": -0.00522,
+    "index_iqr": 0.20248,
+    "low_signal": true
+   },
+   "values": {
+    "fallback": 1.0177,
+    "B0": 1.2387,
+    "A": null,
+    "C": 0.4962
+   }
+  },
+  {
+   "source": "pilot",
+   "site": "bw-ukd1101-45800",
+   "item_id": "S2A_T30UVF_20261116T112248_L2A",
+   "tile": "MGRS-30UVF",
+   "acquired": "2026-11-16T11:26:15.992000Z",
+   "read_at": "2026-11-23T18:19:19+00:00",
+   "model_version": "1.0.0",
+   "inputs": {
+    "reading": 0.335863,
+    "core_brightness": -0.00451,
+    "index_iqr": 0.1851,
+    "low_signal": true
+   },
+   "values": {
+    "fallback": 1.0177,
+    "B0": 1.5655,
+    "A": null,
+    "C": 0.2886
+   }
+  },
+  {
+   "source": "pilot",
+   "site": "bw-ukd1101-45800",
+   "item_id": "S2B_T30UVF_20261122T113540_L2A",
+   "tile": "MGRS-30UVF",
+   "acquired": "2026-11-22T11:36:09.821000Z",
+   "read_at": "2026-11-23T18:19:19+00:00",
+   "model_version": "1.0.0",
+   "inputs": {
+    "reading": 0.103272,
+    "core_brightness": 0.12815,
+    "index_iqr": 0.04646,
+    "low_signal": false
+   },
+   "values": {
+    "fallback": 1.0177,
+    "B0": 1.1959,
+    "A": 1.2411,
+    "C": 1.3269
+   }
+  },
+  {
+   "source": "pilot",
+   "site": "wqa-SW-50900003",
+   "item_id": "S2A_T30UWB_20261116T112248_L2A",
+   "tile": "MGRS-30UWB",
+   "acquired": "2026-11-16T11:27:08.714000Z",
+   "read_at": "2026-11-23T18:19:19+00:00",
+   "model_version": "1.0.0",
+   "inputs": {
+    "reading": 0.053562,
+    "core_brightness": 0.13028,
+    "index_iqr": 0.02318,
+    "low_signal": false
+   },
+   "values": {
+    "fallback": 1.0177,
+    "B0": 1.1169,
+    "A": 1.0665,
+    "C": 1.1719
+   }
+  },
+  {
+   "source": "pilot",
+   "site": "wqa-AN-ANT160",
+   "item_id": "S2C_T31UCU_20261121T111351_L2A",
+   "tile": "MGRS-31UCU",
+   "acquired": "2026-11-21T11:16:28.481000Z",
+   "read_at": "2026-11-23T18:19:19+00:00",
+   "model_version": "1.0.0",
+   "inputs": {
+    "reading": 0.207547,
+    "core_brightness": 0.0051,
+    "index_iqr": 0.23797,
+    "low_signal": true
+   },
+   "values": {
+    "fallback": 1.0177,
+    "B0": 1.3616,
+    "A": null,
+    "C": 0.6454
+   }
+  },
+  {
+   "source": "pilot",
+   "site": "wqa-AN-ANT160",
+   "item_id": "S2C_T30UYD_20261121T111351_L2A",
+   "tile": "MGRS-30UYD",
+   "acquired": "2026-11-21T11:16:29.413000Z",
+   "read_at": "2026-11-23T18:19:19+00:00",
+   "model_version": "1.0.0",
+   "inputs": {
+    "reading": 0.19856,
+    "core_brightness": 0.0053,
+    "index_iqr": 0.25801,
+    "low_signal": true
+   },
+   "values": {
+    "fallback": 1.0177,
+    "B0": 1.3473,
+    "A": null,
+    "C": 0.6402
+   }
   }
  ],
- "updated": "2026-11-09T16:30:01+00:00"
+ "updated": "2026-11-23T18:19:19+00:00"
 }

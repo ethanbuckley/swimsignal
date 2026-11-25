@@ -1,5 +1,5 @@
 // A town typed in the list's search lists the spots near it, under the spots named for it (plan.js, townsNamed,
-// spotsNear, nearSaid, milesFrom; index.html, offerOnMap). Until 6 Nov 2026 "Ambleside" listed one spot, Windermere
+// spotsNear, nearHead, milesFrom; index.html, offerOnMap). Until 6 Nov 2026 "Ambleside" listed one spot, Windermere
 // at Waterhead; Rydal Water, Loughrigg Tarn, Grasmere and Elter Water came only after tapping "From Ambleside".
 //   node --test tests/site_town_search.test.cjs
 const { test } = require('node:test');
@@ -46,7 +46,7 @@ test('the spots near a town: within 10 miles, nearest first, five at most, leavi
   assert.deepEqual(n.rows.map(x => P.milesFrom(x.miles, 'Ambleside')),
     ['1.7 miles from Ambleside', '2.1 miles from Ambleside', '2.8 miles from Ambleside', '2.9 miles from Ambleside', '3.7 miles from Ambleside']);
   assert.equal(n.total, 6);                                                     // Rayrigg Meadow at 3.9 is within reach; Crow Park at 13.5 is not
-  assert.equal(P.nearSaid(n.rows.length, n.total), 'the 5 nearest of 6 within 10 miles');
+  assert.deepEqual(P.nearHead(n.rows.length, n.total, 'Ambleside'), ['5 spots near Ambleside', 'the nearest of 6 within 10 miles']);
   // Nothing skipped: the spot named for the town is nearest.
   assert.equal(P.spotsNear(LAKES, AMBLESIDE, miles).rows[0].s.name, 'Windermere, Waterhead, Ambleside');
   // A town with nothing in reach has no group.
@@ -54,9 +54,10 @@ test('the spots near a town: within 10 miles, nearest first, five at most, leavi
 });
 
 test('the line beside the heading, and the distance in the miles wording of the rest of the site', () => {
-  assert.equal(P.nearSaid(1, 1), '1 spot within 10 miles');
-  assert.equal(P.nearSaid(3, 3), '3 spots within 10 miles, nearest first');
-  assert.equal(P.nearSaid(5, 12), 'the 5 nearest of 12 within 10 miles');
+  // The count leads the heading (17 Nov 2026): "4 spots near LS29 9", not "Near LS29 9" with the count after it.
+  assert.deepEqual(P.nearHead(1, 1, 'Keswick'), ['1 spot near Keswick', 'within 10 miles']);
+  assert.deepEqual(P.nearHead(4, 4, 'LS29 9'), ['4 spots near LS29 9', 'within 10 miles, nearest first']);
+  assert.deepEqual(P.nearHead(5, 12, 'Oxford'), ['5 spots near Oxford', 'the nearest of 12 within 10 miles']);
   assert.equal(P.milesFrom(0.4, 'Keswick'), 'under a mile from Keswick');
   assert.equal(P.milesFrom(1, 'Settle'), '1 mile from Settle');
   assert.equal(P.milesFrom(12.4, 'Ambleside'), '12 miles from Ambleside');
@@ -113,10 +114,11 @@ test('the page lists the town\'s spots first among the offers, with the list\'s 
   const offers = PAGE.slice(PAGE.indexOf('async function offerOnMap('), PAGE.indexOf('const WATER_ZOOM'));
   // Each file on its own: the places still come when the rivers do not (the smoke fixture has no rivers file).
   assert.match(offers, /Promise\.allSettled\(\[loadWaters\(\)/);
-  assert.match(offers, /for \(const town of townsNamed\(places, t\)\)/);
+  assert.match(offers, /for \(const town of postcode \? places : townsNamed\(places, t\)\)/);   // a postcode is its own place (site_postcode_said)
   assert.match(offers, /spotsNear\(DATA\.spots\.filter\(listKept\), town, \(a, b\) => km\(a, b\) \/ MILE_KM, listed\)/);
   assert.match(offers, /const listed = new Set\(LISTED\.map\(s => s\.id\)\)/);       // never a spot twice
-  assert.match(offers, /<li class="area-head"><h3>Near \$\{esc\(n\.town\.name\)\} <span>· \$\{nearSaid\(n\.rows\.length, n\.total\)\}<\/span><\/h3><\/li>/);
+  assert.match(offers, /const \[head, rest\] = nearHead\(n\.rows\.length, n\.total, esc\(n\.town\.name\)\);/);
+  assert.match(offers, /<li class="area-head"><h3>\$\{head\} <span>· \$\{rest\}<\/span><\/h3><\/li>/);
   assert.match(offers, /spotRow\(x\.s, milesFrom\(x\.miles, esc\(n\.town\.name\)\)\)/);
   assert.match(offers, /box\.innerHTML = nearRows \+ plans \+/);
   assert.match(offers, /bindItems\(box\);/);

@@ -971,12 +971,26 @@
    "branch_exists": true,
    "date": "2026-11-13"
   },
+  "707": {
+   "n": 707,
+   "state": "open",
+   "branch": "claude/level-rise-check",
+   "branch_exists": true,
+   "date": "2026-11-16"
+  },
   "698": {
    "n": 698,
    "state": "open",
    "branch": "claude/lake-temp-local-model-a45dfa",
    "branch_exists": true,
    "date": "2026-11-14"
+  },
+  "705": {
+   "n": 705,
+   "state": "open",
+   "branch": "claude/river-unseen-staging",
+   "branch_exists": true,
+   "date": "2026-11-15"
   },
   "699": {
    "n": 699,
@@ -991,6 +1005,34 @@
    "branch": "claude/sonde-arrival-check-311284",
    "branch_exists": true,
    "date": "2026-11-13"
+  },
+  "704": {
+   "n": 704,
+   "state": "open",
+   "branch": "claude/swimsignal-world-class-6a9aed",
+   "branch_exists": true,
+   "date": "2026-11-15"
+  },
+  "718": {
+   "n": 718,
+   "state": "open",
+   "branch": "claude/overflow-ledger-stage-1",
+   "branch_exists": true,
+   "date": "2026-11-17"
+  },
+  "733": {
+   "n": 733,
+   "state": "merged",
+   "branch": "claude/river-winter-read",
+   "branch_exists": true,
+   "date": "2026-11-24"
+  },
+  "736": {
+   "n": 736,
+   "state": "open",
+   "branch": "claude/river-winter-line",
+   "branch_exists": true,
+   "date": "2026-11-24"
   }
  },
  "entries": [
@@ -1455,6 +1497,30 @@
     342
    ],
    "register_note": "The register says the 235 line \"passed 6/7\", which reads as if only that line did; the doc says each line met six of the seven conditions."
+  },
+  {
+   "id": "level-rise-ecoli",
+   "title": "River level as an input to the E. coli estimate",
+   "section": "negative",
+   "topics": [
+    "e. coli",
+    "rivers",
+    "river level"
+   ],
+   "verdict": "Not supported, on 16 November 2026, on samples the models had already seen (development evidence). Adding the 24-hour rise at a river bathing water's own gauge to rain, season and upstream exposure did not improve how a site's samples were ordered: mean within-site rank correlation 0.437 against 0.445, difference −0.008 (95% interval −0.056 to +0.024), on 810 samples at 17 bathing waters. The rise alone ordered samples far worse than 48-hour rain (0.121 against 0.400). How high the river stood in its usual range did about as well as rain alone (0.361) and added nothing on top of it.",
+   "scope": "River bathing waters with a 15-minute level series in the Environment Agency's archive, May to September 2023 to 2026. One model form with one slope for all sites. Dry days alone were not settled either way (+0.059, interval −0.069 to +0.188). Says nothing about flow as dilution, which was tested apart.",
+   "stage": "archived",
+   "stage_note": "This form of the input is archived. Nothing on the site changes.",
+   "reopen_when": "Unseen river points with gauges are staged, so that the level on dry days can be tested under its own statement.",
+   "records": [
+    {
+     "doc": "docs/LEVEL-RISE-CHECK-2026-11.md",
+     "quote": "**Not supported, as stated.**"
+    }
+   ],
+   "prs": [
+    707
+   ]
   },
   {
    "id": "lake-own-rate",
@@ -3069,6 +3135,47 @@
    ]
   },
   {
+   "id": "river-unseen",
+   "title": "River samples the river model never saw: the order holds, the range does not",
+   "section": "data",
+   "topics": [
+    "e. coli",
+    "rivers",
+    "evaluation",
+    "sources"
+   ],
+   "verdict": "Read once on 16 November 2026: the order passes and the range fails. On 6,322 river E. coli results from 2012 to 2022 at 59 Environment Agency sampling points that no model here had used, the frozen candidate put each point's days in the right order (mean within-point correlation 0.360, interval 0.314 to 0.394, against a bar of 0.15). Only 53.1% of results fell inside its 8-in-10 range, against a pass band of 72% to 88%: 44.3% were above it and 2.6% below. Rain in the last 48 hours alone scored 0.355, so the overflow exposure added little to the order.",
+   "scope": "Sampling points that are not bathing waters, kept purposes only (planned monitoring and planned investigations), May to September, hindcast on ERA5-Land rain at lead 0. 48 of the 59 points are in the South West and most are small streams; the median result was 818 per 100 ml against 320 at the bathing waters the model was fitted on. The split of the misses by stream size was made after the read and is development evidence.",
+   "stage": "waiting",
+   "stage_note": "Read on 16 November 2026. Nothing on the site changes. An order-only line at river spots (higher or lower than usual here) is proposed and waits on Ethan's decision.",
+   "next": "Two follow-ups fitted after the read (development evidence only). Giving each place a usual level from its own earlier samples put 75.7% of later results inside the range at the archive points, against 46% for the old range; stream size did not predict a place's level. At bathing-water rivers the same range held (81.1% of 544 samples) and did no better than the old one (83.3%), so no new shadow log is built there. What is missing is samples at swim spots that are not bathing waters.",
+   "records": [
+    {
+     "doc": "docs/RIVER-UNSEEN-PROTOCOL-2026-11.md",
+     "quote": "## The read, 16 November 2026: order passes, range fails"
+    },
+    {
+     "doc": "docs/RIVER-LEVEL-CANDIDATE-2026-11.md",
+     "quote": "## Result, 16 November 2026: L1 passes, L2 passes (development)"
+    },
+    {
+     "doc": "docs/PLACE-LEVEL-READ-0-2026-11.md",
+     "quote": "**The answer is the smallest n that passes.**"
+    },
+    {
+     "doc": "docs/RIVER-LEVEL-BATHING-BACKTEST-2026-11.md",
+     "quote": "**No shadow log for bathing rivers on this evidence.**"
+    },
+    {
+     "doc": "docs/RIVER-ORDER-LINE-PROPOSAL-2026-11.md",
+     "quote": "**It is a product\ndecision for Ethan. Nothing is built and nothing on the site changes.**"
+    }
+   ],
+   "prs": [
+    705
+   ]
+  },
+  {
    "id": "research-lab",
    "title": "Research Lab exhibits",
    "section": "satellite",
@@ -3540,6 +3647,118 @@
    ],
    "prs": [
     699
+   ]
+  },
+  {
+   "id": "ambition-portfolio",
+   "title": "Ambition portfolio: eight further projects, each with a first test",
+   "section": "data",
+   "topics": [
+    "e. coli",
+    "rivers",
+    "evaluation",
+    "sources"
+   ],
+   "verdict": "Not a test. A ranked list written on 15 November 2026. Checks on samples the models had already seen (2023-26, development evidence) found: 54 of 199 river results over 900 came with under 2 mm of rain in 48 hours; rain and season alone order a river's samples nearly as well as the full chain (within-site rank correlation 0.385 against 0.427 at sites left out of the fit); a site's own past rate did not improve the river estimate with the season held out. The Environment Agency's archive returned at least 2,500 river E. coli results a year at points that are not bathing waters, which no model here has used.",
+   "scope": "Twenty river and eighteen lake bathing waters, May to September 2023-26, hindsight inputs on archive rain. No held-out sample was read and none of the eight first tests has been run. The archive count is a lower bound from two capped requests.",
+   "stage": "development",
+   "stage_note": "A document for Ethan's review. Nothing on the site changes. The top three (a held-out river set from the Environment Agency's archive, Yorkshire Water's four-a-week lab samples as a 2027 test, and dry-day levels at rivers) each have a drafted statement.",
+   "next": "After review: the staging PR for the held-out river set, with its statement pushed before any result is joined. Three emails are drafted for Ethan and unsent.",
+   "records": [
+    {
+     "doc": "docs/AMBITION-PORTFOLIO-2026-11.md",
+     "quote": "The river forecast can be tested on years it never saw, now."
+    }
+   ],
+   "prs": [
+    704
+   ]
+  },
+  {
+   "id": "overflow-ledger",
+   "title": "The overflow ledger: what each overflow contributes to the model's exposure at listed spots, and the Ilkley audit statement",
+   "section": "promising",
+   "topics": [
+    "model",
+    "overflows",
+    "samples"
+   ],
+   "verdict": "No test and no new result, 17 Nov 2026. A table of model accounting: 1,414 overflows traced to 89 of the 121 listed spots through 2,099 links, added up from the forecast's own weights. The audit statement for Ilkley is written and not run.",
+   "scope": "An account of the forecast model, not of measured bacteria. The weights are the model's settings, and at 59 unseen river points the production estimate ordered days at 0.376 against 0.355 for rain alone. No row says an overflow caused a sample result or broke a permit. The Ilkley audit is one seen site with 17 samples in 2026.",
+   "stage": "development",
+   "stage_note": "A research file with a contract and a Lab prototype page (prototypes/research-lab/overflow-ledger/), left out of the site build. Not published.",
+   "next": "Ethan decides whether it is public and whether it names overflows nationally. Then a season figure with its protocol first (by 15 Dec 2026), and the Ilkley audit after option B's read on or after 2 Dec 2026.",
+   "records": [
+    {
+     "doc": "docs/OVERFLOW-LEDGER-2026-11.md",
+     "quote": "1,414 overflows traced to 89 of the 121 listed spots, through 2,099 links."
+    },
+    {
+     "doc": "docs/OVERFLOW-LEDGER-CONTRACT-v1.md",
+     "quote": "The script makes no exposure calculation of its own."
+    },
+    {
+     "doc": "docs/RESTORE-ILKLEY-STATEMENT-2026-11.md",
+     "quote": "**Result: not run.** Nothing in this file is a finding about 2026 samples."
+    }
+   ],
+   "prs": [
+    718
+   ]
+  },
+  {
+   "id": "river-winter",
+   "title": "River E. coli in winter: the hidden estimate orders a river's days",
+   "section": "data",
+   "topics": [
+    "e. coli",
+    "rivers",
+    "evaluation",
+    "winter"
+   ],
+   "verdict": "Read once on 24 November 2026: both conditions pass. On 2,754 October to April river E. coli results from six winters (2012 to 2022) at Environment Agency sampling points, never scored by any model here, production's river chance as deployed put each point's days in the right order (mean within-point correlation 0.485, interval 0.393 to 0.525) and still did with each point's month means removed (0.484, interval 0.354 to 0.531), against a bar of 0.15 fixed before the read. Rain in the last 48 hours alone scored 0.473, and production was not shown better than it (difference +0.011, interval −0.022 to +0.032). The estimate's level was too low: a mean chance of 35.5% where 48.3% of results were over 900.",
+   "scope": "28 monitoring points with 15 or more rows, in 8 river systems, 18 of them in the South West; not swim spots. Hindcast at lead 0 on ERA5-Land rain, the model file without soil moisture. Supports an order within a place in winter. Does not support a percentage, a count or a level, any gain from the overflow chain over rain, lakes, or a forecast made days ahead. Half the winters (2,561 rows) were held back unread.",
+   "stage": "waiting",
+   "stage_note": "Read on 24 November 2026. Nothing on the site changes. The river line for October to April is built behind a switch that is off (PR #736): one word on today's day, no percentage, no change to the level. Ethan decides whether to switch it on.",
+   "next": "Ethan looks at the pictures in the build's record and decides on the switch. The held-back winters are kept for one frozen test, first proposed for a rain-only word at river spots with no overflow upstream.",
+   "records": [
+    {
+     "doc": "docs/RIVER-WINTER-READ-2026-11.md",
+     "quote": "## The read, 24 November 2026: both conditions pass"
+    },
+    {
+     "doc": "docs/RIVER-WINTER-LINE-2026-11.md",
+     "quote": "**The switch is off."
+    }
+   ],
+   "prs": [
+    733,
+    736
+   ]
+  },
+  {
+   "id": "next-research-shortlist",
+   "title": "Next research shortlist: seven things the site could tell people next",
+   "section": "data",
+   "topics": [
+    "e. coli",
+    "rivers",
+    "sources",
+    "product"
+   ],
+   "verdict": "Not a test. A ranked list written on 24 November 2026, with one check run (the winter river read, which passed and has its own entry). Two small measurements on data already seen: what the estimate leaves unexplained is correlated between bathing waters under 50 km apart sampled on the same day (rivers 0.21, interval 0.13 to 0.29; lakes 0.32, interval 0.18 to 0.44) and not beyond; and 29 of 48 listed lakes have a confirmed or plausible Bloomin' Algae record within 1 km, 16 of them with no Environment Agency algae check.",
+   "scope": "Feeds were probed with a few requests each; licences are as read on the day, several by a research agent and not by the author. The same-day figure uses seen samples and hindsight estimates and is development evidence. No idea on the list other than the winter read has been tested.",
+   "stage": "development",
+   "stage_note": "A document for Ethan's review. Nothing on the site changes. Its three picks are a river line in winter, a rain word for river spots with no overflow upstream, and a same-day sentinel update as the long bet.",
+   "next": "The winter line is built and switched off (PR #736). Next: a statement and one read of the held-back winter rows for the rain word. Two drafted emails are Ethan's to send.",
+   "records": [
+    {
+     "doc": "docs/NEXT-RESEARCH-SHORTLIST-2026-11.md",
+     "quote": "**The check run today passed.**"
+    }
+   ],
+   "prs": [
+    733
    ]
   }
  ]

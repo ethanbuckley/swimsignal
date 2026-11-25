@@ -245,3 +245,74 @@ read-only). Only whether `p_status` was present in each build was counted. No sh
 - **If the minimum data falls short**, the 14-day extension runs to 5 Dec 2026, read on or after 7 Dec.
 - 25 Oct is the day the clocks go back, so that day's stretches can read up to an hour short (see "When the
   status is known, and when it is stale").
+
+### Readiness check, 16 November 2026 (counts only; no score, no shadow value compared with an outcome)
+
+Run one week before the read, with `scripts/live_status_shadow_readiness.py` on the `state` release of 16 Nov 2026
+01:44 UTC and the published scored file. It counts rows. It computes no score.
+
+**As things stand the read on 23 November cannot be made, and the 14-day extension will not rescue it.**
+
+- **The shadow has had a known status on no decision forecast since issue day 27 October.** On issue days 21 to 24
+  October, 87% to 89% of decision forecasts had a known status. From 27 October to 16 November: none. Every one of
+  those rows fell back, so its `p_status` is production's own figure.
+- **Why.** The rule above calls a status stale if any stretch in the seven-day window ran longer than 8 hours
+  without a current reading. Since 25 October there have been six stretches over 8 hours with no current reading
+  at any overflow: 16.0 h ending 25 Oct 14:15 UTC, 12.5 h ending 26 Oct 11:15, 10.0 h ending 2 Nov 20:15, 8.5 h
+  ending 5 Nov 12:45, 10.5 h ending 9 Nov 21:15 and 8.5 h ending 13 Nov 12:45. One such stretch makes every
+  overflow's status unknown for the next seven days, and they have come often enough that a clear week has not
+  occurred. The 8 hours was set from the poller's gaps in the 30 days to 20 October, when the longest was 7.71 h.
+  The longest gap in a day has since risen from about 5 h to 7 to 8.5 h on most days.
+- **Minimum data.** The test needs 200 spill rows with a known status at each lead. In the 12 scored days of the
+  window so far (to 14 November): 0 at lead 0, 0 at lead 1, 0 at lead 2, 130 at lead 3, 180 at lead 4. Only target
+  days 27 and 28 October hold any. No later day can add one unless polling changes.
+- **Sanity checks that do hold:** every scored row in the window has a logged `p_status`, and every fallback row's
+  `p_status` equals its `p_cal`.
+
+Rebuilt from the state files to confirm the cause: on issue day 24 October, 12,692 of 14,174 overflows had a window
+gap of 8 h or less; on 28 October 27 of 14,173; on 16 November 5 of 14,178.
+
+**What this means beyond the read.** Setting `DIPCAST_LIVE_STATUS=1` today would change no forecast, for the same
+reason: the adopted figure uses the same fallback. The gain measured on EA records (#254, #639) cannot reach the site
+until the status is known at issue time.
+
+**Nothing is changed by this note.** The rule, the candidates, the window and the read stand as written. The
+statement says a change to the inputs or the fallback rule ends the window, so the choice is Ethan's:
+
+1. **Poll more often, leave the rule.** Status needs a current reading at least every 8 hours for seven days. A
+   poll that does not depend on a full site build would give that. The window would restart once a clear week
+   exists.
+2. **Change the rule under a new statement,** for example judging staleness by the latest reading only. That is a
+   different candidate and needs its own window.
+3. **Let it read as "not enough data".** The 2026 backtest (#639) then remains the only evidence, and the switch
+   still does nothing until polling improves.
+
+**Decision, 16 November 2026 (Ethan): poll more often, leave the rule.**
+
+How, with no new code. A status is polled by each site build. GitHub's own schedule has been starting a build every
+4 to 7 hours (for example 01:29 and then 08:26 UTC on 16 November), which is what breaks the 8-hour rule. The
+workflow already has a way to pace itself: with the repository variable `SELF_PACE` set to 1, each build asks for the
+next one 30 minutes after it started (`.github/workflows/site.yml`, job `next-build`; tested 6 November on a
+throwaway branch). It is off today.
+
+When. Not before the ensemble-rain window's last target day, 19 November, and its read on 21 November: the
+workflow's own note says that at 48 builds a day the ensemble gets no spare Open-Meteo calls. So: **set `SELF_PACE`
+to 1 on or after 21 November 2026**, after that read.
+
+```
+gh variable set SELF_PACE --body 1
+```
+
+What it does to this test. The rule, the candidates and the fallback are unchanged, so the window does not end. It
+reads "not enough data" on 23 November and takes its one 14-day extension, to target day 5 December, read on or
+after 7 December. A status becomes known again once seven days pass with no stretch over 8 hours: about 28
+November if the pacing starts on 21 November. That leaves about 8 target days with a known status. At the roughly
+26 spill rows a day seen before the window, that is near the 200 needed at each lead and may fall short. If it
+does, the test is inconclusive as stated, and a new window needs a new statement.
+
+Not checked: whether a build every 30 minutes changes anything for the other open windows (regional routing to 27
+November, company calibration to 22 November, the combined shadow). Each scores the latest forecast issued by 08:00,
+which would then be a fresher one. Their owners should say before the variable is set.
+
+Readiness re-check: run `scripts/live_status_shadow_readiness.py` again on 28 November. It should show a known
+status on most decision forecasts from that issue day.
