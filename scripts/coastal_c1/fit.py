@@ -44,7 +44,7 @@ def fit(X: np.ndarray, y: np.ndarray) -> list[float]:
 def rows(samples: Path, sites: Path, rain_dir: Path, years) -> tuple[pd.DataFrame, dict]:
     """The rows with their targets, last-sample features and every rain window."""
     df = pd.read_parquet(samples)
-    df = df[df["year"].isin(years) & df["ecoli"].notna()].copy().reset_index(drop=True)
+    df = df[df["year"].isin(years) & df["month"].isin(c1.MONTHS) & df["ecoli"].notna()].copy().reset_index(drop=True)
     st = pd.read_csv(sites)
     cells = c1.site_cells(st)
     df["cell"] = df["site_id"].map(lambda s: cells.get(s))

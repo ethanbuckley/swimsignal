@@ -309,3 +309,21 @@ use radar or forecast rain. This amendment does not alter that limit.
 ---
 
 *Results go below this line.*
+
+## Freeze, 25 November 2026
+
+Fitted by `scripts/coastal_c1/fit.py` on the committed 2022 to 2026 samples and ERA5-Land rain (amendment 1). No 2012
+to 2021 sample had been requested.
+
+- Rows: 32,868 statutory samples at 404 sites, May to September, 499 over 500. Every row's rain windows are covered:
+  all 183 cells used have rain (80 of the 185 listed cells from their own grid point, 105 from the nearest land point,
+  median 6.6 km, furthest 22.2 km at Portland).
+- Window pairs, leave one year out, pooled Brier on 2022 to 2026: W4 0.014554, **W1 0.014535**, W2 0.014543,
+  W3 0.014560. C0 (no rain) 0.014699. **Chosen: W1, rain over 24 and 72 hours.**
+- Nested estimate (the choice made inside each outer year), development evidence that decides nothing: C1 minus C0
+  is below zero in 2022, 2023, 2025 and 2026 and above it in 2024 (`docs/coastal-c1/fit.json`).
+- **Frozen file:** `data/research/coastal/c1_frozen.v1.json`, SHA-256
+  `90b390ba251c5ddb48ac9783902dfa1480cf822261f0edfd7e4736c3d99515e6`. It holds R, C0 and C1 for over 500 and over
+  250, the site tables, the window and the cell map. Nothing in it changes after this commit.
+
+Next, per section 5: fetch the 2012 to 2021 statutory samples, then score once with `scripts/coastal_c1/backtest.py`.

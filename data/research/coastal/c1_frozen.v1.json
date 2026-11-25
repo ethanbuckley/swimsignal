@@ -1,0 +1,5212 @@
+{
+ "code_commit": "d74cc3d3c4b4c6b5c732fde68ee099c1162dbc75",
+ "features": [
+  "logit(site rate)",
+  "month 6",
+  "month 7",
+  "month 8",
+  "month 9",
+  "x_last1",
+  "x_last2",
+  "log1p(rain 24 h)",
+  "log1p(rain 72 h)"
+ ],
+ "fit_years": [
+  2022,
+  2023,
+  2024,
+  2025,
+  2026
+ ],
+ "frozen_at": "2026-11-25T14:05:17+00:00",
+ "models": {
+  "over_250": {
+   "C0": [
+    -1.2251712860869715,
+    0.8101018812204351,
+    -0.14590981582515844,
+    0.4657799053369583,
+    0.7721394348944616,
+    0.9322535064623202,
+    0.42846419148399917,
+    -0.3878788155338568
+   ],
+   "C1": [
+    -2.129738187707965,
+    0.7650581346045261,
+    -0.14178316076178293,
+    0.5194293148048875,
+    0.8657277780232426,
+    0.7777913871651173,
+    0.3956818570081241,
+    -0.4266858288035704,
+    0.4339084390823584,
+    0.2291161720801183
+   ],
+   "R": [
+    -0.9423485703807518,
+    0.9111039408510838,
+    0.012900082557297387,
+    0.6555880740570946,
+    1.0142974228522028,
+    1.202043730312111
+   ]
+  },
+  "over_500": {
+   "C0": [
+    -1.2510110657358484,
+    0.7967817860679502,
+    -0.4691763532894064,
+    0.22796645908028457,
+    0.4024784585741666,
+    0.6028578751058583,
+    0.5837888320185859,
+    -0.3560286448338525
+   ],
+   "C1": [
+    -2.385676043967122,
+    0.7456985385575773,
+    -0.5870770935959461,
+    0.10074489419421906,
+    0.3712908468798392,
+    0.2589880252598129,
+    0.5350377700424294,
+    -0.4460258725377452,
+    0.4201118022092806,
+    0.38469478055437994
+   ],
+   "R": [
+    -0.5917911799002015,
+    0.9651076896616292,
+    -0.25950820047197903,
+    0.44085973123680966,
+    0.6919054007588461,
+    0.9765928031949223
+   ]
+  }
+ },
+ "months": [
+  5,
+  6,
+  7,
+  8,
+  9
+ ],
+ "protocol": "docs/COASTAL-C1-PROTOCOL-2026-11.md (sections 2, 5, 6; amendment 1)",
+ "rain": {
+  "cell_rule": "era5land_core.map_cells, max_step 3",
+  "cells": [
+   {
+    "cell_lat": 50.0,
+    "cell_lon": -5.7,
+    "grid_lat": 50.1,
+    "grid_lon": -5.7,
+    "how": "nearest with data",
+    "i": 109,
+    "j": 26,
+    "km": 11.12
+   },
+   {
+    "cell_lat": 50.0,
+    "cell_lon": -5.3,
+    "grid_lat": 50.0,
+    "grid_lon": -5.2,
+    "how": "nearest with data",
+    "i": 110,
+    "j": 31,
+    "km": 7.15
+   },
+   {
+    "cell_lat": 50.0,
+    "cell_lon": -5.2,
+    "grid_lat": 50.0,
+    "grid_lon": -5.2,
+    "how": "centre",
+    "i": 110,
+    "j": 31,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 50.0,
+    "cell_lon": -5.1,
+    "grid_lat": 50.0,
+    "grid_lon": -5.2,
+    "how": "nearest with data",
+    "i": 110,
+    "j": 31,
+    "km": 7.15
+   },
+   {
+    "cell_lat": 50.1,
+    "cell_lon": -5.7,
+    "grid_lat": 50.1,
+    "grid_lon": -5.7,
+    "how": "centre",
+    "i": 109,
+    "j": 26,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 50.1,
+    "cell_lon": -5.5,
+    "grid_lat": 50.1,
+    "grid_lon": -5.6,
+    "how": "nearest with data",
+    "i": 109,
+    "j": 27,
+    "km": 7.13
+   },
+   {
+    "cell_lat": 50.1,
+    "cell_lon": -5.4,
+    "grid_lat": 50.2,
+    "grid_lon": -5.4,
+    "how": "nearest with data",
+    "i": 108,
+    "j": 29,
+    "km": 11.12
+   },
+   {
+    "cell_lat": 50.1,
+    "cell_lon": -5.3,
+    "grid_lat": 50.1,
+    "grid_lon": -5.2,
+    "how": "nearest with data",
+    "i": 109,
+    "j": 31,
+    "km": 7.13
+   },
+   {
+    "cell_lat": 50.1,
+    "cell_lon": -5.1,
+    "grid_lat": 50.1,
+    "grid_lon": -5.2,
+    "how": "nearest with data",
+    "i": 109,
+    "j": 31,
+    "km": 7.13
+   },
+   {
+    "cell_lat": 50.2,
+    "cell_lon": -5.5,
+    "grid_lat": 50.2,
+    "grid_lon": -5.4,
+    "how": "nearest with data",
+    "i": 108,
+    "j": 29,
+    "km": 7.12
+   },
+   {
+    "cell_lat": 50.2,
+    "cell_lon": -5.4,
+    "grid_lat": 50.2,
+    "grid_lon": -5.4,
+    "how": "centre",
+    "i": 108,
+    "j": 29,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 50.2,
+    "cell_lon": -5.0,
+    "grid_lat": 50.2,
+    "grid_lon": -5.1,
+    "how": "nearest with data",
+    "i": 108,
+    "j": 32,
+    "km": 7.12
+   },
+   {
+    "cell_lat": 50.2,
+    "cell_lon": -4.9,
+    "grid_lat": 50.2,
+    "grid_lon": -4.9,
+    "how": "centre",
+    "i": 108,
+    "j": 34,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 50.2,
+    "cell_lon": -4.8,
+    "grid_lat": 50.2,
+    "grid_lon": -4.9,
+    "how": "nearest with data",
+    "i": 108,
+    "j": 34,
+    "km": 7.12
+   },
+   {
+    "cell_lat": 50.2,
+    "cell_lon": -3.9,
+    "grid_lat": 50.2,
+    "grid_lon": -3.8,
+    "how": "nearest with data",
+    "i": 108,
+    "j": 45,
+    "km": 7.12
+   },
+   {
+    "cell_lat": 50.2,
+    "cell_lon": -3.8,
+    "grid_lat": 50.2,
+    "grid_lon": -3.8,
+    "how": "centre",
+    "i": 108,
+    "j": 45,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 50.3,
+    "cell_lon": -5.3,
+    "grid_lat": 50.3,
+    "grid_lon": -5.2,
+    "how": "nearest with data",
+    "i": 107,
+    "j": 31,
+    "km": 7.1
+   },
+   {
+    "cell_lat": 50.3,
+    "cell_lon": -5.2,
+    "grid_lat": 50.3,
+    "grid_lon": -5.2,
+    "how": "centre",
+    "i": 107,
+    "j": 31,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 50.3,
+    "cell_lon": -4.8,
+    "grid_lat": 50.3,
+    "grid_lon": -4.9,
+    "how": "nearest with data",
+    "i": 107,
+    "j": 34,
+    "km": 7.1
+   },
+   {
+    "cell_lat": 50.3,
+    "cell_lon": -4.7,
+    "grid_lat": 50.4,
+    "grid_lon": -4.7,
+    "how": "nearest with data",
+    "i": 106,
+    "j": 36,
+    "km": 11.12
+   },
+   {
+    "cell_lat": 50.3,
+    "cell_lon": -4.6,
+    "grid_lat": 50.4,
+    "grid_lon": -4.6,
+    "how": "nearest with data",
+    "i": 106,
+    "j": 37,
+    "km": 11.12
+   },
+   {
+    "cell_lat": 50.3,
+    "cell_lon": -4.3,
+    "grid_lat": 50.4,
+    "grid_lon": -4.3,
+    "how": "nearest with data",
+    "i": 106,
+    "j": 40,
+    "km": 11.12
+   },
+   {
+    "cell_lat": 50.3,
+    "cell_lon": -4.2,
+    "grid_lat": 50.4,
+    "grid_lon": -4.2,
+    "how": "nearest with data",
+    "i": 106,
+    "j": 41,
+    "km": 11.12
+   },
+   {
+    "cell_lat": 50.3,
+    "cell_lon": -4.1,
+    "grid_lat": 50.4,
+    "grid_lon": -4.1,
+    "how": "nearest with data",
+    "i": 106,
+    "j": 42,
+    "km": 11.12
+   },
+   {
+    "cell_lat": 50.3,
+    "cell_lon": -4.0,
+    "grid_lat": 50.4,
+    "grid_lon": -4.0,
+    "how": "nearest with data",
+    "i": 106,
+    "j": 43,
+    "km": 11.12
+   },
+   {
+    "cell_lat": 50.3,
+    "cell_lon": -3.9,
+    "grid_lat": 50.3,
+    "grid_lon": -3.8,
+    "how": "nearest with data",
+    "i": 107,
+    "j": 45,
+    "km": 7.1
+   },
+   {
+    "cell_lat": 50.3,
+    "cell_lon": -3.7,
+    "grid_lat": 50.3,
+    "grid_lon": -3.7,
+    "how": "centre",
+    "i": 107,
+    "j": 46,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 50.3,
+    "cell_lon": -3.6,
+    "grid_lat": 50.3,
+    "grid_lon": -3.6,
+    "how": "centre",
+    "i": 107,
+    "j": 47,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 50.4,
+    "cell_lon": -5.2,
+    "grid_lat": 50.3,
+    "grid_lon": -5.2,
+    "how": "nearest with data",
+    "i": 107,
+    "j": 31,
+    "km": 11.12
+   },
+   {
+    "cell_lat": 50.4,
+    "cell_lon": -5.1,
+    "grid_lat": 50.4,
+    "grid_lon": -5.0,
+    "how": "nearest with data",
+    "i": 106,
+    "j": 33,
+    "km": 7.09
+   },
+   {
+    "cell_lat": 50.4,
+    "cell_lon": -5.0,
+    "grid_lat": 50.4,
+    "grid_lon": -5.0,
+    "how": "centre",
+    "i": 106,
+    "j": 33,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 50.4,
+    "cell_lon": -4.7,
+    "grid_lat": 50.4,
+    "grid_lon": -4.7,
+    "how": "centre",
+    "i": 106,
+    "j": 36,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 50.4,
+    "cell_lon": -4.5,
+    "grid_lat": 50.4,
+    "grid_lon": -4.5,
+    "how": "centre",
+    "i": 106,
+    "j": 38,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 50.4,
+    "cell_lon": -4.4,
+    "grid_lat": 50.4,
+    "grid_lon": -4.4,
+    "how": "centre",
+    "i": 106,
+    "j": 39,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 50.4,
+    "cell_lon": -4.3,
+    "grid_lat": 50.4,
+    "grid_lon": -4.3,
+    "how": "centre",
+    "i": 106,
+    "j": 40,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 50.4,
+    "cell_lon": -4.1,
+    "grid_lat": 50.4,
+    "grid_lon": -4.1,
+    "how": "centre",
+    "i": 106,
+    "j": 42,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 50.4,
+    "cell_lon": -3.6,
+    "grid_lat": 50.4,
+    "grid_lon": -3.6,
+    "how": "centre",
+    "i": 106,
+    "j": 47,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 50.4,
+    "cell_lon": -3.5,
+    "grid_lat": 50.4,
+    "grid_lon": -3.6,
+    "how": "nearest with data",
+    "i": 106,
+    "j": 47,
+    "km": 7.09
+   },
+   {
+    "cell_lat": 50.5,
+    "cell_lon": -5.0,
+    "grid_lat": 50.5,
+    "grid_lon": -5.0,
+    "how": "centre",
+    "i": 105,
+    "j": 33,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 50.5,
+    "cell_lon": -3.5,
+    "grid_lat": 50.5,
+    "grid_lon": -3.6,
+    "how": "nearest with data",
+    "i": 105,
+    "j": 47,
+    "km": 7.07
+   },
+   {
+    "cell_lat": 50.5,
+    "cell_lon": -2.4,
+    "grid_lat": 50.7,
+    "grid_lon": -2.4,
+    "how": "nearest with data",
+    "i": 103,
+    "j": 59,
+    "km": 22.24
+   },
+   {
+    "cell_lat": 50.6,
+    "cell_lon": -4.9,
+    "grid_lat": 50.6,
+    "grid_lon": -4.8,
+    "how": "nearest with data",
+    "i": 104,
+    "j": 35,
+    "km": 7.06
+   },
+   {
+    "cell_lat": 50.6,
+    "cell_lon": -4.8,
+    "grid_lat": 50.6,
+    "grid_lon": -4.8,
+    "how": "centre",
+    "i": 104,
+    "j": 35,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 50.6,
+    "cell_lon": -3.5,
+    "grid_lat": 50.6,
+    "grid_lon": -3.5,
+    "how": "centre",
+    "i": 104,
+    "j": 48,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 50.6,
+    "cell_lon": -3.4,
+    "grid_lat": 50.6,
+    "grid_lon": -3.5,
+    "how": "nearest with data",
+    "i": 104,
+    "j": 48,
+    "km": 7.06
+   },
+   {
+    "cell_lat": 50.6,
+    "cell_lon": -3.3,
+    "grid_lat": 50.7,
+    "grid_lon": -3.3,
+    "how": "nearest with data",
+    "i": 103,
+    "j": 50,
+    "km": 11.12
+   },
+   {
+    "cell_lat": 50.6,
+    "cell_lon": -2.5,
+    "grid_lat": 50.7,
+    "grid_lon": -2.5,
+    "how": "nearest with data",
+    "i": 103,
+    "j": 58,
+    "km": 11.12
+   },
+   {
+    "cell_lat": 50.6,
+    "cell_lon": -2.4,
+    "grid_lat": 50.7,
+    "grid_lon": -2.4,
+    "how": "nearest with data",
+    "i": 103,
+    "j": 59,
+    "km": 11.12
+   },
+   {
+    "cell_lat": 50.6,
+    "cell_lon": -2.3,
+    "grid_lat": 50.7,
+    "grid_lon": -2.3,
+    "how": "nearest with data",
+    "i": 103,
+    "j": 60,
+    "km": 11.12
+   },
+   {
+    "cell_lat": 50.6,
+    "cell_lon": -2.2,
+    "grid_lat": 50.7,
+    "grid_lon": -2.2,
+    "how": "nearest with data",
+    "i": 103,
+    "j": 61,
+    "km": 11.12
+   },
+   {
+    "cell_lat": 50.6,
+    "cell_lon": -2.1,
+    "grid_lat": 50.7,
+    "grid_lon": -2.1,
+    "how": "nearest with data",
+    "i": 103,
+    "j": 62,
+    "km": 11.12
+   },
+   {
+    "cell_lat": 50.6,
+    "cell_lon": -2.0,
+    "grid_lat": 50.7,
+    "grid_lon": -2.0,
+    "how": "nearest with data",
+    "i": 103,
+    "j": 63,
+    "km": 11.12
+   },
+   {
+    "cell_lat": 50.6,
+    "cell_lon": -1.2,
+    "grid_lat": 50.7,
+    "grid_lon": -1.3,
+    "how": "nearest with data",
+    "i": 103,
+    "j": 70,
+    "km": 13.17
+   },
+   {
+    "cell_lat": 50.7,
+    "cell_lon": -4.6,
+    "grid_lat": 50.7,
+    "grid_lon": -4.6,
+    "how": "centre",
+    "i": 103,
+    "j": 37,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 50.7,
+    "cell_lon": -3.3,
+    "grid_lat": 50.7,
+    "grid_lon": -3.3,
+    "how": "centre",
+    "i": 103,
+    "j": 50,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 50.7,
+    "cell_lon": -3.2,
+    "grid_lat": 50.7,
+    "grid_lon": -3.2,
+    "how": "centre",
+    "i": 103,
+    "j": 51,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 50.7,
+    "cell_lon": -3.1,
+    "grid_lat": 50.7,
+    "grid_lon": -3.1,
+    "how": "centre",
+    "i": 103,
+    "j": 52,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 50.7,
+    "cell_lon": -2.9,
+    "grid_lat": 50.7,
+    "grid_lon": -3.0,
+    "how": "nearest with data",
+    "i": 103,
+    "j": 53,
+    "km": 7.04
+   },
+   {
+    "cell_lat": 50.7,
+    "cell_lon": -2.8,
+    "grid_lat": 50.7,
+    "grid_lon": -2.8,
+    "how": "centre",
+    "i": 103,
+    "j": 55,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 50.7,
+    "cell_lon": -2.7,
+    "grid_lat": 50.7,
+    "grid_lon": -2.7,
+    "how": "centre",
+    "i": 103,
+    "j": 56,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 50.7,
+    "cell_lon": -2.0,
+    "grid_lat": 50.7,
+    "grid_lon": -2.0,
+    "how": "centre",
+    "i": 103,
+    "j": 63,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 50.7,
+    "cell_lon": -1.9,
+    "grid_lat": 50.7,
+    "grid_lon": -1.9,
+    "how": "centre",
+    "i": 103,
+    "j": 64,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 50.7,
+    "cell_lon": -1.8,
+    "grid_lat": 50.7,
+    "grid_lon": -1.9,
+    "how": "nearest with data",
+    "i": 103,
+    "j": 64,
+    "km": 7.04
+   },
+   {
+    "cell_lat": 50.7,
+    "cell_lon": -1.7,
+    "grid_lat": 50.8,
+    "grid_lon": -1.7,
+    "how": "nearest with data",
+    "i": 102,
+    "j": 66,
+    "km": 11.12
+   },
+   {
+    "cell_lat": 50.7,
+    "cell_lon": -1.6,
+    "grid_lat": 50.7,
+    "grid_lon": -1.5,
+    "how": "nearest with data",
+    "i": 103,
+    "j": 68,
+    "km": 7.04
+   },
+   {
+    "cell_lat": 50.7,
+    "cell_lon": -1.5,
+    "grid_lat": 50.7,
+    "grid_lon": -1.5,
+    "how": "centre",
+    "i": 103,
+    "j": 68,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 50.7,
+    "cell_lon": -1.2,
+    "grid_lat": 50.7,
+    "grid_lon": -1.3,
+    "how": "nearest with data",
+    "i": 103,
+    "j": 70,
+    "km": 7.04
+   },
+   {
+    "cell_lat": 50.7,
+    "cell_lon": -1.1,
+    "grid_lat": 50.7,
+    "grid_lon": -1.3,
+    "how": "nearest with data",
+    "i": 103,
+    "j": 70,
+    "km": 14.09
+   },
+   {
+    "cell_lat": 50.7,
+    "cell_lon": -0.8,
+    "grid_lat": 50.8,
+    "grid_lon": -0.8,
+    "how": "nearest with data",
+    "i": 102,
+    "j": 75,
+    "km": 11.12
+   },
+   {
+    "cell_lat": 50.7,
+    "cell_lon": 0.2,
+    "grid_lat": 50.8,
+    "grid_lon": 0.2,
+    "how": "nearest with data",
+    "i": 102,
+    "j": 85,
+    "km": 11.12
+   },
+   {
+    "cell_lat": 50.8,
+    "cell_lon": -4.6,
+    "grid_lat": 50.8,
+    "grid_lon": -4.5,
+    "how": "nearest with data",
+    "i": 102,
+    "j": 38,
+    "km": 7.03
+   },
+   {
+    "cell_lat": 50.8,
+    "cell_lon": -1.4,
+    "grid_lat": 50.8,
+    "grid_lon": -1.4,
+    "how": "centre",
+    "i": 102,
+    "j": 69,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 50.8,
+    "cell_lon": -1.3,
+    "grid_lat": 50.8,
+    "grid_lon": -1.4,
+    "how": "nearest with data",
+    "i": 102,
+    "j": 69,
+    "km": 7.03
+   },
+   {
+    "cell_lat": 50.8,
+    "cell_lon": -1.2,
+    "grid_lat": 50.9,
+    "grid_lon": -1.2,
+    "how": "nearest with data",
+    "i": 101,
+    "j": 71,
+    "km": 11.12
+   },
+   {
+    "cell_lat": 50.8,
+    "cell_lon": -1.1,
+    "grid_lat": 50.9,
+    "grid_lon": -1.1,
+    "how": "nearest with data",
+    "i": 101,
+    "j": 72,
+    "km": 11.12
+   },
+   {
+    "cell_lat": 50.8,
+    "cell_lon": -1.0,
+    "grid_lat": 50.9,
+    "grid_lon": -1.0,
+    "how": "nearest with data",
+    "i": 101,
+    "j": 73,
+    "km": 11.12
+   },
+   {
+    "cell_lat": 50.8,
+    "cell_lon": -0.9,
+    "grid_lat": 50.8,
+    "grid_lon": -0.8,
+    "how": "nearest with data",
+    "i": 102,
+    "j": 75,
+    "km": 7.03
+   },
+   {
+    "cell_lat": 50.8,
+    "cell_lon": -0.7,
+    "grid_lat": 50.8,
+    "grid_lon": -0.8,
+    "how": "nearest with data",
+    "i": 102,
+    "j": 75,
+    "km": 7.03
+   },
+   {
+    "cell_lat": 50.8,
+    "cell_lon": -0.6,
+    "grid_lat": 50.9,
+    "grid_lon": -0.6,
+    "how": "nearest with data",
+    "i": 101,
+    "j": 77,
+    "km": 11.12
+   },
+   {
+    "cell_lat": 50.8,
+    "cell_lon": -0.5,
+    "grid_lat": 50.9,
+    "grid_lon": -0.5,
+    "how": "nearest with data",
+    "i": 101,
+    "j": 78,
+    "km": 11.12
+   },
+   {
+    "cell_lat": 50.8,
+    "cell_lon": -0.4,
+    "grid_lat": 50.9,
+    "grid_lon": -0.4,
+    "how": "nearest with data",
+    "i": 101,
+    "j": 79,
+    "km": 11.12
+   },
+   {
+    "cell_lat": 50.8,
+    "cell_lon": -0.3,
+    "grid_lat": 50.9,
+    "grid_lon": -0.3,
+    "how": "nearest with data",
+    "i": 101,
+    "j": 80,
+    "km": 11.12
+   },
+   {
+    "cell_lat": 50.8,
+    "cell_lon": -0.2,
+    "grid_lat": 50.9,
+    "grid_lon": -0.2,
+    "how": "nearest with data",
+    "i": 101,
+    "j": 81,
+    "km": 11.12
+   },
+   {
+    "cell_lat": 50.8,
+    "cell_lon": -0.1,
+    "grid_lat": 50.9,
+    "grid_lon": -0.1,
+    "how": "nearest with data",
+    "i": 101,
+    "j": 82,
+    "km": 11.12
+   },
+   {
+    "cell_lat": 50.8,
+    "cell_lon": 0.0,
+    "grid_lat": 50.8,
+    "grid_lon": 0.1,
+    "how": "nearest with data",
+    "i": 102,
+    "j": 84,
+    "km": 7.03
+   },
+   {
+    "cell_lat": 50.8,
+    "cell_lon": 0.1,
+    "grid_lat": 50.8,
+    "grid_lon": 0.1,
+    "how": "centre",
+    "i": 102,
+    "j": 84,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 50.8,
+    "cell_lon": 0.4,
+    "grid_lat": 50.8,
+    "grid_lon": 0.3,
+    "how": "nearest with data",
+    "i": 102,
+    "j": 86,
+    "km": 7.03
+   },
+   {
+    "cell_lat": 50.8,
+    "cell_lon": 0.5,
+    "grid_lat": 50.9,
+    "grid_lon": 0.5,
+    "how": "nearest with data",
+    "i": 101,
+    "j": 88,
+    "km": 11.12
+   },
+   {
+    "cell_lat": 50.8,
+    "cell_lon": 0.6,
+    "grid_lat": 50.9,
+    "grid_lon": 0.5,
+    "how": "nearest with data",
+    "i": 101,
+    "j": 88,
+    "km": 13.15
+   },
+   {
+    "cell_lat": 50.9,
+    "cell_lon": -4.6,
+    "grid_lat": 50.9,
+    "grid_lon": -4.5,
+    "how": "nearest with data",
+    "i": 101,
+    "j": 38,
+    "km": 7.01
+   },
+   {
+    "cell_lat": 50.9,
+    "cell_lon": 0.6,
+    "grid_lat": 50.9,
+    "grid_lon": 0.5,
+    "how": "nearest with data",
+    "i": 101,
+    "j": 88,
+    "km": 7.01
+   },
+   {
+    "cell_lat": 50.9,
+    "cell_lon": 0.7,
+    "grid_lat": 50.9,
+    "grid_lon": 0.7,
+    "how": "centre",
+    "i": 101,
+    "j": 90,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 50.9,
+    "cell_lon": 0.8,
+    "grid_lat": 50.9,
+    "grid_lon": 0.7,
+    "how": "nearest with data",
+    "i": 101,
+    "j": 90,
+    "km": 7.01
+   },
+   {
+    "cell_lat": 51.0,
+    "cell_lon": -4.5,
+    "grid_lat": 51.0,
+    "grid_lon": -4.4,
+    "how": "nearest with data",
+    "i": 100,
+    "j": 39,
+    "km": 7.0
+   },
+   {
+    "cell_lat": 51.0,
+    "cell_lon": -4.2,
+    "grid_lat": 51.0,
+    "grid_lon": -4.2,
+    "how": "centre",
+    "i": 100,
+    "j": 41,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 51.0,
+    "cell_lon": 1.0,
+    "grid_lat": 51.0,
+    "grid_lon": 1.0,
+    "how": "centre",
+    "i": 100,
+    "j": 93,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 51.1,
+    "cell_lon": -4.2,
+    "grid_lat": 51.1,
+    "grid_lon": -4.2,
+    "how": "centre",
+    "i": 99,
+    "j": 41,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 51.1,
+    "cell_lon": 1.1,
+    "grid_lat": 51.1,
+    "grid_lon": 1.0,
+    "how": "nearest with data",
+    "i": 99,
+    "j": 93,
+    "km": 6.98
+   },
+   {
+    "cell_lat": 51.1,
+    "cell_lon": 1.2,
+    "grid_lat": 51.2,
+    "grid_lon": 1.2,
+    "how": "nearest with data",
+    "i": 98,
+    "j": 95,
+    "km": 11.12
+   },
+   {
+    "cell_lat": 51.2,
+    "cell_lon": -4.2,
+    "grid_lat": 51.2,
+    "grid_lon": -4.1,
+    "how": "nearest with data",
+    "i": 98,
+    "j": 42,
+    "km": 6.97
+   },
+   {
+    "cell_lat": 51.2,
+    "cell_lon": -4.1,
+    "grid_lat": 51.2,
+    "grid_lon": -4.1,
+    "how": "centre",
+    "i": 98,
+    "j": 42,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 51.2,
+    "cell_lon": -4.0,
+    "grid_lat": 51.2,
+    "grid_lon": -4.0,
+    "how": "centre",
+    "i": 98,
+    "j": 43,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 51.2,
+    "cell_lon": -3.8,
+    "grid_lat": 51.2,
+    "grid_lon": -3.8,
+    "how": "centre",
+    "i": 98,
+    "j": 45,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 51.2,
+    "cell_lon": -3.6,
+    "grid_lat": 51.2,
+    "grid_lon": -3.6,
+    "how": "centre",
+    "i": 98,
+    "j": 47,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 51.2,
+    "cell_lon": -3.5,
+    "grid_lat": 51.2,
+    "grid_lon": -3.5,
+    "how": "centre",
+    "i": 98,
+    "j": 48,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 51.2,
+    "cell_lon": -3.4,
+    "grid_lat": 51.2,
+    "grid_lon": -3.5,
+    "how": "nearest with data",
+    "i": 98,
+    "j": 48,
+    "km": 6.97
+   },
+   {
+    "cell_lat": 51.2,
+    "cell_lon": 1.4,
+    "grid_lat": 51.2,
+    "grid_lon": 1.3,
+    "how": "nearest with data",
+    "i": 98,
+    "j": 96,
+    "km": 6.97
+   },
+   {
+    "cell_lat": 51.3,
+    "cell_lon": -3.0,
+    "grid_lat": 51.3,
+    "grid_lon": -2.9,
+    "how": "nearest with data",
+    "i": 97,
+    "j": 54,
+    "km": 6.95
+   },
+   {
+    "cell_lat": 51.3,
+    "cell_lon": 1.4,
+    "grid_lat": 51.3,
+    "grid_lon": 1.3,
+    "how": "nearest with data",
+    "i": 97,
+    "j": 96,
+    "km": 6.95
+   },
+   {
+    "cell_lat": 51.4,
+    "cell_lon": -3.0,
+    "grid_lat": 51.3,
+    "grid_lon": -2.9,
+    "how": "nearest with data",
+    "i": 97,
+    "j": 54,
+    "km": 13.11
+   },
+   {
+    "cell_lat": 51.4,
+    "cell_lon": -2.9,
+    "grid_lat": 51.4,
+    "grid_lon": -2.8,
+    "how": "nearest with data",
+    "i": 96,
+    "j": 55,
+    "km": 6.94
+   },
+   {
+    "cell_lat": 51.4,
+    "cell_lon": 0.8,
+    "grid_lat": 51.4,
+    "grid_lon": 0.8,
+    "how": "centre",
+    "i": 96,
+    "j": 91,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 51.4,
+    "cell_lon": 0.9,
+    "grid_lat": 51.4,
+    "grid_lon": 0.9,
+    "how": "centre",
+    "i": 96,
+    "j": 92,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 51.4,
+    "cell_lon": 1.0,
+    "grid_lat": 51.4,
+    "grid_lon": 0.9,
+    "how": "nearest with data",
+    "i": 96,
+    "j": 92,
+    "km": 6.94
+   },
+   {
+    "cell_lat": 51.4,
+    "cell_lon": 1.1,
+    "grid_lat": 51.3,
+    "grid_lon": 1.1,
+    "how": "nearest with data",
+    "i": 97,
+    "j": 94,
+    "km": 11.12
+   },
+   {
+    "cell_lat": 51.4,
+    "cell_lon": 1.3,
+    "grid_lat": 51.3,
+    "grid_lon": 1.3,
+    "how": "nearest with data",
+    "i": 97,
+    "j": 96,
+    "km": 11.12
+   },
+   {
+    "cell_lat": 51.4,
+    "cell_lon": 1.4,
+    "grid_lat": 51.3,
+    "grid_lon": 1.3,
+    "how": "nearest with data",
+    "i": 97,
+    "j": 96,
+    "km": 13.11
+   },
+   {
+    "cell_lat": 51.5,
+    "cell_lon": 0.7,
+    "grid_lat": 51.5,
+    "grid_lon": 0.7,
+    "how": "centre",
+    "i": 95,
+    "j": 90,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 51.5,
+    "cell_lon": 0.8,
+    "grid_lat": 51.5,
+    "grid_lon": 0.7,
+    "how": "nearest with data",
+    "i": 95,
+    "j": 90,
+    "km": 6.92
+   },
+   {
+    "cell_lat": 51.8,
+    "cell_lon": 0.9,
+    "grid_lat": 51.8,
+    "grid_lon": 0.8,
+    "how": "nearest with data",
+    "i": 92,
+    "j": 91,
+    "km": 6.88
+   },
+   {
+    "cell_lat": 51.8,
+    "cell_lon": 1.0,
+    "grid_lat": 51.9,
+    "grid_lon": 1.0,
+    "how": "nearest with data",
+    "i": 91,
+    "j": 93,
+    "km": 11.12
+   },
+   {
+    "cell_lat": 51.8,
+    "cell_lon": 1.1,
+    "grid_lat": 51.8,
+    "grid_lon": 1.2,
+    "how": "nearest with data",
+    "i": 92,
+    "j": 95,
+    "km": 6.88
+   },
+   {
+    "cell_lat": 51.8,
+    "cell_lon": 1.2,
+    "grid_lat": 51.8,
+    "grid_lon": 1.2,
+    "how": "centre",
+    "i": 92,
+    "j": 95,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 51.8,
+    "cell_lon": 1.3,
+    "grid_lat": 51.8,
+    "grid_lon": 1.2,
+    "how": "nearest with data",
+    "i": 92,
+    "j": 95,
+    "km": 6.88
+   },
+   {
+    "cell_lat": 51.9,
+    "cell_lon": 1.3,
+    "grid_lat": 51.9,
+    "grid_lon": 1.2,
+    "how": "nearest with data",
+    "i": 91,
+    "j": 95,
+    "km": 6.86
+   },
+   {
+    "cell_lat": 52.0,
+    "cell_lon": 1.3,
+    "grid_lat": 52.0,
+    "grid_lon": 1.3,
+    "how": "centre",
+    "i": 90,
+    "j": 96,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 52.0,
+    "cell_lon": 1.4,
+    "grid_lat": 52.0,
+    "grid_lon": 1.3,
+    "how": "nearest with data",
+    "i": 90,
+    "j": 96,
+    "km": 6.85
+   },
+   {
+    "cell_lat": 52.3,
+    "cell_lon": 1.7,
+    "grid_lat": 52.3,
+    "grid_lon": 1.7,
+    "how": "centre",
+    "i": 87,
+    "j": 100,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 52.5,
+    "cell_lon": 1.7,
+    "grid_lat": 52.5,
+    "grid_lon": 1.7,
+    "how": "centre",
+    "i": 85,
+    "j": 100,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 52.6,
+    "cell_lon": 1.7,
+    "grid_lat": 52.6,
+    "grid_lon": 1.7,
+    "how": "centre",
+    "i": 84,
+    "j": 100,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 52.7,
+    "cell_lon": 1.7,
+    "grid_lat": 52.7,
+    "grid_lon": 1.7,
+    "how": "centre",
+    "i": 83,
+    "j": 100,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 52.8,
+    "cell_lon": 1.6,
+    "grid_lat": 52.8,
+    "grid_lon": 1.6,
+    "how": "centre",
+    "i": 82,
+    "j": 99,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 52.9,
+    "cell_lon": 0.5,
+    "grid_lat": 52.9,
+    "grid_lon": 0.5,
+    "how": "centre",
+    "i": 81,
+    "j": 88,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 52.9,
+    "cell_lon": 1.2,
+    "grid_lat": 52.9,
+    "grid_lon": 1.2,
+    "how": "centre",
+    "i": 81,
+    "j": 95,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 52.9,
+    "cell_lon": 1.3,
+    "grid_lat": 52.9,
+    "grid_lon": 1.3,
+    "how": "centre",
+    "i": 81,
+    "j": 96,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 52.9,
+    "cell_lon": 1.4,
+    "grid_lat": 52.9,
+    "grid_lon": 1.4,
+    "how": "centre",
+    "i": 81,
+    "j": 97,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 53.0,
+    "cell_lon": 0.5,
+    "grid_lat": 53.0,
+    "grid_lon": 0.6,
+    "how": "nearest with data",
+    "i": 80,
+    "j": 89,
+    "km": 6.69
+   },
+   {
+    "cell_lat": 53.0,
+    "cell_lon": 0.8,
+    "grid_lat": 53.0,
+    "grid_lon": 0.8,
+    "how": "centre",
+    "i": 80,
+    "j": 91,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 53.1,
+    "cell_lon": 0.3,
+    "grid_lat": 53.1,
+    "grid_lon": 0.2,
+    "how": "nearest with data",
+    "i": 79,
+    "j": 85,
+    "km": 6.68
+   },
+   {
+    "cell_lat": 53.2,
+    "cell_lon": 0.3,
+    "grid_lat": 53.2,
+    "grid_lon": 0.3,
+    "how": "centre",
+    "i": 78,
+    "j": 86,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 53.2,
+    "cell_lon": 0.4,
+    "grid_lat": 53.2,
+    "grid_lon": 0.4,
+    "how": "centre",
+    "i": 78,
+    "j": 87,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 53.3,
+    "cell_lon": 0.3,
+    "grid_lat": 53.3,
+    "grid_lon": 0.2,
+    "how": "nearest with data",
+    "i": 77,
+    "j": 85,
+    "km": 6.65
+   },
+   {
+    "cell_lat": 53.4,
+    "cell_lon": -3.2,
+    "grid_lat": 53.4,
+    "grid_lon": -3.1,
+    "how": "nearest with data",
+    "i": 76,
+    "j": 52,
+    "km": 6.63
+   },
+   {
+    "cell_lat": 53.4,
+    "cell_lon": -3.1,
+    "grid_lat": 53.4,
+    "grid_lon": -3.1,
+    "how": "centre",
+    "i": 76,
+    "j": 52,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 53.5,
+    "cell_lon": -3.1,
+    "grid_lat": 53.5,
+    "grid_lon": -3.0,
+    "how": "nearest with data",
+    "i": 75,
+    "j": 53,
+    "km": 6.61
+   },
+   {
+    "cell_lat": 53.5,
+    "cell_lon": 0.0,
+    "grid_lat": 53.5,
+    "grid_lon": 0.0,
+    "how": "centre",
+    "i": 75,
+    "j": 83,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 53.6,
+    "cell_lon": -3.1,
+    "grid_lat": 53.6,
+    "grid_lon": -3.0,
+    "how": "nearest with data",
+    "i": 74,
+    "j": 53,
+    "km": 6.6
+   },
+   {
+    "cell_lat": 53.6,
+    "cell_lon": 0.0,
+    "grid_lat": 53.6,
+    "grid_lon": -0.1,
+    "how": "nearest with data",
+    "i": 74,
+    "j": 82,
+    "km": 6.6
+   },
+   {
+    "cell_lat": 53.7,
+    "cell_lon": -3.0,
+    "grid_lat": 53.7,
+    "grid_lon": -3.0,
+    "how": "centre",
+    "i": 73,
+    "j": 53,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 53.7,
+    "cell_lon": 0.0,
+    "grid_lat": 53.7,
+    "grid_lon": 0.0,
+    "how": "centre",
+    "i": 73,
+    "j": 83,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 53.8,
+    "cell_lon": -3.1,
+    "grid_lat": 53.8,
+    "grid_lon": -3.0,
+    "how": "nearest with data",
+    "i": 72,
+    "j": 53,
+    "km": 6.57
+   },
+   {
+    "cell_lat": 53.9,
+    "cell_lon": -3.0,
+    "grid_lat": 53.9,
+    "grid_lon": -3.0,
+    "how": "centre",
+    "i": 71,
+    "j": 53,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 53.9,
+    "cell_lon": -0.2,
+    "grid_lat": 53.9,
+    "grid_lon": -0.2,
+    "how": "centre",
+    "i": 71,
+    "j": 81,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 54.0,
+    "cell_lon": -0.2,
+    "grid_lat": 54.0,
+    "grid_lon": -0.3,
+    "how": "nearest with data",
+    "i": 70,
+    "j": 80,
+    "km": 6.54
+   },
+   {
+    "cell_lat": 54.1,
+    "cell_lon": -3.3,
+    "grid_lat": 54.2,
+    "grid_lon": -3.4,
+    "how": "nearest with data",
+    "i": 68,
+    "j": 49,
+    "km": 12.89
+   },
+   {
+    "cell_lat": 54.1,
+    "cell_lon": -2.9,
+    "grid_lat": 54.1,
+    "grid_lon": -2.8,
+    "how": "nearest with data",
+    "i": 69,
+    "j": 55,
+    "km": 6.52
+   },
+   {
+    "cell_lat": 54.1,
+    "cell_lon": -0.2,
+    "grid_lat": 54.1,
+    "grid_lon": -0.2,
+    "how": "centre",
+    "i": 69,
+    "j": 81,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 54.1,
+    "cell_lon": -0.1,
+    "grid_lat": 54.1,
+    "grid_lon": -0.1,
+    "how": "centre",
+    "i": 69,
+    "j": 82,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 54.2,
+    "cell_lon": -3.4,
+    "grid_lat": 54.2,
+    "grid_lon": -3.4,
+    "how": "centre",
+    "i": 68,
+    "j": 49,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 54.2,
+    "cell_lon": -3.3,
+    "grid_lat": 54.2,
+    "grid_lon": -3.4,
+    "how": "nearest with data",
+    "i": 68,
+    "j": 49,
+    "km": 6.5
+   },
+   {
+    "cell_lat": 54.2,
+    "cell_lon": -0.4,
+    "grid_lat": 54.2,
+    "grid_lon": -0.4,
+    "how": "centre",
+    "i": 68,
+    "j": 79,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 54.2,
+    "cell_lon": -0.3,
+    "grid_lat": 54.2,
+    "grid_lon": -0.3,
+    "how": "centre",
+    "i": 68,
+    "j": 80,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 54.2,
+    "cell_lon": -0.2,
+    "grid_lat": 54.2,
+    "grid_lon": -0.3,
+    "how": "nearest with data",
+    "i": 68,
+    "j": 80,
+    "km": 6.5
+   },
+   {
+    "cell_lat": 54.3,
+    "cell_lon": -0.4,
+    "grid_lat": 54.3,
+    "grid_lon": -0.5,
+    "how": "nearest with data",
+    "i": 67,
+    "j": 78,
+    "km": 6.49
+   },
+   {
+    "cell_lat": 54.4,
+    "cell_lon": -3.5,
+    "grid_lat": 54.4,
+    "grid_lon": -3.4,
+    "how": "nearest with data",
+    "i": 66,
+    "j": 49,
+    "km": 6.47
+   },
+   {
+    "cell_lat": 54.4,
+    "cell_lon": -0.5,
+    "grid_lat": 54.4,
+    "grid_lon": -0.5,
+    "how": "centre",
+    "i": 66,
+    "j": 78,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 54.5,
+    "cell_lon": -3.6,
+    "grid_lat": 54.5,
+    "grid_lon": -3.6,
+    "how": "centre",
+    "i": 65,
+    "j": 47,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 54.5,
+    "cell_lon": -0.7,
+    "grid_lat": 54.5,
+    "grid_lon": -0.7,
+    "how": "centre",
+    "i": 65,
+    "j": 76,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 54.5,
+    "cell_lon": -0.6,
+    "grid_lat": 54.5,
+    "grid_lon": -0.7,
+    "how": "nearest with data",
+    "i": 65,
+    "j": 76,
+    "km": 6.46
+   },
+   {
+    "cell_lat": 54.6,
+    "cell_lon": -1.2,
+    "grid_lat": 54.6,
+    "grid_lon": -1.2,
+    "how": "centre",
+    "i": 64,
+    "j": 71,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 54.6,
+    "cell_lon": -1.1,
+    "grid_lat": 54.6,
+    "grid_lon": -1.1,
+    "how": "centre",
+    "i": 64,
+    "j": 72,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 54.6,
+    "cell_lon": -1.0,
+    "grid_lat": 54.6,
+    "grid_lon": -1.0,
+    "how": "centre",
+    "i": 64,
+    "j": 73,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 54.7,
+    "cell_lon": -1.2,
+    "grid_lat": 54.7,
+    "grid_lon": -1.2,
+    "how": "centre",
+    "i": 63,
+    "j": 71,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 54.8,
+    "cell_lon": -3.4,
+    "grid_lat": 54.8,
+    "grid_lon": -3.4,
+    "how": "centre",
+    "i": 62,
+    "j": 49,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 54.8,
+    "cell_lon": -1.3,
+    "grid_lat": 54.8,
+    "grid_lon": -1.4,
+    "how": "nearest with data",
+    "i": 62,
+    "j": 69,
+    "km": 6.41
+   },
+   {
+    "cell_lat": 54.9,
+    "cell_lon": -1.4,
+    "grid_lat": 54.9,
+    "grid_lon": -1.4,
+    "how": "centre",
+    "i": 61,
+    "j": 69,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 54.9,
+    "cell_lon": -1.3,
+    "grid_lat": 54.9,
+    "grid_lon": -1.4,
+    "how": "nearest with data",
+    "i": 61,
+    "j": 69,
+    "km": 6.39
+   },
+   {
+    "cell_lat": 55.0,
+    "cell_lon": -1.4,
+    "grid_lat": 55.0,
+    "grid_lon": -1.4,
+    "how": "centre",
+    "i": 60,
+    "j": 69,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 55.1,
+    "cell_lon": -1.5,
+    "grid_lat": 55.1,
+    "grid_lon": -1.6,
+    "how": "nearest with data",
+    "i": 59,
+    "j": 67,
+    "km": 6.36
+   },
+   {
+    "cell_lat": 55.2,
+    "cell_lon": -1.5,
+    "grid_lat": 55.2,
+    "grid_lon": -1.6,
+    "how": "nearest with data",
+    "i": 58,
+    "j": 67,
+    "km": 6.35
+   },
+   {
+    "cell_lat": 55.3,
+    "cell_lon": -1.6,
+    "grid_lat": 55.3,
+    "grid_lon": -1.6,
+    "how": "centre",
+    "i": 57,
+    "j": 67,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 55.4,
+    "cell_lon": -1.6,
+    "grid_lat": 55.4,
+    "grid_lon": -1.6,
+    "how": "centre",
+    "i": 56,
+    "j": 67,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 55.5,
+    "cell_lon": -1.6,
+    "grid_lat": 55.5,
+    "grid_lon": -1.6,
+    "how": "centre",
+    "i": 55,
+    "j": 67,
+    "km": 0.0
+   },
+   {
+    "cell_lat": 55.6,
+    "cell_lon": -1.7,
+    "grid_lat": 55.6,
+    "grid_lon": -1.8,
+    "how": "nearest with data",
+    "i": 54,
+    "j": 65,
+    "km": 6.28
+   },
+   {
+    "cell_lat": 55.8,
+    "cell_lon": -2.0,
+    "grid_lat": 55.8,
+    "grid_lon": -2.0,
+    "how": "centre",
+    "i": 52,
+    "j": 63,
+    "km": 0.0
+   }
+  ],
+  "min_cover": 0.9,
+  "source": "ERA5-Land, Copernicus CDS reanalysis-era5-land total_precipitation, de-accumulated hourly by scripts/era5land/to_cells.py, 0.1 mm"
+ },
+ "samples": {
+  "file": "data/research/coastal/samples.parquet",
+  "sha256": "b26f3af80e3fc0dafe115db8104c0916a57469448e24b5fcbde84fa25dc58660"
+ },
+ "schema": "coastal-c1-frozen",
+ "site_tables": {
+  "over_250": {
+   "m": 17.081215986791324,
+   "p0": 0.034440793476938056,
+   "sites": {
+    "ukc1101-06000": {
+     "k": 4,
+     "n": 98
+    },
+    "ukc1101-06100": {
+     "k": 1,
+     "n": 99
+    },
+    "ukc1101-06200": {
+     "k": 1,
+     "n": 69
+    },
+    "ukc1202-06300": {
+     "k": 5,
+     "n": 100
+    },
+    "ukc1202-06400": {
+     "k": 0,
+     "n": 89
+    },
+    "ukc1202-06500": {
+     "k": 3,
+     "n": 94
+    },
+    "ukc1202-06600": {
+     "k": 1,
+     "n": 80
+    },
+    "ukc1202-06650": {
+     "k": 3,
+     "n": 84
+    },
+    "ukc1202-06700": {
+     "k": 5,
+     "n": 100
+    },
+    "ukc1404-05700": {
+     "k": 4,
+     "n": 97
+    },
+    "ukc1404-05800": {
+     "k": 5,
+     "n": 97
+    },
+    "ukc1404-05900": {
+     "k": 1,
+     "n": 98
+    },
+    "ukc2100-04220": {
+     "k": 0,
+     "n": 20
+    },
+    "ukc2101-04000": {
+     "k": 0,
+     "n": 55
+    },
+    "ukc2101-04200": {
+     "k": 0,
+     "n": 60
+    },
+    "ukc2101-04250": {
+     "k": 4,
+     "n": 85
+    },
+    "ukc2102-03600": {
+     "k": 10,
+     "n": 100
+    },
+    "ukc2102-03700": {
+     "k": 0,
+     "n": 60
+    },
+    "ukc2102-03800": {
+     "k": 1,
+     "n": 60
+    },
+    "ukc2102-03900": {
+     "k": 6,
+     "n": 75
+    },
+    "ukc2103-04600": {
+     "k": 1,
+     "n": 79
+    },
+    "ukc2103-04700": {
+     "k": 1,
+     "n": 88
+    },
+    "ukc2104-04280": {
+     "k": 1,
+     "n": 80
+    },
+    "ukc2104-04300": {
+     "k": 1,
+     "n": 55
+    },
+    "ukc2106-04400": {
+     "k": 1,
+     "n": 90
+    },
+    "ukc2106-04500": {
+     "k": 2,
+     "n": 90
+    },
+    "ukc2203-04800": {
+     "k": 2,
+     "n": 70
+    },
+    "ukc2203-04900": {
+     "k": 10,
+     "n": 94
+    },
+    "ukc2203-05000": {
+     "k": 2,
+     "n": 70
+    },
+    "ukc2203-05100": {
+     "k": 1,
+     "n": 55
+    },
+    "ukc2203-05200": {
+     "k": 0,
+     "n": 55
+    },
+    "ukc2204-05300": {
+     "k": 3,
+     "n": 99
+    },
+    "ukc2204-05400": {
+     "k": 6,
+     "n": 94
+    },
+    "ukc2300-05500": {
+     "k": 6,
+     "n": 100
+    },
+    "ukc2300-05600": {
+     "k": 5,
+     "n": 95
+    },
+    "ukd1101-46100": {
+     "k": 10,
+     "n": 94
+    },
+    "ukd1102-44200": {
+     "k": 13,
+     "n": 100
+    },
+    "ukd1102-44300": {
+     "k": 9,
+     "n": 100
+    },
+    "ukd1102-44400": {
+     "k": 19,
+     "n": 100
+    },
+    "ukd1103-44800": {
+     "k": 19,
+     "n": 93
+    },
+    "ukd1103-45200": {
+     "k": 4,
+     "n": 80
+    },
+    "ukd1103-45600": {
+     "k": 14,
+     "n": 100
+    },
+    "ukd1103-45920": {
+     "k": 5,
+     "n": 90
+    },
+    "ukd4200-42100": {
+     "k": 10,
+     "n": 90
+    },
+    "ukd4200-42300": {
+     "k": 19,
+     "n": 90
+    },
+    "ukd4200-42500": {
+     "k": 21,
+     "n": 90
+    },
+    "ukd4200-42600": {
+     "k": 9,
+     "n": 93
+    },
+    "ukd4303-41800": {
+     "k": 14,
+     "n": 92
+    },
+    "ukd4303-41900": {
+     "k": 16,
+     "n": 91
+    },
+    "ukd4305-43260": {
+     "k": 8,
+     "n": 97
+    },
+    "ukd4305-43550": {
+     "k": 8,
+     "n": 94
+    },
+    "ukd4312-42800": {
+     "k": 14,
+     "n": 99
+    },
+    "ukd4312-43000": {
+     "k": 8,
+     "n": 96
+    },
+    "ukd5300-41200": {
+     "k": 1,
+     "n": 80
+    },
+    "ukd5300-41300": {
+     "k": 10,
+     "n": 100
+    },
+    "ukd5300-41500": {
+     "k": 17,
+     "n": 96
+    },
+    "ukd5400-40750": {
+     "k": 11,
+     "n": 100
+    },
+    "ukd5400-40800": {
+     "k": 4,
+     "n": 101
+    },
+    "ukd5400-40900": {
+     "k": 5,
+     "n": 96
+    },
+    "ukd5400-41000": {
+     "k": 6,
+     "n": 101
+    },
+    "uke1200-07900": {
+     "k": 7,
+     "n": 99
+    },
+    "uke1200-07950": {
+     "k": 0,
+     "n": 75
+    },
+    "uke1200-08000": {
+     "k": 8,
+     "n": 100
+    },
+    "uke1200-08100": {
+     "k": 3,
+     "n": 99
+    },
+    "uke1200-08200": {
+     "k": 3,
+     "n": 98
+    },
+    "uke1200-08300": {
+     "k": 8,
+     "n": 100
+    },
+    "uke1200-08600": {
+     "k": 1,
+     "n": 56
+    },
+    "uke1200-08700": {
+     "k": 1,
+     "n": 100
+    },
+    "uke1200-08900": {
+     "k": 1,
+     "n": 95
+    },
+    "uke1301-09000": {
+     "k": 7,
+     "n": 95
+    },
+    "uke1301-09020": {
+     "k": 5,
+     "n": 100
+    },
+    "uke2206-06900": {
+     "k": 3,
+     "n": 100
+    },
+    "uke2206-07000": {
+     "k": 2,
+     "n": 98
+    },
+    "uke2206-07100": {
+     "k": 4,
+     "n": 100
+    },
+    "uke2206-07200": {
+     "k": 5,
+     "n": 91
+    },
+    "uke2206-07300": {
+     "k": 10,
+     "n": 99
+    },
+    "uke2206-07400": {
+     "k": 8,
+     "n": 98
+    },
+    "uke2206-07500": {
+     "k": 0,
+     "n": 49
+    },
+    "uke2206-07600": {
+     "k": 5,
+     "n": 97
+    },
+    "uke2206-07700": {
+     "k": 6,
+     "n": 94
+    },
+    "ukf3102-09100": {
+     "k": 0,
+     "n": 90
+    },
+    "ukf3102-09200": {
+     "k": 0,
+     "n": 58
+    },
+    "ukf3102-09300": {
+     "k": 0,
+     "n": 54
+    },
+    "ukf3102-09400": {
+     "k": 0,
+     "n": 60
+    },
+    "ukf3102-09500": {
+     "k": 1,
+     "n": 75
+    },
+    "ukf3102-09700": {
+     "k": 0,
+     "n": 80
+    },
+    "ukh1303-10325": {
+     "k": 1,
+     "n": 70
+    },
+    "ukh1303-10350": {
+     "k": 4,
+     "n": 100
+    },
+    "ukh1303-10400": {
+     "k": 1,
+     "n": 79
+    },
+    "ukh1303-10500": {
+     "k": 1,
+     "n": 78
+    },
+    "ukh1303-10600": {
+     "k": 3,
+     "n": 79
+    },
+    "ukh1303-10650": {
+     "k": 1,
+     "n": 65
+    },
+    "ukh1304-09800": {
+     "k": 2,
+     "n": 96
+    },
+    "ukh1304-09850": {
+     "k": 6,
+     "n": 95
+    },
+    "ukh1304-09900": {
+     "k": 10,
+     "n": 99
+    },
+    "ukh1305-10000": {
+     "k": 0,
+     "n": 99
+    },
+    "ukh1305-10100": {
+     "k": 2,
+     "n": 85
+    },
+    "ukh1305-10125": {
+     "k": 0,
+     "n": 85
+    },
+    "ukh1305-10150": {
+     "k": 1,
+     "n": 65
+    },
+    "ukh1305-10200": {
+     "k": 3,
+     "n": 95
+    },
+    "ukh1305-10300": {
+     "k": 1,
+     "n": 74
+    },
+    "ukh1305-10310": {
+     "k": 2,
+     "n": 75
+    },
+    "ukh1406-10900": {
+     "k": 1,
+     "n": 80
+    },
+    "ukh1406-11000": {
+     "k": 0,
+     "n": 70
+    },
+    "ukh1407-10750": {
+     "k": 2,
+     "n": 85
+    },
+    "ukh1407-10800": {
+     "k": 3,
+     "n": 90
+    },
+    "ukh1407-10830": {
+     "k": 3,
+     "n": 84
+    },
+    "ukh1407-10850": {
+     "k": 0,
+     "n": 89
+    },
+    "ukh3100-11770": {
+     "k": 1,
+     "n": 98
+    },
+    "ukh3100-11780": {
+     "k": 5,
+     "n": 98
+    },
+    "ukh3100-11800": {
+     "k": 4,
+     "n": 100
+    },
+    "ukh3100-11830": {
+     "k": 7,
+     "n": 93
+    },
+    "ukh3100-11850": {
+     "k": 6,
+     "n": 100
+    },
+    "ukh3100-11900": {
+     "k": 5,
+     "n": 85
+    },
+    "ukh3100-11902": {
+     "k": 5,
+     "n": 99
+    },
+    "ukh3100-11904": {
+     "k": 3,
+     "n": 99
+    },
+    "ukh3306-11750": {
+     "k": 2,
+     "n": 100
+    },
+    "ukh3311-11100": {
+     "k": 1,
+     "n": 66
+    },
+    "ukh3311-11250": {
+     "k": 1,
+     "n": 89
+    },
+    "ukh3311-11300": {
+     "k": 0,
+     "n": 60
+    },
+    "ukh3311-11350": {
+     "k": 2,
+     "n": 95
+    },
+    "ukh3311-11500": {
+     "k": 0,
+     "n": 88
+    },
+    "ukh3311-11600": {
+     "k": 1,
+     "n": 90
+    },
+    "ukh3311-11650": {
+     "k": 2,
+     "n": 99
+    },
+    "ukh3311-11700": {
+     "k": 1,
+     "n": 70
+    },
+    "ukj2100-14800": {
+     "k": 1,
+     "n": 49
+    },
+    "ukj2100-14900": {
+     "k": 3,
+     "n": 82
+    },
+    "ukj2100-14950": {
+     "k": 2,
+     "n": 77
+    },
+    "ukj2100-15000": {
+     "k": 4,
+     "n": 72
+    },
+    "ukj2201-14400": {
+     "k": 2,
+     "n": 98
+    },
+    "ukj2201-14550": {
+     "k": 0,
+     "n": 48
+    },
+    "ukj2202-14100": {
+     "k": 3,
+     "n": 88
+    },
+    "ukj2202-14150": {
+     "k": 3,
+     "n": 95
+    },
+    "ukj2203-14600": {
+     "k": 0,
+     "n": 74
+    },
+    "ukj2204-13900": {
+     "k": 5,
+     "n": 101
+    },
+    "ukj2204-14000": {
+     "k": 2,
+     "n": 100
+    },
+    "ukj2205-14200": {
+     "k": 6,
+     "n": 86
+    },
+    "ukj2205-14300": {
+     "k": 0,
+     "n": 72
+    },
+    "ukj2401-15100": {
+     "k": 1,
+     "n": 48
+    },
+    "ukj2401-15200": {
+     "k": 3,
+     "n": 80
+    },
+    "ukj2401-15300": {
+     "k": 7,
+     "n": 96
+    },
+    "ukj2402-15500": {
+     "k": 6,
+     "n": 100
+    },
+    "ukj2402-15600": {
+     "k": 1,
+     "n": 75
+    },
+    "ukj2402-15650": {
+     "k": 9,
+     "n": 95
+    },
+    "ukj2402-15680": {
+     "k": 7,
+     "n": 92
+    },
+    "ukj2402-15700": {
+     "k": 7,
+     "n": 94
+    },
+    "ukj2402-15800": {
+     "k": 2,
+     "n": 99
+    },
+    "ukj2403-15900": {
+     "k": 0,
+     "n": 75
+    },
+    "ukj2403-16000": {
+     "k": 0,
+     "n": 50
+    },
+    "ukj2403-16100": {
+     "k": 0,
+     "n": 49
+    },
+    "ukj2407-15400": {
+     "k": 6,
+     "n": 92
+    },
+    "ukj3100-16500": {
+     "k": 2,
+     "n": 80
+    },
+    "ukj3100-16600": {
+     "k": 22,
+     "n": 96
+    },
+    "ukj3304-16850": {
+     "k": 4,
+     "n": 100
+    },
+    "ukj3305-16700": {
+     "k": 5,
+     "n": 100
+    },
+    "ukj3305-16800": {
+     "k": 1,
+     "n": 50
+    },
+    "ukj3307-16300": {
+     "k": 2,
+     "n": 50
+    },
+    "ukj3307-16350": {
+     "k": 1,
+     "n": 50
+    },
+    "ukj3307-16400": {
+     "k": 1,
+     "n": 50
+    },
+    "ukj3308-16900": {
+     "k": 0,
+     "n": 50
+    },
+    "ukj3308-17000": {
+     "k": 0,
+     "n": 50
+    },
+    "ukj3308-17100": {
+     "k": 0,
+     "n": 50
+    },
+    "ukj3400-17400": {
+     "k": 0,
+     "n": 51
+    },
+    "ukj3400-17500": {
+     "k": 1,
+     "n": 71
+    },
+    "ukj3400-17600": {
+     "k": 1,
+     "n": 74
+    },
+    "ukj3400-17700": {
+     "k": 1,
+     "n": 95
+    },
+    "ukj3400-17800": {
+     "k": 0,
+     "n": 85
+    },
+    "ukj3400-17850": {
+     "k": 1,
+     "n": 95
+    },
+    "ukj3400-17900": {
+     "k": 4,
+     "n": 100
+    },
+    "ukj3400-18000": {
+     "k": 2,
+     "n": 79
+    },
+    "ukj3400-18100": {
+     "k": 0,
+     "n": 85
+    },
+    "ukj3400-18200": {
+     "k": 3,
+     "n": 100
+    },
+    "ukj3400-18300": {
+     "k": 1,
+     "n": 85
+    },
+    "ukj3400-18350": {
+     "k": 2,
+     "n": 100
+    },
+    "ukj3400-18400": {
+     "k": 5,
+     "n": 99
+    },
+    "ukj3400-18500": {
+     "k": 3,
+     "n": 99
+    },
+    "ukj3400-18600": {
+     "k": 0,
+     "n": 85
+    },
+    "ukj4202-12100": {
+     "k": 5,
+     "n": 95
+    },
+    "ukj4202-12120": {
+     "k": 3,
+     "n": 84
+    },
+    "ukj4202-12150": {
+     "k": 5,
+     "n": 97
+    },
+    "ukj4202-12200": {
+     "k": 2,
+     "n": 97
+    },
+    "ukj4204-13000": {
+     "k": 3,
+     "n": 90
+    },
+    "ukj4204-13100": {
+     "k": 9,
+     "n": 90
+    },
+    "ukj4204-13200": {
+     "k": 2,
+     "n": 75
+    },
+    "ukj4208-13300": {
+     "k": 11,
+     "n": 100
+    },
+    "ukj4208-13400": {
+     "k": 1,
+     "n": 85
+    },
+    "ukj4208-13500": {
+     "k": 0,
+     "n": 75
+    },
+    "ukj4208-13600": {
+     "k": 17,
+     "n": 100
+    },
+    "ukj4208-13700": {
+     "k": 12,
+     "n": 100
+    },
+    "ukj4208-13800": {
+     "k": 25,
+     "n": 100
+    },
+    "ukj4209-11950": {
+     "k": 2,
+     "n": 80
+    },
+    "ukj4209-11975": {
+     "k": 2,
+     "n": 70
+    },
+    "ukj4209-12000": {
+     "k": 1,
+     "n": 100
+    },
+    "ukj4210-12300": {
+     "k": 0,
+     "n": 80
+    },
+    "ukj4210-12350": {
+     "k": 7,
+     "n": 100
+    },
+    "ukj4210-12400": {
+     "k": 4,
+     "n": 95
+    },
+    "ukj4210-12450": {
+     "k": 3,
+     "n": 75
+    },
+    "ukj4210-12500": {
+     "k": 6,
+     "n": 100
+    },
+    "ukj4210-12600": {
+     "k": 2,
+     "n": 94
+    },
+    "ukj4210-12630": {
+     "k": 7,
+     "n": 100
+    },
+    "ukj4210-12660": {
+     "k": 0,
+     "n": 85
+    },
+    "ukj4210-12700": {
+     "k": 3,
+     "n": 85
+    },
+    "ukj4210-12750": {
+     "k": 3,
+     "n": 90
+    },
+    "ukj4210-12800": {
+     "k": 10,
+     "n": 98
+    },
+    "ukj4210-12850": {
+     "k": 3,
+     "n": 75
+    },
+    "ukj4210-12900": {
+     "k": 5,
+     "n": 95
+    },
+    "ukk1202-35700": {
+     "k": 7,
+     "n": 92
+    },
+    "ukk1202-35800": {
+     "k": 7,
+     "n": 92
+    },
+    "ukk1202-35900": {
+     "k": 11,
+     "n": 100
+    },
+    "ukk2101-19000": {
+     "k": 0,
+     "n": 50
+    },
+    "ukk2101-19020": {
+     "k": 0,
+     "n": 50
+    },
+    "ukk2101-19030": {
+     "k": 0,
+     "n": 50
+    },
+    "ukk2101-19050": {
+     "k": 0,
+     "n": 80
+    },
+    "ukk2101-19060": {
+     "k": 3,
+     "n": 84
+    },
+    "ukk2101-19100": {
+     "k": 1,
+     "n": 85
+    },
+    "ukk2101-19150": {
+     "k": 1,
+     "n": 75
+    },
+    "ukk2101-19160": {
+     "k": 1,
+     "n": 70
+    },
+    "ukk2102-19170": {
+     "k": 0,
+     "n": 50
+    },
+    "ukk2102-19190": {
+     "k": 0,
+     "n": 50
+    },
+    "ukk2102-19200": {
+     "k": 0,
+     "n": 50
+    },
+    "ukk2102-19350": {
+     "k": 0,
+     "n": 50
+    },
+    "ukk2102-19400": {
+     "k": 2,
+     "n": 85
+    },
+    "ukk2102-19450": {
+     "k": 4,
+     "n": 90
+    },
+    "ukk2201-17200": {
+     "k": 0,
+     "n": 50
+    },
+    "ukk2201-17300": {
+     "k": 1,
+     "n": 80
+    },
+    "ukk2201-18700": {
+     "k": 1,
+     "n": 85
+    },
+    "ukk2201-18750": {
+     "k": 2,
+     "n": 90
+    },
+    "ukk2201-18800": {
+     "k": 5,
+     "n": 90
+    },
+    "ukk2201-18900": {
+     "k": 1,
+     "n": 70
+    },
+    "ukk2204-19600": {
+     "k": 0,
+     "n": 50
+    },
+    "ukk2204-19700": {
+     "k": 0,
+     "n": 50
+    },
+    "ukk2204-19800": {
+     "k": 0,
+     "n": 79
+    },
+    "ukk2204-19900": {
+     "k": 1,
+     "n": 51
+    },
+    "ukk2204-20000": {
+     "k": 2,
+     "n": 75
+    },
+    "ukk2204-20100": {
+     "k": 0,
+     "n": 51
+    },
+    "ukk2204-20200": {
+     "k": 0,
+     "n": 51
+    },
+    "ukk2205-20970": {
+     "k": 0,
+     "n": 49
+    },
+    "ukk2205-21000": {
+     "k": 1,
+     "n": 70
+    },
+    "ukk2205-21100": {
+     "k": 1,
+     "n": 49
+    },
+    "ukk2205-21200": {
+     "k": 0,
+     "n": 49
+    },
+    "ukk2205-21300": {
+     "k": 1,
+     "n": 87
+    },
+    "ukk2205-21500": {
+     "k": 5,
+     "n": 100
+    },
+    "ukk2206-20300": {
+     "k": 0,
+     "n": 51
+    },
+    "ukk2206-20400": {
+     "k": 4,
+     "n": 100
+    },
+    "ukk2206-20500": {
+     "k": 0,
+     "n": 50
+    },
+    "ukk2206-20600": {
+     "k": 0,
+     "n": 60
+    },
+    "ukk2206-20700": {
+     "k": 3,
+     "n": 85
+    },
+    "ukk2206-20800": {
+     "k": 0,
+     "n": 75
+    },
+    "ukk2206-20900": {
+     "k": 0,
+     "n": 80
+    },
+    "ukk2302-35500": {
+     "k": 2,
+     "n": 99
+    },
+    "ukk2302-35600": {
+     "k": 2,
+     "n": 100
+    },
+    "ukk2305-34900": {
+     "k": 0,
+     "n": 50
+    },
+    "ukk2305-35000": {
+     "k": 6,
+     "n": 99
+    },
+    "ukk2305-35200": {
+     "k": 4,
+     "n": 99
+    },
+    "ukk3008-27080": {
+     "k": 11,
+     "n": 20
+    },
+    "ukk3101-26520": {
+     "k": 4,
+     "n": 101
+    },
+    "ukk3101-26530": {
+     "k": 2,
+     "n": 85
+    },
+    "ukk3101-26560": {
+     "k": 0,
+     "n": 75
+    },
+    "ukk3101-26570": {
+     "k": 0,
+     "n": 60
+    },
+    "ukk3101-26600": {
+     "k": 0,
+     "n": 65
+    },
+    "ukk3101-26700": {
+     "k": 0,
+     "n": 75
+    },
+    "ukk3101-26800": {
+     "k": 0,
+     "n": 90
+    },
+    "ukk3101-26900": {
+     "k": 3,
+     "n": 101
+    },
+    "ukk3101-27000": {
+     "k": 4,
+     "n": 96
+    },
+    "ukk3102-28500": {
+     "k": 0,
+     "n": 65
+    },
+    "ukk3102-28550": {
+     "k": 0,
+     "n": 75
+    },
+    "ukk3102-28600": {
+     "k": 0,
+     "n": 70
+    },
+    "ukk3102-28700": {
+     "k": 1,
+     "n": 100
+    },
+    "ukk3102-28800": {
+     "k": 1,
+     "n": 95
+    },
+    "ukk3102-31600": {
+     "k": 0,
+     "n": 69
+    },
+    "ukk3102-31650": {
+     "k": 0,
+     "n": 60
+    },
+    "ukk3102-31700": {
+     "k": 2,
+     "n": 100
+    },
+    "ukk3102-31800": {
+     "k": 2,
+     "n": 95
+    },
+    "ukk3102-31900": {
+     "k": 0,
+     "n": 60
+    },
+    "ukk3102-32000": {
+     "k": 0,
+     "n": 90
+    },
+    "ukk3103-28900": {
+     "k": 0,
+     "n": 80
+    },
+    "ukk3103-29000": {
+     "k": 0,
+     "n": 65
+    },
+    "ukk3103-29100": {
+     "k": 1,
+     "n": 75
+    },
+    "ukk3103-29200": {
+     "k": 0,
+     "n": 65
+    },
+    "ukk3103-29400": {
+     "k": 0,
+     "n": 65
+    },
+    "ukk3103-29500": {
+     "k": 3,
+     "n": 75
+    },
+    "ukk3103-29501": {
+     "k": 1,
+     "n": 60
+    },
+    "ukk3103-29800": {
+     "k": 1,
+     "n": 65
+    },
+    "ukk3103-29900": {
+     "k": 0,
+     "n": 65
+    },
+    "ukk3103-30000": {
+     "k": 0,
+     "n": 60
+    },
+    "ukk3103-31500": {
+     "k": 0,
+     "n": 70
+    },
+    "ukk3104-32550": {
+     "k": 0,
+     "n": 78
+    },
+    "ukk3104-32600": {
+     "k": 0,
+     "n": 70
+    },
+    "ukk3104-32700": {
+     "k": 0,
+     "n": 60
+    },
+    "ukk3104-32750": {
+     "k": 0,
+     "n": 75
+    },
+    "ukk3104-32800": {
+     "k": 0,
+     "n": 65
+    },
+    "ukk3104-32900": {
+     "k": 0,
+     "n": 95
+    },
+    "ukk3104-33000": {
+     "k": 5,
+     "n": 100
+    },
+    "ukk3104-33200": {
+     "k": 1,
+     "n": 85
+    },
+    "ukk3104-33300": {
+     "k": 1,
+     "n": 100
+    },
+    "ukk3104-33350": {
+     "k": 5,
+     "n": 90
+    },
+    "ukk3104-33360": {
+     "k": 0,
+     "n": 88
+    },
+    "ukk3104-33400": {
+     "k": 0,
+     "n": 70
+    },
+    "ukk3104-33500": {
+     "k": 1,
+     "n": 99
+    },
+    "ukk3104-33600": {
+     "k": 3,
+     "n": 100
+    },
+    "ukk3104-33650": {
+     "k": 1,
+     "n": 85
+    },
+    "ukk3104-33700": {
+     "k": 0,
+     "n": 80
+    },
+    "ukk3105-30100": {
+     "k": 1,
+     "n": 65
+    },
+    "ukk3105-30200": {
+     "k": 0,
+     "n": 90
+    },
+    "ukk3105-30400": {
+     "k": 2,
+     "n": 99
+    },
+    "ukk3105-30500": {
+     "k": 3,
+     "n": 100
+    },
+    "ukk3105-30600": {
+     "k": 0,
+     "n": 65
+    },
+    "ukk3105-30700": {
+     "k": 1,
+     "n": 65
+    },
+    "ukk3105-30750": {
+     "k": 0,
+     "n": 75
+    },
+    "ukk3105-30800": {
+     "k": 0,
+     "n": 65
+    },
+    "ukk3105-30900": {
+     "k": 0,
+     "n": 65
+    },
+    "ukk3105-31000": {
+     "k": 1,
+     "n": 100
+    },
+    "ukk3105-31100": {
+     "k": 0,
+     "n": 65
+    },
+    "ukk3105-31200": {
+     "k": 1,
+     "n": 75
+    },
+    "ukk3105-31250": {
+     "k": 1,
+     "n": 75
+    },
+    "ukk3105-31300": {
+     "k": 0,
+     "n": 60
+    },
+    "ukk3105-31350": {
+     "k": 0,
+     "n": 75
+    },
+    "ukk3105-31400": {
+     "k": 1,
+     "n": 85
+    },
+    "ukk3105-31450": {
+     "k": 0,
+     "n": 75
+    },
+    "ukk3106-27100": {
+     "k": 4,
+     "n": 101
+    },
+    "ukk3106-27200": {
+     "k": 3,
+     "n": 89
+    },
+    "ukk3106-27300": {
+     "k": 3,
+     "n": 94
+    },
+    "ukk3106-27400": {
+     "k": 0,
+     "n": 75
+    },
+    "ukk3106-27500": {
+     "k": 0,
+     "n": 60
+    },
+    "ukk3106-27600": {
+     "k": 0,
+     "n": 75
+    },
+    "ukk3106-27700": {
+     "k": 0,
+     "n": 60
+    },
+    "ukk3106-27800": {
+     "k": 0,
+     "n": 65
+    },
+    "ukk3106-27900": {
+     "k": 0,
+     "n": 95
+    },
+    "ukk3106-28000": {
+     "k": 0,
+     "n": 65
+    },
+    "ukk3106-28100": {
+     "k": 0,
+     "n": 95
+    },
+    "ukk3106-28200": {
+     "k": 2,
+     "n": 95
+    },
+    "ukk3106-28300": {
+     "k": 0,
+     "n": 65
+    },
+    "ukk3106-28400": {
+     "k": 14,
+     "n": 97
+    },
+    "ukk3106-32100": {
+     "k": 5,
+     "n": 98
+    },
+    "ukk3106-32150": {
+     "k": 0,
+     "n": 95
+    },
+    "ukk3106-32200": {
+     "k": 0,
+     "n": 70
+    },
+    "ukk3106-32300": {
+     "k": 2,
+     "n": 100
+    },
+    "ukk3106-32310": {
+     "k": 0,
+     "n": 100
+    },
+    "ukk3106-32320": {
+     "k": 0,
+     "n": 65
+    },
+    "ukk3106-32330": {
+     "k": 0,
+     "n": 60
+    },
+    "ukk3106-32340": {
+     "k": 1,
+     "n": 94
+    },
+    "ukk3106-32400": {
+     "k": 1,
+     "n": 70
+    },
+    "ukk3106-32500": {
+     "k": 2,
+     "n": 95
+    },
+    "ukk4100-26400": {
+     "k": 1,
+     "n": 79
+    },
+    "ukk4100-26500": {
+     "k": 2,
+     "n": 81
+    },
+    "ukk4200-23100": {
+     "k": 1,
+     "n": 60
+    },
+    "ukk4200-23200": {
+     "k": 1,
+     "n": 57
+    },
+    "ukk4200-23300": {
+     "k": 2,
+     "n": 60
+    },
+    "ukk4200-23400": {
+     "k": 2,
+     "n": 80
+    },
+    "ukk4200-23501": {
+     "k": 3,
+     "n": 75
+    },
+    "ukk4200-23600": {
+     "k": 0,
+     "n": 60
+    },
+    "ukk4200-23700": {
+     "k": 2,
+     "n": 80
+    },
+    "ukk4200-23800": {
+     "k": 0,
+     "n": 85
+    },
+    "ukk4200-23900": {
+     "k": 1,
+     "n": 100
+    },
+    "ukk4200-24000": {
+     "k": 0,
+     "n": 78
+    },
+    "ukk4200-24100": {
+     "k": 1,
+     "n": 99
+    },
+    "ukk4200-24200": {
+     "k": 0,
+     "n": 97
+    },
+    "ukk4200-24300": {
+     "k": 0,
+     "n": 70
+    },
+    "ukk4200-24500": {
+     "k": 2,
+     "n": 70
+    },
+    "ukk4200-24600": {
+     "k": 0,
+     "n": 60
+    },
+    "ukk4301-21600": {
+     "k": 4,
+     "n": 98
+    },
+    "ukk4301-21700": {
+     "k": 3,
+     "n": 84
+    },
+    "ukk4301-21800": {
+     "k": 2,
+     "n": 100
+    },
+    "ukk4301-21900": {
+     "k": 2,
+     "n": 75
+    },
+    "ukk4301-22000": {
+     "k": 6,
+     "n": 95
+    },
+    "ukk4301-22100": {
+     "k": 1,
+     "n": 97
+    },
+    "ukk4301-22200": {
+     "k": 8,
+     "n": 100
+    },
+    "ukk4301-22300": {
+     "k": 4,
+     "n": 99
+    },
+    "ukk4304-34100": {
+     "k": 2,
+     "n": 95
+    },
+    "ukk4304-34200": {
+     "k": 1,
+     "n": 98
+    },
+    "ukk4304-34300": {
+     "k": 0,
+     "n": 55
+    },
+    "ukk4304-34400": {
+     "k": 0,
+     "n": 95
+    },
+    "ukk4304-34410": {
+     "k": 0,
+     "n": 55
+    },
+    "ukk4304-34450": {
+     "k": 0,
+     "n": 55
+    },
+    "ukk4304-34600": {
+     "k": 7,
+     "n": 100
+    },
+    "ukk4304-34700": {
+     "k": 5,
+     "n": 91
+    },
+    "ukk4304-34800": {
+     "k": 1,
+     "n": 85
+    },
+    "ukk4305-24700": {
+     "k": 0,
+     "n": 75
+    },
+    "ukk4305-24800": {
+     "k": 0,
+     "n": 65
+    },
+    "ukk4305-24900": {
+     "k": 0,
+     "n": 60
+    },
+    "ukk4305-25000": {
+     "k": 0,
+     "n": 60
+    },
+    "ukk4305-25100": {
+     "k": 0,
+     "n": 65
+    },
+    "ukk4305-25200": {
+     "k": 1,
+     "n": 95
+    },
+    "ukk4305-25300": {
+     "k": 3,
+     "n": 95
+    },
+    "ukk4305-25400": {
+     "k": 3,
+     "n": 85
+    },
+    "ukk4305-25500": {
+     "k": 2,
+     "n": 80
+    },
+    "ukk4305-25600": {
+     "k": 1,
+     "n": 85
+    },
+    "ukk4305-25700": {
+     "k": 8,
+     "n": 89
+    },
+    "ukk4305-25800": {
+     "k": 2,
+     "n": 75
+    },
+    "ukk4305-25900": {
+     "k": 0,
+     "n": 65
+    },
+    "ukk4305-26000": {
+     "k": 1,
+     "n": 80
+    },
+    "ukk4305-26100": {
+     "k": 5,
+     "n": 98
+    },
+    "ukk4305-26150": {
+     "k": 0,
+     "n": 20
+    },
+    "ukk4305-26200": {
+     "k": 2,
+     "n": 94
+    },
+    "ukk4305-26300": {
+     "k": 3,
+     "n": 95
+    },
+    "ukk4306-22400": {
+     "k": 1,
+     "n": 60
+    },
+    "ukk4306-22500": {
+     "k": 4,
+     "n": 96
+    },
+    "ukk4306-22600": {
+     "k": 0,
+     "n": 75
+    },
+    "ukk4306-22700": {
+     "k": 1,
+     "n": 75
+    },
+    "ukk4306-22800": {
+     "k": 2,
+     "n": 99
+    },
+    "ukk4306-22900": {
+     "k": 2,
+     "n": 99
+    },
+    "ukk4306-23000": {
+     "k": 0,
+     "n": 75
+    },
+    "ukk4307-33800": {
+     "k": 0,
+     "n": 55
+    },
+    "ukk4307-33900": {
+     "k": 1,
+     "n": 100
+    }
+   }
+  },
+  "over_500": {
+   "m": 44.129129779216164,
+   "p0": 0.015181939880735061,
+   "sites": {
+    "ukc1101-06000": {
+     "k": 2,
+     "n": 98
+    },
+    "ukc1101-06100": {
+     "k": 0,
+     "n": 99
+    },
+    "ukc1101-06200": {
+     "k": 0,
+     "n": 69
+    },
+    "ukc1202-06300": {
+     "k": 4,
+     "n": 100
+    },
+    "ukc1202-06400": {
+     "k": 0,
+     "n": 89
+    },
+    "ukc1202-06500": {
+     "k": 3,
+     "n": 94
+    },
+    "ukc1202-06600": {
+     "k": 0,
+     "n": 80
+    },
+    "ukc1202-06650": {
+     "k": 1,
+     "n": 84
+    },
+    "ukc1202-06700": {
+     "k": 3,
+     "n": 100
+    },
+    "ukc1404-05700": {
+     "k": 2,
+     "n": 97
+    },
+    "ukc1404-05800": {
+     "k": 3,
+     "n": 97
+    },
+    "ukc1404-05900": {
+     "k": 1,
+     "n": 98
+    },
+    "ukc2100-04220": {
+     "k": 0,
+     "n": 20
+    },
+    "ukc2101-04000": {
+     "k": 0,
+     "n": 55
+    },
+    "ukc2101-04200": {
+     "k": 0,
+     "n": 60
+    },
+    "ukc2101-04250": {
+     "k": 1,
+     "n": 85
+    },
+    "ukc2102-03600": {
+     "k": 6,
+     "n": 100
+    },
+    "ukc2102-03700": {
+     "k": 0,
+     "n": 60
+    },
+    "ukc2102-03800": {
+     "k": 0,
+     "n": 60
+    },
+    "ukc2102-03900": {
+     "k": 2,
+     "n": 75
+    },
+    "ukc2103-04600": {
+     "k": 0,
+     "n": 79
+    },
+    "ukc2103-04700": {
+     "k": 1,
+     "n": 88
+    },
+    "ukc2104-04280": {
+     "k": 1,
+     "n": 80
+    },
+    "ukc2104-04300": {
+     "k": 0,
+     "n": 55
+    },
+    "ukc2106-04400": {
+     "k": 1,
+     "n": 90
+    },
+    "ukc2106-04500": {
+     "k": 2,
+     "n": 90
+    },
+    "ukc2203-04800": {
+     "k": 1,
+     "n": 70
+    },
+    "ukc2203-04900": {
+     "k": 4,
+     "n": 94
+    },
+    "ukc2203-05000": {
+     "k": 1,
+     "n": 70
+    },
+    "ukc2203-05100": {
+     "k": 0,
+     "n": 55
+    },
+    "ukc2203-05200": {
+     "k": 0,
+     "n": 55
+    },
+    "ukc2204-05300": {
+     "k": 1,
+     "n": 99
+    },
+    "ukc2204-05400": {
+     "k": 2,
+     "n": 94
+    },
+    "ukc2300-05500": {
+     "k": 3,
+     "n": 100
+    },
+    "ukc2300-05600": {
+     "k": 2,
+     "n": 95
+    },
+    "ukd1101-46100": {
+     "k": 6,
+     "n": 94
+    },
+    "ukd1102-44200": {
+     "k": 9,
+     "n": 100
+    },
+    "ukd1102-44300": {
+     "k": 7,
+     "n": 100
+    },
+    "ukd1102-44400": {
+     "k": 10,
+     "n": 100
+    },
+    "ukd1103-44800": {
+     "k": 12,
+     "n": 93
+    },
+    "ukd1103-45200": {
+     "k": 2,
+     "n": 80
+    },
+    "ukd1103-45600": {
+     "k": 6,
+     "n": 100
+    },
+    "ukd1103-45920": {
+     "k": 3,
+     "n": 90
+    },
+    "ukd4200-42100": {
+     "k": 5,
+     "n": 90
+    },
+    "ukd4200-42300": {
+     "k": 4,
+     "n": 90
+    },
+    "ukd4200-42500": {
+     "k": 9,
+     "n": 90
+    },
+    "ukd4200-42600": {
+     "k": 2,
+     "n": 93
+    },
+    "ukd4303-41800": {
+     "k": 10,
+     "n": 92
+    },
+    "ukd4303-41900": {
+     "k": 9,
+     "n": 91
+    },
+    "ukd4305-43260": {
+     "k": 5,
+     "n": 97
+    },
+    "ukd4305-43550": {
+     "k": 6,
+     "n": 94
+    },
+    "ukd4312-42800": {
+     "k": 4,
+     "n": 99
+    },
+    "ukd4312-43000": {
+     "k": 2,
+     "n": 96
+    },
+    "ukd5300-41200": {
+     "k": 0,
+     "n": 80
+    },
+    "ukd5300-41300": {
+     "k": 6,
+     "n": 100
+    },
+    "ukd5300-41500": {
+     "k": 8,
+     "n": 96
+    },
+    "ukd5400-40750": {
+     "k": 6,
+     "n": 100
+    },
+    "ukd5400-40800": {
+     "k": 2,
+     "n": 101
+    },
+    "ukd5400-40900": {
+     "k": 0,
+     "n": 96
+    },
+    "ukd5400-41000": {
+     "k": 2,
+     "n": 101
+    },
+    "uke1200-07900": {
+     "k": 1,
+     "n": 99
+    },
+    "uke1200-07950": {
+     "k": 0,
+     "n": 75
+    },
+    "uke1200-08000": {
+     "k": 3,
+     "n": 100
+    },
+    "uke1200-08100": {
+     "k": 0,
+     "n": 99
+    },
+    "uke1200-08200": {
+     "k": 2,
+     "n": 98
+    },
+    "uke1200-08300": {
+     "k": 4,
+     "n": 100
+    },
+    "uke1200-08600": {
+     "k": 1,
+     "n": 56
+    },
+    "uke1200-08700": {
+     "k": 0,
+     "n": 100
+    },
+    "uke1200-08900": {
+     "k": 0,
+     "n": 95
+    },
+    "uke1301-09000": {
+     "k": 0,
+     "n": 95
+    },
+    "uke1301-09020": {
+     "k": 3,
+     "n": 100
+    },
+    "uke2206-06900": {
+     "k": 2,
+     "n": 100
+    },
+    "uke2206-07000": {
+     "k": 1,
+     "n": 98
+    },
+    "uke2206-07100": {
+     "k": 1,
+     "n": 100
+    },
+    "uke2206-07200": {
+     "k": 4,
+     "n": 91
+    },
+    "uke2206-07300": {
+     "k": 6,
+     "n": 99
+    },
+    "uke2206-07400": {
+     "k": 2,
+     "n": 98
+    },
+    "uke2206-07500": {
+     "k": 0,
+     "n": 49
+    },
+    "uke2206-07600": {
+     "k": 2,
+     "n": 97
+    },
+    "uke2206-07700": {
+     "k": 4,
+     "n": 94
+    },
+    "ukf3102-09100": {
+     "k": 0,
+     "n": 90
+    },
+    "ukf3102-09200": {
+     "k": 0,
+     "n": 58
+    },
+    "ukf3102-09300": {
+     "k": 0,
+     "n": 54
+    },
+    "ukf3102-09400": {
+     "k": 0,
+     "n": 60
+    },
+    "ukf3102-09500": {
+     "k": 0,
+     "n": 75
+    },
+    "ukf3102-09700": {
+     "k": 0,
+     "n": 80
+    },
+    "ukh1303-10325": {
+     "k": 1,
+     "n": 70
+    },
+    "ukh1303-10350": {
+     "k": 1,
+     "n": 100
+    },
+    "ukh1303-10400": {
+     "k": 0,
+     "n": 79
+    },
+    "ukh1303-10500": {
+     "k": 1,
+     "n": 78
+    },
+    "ukh1303-10600": {
+     "k": 0,
+     "n": 79
+    },
+    "ukh1303-10650": {
+     "k": 0,
+     "n": 65
+    },
+    "ukh1304-09800": {
+     "k": 1,
+     "n": 96
+    },
+    "ukh1304-09850": {
+     "k": 3,
+     "n": 95
+    },
+    "ukh1304-09900": {
+     "k": 4,
+     "n": 99
+    },
+    "ukh1305-10000": {
+     "k": 0,
+     "n": 99
+    },
+    "ukh1305-10100": {
+     "k": 0,
+     "n": 85
+    },
+    "ukh1305-10125": {
+     "k": 0,
+     "n": 85
+    },
+    "ukh1305-10150": {
+     "k": 0,
+     "n": 65
+    },
+    "ukh1305-10200": {
+     "k": 1,
+     "n": 95
+    },
+    "ukh1305-10300": {
+     "k": 1,
+     "n": 74
+    },
+    "ukh1305-10310": {
+     "k": 1,
+     "n": 75
+    },
+    "ukh1406-10900": {
+     "k": 0,
+     "n": 80
+    },
+    "ukh1406-11000": {
+     "k": 0,
+     "n": 70
+    },
+    "ukh1407-10750": {
+     "k": 1,
+     "n": 85
+    },
+    "ukh1407-10800": {
+     "k": 2,
+     "n": 90
+    },
+    "ukh1407-10830": {
+     "k": 0,
+     "n": 84
+    },
+    "ukh1407-10850": {
+     "k": 0,
+     "n": 89
+    },
+    "ukh3100-11770": {
+     "k": 0,
+     "n": 98
+    },
+    "ukh3100-11780": {
+     "k": 3,
+     "n": 98
+    },
+    "ukh3100-11800": {
+     "k": 0,
+     "n": 100
+    },
+    "ukh3100-11830": {
+     "k": 4,
+     "n": 93
+    },
+    "ukh3100-11850": {
+     "k": 2,
+     "n": 100
+    },
+    "ukh3100-11900": {
+     "k": 4,
+     "n": 85
+    },
+    "ukh3100-11902": {
+     "k": 3,
+     "n": 99
+    },
+    "ukh3100-11904": {
+     "k": 2,
+     "n": 99
+    },
+    "ukh3306-11750": {
+     "k": 1,
+     "n": 100
+    },
+    "ukh3311-11100": {
+     "k": 0,
+     "n": 66
+    },
+    "ukh3311-11250": {
+     "k": 0,
+     "n": 89
+    },
+    "ukh3311-11300": {
+     "k": 0,
+     "n": 60
+    },
+    "ukh3311-11350": {
+     "k": 1,
+     "n": 95
+    },
+    "ukh3311-11500": {
+     "k": 0,
+     "n": 88
+    },
+    "ukh3311-11600": {
+     "k": 0,
+     "n": 90
+    },
+    "ukh3311-11650": {
+     "k": 2,
+     "n": 99
+    },
+    "ukh3311-11700": {
+     "k": 1,
+     "n": 70
+    },
+    "ukj2100-14800": {
+     "k": 1,
+     "n": 49
+    },
+    "ukj2100-14900": {
+     "k": 0,
+     "n": 82
+    },
+    "ukj2100-14950": {
+     "k": 1,
+     "n": 77
+    },
+    "ukj2100-15000": {
+     "k": 3,
+     "n": 72
+    },
+    "ukj2201-14400": {
+     "k": 0,
+     "n": 98
+    },
+    "ukj2201-14550": {
+     "k": 0,
+     "n": 48
+    },
+    "ukj2202-14100": {
+     "k": 0,
+     "n": 88
+    },
+    "ukj2202-14150": {
+     "k": 0,
+     "n": 95
+    },
+    "ukj2203-14600": {
+     "k": 0,
+     "n": 74
+    },
+    "ukj2204-13900": {
+     "k": 1,
+     "n": 101
+    },
+    "ukj2204-14000": {
+     "k": 1,
+     "n": 100
+    },
+    "ukj2205-14200": {
+     "k": 3,
+     "n": 86
+    },
+    "ukj2205-14300": {
+     "k": 0,
+     "n": 72
+    },
+    "ukj2401-15100": {
+     "k": 1,
+     "n": 48
+    },
+    "ukj2401-15200": {
+     "k": 3,
+     "n": 80
+    },
+    "ukj2401-15300": {
+     "k": 3,
+     "n": 96
+    },
+    "ukj2402-15500": {
+     "k": 4,
+     "n": 100
+    },
+    "ukj2402-15600": {
+     "k": 1,
+     "n": 75
+    },
+    "ukj2402-15650": {
+     "k": 5,
+     "n": 95
+    },
+    "ukj2402-15680": {
+     "k": 4,
+     "n": 92
+    },
+    "ukj2402-15700": {
+     "k": 4,
+     "n": 94
+    },
+    "ukj2402-15800": {
+     "k": 1,
+     "n": 99
+    },
+    "ukj2403-15900": {
+     "k": 0,
+     "n": 75
+    },
+    "ukj2403-16000": {
+     "k": 0,
+     "n": 50
+    },
+    "ukj2403-16100": {
+     "k": 0,
+     "n": 49
+    },
+    "ukj2407-15400": {
+     "k": 3,
+     "n": 92
+    },
+    "ukj3100-16500": {
+     "k": 1,
+     "n": 80
+    },
+    "ukj3100-16600": {
+     "k": 15,
+     "n": 96
+    },
+    "ukj3304-16850": {
+     "k": 1,
+     "n": 100
+    },
+    "ukj3305-16700": {
+     "k": 0,
+     "n": 100
+    },
+    "ukj3305-16800": {
+     "k": 0,
+     "n": 50
+    },
+    "ukj3307-16300": {
+     "k": 1,
+     "n": 50
+    },
+    "ukj3307-16350": {
+     "k": 0,
+     "n": 50
+    },
+    "ukj3307-16400": {
+     "k": 1,
+     "n": 50
+    },
+    "ukj3308-16900": {
+     "k": 0,
+     "n": 50
+    },
+    "ukj3308-17000": {
+     "k": 0,
+     "n": 50
+    },
+    "ukj3308-17100": {
+     "k": 0,
+     "n": 50
+    },
+    "ukj3400-17400": {
+     "k": 0,
+     "n": 51
+    },
+    "ukj3400-17500": {
+     "k": 0,
+     "n": 71
+    },
+    "ukj3400-17600": {
+     "k": 0,
+     "n": 74
+    },
+    "ukj3400-17700": {
+     "k": 0,
+     "n": 95
+    },
+    "ukj3400-17800": {
+     "k": 0,
+     "n": 85
+    },
+    "ukj3400-17850": {
+     "k": 0,
+     "n": 95
+    },
+    "ukj3400-17900": {
+     "k": 0,
+     "n": 100
+    },
+    "ukj3400-18000": {
+     "k": 0,
+     "n": 79
+    },
+    "ukj3400-18100": {
+     "k": 0,
+     "n": 85
+    },
+    "ukj3400-18200": {
+     "k": 3,
+     "n": 100
+    },
+    "ukj3400-18300": {
+     "k": 1,
+     "n": 85
+    },
+    "ukj3400-18350": {
+     "k": 1,
+     "n": 100
+    },
+    "ukj3400-18400": {
+     "k": 2,
+     "n": 99
+    },
+    "ukj3400-18500": {
+     "k": 1,
+     "n": 99
+    },
+    "ukj3400-18600": {
+     "k": 0,
+     "n": 85
+    },
+    "ukj4202-12100": {
+     "k": 1,
+     "n": 95
+    },
+    "ukj4202-12120": {
+     "k": 0,
+     "n": 84
+    },
+    "ukj4202-12150": {
+     "k": 2,
+     "n": 97
+    },
+    "ukj4202-12200": {
+     "k": 0,
+     "n": 97
+    },
+    "ukj4204-13000": {
+     "k": 1,
+     "n": 90
+    },
+    "ukj4204-13100": {
+     "k": 3,
+     "n": 90
+    },
+    "ukj4204-13200": {
+     "k": 1,
+     "n": 75
+    },
+    "ukj4208-13300": {
+     "k": 2,
+     "n": 100
+    },
+    "ukj4208-13400": {
+     "k": 0,
+     "n": 85
+    },
+    "ukj4208-13500": {
+     "k": 0,
+     "n": 75
+    },
+    "ukj4208-13600": {
+     "k": 9,
+     "n": 100
+    },
+    "ukj4208-13700": {
+     "k": 2,
+     "n": 100
+    },
+    "ukj4208-13800": {
+     "k": 8,
+     "n": 100
+    },
+    "ukj4209-11950": {
+     "k": 0,
+     "n": 80
+    },
+    "ukj4209-11975": {
+     "k": 1,
+     "n": 70
+    },
+    "ukj4209-12000": {
+     "k": 0,
+     "n": 100
+    },
+    "ukj4210-12300": {
+     "k": 0,
+     "n": 80
+    },
+    "ukj4210-12350": {
+     "k": 5,
+     "n": 100
+    },
+    "ukj4210-12400": {
+     "k": 3,
+     "n": 95
+    },
+    "ukj4210-12450": {
+     "k": 1,
+     "n": 75
+    },
+    "ukj4210-12500": {
+     "k": 2,
+     "n": 100
+    },
+    "ukj4210-12600": {
+     "k": 0,
+     "n": 94
+    },
+    "ukj4210-12630": {
+     "k": 4,
+     "n": 100
+    },
+    "ukj4210-12660": {
+     "k": 0,
+     "n": 85
+    },
+    "ukj4210-12700": {
+     "k": 1,
+     "n": 85
+    },
+    "ukj4210-12750": {
+     "k": 1,
+     "n": 90
+    },
+    "ukj4210-12800": {
+     "k": 3,
+     "n": 98
+    },
+    "ukj4210-12850": {
+     "k": 3,
+     "n": 75
+    },
+    "ukj4210-12900": {
+     "k": 2,
+     "n": 95
+    },
+    "ukk1202-35700": {
+     "k": 1,
+     "n": 92
+    },
+    "ukk1202-35800": {
+     "k": 1,
+     "n": 92
+    },
+    "ukk1202-35900": {
+     "k": 2,
+     "n": 100
+    },
+    "ukk2101-19000": {
+     "k": 0,
+     "n": 50
+    },
+    "ukk2101-19020": {
+     "k": 0,
+     "n": 50
+    },
+    "ukk2101-19030": {
+     "k": 0,
+     "n": 50
+    },
+    "ukk2101-19050": {
+     "k": 0,
+     "n": 80
+    },
+    "ukk2101-19060": {
+     "k": 0,
+     "n": 84
+    },
+    "ukk2101-19100": {
+     "k": 0,
+     "n": 85
+    },
+    "ukk2101-19150": {
+     "k": 0,
+     "n": 75
+    },
+    "ukk2101-19160": {
+     "k": 1,
+     "n": 70
+    },
+    "ukk2102-19170": {
+     "k": 0,
+     "n": 50
+    },
+    "ukk2102-19190": {
+     "k": 0,
+     "n": 50
+    },
+    "ukk2102-19200": {
+     "k": 0,
+     "n": 50
+    },
+    "ukk2102-19350": {
+     "k": 0,
+     "n": 50
+    },
+    "ukk2102-19400": {
+     "k": 2,
+     "n": 85
+    },
+    "ukk2102-19450": {
+     "k": 0,
+     "n": 90
+    },
+    "ukk2201-17200": {
+     "k": 0,
+     "n": 50
+    },
+    "ukk2201-17300": {
+     "k": 1,
+     "n": 80
+    },
+    "ukk2201-18700": {
+     "k": 0,
+     "n": 85
+    },
+    "ukk2201-18750": {
+     "k": 1,
+     "n": 90
+    },
+    "ukk2201-18800": {
+     "k": 3,
+     "n": 90
+    },
+    "ukk2201-18900": {
+     "k": 0,
+     "n": 70
+    },
+    "ukk2204-19600": {
+     "k": 0,
+     "n": 50
+    },
+    "ukk2204-19700": {
+     "k": 0,
+     "n": 50
+    },
+    "ukk2204-19800": {
+     "k": 0,
+     "n": 79
+    },
+    "ukk2204-19900": {
+     "k": 0,
+     "n": 51
+    },
+    "ukk2204-20000": {
+     "k": 0,
+     "n": 75
+    },
+    "ukk2204-20100": {
+     "k": 0,
+     "n": 51
+    },
+    "ukk2204-20200": {
+     "k": 0,
+     "n": 51
+    },
+    "ukk2205-20970": {
+     "k": 0,
+     "n": 49
+    },
+    "ukk2205-21000": {
+     "k": 1,
+     "n": 70
+    },
+    "ukk2205-21100": {
+     "k": 0,
+     "n": 49
+    },
+    "ukk2205-21200": {
+     "k": 0,
+     "n": 49
+    },
+    "ukk2205-21300": {
+     "k": 0,
+     "n": 87
+    },
+    "ukk2205-21500": {
+     "k": 2,
+     "n": 100
+    },
+    "ukk2206-20300": {
+     "k": 0,
+     "n": 51
+    },
+    "ukk2206-20400": {
+     "k": 4,
+     "n": 100
+    },
+    "ukk2206-20500": {
+     "k": 0,
+     "n": 50
+    },
+    "ukk2206-20600": {
+     "k": 0,
+     "n": 60
+    },
+    "ukk2206-20700": {
+     "k": 1,
+     "n": 85
+    },
+    "ukk2206-20800": {
+     "k": 0,
+     "n": 75
+    },
+    "ukk2206-20900": {
+     "k": 0,
+     "n": 80
+    },
+    "ukk2302-35500": {
+     "k": 1,
+     "n": 99
+    },
+    "ukk2302-35600": {
+     "k": 1,
+     "n": 100
+    },
+    "ukk2305-34900": {
+     "k": 0,
+     "n": 50
+    },
+    "ukk2305-35000": {
+     "k": 0,
+     "n": 99
+    },
+    "ukk2305-35200": {
+     "k": 2,
+     "n": 99
+    },
+    "ukk3008-27080": {
+     "k": 4,
+     "n": 20
+    },
+    "ukk3101-26520": {
+     "k": 3,
+     "n": 101
+    },
+    "ukk3101-26530": {
+     "k": 0,
+     "n": 85
+    },
+    "ukk3101-26560": {
+     "k": 0,
+     "n": 75
+    },
+    "ukk3101-26570": {
+     "k": 0,
+     "n": 60
+    },
+    "ukk3101-26600": {
+     "k": 0,
+     "n": 65
+    },
+    "ukk3101-26700": {
+     "k": 0,
+     "n": 75
+    },
+    "ukk3101-26800": {
+     "k": 0,
+     "n": 90
+    },
+    "ukk3101-26900": {
+     "k": 2,
+     "n": 101
+    },
+    "ukk3101-27000": {
+     "k": 2,
+     "n": 96
+    },
+    "ukk3102-28500": {
+     "k": 0,
+     "n": 65
+    },
+    "ukk3102-28550": {
+     "k": 0,
+     "n": 75
+    },
+    "ukk3102-28600": {
+     "k": 0,
+     "n": 70
+    },
+    "ukk3102-28700": {
+     "k": 1,
+     "n": 100
+    },
+    "ukk3102-28800": {
+     "k": 1,
+     "n": 95
+    },
+    "ukk3102-31600": {
+     "k": 0,
+     "n": 69
+    },
+    "ukk3102-31650": {
+     "k": 0,
+     "n": 60
+    },
+    "ukk3102-31700": {
+     "k": 1,
+     "n": 100
+    },
+    "ukk3102-31800": {
+     "k": 2,
+     "n": 95
+    },
+    "ukk3102-31900": {
+     "k": 0,
+     "n": 60
+    },
+    "ukk3102-32000": {
+     "k": 0,
+     "n": 90
+    },
+    "ukk3103-28900": {
+     "k": 0,
+     "n": 80
+    },
+    "ukk3103-29000": {
+     "k": 0,
+     "n": 65
+    },
+    "ukk3103-29100": {
+     "k": 1,
+     "n": 75
+    },
+    "ukk3103-29200": {
+     "k": 0,
+     "n": 65
+    },
+    "ukk3103-29400": {
+     "k": 0,
+     "n": 65
+    },
+    "ukk3103-29500": {
+     "k": 3,
+     "n": 75
+    },
+    "ukk3103-29501": {
+     "k": 0,
+     "n": 60
+    },
+    "ukk3103-29800": {
+     "k": 1,
+     "n": 65
+    },
+    "ukk3103-29900": {
+     "k": 0,
+     "n": 65
+    },
+    "ukk3103-30000": {
+     "k": 0,
+     "n": 60
+    },
+    "ukk3103-31500": {
+     "k": 0,
+     "n": 70
+    },
+    "ukk3104-32550": {
+     "k": 0,
+     "n": 78
+    },
+    "ukk3104-32600": {
+     "k": 0,
+     "n": 70
+    },
+    "ukk3104-32700": {
+     "k": 0,
+     "n": 60
+    },
+    "ukk3104-32750": {
+     "k": 0,
+     "n": 75
+    },
+    "ukk3104-32800": {
+     "k": 0,
+     "n": 65
+    },
+    "ukk3104-32900": {
+     "k": 0,
+     "n": 95
+    },
+    "ukk3104-33000": {
+     "k": 1,
+     "n": 100
+    },
+    "ukk3104-33200": {
+     "k": 0,
+     "n": 85
+    },
+    "ukk3104-33300": {
+     "k": 0,
+     "n": 100
+    },
+    "ukk3104-33350": {
+     "k": 2,
+     "n": 90
+    },
+    "ukk3104-33360": {
+     "k": 0,
+     "n": 88
+    },
+    "ukk3104-33400": {
+     "k": 0,
+     "n": 70
+    },
+    "ukk3104-33500": {
+     "k": 1,
+     "n": 99
+    },
+    "ukk3104-33600": {
+     "k": 1,
+     "n": 100
+    },
+    "ukk3104-33650": {
+     "k": 0,
+     "n": 85
+    },
+    "ukk3104-33700": {
+     "k": 0,
+     "n": 80
+    },
+    "ukk3105-30100": {
+     "k": 0,
+     "n": 65
+    },
+    "ukk3105-30200": {
+     "k": 0,
+     "n": 90
+    },
+    "ukk3105-30400": {
+     "k": 0,
+     "n": 99
+    },
+    "ukk3105-30500": {
+     "k": 2,
+     "n": 100
+    },
+    "ukk3105-30600": {
+     "k": 0,
+     "n": 65
+    },
+    "ukk3105-30700": {
+     "k": 1,
+     "n": 65
+    },
+    "ukk3105-30750": {
+     "k": 0,
+     "n": 75
+    },
+    "ukk3105-30800": {
+     "k": 0,
+     "n": 65
+    },
+    "ukk3105-30900": {
+     "k": 0,
+     "n": 65
+    },
+    "ukk3105-31000": {
+     "k": 0,
+     "n": 100
+    },
+    "ukk3105-31100": {
+     "k": 0,
+     "n": 65
+    },
+    "ukk3105-31200": {
+     "k": 1,
+     "n": 75
+    },
+    "ukk3105-31250": {
+     "k": 0,
+     "n": 75
+    },
+    "ukk3105-31300": {
+     "k": 0,
+     "n": 60
+    },
+    "ukk3105-31350": {
+     "k": 0,
+     "n": 75
+    },
+    "ukk3105-31400": {
+     "k": 0,
+     "n": 85
+    },
+    "ukk3105-31450": {
+     "k": 0,
+     "n": 75
+    },
+    "ukk3106-27100": {
+     "k": 2,
+     "n": 101
+    },
+    "ukk3106-27200": {
+     "k": 2,
+     "n": 89
+    },
+    "ukk3106-27300": {
+     "k": 2,
+     "n": 94
+    },
+    "ukk3106-27400": {
+     "k": 0,
+     "n": 75
+    },
+    "ukk3106-27500": {
+     "k": 0,
+     "n": 60
+    },
+    "ukk3106-27600": {
+     "k": 0,
+     "n": 75
+    },
+    "ukk3106-27700": {
+     "k": 0,
+     "n": 60
+    },
+    "ukk3106-27800": {
+     "k": 0,
+     "n": 65
+    },
+    "ukk3106-27900": {
+     "k": 0,
+     "n": 95
+    },
+    "ukk3106-28000": {
+     "k": 0,
+     "n": 65
+    },
+    "ukk3106-28100": {
+     "k": 0,
+     "n": 95
+    },
+    "ukk3106-28200": {
+     "k": 0,
+     "n": 95
+    },
+    "ukk3106-28300": {
+     "k": 0,
+     "n": 65
+    },
+    "ukk3106-28400": {
+     "k": 2,
+     "n": 97
+    },
+    "ukk3106-32100": {
+     "k": 2,
+     "n": 98
+    },
+    "ukk3106-32150": {
+     "k": 0,
+     "n": 95
+    },
+    "ukk3106-32200": {
+     "k": 0,
+     "n": 70
+    },
+    "ukk3106-32300": {
+     "k": 0,
+     "n": 100
+    },
+    "ukk3106-32310": {
+     "k": 0,
+     "n": 100
+    },
+    "ukk3106-32320": {
+     "k": 0,
+     "n": 65
+    },
+    "ukk3106-32330": {
+     "k": 0,
+     "n": 60
+    },
+    "ukk3106-32340": {
+     "k": 0,
+     "n": 94
+    },
+    "ukk3106-32400": {
+     "k": 0,
+     "n": 70
+    },
+    "ukk3106-32500": {
+     "k": 0,
+     "n": 95
+    },
+    "ukk4100-26400": {
+     "k": 1,
+     "n": 79
+    },
+    "ukk4100-26500": {
+     "k": 2,
+     "n": 81
+    },
+    "ukk4200-23100": {
+     "k": 0,
+     "n": 60
+    },
+    "ukk4200-23200": {
+     "k": 0,
+     "n": 57
+    },
+    "ukk4200-23300": {
+     "k": 2,
+     "n": 60
+    },
+    "ukk4200-23400": {
+     "k": 2,
+     "n": 80
+    },
+    "ukk4200-23501": {
+     "k": 0,
+     "n": 75
+    },
+    "ukk4200-23600": {
+     "k": 0,
+     "n": 60
+    },
+    "ukk4200-23700": {
+     "k": 1,
+     "n": 80
+    },
+    "ukk4200-23800": {
+     "k": 0,
+     "n": 85
+    },
+    "ukk4200-23900": {
+     "k": 0,
+     "n": 100
+    },
+    "ukk4200-24000": {
+     "k": 0,
+     "n": 78
+    },
+    "ukk4200-24100": {
+     "k": 0,
+     "n": 99
+    },
+    "ukk4200-24200": {
+     "k": 0,
+     "n": 97
+    },
+    "ukk4200-24300": {
+     "k": 0,
+     "n": 70
+    },
+    "ukk4200-24500": {
+     "k": 2,
+     "n": 70
+    },
+    "ukk4200-24600": {
+     "k": 0,
+     "n": 60
+    },
+    "ukk4301-21600": {
+     "k": 3,
+     "n": 98
+    },
+    "ukk4301-21700": {
+     "k": 1,
+     "n": 84
+    },
+    "ukk4301-21800": {
+     "k": 1,
+     "n": 100
+    },
+    "ukk4301-21900": {
+     "k": 1,
+     "n": 75
+    },
+    "ukk4301-22000": {
+     "k": 2,
+     "n": 95
+    },
+    "ukk4301-22100": {
+     "k": 0,
+     "n": 97
+    },
+    "ukk4301-22200": {
+     "k": 4,
+     "n": 100
+    },
+    "ukk4301-22300": {
+     "k": 1,
+     "n": 99
+    },
+    "ukk4304-34100": {
+     "k": 0,
+     "n": 95
+    },
+    "ukk4304-34200": {
+     "k": 1,
+     "n": 98
+    },
+    "ukk4304-34300": {
+     "k": 0,
+     "n": 55
+    },
+    "ukk4304-34400": {
+     "k": 0,
+     "n": 95
+    },
+    "ukk4304-34410": {
+     "k": 0,
+     "n": 55
+    },
+    "ukk4304-34450": {
+     "k": 0,
+     "n": 55
+    },
+    "ukk4304-34600": {
+     "k": 5,
+     "n": 100
+    },
+    "ukk4304-34700": {
+     "k": 2,
+     "n": 91
+    },
+    "ukk4304-34800": {
+     "k": 1,
+     "n": 85
+    },
+    "ukk4305-24700": {
+     "k": 0,
+     "n": 75
+    },
+    "ukk4305-24800": {
+     "k": 0,
+     "n": 65
+    },
+    "ukk4305-24900": {
+     "k": 0,
+     "n": 60
+    },
+    "ukk4305-25000": {
+     "k": 0,
+     "n": 60
+    },
+    "ukk4305-25100": {
+     "k": 0,
+     "n": 65
+    },
+    "ukk4305-25200": {
+     "k": 0,
+     "n": 95
+    },
+    "ukk4305-25300": {
+     "k": 2,
+     "n": 95
+    },
+    "ukk4305-25400": {
+     "k": 2,
+     "n": 85
+    },
+    "ukk4305-25500": {
+     "k": 1,
+     "n": 80
+    },
+    "ukk4305-25600": {
+     "k": 0,
+     "n": 85
+    },
+    "ukk4305-25700": {
+     "k": 2,
+     "n": 89
+    },
+    "ukk4305-25800": {
+     "k": 1,
+     "n": 75
+    },
+    "ukk4305-25900": {
+     "k": 0,
+     "n": 65
+    },
+    "ukk4305-26000": {
+     "k": 1,
+     "n": 80
+    },
+    "ukk4305-26100": {
+     "k": 3,
+     "n": 98
+    },
+    "ukk4305-26150": {
+     "k": 0,
+     "n": 20
+    },
+    "ukk4305-26200": {
+     "k": 2,
+     "n": 94
+    },
+    "ukk4305-26300": {
+     "k": 2,
+     "n": 95
+    },
+    "ukk4306-22400": {
+     "k": 0,
+     "n": 60
+    },
+    "ukk4306-22500": {
+     "k": 3,
+     "n": 96
+    },
+    "ukk4306-22600": {
+     "k": 0,
+     "n": 75
+    },
+    "ukk4306-22700": {
+     "k": 1,
+     "n": 75
+    },
+    "ukk4306-22800": {
+     "k": 1,
+     "n": 99
+    },
+    "ukk4306-22900": {
+     "k": 2,
+     "n": 99
+    },
+    "ukk4306-23000": {
+     "k": 0,
+     "n": 75
+    },
+    "ukk4307-33800": {
+     "k": 0,
+     "n": 55
+    },
+    "ukk4307-33900": {
+     "k": 1,
+     "n": 100
+    }
+   }
+  }
+ },
+ "version": 1,
+ "window": {
+  "hours": [
+   24,
+   72
+  ],
+  "name": "W1"
+ }
+}
