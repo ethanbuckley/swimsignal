@@ -94,12 +94,20 @@ async function networkFirst(req) {
     if (hit) return stored(hit);
     // A page never opened before (a spot's, say): the home page stands in and reads the spot from
     // the address. Its first <base>, at this worker's scope, keeps its links working at any depth.
-    const home = req.mode === 'navigate' ? await cache.match(self.registration.scope) || await fromPack(self.registration.scope) : undefined;
+    // The redesign preview (preview/, docs/DESIGN.md) is a second set of pages beside the app, kept as each is
+    // opened and not with the app's own files (SHELL). A page of its own never opened before gets the preview's
+    // opening as its stand-in, with its <base> at preview/, and never the app's home page: until 24 November 2026
+    // the preview was left to the browser, because a slow first visit was handed the app's home page in its place.
+    const root = inPreview(req.url) ? PREVIEW_ROOT() : self.registration.scope;
+    const home = req.mode === 'navigate' ? await cache.match(root) || (root === self.registration.scope ? await fromPack(root) : undefined) : undefined;
     if (!home) return net;
-    const html = (await home.text()).replace('<head>', `<head>\n<base href="${self.registration.scope}">`);
+    const html = (await home.text()).replace('<head>', `<head>\n<base href="${root}">`);
     return new Response(html, { headers: { 'Content-Type': 'text/html; charset=utf-8', [STORED]: '1' } });
   }
 }
+
+const PREVIEW_ROOT = () => new URL('preview/', self.registration.scope).href;
+const inPreview = u => u.startsWith(PREVIEW_ROOT());
 
 // A spot's own file, data/spot/<id>.json, brings its traced river, data/spot/<id>-trace.json, which its map
 // draws only when zoomed in (index.html, drawTrace): stored now, so the map has it at the water. Not every

@@ -32,7 +32,7 @@ from dipcast.algae import by_site, refresh_algae
 from dipcast.forecast_log import describe_fetch, latest_samples, load_poll_log, load_verification, samples_status
 from dipcast.guides import attach_guides, boat_note, copy_photos
 from dipcast.openings import attach_openings
-from dipcast import official_advice, shadow_radar
+from dipcast import hero_photos, official_advice, shadow_radar
 from dipcast.samples import attach_measured
 from dipcast.ingest import rainfall
 from dipcast.ingest.live import expected_rows, is_short
@@ -1229,6 +1229,26 @@ SCOTLAND_CREDIT = {"use": "always", "credit": "Contains Scottish Water data: ove
 FOOTER_COMPANIES = "via the National Storm Overflow Hub"
 
 
+RIVER_WINTER_MARK = "<!-- RIVER_WINTER_LINE -->\n"
+RIVER_WINTER_METHOD = (
+    '<p id="winter-river-line">From October to April a river spot\'s page says whether today\'s E. coli estimate is higher or lower '
+    "than usual there for those months. It gives no figure, and the word does not change the risk level. The word comes from the "
+    "estimate without soil moisture. On 2,754 winter samples from 2012 to 2022 at river monitoring points, which it had never "
+    "seen, that estimate put the days at a place in the right order (a correlation within each place of 0.49, where 0 is no "
+    "order; 28 places, most of them in the South West, none a swim spot). Rain in the last two days did as well alone. The test "
+    "used the rain measured on the day, so the word is given for today only, and its size was not tested. "
+    '<a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/RIVER-WINTER-READ-2026-11.md">The test</a>.</p>\n')
+
+
+def with_river_winter(html: str) -> str:
+    """methods.html with the winter river line's paragraph while its switch is on (river_usual.winter_on), and without
+    its marker either way. With the switch off the page is as it was before the marker was added."""
+    from dipcast import river_usual
+    if html.count(RIVER_WINTER_MARK) != 1:
+        raise ValueError("methods.html has lost its RIVER_WINTER_LINE marker")
+    return html.replace(RIVER_WINTER_MARK, RIVER_WINTER_METHOD if river_usual.winter_on() else "")
+
+
 def with_scotland_credit(html: str) -> str:
     """The page's footer credit with Scottish Water's data added while the Scotland trial is on."""
     from dipcast import scotland_trial
@@ -2240,6 +2260,21 @@ def attach_water_temperature_estimate(results: list[dict], forecast=None, model=
 BATHING_WATER_POINTS = ROOT / "data" / "raw" / "bathing_water_points.json"   # scripts/refresh_bathing_water_points.py
 
 
+def attach_coastal_spills(sites: list[dict], now: pd.Timestamp, points_file: Path | None = None) -> dict:
+    """The English coastal directory's sewage overflows near each sampling point and which reported a spill in the
+    last 48 hours (coastal_spills.attach), from the overflow table this build already holds: no request. A failure
+    leaves the directory as it was and never stops the build."""
+    from dipcast import coastal_spills
+    try:
+        points = json.loads((points_file or BATHING_WATER_POINTS).read_text()).get("england") or {}
+        return coastal_spills.attach(sites, points, _overflows(), _net(), pd.Timestamp(now).tz_convert("UTC"))
+    except Exception as e:  # noqa: BLE001 - an observation beside the directory must not sink the build
+        log.warning("coastal spills nearby: %s", e)
+        for s in sites:
+            s.pop("spills_nearby", None)
+        return {"error": str(e)}
+
+
 def site_point(s: dict, points: dict) -> tuple[float, float] | None:
     """A directory site's (lat, lon): its own where its source gives one (Scotland, Ireland, Northern Ireland), else
     its sampling point on file (BATHING_WATER_POINTS: England, Wales), else None."""
@@ -2600,6 +2635,229 @@ def copy_app_files(site: Path, stamp: str | None = None) -> None:
     shutil.copytree(TEMPLATE.parent / "icons", site / "icons", dirs_exist_ok=True)
     # The map library, Leaflet, served from this site (vendor/leaflet/VERSION.txt) rather than a CDN.
     shutil.copytree(TEMPLATE.parent / "vendor", site / "vendor", dirs_exist_ok=True)
+
+
+# The redesign preview (docs/DESIGN.md, "A redesign kept as a preview"): a second set of swimmer pages, published
+# beside the live ones at preview/ so they can be judged on a phone. Marked noindex, in no sitemap, linked from no live
+# page, and left alone by the offline copy (sw.js). It reads the data files the live pages read, loads levels.js and
+# eatoday.js from the site's root so a level and an official notice read the same in both, and gets one file of its own
+# from the build: each spot's opening photo, by guide.js's rule (dipcast.hero_photos), so a list of places can show a
+# photo beside each without reading every spot's file.
+PREVIEW = TEMPLATE.parent / "preview"
+PREVIEW_FILES = ("index.html", "preview.css", "host.js", "model.js", "alerts.js", "map.js", "app.js")
+PREVIEW_NOINDEX = '<meta name="robots" content="noindex, nofollow">'
+# The redesign as the site (docs/DESIGN.md, "The switch"): with DIPCAST_REDESIGN=1 the build writes the redesign's
+# pages at the site's own addresses (/, spot/<id>/, plan/, saved/) and the app they replace at classic/. Unset, or
+# anything else, and every page is as before: the app at the site's addresses, the redesign at preview/.
+REDESIGN_ENV = "DIPCAST_REDESIGN"
+# What the preview's own file says of where it is, which the build rewrites for each page it writes from it.
+PREVIEW_BASE = '<base href="../">'
+PREVIEW_HOME = '<html lang="en-GB" data-home="preview/">'
+PREVIEW_BRAND = '<a class="brand" href="preview/">'
+# The head a page of the site's own carries and the preview's file does not: the Home Screen app's manifest and icon.
+REDESIGN_HEAD = ('<link rel="manifest" href="manifest.webmanifest">\n<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">\n'
+                 '<meta name="mobile-web-app-capable" content="yes">\n<meta name="apple-mobile-web-app-capable" content="yes">\n'
+                 '<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">\n'
+                 f'<meta name="apple-mobile-web-app-title" content="{BRAND}">')
+REDESIGN_NOSCRIPT = ('<noscript><p class="noscript">This page needs JavaScript to read the forecast. <a href="spots.html">Every spot</a> '
+                     'has a page of its own with its forecast, which works without it.</p></noscript>')
+
+
+def redesign_on() -> bool:
+    """Whether this build publishes the redesign as the site (REDESIGN_ENV is exactly "1")."""
+    return os.environ.get(REDESIGN_ENV, "").strip() == "1"
+# The live site's own rules, which the preview loads rather than copies: the levels and the official advice's words,
+# and the saved lists and the plan (lists.js reads a stored list with experience.js).
+PREVIEW_RULES = ("levels.js", "eatoday.js", "experience.js", "lists.js", "plan.js")
+
+
+def preview_map(tiles: dict | None, template: str | None = None) -> dict:
+    """preview/map.json: the live map's tiles for the preview's maps (preview/map.js). Their address and credit are
+    the provider's the build chose (tile_config), or OpenStreetMap's; the colour filter is that provider's, or the
+    one index.html carries, so the two maps are drawn in the same colours."""
+    src = tiles or TILE_PROVIDERS["osm"]
+    own = TILE_FILTER.search(template if template is not None else TEMPLATE.read_text())
+    return {"url": src["url"], "credit": src["credit"], "filter": src.get("filter") or (own.group(0) if own else "")}
+
+
+PREVIEW_TITLE = re.compile(r"<title>.*?</title>")
+PREVIEW_APP = re.compile(r'<div id="app">.*?</div>\n(?=<p id="said")', re.DOTALL)
+PREVIEW_NOSCRIPT = re.compile(r'<noscript><p class="noscript">.*?</p></noscript>\n?', re.DOTALL)
+PREVIEW_MAIN = re.compile(r'<main id="main"[^>]*>')
+
+
+def prerender_preview(site: Path, home: str = "preview/") -> dict:
+    """The preview's opening and each place's page as its own script draws them, {"home": html, "spots": {id: html}},
+    from the data this build has written (scripts/prerender_preview.js runs preview/app.js in Node, in UK time, as at
+    the moment the forecast was issued). Without Node, or the data, {}: the pages keep their loading line, and the
+    build says why."""
+    if not (site / "data" / "spots-lite.json").exists():
+        return {}
+    try:
+        run = subprocess.run(["node", str(ROOT / "scripts" / "prerender_preview.js"), str(site), "-", home], check=True,
+                             capture_output=True, text=True, timeout=180, env={**os.environ, "TZ": "Europe/London"})
+        return json.loads(run.stdout)
+    except (OSError, ValueError, subprocess.SubprocessError) as e:
+        log.warning("the preview's pages without their forecast in the HTML (%s)", getattr(e, "stderr", "") or e)
+        return {}
+
+
+# What the preview's built pages lack without scripts. Their overflows upstream and places nearby are in the HTML,
+# so the live note's ending (NOSCRIPT) would be wrong here. The buttons that only a script answers are hidden.
+PREVIEW_NOSCRIPT_END = "With JavaScript on, the page updates it and shows the other days, the map and your saved places."
+PREVIEW_NOSCRIPT_STYLE = "<style>button,.picks{display:none!important}</style>"
+# The opening without scripts: its search and its areas' lists are the script's, so both are hidden and the reader is
+# sent to spots.html, whose links to every spot's page work without it (the Saved and Plan pages say the same).
+PREVIEW_HOME_NOSCRIPT = ('<noscript><style>button,.ask,.daytabs,.home-body .block{display:none!important}</style>'
+                         '<p class="notice">This page needs JavaScript to search for a place and to list an area\'s places. '
+                         '<a href="spots.html">Every spot</a> has a page of its own with its forecast, which works without it.</p></noscript>')
+
+
+def preview_built(shell: str, built: str | None, issued: pd.Timestamp | None, home: bool = False) -> str:
+    """The preview's page with what its script would draw already in it (built), marked data-built so the script
+    keeps it if the forecast cannot be read. A reader without scripts is told what they are seeing and when it was
+    issued, as on the live pages (noscript_note) but for what this page lacks, in place of the line saying the page
+    needs JavaScript. home: the opening, which without scripts can only point to the list of every spot.
+    Unchanged without built."""
+    if not built:
+        return shell
+    said = noscript_note(issued).replace(NOSCRIPT.split(". ", 1)[1], PREVIEW_NOSCRIPT_END)
+    note = PREVIEW_HOME_NOSCRIPT if home else f'<noscript>{PREVIEW_NOSCRIPT_STYLE}<p class="notice">{escape(said)}</p></noscript>'
+    built = PREVIEW_MAIN.sub(lambda m: m.group(0) + note, built, count=1)
+    if not PREVIEW_APP.search(shell):
+        raise ValueError('preview/index.html has lost <div id="app">, which the built page fills')
+    return PREVIEW_NOSCRIPT.sub("", PREVIEW_APP.sub(lambda _: f'<div id="app" data-built>{built}</div>\n', shell, count=1), count=1)
+
+
+def redesign_shell(shell: str, base: str, live: bool = False) -> str:
+    """The preview's file for a page written somewhere else: its <base> back to the site's root from there, and,
+    live, as one of the site's own pages: no word of a preview, nothing keeping search engines out, the Home
+    Screen app's manifest and icon, and where its own pages are (data-home, which app.js reads) the root."""
+    for mark in (PREVIEW_BASE, PREVIEW_HOME, PREVIEW_BRAND, PREVIEW_NOINDEX):
+        if mark not in shell:
+            raise ValueError(f"preview/index.html has lost {mark}, which the build rewrites for each page")
+    shell = shell.replace(PREVIEW_BASE, f'<base href="{escape(base)}">', 1)
+    if not live:
+        return shell
+    shell = shell.replace(PREVIEW_HOME, '<html lang="en-GB" data-home="">', 1).replace(PREVIEW_BRAND, '<a class="brand" href="./">', 1)
+    for note in (r"<!-- A redesign kept beside the live site.*?-->\n", r"<!-- Every address below is read against.*?-->\n"):
+        shell = re.sub(note, "", shell, count=1, flags=re.DOTALL)   # what the preview's file says of being a preview
+    shell = shell.replace(PREVIEW_NOINDEX + "\n", "", 1).replace("</title>", "</title>\n" + REDESIGN_HEAD, 1)
+    shell = shell.replace(f"Where do you swim? · {BRAND} preview", HOME_TITLE, 1)
+    return PREVIEW_NOSCRIPT.sub(REDESIGN_NOSCRIPT + "\n", shell, count=1)
+
+
+def preview_place_page(shell: str, spot: dict, root: str, built: str | None = None, card: tuple[str, str] | None = None,
+                       issued: pd.Timestamp | None = None, live: bool = False) -> str:
+    """A place's own page in the redesign: the preview's page with the place's name, description, address and share
+    card in its <head> (page_meta, as the app's spot page has them) and a <base> back to the site's root. built: the
+    page as its script draws it. As a preview it is preview/spot/<id>/ and stays out of search engines. live: the
+    site's own page for the place, spot/<id>/: search engines may index it, and it carries the app's page's
+    structured data."""
+    url = f"{root}spot/{spot['id']}/" if live else f"{root}preview/spot/{spot['id']}/"
+    blurb = spot_description(spot)
+    head = page_meta(spot_title(spot), blurb, url, root, image=card)
+    if live:
+        head += "\n" + spot_structured_data(spot, root, blurb)
+    shell = redesign_shell(shell, "../../" if live else "../../../", live)
+    if not PREVIEW_TITLE.search(shell):
+        raise ValueError("preview/index.html has lost its <title>, which a place's page replaces")
+    return preview_built(PREVIEW_TITLE.sub(lambda _: head, shell, count=1), built, issued)
+
+
+def write_preview(site: Path, results: list[dict], tiles: dict | None = None, root: str | None = None,
+                  spot_cards: dict[str, str] | None = None, cards_v: str = "") -> int:
+    """site/preview/: the redesign's files, copied as they are, with hero-photos.json and map.json. Then, unless the
+    redesign is the site (redesign_on: write_redesign then writes its pages at the site's own addresses), its opening
+    and a page for each place at preview/spot/<id>/, each with what its script would draw already in the HTML
+    (prerender_preview) and, for a place, its own <head>. Returns how many spots have an opening photo. A page that
+    has lost its noindex mark, or the live site's own rules, stops the build."""
+    page = (PREVIEW / "index.html").read_text()
+    if PREVIEW_NOINDEX not in page:
+        raise ValueError("preview/index.html has lost its noindex mark: the preview must stay out of search engines")
+    for name in PREVIEW_RULES:
+        tag = f'<script src="{name}"></script>'
+        if tag not in page:
+            raise ValueError(f"preview/index.html has lost {tag}, the live site's own rules")
+    redesign_shell(page, "../")   # every mark the build rewrites is there
+    root = root or site_url()
+    out = site / "preview"
+    out.mkdir(parents=True, exist_ok=True)
+    for name in PREVIEW_FILES:
+        shutil.copy(PREVIEW / name, out / name)
+    photos = hero_photos.index(results)
+    (out / "hero-photos.json").write_text(json.dumps(photos, separators=(",", ":")))
+    (out / "map.json").write_text(json.dumps(preview_map(tiles), separators=(",", ":")))
+    shutil.rmtree(out / "spot", ignore_errors=True)   # a spot dropped from spots.csv loses its page
+    if redesign_on():
+        # The redesign has the site's addresses: an address under preview/ opens the same page there.
+        (out / "index.html").write_text(PREVIEW_MOVED)
+        return len(photos)
+    built, issued = prerender_preview(site), built_issue_time(site)   # after hero-photos.json, which the built pages show
+    (out / "index.html").write_text(preview_built(page, built.get("home"), issued, home=True))
+    for r in results:
+        if not SPOT_ID.fullmatch(str(r["id"])):
+            continue   # as the live pages: no page of its own, it keeps ?spot=
+        card = (f"cards/spot/{r['id']}.png?v={cards_v}", spot_cards[r["id"]]) if r["id"] in (spot_cards or {}) else None
+        (out / "spot" / r["id"]).mkdir(parents=True, exist_ok=True)
+        (out / "spot" / r["id"] / "index.html").write_text(
+            preview_place_page(page, r, root, (built.get("spots") or {}).get(r["id"]), card, issued))
+    return len(photos)
+
+
+# preview/index.html once the redesign is the site: the address someone kept from the preview opens the same page
+# at the site's own address ("?spot=<id>" is a place, anything else the opening with the same question).
+PREVIEW_MOVED = ('<!doctype html>\n<html lang="en-GB">\n<head>\n<meta charset="utf-8">\n<meta name="robots" content="noindex">\n'
+                 f'<title>{BRAND}</title>\n<script>(function () {{ var q = new URLSearchParams(location.search), id = q.get("spot"); q.delete("spot");\n'
+                 '  var rest = q.toString(); location.replace("../" + (/^[A-Za-z0-9_-]+$/.test(id || "") ? "spot/" + id + "/" : "") + (rest ? "?" + rest : "") + location.hash); })();</script>\n'
+                 f'</head>\n<body><p><a href="../">{BRAND}</a> has moved to the site\'s own address.</p></body>\n</html>\n')
+CLASSIC_NOTE = ('<p class="classic-note" style="margin:0;padding:10px 16px;background:#fff6e8;border-bottom:1px solid #e5a53a;font:400 15px/1.4 system-ui,sans-serif;color:#1b2328">'
+                f'This is the earlier version of {BRAND}, kept for what the new one does not have yet. <a href="./" style="color:#0f5a61;font-weight:600">Open the new {BRAND}</a></p>')
+CLASSIC_BASE = re.compile(r'<base href="([^"]*)">')
+
+
+def classic_page(page: str) -> str:
+    """One of the app's pages as it is published under classic/, while the redesign has the site's addresses: its
+    <base> one folder further from the site's root; data-home, from which the app makes its own pages' addresses
+    (index.html, ROOT); its links to its own home, Plan a swim and Saved under classic/; out of search engines, whose
+    page for each address is now the redesign's (its canonical link already names it); and a line at the top saying
+    what it is, with the way to the new site."""
+    if not CLASSIC_BASE.search(page) or '<html lang="en">' not in page or "<body" not in page:
+        raise ValueError("an app page has no <base>, <html lang> or <body>, which classic_page rewrites")
+    page = CLASSIC_BASE.sub(lambda m: f'<base href="../{m.group(1)[2:] if m.group(1).startswith("./") else m.group(1)}">', page, count=1)
+    page = page.replace('<html lang="en">', '<html lang="en" data-home="classic/">', 1)
+    if '<meta name="robots" content="noindex">' not in page:
+        page = page.replace("<link rel=\"canonical\"", '<meta name="robots" content="noindex">\n<link rel="canonical"', 1)
+    for a in ("./", "plan/", "saved/"):
+        page = page.replace(f'href="{a}"', f'href="classic/{"" if a == "./" else a}"')
+    return re.sub(r"(<body[^>]*>)", lambda m: m.group(1) + CLASSIC_NOTE, page, count=1)
+
+
+def write_redesign(site: Path, results: list[dict], root: str, spot_cards: dict[str, str] | None = None, cards_v: str = "",
+                   token: str | None = None, feeds: bool = False) -> int:
+    """The redesign as the site (redesign_on): its opening at index.html, a page for each place at spot/<id>/, and
+    its Plan a swim and Saved at plan/ and saved/, the app's own addresses, each with the app's page's <head> and
+    the page-view counter, and the opening and the places with what the script would draw already in the HTML.
+    Called after the app's pages are written (under classic/) and after spot/ is cleared. Returns the place pages."""
+    page = (PREVIEW / "index.html").read_text()
+    built, issued = prerender_preview(site, home=""), built_issue_time(site)
+    head = page_meta(HOME_TITLE, DESCRIPTION, root, root, feed=("feed.xml", f"{BRAND} · every spot") if feeds else None)
+    home = PREVIEW_TITLE.sub(lambda _: head, redesign_shell(page, "./", live=True), count=1)
+    (site / "index.html").write_text(with_counter(preview_built(home, built.get("home"), issued, home=True), token))
+    for folder, title, blurb, noindex in (("plan", PLAN_TITLE, PLAN_DESCRIPTION, False), ("saved", SAVED_TITLE, SAVED_DESCRIPTION, True)):
+        head = page_meta(title, blurb, f"{root}{folder}/", root, noindex=noindex)
+        (site / folder).mkdir(exist_ok=True)
+        (site / folder / "index.html").write_text(with_counter(PREVIEW_TITLE.sub(lambda _: head, redesign_shell(page, "../", live=True), count=1), token))
+    n = 0
+    for r in results:
+        if not SPOT_ID.fullmatch(str(r["id"])):
+            continue
+        card = (f"cards/spot/{r['id']}.png?v={cards_v}", spot_cards[r["id"]]) if r["id"] in (spot_cards or {}) else None
+        (site / "spot" / r["id"]).mkdir(parents=True, exist_ok=True)
+        (site / "spot" / r["id"] / "index.html").write_text(with_counter(
+            preview_place_page(page, r, root, (built.get("spots") or {}).get(r["id"]), card, issued, live=True), token))
+        n += 1
+    return n
 
 
 def site_url() -> str:
@@ -3390,6 +3648,8 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
             s = with_verification_figures(s, site / "data" / "verification.json")   # build() writes it before the pages
         for a, b in REWRITES:
             s = s.replace(a, b)
+        if name == "methods.html":
+            s = with_river_winter(s)   # the winter river line's paragraph, only while its switch is on
         if name == "about.html":
             s = with_counts(s, results)
         if name in ("clubs.html", "about.html"):   # about.html since 5 Nov 2026: its "How good it is" gave no figure
@@ -3427,16 +3687,23 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     shutil.copytree(STATIC / "fonts", site / "fonts", dirs_exist_ok=True)   # declared in page.css and index.html
     copy_app_files(site, stamp)
     (site / "app.js").write_text(app_js)
+    write_preview(site, results, tiles, root, spot_cards, cards_v)   # the redesign preview at preview/, beside the live pages; after the scripts it loads
     feeds = (site / "data" / "alerts.json").is_file()   # write_feeds writes them from it, after the spot pages
     home = PAGE_META.sub(lambda m: page_meta(HOME_TITLE, DESCRIPTION, root, root, base="./",
                                              feed=("feed.xml", f"{BRAND} · every spot") if feeds else None), template, count=1)
     five = [(pd.Timestamp(day) + pd.Timedelta(days=i)).date().isoformat() for i in range(5)] if day else None
     home = home.replace(LOADING, home_lead(len(results), five, spots_where(results)), 1)
-    (site / "index.html").write_text(with_counter(home, token))
-    (site / "saved").mkdir(exist_ok=True)
-    (site / "saved" / "index.html").write_text(with_counter(saved_page(template, root), token))
-    (site / "plan").mkdir(exist_ok=True)
-    (site / "plan" / "index.html").write_text(with_counter(plan_page(template, root), token))
+    # The app's own pages: at the site's addresses, or, while the redesign has those (redesign_on), under classic/,
+    # each rewritten for where it is (classic_page). write_redesign then writes the site's addresses, below.
+    redesign = redesign_on()
+    shutil.rmtree(site / "classic", ignore_errors=True)   # none left behind when the switch goes off
+    app, placed = (site / "classic", classic_page) if redesign else (site, lambda page: page)
+    app.mkdir(exist_ok=True)
+    (app / "index.html").write_text(placed(with_counter(home, token)))
+    (app / "saved").mkdir(exist_ok=True)
+    (app / "saved" / "index.html").write_text(placed(with_counter(saved_page(template, root), token)))
+    (app / "plan").mkdir(exist_ok=True)
+    (app / "plan" / "index.html").write_text(placed(with_counter(plan_page(template, root), token)))
     (site / "data").mkdir(exist_ok=True)
     shutil.copy(PLACES, site / "data" / "places.json")   # before the data page, which lists data/
     shutil.copy(WATERS, site / "data" / "waters.json")
@@ -3449,12 +3716,15 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
         if not SPOT_ID.fullmatch(str(r["id"])):
             log.warning("spot id %r is not letters, digits and hyphens: no page of its own, it keeps ?spot=", r["id"])
             continue
-        (site / "spot" / r["id"]).mkdir(parents=True, exist_ok=True)
-        (site / "spot" / r["id"] / "index.html").write_text(with_counter(spot_page(template, r, root, tops.get(r["id"]),
+        (site / "spot" / r["id"]).mkdir(parents=True, exist_ok=True)   # also holds its sign, profile and feed, whoever has its page
+        (app / "spot" / r["id"]).mkdir(parents=True, exist_ok=True)
+        (app / "spot" / r["id"] / "index.html").write_text(placed(with_counter(spot_page(template, r, root, tops.get(r["id"]),
             (f"cards/spot/{r['id']}.png?v={cards_v}", spot_cards[r["id"]]) if r["id"] in (spot_cards or {}) else None, feeds,
-            issued=issued), token))
+            issued=issued), token)))
         write_sign(site, r, root, token)   # spot/<id>/sign/, and the QR code the live sign shows
         ids.append(r["id"])
+    if redesign:
+        write_redesign(site, results, root, spot_cards, cards_v, token, feeds)
     paged = [r for r in results if r["id"] in set(ids)]
     write_spill_durations(site, paged)   # data/research/spill_durations*, before the profiles that show them and the data page
     write_profiles(site, paged, token, root=root)   # spot/<id>/profile/, from data/upstream/
@@ -5378,6 +5648,115 @@ def plume_files(site: Path, results: list[dict], upstream: dict[str, list[dict]]
     return out
 
 
+def write_site_pages(site: Path, results: list[dict], generated: pd.Timestamp, spot_cards: dict[str, str], *, coastal: dict,
+                     wales: dict, scotland: dict, ireland: dict, northern_ireland: dict) -> int:
+    """write_pages with this run's settings. build() and rebuild_pages() both write the pages through here, so a
+    page-only build cannot be given different arguments from a full one."""
+    push, email, ask = push_config(), email_config(), ask_config()
+    return write_pages(site, results, os.environ.get(COUNTER_TOKEN_ENV, "").strip(), day=generated.date().isoformat(),
+                       push=push is not None, coastal=coastal, wales=wales, scotland=scotland, email=email is not None,
+                       ireland=ireland, northern_ireland=northern_ireland, support=support_url(), tiles=tile_config(),
+                       push_dates=bool(push and push.get("dates")), ask=ask is not None,
+                       push_advice=bool(push and push.get("advice")), push_clears=bool(push and push.get("clears")),
+                       actions=actions_url(), spot_cards=spot_cards, cards_v=generated.strftime("%Y%m%d%H%M"),
+                       overflows=_overflows(), generated=generated)
+
+
+# A page-only build (docs/PAGE-ONLY-BUILDS-2026-11.md). A push to main that changes only what the pages are made from
+# (scripts/page_only.py decides) need not forecast again: rebuild_pages writes the pages over the last build's
+# published site, whose data/ it leaves as it is, so every page gives that forecast's own issue time. BUILT_FILE is
+# the full build's note to it, kept with the state: which forecast the state belongs to, and the settings it had.
+BUILT_FILE = "site_build.json"
+NATIONS = ("wales", "scotland", "ireland", "northern_ireland")
+# Settings that are paths on the machine, not choices about the site. The Open-Meteo key is a secret: only whether
+# it is set goes into the hash.
+WRITTEN_AFTER_PAGES = ("since-last.json",)   # issue_history.record_and_publish, the last thing build() writes
+SETTINGS_NOT_HASHED = ("DIPCAST_ROOT", "DIPCAST_STATE", "DIPCAST_CACHE")
+SETTINGS_SET_ONLY = ("DIPCAST_OPEN_METEO_KEY",)
+
+
+class PagesOnlyUnsafe(RuntimeError):
+    """The pages cannot be written from the published data as a full build would write them: build in full."""
+
+
+def build_settings() -> str:
+    """A hash of the DIPCAST_ settings this run has, names and values (for a secret, only whether it is set). A
+    setting changed since the forecast was made can change the data as well as the pages, so a page-only build
+    whose hash differs from the full build's is not safe."""
+    h = hashlib.sha256()
+    for k in sorted(os.environ):
+        if not k.startswith("DIPCAST_") or k in SETTINGS_NOT_HASHED or not os.environ[k].strip():
+            continue
+        h.update(f"{k}={'set' if k in SETTINGS_SET_ONLY else os.environ[k].strip()}\n".encode())
+    return h.hexdigest()[:16]
+
+
+def rebuild_pages(site: Path = SITE, built: Path | None = None) -> dict:
+    """Every page again, over a published site whose data/ stays as it is: the last build's forecast with this
+    commit's pages. Raises PagesOnlyUnsafe, before anything is written, unless the state is that forecast's and
+    the settings are the ones it was made with. It asks the network for the reviews alone, as a build does.
+    What it runs again is what reads the page sources (src/dipcast/site, src/dipcast/pages, the prerender scripts
+    and alerts.js): alerts.json and the cards, by the page's own rules, the pages, and the reviews' sections in
+    them. The Lab's paths, which a build makes from its own network, are the last build's, put back."""
+    t0 = time.time()
+    data = site / "data"
+    try:
+        doc = json.loads((data / "spots.json").read_text())
+        results, generated = doc["spots"], pd.Timestamp(doc["generated_at"])
+        coastal = json.loads((data / "coastal.json").read_text())
+        nations = {name: json.loads((data / f"{name}.json").read_text()) for name in NATIONS}
+    except (OSError, KeyError, TypeError, ValueError) as e:
+        raise PagesOnlyUnsafe(f"the published data cannot be read ({e})") from e
+    try:
+        note = json.loads((built or config.state_read(BUILT_FILE)).read_text())
+    except (OSError, ValueError) as e:
+        raise PagesOnlyUnsafe(f"no note from the full build in the state ({e})") from e
+    if note.get("generated_at") != doc["generated_at"]:
+        raise PagesOnlyUnsafe(f"the state is the forecast of {note.get('generated_at')}, the published data that of {doc['generated_at']}")
+    if note.get("settings") != build_settings():
+        raise PagesOnlyUnsafe("a DIPCAST_ setting has changed since the forecast was made")
+    push, email, ask = push_config(), email_config(), ask_config()
+    for key, now in (("push", push), ("email", email), ("ask", ask), ("credits", data_credits(site_url()))):
+        if doc.get(key) != now:
+            raise PagesOnlyUnsafe(f"spots.json was written with another {key} setting")
+    health: dict = {"pages_only": True, "generated_at": doc["generated_at"], "forecast_commit": doc.get("commit")}
+    paths, kept = site / "lab" / "assets" / "paths", None
+    if paths.is_dir():   # write_lab puts the repository's copy there; the last build's own goes back below
+        kept = site / ".lab-paths-kept"
+        shutil.rmtree(kept, ignore_errors=True)
+        shutil.copytree(paths, kept)
+    # What a build writes into data/ after the pages, so the data page, which lists data/, does not list it:
+    # set aside while the pages are written, as it was not there when the full build wrote them.
+    later = [(data / name, site / f".{name}.kept") for name in WRITTEN_AFTER_PAGES if (data / name).is_file()]
+    for f, aside in later:
+        f.replace(aside)
+    try:
+        alerts_ok = write_alerts(site, site_url(), push is not None or email is not None)
+        spot_cards = write_spot_cards(site, results, generated.isoformat(), alerts_ok)
+        health["spot_cards"] = len(spot_cards)
+        health["spot_pages"] = write_site_pages(site, results, generated, spot_cards, coastal=coastal, **nations)
+    finally:
+        for f, aside in later:
+            aside.replace(f)
+    from dipcast.reviews import write_reviews
+    try:
+        health["reviews"] = write_reviews(site, spot_ids=[r["id"] for r in results], fetch=True)
+    except Exception as e:  # noqa: BLE001 - as in build(): reviews must never stop the site publishing
+        health["reviews"] = {"warning": f"reviews not written, so the site shows none this time: {e}"}
+    if health["reviews"].get("warning"):
+        announce(health["reviews"]["warning"])
+    if kept is not None:
+        if paths.is_dir():
+            shutil.rmtree(paths)
+            shutil.copytree(kept, paths)
+            write_lab_refresh(site, paths_from_build=True)
+        shutil.rmtree(kept)
+    health["cards"] = write_cards(site, results, generated.isoformat(), site_url(), alerts_ok)
+    summary = {**health, "seconds": round(time.time() - t0, 1)}
+    log.info("pages rebuilt on the forecast of %s: %s", doc["generated_at"], summary)
+    return summary
+
+
 def build(refresh: bool = True) -> dict:
     t0 = time.time()
     require_spill_model()
@@ -5535,11 +5914,13 @@ def build(refresh: bool = True) -> dict:
     coastal = attach_samples(fetch_coastal(), cache=config.CACHE / "coastal_samples.json")
     n_coastal_typical = attach_coastal_typical(coastal)   # a committed export: no request
     coastal_water = attach_directory_water_temp(coastal["sites"], anypoint_water_air(SITE))
+    coastal_spills = attach_coastal_spills(coastal["sites"], generated)
     (SITE / "data" / "coastal.json").write_text(json.dumps(coastal))
     health["coastal"] = {"status": coastal["status"], "sites": len(coastal["sites"]),
                          "samples": coastal.get("samples", {}).get("state"),
                          "with_sample": sum((s.get("sample") or {}).get("state") == "ok" for s in coastal["sites"]),
-                         "water_temperature_estimate": coastal_water, "typical_readings": n_coastal_typical}
+                         "water_temperature_estimate": coastal_water, "typical_readings": n_coastal_typical,
+                         "spills_nearby": coastal_spills}
     # Welsh bathing waters: NRW's sites and latest samples, live or from the dated snapshot (wales.py).
     from dipcast.wales import fetch as fetch_wales
     wales = fetch_wales()
@@ -5605,14 +5986,7 @@ def build(refresh: bool = True) -> dict:
     # How the forecast has done at each spot's upstream overflows, from that CSV: before the pages, for data.html.
     from dipcast import spot_scores
     health["spot_scores"] = spot_scores.write(SITE, upstream, generated, credits)
-    token = os.environ.get(COUNTER_TOKEN_ENV, "").strip()
-    health["spot_pages"] = write_pages(SITE, results, token, day=generated.date().isoformat(), push=push is not None,
-                                       coastal=coastal, wales=wales, scotland=scotland, email=email is not None,
-                                       ireland=ireland, northern_ireland=northern_ireland, support=support_url(), tiles=tile_config(),
-                                       push_dates=bool(push and push.get("dates")), ask=ask is not None,
-                                       push_advice=bool(push and push.get("advice")), push_clears=bool(push and push.get("clears")), actions=actions_url(),
-                                       spot_cards=spot_cards, cards_v=generated.strftime("%Y%m%d%H%M"),
-                                       overflows=_overflows(), generated=generated)
+    health["spot_pages"] = write_site_pages(SITE, results, generated, spot_cards, coastal=coastal, **nations)
     # Swimmers' reviews: the published ones into site/reviews/, and their sections into the pages just written.
     from dipcast.reviews import write_reviews
     try:
@@ -5642,6 +6016,8 @@ def build(refresh: bool = True) -> dict:
     except Exception as e:  # noqa: BLE001 - the history beside the forecast must never stop it publishing
         health["issue_history"] = {"warning": f"issue history not kept or published this time: {e}"}
         announce(health["issue_history"]["warning"])
+    if refresh:   # what rebuild_pages checks before it writes pages from this build's data
+        config.state_write(BUILT_FILE).write_text(json.dumps({"generated_at": generated.isoformat(), "settings": build_settings()}))
     summary = {**health, "seconds": round(time.time() - t0, 1), "generated_at": generated.isoformat()}
     summary.pop("failed_spots", None)
     if refresh and config.SCOTTISH_WATER:
@@ -5665,6 +6041,13 @@ def build(refresh: bool = True) -> dict:
 
 
 if __name__ == "__main__":
+    if "--pages-only" in sys.argv:   # the pages again from the data already in site/; exit 3 = not safe, build in full
+        try:
+            print(rebuild_pages())
+        except PagesOnlyUnsafe as e:
+            log.warning("pages not rebuilt from the published data: %s", e)
+            sys.exit(3)
+        sys.exit(0)
     try:
         print(build(refresh="--no-refresh" not in sys.argv))
     except BuildUnhealthy as e:

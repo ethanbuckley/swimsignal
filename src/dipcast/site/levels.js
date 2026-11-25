@@ -152,6 +152,18 @@ const ECOLI_OFF = 'Out of season';
 // figure's; the figure, its band and the level are unchanged. No safety, colour or level from it.
 const RIVER_USUAL = { higher: 'That is higher than usual here.', lower: 'That is lower than usual here.', about: 'That is about usual here.' };
 const riverUsual = x => RIVER_USUAL[(x || {}).ecoli_usual] || '';
+// From October to April the build can put `ecoli_usual_winter` on today's day at a river spot (river_usual.py,
+// winter_direction), behind a switch that is off (DIPCAST_RIVER_WINTER_LINE; docs/RIVER-WINTER-LINE-2026-11.md). The
+// word comes from the river model without soil moisture, whose order was tested on winter samples it never saw
+// (docs/RIVER-WINTER-READ-2026-11.md). Its size was not, so the tile still gives no figure and no band, and the
+// level is unchanged. Without the field, which is every build while the switch is off, these give ''.
+const RIVER_USUAL_WINTER = { higher: 'Today the estimate is higher than usual here for October to April.',
+  lower: 'Today the estimate is lower than usual here for October to April.', about: 'Today the estimate is about usual here for October to April.' };
+const RIVER_USUAL_WINTER_SAID = 'In winter only its order is tested: on past winter samples at river monitoring points it put the days at a place in the right order. Its size is untested, so no figure is given and it is not part of the level.';
+const riverUsualWinter = x => ecoliUntested(x) ? (RIVER_USUAL_WINTER[(x || {}).ecoli_usual_winter] || '') : '';
+// The out-of-season tile's sentence in view: the winter word and what it rests on where today's day carries one,
+// else the first of ecoliNotes, as before.
+const ecoliOffSaid = (s, check, x) => riverUsualWinter(x) ? `${riverUsualWinter(x)} ${RIVER_USUAL_WINTER_SAID}` : ecoliNotes(s, check, x)[0];
 const ECOLI_EXPERIMENTAL = 'Experimental E. coli estimate', ECOLI_FOLD = 'Experimental estimate';
 const ECOLI_OFF_SAID = 'Out of season. The E. coli estimate is tested only for May to September, when the Environment Agency takes samples. From October to April it is experimental, so it is not given here and does not set the level.';
 const algaeAge = a => (Date.parse(today()) - Date.parse(a.date)) / 864e5;
@@ -868,6 +880,6 @@ if (typeof module === 'object' && module.exports) {
   module.exports = { nameCase, plainName, overflowNames, ORDER, NOT_COVERED, NO_FORECAST, NO_OVERFLOWS, NO_RIVER, OTHER_RISKS, SPILL_CUTS, ECOLI_CUTS, spillLevel, shownRisk, tooFar, allUpstream, tooFarSaid, WEIGHT_SAID, setToday, today, dayWord, readerDay, fromDay, rank, risk, nowUnknown, nowUnknownWhy, nowFew, nowWatched, NOW_WATCHED_SHARE, LIVE_NONE, liveCover, liveHead, liveLine, liveParts, MODELLED_FROM, level, dayLevel, headParts, headline, levelScope, nowBecause, dayBecause, dayHeadline, tileLine, weekNext, laterWords, coverage, COVER, FOUND_NONE, ISOLATED_WHY, plainLevel, inBathingSeason, poorReason, poorAdvice, daily, ecoliBand, ecoliLevel, ecoliUntested, bestDay, weekendWords, yoursLevelled, lowAnswerDay, lowAnswerWords, mostWords, clockWords, clearWords, RAIN_OLD_H, rainAgeLine, backToLow,
     ACTION, POOR_ACTION, ALGAE_ACTION, PLAIN_ACTION, actionFor, levelAction, dayAction, HEAD_SCOPE, spillSet, worstNear,
     SAMPLE_LINE, SAMPLE_DAYS, sampleLevel, standingLevel, eaUnchecked, EA_UNCHECKED, walesShare, walesWords, trialWords, ecoliNotes,
-    ECOLI_OFF, ECOLI_EXPERIMENTAL, ECOLI_FOLD, ECOLI_OFF_SAID, RIVER_USUAL, riverUsual,
+    ECOLI_OFF, ECOLI_EXPERIMENTAL, ECOLI_FOLD, ECOLI_OFF_SAID, RIVER_USUAL, riverUsual, RIVER_USUAL_WINTER, RIVER_USUAL_WINTER_SAID, riverUsualWinter, ecoliOffSaid,
     companyName, atSpot, overflowWhere, travelSaid, SPILL_LONG_H, spillStart, longSpill, LONG_SPILL, isolated };
 }

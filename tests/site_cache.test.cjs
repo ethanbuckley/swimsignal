@@ -152,3 +152,43 @@ test('the cache is named by the build and filled from the server, with the scrip
   assert.ok(urls.every(u => u.startsWith(SCOPE)), urls.join(' '));
   assert.ok(w.added.every(r => r.cache === 'no-cache'));
 });
+
+// The redesign preview (preview/, docs/DESIGN.md): a second set of pages beside the app, kept as each is opened.
+test('a preview page opened with a connection is kept, and answers without one', async () => {
+  const page = SCOPE + 'preview/spot/ilkley/';
+  let online = true;
+  const w = worker(async () => { if (!online) throw new Error('offline'); return new Response('<html><head></head><body>Ilkley, built</body></html>'); });
+  await w.context.networkFirst({ url: page + '?day=2026-11-28', mode: 'navigate' });
+  assert.ok(w.entries.has(page), 'stored under its address without the day');
+  online = false;
+  assert.match(await (await w.context.networkFirst({ url: page + '?day=2026-11-29', mode: 'navigate' })).text(), /Ilkley, built/);
+  // Its scripts and its two files are the network first, as the site's own are.
+  for (const f of ['preview/app.js', 'preview/model.js', 'preview/preview.css', 'preview/hero-photos.json', 'preview/map.json']) {
+    const v = worker(async () => new Response('from the network'), { [SCOPE + f]: new Response('stored') });
+    assert.equal(await (await fetchEvent(v, SCOPE + f)).text(), 'from the network', f);
+  }
+});
+
+test("a preview page never opened before is the preview's opening, with a <base> at preview/, never the app's home page", async () => {
+  const opening = SCOPE + 'preview/';
+  const { context } = worker(async () => { throw new Error('offline'); },
+    { [SCOPE]: new Response('<html><head></head><body>App</body></html>'), [opening]: new Response('<html><head></head><body>Where do you swim?</body></html>') });
+  const res = await context.networkFirst({ url: opening + 'spot/wastwater/?day=2026-11-28', mode: 'navigate' });
+  const html = await res.text();
+  assert.match(html, /Where do you swim\?/); assert.doesNotMatch(html, /App/);
+  assert.ok(html.includes(`<head>\n<base href="${opening}">`), html);
+  // A live spot page still gets the app's home page, at the scope.
+  const live = await (await context.networkFirst({ url: SCOPE + 'spot/wastwater/', mode: 'navigate' })).text();
+  assert.match(live, /App/); assert.ok(live.includes(`<base href="${SCOPE}">`));
+});
+
+test("with nothing of the preview stored, a preview page waits for the network: the app's home page does not stand in", async () => {
+  const { context } = worker(async () => { throw new Error('offline'); }, { [SCOPE]: new Response('<html><head></head><body>App</body></html>') });
+  await assert.rejects(context.networkFirst({ url: SCOPE + 'preview/spot/wastwater/', mode: 'navigate' }), /offline/);
+  await assert.rejects(context.networkFirst({ url: SCOPE + 'preview/', mode: 'navigate' }), /offline/);
+});
+
+test('the preview is not among the files every visitor stores at install', () => {
+  const sw = readFileSync(join(__dirname, '../src/dipcast/site/sw.js'), 'utf8');
+  assert.doesNotMatch(sw.split('const SHELL')[1].split('];')[0], /preview\//);
+});
