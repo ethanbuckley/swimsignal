@@ -8,6 +8,8 @@
   color-scheme: light;
   --font-text: "Source Sans 3", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-display: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;   /* page.css's: a figure label, "Exhibit 2" */
+  --deep: #12232a;   /* page.css's: an exhibit's cover while it loads */
   --bg: #f6f4ee; --card: #fff; --ink: #1b2328; --muted: #5a6166; --line: #e0dbd0; --hair: rgba(27, 35, 40, .1);
   --hover: #efebe2; --active: #e8e3d8;
   --brand: #0f5a61; --brand-deep: #0b474d; --link: #0f5a61;
@@ -684,6 +686,24 @@ dialog.rv-view img { display: block; width: auto; height: auto; max-width: calc(
 dialog.rv-view figcaption { padding: 8px 12px; font-size: var(--fs-meta); line-height: 1.35; color: var(--muted); }
 .rv-close { position: fixed; top: calc(8px + env(safe-area-inset-top)); right: calc(8px + env(safe-area-inset-right)); display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 50%; background: var(--float); color: var(--ink); cursor: pointer; }
 .rv-close .ic { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; }
+
+/* ---------------------------------------------------------------- explore the evidence */
+/* The Research Lab's exhibits that hold this place's record (app.js, labHtml), as the routes the earlier page and the
+   Research page draw (page.css, .routes; docs/DESIGN.md, "The manner on the forecast pages"): the cover in an ink
+   hairline, "Exhibit n" in the figure label's face, the name in the serif, one line, between hairlines. No card. */
+.labx { margin: 36px var(--gutter) 0; padding-top: 20px; border-top: 1px solid var(--line); }
+.labx > h2 { font: 600 var(--fs-head)/1.2 var(--font-display); }
+.labx > .meta { margin-top: 12px; max-width: 68ch; }
+.labx .routes { list-style: none; padding: 0; margin: 12px 0 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 0 24px; }
+.labx .routes a { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 14px; align-items: start; padding: 12px 0; border-top: 1px solid var(--line); color: var(--muted); text-decoration: none; font-size: var(--fs-note); line-height: 1.4; }
+.labx .routes img { display: block; width: 56px; height: 56px; border: 1px solid var(--ink); background: var(--deep); }
+.labx .routes small { display: block; font: 600 var(--fs-meta)/1.3 var(--font-mono); color: var(--muted); }
+.labx .routes b { display: block; margin: 2px 0 4px; font: 600 var(--fs-body)/1.3 var(--font-display); color: var(--link); }
+.labx .routes a:hover b { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 2px; }
+@media (min-width: 620px) { .labx .routes { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 960px) { .labx { max-width: 760px; } }
+/* The foot's links wrap as a line of text; each is a word's height, as on every other page's foot. */
+.foot-links { line-height: 1.9; }
 
 /* ---------------------------------------------------------------- wider screens */
 @media (min-width: 620px) {

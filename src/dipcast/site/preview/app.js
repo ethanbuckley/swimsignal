@@ -157,10 +157,18 @@ function countToggle() {
     : was ? 'Your visits will be counted again from the next page you open.' : 'Your visits from this browser are not counted from the next page you open.';
   dataOpen = true; draw(); const b = app.querySelector('[data-do="count"]'); if (b) b.focus({ preventScroll: true });
 }
+// The foot's links: the site's one list, in its order and words (build_site.FOOT_LINKS; docs/DESIGN.md, "One foot,
+// one opening", 12 November 2026), so Research and data, the Method and every spot are a link away from every page.
+// Data credits is left out, as on the earlier app's foot: the fold under the links gives the credits and links them.
+// tests/test_preview_research_links.py holds the two lists together.
+const FOOT_LINKS = [['about.html', 'About SwimSignal'], ['verification.html', 'How accurate is it?'], ['methods.html', 'Method'], ['spots.html', 'Every spot'],
+  ['research.html', 'Research and data'], ['coverage.html', 'Coasts, Wales, Scotland, Ireland and algae'], ['clubs.html', 'For organisations'],
+  ['feedback.html', 'Feedback'], ['feedback.html?type=spot', 'Request a spot'], ['terms.html', 'Terms of use'], ['privacy.html', 'Privacy']];
+const footLinks = () => FOOT_LINKS.map(([h, t]) => `<a href="${h}">${esc(t)}</a>`).join(' · ') + ' · <a href="https://github.com/ethanbuckley/swimsignal">Source code</a> (MIT)';
 const foot = () => { const c = (DATA && DATA.credits) || {};
   return `<footer class="foot"><p>${PREVIEW ? `This is a preview of a redesign, kept beside <a href="${classic()}">the current SwimSignal</a>. Both read the same forecast, and a place saved on one is saved on the other.`
       : `Keeping an outing for offline use, and a plan as a picture to send, are still on <a href="${classic()}">the earlier version of SwimSignal</a>, which reads the same forecast. A place saved on one is saved on the other.`} Saved places stay on this device.</p>
-    <p><a href="methods.html">Method and limits</a> · <a href="verification.html">How accurate it has been</a> · <a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a></p>
+    <p class="foot-links">${footLinks()}</p>
     ${yourDataHtml()}
     <details><summary>Data sources and licences</summary><p>${esc(c.attribution || '')}</p><p>${esc(c.modified || '')} ${esc(c.endorsement || '')} <a href="terms.html#data">Full credits</a></p></details></footer>`; };
 // One quiet line under a photo, the day first since the photo is of that day. Each part keeps to one line with its
@@ -212,6 +220,10 @@ function homeHtml() {
 const AREA_PHOTO = { 'Cumbria and the Lake District': 'wastwater', Yorkshire: 'bw-uke4100-08901', Scotland: 'scot-lomond-rowardennan', 'Thames Valley': 'thames-lechlade',
   'South West': 'teign-fingle-bridge', 'Severn and the Welsh borders': 'bw-ukg2200-36060', 'East of England': 'cam-grantchester', 'South and South East': 'bw-ukj3308-19001',
   'Peak District and Sheffield': 'derwent-slippery-stones', London: 'bw-uki1101-11920', Midlands: 'bw-ukf2208-09701', 'North East': 'tees-low-force', Lancashire: 'lune-crook-o-lune' };
+// Where the places listed stop: England's beaches, and the waters of Wales, Scotland and Ireland that are not listed,
+// have their official sources and past samples on the coverage page (coverage.html), which nothing on these pages
+// but the foot linked. Under the areas, and under a search that found nothing, since that is where a beach is missed.
+const COVERAGE_LINE = '<p class="meta coverage-line">Beaches, and waters in Wales, Scotland and Ireland that are not listed here: <a href="coverage.html">their official sources and past samples</a>.</p>';
 // Everything under the day control: what was searched for, or a picked area, or the first look.
 function resultsHtml(day) {
   const q = (route.q || '').trim(); let out = '';
@@ -227,7 +239,7 @@ function resultsHtml(day) {
     for (const t of points) out += `<section class="block"><h2>Near ${esc(t.name)}</h2>${rows(P.nearest(DATA.spots.filter(p => !shown.has(p.id)), t, day, 5), day)}<p class="meta">Miles in a straight line from ${esc(t.name)}.</p></section>`;
     // A postcode that is not in the file (Northern Ireland's are not) is said as that, in the live page's words.
     if (!hits.length && !points.length) out += `<p class="none">${!(pc ? POSTCODES : PLACES) ? 'Looking…' : pc ? `No postcode found for “${esc(q)}”: type a town, a village or a river.`
-      : `Nothing found for “${esc(q)}”. Try a river, a lake, a town or the first half of a postcode.`}</p>`;
+      : `Nothing found for “${esc(q)}”. Try a river, a lake, a town or the first half of a postcode.`}</p>${!(pc ? POSTCODES : PLACES) ? '' : COVERAGE_LINE}`;
     return out;
   }
   if (route.area) {
@@ -244,6 +256,7 @@ function resultsHtml(day) {
     if (p) used.push([id, p]);
     return `<li><a class="area" href="${link({ area: a.name, day })}">${p ? `<img src="guides/photos/${encodeURIComponent(p.file)}" width="${p.w}" height="${p.h}" alt="" loading="lazy" decoding="async">` : `<span class="noimg">${IC.water}</span>`}
       <span class="area-name">${esc(a.name)}</span><span class="area-n">${a.n} places · ${a.low} at low risk ${esc(dayWord(day))}</span></a></li>`; }).join('')}</ul>
+    ${COVERAGE_LINE}
     <details class="credits"><summary>Photo credits</summary><ul>${used.map(([id, p]) => `<li>${esc(spotOf(id).name)}: ${credit(p)}</li>`).join('')}</ul><p>Older photos, each of one day. The place may have changed.</p></details></section>`;
   return out;
 }
@@ -1038,6 +1051,7 @@ function placeHtml() {
     ${s.unlisted ? `<section class="theplace" aria-labelledby="place-h"><h2 id="place-h">This point</h2><p class="sec-lede">Not one of the listed places: nobody has checked it by hand, and it has no rain forecast of its own and no E.&nbsp;coli estimate.${s.rain_km ? ` Rain is from the forecast for the area next to this point's, about ${esc(s.rain_km)} km away.` : ''}</p>${requestHtml(s)}</section>` : placeFactsHtml(s)}
     ${logHtml(s)}
     ${swimmersHtml(s)}
+    ${labHtml(s)}
     ${foot()}
   </main>${tabbar()}`;
 }
@@ -1101,6 +1115,26 @@ function mountJournal() {
   journalBindSection(); if (typeof passportBind === 'function') passportBind();
 }
 
+// Explore the evidence: the Research Lab's exhibits that hold this place's own record, each opened on it (docs/DESIGN.md,
+// "The Research Lab, and its manner on the rest of the site", Places, 1 November 2026). The keys are the place's own
+// file's (build_site.attach_lab_links: `lake`, `bw`, `ws`); exhibit 2 holds every place with an overflow upstream. The
+// words and covers are the earlier page's tile's (index.html, labTile), word for word. Last before the foot, as the
+// 1 November order put it, never above the answer. A place no exhibit holds is told so, with the way to all five; a
+// point tapped on the map has no record in the Lab. Drawn once the place's own file has been read, which a built page has.
+const LAB_COVER = n => `lab/assets/covers/${['', 'lake-from-space', 'pollution', 'forecasts', 'workspace', 'sampling'][n]}.jpg`;
+function labHtml(s) {
+  const got = details.get(s.id);
+  if (s.unlisted || !got) return '';
+  const l = (got.detail && got.detail.lab) || {}, enc = encodeURIComponent, n = (s.upstream_summary || {}).overflows || 0, items = [];
+  if (l.lake) items.push([1, `lab/lake-from-space/#lake=${enc(l.lake)}`, 'The lake from space', 'Its satellite pictures and readings, cloudy days left blank. Not a toxin measurement.']);
+  if (n) items.push([2, `lab/pollution/#spot=${enc(s.id)}`, 'Where does the pollution go?', `The rivers joining its ${n} overflow${n === 1 ? '' : 's'} to it, and how strongly the model counts each.`]);
+  if (l.bw) items.push([3, `lab/forecasts/#bw=${enc(l.bw)}`, 'How good are the forecasts?', 'Its E. coli samples against what the estimate, rebuilt afterwards, would have said.']);
+  if (l.ws) items.push([4, `lab/workspace/#c=${enc(l.ws)}&spot=${enc(s.id)}`, 'Catchment workspace', 'Rain, spills and samples around it on one timeline, January 2024 to September 2026.']);
+  return `<section class="labx" id="lab-exhibits" aria-labelledby="labx-h"><h2 id="labx-h">Explore the evidence</h2>
+    ${items.length ? `<ul class="routes">${items.map(([k, href, name, line]) => `<li><a href="${esc(href)}"><img src="${LAB_COVER(k)}" alt="" width="56" height="56" loading="lazy" decoding="async"><span><small>Exhibit ${k}</small><b>${esc(name)}</b>${esc(line)}</span></a></li>`).join('')}</ul>`
+      : '<p class="sec-lede">No Research Lab exhibit holds a record for this spot yet.</p>'}
+    <p class="meta">Research Lab: exploratory, on data already read. It changes nothing in this forecast. <a href="lab/">All five exhibits</a> · <a href="research.html">Research and data</a> · <a href="coverage.html">Beaches, Wales, Scotland and Ireland</a></p></section>`;
+}
 // From swimmers: notes on a visit, reviews and reports of illness, each the live site's own script (visits.js,
 // reviews.js, illness.js), which draws its own part and takes what a swimmer sends. They look for the place they
 // draw into by the live page's names (#result .stack .tiles), so the slot here is given those. What they have drawn
