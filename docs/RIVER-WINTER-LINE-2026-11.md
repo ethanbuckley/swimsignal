@@ -5,6 +5,16 @@
 While it is off no forecast, published file or page differs from before.** Switching it on is a separate decision
 and has not been made.
 
+**Switched on, 25 November 2026.** Ethan's decision that day, after the redesign's E. coli row was made to read
+the word (below). The repository variable `DIPCAST_RIVER_WINTER_LINE` was set to `1` at 13:27 UTC and a build
+started by hand. It published the forecast issued at 13:34 UTC. In that forecast 69 of the 85 river spots with a
+daily forecast carry a word, on today's day only: 41 "about", 19 "lower", 9 "higher". Seen on the live site: Sandy
+Lane, Chester reads "higher" today with the level at low risk, and the same row reads "Tested only for May to
+September" with Thursday picked; Wharfe at Cromwheel, Ilkley reads "about". The method page has its paragraph.
+Before switching, the pages were built locally with the switch on (133 place pages, the method page's paragraph in
+place). Not checked: the earlier version's tile at `classic/`, a screen reader, and whether each word is right
+for its place. To switch it off, delete the variable; the next build is as before.
+
 ## What it does when switched on
 
 At a listed river spot with overflows upstream, from October to April, today's day carries one word: higher, lower
