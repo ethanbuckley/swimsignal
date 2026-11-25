@@ -18,6 +18,10 @@ and reads "Out of season":
 The tile's figure still reads "Out of season". There is no percentage and no band. The level, the answer, alerts
 and every other tile are unchanged. The method page gains one paragraph.
 
+Since 25 November 2026 (the pull request "Redesign: the winter word in the E. coli row") the redesign's
+"E. coli estimate, experimental" row in "Behind the level" reads the word too, with the same two sentences, on the
+day that carries it. Its value still reads "Out of season".
+
 It keeps to the three points Ethan read before saying yes:
 
 1. **Today only.** The read was at lead 0 with the day's measured rain, so the word goes on today's day and on no

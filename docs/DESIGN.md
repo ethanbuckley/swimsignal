@@ -3063,6 +3063,22 @@ worker was still not started in a browser that had turned it off. What was missi
 **Checked:** in a browser on a local build with the switch on (below, in the pull request). **Not checked:** the
 counter's row on the live site, which needs the build's token.
 
+### The winter word in the redesign's E. coli row (25 November 2026)
+
+**The switch is still off** (`DIPCAST_RIVER_WINTER_LINE` is not set). **Not decided: whether to switch it on.** While
+it is off no day carries `ecoli_usual_winter`, so the row reads as before.
+
+- **Already decided** ("The same word in winter, built and switched off", #736): the words and their limits. Today's
+  day only; no figure, no percentage, no band; the level is unchanged; the word comes from the river model without
+  soil moisture. The sentences are `levels.js`'s own (`riverUsualWinter`, `RIVER_USUAL_WINTER_SAID`, as
+  `ecoliOffSaid` puts them together for the earlier page's tile).
+- **Already decided** ("The E. coli estimate out of season", 20 October 2026): switching it on reverses part of that
+  rule, here as at `classic/`. What the rule keeps is kept: the row's value still reads "Out of season".
+- **New:** the redesign's "E. coli estimate, experimental" row in "Behind the level" reads the word too. Where the day
+  shown carries one, the row's line is the earlier page's two sentences. Otherwise it is the row's own sentence, as
+  before. The row reads the day shown, so a later day never borrows today's word. Until now the word would have shown
+  only at `classic/`.
+
 ### Ported: the spill map, "Where spill water may be" (24 November 2026, night)
 
 The live page's spill map (`plume.js`, docs/PLUME-MAP-2026-10.md), which was only at `classic/` after the switch.

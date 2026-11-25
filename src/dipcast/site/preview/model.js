@@ -256,8 +256,11 @@ function ledger(s, iso, data, nowMs) {
       'A score for sewage from upstream reaching here, after travel time, die-off and dilution. Not a probability.',
       x.rain_missing_share > 0 ? 'Part of the rain data for this day is missing.' : ''].filter(Boolean) });
   // The E. coli estimate, where the model gives one: in season it can set the level; out of season it is not counted.
+  // Out of season, where the day shown carries the winter word (today's day only, behind a switch that is off), the
+  // row says what the earlier page's tile says (ecoliOffSaid in levels.js); the value stays "Out of season".
   if (ecoliBand(s, x)) rows.push(ecoliUntested(x)
-    ? { key: 'ecoli', label: 'E. coli estimate, experimental', value: 'Out of season', cls: 'lv-none', lines: ['Tested only for May to September, so it is not counted in the level now.'] }
+    ? { key: 'ecoli', label: 'E. coli estimate, experimental', value: 'Out of season', cls: 'lv-none',
+        lines: [riverUsualWinter(x) ? `${riverUsualWinter(x)} ${RIVER_USUAL_WINTER_SAID}` : 'Tested only for May to September, so it is not counted in the level now.'] }
     : { key: 'ecoli', label: 'E. coli estimate, experimental', value: `${Math.round(x.p_ecoli_gt900 * 100)}%`, word: ecoliBand(s, x), cls: cls(ecoliBand(s, x)),
         lines: [`Chance a water sample would show over 900 E. coli per 100 ml ${when}. ${riverUsual(x)}`.trim(), tileLine(s, 'water', iso)].filter(Boolean) });
   // What was not seen: live readings missing, and what the trace leaves out.
