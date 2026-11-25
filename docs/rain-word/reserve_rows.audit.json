@@ -1,0 +1,40 @@
+{
+ "rows": 1028,
+ "unparsed_results": 0,
+ "same_point_and_time": {
+  "groups_equal": 0,
+  "groups_unequal": 0,
+  "rows_dropped": 0
+ },
+ "times_not_placeable": 0,
+ "samples_in": 1028,
+ "rows_out": 1020,
+ "sites_out": 12,
+ "drops": {
+  "no_site_rain": 0,
+  "rain_window": 8
+ },
+ "rows_before_first_day": 0,
+ "rows_by_winter": {
+  "2013": 325,
+  "2015": 429,
+  "2017": 84,
+  "2019": 81,
+  "2021": 63,
+  "2023": 38
+ },
+ "rows_by_point": {
+  "AN-ALD020": 205,
+  "AN-DEB026": 135,
+  "NW-88003842": 58,
+  "NW-88003843": 366,
+  "NW-88003846": 57,
+  "SO-E0007084": 14,
+  "SO-F0017522": 14,
+  "SW-50250102": 57,
+  "SW-70815303": 1,
+  "SW-73013103": 1,
+  "SW-81020186": 56,
+  "SW-81020847": 56
+ }
+}

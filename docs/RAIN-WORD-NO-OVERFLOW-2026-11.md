@@ -175,3 +175,89 @@ python scripts/rain_word/rain_word_read.py read <private out dir>
 here match. `read` writes `docs/rain-word/result.json` and appends to `docs/rain-word/reads.jsonl` whatever it shows.
 Built rows hold results and stay out of git, in a scratch folder; `result.json` records their SHA-256. Sealed table:
 `95ca8c9f…`.
+
+---
+
+## The read, 25 November 2026: both conditions pass
+
+Run once, at 14:38 UTC on 25 November 2026, at commit `f44527ec` (the statement as pushed). Logged in
+`docs/rain-word/reads.jsonl`; every figure is in `docs/rain-word/result.json`. The builder took 1,028 reserve samples
+in and gave 1,020 rows out at 12 points in 8 river systems; 8 rows had no full rain window
+(`docs/rain-word/reserve_rows.audit.json`). 8 points have 15 or more rows, in 5 river systems: the River Brock (3
+points), the Yealm and the Piall (one system), the Alde, the Deben and the Ebble. Each has more than one word and
+more than one count, so all 8 are scored. The two Hastings points fell to 14 rows each (their cell has rain from
+2019 only), under the 15 that the count before the build gave them. The not-run rule (8 points, 700 rows) is met
+exactly on points. 42.0% of results were over 900; 4.3% sat at a lab limit.
+
+| Condition | Result | Pass rule | Verdict |
+|---|---|---|---|
+| 1. Raw order: mean within-point correlation of the word with the log count | 0.504 (0.353 to 0.531) | interval wholly above 0.15 | pass |
+| 2. Order beyond the calendar (month means removed) | 0.415 (0.287 to 0.495) | interval wholly above 0.15 | pass |
+
+**What is supported.** At river monitoring points with no monitored overflow upstream, in six winters that no figure
+here had been scored on, a three-way word made only from the rain in the last 48 hours against the point's own
+usual put a point's winter days in the right order, and not only by the calendar. Samples on "more rain than usual"
+days tended to read higher than on "less" days at the same point. This is confirmation evidence for the order, at
+these points, at lead 0 with reanalysis rain: the word, its cut-points and the conditions were pushed first, and the
+reserve's results had not been joined to anything.
+
+**What is not supported.**
+
+- A count, a chance or a level from the word. The shares over 900 below differ a lot by word, but they are these
+  points' shares, and the points read high.
+- Anything at an upland beck. The scored points are lowland and coastal rivers in Lancashire, Suffolk, Wiltshire
+  and Devon, 5 river systems in all. The 15 spots are not like them.
+- Anything days ahead, or from forecast rain.
+
+### Reported, deciding nothing
+
+| Figure (same rows) | Raw | Month means removed |
+|---|---|---|
+| The word | 0.504 | 0.415 (0.287 to 0.495) |
+| Rain in 48 hours as a number | 0.519 | 0.432 (0.316 to 0.534) |
+| Production's chance with exposure 0 (`7daf7c8e…`) | 0.602 | 0.414 (0.305 to 0.518) |
+
+- The word less rain as a number, month means removed: −0.017 (−0.061 to −0.014). Cutting rain into three loses a
+  little order, as expected, and the loss is small.
+- Production's raw figure is higher because its day-of-year terms follow the calendar; with month means removed it
+  is level with the word.
+- Level by word: on "less" days 8.3% of results were over 900 (median 210 per 100 ml, 291 rows); "about" 38.8%
+  (545, 312 rows); "more" 67.9% (2,000, 417 rows). Production's mean chance was 8.2% where 42.0% were over 900.
+  The word shares on sample days were 29% less, 31% about, 41% more: samples fell on wetter days more often than a
+  third of the time.
+- By month group (raw, month-removed): October and November 0.532, 0.502; December to February 0.454, 0.422; March
+  and April 0.339, 0.351. Winters to 2017: 0.493, 0.405; from 2019: 0.398, 0.353 (3 points scored).
+- Each system left out in turn: condition 1 stays between 0.489 and 0.534 and condition 2 between 0.407 and 0.468,
+  except without the River Brock (3 points), where they are 0.418 and 0.284. The Brock is the strongest part.
+- Each point's own correlation: Alde 0.60, Deben 0.29, Brock 0.53, 0.71 and 0.70, Ebble 0.30, Yealm 0.30, Piall 0.59.
+
+**Development, on rows already read** (`docs/rain-word/development.json`, scored after the statement was pushed):
+
+| Rows | Points scored | Raw | Month means removed |
+|---|---|---|---|
+| RIVER-WINTER's read half, winter (1,122) | 8 | 0.426 (0.314 to 0.501) | 0.448 (0.331 to 0.508) |
+| RIVER-UNSEEN's summer side set, summer cut-points (2,071) | 23 | 0.297 (0.241 to 0.367) | 0.338 (0.268 to 0.395) |
+
+In summer the word is weaker than in winter, and weaker than rain as a number (0.321 raw, 0.375 month-removed): the
+word less rain was −0.038 (−0.059 to −0.010). Over 900 by word in summer: less 35.7%, about 43.9%, more 74.6%.
+
+Shared inputs had the same fingerprints before and after (`docs/rain-word/shared_inputs_fingerprint.txt`): the
+sealed table, the private RIVER-UNSEEN folder, the ERA5-Land cache listing, the river-usual cache listing and the
+summer side-set rows. Built rows: `reserve_rows_no_overflow.parquet`, SHA-256 `e51a5dab…`, in the session's scratch
+folder.
+
+### What this leads to
+
+By the statement: **the word goes on the site**, as fixed above, in its own pull request, not merged by this project.
+
+- **Summer too.** The statement's rule for summer was the development figure's raw interval wholly above 0.15. It is
+  (0.241 to 0.367), so the word also shows from May to September, with summer cut-points. The page says the summer
+  evidence is weaker. It is development evidence on samples that no model had seen when RIVER-UNSEEN scored them, not
+  a pass test.
+- **The wording, against the kill rule.** "More rain than usual here in the last two days" is a statement about rain.
+  The sentence under it says what the word rests on and "This is not a level". So the shortlist's second kill
+  condition (no wording avoids implying a level) is not met, on this project's judgement; Ethan can overrule it.
+- **The reserve.** This read used the reserve's no-overflow rows. The reserve's rows at points with an overflow
+  upstream are still sealed for RIVER-WINTER's own use.
+- **Next check** (owner: this project's family): when winter samples at a listed upland beck exist (none known now),
+  score the word there. Until then the evidence is monitoring points only, and the page says so.

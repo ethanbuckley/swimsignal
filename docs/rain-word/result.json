@@ -1,0 +1,282 @@
+{
+ "read_at": "2026-11-25T14:38:18+00:00",
+ "commit": "f44527ecde7032463d5ee0b4dd1042059ae0d542",
+ "rows": 1020,
+ "points": 12,
+ "points_15_or_more": 8,
+ "points_scored": 8,
+ "systems": 8,
+ "winters": [
+  2013,
+  2015,
+  2017,
+  2019,
+  2021,
+  2023
+ ],
+ "word_shares": {
+  "less": 0.2853,
+  "about": 0.3059,
+  "more": 0.4088
+ },
+ "condition_1_raw": {
+  "value": 0.5035,
+  "ci95": [
+   0.3525,
+   0.531
+  ]
+ },
+ "condition_1_pass": true,
+ "condition_2_month_removed": {
+  "value": 0.4151,
+  "ci95": [
+   0.2871,
+   0.4946
+  ]
+ },
+ "condition_2_pass": true,
+ "reported": {
+  "rho_by_figure": {
+   "word": {
+    "raw": 0.5035,
+    "month_removed": 0.4151
+   },
+   "rain": {
+    "raw": 0.519,
+    "month_removed": 0.4323
+   },
+   "z_prod": {
+    "raw": 0.6015,
+    "month_removed": 0.4144
+   }
+  },
+  "rain_month_removed": {
+   "value": 0.4323,
+   "ci95": [
+    0.3162,
+    0.5336
+   ]
+  },
+  "production_month_removed": {
+   "value": 0.4144,
+   "ci95": [
+    0.3045,
+    0.5177
+   ]
+  },
+  "word_minus_rain_month_removed": {
+   "value": -0.0172,
+   "ci95": [
+    -0.0612,
+    -0.0136
+   ]
+  },
+  "level": {
+   "rows": 1020,
+   "share_over_900": 0.4196,
+   "median_count": 670.0,
+   "mean_production_chance": 0.0823,
+   "by_word": {
+    "less": {
+     "rows": 291,
+     "share_over_900": 0.0825,
+     "median_count": 210.0
+    },
+    "about": {
+     "rows": 312,
+     "share_over_900": 0.3878,
+     "median_count": 545.0
+    },
+    "more": {
+     "rows": 417,
+     "share_over_900": 0.6787,
+     "median_count": 2000.0
+    }
+   }
+  },
+  "subsets": {
+   "oct_nov": {
+    "rows": 346,
+    "points_scored": 8,
+    "word": {
+     "raw": 0.5321,
+     "month_removed": 0.502
+    },
+    "rain": {
+     "raw": 0.5265,
+     "month_removed": 0.5196
+    },
+    "share_over_900": 0.5491
+   },
+   "dec_feb": {
+    "rows": 438,
+    "points_scored": 8,
+    "word": {
+     "raw": 0.4537,
+     "month_removed": 0.4224
+    },
+    "rain": {
+     "raw": 0.4864,
+     "month_removed": 0.4622
+    },
+    "share_over_900": 0.468
+   },
+   "mar_apr": {
+    "rows": 236,
+    "points_scored": 8,
+    "word": {
+     "raw": 0.3392,
+     "month_removed": 0.3511
+    },
+    "rain": {
+     "raw": 0.2764,
+     "month_removed": 0.2708
+    },
+    "share_over_900": 0.1398
+   },
+   "winters_to_2017": {
+    "rows": 838,
+    "points_scored": 8,
+    "word": {
+     "raw": 0.4928,
+     "month_removed": 0.4045
+    },
+    "rain": {
+     "raw": 0.512,
+     "month_removed": 0.4265
+    },
+    "share_over_900": 0.4702
+   },
+   "winters_from_2019": {
+    "rows": 182,
+    "points_scored": 3,
+    "word": {
+     "raw": 0.3983,
+     "month_removed": 0.3525
+    },
+    "rain": {
+     "raw": 0.3801,
+     "month_removed": 0.3617
+    },
+    "share_over_900": 0.1868
+   },
+   "band_medium": {
+    "rows": 743,
+    "points_scored": 5,
+    "word": {
+     "raw": 0.5687,
+     "month_removed": 0.4832
+    },
+    "rain": {
+     "raw": 0.6155,
+     "month_removed": 0.5235
+    },
+    "share_over_900": 0.5155
+   },
+   "band_small": {
+    "rows": 277,
+    "points_scored": 3,
+    "word": {
+     "raw": 0.3949,
+     "month_removed": 0.3016
+    },
+    "rain": {
+     "raw": 0.3582,
+     "month_removed": 0.2803
+    },
+    "share_over_900": 0.1625
+   }
+  },
+  "leave_one_system_out": {
+   "S04": {
+    "condition_1": 0.5035,
+    "condition_2": 0.4151
+   },
+   "S06": {
+    "condition_1": 0.5337,
+    "condition_2": 0.434
+   },
+   "S07": {
+    "condition_1": 0.5324,
+    "condition_2": 0.4678
+   },
+   "S13": {
+    "condition_1": 0.5035,
+    "condition_2": 0.4151
+   },
+   "S25": {
+    "condition_1": 0.4177,
+    "condition_2": 0.2842
+   },
+   "S30": {
+    "condition_1": 0.5227,
+    "condition_2": 0.4498
+   },
+   "S31": {
+    "condition_1": 0.5035,
+    "condition_2": 0.4151
+   },
+   "S35": {
+    "condition_1": 0.4894,
+    "condition_2": 0.4073
+   }
+  },
+  "by_point": {
+   "AN-ALD020": {
+    "rows": 205,
+    "rho_word": 0.6021
+   },
+   "AN-DEB026": {
+    "rows": 135,
+    "rho_word": 0.2924
+   },
+   "NW-88003842": {
+    "rows": 58,
+    "rho_word": 0.7065
+   },
+   "NW-88003843": {
+    "rows": 366,
+    "rho_word": 0.5288
+   },
+   "NW-88003846": {
+    "rows": 57,
+    "rho_word": 0.7046
+   },
+   "SO-E0007084": {
+    "rows": 14,
+    "rho_word": null
+   },
+   "SO-F0017522": {
+    "rows": 14,
+    "rho_word": null
+   },
+   "SW-50250102": {
+    "rows": 57,
+    "rho_word": 0.3016
+   },
+   "SW-70815303": {
+    "rows": 1,
+    "rho_word": null
+   },
+   "SW-73013103": {
+    "rows": 1,
+    "rho_word": null
+   },
+   "SW-81020186": {
+    "rows": 56,
+    "rho_word": 0.2978
+   },
+   "SW-81020847": {
+    "rows": 56,
+    "rho_word": 0.5944
+   }
+  }
+ },
+ "outcome": "both pass",
+ "inputs": {
+  "reserve_rows_no_overflow": "e51a5dab6d37c5f094bffc2ecc85b447cbf3e883c41be3c46ac67f18239c23a9",
+  "cut_points": "486286958ff64db4b69d00ce10c8a3157aa8f5d64099c63d0e9f0dbf9daacf83",
+  "production": "7daf7c8e407a82ba1344ab1b925092953791c138d690d5dc18093221d49ca09c",
+  "sealed_samples": "95ca8c9f5e371ff0dd99defaa542a2a1a869b75910fa7900f4293054669cae9b"
+ }
+}

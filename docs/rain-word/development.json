@@ -1,0 +1,594 @@
+{
+ "note": "Development: rows already read (RIVER-WINTER read half, 24 Nov 2026; RIVER-UNSEEN summer side set, 16 Nov 2026), scored after the statement was pushed by rain_word_read.py dev. Not a test.",
+ "read_half_winter": {
+  "rows": 1122,
+  "points": 12,
+  "points_15_or_more": 8,
+  "points_scored": 8,
+  "systems": 7,
+  "winters": [
+   2012,
+   2014,
+   2016,
+   2018,
+   2020,
+   2022
+  ],
+  "word_shares": {
+   "less": 0.2023,
+   "about": 0.279,
+   "more": 0.5187
+  },
+  "condition_1_raw": {
+   "value": 0.426,
+   "ci95": [
+    0.3135,
+    0.5012
+   ]
+  },
+  "condition_1_pass": true,
+  "condition_2_month_removed": {
+   "value": 0.4477,
+   "ci95": [
+    0.3308,
+    0.5077
+   ]
+  },
+  "condition_2_pass": true,
+  "reported": {
+   "rho_by_figure": {
+    "word": {
+     "raw": 0.426,
+     "month_removed": 0.4477
+    },
+    "rain": {
+     "raw": 0.439,
+     "month_removed": 0.4575
+    },
+    "z_prod": {
+     "raw": 0.4653,
+     "month_removed": 0.4239
+    }
+   },
+   "rain_month_removed": {
+    "value": 0.4575,
+    "ci95": [
+     0.3296,
+     0.5204
+    ]
+   },
+   "production_month_removed": {
+    "value": 0.4239,
+    "ci95": [
+     0.2953,
+     0.502
+    ]
+   },
+   "word_minus_rain_month_removed": {
+    "value": -0.0098,
+    "ci95": [
+     -0.0407,
+     0.0268
+    ]
+   },
+   "level": {
+    "rows": 1122,
+    "share_over_900": 0.4554,
+    "median_count": 740.0,
+    "mean_production_chance": 0.087,
+    "by_word": {
+     "less": {
+      "rows": 227,
+      "share_over_900": 0.1101,
+      "median_count": 220.0
+     },
+     "about": {
+      "rows": 313,
+      "share_over_900": 0.3291,
+      "median_count": 510.0
+     },
+     "more": {
+      "rows": 582,
+      "share_over_900": 0.6581,
+      "median_count": 1455.0
+     }
+    }
+   },
+   "subsets": {
+    "oct_nov": {
+     "rows": 313,
+     "points_scored": 7,
+     "word": {
+      "raw": 0.5347,
+      "month_removed": 0.5646
+     },
+     "rain": {
+      "raw": 0.5106,
+      "month_removed": 0.5432
+     },
+     "share_over_900": 0.5847
+    },
+    "dec_feb": {
+     "rows": 526,
+     "points_scored": 8,
+     "word": {
+      "raw": 0.37,
+      "month_removed": 0.3713
+     },
+     "rain": {
+      "raw": 0.3588,
+      "month_removed": 0.3658
+     },
+     "share_over_900": 0.4696
+    },
+    "mar_apr": {
+     "rows": 283,
+     "points_scored": 8,
+     "word": {
+      "raw": 0.4969,
+      "month_removed": 0.424
+     },
+     "rain": {
+      "raw": 0.5042,
+      "month_removed": 0.4342
+     },
+     "share_over_900": 0.2862
+    },
+    "winters_to_2017": {
+     "rows": 881,
+     "points_scored": 8,
+     "word": {
+      "raw": 0.3956,
+      "month_removed": 0.4107
+     },
+     "rain": {
+      "raw": 0.4111,
+      "month_removed": 0.4256
+     },
+     "share_over_900": 0.504
+    },
+    "winters_from_2019": {
+     "rows": 159,
+     "points_scored": 3,
+     "word": {
+      "raw": 0.5307,
+      "month_removed": 0.5714
+     },
+     "rain": {
+      "raw": 0.5642,
+      "month_removed": 0.6323
+     },
+     "share_over_900": 0.3145
+    },
+    "band_medium": {
+     "rows": 859,
+     "points_scored": 5,
+     "word": {
+      "raw": 0.5099,
+      "month_removed": 0.4739
+     },
+     "rain": {
+      "raw": 0.542,
+      "month_removed": 0.5086
+     },
+     "share_over_900": 0.5215
+    },
+    "band_small": {
+     "rows": 263,
+     "points_scored": 3,
+     "word": {
+      "raw": 0.2861,
+      "month_removed": 0.4042
+     },
+     "rain": {
+      "raw": 0.2674,
+      "month_removed": 0.3725
+     },
+     "share_over_900": 0.2395
+    }
+   },
+   "leave_one_system_out": {
+    "S03": {
+     "condition_1": 0.426,
+     "condition_2": 0.4477
+    },
+    "S06": {
+     "condition_1": 0.4464,
+     "condition_2": 0.4641
+    },
+    "S07": {
+     "condition_1": 0.4565,
+     "condition_2": 0.4885
+    },
+    "S13": {
+     "condition_1": 0.426,
+     "condition_2": 0.4477
+    },
+    "S25": {
+     "condition_1": 0.3459,
+     "condition_2": 0.3997
+    },
+    "S30": {
+     "condition_1": 0.4721,
+     "condition_2": 0.4504
+    },
+    "S35": {
+     "condition_1": 0.3927,
+     "condition_2": 0.4226
+    }
+   },
+   "by_point": {
+    "AN-ALD020": {
+     "rows": 237,
+     "rho_word": 0.659
+    },
+    "AN-DEB026": {
+     "rows": 141,
+     "rho_word": 0.2832
+    },
+    "NW-88003842": {
+     "rows": 63,
+     "rho_word": 0.6327
+    },
+    "NW-88003843": {
+     "rows": 435,
+     "rho_word": 0.4584
+    },
+    "NW-88003846": {
+     "rows": 63,
+     "rho_word": 0.5869
+    },
+    "SO-E0007084": {
+     "rows": 4,
+     "rho_word": null
+    },
+    "SO-F0017522": {
+     "rows": 4,
+     "rho_word": null
+    },
+    "SW-50250102": {
+     "rows": 61,
+     "rho_word": 0.2124
+    },
+    "SW-81020186": {
+     "rows": 64,
+     "rho_word": 0.2927
+    },
+    "SW-81020847": {
+     "rows": 48,
+     "rho_word": 0.2824
+    },
+    "SW-82510201": {
+     "rows": 1,
+     "rho_word": null
+    },
+    "SW-82510210": {
+     "rows": 1,
+     "rho_word": null
+    }
+   }
+  },
+  "outcome": "both pass",
+  "development": true
+ },
+ "summer_side_set": {
+  "rows": 2071,
+  "points": 23,
+  "points_15_or_more": 23,
+  "points_scored": 23,
+  "systems": 17,
+  "winters": [
+   2012,
+   2013,
+   2014,
+   2015,
+   2016,
+   2017,
+   2018,
+   2019,
+   2021,
+   2022
+  ],
+  "word_shares": {
+   "less": 0.2878,
+   "about": 0.3143,
+   "more": 0.3979
+  },
+  "condition_1_raw": {
+   "value": 0.297,
+   "ci95": [
+    0.2409,
+    0.3669
+   ]
+  },
+  "condition_1_pass": true,
+  "condition_2_month_removed": {
+   "value": 0.3376,
+   "ci95": [
+    0.2684,
+    0.3946
+   ]
+  },
+  "condition_2_pass": true,
+  "reported": {
+   "rho_by_figure": {
+    "word": {
+     "raw": 0.297,
+     "month_removed": 0.3376
+    },
+    "rain": {
+     "raw": 0.3207,
+     "month_removed": 0.3752
+    },
+    "z_prod": {
+     "raw": 0.3617,
+     "month_removed": 0.3576
+    }
+   },
+   "rain_month_removed": {
+    "value": 0.3752,
+    "ci95": [
+     0.3058,
+     0.4265
+    ]
+   },
+   "production_month_removed": {
+    "value": 0.3576,
+    "ci95": [
+     0.286,
+     0.4059
+    ]
+   },
+   "word_minus_rain_month_removed": {
+    "value": -0.0377,
+    "ci95": [
+     -0.0586,
+     -0.0101
+    ]
+   },
+   "level": {
+    "rows": 2071,
+    "share_over_900": 0.5379,
+    "median_count": 1091.0,
+    "mean_production_chance": 0.0602,
+    "by_word": {
+     "less": {
+      "rows": 596,
+      "share_over_900": 0.3574,
+      "median_count": 585.0
+     },
+     "about": {
+      "rows": 651,
+      "share_over_900": 0.4393,
+      "median_count": 690.0
+     },
+     "more": {
+      "rows": 824,
+      "share_over_900": 0.7464,
+      "median_count": 3350.0
+     }
+    }
+   },
+   "subsets": {
+    "winters_to_2017": {
+     "rows": 1401,
+     "points_scored": 15,
+     "word": {
+      "raw": 0.3167,
+      "month_removed": 0.3224
+     },
+     "rain": {
+      "raw": 0.3473,
+      "month_removed": 0.3765
+     },
+     "share_over_900": 0.5782
+    },
+    "winters_from_2019": {
+     "rows": 513,
+     "points_scored": 15,
+     "word": {
+      "raw": 0.2774,
+      "month_removed": 0.329
+     },
+     "rain": {
+      "raw": 0.2946,
+      "month_removed": 0.3326
+     },
+     "share_over_900": 0.4834
+    },
+    "band_medium": {
+     "rows": 873,
+     "points_scored": 5,
+     "word": {
+      "raw": 0.4013,
+      "month_removed": 0.4049
+     },
+     "rain": {
+      "raw": 0.4445,
+      "month_removed": 0.4704
+     },
+     "share_over_900": 0.5395
+    },
+    "band_small": {
+     "rows": 1198,
+     "points_scored": 18,
+     "word": {
+      "raw": 0.2681,
+      "month_removed": 0.3189
+     },
+     "rain": {
+      "raw": 0.2863,
+      "month_removed": 0.3488
+     },
+     "share_over_900": 0.5367
+    }
+   },
+   "leave_one_system_out": {
+    "S03": {
+     "condition_1": 0.319,
+     "condition_2": 0.3682
+    },
+    "S04": {
+     "condition_1": 0.2932,
+     "condition_2": 0.3361
+    },
+    "S06": {
+     "condition_1": 0.2965,
+     "condition_2": 0.337
+    },
+    "S07": {
+     "condition_1": 0.3051,
+     "condition_2": 0.3477
+    },
+    "S13": {
+     "condition_1": 0.305,
+     "condition_2": 0.3259
+    },
+    "S15": {
+     "condition_1": 0.2895,
+     "condition_2": 0.3302
+    },
+    "S16": {
+     "condition_1": 0.298,
+     "condition_2": 0.3415
+    },
+    "S17": {
+     "condition_1": 0.3065,
+     "condition_2": 0.3416
+    },
+    "S25": {
+     "condition_1": 0.2624,
+     "condition_2": 0.3109
+    },
+    "S30": {
+     "condition_1": 0.2922,
+     "condition_2": 0.3313
+    },
+    "S31": {
+     "condition_1": 0.2938,
+     "condition_2": 0.3382
+    },
+    "S35": {
+     "condition_1": 0.2967,
+     "condition_2": 0.3364
+    },
+    "S36": {
+     "condition_1": 0.3021,
+     "condition_2": 0.3434
+    },
+    "S39": {
+     "condition_1": 0.297,
+     "condition_2": 0.3347
+    },
+    "S41": {
+     "condition_1": 0.3009,
+     "condition_2": 0.3396
+    },
+    "S42": {
+     "condition_1": 0.2988,
+     "condition_2": 0.3479
+    },
+    "S45": {
+     "condition_1": 0.2906,
+     "condition_2": 0.3262
+    }
+   },
+   "by_point": {
+    "AN-ALD020": {
+     "rows": 211,
+     "rho_word": 0.3044
+    },
+    "AN-DEB026": {
+     "rows": 204,
+     "rho_word": 0.309
+    },
+    "NW-88003842": {
+     "rows": 87,
+     "rho_word": 0.4787
+    },
+    "NW-88003843": {
+     "rows": 409,
+     "rho_word": 0.7356
+    },
+    "NW-88003846": {
+     "rows": 87,
+     "rho_word": 0.3682
+    },
+    "SO-E0007084": {
+     "rows": 20,
+     "rho_word": 0.2295
+    },
+    "SO-F0017522": {
+     "rows": 20,
+     "rho_word": 0.1975
+    },
+    "SW-50250102": {
+     "rows": 79,
+     "rho_word": 0.1194
+    },
+    "SW-70310100": {
+     "rows": 66,
+     "rho_word": 0.4618
+    },
+    "SW-70815303": {
+     "rows": 40,
+     "rho_word": 0.5256
+    },
+    "SW-70815305": {
+     "rows": 47,
+     "rho_word": 0.1365
+    },
+    "SW-73013103": {
+     "rows": 120,
+     "rho_word": 0.3803
+    },
+    "SW-73013210": {
+     "rows": 40,
+     "rho_word": 0.4384
+    },
+    "SW-81020186": {
+     "rows": 79,
+     "rho_word": 0.315
+    },
+    "SW-81020847": {
+     "rows": 79,
+     "rho_word": 0.3802
+    },
+    "SW-81810719": {
+     "rows": 60,
+     "rho_word": 0.2758
+    },
+    "SW-82510201": {
+     "rows": 61,
+     "rho_word": 0.0241
+    },
+    "SW-82510210": {
+     "rows": 81,
+     "rho_word": 0.1078
+    },
+    "SW-82511707": {
+     "rows": 120,
+     "rho_word": 0.2126
+    },
+    "SW-82512203": {
+     "rows": 43,
+     "rho_word": 0.2983
+    },
+    "SW-82610106": {
+     "rows": 68,
+     "rho_word": 0.1854
+    },
+    "SW-82711985": {
+     "rows": 20,
+     "rho_word": 0.2586
+    },
+    "TH-PTNR0099": {
+     "rows": 30,
+     "rho_word": 0.089
+    }
+   }
+  },
+  "outcome": "both pass",
+  "development": true
+ }
+}
