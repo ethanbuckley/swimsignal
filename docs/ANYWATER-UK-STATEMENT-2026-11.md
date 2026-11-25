@@ -65,3 +65,10 @@ with the same intervals; the Brier score for over 500 for C1, C0 and month; how 
 - 2023 to 2026 only: four seasons, and Welsh beaches mostly read low (the typical file's medians are often "<10").
 - ERA5-Land is a reanalysis; a live word would use other rain.
 - A pass shows that rain orders days within a beach in another nation. It does not show a level or a chance there.
+
+## Amendment 1, 25 November 2026, before any score
+
+The first scoring run stopped while reading times, before any rain was joined or any figure computed: DAERA's tables
+give a sample's date and no time. Rule: **a sample with a date and no time counts as taken at 12:00 UK time** that
+day (the hour `ecoli.SAMPLE_HOUR` uses for the site's own rain windows). NRW's samples carry their times and are
+unchanged. Reported with the result: how many rows took this rule.
