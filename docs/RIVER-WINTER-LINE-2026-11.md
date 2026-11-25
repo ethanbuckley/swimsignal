@@ -18,6 +18,10 @@ and reads "Out of season":
 The tile's figure still reads "Out of season". There is no percentage and no band. The level, the answer, alerts
 and every other tile are unchanged. The method page gains one paragraph.
 
+Since 25 November 2026 (the pull request "Redesign: the winter word in the E. coli row") the redesign's
+"E. coli estimate, experimental" row in "Behind the level" reads the word too, with the same two sentences, on the
+day that carries it. Its value still reads "Out of season".
+
 It keeps to the three points Ethan read before saying yes:
 
 1. **Today only.** The read was at lead 0 with the day's measured rain, so the word goes on today's day and on no
@@ -115,7 +119,7 @@ The word changes from one day to the next on 28% of days.
 
 Not checked: a full site build with the switch on (the six spots ran through `forecast_point`, not `build_site`);
 the organisers' page, the decision record, the day-by-day table and the shared picture, which do not show the word;
-the redesign preview at `/preview/`, which does not read the new field; a screen reader. The data page
+the redesign preview at `/preview/`, which did not read the new field then (it does since 25 November: above); a screen reader. The data page
 (`data.html`) does not describe the new field `ecoli_usual_winter`; it does not describe the in-season one either.
 
 ## What stays as it was

@@ -467,6 +467,23 @@ test('as the site\'s own pages they carry the two things the privacy notice says
   assert.match(CSS, /\.foot summary \{ cursor: pointer; padding: 12px 0; \}/); assert.match(CSS, /\.yourdata \.textbtn \{ min-height: 44px; \}/);
 });
 
+test('out of season, the E. coli row reads the winter word on the day that carries it, and nothing else changes', () => {
+  // The build puts ecoli_usual_winter on today's day only (#736, switch off). The row reads the day shown, not the first day.
+  const make = word => { const s = spot(ALL); s.days.forEach(x => { x.p_ecoli_gt900 = 0.3; }); if (word) s.days[0].ecoli_usual_winter = word; return s; };
+  const withWord = make('higher'), without = make(null);
+  const row = (s, iso) => M.ledger(s, iso, data([s]), NOW).find(r => r.key === 'ecoli');
+  const OLD = 'Tested only for May to September, so it is not counted in the level now.';
+  const r = row(withWord, DAYS[0]);
+  assert.equal(r.value, 'Out of season');
+  assert.deepEqual(r.lines, [`${L.RIVER_USUAL_WINTER.higher} ${L.RIVER_USUAL_WINTER_SAID}`]);
+  assert.equal(r.lines[0], L.ecoliOffSaid(withWord, null, withWord.days[0]), 'the live page\'s own sentence');
+  assert.doesNotMatch(r.lines.join(' '), /\d\s*%/);
+  assert.deepEqual(row(withWord, DAYS[1]).lines, [OLD], 'another day does not borrow today\'s word');
+  assert.deepEqual(row(without, DAYS[0]), {...r, lines: [OLD]});
+  const lv = (s, iso) => [M.answer(s, iso, data([s]), NOW).level, M.ledger(s, iso, data([s]), NOW)[0].value];
+  for (const iso of [DAYS[0], DAYS[1]]) assert.deepEqual(lv(withWord, iso), lv(without, iso));
+});
+
 test('the spill map is the live site\'s own script, asked for only when its place on the page is near', () => {
   const PL = require(path.join(SITE, 'plume.js'));
   // The script draws the tile and the map; the page gives it a place, the map's library and the page's own tiles.
