@@ -17,7 +17,7 @@ One page. Counts are from files in the repository on 25 November 2026 (main `7b7
 
 | Rank | Water | Places added | What we could honestly say | What is tested | What stands in the way | On the site |
 |---|---|---|---|---|---|---|
-| 1 | **England's coast** | 404 bathing waters with samples | A rain word ("heavy rain here in the last 3 days") with the beach's own past samples after rain like that. A "higher than usual after rain" word only if the frozen test passes. Never a chance or a level: best skill on seen years is 3.4% | Seen years only: rain is the one input that helped, 2022-26 (COASTAL-BASELINES) | C1 had not run: its rain fetch was waiting on Open-Meteo budget. **ERA5-Land rain for 2012 to Aug 2026 is now on disk** (CDS, 176 monthly files), so the test needs no Open-Meteo call | Days, if C1 passes on 2012-21 |
+| 1 | **England's coast** | 404 bathing waters with samples | A rain word ("heavy rain here in the last 3 days") with the beach's own past samples after rain like that. A "higher than usual after rain" word only if the frozen test passes. Never a chance or a level: best skill on seen years is 3.4% | **Passed 25 Nov on 2012-21, unseen:** rain improved the over-500 chance (Brier −0.00041, interval below zero, 9 of 10 seasons; AUC 0.786 against 0.665) | Nothing for the card lines. A chance would need calibration and a 2027 shadow | Card lines: next PR |
 | 2 | **Wales and Northern Ireland coast** | 112 + 33 | The same word, from England's frozen model, scored on Welsh and NI samples it never saw (ANYWATER) | Nothing yet | C1 must pass first. Per-sample Welsh results need one NRW archive fetch (answers this Mac, OGL). NI samples are held. Rain is on disk (box reaches 8.3° W) | A week after rank 1 |
 | 3 | **Republic of Ireland coast and lakes** | 210 | As rank 2 | Nothing | Outside the UK. Rain box stops at 8.3° W: one more CDS download, free | After rank 2, optional |
 | 4 | **Scotland's coast** | 90 | Rain word and a link to SEPA's own sign. No past samples | Nothing | SEPA's terms forbid republishing its samples (Ethan's contact). SEPA runs its own predictions at 30 beaches | When SEPA answers |
@@ -33,3 +33,8 @@ the CDS ERA5-Land download instead of Open-Meteo's `era5_land` copy of the same 
 0.1° cell is sea takes the nearest land cell. Fit and freeze on 2022-26, fetch the unread 2012-21 samples, score
 once. A pass puts a labelled coastal observation on each English beach's page. A fail says so and closes this route
 at this resolution, not the coast.
+
+## Result, 25 November 2026
+
+C1 passed: "supported on unseen seasons" (`docs/COASTAL-C1-PROTOCOL-2026-11.md`, results). Rank 2 (Wales and
+Northern Ireland) is now open to test.
