@@ -1,0 +1,468 @@
+{
+ "what": "Per no-overflow point (docs/RAIN-WORD-NO-OVERFLOW-2026-11.md): cut-points at one third and two thirds of its cell's ERA5-Land rain in the 48 hours to 12:00 local. winter: October to April days of the even winters, 1 February 2012 to 30 April 2022. summer: May to September days of 2012 to 2022. Under `low` is less rain than usual, over `high` more, else about.",
+ "min_days": 300,
+ "min_gap_mm": 1.0,
+ "no_rain_cell": [],
+ "points": {
+  "NW-88003843": {
+   "cell": [
+    53.9,
+    -2.7
+   ],
+   "winter": {
+    "low": 1.9,
+    "high": 10.2,
+    "days": 1152,
+    "less": 0.326,
+    "more": 0.33
+   },
+   "summer": {
+    "low": 1.5,
+    "high": 7.8,
+    "days": 1683,
+    "less": 0.331,
+    "more": 0.332
+   }
+  },
+  "AN-ALD020": {
+   "cell": [
+    52.2,
+    1.5
+   ],
+   "winter": {
+    "low": 0.8,
+    "high": 4.9,
+    "days": 1152,
+    "less": 0.333,
+    "more": 0.333
+   },
+   "summer": {
+    "low": 0.4,
+    "high": 3.6,
+    "days": 1683,
+    "less": 0.302,
+    "more": 0.33
+   }
+  },
+  "AN-DEB026": {
+   "cell": [
+    52.2,
+    1.3
+   ],
+   "winter": {
+    "low": 0.6,
+    "high": 4.4,
+    "days": 1152,
+    "less": 0.326,
+    "more": 0.33
+   },
+   "summer": {
+    "low": 0.5,
+    "high": 3.7,
+    "days": 1683,
+    "less": 0.328,
+    "more": 0.33
+   }
+  },
+  "SW-73013103": {
+   "cell": [
+    51.1,
+    -4.2
+   ],
+   "winter": {
+    "low": 1.7,
+    "high": 8.5,
+    "days": 1152,
+    "less": 0.326,
+    "more": 0.331
+   },
+   "summer": {
+    "low": 0.8,
+    "high": 5.0,
+    "days": 1683,
+    "less": 0.332,
+    "more": 0.331
+   }
+  },
+  "SW-82511707": {
+   "cell": [
+    50.5,
+    -5.0
+   ],
+   "winter": {
+    "low": 1.8,
+    "high": 7.7,
+    "days": 1152,
+    "less": 0.333,
+    "more": 0.33
+   },
+   "summer": {
+    "low": 0.8,
+    "high": 4.7,
+    "days": 1683,
+    "less": 0.332,
+    "more": 0.329
+   }
+  },
+  "NW-88003842": {
+   "cell": [
+    53.9,
+    -2.7
+   ],
+   "winter": {
+    "low": 1.9,
+    "high": 10.2,
+    "days": 1152,
+    "less": 0.326,
+    "more": 0.33
+   },
+   "summer": {
+    "low": 1.5,
+    "high": 7.8,
+    "days": 1683,
+    "less": 0.331,
+    "more": 0.332
+   }
+  },
+  "NW-88003846": {
+   "cell": [
+    53.9,
+    -2.8
+   ],
+   "winter": {
+    "low": 2.1,
+    "high": 10.3,
+    "days": 1152,
+    "less": 0.33,
+    "more": 0.332
+   },
+   "summer": {
+    "low": 1.6,
+    "high": 7.9,
+    "days": 1683,
+    "less": 0.332,
+    "more": 0.332
+   }
+  },
+  "SW-73013210": {
+   "cell": [
+    51.2,
+    -4.2
+   ],
+   "winter": {
+    "low": 1.2,
+    "high": 9.7,
+    "days": 425,
+    "less": 0.322,
+    "more": 0.332
+   },
+   "summer": {
+    "low": 0.6,
+    "high": 5.4,
+    "days": 612,
+    "less": 0.333,
+    "more": 0.325
+   }
+  },
+  "SW-82510210": {
+   "cell": [
+    50.4,
+    -5.0
+   ],
+   "winter": {
+    "low": 1.3,
+    "high": 6.8,
+    "days": 1152,
+    "less": 0.328,
+    "more": 0.332
+   },
+   "summer": {
+    "low": 0.6,
+    "high": 4.1,
+    "days": 1683,
+    "less": 0.314,
+    "more": 0.33
+   }
+  },
+  "SW-50250102": {
+   "cell": [
+    51.0,
+    -1.8
+   ],
+   "winter": {
+    "low": 0.6,
+    "high": 5.3,
+    "days": 1152,
+    "less": 0.333,
+    "more": 0.331
+   },
+   "summer": {
+    "low": 0.4,
+    "high": 3.4,
+    "days": 1683,
+    "less": 0.307,
+    "more": 0.333
+   }
+  },
+  "SW-81020186": {
+   "cell": [
+    50.4,
+    -4.0
+   ],
+   "winter": {
+    "low": 1.0,
+    "high": 7.1,
+    "days": 1152,
+    "less": 0.324,
+    "more": 0.333
+   },
+   "summer": {
+    "low": 0.6,
+    "high": 4.0,
+    "days": 1683,
+    "less": 0.32,
+    "more": 0.333
+   }
+  },
+  "SW-81020847": {
+   "cell": [
+    50.4,
+    -4.0
+   ],
+   "winter": {
+    "low": 1.0,
+    "high": 7.1,
+    "days": 1152,
+    "less": 0.324,
+    "more": 0.333
+   },
+   "summer": {
+    "low": 0.6,
+    "high": 4.0,
+    "days": 1683,
+    "less": 0.32,
+    "more": 0.333
+   }
+  },
+  "SW-82610106": {
+   "cell": [
+    50.6,
+    -4.7
+   ],
+   "winter": {
+    "low": 1.9,
+    "high": 8.5,
+    "days": 1152,
+    "less": 0.328,
+    "more": 0.332
+   },
+   "summer": {
+    "low": 0.9,
+    "high": 5.1,
+    "days": 1683,
+    "less": 0.326,
+    "more": 0.33
+   }
+  },
+  "SW-70310100": {
+   "cell": [
+    50.7,
+    -3.2
+   ],
+   "winter": {
+    "low": 0.6,
+    "high": 5.3,
+    "days": 1152,
+    "less": 0.329,
+    "more": 0.33
+   },
+   "summer": {
+    "low": 0.4,
+    "high": 3.4,
+    "days": 1683,
+    "less": 0.309,
+    "more": 0.33
+   }
+  },
+  "SW-82510201": {
+   "cell": [
+    50.4,
+    -5.0
+   ],
+   "winter": {
+    "low": 1.3,
+    "high": 6.8,
+    "days": 1152,
+    "less": 0.328,
+    "more": 0.332
+   },
+   "summer": {
+    "low": 0.6,
+    "high": 4.1,
+    "days": 1683,
+    "less": 0.314,
+    "more": 0.33
+   }
+  },
+  "SW-81810719": {
+   "cell": [
+    50.3,
+    -4.8
+   ],
+   "winter": {
+    "low": 1.3,
+    "high": 6.5,
+    "days": 1152,
+    "less": 0.332,
+    "more": 0.332
+   },
+   "summer": {
+    "low": 0.6,
+    "high": 4.1,
+    "days": 1683,
+    "less": 0.33,
+    "more": 0.333
+   }
+  },
+  "SW-82711985": {
+   "cell": [
+    50.8,
+    -4.6
+   ],
+   "winter": {
+    "low": 1.4,
+    "high": 9.0,
+    "days": 425,
+    "less": 0.325,
+    "more": 0.329
+   },
+   "summer": {
+    "low": 0.9,
+    "high": 5.5,
+    "days": 612,
+    "less": 0.328,
+    "more": 0.332
+   }
+  },
+  "SW-70815305": {
+   "cell": [
+    50.3,
+    -3.9
+   ],
+   "winter": {
+    "low": 1.0,
+    "high": 7.2,
+    "days": 1152,
+    "less": 0.331,
+    "more": 0.33
+   },
+   "summer": {
+    "low": 0.4,
+    "high": 3.4,
+    "days": 1683,
+    "less": 0.32,
+    "more": 0.331
+   }
+  },
+  "SW-82512203": {
+   "cell": [
+    50.5,
+    -5.0
+   ],
+   "winter": {
+    "low": 1.8,
+    "high": 7.7,
+    "days": 1152,
+    "less": 0.333,
+    "more": 0.33
+   },
+   "summer": {
+    "low": 0.8,
+    "high": 4.7,
+    "days": 1683,
+    "less": 0.332,
+    "more": 0.329
+   }
+  },
+  "SW-70815303": {
+   "cell": [
+    50.3,
+    -3.9
+   ],
+   "winter": {
+    "low": 1.0,
+    "high": 7.2,
+    "days": 1152,
+    "less": 0.331,
+    "more": 0.33
+   },
+   "summer": {
+    "low": 0.4,
+    "high": 3.4,
+    "days": 1683,
+    "less": 0.32,
+    "more": 0.331
+   }
+  },
+  "SO-E0007084": {
+   "cell": [
+    50.9,
+    0.6
+   ],
+   "winter": {
+    "low": 0.4,
+    "high": 5.1,
+    "days": 425,
+    "less": 0.308,
+    "more": 0.322
+   },
+   "summer": {
+    "low": 0.4,
+    "high": 3.1,
+    "days": 612,
+    "less": 0.332,
+    "more": 0.332
+   }
+  },
+  "SO-F0017522": {
+   "cell": [
+    50.9,
+    0.6
+   ],
+   "winter": {
+    "low": 0.4,
+    "high": 5.1,
+    "days": 425,
+    "less": 0.308,
+    "more": 0.322
+   },
+   "summer": {
+    "low": 0.4,
+    "high": 3.1,
+    "days": 612,
+    "less": 0.332,
+    "more": 0.332
+   }
+  },
+  "TH-PTNR0099": {
+   "cell": [
+    51.6,
+    0.6
+   ],
+   "winter": {
+    "low": 0.7,
+    "high": 5.1,
+    "days": 1152,
+    "less": 0.326,
+    "more": 0.328
+   },
+   "summer": {
+    "low": 0.5,
+    "high": 3.7,
+    "days": 1683,
+    "less": 0.321,
+    "more": 0.333
+   }
+  }
+ }
+}
