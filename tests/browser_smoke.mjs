@@ -44,6 +44,12 @@ const PAGES = [
   [`index.html?spot=${IDS[0]}`, '#save-hint', 'spot-alerts'],
   // A town typed in the search: the spots near it, under the spots named for it (fixture places.json; no rivers file).
   ['index.html', '#q', 'search'],
+  // One spot saved, first look (outside audit, 17 Nov 2026): the place leads, with no "nothing to compare yet" tile and
+  // no line sending to the page its name already links to.
+  ['saved/', '#scards .places li', 'one'],
+  // The swim journal's form, opened and cancelled: focus and the screen go back to the control that opened it. On a
+  // phone that is "Log a swim here" over the five days (Henley is low in the fixture), about 6,000 px over the form.
+  ['index.html?spot=thames-henley', '#result h1', 'log-cancel'],
 ];
 
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.json': 'application/json', '.css': 'text/css',
@@ -106,7 +112,7 @@ for (const [w, h, mobile] of [[375, 812, true], [1440, 900, false]]) {
       globalThis.Date = F; })();` }, s);
     // The Saved route needs a fresh browser state, then two saved spots for the comparison to exist.
     // In a try: it runs in every frame, and a spot page's sandboxed frames may not read storage.
-    if (saved) await send('Page.addScriptToEvaluateOnNewDocument', { source: `try { localStorage.clear(); ${['saved', 'blocked', 'dismissed', 'iphone'].includes(saved) ? `localStorage.setItem('dipcast.saved', ${JSON.stringify(JSON.stringify(IDS.slice(0, 2)))});` : ''}${saved === 'spot-alerts' ? `localStorage.setItem('dipcast.saved', ${JSON.stringify(JSON.stringify(IDS.slice(0, 1)))});` : ''} } catch (e) { /* a frame without storage */ }` }, s);
+    if (saved) await send('Page.addScriptToEvaluateOnNewDocument', { source: `try { localStorage.clear(); ${['saved', 'blocked', 'dismissed', 'iphone'].includes(saved) ? `localStorage.setItem('dipcast.saved', ${JSON.stringify(JSON.stringify(IDS.slice(0, 2)))});` : ''}${['spot-alerts', 'one'].includes(saved) ? `localStorage.setItem('dipcast.saved', ${JSON.stringify(JSON.stringify(IDS.slice(0, 1)))});` : ''} } catch (e) { /* a frame without storage */ }` }, s);
     const notify = setting => send('Browser.setPermission', { permission: { name: 'notifications' }, setting, origin: BASE.slice(0, -1) });
     if (saved === 'blocked') await notify('denied');
     if (saved === 'dismissed') { await notify('prompt');
@@ -195,13 +201,47 @@ for (const [w, h, mobile] of [[375, 812, true], [1440, 900, false]]) {
         return (top >= 0 && top < innerHeight) || 'Go to alerts: the Alerts heading is out of view (' + Math.round(top) + ' px)'; })()` }, s);
       const v = r.result?.result?.value; if (v !== true) errors.push(String(v));
     }
-    // "Marlow" names no spot; Henley-on-Thames is 5.6 miles away, so it is listed under "Near Marlow" with its own level.
+    // Empty: where saved spots are kept is said once (outside audit, 17 Nov 2026: the lede and the tile both said it).
+    if (shown && saved === 'empty') {
+      const n = (await send('Runtime.evaluate', { returnByValue: true, expression: `(document.querySelector('.view-saved .lead').textContent + ' ' + document.querySelector('.empty-saved').textContent).split('in this browser').length - 1` }, s)).result?.result?.value;
+      if (n !== 1) errors.push(`Empty Saved says "in this browser" ${n} times, not once`);
+    }
+    if (shown && saved === 'one') {
+      const v = (await send('Runtime.evaluate', { returnByValue: true, expression: `(() => ({ since: !!document.getElementById('since-h'),
+        text: document.getElementById('panel').textContent, first: (document.querySelector('#scards') || {}).previousElementSibling?.className || '' }))()` }, s)).result?.result?.value;
+      if (!v || v.since || /nothing to compare yet/.test(v.text)) errors.push('One spot, first look: the "Since you last looked" tile is shown with nothing to compare');
+      if (!v || /Its page has why/.test(v.text)) errors.push('One spot: the line sending to the page its name links to is still there');
+    }
+    if (shown && saved === 'log-cancel') {
+      const r = await send('Runtime.evaluate', { awaitPromise: true, returnByValue: true, expression: `(async () => {
+        const wait = ms => new Promise(r => setTimeout(r, ms));
+        const here = document.querySelector('#log-here button'), swam = document.getElementById('swam');
+        if (!swam) return 'no Log a swim button';
+        if (innerWidth <= 800 && !here) return 'a phone on a low day: no Log a swim here';
+        const opener = here || swam;
+        opener.click(); await wait(300);
+        const box = document.getElementById('jn-box'); if (!box) return 'the form did not open';
+        // Quick entry first: the day, the note and the photos come before the time and the minutes, and the draft's
+        // notice is not over the first field.
+        const order = ['jn-date', 'jn-note', 'jn-pick', 'jn-time', 'jn-min'].map(id => document.getElementById(id)).filter(Boolean);
+        for (let i = 1; i < order.length; i++) if (order[i - 1].compareDocumentPosition(order[i]) !== Node.DOCUMENT_POSITION_FOLLOWING) return 'form order: ' + order.map(e => e.id).join(', ');
+        const note = [...box.querySelectorAll('p')].find(p => /Unsent answers/.test(p.textContent));
+        if (note && note.compareDocumentPosition(document.getElementById('jn-date')) & Node.DOCUMENT_POSITION_FOLLOWING) return 'the unsent-answers notice is above the first field';
+        document.getElementById('jn-cancel').click(); await wait(700);
+        if (document.getElementById('jn-box')) return 'Cancel left the form open';
+        if (document.activeElement !== opener) return 'Cancel moved focus to ' + (document.activeElement.id || document.activeElement.textContent.trim().slice(0, 30)) + ', not the control that opened the form';
+        const top = opener.getBoundingClientRect().top;
+        return (top >= 0 && top < innerHeight) || 'after Cancel the opener is out of view (' + Math.round(top) + ' px)'; })()` }, s);
+      const v = r.result?.result?.value; if (v !== true) errors.push(String(v));
+    }
+    // "Marlow" names no spot; Henley-on-Thames is 5.6 miles away, so it is listed under "1 spot near Marlow" (the count
+    // first since 17 Nov 2026, plan.js nearHead) with its own level.
     if (shown && saved === 'search') {
       const r = await send('Runtime.evaluate', { awaitPromise: true, returnByValue: true, expression: `(async () => {
         const q = document.getElementById('q'); q.value = 'Marlow'; q.dispatchEvent(new Event('input', { bubbles: true }));
         for (let t = 0; t < 20 && !document.querySelector('#on-map a[data-id]'); t++) await new Promise(r => setTimeout(r, 150));
         const a = document.querySelector('#on-map a[data-id="thames-henley"]'), h = document.querySelector('#on-map .area-head h3');
-        return !!a && /5\\.6 miles from Marlow/.test(a.textContent) && !!a.querySelector('.hl') && !!h && /^Near Marlow/.test(h.textContent); })()` }, s);
+        return !!a && /5\\.6 miles from Marlow/.test(a.textContent) && !!a.querySelector('.hl') && !!h && /^\\d+ spots? near Marlow/.test(h.textContent); })()` }, s);
       if (!r.result?.result?.value) errors.push('Searching a town did not list the spot near it');
     }
     await sleep(400);

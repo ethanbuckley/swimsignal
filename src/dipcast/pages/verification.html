@@ -50,9 +50,12 @@ td.bars { width:38%; padding-top:10px; }
 <nav aria-label="Site"><a href="/plan/">Plan a swim</a><a href="/saved/">Saved</a><a aria-current="page" href="/verification">Accuracy</a><a href="/about">About</a><a class="desk-only" href="/clubs">For organisations</a></nav></header>
 <main class="doc" id="main">
 <h1>How good is the forecast?</h1>
-<p class="lead">Every forecast SwimSignal issues is logged and scored later against what the overflows actually did. This page updates itself. It also shows the offline tests the model was built on. How the forecast is made is on the <a href="/methods">method page</a>. The candidates being tested against it now, and the date each test is read, are on the <a href="models.html">model scorecard</a>.</p>
-<p>A warning can miss a spill, and a warning does not always precede one. These scores describe monitored overflows, not whether the water at a particular spot is safe. An older ranking test measures how well days were ordered; it is not a percentage of forecasts correct.</p>
+<p class="lead">Every forecast SwimSignal issues is logged and scored later against what the overflows actually did.</p>
+<!-- The live figures and what they mean come first (17 Nov 2026, design audit section 9); the rest of the lede and its
+     caveats follow them, word for word. -->
 <div id="top"><p class="muted">Loading the scores…</p></div>
+<p>This page updates itself. It also shows the offline tests the model was built on. How the forecast is made is on the <a href="/methods">method page</a>. The candidates being tested against it now, and the date each test is read, are on the <a href="models.html">model scorecard</a>.</p>
+<p>A warning can miss a spill, and a warning does not always precede one. These scores describe monitored overflows, not whether the water at a particular spot is safe. An older ranking test measures how well days were ordered; it is not a percentage of forecasts correct.</p>
 <div id="short"></div>
 <div id="answer"></div>
 
@@ -573,11 +576,13 @@ function summary(d) {
   const L = d.live || {}, W = L.warning_table || {}, ho = (d.holdout || [])[0], {skill, flat} = liveError(L);
   const tile = (v, l, dd) => `<div class="stat"><dt class="l">${l}</dt><dd class="v">${v}</dd><dd class="d">${dd}</dd></div>`;
   const live = !!W.n, spills = W.hits + W.misses, warnings = W.hits + W.false_alarms;
-  const liveTiles = [
+  const warnTiles = [
     tile(live && W.hit_rate !== null ? p0(W.hit_rate) : '–', 'Spills warned of', !live ? 'Nothing scored yet.' : !spills ? 'No spill to warn of yet.'
       : `Since ${day(W.first_day)}, ${n0(W.hits)} of ${n0(spills)} forecasts for a day with a spill gave a High risk warning.`),
     tile(live && W.warnings_true !== null ? p0(W.warnings_true) : '–', 'Warnings that came true', !live ? 'Nothing scored yet.' : !warnings ? 'It gave no warnings.'
       : `${n0(W.hits)} of ${n0(warnings)} warnings were followed by a spill, against ${pLow(W.base_rate)} of all forecasts.`),
+  ].join('');
+  const errorTile = [
     // A live error above the baseline is said as higher, never as a negative "lower". The figure is against the harder
     // baseline, a flat forecast at the period's own rate, where there is one (Ethan, 5 Nov 2026): the long-run rate is
     // "an easy test here", as the page says, and its larger figure is given second.
@@ -588,11 +593,34 @@ function summary(d) {
         : `Read as a chance, against each overflow's long-run rate.`),
   ].join('');
   const historical = tile(ho ? `${Math.round(100 * ho.auc)} in 100` : '–', 'Pairs ranked the right way round', ho ? 'A ranking of spill days above dry days, not a share of forecasts right: United Utilities, 2025, a year the model never saw.' : 'No offline test loaded.');
+  // The error's reference named in its heading (17 Nov 2026): beside the two warning shares, "Lower error, live" read
+  // as the same kind of figure.
+  const errorHead = flat !== null ? "Error read as a chance, against a flat forecast at this period's own rate" : "Error read as a chance, against each overflow's long-run rate";
   return `<section aria-labelledby="live-summary-h"><h2 id="live-summary-h">Issued forecasts: live results</h2>`
-    + `<p class="small muted">Monitored overflow spill forecasts${W.first_day ? `, ${day(W.first_day)}${W.last_day ? ` to ${day(W.last_day)}` : ' onwards'}` : ''}. Warnings and probability error are different measures.</p>`
-    + `<dl class="stats">${liveTiles}</dl>${companyLine(W)}</section>`
+    + liveMeaning(W, live, spills, warnings)
+    + `<dl class="stats">${warnTiles}</dl>${companyLine(W)}${rulesLine(L)}`
+    + `<h3 id="live-error-h">${errorHead}</h3>`
+    + `<p class="small muted">A different measure from the warnings above.</p><dl class="stats">${errorTile}</dl></section>`
     + `<section aria-labelledby="history-summary-h"><h2 id="history-summary-h">Historical development test</h2>`
     + `<p class="small muted">A separate held-out ranking test, not the live results above.</p><dl class="stats">${historical}</dl></section>`;
+}
+// What the live figures mean, in one paragraph before them (17 Nov 2026, design audit section 9): the period, what was
+// scored, the share of spills warned of, the share of warnings that came true, and that they describe monitored
+// overflows. Days are counted, never spanned (the scorer's n_days).
+function liveMeaning(W, live, spills, warnings) {
+  if (!live) return `<p>Monitored overflow spill forecasts. Nothing scored yet.</p>`;
+  const when = W.first_day ? `, from ${day(W.first_day)}${W.last_day ? ` to ${day(W.last_day)}` : ''}${W.n_days ? `, on ${W.n_days} day${W.n_days === 1 ? '' : 's'} with scores` : ''}` : '';
+  const said = [spills && W.hit_rate !== null ? `It warned of ${p0(W.hit_rate)} of spills` : '',
+    warnings && W.warnings_true !== null ? `${p0(W.warnings_true)} of its warnings came true` : ''].filter(Boolean);
+  return `<p>${n0(W.n)} spill forecasts for monitored overflows were scored against what the overflows then did${when}. `
+    + `${said.length ? `${said.join(', and ')}. ` : ''}These figures describe monitored overflows, not whether the water at a particular spot is safe.</p>`;
+}
+// The comparison with the two simple rules, straight after the warnings (17 Nov 2026), in the words In short and the
+// rules' section use, whichever way the verdicts fall.
+function rulesLine(L) {
+  const R = L.simple_refs, r0 = R && ruleCell(R, '0'), r1 = R && ruleCell(R, '1-4');
+  if (!r0 && !r1) return '';
+  return `<p>Against two simple rules anyone could use (spilling now or in the last ${R.settings.recent_spill_hours} hours; over ${R.settings.rain_mm} mm of rain forecast in two days): ${[r0 && `on the same day, SwimSignal ${againstRules(r0)}`, r1 && `in advance, it ${againstRules(r1)}`].filter(Boolean).join('; ')}. <a href="#simple-rules">Details</a></p>`;
 }
 // The warnings by company in one line: the share of spills warned of at the company the spill model learned from,
 // against the other companies together, and the range among those with enough spills for a share to mean

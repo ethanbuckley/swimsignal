@@ -329,6 +329,17 @@ def water_line(site):
     return ''
 
 
+def spills_line(site):
+    """The sewage overflows near the site's sampling point (coastal_spills.line), or ''."""
+    from dipcast import coastal_spills
+    return coastal_spills.line(site)
+
+
+def spills_note():
+    from dipcast import coastal_spills
+    return coastal_spills.NOTE
+
+
 def when(iso):
     """A source time as people read it, in UK time ("3 Oct 2026, 21:45"), in a <time> element that
     keeps the exact value. Unreadable values are shown as they came."""
@@ -365,6 +376,8 @@ def render(snapshot):
         sample += f'<br>{escape(typical.line(site["typical"]))}' if site.get("typical") else ''
         water = water_line(site)
         sample += f'<br>{escape(water)}' if water else ''
+        spills = spills_line(site)   # carries its own <time> element, escaped inside
+        sample += f'<br>{spills}' if spills else ''
         profile = escape(site["profile"], quote=True)
         # Today's advice, from the EA itself: coverage.html's script loads the EA's own panel for the
         # site into this fold when it is first opened. Without the script, the fold points to the profile.
@@ -387,7 +400,8 @@ def render(snapshot):
                 + (f', checked {when(snapshot["samples"]["fetched_at"])}' if snapshot["samples"].get("fetched_at") else '')
                 + '. The archive can lag the official profile by several days. A sample describes the water when '
                 'it was taken, not today. The rating uses four seasons of samples.</p>') if snapshot.get("samples") else '')
-            + typical.note(snapshot) +
+            + typical.note(snapshot)
+            + (spills_note() if any(s.get("spills_nearby") for s in snapshot["sites"]) else '') +
             '<label for="coastal-search">Find a beach or estuary</label> '
             '<input type="search" id="coastal-search" placeholder="Bathing-water name">'
             f'<p id="coastal-count" class="small" aria-live="polite">{len(cards)} sites</p>'

@@ -125,6 +125,24 @@ def joins_at(net, rt: dict, link_id: str, cap_m: float) -> float | None:
     return min(met) / 1000 if met else None
 
 
+def between(net, rt: dict, where: dict[str, tuple[str, float]], counted_a: set[str], counted_b: set[str], places: int = 1) -> dict:
+    """The overflows between the two ends of a route (`route`), in the module's three groups: { km, route: [[site_id,
+    km below the start]], side: [[site_id, km below the start where its water joins, or None]], above }. where:
+    site_id -> (link_id, frac); counted_a and counted_b: the overflows the upper and the lower end's forecasts count.
+    Used for a paddle between two listed spots (`stretches`) and for a course between two points that are not
+    spots (scripts/course_briefing.py). `places` is the rounding of each km."""
+    on = sorted(((s, km_below_start(net, rt, *where[s])) for s in where if on_route(rt, *where[s])),
+                key=lambda x: (x[1] is None, x[1], x[0]))
+    on_ids = {s for s, _ in on}
+    off = counted_b - counted_a - on_ids
+    side = sorted(([s, None if s not in where else joins_at(net, rt, where[s][0], 60_000.0)] for s in off),
+                  key=lambda x: (x[1] is None, x[1] if x[1] is not None else 0, x[0]))
+    return {"km": round(rt["m"] / 1000, places),
+            "route": [[s, None if k is None else round(k, places)] for s, k in on],
+            "side": [[s, None if k is None else round(k, places)] for s, k in side],
+            "above": len(counted_a & counted_b)}
+
+
 def stretches(net, spots, upstream: dict[str, list[dict]], overflows, max_km: float = MAX_KM) -> dict[str, list[dict]]:
     """For each river spot (spots: the build's frame), the listed river spots downstream within max_km, nearest
     first, each { to, km, route: [[site_id, km below the start]], side: [[site_id, km below the start where it
@@ -152,16 +170,7 @@ def stretches(net, spots, upstream: dict[str, list[dict]], overflows, max_km: fl
             rt = route(net, pa, pb, max_km)
             if rt is None:
                 continue
-            on = sorted(((s, km_below_start(net, rt, *where[s])) for s in where if on_route(rt, *where[s])),
-                        key=lambda x: (x[1] is None, x[1], x[0]))
-            on_ids = {s for s, _ in on}
-            off = counted[b] - counted[a] - on_ids
-            side = sorted(([s, None if s not in where else joins_at(net, rt, where[s][0], 60_000.0)] for s in off),
-                          key=lambda x: (x[1] is None, x[1] if x[1] is not None else 0, x[0]))
-            found.append({"to": b, "km": round(rt["m"] / 1000, 1),
-                          "route": [[s, None if k is None else round(k, 1)] for s, k in on],
-                          "side": [[s, None if k is None else round(k, 1)] for s, k in side],
-                          "above": len(counted[a] & counted[b])})
+            found.append({"to": b, **between(net, rt, where, counted[a], counted[b])})
         if found:
             out[a] = sorted(found, key=lambda x: (x["km"], x["to"]))
     return out

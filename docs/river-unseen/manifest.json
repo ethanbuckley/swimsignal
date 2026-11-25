@@ -1,0 +1,103 @@
+{
+ "protocol": "docs/RIVER-UNSEEN-PROTOCOL-2026-11.md",
+ "checks": {
+  "pages": 34,
+  "rows_fetched": 64279,
+  "repeated_ids": 0,
+  "rows": 64279,
+  "rows_sharing_point_and_time": 4
+ },
+ "rows_by_year": {
+  "2012": 9683,
+  "2013": 7286,
+  "2014": 5775,
+  "2015": 5017,
+  "2016": 3310,
+  "2017": 2814,
+  "2018": 2838,
+  "2019": 3349,
+  "2020": 317,
+  "2021": 2808,
+  "2022": 3719,
+  "2023": 4295,
+  "2024": 3810,
+  "2025": 4853,
+  "2026": 4405
+ },
+ "rows_by_material": {
+  "RIVER / RUNNING SURFACE WATER": 61741,
+  "ESTUARINE WATER": 1332,
+  "SEA WATER": 676,
+  "SURFACE DRAINAGE": 245,
+  "ANY WATER": 114,
+  "POND / LAKE / RESERVOIR WATER": 105,
+  "ESTUARINE WATER AT HIGH TIDE": 29,
+  "FINAL SEWAGE EFFLUENT": 16,
+  "ANY SEWAGE": 8,
+  "GROUNDWATER": 7,
+  "CRUDE SEWAGE": 3,
+  "CANAL WATER": 2,
+  "STORM SEWER OVERFLOW DISCHARGE": 1
+ },
+ "rows_by_purpose": {
+  "PLANNED INVESTIGATION (LOCAL MONITORING)": 21852,
+  "STATUTORY FAILURES (FOLLOW UPS AT NON-DESIGNATED POINTS)": 17061,
+  "MONITORING (UK GOVT POLICY - NOT GQA OR RE)": 15343,
+  "PLANNED INVESTIGATION (NATIONAL AGENCY POLICY)": 4698,
+  "ENVIRONMENTAL MONITORING STATUTORY (EU DIRECTIVES)": 2748,
+  "MONITORING (NATIONAL AGENCY POLICY)": 1093,
+  "UNPLANNED REACTIVE MONITORING (POLLUTION INCIDENTS)": 1044,
+  "STATUTORY FAILURES (FOLLOW UPS AT DESIGNATED POINTS)": 405,
+  "UNPLANNED REACTIVE MONITORING FORMAL (POLLUTION INCIDENTS)": 24,
+  "WASTE MONITORING (AGENCY INVESTIGATION)": 9,
+  "WASTE MONITORING (FORMAL SAMPLE)": 1,
+  "UNSPECIFIED AT TIME OF WIMS LOAD": 1
+ },
+ "rows_may_to_september": 47335,
+ "kept_rows": {
+  "held_out": 17156,
+  "development": 12718
+ },
+ "kept_held_out_by_year": {
+  "2012": 3320,
+  "2013": 2190,
+  "2014": 1301,
+  "2015": 1553,
+  "2016": 1219,
+  "2017": 1188,
+  "2018": 1347,
+  "2019": 1874,
+  "2021": 1272,
+  "2022": 1892
+ },
+ "points": {
+  "all": 1223,
+  "rule1_count": 115,
+  "then_rule2_on_river": 95,
+  "then_rule3_right_river": 82,
+  "then_rule5_not_bench": 82,
+  "then_rule4_overflow_upstream": 59
+ },
+ "kill_rule": {
+  "points_passing_all_five": 59,
+  "held_out_rows_at_them": 6322,
+  "development_rows_at_them": 1495,
+  "points_passing_1_2_3_5": 82,
+  "held_out_rows_at_those": 8511,
+  "of_which_no_overflow_upstream": 2189,
+  "share_no_overflow_upstream": 0.2571965691458113,
+  "killed": false
+ },
+ "kept_points_by_region": {
+  "SouthWest": 48,
+  "Anglian": 5,
+  "NorthWest": 4,
+  "Southern": 1,
+  "Thames": 1
+ },
+ "sealed_samples": {
+  "file": "swimsignal-private/river-unseen/samples.parquet",
+  "rows": 64279,
+  "sha256": "95ca8c9f5e371ff0dd99defaa542a2a1a869b75910fa7900f4293054669cae9b"
+ }
+}

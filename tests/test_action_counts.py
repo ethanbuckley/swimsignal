@@ -33,7 +33,7 @@ def test_off_the_app_names_no_worker_and_the_notice_is_unchanged(tmp_path):
     for page in ("index.html", "plan/index.html", "saved/index.html", "spot/a/index.html"):
         assert "swimsignal-actions" not in (tmp_path / page).read_text(), page
     privacy = (tmp_path / "privacy.html").read_text()
-    assert 'id="action-counts"' not in privacy and "Last updated 31 October 2026." in privacy
+    assert 'id="action-counts"' not in privacy and "Last updated 17 November 2026." in privacy
     assert "There is no analytics script and no third-party tracking." in privacy
 
 
@@ -45,7 +45,7 @@ def test_on_the_app_names_the_worker_and_the_notice_says_what_is_counted(tmp_pat
         assert (tmp_path / page).read_text().count(meta) == 1, page
     privacy = (tmp_path / "privacy.html").read_text()
     assert privacy.index('<h2 id="action-counts">Action counts</h2>') < privacy.index("<h2>The server version</h2>")
-    assert "Last updated 31 October 2026 (action counts)." in privacy
+    assert "Last updated 17 November 2026 (action counts)." in privacy
     assert "There is no analytics script" not in privacy
     assert "There is no third-party tracking. Eleven actions" in privacy
     for words in ("not your IP address", "no cookie and no identifier", "Nothing is stored on your device",
@@ -60,7 +60,7 @@ def test_with_the_page_view_counter_too_both_are_described(tmp_path):
     bs = _build_site()
     bs.write_pages(tmp_path, SPOTS, token="abcdefghij0123456789", root="https://example.org/", actions=URL)
     privacy = (tmp_path / "privacy.html").read_text()
-    assert "Last updated 31 October 2026 (page-view counter, action counts)." in privacy
+    assert "Last updated 17 November 2026 (page-view counter, action counts)." in privacy
     assert "Cloudflare Web Analytics" in privacy
     assert "are also counted as daily totals that hold nothing about who did them (see Action counts). There is no other analytics or tracking." in privacy
 

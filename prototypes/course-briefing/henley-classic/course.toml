@@ -1,0 +1,121 @@
+# The Henley Classic as a course: its two ends, the mapped mouths of the stream below Henley sewage works, and
+# the three past dates the briefing replays. Read by scripts/course_briefing.py, which writes course.json beside it.
+# How each fact was fixed, and how sure it is: docs/COURSE-BRIEFING-HENLEY-2026-11.md.
+# A prototype. Nothing here is built into the site.
+
+id = "henley-classic"
+name = "Henley Classic"
+organiser = "Henley Swim"
+source_url = "https://www.henleyswim.com/henley-classic/"
+source_read = "2026-11-17"
+said = "2.1 km upstream, from the official regatta start, a straight point-to-point swim with no turns"
+next_event = "2027-06-27"
+next_event_start = "04:00"
+length_m = 2112          # the regatta's 1 mile 550 yards (hrr.co.uk, "Regatta Course", read 17 Nov 2026)
+river = "River Thames"
+spot = "thames-henley"   # the listed spot whose issued figures the briefing shows
+bathing_waters = ["ukj1102-11941", "ukj1403-11947"]   # the nearest designated bathing waters upstream
+
+# Positions are OSGB36 eastings and northings read from open-licence data, never from OpenStreetMap.
+[start]
+easting = 477124
+northing = 184922
+how = "The downstream tip of Temple Island, as OS OpenMap Local (October 2026) draws the island, moved onto the OS Open Rivers line. Henley Royal Regatta says its course runs \"from below the Berkshire side of Temple Island\". The organiser's page says \"the official regatta start\"."
+sure = "About 60 m either way. The start pontoons were not located."
+
+[finish]
+easting = 476377
+northing = 182953
+how = "2,112 m upstream of the start along the OS Open Rivers line. That is 311 m downstream of Henley Bridge (Historic England list entries 1369131 and 1117419). Henley Royal Regatta names the finish Poplar Point, which no open-licence dataset used here places."
+sure = "About 100 m either way: the start's 60 m, and the OS line being simpler than the river."
+
+# Mouths into the Thames of the channels that OS OpenMap Local draws below Henley sewage works, in Fawley Meadows.
+# `link`: how the channel is joined to the stream from the works on that map. "mapped": open water with gaps
+# of 3 m or less. "possible": only across gaps of up to 10 m. A mouth is where a narrow arm of the river's own
+# water area meets the main channel.
+[[mouth]]
+name = "Channel at the stream's meadow end"
+easting = 476985
+northing = 184598
+link = "mapped"
+note = "The OS Open Rivers join. SwimSignal's network puts the works' overflow here."
+
+[[mouth]]
+name = "Second channel, 110 m further down"
+easting = 477006
+northing = 184704
+link = "mapped"
+
+[[mouth]]
+name = "Backwater beside Temple Island, upper end"
+easting = 477039
+northing = 184807
+link = "mapped"
+
+[[mouth]]
+name = "Backwater below Temple Island, lower end"
+easting = 477134
+northing = 185016
+link = "mapped"
+
+[[mouth]]
+name = "Fawley Court canal"
+easting = 476816
+northing = 184123
+link = "possible"
+note = "Joined to the stream's channels only through ditches with gaps of up to 10 m on the map. Which way they flow is not known."
+
+# What can be observed, by source. Each is a fact about the source, not a reading.
+[[observation]]
+what = "Live overflow status"
+where = "Every monitored Thames Water overflow upstream"
+source = "Thames Water's storm overflow feed, polled by SwimSignal's build"
+limit = "A status at each poll, not a continuous record. A monitor can be offline. The feed says nothing about volume."
+
+[[observation]]
+what = "Start and stop of past spills"
+where = "Every monitored Thames Water overflow upstream"
+source = "Environment Agency event duration monitoring files, 2024 and 2025"
+limit = "Published after the year ends. Not available on the day."
+
+[[observation]]
+what = "Laboratory samples"
+where = "None on the course"
+source = "The Environment Agency samples designated bathing waters only. The nearest upstream are Pangbourne Meadow and Wallingford Beach."
+limit = "Their results describe those places in the bathing season, not Henley."
+
+[[observation]]
+what = "River level"
+where = "Hambleden Lock, downstream of the start"
+source = "Environment Agency flood monitoring gauge, as the site's build of 17 November 2026 reads it for the Henley spot"
+limit = "A level, not a flow or a water-quality reading. Not part of the pollution level."
+
+[[observation]]
+what = "Rain"
+where = "Each overflow's forecast cell"
+source = "Open-Meteo forecast, read by the build"
+limit = "A forecast for a grid cell, not a rain gauge."
+
+
+# The three dates, in the walkthrough's order. `as_of` is the decision time, UK local. `issue` is the page record
+# the briefing quotes: the last one issued before that time. A date before the forecast log has none, and is a
+# historical view only.
+[[date]]
+id = "gap"
+day = "2026-11-14"
+as_of = "2026-11-14T07:30"
+title = "The same time: one monitor silent"
+issue = "6743baf-20261114T0718Z"
+
+[[date]]
+id = "routine"
+day = "2026-11-01"
+as_of = "2026-11-01T08:40"
+title = "The same time: a quiet day"
+issue = "4deeedd-20261101T0832Z"
+
+[[date]]
+id = "differs"
+day = "2024-07-06"
+as_of = "2024-07-06T13:00"
+title = "Historical: evidence differs along the course"

@@ -12,6 +12,13 @@ research files it reads. Run from the repository root, as below, the exhibits re
 | 4. Catchment workspace | `workspace/` | live, exploratory | `docs/CATCHMENT-WORKSPACE-2026-11.md` |
 | 5. Sampling gaps | `sampling/` | exploratory planning aid | `docs/SAMPLING-GAPS-EXHIBIT-2026-11.md` |
 
+Prototypes the site build leaves out (`build_site.LAB_UNPUBLISHED`), linked from no page:
+
+| Prototype | Folder | Record |
+|---|---|---|
+| What if (CATCH-SIM) | `workspace/whatif/` | `docs/CATCH-SIM-2026-12.md` |
+| The overflow ledger (LEDGER) | `overflow-ledger/` | `docs/OVERFLOW-LEDGER-2026-11.md` |
+
 ## Run it
 
 1. From the repository root, start a static server:

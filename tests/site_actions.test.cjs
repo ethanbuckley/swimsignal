@@ -111,7 +111,7 @@ function pageContext(names, extra = {}) {
   return ctx;
 }
 const PAGE = ['esc', 'tone', 'headTone', 'rainSaid', 'answerParts', 'flowLine', 'ageMin', 'ago', 'agoSpan', 'issued', 'nextDay', 'yesterdayLine', 'answerWords',
-  'sinceTime', 'spillFor', 'overflowSaid', 'longSpillLine', 'coverWords', 'coverLine', 'answerAfter'];
+  'sinceTime', 'spillFor', 'overflowSaid', 'longSpillLine', 'coverWords', 'coverLine', 'eaAdviceLine', 'answerAfter'];
 
 test('the answer puts the line under where the week goes, for today and for a picked day', () => {
   const ctx = pageContext(PAGE, {DATA: {generated_at: '2026-09-30T08:00:00+01:00'}});

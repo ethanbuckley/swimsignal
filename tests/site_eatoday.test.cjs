@@ -144,7 +144,7 @@ function pageWith(withScript) {
   if (withScript) vm.runInContext(SRC, ctx);
   vm.runInContext(pageDefs(['esc', 'glyph', 'ICON', 'tone', 'tile', 'factorRow', 'explain', 'poorLine', 'ratingHistory',
     'riverTile', 'WT_ROUTES', 'waterEstOk', 'waterEstHow', 'waterEstSay', 'WT_AIR', 'WT_TAIL', 'waterEstMore', 'waterTile', 'weatherOn', 'facts', 'standing', 'check', 'nowTile', 'noFeedSaid', 'ecoliName', 'ecoliFold', 'ecoliCheck', 'ecoliSaid', 'ecoliMore', 'lakeRanged', 'rangeOf', 'ecoliReading', 'likely', 'rangeLine', 'monthPart', 'usualLine', 'RANGE_BASIS', 'rangeBasis', 'RANGE_MORE', 'RANGE_OFF_SAID', 'rangeFold', 'typicalLine', 'TYPICAL_SAID', 'TYPICAL_MORE',
-    'sinceTime', 'spillFor', 'overflowSaid', 'longSpillLine', 'eaSaid', 'coverWords', 'coverLine', 'answerAfter']), ctx);
+    'sinceTime', 'spillFor', 'overflowSaid', 'longSpillLine', 'eaSaid', 'coverWords', 'coverLine', 'eaAdviceLine', 'answerAfter']), ctx);
   vm.runInContext(pageDefs(['polledMs', 'pollAt', 'pollSay']), ctx);   // the Right now tile's poll line (nowTile)
   return ctx;
 }
@@ -158,10 +158,10 @@ const spot = frensham({ days: [{ date: '2026-10-04', risk: 0, label: 'low', rain
 // above the issue time. The line under the five days no longer repeats it.
 test('beside the answer, the EA advice could not be checked: open the fold, whose link opens it; without the script, the EA page', () => {
   const line = vm.runInContext('coverLine', pageWith(true))(spot);
-  assert.equal(line, '<p class="cover">Today\'s EA advice not checked: <a href="#ea-today">open it</a> before you swim.</p>');   // no overflow upstream: no live count
+  assert.equal(line, '<p class="cover">Today\'s official advice was not checked. <a href="#ea-today">Check Environment Agency advice</a>.</p>');   // no overflow upstream: no live count
   assert.doesNotMatch(line, /widget/);
   const without = vm.runInContext('coverLine', pageWith(false))(spot);
-  assert.match(without, new RegExp(`Today's EA advice not checked: <a href="${PROFILE.replace(/[.?]/g, '\\$&')}">see the EA's page</a> before you swim`));
+  assert.match(without, new RegExp(`Today's official advice was not checked\\. <a href="${PROFILE.replace(/[.?]/g, '\\$&')}">Check Environment Agency advice</a>`));
   const river = { ...spot, id: 'osm-x', source: 'curated', classification: undefined };
   assert.equal(vm.runInContext('coverLine', pageWith(true))(river), '');   // not a bathing water, nothing upstream: nothing to say
   assert.equal(vm.runInContext('coverLine', pageWith(true))({ ...spot, unlisted: true, source: 'unlisted' }), '');   // a clicked point
@@ -299,6 +299,6 @@ test('on a spot page the level is said apart from official advice once, in its b
   const app = require('node:fs').readFileSync(require('node:path').join(__dirname, '../src/dipcast/site/index.html'), 'utf8');
   const answer = app.slice(app.indexOf('const answerWords = '), app.indexOf('\n// The live status', app.indexOf('const answerWords = ')));
   assert.doesNotMatch(answer, /eaTodayApart/);
-  assert.match(app, /const reviewed = typeof eaTodayCover === 'function' \? eaTodayCover\(d\) : '';\n  if \(!reviewed && eaUnchecked\(d\)\) \{/);
+  assert.match(app, /const reviewed = typeof eaTodayCover === 'function' \? eaTodayCover\(d\) : '';\n  if \(reviewed \|\| !eaUnchecked\(d\)\) return '';/);
   assert.match(ea.eaTodayOfficial(frensham({ official: [item()] })), /It is not SwimSignal's, and the forecast below does not include it\./);
 });

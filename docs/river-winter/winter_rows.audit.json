@@ -1,0 +1,57 @@
+{
+ "kept": {
+  "rows": 2754,
+  "unparsed_results": 0,
+  "same_point_and_time": {
+   "groups_equal": 0,
+   "groups_unequal": 0,
+   "rows_dropped": 0
+  },
+  "times_not_placeable": 0,
+  "samples_in": 2754,
+  "rows_out": 2754,
+  "sites_out": 39,
+  "drops": {
+   "no_upstream": 0,
+   "no_site_rain": 0,
+   "rain_window": 0,
+   "exposure_missing": 0
+  },
+  "rain_cache": "<scratch>/cache (clones of the ERA5-Land cell files, 2012-22)",
+  "rows_by_winter": {
+   "2012": 406,
+   "2014": 864,
+   "2016": 766,
+   "2018": 249,
+   "2020": 204,
+   "2022": 265
+  }
+ },
+ "no_overflow": {
+  "rows": 1142,
+  "unparsed_results": 0,
+  "same_point_and_time": {
+   "groups_equal": 0,
+   "groups_unequal": 0,
+   "rows_dropped": 0
+  },
+  "times_not_placeable": 0,
+  "samples_in": 1142,
+  "rows_out": 1122,
+  "sites_out": 12,
+  "drops": {
+   "no_site_rain": 0,
+   "rain_window": 20
+  },
+  "rain_cache": "<scratch>/cache (clones of the ERA5-Land cell files, 2012-22)",
+  "rows_by_winter": {
+   "2012": 157,
+   "2014": 362,
+   "2016": 362,
+   "2018": 82,
+   "2020": 65,
+   "2022": 94
+  }
+ },
+ "left_out_before_first_day_all_points": 183
+}

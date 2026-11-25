@@ -66,8 +66,8 @@ test('the line on what the forecast could read: live readings, days with no fore
     now: {label: 'low', discharging_upstream: 0, monitored_upstream: 10},
     classification: {class: 'poor', year: 2025, url: 'https://environment.data.gov.uk/bwq/profiles/profile.html?site=ukg2200-36060'}});
   assert.equal(text(vm.runInContext('coverLine', ctx)(ludlow)), 'Overflows in Wales not counted '
-    + "(12% of the river above). Today's EA advice not checked: open it before you swim.");
-  assert.match(vm.runInContext('coverLine', ctx)(ludlow), /<a href="#ea-today">open it<\/a>/);
+    + "(12% of the river above). Today's official advice was not checked. Check Environment Agency advice .");   // text() spaces the link's end
+  assert.match(vm.runInContext('coverLine', ctx)(ludlow), /<a href="#ea-today">Check Environment Agency advice<\/a>/);
   // Nothing to say, no line: a plain level with nothing upstream, not a bathing water.
   assert.equal(vm.runInContext('coverLine', ctx)(spot(['low', 'low', 'low', 'low', 'low'], {upstream_summary: {overflows: 0}})), '');
   for (const s of [lb, ludlow]) assert.doesNotMatch(vm.runInContext('coverLine', ctx)(s), /\blow\b/i);
@@ -76,11 +76,16 @@ test('the line on what the forecast could read: live readings, days with no fore
 test('the answer is one block, the five days straight under it, and what to do and what it counts under them', () => {
   const s = spot(['low', 'moderate', 'moderate', 'moderate', 'high'], {now: {label: 'low', risk: 0.03, discharging_upstream: 2, monitored_upstream: 44}});
   const h = spots.prerender({generated_at: GEN, spots: [s]}, 'https://example.org/swim/').a;
-  // The answer: name, level, why and when, where the week goes, what was read, the issue time, then the place
-  // (kind, under the issue time since 29 Oct 2026); nothing else.
+  // The answer: name, level, the level's day and the issue time, then what to do in its card (option A, 18 Nov 2026:
+  // moderate tomorrow here), why and when in it, then the place (kind); nothing else.
   const answer = h.slice(h.indexOf('<section class="answer"'), h.indexOf('</section>', h.indexOf('<section class="answer"')));
   assert.deepEqual([...answer.matchAll(/<(?:h1|h2|p) class="([\w-]+)/g)].map(m => m[1]),
-    ['spot-name', 'big', 'why', 'next', 'issued', 'kind']);   // the live status's counts are under the five days (31 Oct 2026)
+    ['spot-name', 'big', 'issued', 'act-do', 'act-why', 'kind']);   // the live status's counts are under the five days (31 Oct 2026)
+  // A low level has no card: why and when, then the issue time, as before.
+  const low = spots.prerender({generated_at: GEN, spots: [spot(['low', 'low', 'low', 'low', 'low'])]}, 'https://example.org/swim/').a;
+  const lowAnswer = low.slice(low.indexOf('<section class="answer"'), low.indexOf('</section>', low.indexOf('<section class="answer"')));
+  assert.doesNotMatch(lowAnswer, /act-card/);
+  assert.match(low, /<div class="after" id="answer-after"><p class="act">Usual care: /);
   assert.ok(h.indexOf('class="live-row"') > h.indexOf('id="day-strip"'));
   // Then the five days' tile, first in the stack: its sentence, the rows, what to do, what the level counts.
   assert.ok(h.indexOf('</section><div class="stack"><section class="tile" aria-labelledby="days-h">') > 0);
@@ -88,7 +93,9 @@ test('the answer is one block, the five days straight under it, and what to do a
   const at = k => tile.indexOf(k);
   assert.ok(at('class="t-sent"') < at('id="day-strip"') && at('id="day-strip"') < at('id="answer-after"')
     && at('id="answer-after"') < at('id="day-view"') && at('id="day-view"') < at('class="check"'));
-  assert.match(tile, /<div class="after" id="answer-after"><p class="act">Take more care: [^<]+<\/p><p class="scope">This forecast counts sewage from the monitored storm overflows upstream/);
+  // What to do is in the card over the five days, so under them only what the level counts (said once).
+  assert.match(answer, /<p class="act-do"><strong>Take more care: young children, older people and anyone with a weakened immune system may want a lower day or spot\.<\/strong><\/p>/);
+  assert.match(tile, /<div class="after" id="answer-after"><p class="scope">This forecast counts sewage from the monitored storm overflows upstream/);
   // A picked day fills both again.
-  assert.match(PAGE, /getElementById\('answer-words'\)\.innerHTML = answerWords\(d, DAY\);\n\s+const after = document\.getElementById\('answer-after'\); if \(after\) after\.innerHTML = answerAfter\(d, DAY\);/);
+  assert.match(PAGE, /getElementById\('answer-words'\)\.innerHTML = answerWords\(d, DAY\); actPlan\(d\);[^\n]*\n\s+const after = document\.getElementById\('answer-after'\); if \(after\) after\.innerHTML = answerAfter\(d, DAY\);/);
 });
