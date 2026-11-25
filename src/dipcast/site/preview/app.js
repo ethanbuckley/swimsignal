@@ -1239,7 +1239,10 @@ app.addEventListener('click', e => {
   // Only these pages' own addresses are drawn here (the opening and its views, and a place); a link to the live
   // site, or out, is left to the browser.
   const rel = a && !a.target && a.origin === location.origin && a.pathname.startsWith(BASE) ? a.pathname.slice(BASE.length) : null;
-  if (rel === null || !(rel === '' || /^spot\/[A-Za-z0-9_-]+\/$/.test(rel))) return;
+  // plan/ and saved/ are these pages' own too, where they are the site's: the live scripts link to Saved by that
+  // address (host.js, savedPath), and two of them (journal.js, outing.js) stop the browser following their link
+  // because their own page opens Saved itself. Here this handler is what opens it, so it must take the address.
+  if (rel === null || !(rel === '' || /^(spot\/[A-Za-z0-9_-]+|plan|saved)\/$/.test(rel))) return;
   if (a.getAttribute('href').startsWith('#')) return;
   if (a.dataset.day) { e.preventDefault(); setDay(a.dataset.day); return; }
   if (a.dataset.planNew !== undefined) planNew = true;   // "Plan a swim here": started here, not opened from a link

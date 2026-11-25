@@ -356,6 +356,24 @@ test('the opening keeps one line of the earlier count: how many places are at lo
   assert.match(JS, /\$\{dayTabsHtml\(tabs, day, 'Day shown', d => link\(\{ q: route\.q, area: route\.area, day: d \}\)\)\}\n      \$\{tallyHtml\(day\)\}/, 'under the days');
 });
 
+test('a live script\'s link to Saved or to a place still opens it, though the script stops the browser following it', () => {
+  // journal.js and outing.js call preventDefault on their own links once the page gives them openSaved and select,
+  // because on the live page those open the view. Here the two names do nothing and the page's own click handler
+  // opens the address, so it has to take every address those links have: a place, and saved/ where these pages are
+  // the site's (host.js, savedPath). Before 25 November 2026 it took only a place, and "Your journal" did nothing.
+  const J = fs.readFileSync(path.join(SITE, 'journal.js'), 'utf8'), O = fs.readFileSync(path.join(SITE, 'outing.js'), 'utf8');
+  assert.match(J, /typeof openSaved !== 'function' \|\| \(typeof plainClick === 'function' && !plainClick\(e\)\)\) return;\n    e\.preventDefault\(\); openSaved\(\);/);
+  assert.match(O, /e\.preventDefault\(\); openSaved\(\);/);
+  assert.match(JS, /select: \(\) => \{\}, openSaved: \(\) => \{\},/);
+  assert.match(HOST, /const savedPath = /);
+  const m = JS.match(/if \(rel === null \|\| !\(rel === '' \|\| (\/.+?\/)\.test\(rel\)\)\) return;/);
+  assert.ok(m, 'the handler names the addresses it opens');
+  const takes = new RegExp(m[1].slice(1, -1));
+  for (const rel of ['saved/', 'plan/', 'spot/wharfe-linton-falls/']) assert.ok(takes.test(rel), rel);
+  for (const rel of ['classic/', 'methods.html', 'saved/x/', 'spot/', 'data/spots.json']) assert.ok(!takes.test(rel), `${rel} is left to the browser`);
+  assert.doesNotMatch(JS.slice(JS.indexOf("app.addEventListener('click'"), JS.indexOf("app.addEventListener('click'") + 400), /defaultPrevented/, 'a prevented click is still opened by the page');
+});
+
 test('an outing on Plan is the live site\'s own script, kept as the plan is, and one from a link is shown before it is kept', () => {
   const OUT = require(path.join(SITE, 'outing.js')), WATCH = require(path.join(SITE, 'outingwatch.js')), DATESJS = require(path.join(SITE, 'spotdate.js'));
   // The script draws and binds its own tile; the page gives it a place at the top of the plan's results, and the plan's places.
