@@ -33,7 +33,7 @@ body.lab { background: var(--paper) var(--grain); }
 .labnav { background: var(--deep-2); border-bottom: 1px solid rgba(0, 0, 0, .5); }
 .labnav .wrap { display: flex; align-items: stretch; gap: 4px; overflow-x: auto; scrollbar-width: none; }
 .labnav .wrap::-webkit-scrollbar { display: none; }
-.labnav a { flex: none; display: inline-flex; align-items: center; gap: 7px; min-height: 44px; padding: 0 10px; color: var(--deep-muted); text-decoration: none; font-size: var(--fs-note); font-weight: 600; white-space: nowrap; }
+.labnav a { flex: none; display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 8px;   /* 8 px: seven exhibits fit at 1,440 px (25 Nov 2026) */ color: var(--deep-muted); text-decoration: none; font-size: var(--fs-note); font-weight: 600; white-space: nowrap; }
 .labnav a:first-child { padding-left: 0; font: 600 var(--fs-body)/1 var(--font-display); color: var(--deep-ink); margin-right: 8px; }
 .labnav a .n { font: 600 12px/1 var(--font-mono); color: var(--deep-muted); }
 .labnav a:hover { color: #fbf7ec; }

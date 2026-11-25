@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Research Lab exhibit 7, a river's bad days: the two frozen-model backtests at river points no model here had seen
+     (RIVER-UNSEEN, docs/RIVER-UNSEEN-PROTOCOL-2026-11.md; RIVER-WINTER, docs/RIVER-WINTER-READ-2026-11.md). Every figure
+     is read from reads.json, which scripts/lab_river_reads.py makes from the two committed results (`check` compares
+     them). Built into the site at lab/ by scripts/build_site.py write_lab. -->
+<title>A river's bad days · SwimSignal Research Lab</title>
+<meta name="description" content="At river points no model had seen, SwimSignal's E. coli estimate put the bad days in order in summer and winter, and rain in the 48 hours before did nearly as well. Its chance of a result over 900 was too low. Two tests, each read once.">
+<link rel="stylesheet" href="../../../src/dipcast/pages/page.css">
+<link rel="stylesheet" href="../lab.css?v=12">
+<link rel="stylesheet" href="rivers.css?v=1">
+</head>
+<body class="lab">
+<!-- A stand-in for a repository preview: the site build puts the site's own header here (build_site.site_header). -->
+<header class="top"><a class="brand" href="https://swimsignal.co.uk/">SwimSignal</a></header>
+<nav class="labnav" aria-label="Research Lab"><div class="wrap">
+  <a href="../">Research Lab</a>
+  <a href="../lake-from-space/"><span class="n">1</span>Lake from space</a>
+  <a href="../pollution/"><span class="n">2</span>Where pollution goes</a>
+  <a href="../forecasts/"><span class="n">3</span>Forecast record</a>
+  <a href="../workspace/"><span class="n">4</span>Catchment workspace</a>
+  <a href="../sampling/"><span class="n">5</span>Sampling gaps</a>
+  <a href="../overflow-ledger/"><span class="n">6</span>Overflow ledger</a>
+  <a href="../rivers/" aria-current="page"><span class="n">7</span>River tests</a>
+</div></nav>
+
+<div class="front"><div class="wrap">
+  <div>
+    <h1>A river's bad days</h1>
+    <p class="q">At rivers no model here had seen, did SwimSignal's estimate put the bad days in order, and did it know more than the rain?</p>
+    <div class="answer" id="front-answer">Loading the two tests…</div>
+    <p class="status" id="scope"><b>Tested, at monitoring points, not swim spots.</b> Two frozen-model backtests: each statement was written down before any result was joined, and each was read once. On the day itself, with rain as it fell. It changes nothing in the forecast.</p>
+    <p class="status" data-asof="river-reads" data-base="../"></p>
+  </div>
+  <figure class="overview">
+    <div class="drawn-map dark" id="overview"></div>
+    <figcaption id="overview-cap"></figcaption>
+  </figure>
+</div></div>
+
+<main>
+  <section class="sec" id="s-read"><div class="wrap">
+    <div class="sec-head"><span class="no">1</span><h2>How to read it</h2><span class="aside">read this first</span></div>
+    <div class="rv-read">
+      <p><b>Putting days in order.</b> At each point, the Environment Agency took E. coli samples on many days. A figure
+        "puts the days in order" if its higher values fall on the days with higher counts. The tests measured this with a
+        correlation inside each point, averaged over the points: 1 is perfect order, 0 is no better than chance. The bar,
+        set before either test, was 0.15.</p>
+      <p><b>Three figures were compared.</b> SwimSignal's E. coli estimate, from the model file the site used before soil moisture was added in season. Rain in the 48 hours before
+        the sample, alone. And the overflow figure alone: the spill chances of the overflows upstream, weighted by the
+        model's distance and dilution. In a test on past days, those spill chances come from the same rain, so the three
+        are close to one signal.</p>
+      <p><b>What "over 900" means.</b> 900 E. coli per 100 ml is the line for an inland bathing water to be rated
+        "sufficient". It is a line, not a safety boundary. These points are not bathing waters, and about half their results
+        were over it.</p>
+      <p><b>Not swim spots.</b> The points are the Environment Agency's river monitoring points, chosen for its own work,
+        many of them in planned investigations. No model here had seen their results before each test.</p>
+    </div>
+  </div></section>
+
+  <section class="sec" id="s-order"><div class="wrap">
+    <div class="sec-head"><span class="no">2</span><h2>The order: estimate, rain and overflows</h2><span class="aside">within-point correlation, higher is better</span></div>
+    <div class="notes" id="order"></div>
+  </div></section>
+
+  <section class="sec" id="s-level"><div class="wrap">
+    <div class="sec-head"><span class="no">3</span><h2>The level: too low</h2><span class="aside">the estimate's chance against what was found</span></div>
+    <div class="notes" id="level"></div>
+  </div></section>
+
+  <section class="sec" id="s-none"><div class="wrap">
+    <div class="sec-head"><span class="no">4</span><h2>Rivers with no overflow upstream</h2><span class="aside">winter</span></div>
+    <div class="notes" id="none"></div>
+  </div></section>
+
+  <section class="sec" id="s-where"><div class="wrap">
+    <div class="sec-head"><span class="no">5</span><h2>Where it held more and less</h2><span class="aside">reported beside each test, deciding nothing</span></div>
+    <div class="rv-tables" id="where"></div>
+  </div></section>
+
+  <section class="sec" id="s-site"><div class="wrap">
+    <div class="sec-head"><span class="no">6</span><h2>What it changed on the site</h2></div>
+    <div class="rv-read one">
+      <p>Only the order passed, so only the order is shown. A river spot's page gives one sentence: whether today's estimate is
+        higher or lower than usual for that place. It changes no level. In season it sits beside the
+        percentage (decided 17 November 2026, shown from May 2027). From October to April, when the percentage stays hidden, it is
+        shown alone, switched on 25 November 2026 after the winter test. <a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/RIVER-ORDER-LINE-PROPOSAL-2026-11.md">The summer proposal</a>,
+        <a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/RIVER-WINTER-LINE-2026-11.md">the winter line</a>.</p>
+      <p>The level a spot shows still comes from the spill forecast. Neither test supports a count or a range for a river, and neither
+        shows that the estimate knows more than the rain.</p>
+    </div>
+  </div></section>
+
+  <section class="sec" id="s-not"><div class="wrap">
+    <div class="sec-head"><span class="no">7</span><h2>What it cannot tell you</h2></div>
+    <ul class="lim" id="not">
+      <li><b>Nothing about a swim spot directly.</b> The points are monitoring points. Most are in the South West, and none is a bathing water.</li>
+      <li><b>Nothing about days ahead.</b> Both tests used rain as it fell, on the day of the sample. The site's forecast for later days rests on forecast rain, which was not tested here.</li>
+      <li><b>Nothing about live spill reports.</b> On the day, the forecast can use an overflow's live status. A test on past days cannot, so whether that adds to rain is not known.</li>
+      <li><b>Not "safe".</b> A day in the lower part of a place's order can still be over 900. About half of all results here were.</li>
+      <li><b>Not the in-season model with soil moisture.</b> Both tests scored the file without it. In season the site uses the version with soil moisture, for rivers (PR #361); whether it keeps the order is not tested here.</li>
+      <li><b>Nothing about lakes or the sea.</b> Both tests were at rivers only.</li>
+      <li><b>Official advice comes first.</b> Environment Agency notices and signs at the water are on each spot page of the live site.</li>
+    </ul>
+  </div></section>
+
+  <section class="sec" id="s-next"><div class="wrap">
+    <div class="sec-head"><span class="no">8</span><h2>Questions worth asking next</h2><span class="aside">proposed, not started</span></div>
+    <ol class="qs">
+      <li><div><h3>Does the order hold at swim spots that are not bathing waters?</h3>
+        <p class="k">Useful if: samples at such spots, taken on days fixed in advance, with a local group. Unconvincing if: another reading of these monitoring points.</p></div></li>
+      <li><div><h3>Is rain alone enough at a river with no overflow upstream?</h3>
+        <p class="k">Useful if: a rain-only line, written down first and scored once on the odd winters, which are sealed for one test. Unconvincing if: a rule tuned on the even winters shown here.</p></div></li>
+      <li><div><h3>Does a forecast made days ahead keep the order?</h3>
+        <p class="k">Useful if: forecast rain as it was issued, archived by run, scored on new samples. Unconvincing if: rain as it fell, relabelled as a forecast.</p></div></li>
+    </ol>
+  </div></section>
+
+  <section class="sec"><div class="wrap">
+    <nav class="pager" aria-label="Exhibits">
+      <a class="prev" href="../overflow-ledger/"><small>&larr; Exhibit 6</small><b>Overflow ledger</b></a>
+      <a class="next" href="../"><small>All seven exhibits &rarr;</small><b>Research Lab</b></a>
+    </nav>
+    <p class="back"><a href="https://swimsignal.co.uk/">Back to the forecasts</a> · <a href="https://swimsignal.co.uk/spots.html">Every spot</a> · <a href="https://swimsignal.co.uk/research.html">Research &amp; data</a></p>
+  </div></section>
+</main>
+
+<footer class="foot"><div class="wrap">
+  <p id="attrib"></p>
+  <p>Method: <a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/RIVER-UNSEEN-PROTOCOL-2026-11.md">the summer test</a>,
+     <a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/RIVER-WINTER-READ-2026-11.md">the winter test</a>,
+     <a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/RESEARCH-RECOVERY-2026-10.md">the research register</a>.
+     Data: <a href="reads.json">reads.json</a>, made by <code>scripts/lab_river_reads.py</code> from the two committed results.</p>
+  <p>It changes nothing in the forecast. Each spot's own page gives the forecast and official advice.</p>
+  <p class="site-links"><a href="https://swimsignal.co.uk/about.html">About SwimSignal</a> · <a href="https://swimsignal.co.uk/verification.html">How accurate is it?</a> · <a href="https://swimsignal.co.uk/methods.html">Method</a> · <a href="https://swimsignal.co.uk/spots.html">Every spot</a> · <a href="https://swimsignal.co.uk/research.html">Research and data</a> · <a href="https://swimsignal.co.uk/coverage.html">Coasts, Wales, Scotland, Ireland and algae</a> · <a href="https://swimsignal.co.uk/clubs.html">For organisations</a> · <a href="https://swimsignal.co.uk/feedback.html">Feedback</a> · <a href="https://swimsignal.co.uk/feedback.html?type=spot">Request a spot</a> · <a href="https://swimsignal.co.uk/terms.html">Terms of use</a> · <a href="https://swimsignal.co.uk/privacy.html">Privacy</a> · <a href="https://swimsignal.co.uk/terms.html#data">Data credits</a> · <a href="https://github.com/ethanbuckley/swimsignal">Source code</a> (MIT)</p>
+</div></footer>
+<script src="../lab.js?v=6"></script>
+<script src="rivers.js?v=2"></script>
+</body>
+</html>

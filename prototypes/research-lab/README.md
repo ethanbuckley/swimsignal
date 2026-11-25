@@ -12,6 +12,7 @@ research files it reads. Run from the repository root, as below, the exhibits re
 | 4. Catchment workspace | `workspace/` | live, exploratory | `docs/CATCHMENT-WORKSPACE-2026-11.md` |
 | 5. Sampling gaps | `sampling/` | exploratory planning aid | `docs/SAMPLING-GAPS-EXHIBIT-2026-11.md` |
 | 6. The overflow ledger | `overflow-ledger/` | live from 25 Nov 2026, model accounting, no test | `docs/OVERFLOW-LEDGER-2026-11.md` |
+| 7. A river's bad days | `rivers/` | live from 25 Nov 2026, two frozen-model backtests, each read once | `docs/RIVER-UNSEEN-PROTOCOL-2026-11.md`, `docs/RIVER-WINTER-READ-2026-11.md` |
 
 Exhibit 6 keeps Ethan's decisions of 19 Nov 2026: no national list of overflows (they are named one catchment at a
 time, as exhibit 2 and each spot page name them), no table by company, and no season figure (stage 2's reproduction
@@ -34,7 +35,7 @@ Prototypes the site build leaves out (`build_site.LAB_UNPUBLISHED`), linked from
 
 2. Open http://localhost:8823/prototypes/research-lab/
 
-It worked if the front page lists six exhibits and each one opens with its answer and "The figures behind it".
+It worked if the front page lists seven exhibits and each one opens with its answer and "The figures behind it".
 "This exhibit's data could not be loaded" means the server was started in the wrong folder. From the repository the
 header is a stand-in with the name only; the site build puts the site's own header and phone bar there. A page showing the main
 SwimSignal app means another server or an old service worker holds that port: pick another.
@@ -61,11 +62,15 @@ SwimSignal app means another server or an old service worker holds that port: pi
 - `lab.css`: the Lab's editorial variant over `page.css`: the warmer paper, the deep frontispiece, plates and captions.
 - `sampling/gaps.json`: every spot's place and samples, the calendar and the fixed-day rain shares, from
   `scripts/lab_sampling_gaps.py` (committed files only; `check` matches it to the planner's file, which exhibit 5 also reads).
-- `assets/covers/`: the six exhibits' covers as 320 px pictures, for the Research page, Accuracy, the home page and a
+- `assets/covers/`: the seven exhibits' covers as 320 px pictures, for the Research page, Accuracy, the home page and a
   spot's "Explore the evidence". Taken on 1 Nov 2026 from this front page's own drawn covers (headless Chrome, the big
-  numbers and corner ticks hidden); exhibit 6's on 25 Nov 2026 the same way. Retake them if an exhibit's cover changes.
+  numbers and corner ticks hidden); exhibits 6 and 7 on 25 Nov 2026 the same way. Retake them if an exhibit's cover changes.
 - `../../data/research/overflow_ledger.v1.json` (exhibit 6 and its cover on this front page): ledger v1 as committed,
   from `scripts/export_overflow_ledger.py`. The build copies it to `lab/data/`.
+- `rivers/reads.json` (exhibit 7): the two river read results as committed (`docs/river-unseen/result.json`,
+  `docs/river-winter/result.json`) and the summer read's 59 points, from `scripts/lab_river_reads.py` (committed files
+  only; `check` compares the file with the results, and a test runs it). Figures the winter result reports on summer
+  rows already read are labelled development on the page.
 - Links in: `#lake=`, `#spot=`, `#bw=` and `#c=…&spot=` open an exhibit on a place; a place an exhibit lacks is said in a
   status line, never swapped quietly. Each exhibit links back to "Today's forecast for" the place it shows.
 - Each exhibit: a question and a plain answer with figures; numbered sections; real data only, missing data drawn as
