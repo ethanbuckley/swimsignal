@@ -115,3 +115,25 @@ part of the pass rule to hold 8 times in 10. The likely result is "inconclusive"
 | Next deliverable | A season figure: expected high-level spot-days per overflow for May to September 2025, from the production model on cached archive rain, by CATCH-SIM's removal rule at every spot. Protocol first, with the rain cache's coverage counted in it. Then the Ilkley audit, after option B's read |
 | Milestone | Season figure protocol by 15 December 2026. Ilkley audit on or after 2 December 2026, in RESTORE's record due 31 January 2027 |
 | Release route | Ethan decides public or Lab-only and naming. Rollback: delete the folder, the file and the build's ignore entry |
+
+## Published as Research Lab exhibit 6 (25 November 2026)
+
+Ethan asked on 25 November 2026 for the Lab's half-done work to be finished, naming this prototype ("The overflow
+ledger has a prototype that is not in the build"). That reverses his 19 November decision that the ledger stays an
+unpublished prototype. His other decisions of 19 November hold, so the published page differs from the prototype:
+
+- **No national list of overflows.** The national table is by spot: overflows traced, summed weight, largest weight,
+  the largest one's share and how many overflows carry half. Overflows are named only in one catchment's grid, as
+  exhibit 2 and each spot page name them one place at a time. The opening map draws every traced overflow as an
+  unnamed dot.
+- **No table by company,** and no company filter.
+- **No season figure.** Section 5 says a season count was made and why it is not shown (check 4 failed as stated;
+  the per-overflow figure moved between seasons), with a link to its record. The season file is not copied to the
+  site.
+- The weighted-spills year figure is left off the page. It is in the published file and its contract.
+
+The research file is copied to `lab/data/` as it is (`build_site.LAB_DATA`). It holds every overflow's name and the
+by-company roll-up, as exhibit 2's per-spot files already hold the same rows spot by spot. Whether a published file may
+hold the by-company roll-up is a question for Ethan; a trimmed public copy is the alternative.
+
+Nothing in the ledger, its contract or its claim changed. Stage unchanged: model accounting, no test.

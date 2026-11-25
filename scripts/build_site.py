@@ -4275,8 +4275,10 @@ def write_lakes(site: Path, token: str | None = None, root: str | None = None) -
 # dropped here, and lab_pages puts every page in the sitemap.
 LAB = ROOT / "prototypes" / "research-lab"
 LAB_DATA = ("ecoli_evidence.v1.json", "lake_observations.v1.json", "lake_imagery.v1.json",
-            "satellite/pilot_runs.json", "research_catalogue.v1.json", "sampling_planner.v1.json", "lake-img")
+            "satellite/pilot_runs.json", "research_catalogue.v1.json", "sampling_planner.v1.json", "lake-img",
+            "overflow_ledger.v1.json")   # exhibit 6 (25 Nov 2026); the season file (stage 2) stays out: no page shows it
 LAB_REWRITES = (("../../../data/research/", "../data/"),            # an exhibit's reads, one folder down
+                ("../../data/research/", "data/"),                   # the front page's (exhibit 6's cover)
                 ("../../../src/dipcast/pages/page.css", "../../page.css"),   # an exhibit's link to the site's stylesheet
                 ("../../src/dipcast/pages/page.css", "../page.css"))         # the front page's
 LAB_HEADER = re.compile(r'<header class="top">.*?</header>', re.S)
@@ -4289,7 +4291,7 @@ def lab_pages(lab: Path = LAB) -> list[str]:
     return ["lab/"] + sorted(f"lab/{d.name}/" for d in lab.iterdir() if (d / "index.html").is_file() and d.name not in LAB_UNPUBLISHED)
 
 
-LAB_UNPUBLISHED = ("whatif", "overflow-ledger")   # Lab folders the build leaves out: prototypes not to be published, or listed in the sitemap
+LAB_UNPUBLISHED = ("whatif",)   # Lab folders the build leaves out: prototypes not to be published, or listed in the sitemap
 
 
 def write_lab(site: Path, token: str | None = None, lab: Path = LAB, research: Path = ROOT / "data" / "research") -> int:
@@ -4301,8 +4303,8 @@ def write_lab(site: Path, token: str | None = None, lab: Path = LAB, research: P
         return 0
     # whatif/: the catchment workspace's what-if mode (CATCH-SIM, docs/CATCH-SIM-2026-12.md), a prototype kept off the site
     # until Ethan decides whether a scenario view is shown at all.
-    # overflow-ledger/: the overflow ledger (LEDGER stage 1, docs/OVERFLOW-LEDGER-2026-11.md), kept off the site until Ethan decides
-    # whether it is published and whether it names overflows nationally.
+    # overflow-ledger/ (exhibit 6, LEDGER stage 1, docs/OVERFLOW-LEDGER-2026-11.md) is published from 25 Nov 2026 on Ethan's
+    # request, without a national list of overflows or a table by company (his decisions of 19 Nov 2026).
     shutil.copytree(lab, out, ignore=shutil.ignore_patterns("shots", "*.md", *LAB_UNPUBLISHED))
     for name in LAB_DATA:
         src, dst = research / name, out / "data" / name
@@ -4410,6 +4412,10 @@ def write_lab_refresh(site: Path, paths_from_build: bool = False) -> dict:
         "sampling": {"label": "Lab samples and sampling gaps", "short": "sampling export", "as_of": _lab_date(out / "sampling" / "gaps.json", "made"),
                      "outcomes_to": _lab_date(out / "sampling" / "gaps.json", "outcomes_to"),
                      "refresh": "by hand, after each bathing season", "stale_days": None},
+        # exhibit 6: exhibit 2's weights added up by hand on one day (scripts/export_overflow_ledger.py); the forecast remakes
+        # its own trace at every build, so the ledger drifts from it and is called old after 90 days, as the workspace is
+        "ledger": {"label": "Overflow ledger weights", "short": "ledger", "as_of": _lab_date(out / "data" / "overflow_ledger.v1.json", "generated_at"),
+                   "refresh": "by hand, from exhibit 2's export", "stale_days": 90},
         "catalogue": {"label": "Research records", "short": "records", "as_of": _lab_date(out / "data" / "research_catalogue.v1.json", "written"),
                       "refresh": "with each research record", "stale_days": None},
     }

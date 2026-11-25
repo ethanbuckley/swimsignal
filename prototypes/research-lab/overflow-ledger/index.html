@@ -3,17 +3,19 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="robots" content="noindex">
-<!-- The overflow ledger (LEDGER stage 1, docs/OVERFLOW-LEDGER-CONTRACT-v1.md). A Lab prototype: build_site.write_lab
-     leaves this folder out of the site, and no page links here. Whether it is published, and whether it names
-     overflows nationally, is Ethan's decision. -->
+<!-- Research Lab exhibit 6, the overflow ledger (LEDGER stage 1, docs/OVERFLOW-LEDGER-CONTRACT-v1.md). Built into the site at
+     lab/ by scripts/build_site.py write_lab, which points the data read at lab/data/; served from the repository root, it
+     reads data/research/ as committed. Ethan's decisions of 19 Nov 2026 hold on this page: no national list of overflows
+     (they are named one catchment at a time, as each spot's page and exhibit 2 name them), no table by company, and no
+     season figure (its reproduction check failed as stated). -->
 <title>Overflow ledger · SwimSignal Research Lab</title>
-<meta name="description" content="What each monitored storm overflow contributes to SwimSignal's modelled exposure at listed swim spots. An account of the model, not of measured bacteria.">
+<meta name="description" content="How many monitored storm overflows SwimSignal's forecast model counts at each listed swim spot, and how much of a spot's weight rests on one of them. An account of the model, not of measured bacteria.">
 <link rel="stylesheet" href="../../../src/dipcast/pages/page.css">
 <link rel="stylesheet" href="../lab.css?v=11">
-<link rel="stylesheet" href="ledger.css?v=1">
+<link rel="stylesheet" href="ledger.css?v=2">
 </head>
 <body class="lab">
+<!-- A stand-in for a repository preview: the site build puts the site's own header here (build_site.site_header). -->
 <header class="top"><a class="brand" href="https://swimsignal.co.uk/">SwimSignal</a></header>
 <nav class="labnav" aria-label="Research Lab"><div class="wrap">
   <a href="../">Research Lab</a>
@@ -22,18 +24,21 @@
   <a href="../forecasts/"><span class="n">3</span>Forecast record</a>
   <a href="../workspace/"><span class="n">4</span>Catchment workspace</a>
   <a href="../sampling/"><span class="n">5</span>Sampling gaps</a>
+  <a href="../overflow-ledger/" aria-current="page"><span class="n">6</span>Overflow ledger</a>
 </div></nav>
 
 <div class="front"><div class="wrap">
   <div>
     <h1>The overflow ledger</h1>
-    <p class="q">Which overflows does the forecast model count most, across every listed swim spot?</p>
-    <div class="answer" id="front-answer">Loading…</div>
-    <details id="front-figs" hidden><summary>The figures behind it</summary><div id="front-figs-body"></div></details>
-    <p class="status"><b>An account of the model, not of measured bacteria.</b>
-      Exploratory. A prototype. Not published.</p>
-    <p class="status" id="asof"></p>
+    <p class="q">How many sewage overflows does the forecast count at each swim spot, and does one of them carry most of the weight?</p>
+    <div class="answer" id="front-answer">Loading the ledger…</div>
+    <p class="status" id="scope"><b>An account of the model, not of measured bacteria.</b> Exploratory: no test was run, and it changes nothing in the forecast.</p>
+    <p class="status" data-asof="ledger" data-base="../"></p>
   </div>
+  <figure class="overview">
+    <div class="drawn-map dark" id="overview"></div>
+    <figcaption id="overview-cap"></figcaption>
+  </figure>
 </div></div>
 
 <main>
@@ -43,36 +48,32 @@
       <p><b>A weight is the model's factor, from 0 to 1.</b> For one overflow at one spot the forecast multiplies a survival
         factor (how long the model thinks the water takes to arrive) by a dilution factor. That product is the weight. It is
         not the share of a spill that arrives, and nobody measured it.</p>
-      <p><b>The ledger adds the weights up.</b> For each overflow: how many listed spots the model traces it to, its weights
-        added over those spots, and its largest weight at one spot. "Weighted spills a year" multiplies the summed weight by
-        the Environment Agency's long-term average spill count for the overflow.</p>
+      <p><b>The ledger adds the weights up.</b> For each spot: how many overflows the model traces to it, their weights added
+        (the summed weight), the largest single weight, and how much of the sum that largest one carries. The forecast uses the
+        same weights, overflow by overflow, when it turns spill chances into a spot's level.</p>
       <p id="evidence"><b>How far to trust the chain.</b> <span id="evidence-text"></span></p>
       <p><b>What no row says.</b> No row says an overflow caused a sample result, put any share of the bacteria at a spot, or
         broke a permit. The model holds no spill volume, and no treated sewage, farm or road runoff.</p>
     </div>
   </div></section>
 
-  <section class="sec" id="s-table"><div class="wrap">
-    <div class="sec-head"><span class="no">2</span><h2>Every overflow the model traces to a listed spot</h2><span class="aside" id="table-aside"></span></div>
+  <section class="sec" id="s-spots"><div class="wrap">
+    <div class="sec-head"><span class="no">2</span><h2>Spot by spot</h2><span class="aside" id="spots-aside"></span></div>
     <div class="lg-controls">
-      <div class="lg-field">
-        <label class="lbl" for="company">Company</label>
-        <select id="company"></select>
-      </div>
       <div class="lg-field">
         <span class="lbl" id="sort-lbl">Order by</span>
         <div class="seg" id="sort" role="group" aria-labelledby="sort-lbl"></div>
       </div>
     </div>
-    <div class="lg-table" id="table"></div>
+    <div class="lg-table" id="spots"></div>
     <p class="note"><button type="button" id="more" hidden></button></p>
+    <p class="note" id="untraced"></p>
   </div></section>
 
-  <section class="sec" id="s-company"><div class="wrap">
-    <div class="sec-head"><span class="no">3</span><h2>By company</h2><span class="aside">the same weights, added by company</span></div>
-    <div class="lg-table" id="companies"></div>
-    <p class="note">A company with more listed spots on its rivers has more rows here. The list of spots is SwimSignal's choice,
-      so these totals compare the model's accounting, not the companies.</p>
+  <section class="sec" id="s-shared"><div class="wrap">
+    <div class="sec-head"><span class="no">3</span><h2>Overflows shared between spots</h2><span class="aside">how many listed spots each one reaches</span></div>
+    <div class="lg-reach" id="reach"></div>
+    <p class="note" id="shared-note"></p>
   </div></section>
 
   <section class="sec" id="s-group"><div class="wrap">
@@ -83,18 +84,50 @@
         <select id="group"></select>
       </div>
     </div>
+    <p class="note" id="group-status" role="status"></p>
     <p class="note" id="group-note"></p>
     <div class="lg-table lg-grid" id="grid"></div>
     <div class="chart-note" id="grid-key"></div>
+    <p class="note">Overflows are named here one catchment at a time, as each spot's own page and exhibit 2 name them. This page gives no national list of overflows and no totals by company: which spots are listed is SwimSignal's choice, so such a list would compare the model's accounting, not the overflows or the companies.</p>
+    <p class="tolive" id="group-live"></p>
+  </div></section>
+
+  <section class="sec" id="s-season"><div class="wrap">
+    <div class="sec-head"><span class="no">5</span><h2>A season count, not shown here</h2><span class="aside">development, seen data</span></div>
+    <div class="lg-read one">
+      <p>A second calculation counted, for the 2024 and 2025 bathing seasons, the spot-days the model would have put at high level
+        with each overflow and below high without it, using the Environment Agency's recorded spill days where the record was usable. It was written
+        down before it was run, on 19 November 2026.</p>
+      <p>Its figures are not shown. Its check against an earlier rebuild missed the bar set before the run, by one rounded score
+        on one day. And the count for one overflow moved a lot from one season to the next, so a single season's figure would
+        mislead. <a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/OVERFLOW-LEDGER-SEASON-2026-11.md">The season record</a>
+        gives every figure and the diagnosis.</p>
+    </div>
   </div></section>
 
   <section class="sec" id="s-not"><div class="wrap">
-    <div class="sec-head"><span class="no">5</span><h2>What it cannot tell you</h2></div>
+    <div class="sec-head"><span class="no">6</span><h2>What it cannot tell you</h2></div>
     <ul class="lim" id="not"></ul>
   </div></section>
 
+  <section class="sec" id="s-next"><div class="wrap">
+    <div class="sec-head"><span class="no">7</span><h2>Questions worth asking next</h2><span class="aside">proposed, not started</span></div>
+    <ol class="qs">
+      <li><div><h3>Does the overflow chain add anything to rain at rivers?</h3>
+        <p class="k">Useful if: samples taken on days fixed before the forecast, at river spots that are not bathing waters, scored against the forecast and against rain alone. Unconvincing if: more model accounting, or samples already read.</p></div></li>
+      <li><div><h3>Did the Ilkley upgrade change the water at Cromwheel?</h3>
+        <p class="k">Useful if: the <a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/RESTORE-ILKLEY-STATEMENT-2026-11.md">audit statement</a> fixed before any 2026 sample was joined, read once. Its 17 samples make "inconclusive" the likely answer, and it says so. Unconvincing if: a before-and-after of samples with no expectation for rain and season.</p></div></li>
+      <li><div><h3>Which overflow carries a spot's high days in a season?</h3>
+        <p class="k">Useful if: a season count whose check passes and whose figures hold between seasons. Unconvincing if: one season's count per overflow, which moved too much between 2024 and 2025.</p></div></li>
+    </ol>
+  </div></section>
+
   <section class="sec"><div class="wrap">
-    <p class="back"><a href="../pollution/">Exhibit 2 shows these weights spot by spot</a></p>
+    <nav class="pager" aria-label="Exhibits">
+      <a class="prev" href="../sampling/"><small>&larr; Exhibit 5</small><b>Sampling gaps</b></a>
+      <a class="next" href="../"><small>All six exhibits &rarr;</small><b>Research Lab</b></a>
+    </nav>
+    <p class="back"><a href="https://swimsignal.co.uk/">Back to the forecasts</a> · <a href="../pollution/">Exhibit 2 shows these weights spot by spot, with the rivers</a> · <a href="https://swimsignal.co.uk/research.html">Research &amp; data</a></p>
   </div></section>
 </main>
 
@@ -104,9 +137,10 @@
      <a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/OVERFLOW-LEDGER-2026-11.md">its record</a>,
      <a href="https://github.com/ethanbuckley/swimsignal/blob/main/docs/RESEARCH-RECOVERY-2026-10.md">the research register</a>.
      Data: <a href="../../../data/research/overflow_ledger.v1.json">overflow_ledger.v1.json</a>, made by <code>scripts/export_overflow_ledger.py</code>.</p>
-  <p>It changes nothing in the forecast. Each spot's own page gives the forecast and official advice.</p>
+  <p>Exploratory work on data already read. It changes nothing in the forecast. Each spot's own page gives the forecast and official advice.</p>
   <p class="site-links"><a href="https://swimsignal.co.uk/about.html">About SwimSignal</a> · <a href="https://swimsignal.co.uk/verification.html">How accurate is it?</a> · <a href="https://swimsignal.co.uk/methods.html">Method</a> · <a href="https://swimsignal.co.uk/spots.html">Every spot</a> · <a href="https://swimsignal.co.uk/research.html">Research and data</a> · <a href="https://swimsignal.co.uk/coverage.html">Coasts, Wales, Scotland, Ireland and algae</a> · <a href="https://swimsignal.co.uk/clubs.html">For organisations</a> · <a href="https://swimsignal.co.uk/feedback.html">Feedback</a> · <a href="https://swimsignal.co.uk/feedback.html?type=spot">Request a spot</a> · <a href="https://swimsignal.co.uk/terms.html">Terms of use</a> · <a href="https://swimsignal.co.uk/privacy.html">Privacy</a> · <a href="https://swimsignal.co.uk/terms.html#data">Data credits</a> · <a href="https://github.com/ethanbuckley/swimsignal">Source code</a> (MIT)</p>
 </div></footer>
-<script src="ledger.js?v=1"></script>
+<script src="../lab.js?v=6"></script>
+<script src="ledger.js?v=2"></script>
 </body>
 </html>

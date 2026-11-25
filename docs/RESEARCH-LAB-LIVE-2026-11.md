@@ -130,3 +130,27 @@ No forecast, level, model, threshold or evaluation window changed.
 - **Percentages elsewhere on the site.** The site's own pages show the model weight as a percentage ("model weight
   98%"): the spot overflow list, the map tooltip, the organisers and record pages. The Lab now shows it as a 0-to-1
   factor. Making the site match is a wording decision for Ethan.
+
+## Exhibit 6, the overflow ledger (25 November 2026)
+
+Ethan asked to finish what was half done in the Lab, naming the overflow ledger's prototype. It is now exhibit 6 at
+`lab/overflow-ledger/`. The record of what the published page keeps from his 19 November decisions is in
+[OVERFLOW-LEDGER-2026-11.md](OVERFLOW-LEDGER-2026-11.md), "Published as Research Lab exhibit 6".
+
+- **Build.** `overflow-ledger` left `build_site.LAB_UNPUBLISHED`; `overflow_ledger.v1.json` joined `LAB_DATA`. The front
+  page's cover reads the same file, so `LAB_REWRITES` gained the front page's path. `refresh.json` has a `ledger`
+  part: dated from the file, refreshed by hand, called old after 90 days (the forecast remakes exhibit 2's weights at
+  every build, so the ledger drifts from them).
+- **Shell.** Every Lab bar lists six exhibits. Sampling gaps now leads to exhibit 6, which leads back to the overview.
+  The front page shows six cards in three columns, the sixth cover drawn from the ledger's own file (every traced
+  overflow as an unnamed dot), and `assets/covers/overflow-ledger.jpg` was taken from it for the Research page.
+- **Wording.** "An account of the model, not of measured bacteria" and "Exploratory: no test was run" in the opening;
+  the evidence line says the river test was of the production estimate, not of the ledger; spots with no traced
+  overflow are listed and never called clean; a link naming a spot the ledger lacks is said in a status line.
+- **What-if (CATCH-SIM) stays out.** Its checks passed, but a scenario view is a new kind of public page and its two
+  release decisions are Ethan's and not made. The README gives the reasons.
+- **Checks.** `tests/test_overflow_ledger.py` (the page keeps the 19 November decisions; the build publishes the page,
+  the frozen file and its date) and `tests/test_lab_build.py` (seven links in every bar, six covers, every read
+  resolves, the sitemap). Served from a scratch build at 1440 and 375 px in headless Chrome and the app's browser: no
+  console error, no failed request, no sideways page scroll on a phone.
+
