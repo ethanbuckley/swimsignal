@@ -280,6 +280,8 @@ button { font: inherit; color: inherit; }
 .theplace > .meta { margin-top: 16px; }
 
 .foot { margin-top: 40px; padding: 20px var(--gutter) 32px; border-top: 1px solid var(--line); font-size: var(--fs-meta); color: var(--muted); display: grid; gap: 8px; }
+/* The opening's one line of count, under its days (app.js, tallyHtml). */
+.tally { margin-top: 12px; font-size: var(--fs-note); color: var(--muted); }
 .foot summary { cursor: pointer; padding: 12px 0; }   /* a thumb's height, and the fold's own marker kept */
 /* What is kept in this browser, and the two things a visitor can turn off (app.js, yourDataHtml). The fold's name is a
    place the privacy notice sends people to; its two buttons are a thumb's height, as the fold's name is. */
