@@ -85,14 +85,15 @@ const seat = (m, slot) => { if (m.el.parentElement !== slot) slot.appendChild(m.
 // ------------------------------------------------------------------------------------------------ every place
 let HOME = null;
 // points: model.js mapPoints. picked: the place whose card is open. onPick(id or null). here: { lat, lon } or null.
-async function home(slot, points, picked, onPick, here) {
+// onWater(lat, lon, zoom): a tap that is on no listed place, which the page reads as a river or lake to forecast.
+async function home(slot, points, picked, onPick, here, onWater) {
   await load(); if (!slot.isConnected) return;
   if (!HOME) { HOME = make('Map of every listed place. The same places are in the list.', true); HOME.fitted = false;
     // A tap picks the nearest place within a finger's width, so a 16 px dot is not a 16 px target.
     HOME.map.on('click', e => { const at = HOME.map.latLngToContainerPoint(e.latlng); let best = null, d = 26;
       for (const p of HOME.points) { const q = HOME.map.latLngToContainerPoint([p.lat, p.lon]), r = Math.hypot(q.x - at.x, q.y - at.y); if (r < d) { d = r; best = p; } }
-      HOME.onPick(best ? best.id : null); }); }
-  HOME.points = points; HOME.onPick = onPick; seat(HOME, slot);
+      if (best || !HOME.onWater) HOME.onPick(best ? best.id : null); else HOME.onWater(e.latlng.lat, e.latlng.lng, HOME.map.getZoom()); }); }
+  HOME.points = points; HOME.onPick = onPick; HOME.onWater = onWater || null; seat(HOME, slot);
   HOME.layer.clearLayers();
   const draw = (p, on) => L.circleMarker([p.lat, p.lon], { radius: on ? 11 : 8, color: on ? RING : p.advised ? ADVICE : PAPER, weight: on || p.advised ? 3 : 2, fillColor: FILL[p.cls] || FILL['lv-none'], fillOpacity: 1 })
     .bindTooltip(tip(`${p.name}: ${p.words}`), { direction: 'top', offset: [0, -8] }).addTo(HOME.layer);
@@ -126,5 +127,5 @@ async function place(slot, s, points, lines) {
     const b = L.latLngBounds([[s.lat, s.lon], ...points.map(p => [p.lat, p.lon])]);
     if (points.length) PLACE.map.fitBounds(b, { padding: [28, 28], maxZoom: 14, animate: false }); else PLACE.map.setView([s.lat, s.lon], 12, { animate: false }); }
 }
-window.PVMap = { home, homeTo, place, load };
+window.PVMap = { home, homeTo, place, load, tiles };
 })();

@@ -35,6 +35,25 @@
 <script src="reviews.js"></script>
 <script src="visits.js"></script>
 <script src="illness.js"></script>
+<!-- The record at a place: how the forecast has done at the overflows upstream, and past spills by month. The live
+     site's own scripts again; each gives its part as markup, and the page puts it in (app.js, mountRecord). -->
+<script src="spotscores.js"></script>
+<script src="seasonal.js"></script>
+<!-- What the level rests on (each item's age and source, and the gaps), lab results an organisation sent, and the
+     evidence timeline, which reads its files when it is opened. measured.js and timeline.js use evidence.js's ages. -->
+<script src="evidence.js"></script>
+<script src="measured.js"></script>
+<script src="timeline.js"></script>
+<!-- On Saved: what changed since you last looked, and each place's low-risk days. The live site's own again. -->
+<script src="since.js"></script>
+<script src="findwindow.js"></script>
+<!-- The swim journal and the passport made from it: on this device only, and the live site's own. journal.js uses
+     reviews.js's photo shrinking, so it comes after it. -->
+<script src="journal.js"></script>
+<script src="passport.js"></script>
+<!-- A forecast for any point on the map that is not a listed place, worked out in the browser from data/anypoint/.
+     The live site's own arithmetic (AnyPoint.point); its own page wiring is for the live page and does not run here. -->
+<script src="anypoint.js"></script>
 <script src="preview/model.js"></script>
 <script src="preview/alerts.js"></script>
 <script src="preview/map.js"></script>

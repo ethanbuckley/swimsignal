@@ -37,7 +37,7 @@ test('the page is out of search engines, shares only the rules, and keeps the li
   assert.match(PAGE, /<meta name="robots" content="noindex, nofollow">/);
   assert.deepEqual([...PAGE.matchAll(/<script src="([^"]+)"/g)].map(m => m[1]),
     ['levels.js', 'eatoday.js', 'experience.js', 'lists.js', 'plan.js', 'preview/host.js', 'reviews.js', 'visits.js', 'illness.js',
-      'preview/model.js', 'preview/alerts.js', 'preview/map.js', 'preview/app.js']);
+      'spotscores.js', 'seasonal.js', 'evidence.js', 'measured.js', 'timeline.js', 'since.js', 'findwindow.js', 'journal.js', 'passport.js', 'anypoint.js', 'preview/model.js', 'preview/alerts.js', 'preview/map.js', 'preview/app.js']);
   // Every address is read against the site's root, as the live pages' are: the page says where that is, and where it is under it.
   assert.match(PAGE, /<html lang="en-GB" data-home="preview\/">/); assert.match(PAGE, /<base href="\.\.\/">\n<title>/);
   assert.ok(PAGE.indexOf('<base href="../">') < PAGE.indexOf('href="fonts/'), 'the <base> comes before the first relative address');
@@ -330,16 +330,78 @@ test('the build draws each page with the page\'s own script, as at the moment th
   assert.match(JS, /if \(!DATA \|\| e\.metaKey/);
 });
 
-test('as the site\'s own pages: the app is "the earlier version" at classic/, and two kinds of link are passed on to it', () => {
+test('as the site\'s own pages: the app is "the earlier version" at classic/, and a sent outing is passed on to it', () => {
   assert.match(JS, /const classic = \(path = ''\) => \(\(PREVIEW \? '' : 'classic\/'\) \+ path\) \|\| '\.\/';/);
   assert.match(JS, /const link = r => \{ const a = P\.queryFor\(r\); return a === '\.\/' \? HOME \|\| '\.\/' : HOME \+ a; \};/);
-  // A shared list and a sent outing are things only the app can show: passed on, but never for this page's own Plan.
-  assert.match(JS, /const shared = route\.view === 'saved' && readShared\(location\.hash, dates\(\)\), outing = route\.view === 'plan' && \/\[#&\]spot=\/\.test\(location\.hash\);/);
+  // A sent outing is a thing only the app can show: passed on, but never for this page's own Plan. A shared list is shown here.
+  assert.match(JS, /if \(!\(route\.view === 'plan' && \/\[#&\]spot=\/\.test\(location\.hash\)\)\) return false;\n  location\.replace\(classic\('plan\/'\) \+ location\.hash\); return true;/);
   assert.match(JS, /if \(PREVIEW \|\| !route \|\| !DATA\) return false;/);
+  assert.match(JS, /const sh = readShared\(location\.hash, dates\(\)\); if \(sh\) return sharedHtml\(sh\);/);
   assert.match(JS, /if \(opts\.first && passOn\(\)\) return;/);
   assert.equal(typeof LISTS.readShared, 'function');
   assert.ok(LISTS.readShared('#list=Weekend&spots=a,b', DAYS), 'a shared list is read from the address');
   assert.equal(LISTS.readShared('', DAYS), null);
+});
+
+test('as the site\'s own pages they carry the two things the privacy notice says a visitor can turn off, under its name for them', () => {
+  // The notice names the place: 'under "Saved spots, offline use and your data" at the bottom of the home page'.
+  const NOTICE = fs.readFileSync(path.join(SITE, '../pages/privacy.html'), 'utf8');
+  assert.match(NOTICE, /Saved spots, offline use and your data/);
+  assert.match(JS, /<details class="yourdata" id="your-data"\$\{dataOpen \? ' open' : ''\}><summary>Saved spots, offline use and your data<\/summary>/);
+  assert.match(JS, /\$\{yourDataHtml\(\)\}\n    <details><summary>Data sources and licences<\/summary>/, 'on every page\'s foot');
+  assert.match(JS, /if \(PREVIEW\) return '';   \/\/ beside a preview the home page is the app's, which has it/);
+  // The live page's words, each of them: the labels and what is said after a press.
+  for (const said of ['Turn the offline copy back on', 'Turn off the offline copy', 'Count my visits again', "Don't count my visits",
+    'Page views are counted, without cookies.', 'Your browser asks sites not to track it, so your visits are not counted.',
+    'This browser is not keeping site data, so this lasts only until you close the page.', 'The offline copy is on again.',
+    'The offline copy is off, and deleted from this device.', ' Alerts are off too: they need it.',
+    'This browser is not keeping site data, so it cannot keep this choice.', 'Your visits will be counted again from the next page you open.',
+    'Your visits from this browser are not counted from the next page you open.']) {
+    assert.ok(LIVE.includes(said), `the live page says: ${said}`); assert.ok(JS.includes(said), `and so does this one: ${said}`);
+  }
+  // The same keys the worker's start and the counter read, so a choice made on either design holds on both.
+  const COUNTER = fs.readFileSync(path.join(SITE, 'counter.js'), 'utf8');
+  assert.match(COUNTER, /var COUNT_KEY = 'dipcast\.count';/); assert.match(LIVE, /const OFFLINE_KEY = 'dipcast\.offline';/);
+  assert.match(JS, /localStorage\.setItem\('dipcast\.count', 'off'\)/); assert.match(JS, /localStorage\.setItem\('dipcast\.offline', 'off'\)/);
+  assert.match(JS, /if \(!off\) startWorker\(\); \}/, 'the worker is not started again once turned off');
+  assert.match(JS, /if \(on\) \{ startWorker\(\); return kept; \}/);
+  // Off means gone: the worker, what it stored, a kept outing, and alerts first, since they arrive through the worker.
+  assert.match(JS, /for \(const r of await navigator\.serviceWorker\.getRegistrations\(\)\) await r\.unregister\(\);/);
+  assert.match(JS, /if \(k\.startsWith\('dipcast-'\) \|\| k === 'swimsignal-outing'\) await caches\.delete\(k\);/);
+  assert.match(fs.readFileSync(path.join(SITE, 'outingpack.js'), 'utf8'), /const CACHE = 'swimsignal-outing', KEY = 'dipcast\.outingpack'/);
+  assert.match(JS, /localStorage\.removeItem\('dipcast\.outingpack'\)/);
+  assert.ok(JS.indexOf('await window.PVAlerts.turnOff(DATA.push)') < JS.indexOf('const kept = await setOffline(on)'), 'alerts are turned off before the worker goes');
+  // The counter's row only where the build put the counter in, and no button where the browser has objected already.
+  assert.match(JS, /const c = document\.getElementById\('page-counter'\), counted = !!c && c\.tagName === 'SCRIPT';/);
+  assert.match(JS, /const noTrack = \(\) => navigator\.globalPrivacyControl === true \|\| navigator\.doNotTrack === '1';/);
+  // Alerts' own line, when the copy is off, points at this page's fold and not at the earlier version's.
+  assert.match(JS, /\(PREVIEW \? classic\('#your-data'\) : '#your-data'\) \+ '" data-do="to-data">Turn it back on<\/a>/);
+  assert.match(CSS, /\.foot summary \{ cursor: pointer; padding: 12px 0; \}/); assert.match(CSS, /\.yourdata \.textbtn \{ min-height: 44px; \}/);
+});
+
+test('the spill map is the live site\'s own script, asked for only when its place on the page is near', () => {
+  const PL = require(path.join(SITE, 'plume.js'));
+  // The script draws the tile and the map; the page gives it a place, the map's library and the page's own tiles.
+  assert.match(JS, /plumeStyle\(document\); el\.classList\.add\('on'\); el\.innerHTML = plumeTile\(s, doc, replay, gen, now\(\)\); mine\.map = plumeBind\(el, s, doc, replay, trace, gen\);/);
+  for (const f of ['plumeStyle', 'plumeTile', 'plumeBind']) assert.equal(typeof PL[f], 'function', f);
+  assert.match(MAP, /window\.PVMap = \{ home, homeTo, place, load, tiles \};/);
+  assert.match(JS, /window\.tiles = window\.PVMap\.tiles;/);
+  assert.match(fs.readFileSync(path.join(SITE, 'plume.js'), 'utf8'), /\(typeof tiles === 'function' \? tiles\(\) : L\.tileLayer\(/);
+  // Not in the page's own scripts: plume.js, the map's library and the place's three files come when the slot is
+  // within a screen of view, as on the live page.
+  assert.doesNotMatch(PAGE, /plume\.js/);
+  assert.match(JS, /const io = new IntersectionObserver\(es => \{ if \(es\.some\(e => e\.isIntersecting\)\) \{ io\.disconnect\(\); go\(\); \} \}, \{ rootMargin: '100% 0px' \}\);/);
+  assert.match(JS, /Promise\.all\(\[plumeLib, window\.PVMap\.load\(\), get\('-plume\.json'\), get\('-replay\.json'\), get\('-trace\.json'\)\]\)/);
+  // For a listed place with a daily forecast; a place with no routes file keeps an empty slot that takes no room.
+  assert.match(JS, /const plumeWanted = s => !s\.unlisted && !!s\.detail_file && daily\(s\);/);
+  assert.match(JS, /if \(!doc \|\| !replay\) return;/);
+  assert.match(CSS, /\.spill\.on \{ margin-top: 32px; padding-top: 20px; border-top: 1px solid var\(--line\); \}/);
+  assert.doesNotMatch(CSS, /\.spill \{/, 'the empty slot has no room or rule of its own');
+  // Kept through a redraw, so the slider stays where it was left; the map is let go when the place is left.
+  assert.match(JS, /if \(plume && plume\.id === s\.id\) \{ slot\.replaceWith\(plume\.el\); return; \}/);
+  assert.match(JS, /const plumeGone = \(\) => \{ if \(plume && plume\.map\) plume\.map\.remove\(\); plume = null; \};/);
+  // What it is: a model estimate, said in the script's own first line under the heading.
+  assert.match(PL.PLUME_ESTIMATE, /model estimate/i); assert.match(PL.PLUME_ESTIMATE, /not a measurement/i);
 });
 
 test('reviews, notes on a visit and reports of illness are the live site\'s own scripts, drawn into the place\'s page', () => {
@@ -363,4 +425,192 @@ test('reviews, notes on a visit and reports of illness are the live site\'s own 
   for (const c of ['rv-tile', 't-lab', 't-fig', 't-say', 't-key', 't-more', 'rv-bar', 'rv-list', 'rv-v', 'rv-meta', 'rv-text', 'rv-pics', 'rv-pic', 'rv-acts', 'linkbtn', 'rv-write', 'rv-said',
     'rv-form', 'rv-q', 'rv-opt', 'rv-choice', 'vn-kinds', 'rv-add', 'rv-file', 'rv-consent', 'rv-hp', 'rv-hint', 'rv-send', 'rv-msg', 'rv-report', 'rv-view', 'rv-close', 'rv-previews', 'rv-sure', 'vn-flag', 'vn-caveat'])
     assert.match(CSS, new RegExp(`\\.${c}\\b`), c);
+});
+
+test('a place links to the pages for a group and to telling Ethan, and a list to its page to print, in the live page\'s words', () => {
+  // The live page's two lines under a place's buttons. Each page reads its place, and the record its day, from after the #.
+  for (const said of ['Taking a group in the water here, or running an event? <a href="organisers.html#spot=', '">The event page</a>, with the overflows upstream, a checklist and signs; ',
+    '<a href="clubs.html">tools for clubs and centres</a>; and ', 'Did the forecast change where or when you swam? <a href="', '">Tell&nbsp;Ethan</a>.',
+    'For a club or a centre: these spots on one page to print, each with its five days. <a href="', '">Open the sites view</a>.']) {
+    assert.ok(LIVE.includes(said), `the live page says: ${said}`); assert.ok(JS.includes(said), `and so does this one: ${said}`);
+  }
+  assert.match(LIVE, /const FEEDBACK = 'feedback\.html\?type=feedback';/);
+  assert.match(JS, /<a href="feedback\.html\?type=feedback&amp;spot=\$\{encodeURIComponent\(s\.name\)\}">/);
+  // The record is for the day shown, at the address record.js reads: record.html#spot=<id>&day=YYYY-MM-DD.
+  assert.match(fs.readFileSync(path.join(SITE, 'record.js'), 'utf8'), /record\.html#spot=<id>&day=YYYY-MM-DD/);
+  assert.match(JS, /<a href="record\.html#spot=\$\{id\}&amp;day=\$\{esc\(day\)\}">a decision record for \$\{esc\(dayName\(day\)\)\}<\/a> to print\./);
+  assert.match(JS, /const groupLinks = s => \{ if \(s\.unlisted\) return ''; const id = encodeURIComponent\(s\.id\), day = placeDay\(s\);/, 'not for a point tapped on the map');
+  // The pages exist beside the app's, where the links point: the site's root.
+  for (const f of ['organisers.html', 'record.html', 'sites.html']) assert.ok(fs.existsSync(path.join(SITE, f)), f);
+  for (const f of ['clubs.html', 'feedback.html']) assert.ok(fs.existsSync(path.join(SITE, '../pages', f)), f);
+  // A list's page to print holds its name and its places after the #, as lists.js writes them.
+  assert.match(JS, /<a href="sites\.html\$\{esc\(sitesHash\(cur\.name, mine\.map\(s => s\.id\)\)\)\}">Open the sites view<\/a>/);
+  assert.equal(LISTS.sitesHash('Club launches', ['a', 'b']), '#spots=a,b&name=Club%20launches');
+});
+
+test('the record at a place is the live site\'s own: how the forecast has done there, and past spills by month', () => {
+  const SC = require(path.join(SITE, 'spotscores.js')), SE = require(path.join(SITE, 'seasonal.js'));
+  // The page calls the live scripts for the markup, from the live site's own files.
+  assert.match(JS, /scoresLoad\(\)\.then\(d => \{ SCORES = d \|\| null; scoresRead = true;/);
+  assert.match(JS, /scoresTile\(s, SCORES\)/); assert.match(JS, /const full = got \? \{ \.\.\.s, \.\.\.\(got\.detail \|\| \{\}\) \} : null/); assert.match(JS, /seasonalTile\(full\)/);
+  assert.match(fs.readFileSync(path.join(SITE, 'spotscores.js'), 'utf8'), /const SCORES_FILE = 'data\/spot_scores\.json';/);
+  // How the forecast has done: only where it counts an overflow upstream, as on the live page, never at a place with none.
+  assert.match(JS, /const wanted = typeof scoresWanted === 'function' && scoresWanted\(s\);/); assert.match(JS, /!wanted \? '' : !scoresRead \?/);
+  assert.equal(SC.scoresWanted(spot(ALL)), true); assert.equal(SC.scoresWanted(tarn()), false);
+  // What they give is what the page shows: the counts in words, and twelve months.
+  const tile = SC.scoresTile(spot(ALL), {min_spills: 10, first_day: '2026-09-29', spots: {a: {overflows: 10, scored_overflows: 10, overflow_days: 300, spill_days: 12, forecasts: 1400, hits: 20, misses: 30, false_alarms: 40, days: 37, first_day: '2026-09-29'}}});
+  assert.match(tile, /<section class="tile" id="scores"/); assert.match(tile, /href="verification\.html#warnings"/);
+  const months = SE.seasonalTile({...spot(ALL), seasonal: {years: [2024, 2025], overflows: 10, covered_min: 10, days: [62, 57, 62, 60, 62, 60, 62, 62, 60, 62, 60, 62],
+    spill: [33, 21, 24, 25, 21, 30, 33, 32, 27, 22, 29, 23], short: {}, made: '2026-10-27'}});
+  assert.match(months, /<details class="tile fold" id="seasonal">/); assert.equal((months.match(/<span[^>]*><em>/g) || []).length, 12);
+  assert.match(months, /History, not a forecast\./);
+  // Kept when the page is drawn again, so a fold opened stays open; and every class they write has a rule here.
+  assert.match(JS, /if \(rec && rec\.key === key\) \{ if \(slot !== rec\.el\) slot\.replaceWith\(rec\.el\); return; \}/);
+  for (const c of ['record', 'mchart', 's-now', 's-more', 's-bar', 'seasonal', 'fold']) assert.match(CSS, new RegExp(`\\.${c}\\b`), c);
+});
+
+test('Saved has the live site\'s own: what changed since you last looked, each place\'s low-risk days, and a list to share', () => {
+  const SI = require(path.join(SITE, 'since.js')), FW = require(path.join(SITE, 'findwindow.js'));
+  // Since you last looked: the page asks the live rules for the words, only while today is shown, and notes what it showed.
+  assert.match(JS, /const sum = isToday && mine\.length && typeof sinceSummaryFor === 'function' \? sinceSummaryFor\(mine, DATA\.generated_at\) : null;/);
+  assert.match(JS, /const since = id => isToday && typeof sinceSaid === 'function' \? sinceSaid\(spotOf\(id\), DATA\.generated_at\) : '';/);
+  assert.match(JS, /if \(s && placeDay\(s\) === today\(\)\) lookedAt\(\[s\], DATA\.generated_at, saved\);/);
+  assert.match(JS, /writeSeen\(new Set\(allSaved\(LISTS\)\)\)/, 'a place unsaved loses its note');
+  assert.equal(SI.SEEN_KEY, 'dipcast.seen');   // the live site's own note, so the two pages share one
+  // Nothing over the places on a first look, as on the live page.
+  assert.equal(SI.sinceSummary([{name: 'A', was: undefined, now: null}]).state, 'none'); assert.match(JS, /sum && sum\.state !== 'none'/);
+  // Find a window: the live section, for two places or more, its links to this page's own addresses.
+  assert.match(JS, /mine\.length > 1 && typeof fwSection === 'function' \? fwSection\(mine, dates\(\), s => link\(\{ id: s\.id \}\)\) : ''/);
+  data([spot(ALL), spot(['low', 'low', 'low', 'low', 'low'], {id: 'b', name: 'B'})]);
+  const sec = FW.fwSection([spot(ALL), spot(['low', 'low', 'low', 'low', 'low'], {id: 'b', name: 'B'})], DAYS, s => M.queryFor({id: s.id}));
+  assert.match(sec, /<a href="spot\/a\/" data-id="a" class="fw-nm">/); assert.match(sec, /Low risk: Tue 24 Nov to Sat 28 Nov\./); assert.match(sec, /Low risk is not a safety check/);
+  // Sharing: the live link's own form, and its words for what the link holds.
+  assert.equal(LISTS.shareHash('Weekend', ['a', 'b']), '#list=Weekend&spots=a,b');
+  assert.match(JS, /new URL\(link\(\{ view: 'saved' \}\), document\.baseURI\)\.href \+ shareHash\(cur\.name, ids\)/);
+  for (const said of ['A link that opens this list on another phone or browser, or for a friend, who can then add it to their own lists.', "It is not kept on this device unless you add it.",
+    'Once added, it stays under Saved, where you can set up alerts for its spots.', 'None of the spots in this link is in the forecast now, or the link was cut short.']) {
+    assert.ok(JS.includes(said), said); assert.ok(LIVE.includes(said), `the live page no longer says: ${said}`); }
+  assert.match(JS, /addSharedList\(LISTS, sh\.name, ids\)/); assert.match(JS, /sameList\(LISTS, sh\.name, spots\.map\(s => s\.id\)\)/);
+  assert.match(HOST, /const spotPath = id => `\$\{document\.documentElement\.dataset\.home \|\| ''\}spot\/\$\{encodeURIComponent\(id\)\}\/`;/);
+  for (const c of ['place-since', 'since-ev', 'since-sum', 'fw-list', 'fw-nm', 'fw-note', 'fw-apart', 'o-tag', 'sharelist']) assert.match(CSS, new RegExp(`\\.${c}\\b`), c);
+});
+
+test('Saved moves or copies a place between lists and opens a list from a pasted link, by the live site\'s own rules', () => {
+  // The rules are lists.js's, which the page calls: nothing about a list is worked out twice.
+  assert.match(JS, /const kept = setLists\(copy \? copyToList\(LISTS, id, to\.id\) : moveToList\(LISTS, id, fromId, to\.id\)\);/);
+  assert.match(JS, /const got = pastedList\(box\.value, location\.origin\);/);
+  const two = {current: 'l1', lists: [{id: 'l1', name: 'Weekend', spots: ['a', 'b']}, {id: 'l2', name: 'Club', spots: ['c']}]};
+  assert.deepEqual(LISTS.moveToList(two, 'a', 'l1', 'l2').lists.map(l => l.spots), [['b'], ['c', 'a']]);
+  assert.deepEqual(LISTS.copyToList(two, 'a', 'l2').lists.map(l => l.spots), [['a', 'b'], ['c', 'a']]);
+  // Offered with two lists or more and a place to move; opening a link is offered always, an empty Saved included,
+  // since the Home Screen app on an iPhone has no address bar to paste into.
+  assert.match(JS, /many && movable\.length \? '<button type="button" class="textbtn" data-do="list-mv">Move or copy a place<\/button>' : ''\}<button type="button" class="textbtn" data-do="list-open">Open a list from a link<\/button>/);
+  // What is said is what the live page says.
+  for (const said of ['Paste a link to a SwimSignal list first.', 'That is too long to be a link to a list.', 'That is not a link. Paste the whole link, starting https://.',
+    'That is a link to another website, not SwimSignal.', "That link has no list of spots in it. A list's link has saved/#list= in it.",
+    'Open a list from a link', 'Paste a link to a list, sent to you or copied with Share this list', ' is in ${to.name} already.',
+    'This browser is not keeping site data, so this change lasts only for this visit.']) {
+    assert.ok(LIVE.includes(said), `the live page says: ${said}`); assert.ok(JS.includes(said), `and so does this one: ${said}`);
+  }
+  assert.match(JS, /`\$\{copy \? 'Copied' : 'Moved'\} \$\{s\.name\} \$\{copy \? 'to' : `from \$\{from\.name\} to`\} \$\{to\.name\}\.`/);
+  // Only a link to a Saved page of this site that holds a list is taken, and it opens as a shared list: read only.
+  assert.equal(LISTS.pastedList('https://example.com/saved/#list=A&spots=a', 'https://swimsignal.co.uk').why, 'site');
+  assert.equal(LISTS.pastedList('https://swimsignal.co.uk/plan/', 'https://swimsignal.co.uk').why, 'notlist');
+  assert.equal(LISTS.pastedList('https://swimsignal.co.uk/saved/#list=A&spots=a,b', 'https://swimsignal.co.uk').hash, '#list=A&spots=a,b');
+  assert.match(JS, /listForm = null; history\.pushState\(null, '', link\(\{ view: 'saved', day: route\.day \}\) \+ got\.hash\); draw\(\{ focus: true \}\);/);
+  assert.doesNotMatch(JS, /clipboard\.read/, 'nothing is read from the clipboard: the reader pastes');
+});
+
+test('Saved compares up to three places by the live site\'s own rules, and every cell says something', () => {
+  const X = require(path.join(SITE, 'experience.js'));
+  // The rules are experience.js's and plan.js's, which the page calls; the table is this page's own markup.
+  assert.match(JS, /const days = spots\.map\(s => compareDays\(s, ds\)\), facts = spots\.map\(s => compareRows\(s, day, DATA\.generated_at\)\), water = spots\.map\(compareWater\);/);
+  assert.match(JS, /const ids = cmpIds = planCompareIds\(cmpIds, mine\), ds = dates\(\);/);
+  assert.match(JS, /cmpIds = comparisonIds\(\[\.\.\.app\.querySelectorAll\('\[data-cmp\]'\)\]\.map\(x => x\.value\), /);
+  assert.match(JS, /if \(mine\.length < 2 \|\| typeof compareRows !== 'function' \|\| typeof evidenceRows !== 'function'\) return '';/, 'nothing to compare until two places are saved');
+  // Up to three, the first three until others are chosen, and a choice of one filled up again.
+  const three = ['a', 'b', 'c', 'd'].map(id => ({id}));
+  assert.deepEqual(PLAN.planCompareIds(null, three), ['a', 'b', 'c']);
+  assert.deepEqual(PLAN.planCompareIds(['d', 'b'], three), ['d', 'b']);
+  assert.deepEqual(X.comparisonIds(['a', 'a', 'zz', 'b'], three), ['a', 'b']);
+  // A place with a daily forecast has a cell a day; one without has one cell for the five, in its headline's words.
+  const d = X.compareDays(spot(ALL), DAYS);
+  assert.equal(d.same, false); assert.deepEqual(d.days.map(x => x.level), ALL);
+  const t = X.compareDays(tarn(), DAYS);
+  assert.equal(t.same, true); assert.doesNotMatch(t.days[0].words, /\blow\b/i);
+  assert.match(JS, /: i \? '' : `<td class="same" rowspan="\$\{ds\.length\}"\$\{hd\('cmp-days', j\)\}>\$\{cell\(d\.days\[0\]\)\}\. The same on every day\.<\/td>`/);
+  // Every row of facts has words in every column: missing data says it is not known.
+  for (const s of [spot(ALL), tarn()]) for (const [label, html] of X.compareRows(s, DAYS[0], GEN, NOW)) assert.ok(String(html).trim().length > 3, `${s.id}: ${label}`);
+  // The water today: a missing reading or gauge is said, never left blank.
+  assert.match(JS, /: vt\('none', 'No reading'\),/); assert.match(JS, /\? vt\('none', 'No gauge'\) : rs\.stale \?/);
+  // A level's words carry its colour; the day shown is the row shaded; no column is called the best.
+  assert.match(JS, /const cell = x => `<span class="lvl \$\{P\.cls\(x\.level\)\}">\$\{esc\(x\.words\)\}<\/span>`/);
+  assert.match(JS, /<tr\$\{iso === day \? ' class="on" aria-current="true"' : ''\}>/);
+  assert.doesNotMatch(JS.slice(JS.indexOf('function compareHtml'), JS.indexOf('function redrawCompare')), /\b(best|winner|recommended)\b/i);
+  // What a lower level is not, in this page's own words (the live table's sentence uses a word this page never does).
+  assert.match(JS, /A lower level is the forecast for sewage pollution, not a safety check: check the signs at the water\./);
+  // A place's own file is asked for once, for its guide; the table is drawn again where it was scrolled to.
+  assert.match(JS, /for \(const id of cmpIds \|\| \[\]\) if \(!details\.has\(id\)\) loadDetail\(id\)\.then\(redrawCompare\);/);
+  assert.match(CSS, /table\.cmp \{ width: 100%; min-width: calc\(var\(--cols, 2\) \* 150px\); table-layout: fixed;/);
+});
+
+test('the swim journal and the passport are the live site\'s own, on this device only', () => {
+  const JN = require(path.join(SITE, 'journal.js')), JS_JN = fs.readFileSync(path.join(SITE, 'journal.js'), 'utf8');
+  assert.equal(JN.JOURNAL_KEY, 'dipcast.swims');   // the live site's own, so a swim logged on either page is in both journals
+  // The live script binds "Log a swim" and draws the form; the page gives it the names it looks for.
+  assert.match(JS_JN, /const b = document\.getElementById\('swam'\); if \(!b\) return;/); assert.match(JS_JN, /const acts = b\.closest\('\.actions'\); if \(!acts\) return;/);
+  assert.match(JS, /<div class="actions"><button type="button" class="btn" id="swam" aria-expanded="false">Log a swim<\/button><\/div><p class="meta" id="swam-msg" role="status" aria-live="polite"><\/p>/);
+  assert.match(JS, /journalLogBind\(s, DATA\.generated_at\);/);
+  // The journal names a swim's place from the forecast the page holds, by the live page's name for it.
+  assert.match(JS_JN, /typeof DATA !== 'undefined' && DATA \? new Map\(DATA\.spots\.map/); assert.match(JS, /window\.DATA = DATA;/);
+  // On Saved: the journal and the passport, each drawn by its own script; a logged swim's link goes to the journal there.
+  assert.match(JS, /el\.innerHTML = journalCard\(\) \+ \(typeof passportSection === 'function' \? passportSection\(DATA\.spots\) : ''\);/);
+  assert.match(JS, /journalBindSection\(\); if \(typeof passportBind === 'function'\) passportBind\(\);/);
+  assert.match(HOST, /const savedPath = \(\) => \{ const home = document\.documentElement\.dataset\.home \|\| ''; return home \? `\$\{home\}\?view=saved` : 'saved\/'; \};/);
+  assert.match(JS, /location\.hash === '#journal' && typeof journalFocus === 'function'\) journalFocus\(\);/);
+  // It makes no request: nothing in the journal leaves the browser.
+  assert.doesNotMatch(JS_JN, /\bfetch\(/);
+  for (const c of ['yourswims', 'jn-where', 'jn-seen', 'jn-file', 'jn-when', 'jn-kept', 'pp-sum', 'pp-badge']) assert.match(CSS, new RegExp(`\\.${c}\\b`), c);
+});
+
+test('any river or lake tapped on the map has a forecast: the live site\'s own arithmetic, at an address that reaches no server', () => {
+  const AP = fs.readFileSync(path.join(SITE, 'anypoint.js'), 'utf8');
+  // The live script's page wiring is for the live page's own map and does not run here; its arithmetic is what is called.
+  assert.match(AP, /if \(typeof window !== 'undefined' && typeof map !== 'undefined'\) \{\n  map\.on\('click', AnyPoint\.onMapClick\);/);
+  assert.doesNotMatch(PAGE + JS + MAP, /id="map"/, 'no element named map here, or the live wiring would wake');
+  assert.match(JS, /AnyPoint\.point\(route\.point\[0\], route\.point\[1\]\)\.then\(d => \{ P\.prepareOne\(d, DATA, now\(\)\); d\.id = id; POINTS\.set\(id, d\);/);
+  assert.match(AP, /squares, point, open, onMapClick, POINT_ZOOM \};/);
+  // Where someone tapped is after the #, which a browser never sends; a link to it still opens the same point.
+  const at = M.parseAddress('/', '?day=2026-11-28', '/', '#point=53.94820,-1.87950');
+  assert.deepEqual(at, {screen: 'place', id: 'point-53.94820,-1.87950', point: [53.9482, -1.8795], day: SAT});
+  data([spot(ALL)]);
+  assert.equal(M.queryFor({id: at.id, day: SAT}), '?day=2026-11-28#point=53.94820,-1.87950'); assert.equal(M.queryFor({id: at.id}), './#point=53.94820,-1.87950');
+  assert.doesNotMatch(M.queryFor({id: at.id, day: SAT}).split('#')[0], /5[0-9]\.\d|point/, 'nothing of the place before the #');
+  assert.equal(M.parseAddress('/', '?point=53.9,-1.8', '/', '').screen, 'find', 'a point in the query is not read: it would reach the server');
+  for (const far of ['#point=10,20', '#point=53.9,4.2', '#point=x,y', '#point=53.9', '#point=53.9,-1.8&x=1']) assert.equal(M.parseAddress('/', '', '/', far).screen, 'find', far);
+  assert.equal(M.parseAddress('/spot/a/', '', '/', '#point=53.9,-1.8').id, 'a', 'a place\'s own page stays that place');
+  assert.equal(M.pointOf('54.36,-2.935').id, 'point-54.36000,-2.93500');
+  // A point is made ready as a listed place is, and is never offered what only a listed place has.
+  const d = M.prepareOne({id: 'point-53.94820,-1.87950', unlisted: true, name: 'River Wharfe', kind: 'river', lat: 53.9482, lon: -1.8795, upstream_summary: {overflows: 10},
+    now: {label: 'low', risk: 0.02}, days: DAYS.map(x => ({date: x, label: 'low', risk: 0.05})), contributors: []}, {generated_at: GEN}, NOW);
+  assert.equal(d.days.length, 5); assert.equal(M.answer(d, SAT, data([spot(ALL)]), NOW).level, 'low');
+  assert.match(JS, /if \(s\.unlisted\) return \['Unlisted point: not hand-checked'/); assert.match(JS, /\$\{s\.unlisted \? '' : `<button type="button" class="tool" data-do="keep"/);
+  assert.match(JS, /Not one of the listed places: nobody has checked it by hand, and it has no rain forecast of its own and no E\.&nbsp;coli estimate\./);
+  // Further out than the live map's own zoom a tap zooms in and asks again; outside the area it says so.
+  assert.match(JS, /const need = AnyPoint\.POINT_ZOOM \|\| 9;/); assert.match(JS, /That point is outside Britain and Ireland/);
+  assert.match(MAP, /if \(best \|\| !HOME\.onWater\) HOME\.onPick\(best \? best\.id : null\); else HOME\.onWater\(e\.latlng\.lat, e\.latlng\.lng, HOME\.map\.getZoom\(\)\);/);
+  for (const said of ["A listed spot is checked by hand and gets its own rain forecast and E.&nbsp;coli estimate.", 'Request this as a spot']) { assert.ok(JS.includes(said), said); assert.ok(AP.includes(said), `anypoint.js no longer says: ${said}`); }
+});
+
+test('what the level rests on, lab results and the evidence timeline are the live site\'s own, for a listed place', () => {
+  const EV = require(path.join(SITE, 'evidence.js')), TL = fs.readFileSync(path.join(SITE, 'timeline.js'), 'utf8');
+  assert.match(JS, /evidenceTile\(full, at, DATA\.generated_at\)/); assert.match(JS, /measuredTile\(full, at\)/); assert.match(JS, /timelineTile\(full\)/);
+  assert.match(JS, /const recordHtml = s => typeof evidenceTile !== 'function' \|\| s\.unlisted \? ''/, 'a point tapped on the map has no record');
+  // The timeline reads its files when its fold is opened, by its own listener, and names the forecast's time from the page's.
+  assert.match(TL, /document\.addEventListener\('toggle', timelineOpen, true\);/); assert.match(TL, /typeof DATA === 'object' && DATA \? DATA\.generated_at : null/);
+  // What the live script gives for a place: its items as rows, each with its age and whose it is.
+  const tile = EV.evidenceTile({...spot(ALL), contributors: []}, NOW, GEN);
+  assert.match(tile, /<details class="tile fold" id="evidence">/); assert.match(tile, /<div class="factor"><div class="f-l">/); assert.match(tile, /<div class="f-src">/);
+  assert.equal(EV.evidenceTile({...spot(ALL), unlisted: true}, NOW, GEN), '');
+  for (const c of ['factors', 'factor', 'f-l', 'f-v', 'f-d', 'f-src', 'ev-gap']) assert.match(CSS, new RegExp(`\\.${c}\\b`), c);
 });

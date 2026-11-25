@@ -3022,6 +3022,46 @@ site's root); `plan/#...`, `saved/`, a shared list, a sent outing, `?map=1` and 
 **Not checked:** the live tile provider and the counter on the redesign's pages at the root, alerts, the Home
 Screen app, a search engine's or a messaging app's reading of the new pages.
 
+### A gap the switch opened: "Saved spots, offline use and your data" (24 November 2026, night)
+
+**Reversing nothing; restoring a thing the switch dropped.** The privacy notice tells a visitor that the offline
+copy can be turned off, and "Don't count my visits" chosen, 'under "Saved spots, offline use and your data" at the
+bottom of the home page'. The redesign had no such fold. From 19:53 UTC on 24 November, when it became the home
+page, until this was published, the two controls were only at `classic/`, where the notice did not send anyone.
+The counter still honoured a choice already made, Global Privacy Control and Do Not Track (`counter.js`), and the
+worker was still not started in a browser that had turned it off. What was missing was the way to make the choice.
+
+- **Already decided** (PECR, Schedule A1; the comments in `index.html` and `counter.js`): storage and a counter the
+  site works without need clear information and a free, simple way to object. So where the redesign is the site
+  it has the fold, by the notice's name, with the live page's words, keys and order of work: alerts off first,
+  then the worker, then everything it stored, a kept outing included.
+- **New:** it is on the foot of every redesign page and not the home page alone, since a place's page is where
+  most visits land. It is not drawn at `/preview/`, where the home page is still the app's.
+- **New:** the alerts card's "Turn it back on" opens this fold on the same page.
+- The footer's sentence about what is still on the earlier version no longer lists the forecast for any river or
+  lake, which the redesign has had since that port.
+
+**Checked:** in a browser on a local build with the switch on (below, in the pull request). **Not checked:** the
+counter's row on the live site, which needs the build's token.
+
+### Ported: the spill map, "Where spill water may be" (24 November 2026, night)
+
+The live page's spill map (`plume.js`, docs/PLUME-MAP-2026-10.md), which was only at `classic/` after the switch.
+
+- **Already decided:** everything it shows and says. It is the live script, loaded unchanged: the official notice
+  first, "A model estimate of where water from reported spills may be, not a measurement of pollution", the
+  slider from 48 hours before the update to 48 after, the key, the words under the map, the two folds. The script,
+  the map's library and the place's three files are asked for when its place on the page is within a screen of
+  view, as on the live page.
+- **New:** its place, after "Upstream" and before "Elsewhere today", with its heading as a section's on this page.
+  It draws on the redesign's own map tiles. Kept through a redraw, so a day picked does not move the slider.
+- For a listed place with a daily forecast. A place with no routes file (a lake) shows nothing, with no rule or gap.
+
+**Checked:** in-app browser at 375 px on the live forecast: Ilkley's map with its two overflows, the slider moved
+and its words following, a day picked with the slider and the map staying put; Wastwater has none. **Not checked:**
+Play, which did not advance in the hidden browser pane (it runs on animation frames, which a hidden page does not
+get); a place with a spill's water drawn (none was reported upstream of the places tried); 1,440 px by eye.
+
 ### Ported: reviews, notes on a visit and reports of illness (24 November 2026, night)
 
 The redesign went live at 19:53 UTC on 24 November 2026 (`DIPCAST_REDESIGN=1`, #738), and Ethan said to port what
@@ -3049,4 +3089,166 @@ the notes and reviews drawn, "Show all", the review form opened, a day picked wi
 and cursor kept), the question before leaving, a review sent and kept as this browser's own. With the live list
 (empty): both forms offered. Headless Chrome at 375 and 1,440 px. **Not checked:** a review really sent, a photo
 added, the illness tile (off on the live site), the report form.
+
+### Ported: the links for a group, the decision record, and telling Ethan (24 November 2026, night)
+
+The redesign's place page had no way to the event page, the clubs' tools, the decision record or the feedback
+form, and Saved had none to the sites view. All five are pages of their own that were never part of the app, so
+this is five links, in the live page's words. Marked:
+
+- **Already decided:** the two lines under a place's buttons ("Taking a group in the water here, or running an
+  event?" and "Did the forecast change where or when you swam? Tell Ethan."), and the line under Share this list
+  ("For a club or a centre: these spots on one page to print").
+- **New:** where they sit. The two lines close "The place"; the sites view's line closes "Share this list".
+- **New:** one decision record link, for the day shown ("a decision record for Thursday"). The live page has a
+  link under each of the five days; the redesign shows one day at a time.
+- Not on a point tapped on the map, which those pages cannot open.
+
+**Checked:** in-app browser, Ilkley on Thursday: the four addresses, the record's with the day shown; all five
+pages answer on the live site. **Not checked:** each page opened from the link on a phone.
+
+### Ported: the record at a place (24 November 2026, night)
+
+The second port from `classic/`. Marked: the words and the counts are already decided ("How the forecast has done
+here", "Past spills upstream, by month"); the section is new.
+
+- **"The record here"**, a section of a place's page under the three about the forecast, for a place where the
+  forecast counts an overflow upstream. Two parts, both the live site's own scripts giving their markup:
+  `spotscores.js` (how the forecast has done at the overflows upstream since live scoring began, from
+  `data/spot_scores.json`) and `seasonal.js` (on how many days of each month a spill was reported upstream, from the
+  place's own file, folded).
+- **It does not follow the day picked**, and says so: it is history. What is drawn is kept when the page is drawn
+  again, so the months stay open.
+- **The look.** The months are grey bars with this month in ink. History takes no level's colour.
+- **Still only at `classic/` from this group:** lab results an organisation sent (`measured.js`). No place has any on
+  24 November 2026, and it needs the evidence script's ages, so it waits for the evidence timeline's port.
+
+**Checked:** in-app browser at 375 px on the 13:21 issue and the live record file: Ilkley's counts (531
+overflow-days, 16 with a spill; 27 of 70 forecasts for those spills reached the High risk line), its twelve months
+with November marked, the fold kept open through a day picked; Wastwater, with no overflow upstream, has no such
+section. Headless Chrome at 1,440 px. **Not checked:** a place whose entry in the record file is missing.
+
+### Ported: Saved's extras (24 November 2026, night)
+
+The third port from `classic/`. Marked: the rules and words are already decided ("Saved as a starting page", the
+lists, Find a window); their place in the redesign's Saved is new.
+
+- **Since you last looked** (`since.js`): one sentence over the places and a line under each place that changed,
+  only while today is shown, and nothing over them on a first look. The note of what a place showed is the live
+  site's own (`dipcast.seen`), so the two sites share one. It is written when a saved place's level is on screen
+  with today picked: on Saved and on the place's own page.
+- **Find a window** (`findwindow.js`): the live section, for two saved places or more, its links to the redesign's
+  addresses.
+- **Share this list**, and **a list someone shared**: the live link's own form (`saved/#list=...&spots=...`) and
+  words. A shared list is shown, not kept, with one thing to do, "Add to my lists"; one already held says so. It
+  was passed on to `classic/` until this port; an outing someone sent still is.
+- **Still only at `classic/` on Saved:** the swim journal and passport, comparing places day by day, moving a place
+  between lists, and pasting a list's link.
+
+**Checked:** in-app browser at 375 px, with three places saved and a note written a day earlier that Linton Falls
+was at high risk: the sentence names it, its row says "Was high risk when you looked on Monday at 18:19; now low
+risk", and the notes are rewritten for the forecast on screen. Find a window's three rows. The link copied. A shared
+list of three, one not in the forecast: shown with two, added, then said to be held already, with "Show it".
+**Not checked:** a phone's own share sheet, 1,440 px by eye.
+
+### Ported: a place moved between lists, and a list opened from a pasted link (24 November 2026, night)
+
+Both were in the live page's "Your lists" fold and only at `classic/` after the switch. Marked:
+
+- **Already decided** (the phone audit of 25 October 2026): the Home Screen app on an iPhone has no address bar
+  and keeps its lists apart from Safari's, so a list's link is pasted into the page. Only a link to a Saved page
+  of this site that holds a list is taken (`lists.js`, `pastedList`), and it opens as a shared list, read only,
+  with its own "Add to my lists". Nothing is read from the clipboard.
+- **Already decided:** a place can be moved or copied between lists (`moveToList`, `copyToList`), with the live
+  page's words for what happened.
+- **New:** where they sit. The redesign has no "Your lists" fold. Its list tools are a row of text buttons under
+  the list, and these are two more: "Move or copy a place" (with two lists or more) and "Open a list from a
+  link" (always, an empty Saved included, since that is where a new Home Screen app starts). Each opens a small
+  form in the row's place. The move form stays up after a move, since sorting a list takes several.
+
+**Checked:** in-app browser at 375 px on two lists: a move, a copy, "is in Club already", the four refusals of a
+pasted link, a good link opening the shared list, and Back returning to Saved. **Not checked:** the Home Screen
+app on an iPhone, where the paste matters most.
+
+### Ported: compare your places (24 November 2026, night)
+
+The live page's "Compare your spots", which was only at `classic/` after the switch. Marked:
+
+- **Already decided** (experience.js, compareDays and compareRows; "Compare" in this document): up to three saved
+  places side by side, a column each; the five days first, the day shown shaded; then the water today and what
+  each level rests on and leaves out. Every cell says something. No column is called the best. It opens on the
+  first three places of the list shown. On a phone the three selects fold once two are chosen (6 November 2026).
+- **New:** it is a section of Saved, after "Find a window", and not a fold: the redesign's Saved has no folds
+  around its sections. Drawn only with two places or more in the list shown.
+- **Reversing, in one sentence:** the live table's note says a lower level "does not mean safe water". The redesign
+  never uses that word (its test refuses it), so the note is its own: "A lower level is the forecast for sewage
+  pollution, not a safety check".
+- **Not carried:** the names pinned under the header while a phone reads the table down (the redesign's header is
+  not fixed, so there is nothing to pin under), and "Plan here" in a column (outings are not ported yet).
+
+**Checked:** in-app browser at 375 px and 1,280 px on four saved places: Ilkley, Wastwater (one cell for the five
+days) and a second Wharfe place side by side; a third place removed and another chosen; the Access row filled in
+when the places' own files arrived; the table scrolls sideways inside itself at 375 px with three columns and the
+page does not. **Not checked:** a screen reader's reading of the table.
+
+### Ported: the swim journal and the passport (24 November 2026, night)
+
+The fourth port from `classic/`. Marked: the journal's rules and words are already decided ("The swim journal", the
+passport); where they sit in the redesign is new.
+
+- **"Your swims" on a place's page**: one button, "Log a swim", whose form opens under it and keeps what the
+  forecast showed. The live script (`journal.js`) binds the button and draws the form.
+- **On Saved**: the journal, then the passport made from it (`passport.js`), each drawn and redrawn by its own
+  script. A swim just logged links to the journal there.
+- **One journal for both sites**: the live site's own key (`dipcast.swims`) and its photo store. Nothing in it is
+  sent anywhere; a test checks the script makes no request.
+- **Kept when the page is drawn again**, as the reviews are, so a form half written keeps its words.
+
+**Checked:** in-app browser at 375 px: a swim logged at Linton Falls (the form, "Kept with the swim: Low risk in
+the forecast issued Tue 24 Nov, 13:21", a day picked with the form open, the swim stored), the link to the journal,
+the journal's one entry and the passport's first badge on Saved, the entry's link back to the place.
+**Not checked:** a photo added, a copy saved and added back, the passport's lesson, 1,440 px by eye.
+
+### Ported: a forecast for any river or lake on the map (24 November 2026, night)
+
+The fifth port from `classic/`. Marked: the arithmetic and its words are already decided ("Click anywhere"); how the
+redesign shows a point is new, and one thing differs from the live page on purpose (the address).
+
+- **A tap on the map that is on no listed place** is read as a river or lake to forecast. `anypoint.js` is loaded as
+  it is and its own arithmetic is called (`AnyPoint.point`), from the same files under `data/anypoint/`. Its page
+  wiring is for the live page's map and does not run here.
+- **Further out than the live map's own zoom** a tap zooms in and the line under the map asks for another, as the live
+  map does. A tap outside Britain and Ireland is said to be.
+- **A point is drawn as a place is**, by the same page: its name, "Unlisted point: not hand-checked", the five days,
+  the answer, Behind the level, the overflows upstream as a line, and the places elsewhere. It has no Save, no
+  journal, no reviews and no record, and a section "This point" says what it lacks beside a listed place, with the
+  live page's "Request this as a spot".
+- **A point with no forecast** (outside England, off the network, an isolated lake) says why in the live script's own
+  words, gives the official source for where it is, and lists the places near it.
+- **The address differs from the live page's, on purpose.** The live page keeps a point out of the address
+  altogether. Here it is after the `#` (`#point=<lat>,<lon>`), which a browser never sends to a server, so a point
+  can be reloaded, kept or sent and where someone tapped still reaches nobody. A point in the query is not read.
+
+**Checked:** in-app browser at 375 px against the live point files: a point on the Wharfe above Ilkley (five days,
+ten overflows upstream, Saturday picked), Windermere's north basin (a lake, three overflows), a point in Wales
+("England only", with the official sources), a point in the sea (no forecast), a far tap (zooms in and asks again),
+a near tap (the point's page), and Map back from it. **Not checked:** 1,440 px by eye, a point in Scotland during
+the trial, a link to a point opened on another device.
+
+### Ported: what the level rests on, lab results and the evidence timeline (24 November 2026, night)
+
+The sixth port from `classic/`. Marked: the content is already decided ("What the level rests on", the evidence
+timeline, lab results an organisation sent); its place in "The record here" is new.
+
+- **"The record here" is on every listed place's page.** Before this port it was on those with an overflow
+  upstream. In order:
+  what the level rests on (`evidence.js`: each item's age and whose it is, and the gaps), lab results an
+  organisation sent (`measured.js`, where there are any), how the forecast has done here, past spills by month, and
+  the evidence timeline (`timeline.js`), which reads its files when it is opened.
+- **A point tapped on the map has no record**, as on the live page.
+
+**Checked:** in-app browser at 375 px: Ilkley's five items (overflows upstream, rain here, the rating, algae at the
+last check, the latest lab sample), its timeline of 82 dated items with "Show all", both folds kept open through a
+day picked; Wastwater, with no overflow upstream, has the items, the months' note and the timeline, and no forecast
+score. **Not checked:** a place with a lab result from an organisation (none exists on 24 November), 1,440 px by eye.
 

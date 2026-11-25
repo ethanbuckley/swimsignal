@@ -14,7 +14,10 @@ const expanded = new Set(), LINE_FIRST = 6;   // the places whose line upstream 
 const traces = new Map();                     // id -> the traced water's lines, null if there is none; undefined while reading
 const details = new Map();                    // id -> { detail, up } once fetched; undefined while reading
 const now = () => Date.now();
-const spotOf = id => DATA.spots.find(p => p.id === id);
+// A point tapped on the map that is no listed place (anypoint.js): its forecast, worked out here, by its id
+// ("point-<lat>,<lon>"). undefined while it is being worked out; { failed } if it could not be.
+const POINTS = new Map();
+const spotOf = id => DATA.spots.find(p => p.id === id) || (POINTS.get(id) && !POINTS.get(id).failed ? POINTS.get(id) : undefined);
 const say = t => { saidEl.textContent = ''; setTimeout(() => { saidEl.textContent = t; }, 60); };
 
 // Saved places, kept on this device only, as the live site keeps them: named lists under 'dipcast.lists', and every
@@ -32,7 +35,9 @@ const savedIds = () => allSaved(LISTS), knownSaved = () => savedIds().filter(id 
 // Change the lists. Returns false when the browser would not keep them. The alert service is told a second later.
 let syncTimer = null;
 const syncSoon = () => { clearTimeout(syncTimer); syncTimer = setTimeout(() => { if (DATA && DATA.push) window.PVAlerts.sync(DATA.push, knownSaved()).catch(() => {}); }, 1000); };
-function setLists(next) { LISTS = next; const ok = storeLists(); syncSoon(); return ok; }
+function setLists(next) { LISTS = next; const ok = storeLists(); syncSoon();
+  if (typeof writeSeen === 'function') writeSeen(new Set(allSaved(LISTS)));   // since.js: a place unsaved loses its note
+  return ok; }
 // Another tab changed them (the live site, say): follow it, or this tab's next change would undo that one.
 window.addEventListener('storage', e => {
   if (e.key === LISTS_KEY) { if (!listsReadable(e.newValue)) return; LISTS = readLists(e.newValue, null); }
@@ -103,10 +108,60 @@ function dayTabsHtml(tabs, day, label, hrefFor) {
       + `<span class="dt-top"><span class="dt-name">${esc(t.name)}</span> <span class="dt-dom">${t.dom}</span></span>${t.short ? `<span class="dt-mark" aria-hidden="true"></span><span class="dt-level">${esc(t.short)}</span>` : ''}</a></li>`; }).join('')}</ol></nav>`;
 }
 const stale = () => { const i = P.issuedWords(DATA, now()); return i.stale ? `<p class="notice" role="note"><b>Older forecast.</b> ${esc(i.note)}</p>` : ''; };
+// "Saved spots, offline use and your data": what is kept in this browser, and the two things a visitor can turn off,
+// the offline copy and the page-view counter. The privacy notice sends people here by this name, "at the bottom of
+// the home page", for both, and the law asks for a free, simple way to object to each (PECR, Schedule A1). So where
+// these pages are the site's own they carry it, on every page's foot, in the live page's words and with the live
+// page's keys ('dipcast.offline', 'dipcast.count'), which the worker's start (below) and the counter (counter.js)
+// already read. From 19:53 to the evening of 24 November 2026 the redesign was the home page without it.
+let dataOpen = false, offlineSaid = '', countSaid = '';
+const stayOff = key => { try { return localStorage.getItem(key) === 'off'; } catch (e) { return false; } };
+const startWorker = () => navigator.serviceWorker.register(new URL('sw.js', document.baseURI)).catch(() => {});
+const noTrack = () => navigator.globalPrivacyControl === true || navigator.doNotTrack === '1';
+function yourDataHtml() {
+  if (PREVIEW) return '';   // beside a preview the home page is the app's, which has it
+  // The counter's row only where the build put the counter in. Its script is asked for by name: the build's stand-in
+  // for a browser (prerender_preview.js) answers every id, and the built page must not say visits are counted there.
+  const c = document.getElementById('page-counter'), counted = !!c && c.tagName === 'SCRIPT';
+  return `<details class="yourdata" id="your-data"${dataOpen ? ' open' : ''}><summary>Saved spots, offline use and your data</summary>
+    <p>Saved spots, the names of your lists and your swim journal are kept in this browser, and sent nowhere unless you turn on alerts on the Saved page (alerts send which spots are saved, not the lists' names or the journal). After a first visit the page and the latest forecast are stored on your device, so the site opens without signal at the water's edge; it then says how old the forecast is. <a href="privacy.html">Privacy notice</a>.</p>
+    ${'serviceWorker' in navigator ? `<p><button type="button" class="textbtn" data-do="offline">${stayOff('dipcast.offline') ? 'Turn the offline copy back on' : 'Turn off the offline copy'}</button> <span id="offline-msg" role="status">${esc(offlineSaid)}</span></p>` : ''}
+    ${counted ? `<p>Page views are counted, without cookies. ${noTrack() ? '' : `<button type="button" class="textbtn" data-do="count">${stayOff('dipcast.count') ? 'Count my visits again' : "Don't count my visits"}</button> `}<span id="count-msg" role="status">${esc(noTrack() ? 'Your browser asks sites not to track it, so your visits are not counted.' : countSaid)}</span></p>` : ''}
+  </details>`;
+}
+// Turn the offline copy off or on (index.html, setOffline). Off removes the worker and everything it stored, an
+// outing kept for offline use with it, and turns alerts off first, since they arrive through the worker: the alert
+// service then deletes its record now. Returns false when the browser would not keep the choice.
+async function setOffline(on) {
+  let kept = true;
+  try { if (on) localStorage.removeItem('dipcast.offline'); else localStorage.setItem('dipcast.offline', 'off'); } catch (e) { kept = false; }
+  if (on) { startWorker(); return kept; }
+  for (const r of await navigator.serviceWorker.getRegistrations()) await r.unregister();
+  if ('caches' in window) for (const k of await caches.keys()) if (k.startsWith('dipcast-') || k === 'swimsignal-outing') await caches.delete(k);
+  try { localStorage.removeItem('dipcast.outingpack'); } catch (e) { /* nothing kept */ }
+  return kept;
+}
+async function offlineToggle() {
+  const on = stayOff('dipcast.offline');
+  const alerts = !on && DATA && DATA.push && window.PVAlerts.can() === 'yes' ? await window.PVAlerts.turnOff(DATA.push).catch(() => false) : false;
+  const kept = await setOffline(on).catch(() => false);
+  if (alerts) { alertsOn = false; alertsSaid = ''; }
+  offlineSaid = !kept ? 'This browser is not keeping site data, so this lasts only until you close the page.'
+    : on ? 'The offline copy is on again.' : `The offline copy is off, and deleted from this device.${alerts ? ' Alerts are off too: they need it.' : ''}`;
+  dataOpen = true; draw(); const b = app.querySelector('[data-do="offline"]'); if (b) b.focus({ preventScroll: true });
+}
+function countToggle() {
+  const was = stayOff('dipcast.count'); let kept = true;
+  try { if (was) localStorage.removeItem('dipcast.count'); else localStorage.setItem('dipcast.count', 'off'); } catch (e) { kept = false; }
+  countSaid = !kept ? 'This browser is not keeping site data, so it cannot keep this choice.'
+    : was ? 'Your visits will be counted again from the next page you open.' : 'Your visits from this browser are not counted from the next page you open.';
+  dataOpen = true; draw(); const b = app.querySelector('[data-do="count"]'); if (b) b.focus({ preventScroll: true });
+}
 const foot = () => { const c = (DATA && DATA.credits) || {};
   return `<footer class="foot"><p>${PREVIEW ? `This is a preview of a redesign, kept beside <a href="${classic()}">the current SwimSignal</a>. Both read the same forecast, and a place saved on one is saved on the other.`
-      : `A forecast for any river or lake on the map, outings and the swim journal are still on <a href="${classic()}">the earlier version of SwimSignal</a>, which reads the same forecast. A place saved on one is saved on the other.`} Saved places stay on this device.</p>
+      : `Outings and the map of a spill's spread are still on <a href="${classic()}">the earlier version of SwimSignal</a>, which reads the same forecast. A place saved on one is saved on the other.`} Saved places stay on this device.</p>
     <p><a href="methods.html">Method and limits</a> · <a href="verification.html">How accurate it has been</a> · <a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a></p>
+    ${yourDataHtml()}
     <details><summary>Data sources and licences</summary><p>${esc(c.attribution || '')}</p><p>${esc(c.modified || '')} ${esc(c.endorsement || '')} <a href="terms.html#data">Full credits</a></p></details></footer>`; };
 // One quiet line under a photo, the day first since the photo is of that day. Each part keeps to one line with its
 // dot after it, so a narrow phone's second line never starts with a dot (the live page's rule).
@@ -219,7 +274,7 @@ const KEYS = [['lv-low', 'Low'], ['lv-moderate', 'Moderate'], ['lv-high', 'High'
 function mapCardHtml(day) {
   const s = mapPick && spotOf(mapPick);
   return s ? `<div class="picked"><ul class="rows"><li class="has-x">${rowLink(P.placeRow(s, day, here), day)}<button type="button" class="x" data-do="map-close" aria-label="Close ${esc(s.name)}">${IC.x}</button></li></ul></div>`
-    : `<p class="meta map-tip">${TOUCH ? 'Tap' : 'Click'} a place for its forecast ${esc(dayWord(day))}.</p>`;
+    : `<p class="meta map-tip" id="map-tip" role="status">${esc(mapSaid || `${TOUCH ? 'Tap' : 'Click'} a place for its forecast ${dayWord(day)}${typeof AnyPoint === 'object' ? ', or any river or lake' : ''}.`)}</p>`;
 }
 function mapViewHtml() {
   const day = homeDay();
@@ -233,17 +288,31 @@ function mapViewHtml() {
       <div class="map-side"><div id="map-card" aria-live="polite">${mapCardHtml(day)}</div>
       <p class="mapkey"><b>Pollution risk ${esc(dayWord(day))}</b>${KEYS.map(([c, w]) => `<span><i class="${c}"></i>${w}</span>`).join('')}<span><i class="adv"></i>Ringed: an official notice</span></p>
       <p class="meta" id="here-note">${esc(hereNote)}</p>
-      <p class="meta">The map shows the ${DATA.spots.length} listed places. <a href="${link({ day })}">The same places as a list</a>. For any other river or lake, <a href="${classic('?map=1')}">tap the water on ${OLD}'s map</a>.</p></div>
+      <p class="meta">The map shows the ${DATA.spots.length} listed places. <a href="${link({ day })}">The same places as a list</a>. A river or lake that is not listed has a forecast too: zoom in and ${TOUCH ? 'tap' : 'click'} the water.</p></div>
     </div>
     ${foot()}
   </main>${tabbar()}`;
 }
-let mapGoHere = false;
+let mapGoHere = false, mapSaid = '';
+// A tap on the map that is on no listed place: a river or lake to forecast. Further out than this a pixel is half a
+// kilometre or more and only the big rivers are drawn, so the map zooms in on the tap and asks again (anypoint.js,
+// POINT_ZOOM and CLOSER, the live map's own rule).
+function tapWater(lat, lon, zoom) {
+  if (typeof AnyPoint !== 'object') return;
+  const need = AnyPoint.POINT_ZOOM || 9;
+  if (zoom < need) { window.PVMap.homeTo({ lat, lon }, need + 2); mapSaid = `Zoomed in. Now ${TOUCH ? 'tap' : 'click'} a river or lake for its forecast.`;
+    const said = document.getElementById('map-tip'); if (said) said.textContent = mapSaid; return; }
+  const pt = P.pointOf(`${lat.toFixed(5)},${lon.toFixed(5)}`), tip = document.getElementById('map-tip');
+  if (!pt) { mapSaid = 'That point is outside Britain and Ireland, so there is no forecast to work out for it.'; if (tip) tip.textContent = mapSaid; return; }
+  mapSaid = '';
+  leftAt.set(location.pathname + location.search, { y: window.scrollY, href: '' });
+  history.pushState(null, '', link({ id: pt.id, day: route.day })); draw({ focus: true });
+}
 function mountHomeMap() {
   const slot = document.getElementById('home-map'); if (!slot) return;
   const day = homeDay(), points = P.mapPoints(DATA.spots, day);
-  const pick = id => { mapPick = id; const card = document.getElementById('map-card'); if (card) card.innerHTML = mapCardHtml(day); window.PVMap.home(slot, points, mapPick, pick, here).catch(() => {}); };
-  window.PVMap.home(slot, points, mapPick, pick, here).then(() => { const w = slot.querySelector('.map-wait'); if (w) w.remove();
+  const pick = id => { mapPick = id; mapSaid = ''; const card = document.getElementById('map-card'); if (card) card.innerHTML = mapCardHtml(day); window.PVMap.home(slot, points, mapPick, pick, here, tapWater).catch(() => {}); };
+  window.PVMap.home(slot, points, mapPick, pick, here, tapWater).then(() => { const w = slot.querySelector('.map-wait'); if (w) w.remove();
     if (mapGoHere && here) { mapGoHere = false; window.PVMap.homeTo(here); } })
     .catch(() => { slot.innerHTML = `<p class="none">The map could not be read just now. <a href="${link({ day })}">The same places as a list</a></p>`; });
 }
@@ -258,7 +327,7 @@ function alertsHtml() {
   const what = 'A notification when one of your saved spots reaches high or very high risk, at most once a day for each.' + (push.advice ? ' Another when official advice is newly shown at one of them, also at most once a day for each.' : '');
   const sends = 'Turning alerts on sends your browser\'s push address and the list of your saved spots, and nothing else about you, to SwimSignal\'s alert service. Ticking the weekly note adds only that you want it. ' + (push.clears === true ? 'Asking, on a spot\'s page, to hear when it is back to low risk adds only that spot. ' : '') + 'Alerts reach you through your browser maker\'s push service (Google, Apple, Mozilla or Microsoft), encrypted so it cannot read them. '
     + 'You can turn them off here at any time, which deletes what the alert service holds. An alert can be late or not come at all, so no alert does not mean the water is clean. <a href="privacy.html">Privacy notice</a>.';
-  const body = can === 'offline' ? '<p class="meta">Alerts need the offline copy, which is turned off in this browser. <a href="' + classic('#your-data') + '">Turn it back on</a> to use them.</p>'
+  const body = can === 'offline' ? '<p class="meta">Alerts need the offline copy, which is turned off in this browser. <a href="' + (PREVIEW ? classic('#your-data') : '#your-data') + '" data-do="to-data">Turn it back on</a> to use them.</p>'
     : can === 'blocked' ? `<p class="meta" id="alerts-blocked" tabindex="-1">Notifications are blocked for this site in your browser settings, so alerts cannot be turned on. ${esc(unblockHow(w))}</p>`
     : can === 'yes' ? `<p class="alerts-go"><button type="button" class="btn" data-do="alerts"${alertsOn === null ? ' disabled' : ''}>${alertsOn ? 'Turn off alerts' : 'Turn on alerts'}</button></p>`
       + `<label class="tick"${alertsOn ? '' : ' hidden'}><input type="checkbox" id="alerts-week"${alertsOn && A.weeklyOn() ? ' checked' : ''}><span>Also a weekly note on Thursday evenings: the days with the lowest pollution risk, Friday to Monday, at each saved spot.</span></label>`
@@ -283,29 +352,182 @@ async function alertsToggle() {
   redrawAlerts();
   const to = document.getElementById('alerts-blocked') || document.querySelector('[data-do="alerts"]'); if (to) to.focus({ preventScroll: true });
 }
+// A list someone shared (saved/#list=...&spots=..., lists.js, readShared): shown, not kept, with one thing to do,
+// add it to my lists. It stays in the address while it is shown, so a reload or Back shows it again. The words are
+// the live page's (index.html, renderShared).
+function sharedHtml(sh) {
+  const day = dates().includes(sh.day) ? sh.day : homeDay(), spots = sh.spots.map(spotOf).filter(Boolean), gone = sh.spots.length - spots.length;
+  const have = spots.length ? sameList(LISTS, sh.name, spots.map(s => s.id)) : null, inApp = window.PVAlerts.where.inApp, own = window.PVAlerts.where.ios ? 'Safari' : 'your own browser';
+  return `${bar()}<main id="main" class="home view-saved">
+    <section class="opening slim"><p class="backline"><a href="${link({ view: 'saved' })}">${IC.back}Saved</a></p><h1 id="title" tabindex="-1">${esc(sh.name)}</h1>
+      <p class="lede">Someone shared this list${spots.length ? ` of ${spots.length === 1 ? 'one spot' : `${spots.length} spots`}` : ''} with you.${spots.length ? ' It is not kept on this device unless you add it.' : ''}${spots.length && !have && DATA.push ? ' Once added, it stays under Saved, where you can set up alerts for its spots.' : ''}</p></section>
+    ${stale()}
+    <div class="home-body">
+      ${inApp && spots.length && !have ? `<p class="notice" role="note">You are in the ${esc(inApp)} app's browser. A list added here stays in the ${esc(inApp)} app, not in ${own}, and alerts cannot be turned on here. To keep it in ${own}, open this page there: the ${esc(inApp)} app's menu has an option for it.</p>` : ''}
+      ${have ? `<p class="shared-act" role="status">It is in your lists already, as ${esc(have.name)}. <button type="button" class="textbtn" data-do="shared-show" data-list="${esc(have.id)}">Show it</button></p>`
+        : spots.length ? '<p class="shared-act"><button type="button" class="btn primary" data-do="shared-add">Add to my lists</button></p>' : ''}
+      <section class="block">
+        ${spots.length ? `<h2>${spots.length === 1 ? 'The place' : `The ${spots.length} places`} <span class="meta">${esc(dayWord(day))}</span></h2>${rows(spots.map(p => P.placeRow(p, day)), day)}`
+          : `<h2>No spots to show</h2><p class="sec-lede">None of the spots in this link is in the forecast now, or the link was cut short.</p><p><a class="btn primary" href="${link({ day })}">Find a place</a></p>`}
+        ${gone && spots.length ? `<p class="meta">${gone === 1 ? 'One spot in the link is' : `${gone} spots in the link are`} not in the forecast now, so ${gone === 1 ? 'it is' : 'they are'} left out.</p>` : ''}
+      </section>
+      <p class="issued">${esc(P.issuedWords(DATA, now()).text)}. Forecasts, not water tests: check the signs at the water before you swim.</p>
+    </div>
+    ${foot()}
+  </main>${tabbar()}`;
+}
+// Share the list shown: a link that opens it on another phone or for a friend (lists.js, shareHash). The phone's own
+// share sheet where there is one, else the link is copied; if neither can be done the link is written out.
+async function shareList() {
+  const cur = shownList(LISTS), ids = cur.spots.filter(spotOf), msg = document.getElementById('share-list-msg');
+  const url = new URL(link({ view: 'saved' }), document.baseURI).href + shareHash(cur.name, ids), say = t => { if (msg) msg.textContent = t; };
+  try { if (TOUCH && navigator.share) await navigator.share({ title: `${cur.name} · SwimSignal`, url }); else { await navigator.clipboard.writeText(url); say('Link copied.'); } }
+  catch (e) { if (e.name !== 'AbortError') say(url); }
+}
+// Move or copy a place between lists (the live page's "Your lists": lists.js moveToList, copyToList). Offered with
+// two lists or more. It opens from the list shown to the next one, or into the list shown when that is empty, as a
+// list just made is. The form stays up after a move, since sorting a list is several moves.
+let moveSaid = '';
+function moveFormHtml(cur, movable) {
+  const here = cur.spots.some(spotOf), to = here ? LISTS.lists.find(l => l.id !== cur.id) : cur;
+  return `<form class="listform moveform" onsubmit="return false"><h3 id="mv-h">Move or copy a place</h3>
+      <p class="picks"><label for="mv-spot">Place<select id="mv-spot">${movable.map(x => `<optgroup label="${esc(x.l.name)}">${x.spots.map((s, i) => `<option value="${esc(x.l.id)} ${esc(s.id)}"${here && x.l.id === cur.id && !i ? ' selected' : ''}>${esc(s.name)}</option>`).join('')}</optgroup>`).join('')}</select></label>
+        <label for="mv-to">To<select id="mv-to">${LISTS.lists.map(l => `<option value="${esc(l.id)}"${l.id === to.id ? ' selected' : ''}>${esc(l.name)}</option>`).join('')}</select></label></p>
+      <p class="chips"><button type="button" class="btn" data-do="list-move">Move</button><button type="button" class="btn" data-do="list-copy">Copy</button><button type="button" class="textbtn" data-do="list-cancel">Done</button></p>
+      <p class="meta" id="mv-said" role="status">${esc(moveSaid)}</p></form>`;
+}
+function listMove(copy) {
+  const pick = document.getElementById('mv-spot'), dest = document.getElementById('mv-to'); if (!pick || !dest) return;
+  const v = pick.value, at = v.indexOf(' '), fromId = v.slice(0, at), id = v.slice(at + 1), s = spotOf(id), to = listById(LISTS, dest.value), from = listById(LISTS, fromId);
+  if (!s || !to || !from) return;
+  const say = t => { moveSaid = t; draw(); const b = app.querySelector(`[data-do="${copy ? 'list-copy' : 'list-move'}"]`) || app.querySelector('[data-do="list-open"]'); if (b) b.focus({ preventScroll: true }); };
+  if (to.spots.includes(id)) { say(`${s.name} is in ${to.name} already.`); return; }
+  const kept = setLists(copy ? copyToList(LISTS, id, to.id) : moveToList(LISTS, id, fromId, to.id));
+  say(!kept ? 'This browser is not keeping site data, so this change lasts only for this visit.' : `${copy ? 'Copied' : 'Moved'} ${s.name} ${copy ? 'to' : `from ${from.name} to`} ${to.name}.`);
+}
+// Open a list from its link (lists.js pastedList): the Home Screen app on an iPhone has no address bar, so a list
+// sent to someone, or copied in Safari, is pasted here and opens as a shared list with its own "Add to my lists".
+// Nothing is read from the clipboard: the reader pastes. Only a link to a Saved page of this site is taken.
+const OPEN_WHY = { empty: 'Paste a link to a SwimSignal list first.', long: 'That is too long to be a link to a list.',
+  notlink: 'That is not a link. Paste the whole link, starting https://.', site: 'That is a link to another website, not SwimSignal.',
+  notlist: "That link has no list of spots in it. A list's link has saved/#list= in it." };
+const openFormHtml = () => `<form class="listform" onsubmit="return false"><label for="list-link">Open a list from a link</label>
+      <p class="meta">Paste a link to a list, sent to you or copied with Share this list${navigator.standalone ? ' in Safari' : ''}, to see it and add it here.</p>
+      <div class="field"><input id="list-link" type="text" inputmode="url" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="${PASTE_MAX}" enterkeyhint="go" placeholder="https://swimsignal.co.uk/saved/#list=…"></div>
+      <p class="chips"><button type="button" class="btn" data-do="list-opened">Open</button><button type="button" class="textbtn" data-do="list-cancel">Cancel</button></p>
+      <p class="meta" id="list-link-said" role="status"></p></form>`;
+function listOpen() {
+  const box = document.getElementById('list-link'), said = document.getElementById('list-link-said'); if (!box) return;
+  const got = pastedList(box.value, location.origin);
+  if (got.why) { said.textContent = OPEN_WHY[got.why]; box.focus(); return; }
+  listForm = null; history.pushState(null, '', link({ view: 'saved', day: route.day }) + got.hash); draw({ focus: true });
+}
+// Compare your places: up to three saved places side by side, a column each. The five days first, the day shown
+// shaded; then the water today, and what each level rests on and leaves out. The rules and the words are the live
+// site's own (experience.js, compareDays and compareRows; plan.js, planCompareIds), so every cell says something:
+// where the data is missing it says it is not known. No column is called the best: the reader decides which to look
+// into further. Opens on the first three places of the list shown, until others are chosen; the choice is kept
+// while the page is open, not stored.
+let cmpIds = null, cmpOpen = false;
+const vt = (kind, words) => `<span class="vt vt-${kind}">${words}</span>`;
+window.valueTag = vt;   // compareRows marks each value's kind with the page's own tag
+// The water today, as two cells: the temperature (model.js, waterTemp: measured, or an estimate said as one) and the
+// level at the place's gauge, which is named, since places on one river often share one.
+function compareWater(s) {
+  const w = P.waterTemp(s, today(), now()), rs = s.river_state, at = rs && rs.station ? ` at ${esc(rs.station)}` : '';
+  const word = rs && ({ low: 'low', normal: 'normal', high: 'high', 'very high': 'very high' })[rs.label];
+  return [w ? `${esc(w.value)} ${vt(/^Measured/.test(w.note) ? 'measured' : 'estimate', esc(w.note.replace(/\.$/, '')))}` : vt('none', 'No reading'),
+    !rs || P.isNil(rs.level_m) ? vt('none', 'No gauge') : rs.stale ? `${vt('none', 'No current reading')} ${vt('stale', `Last reading${at}: too old to use`)}`
+      : `${num(rs.level_m, 2)}&nbsp;m${word ? `, ${word}` : ''} ${vt('measured', `Measured${at}`)}`];
+}
+function compareHtml(mine, day) {
+  if (mine.length < 2 || typeof compareRows !== 'function' || typeof evidenceRows !== 'function') return '';
+  const ids = cmpIds = planCompareIds(cmpIds, mine), ds = dates();
+  // A place as its own file fills it out (its guide, for Access); until the file comes the cell says so.
+  const full = s => { const got = details.get(s.id); return got ? { ...s, ...(got.detail || {}), detail_loaded: true, detail_missing: !got.detail && !!s.detail_file } : s; };
+  const spots = ids.map(spotOf).filter(Boolean).map(full), n = spots.length;
+  const opts = i => mine.map(s => `<option value="${esc(s.id)}"${s.id === ids[i] ? ' selected' : ''}>${esc(s.name)}</option>`).join('');
+  // On a phone the three selects fold under "Choose the places" once two are chosen: open, they put the first day's
+  // levels off the first screen (the live page's finding, 6 November 2026). The table's heads name the places chosen.
+  const fold = !matchMedia('(min-width: 700px)').matches && ids.length >= 2 && !cmpOpen;
+  const picks = `<details class="cmp-choose"${fold ? '' : ' open'}><summary>Choose the places</summary><p class="picks cmp-picks">${[0, 1, 2].map(i => `<label for="cmp-${i}">Place ${i + 1}${i === 2 ? ' (optional)' : ''}<select id="cmp-${i}" data-cmp="${i}"><option value="">Choose a place</option>${opts(i)}</select></label>`).join('')}</p></details>`;
+  const head = `<section class="compare" id="compare" aria-labelledby="compare-h"><h2 id="compare-h">Compare your places</h2>
+    <p class="sec-lede">Up to three saved places side by side: the next ${ds.length === 4 ? 'four' : 'five'} days, and what each level rests on.</p>${picks}`;
+  if (n < 2) return `${head}<p class="meta" role="status">Choose at least two different places.</p></section>`;
+  const days = spots.map(s => compareDays(s, ds)), facts = spots.map(s => compareRows(s, day, DATA.generated_at)), water = spots.map(compareWater);
+  const cell = x => `<span class="lvl ${P.cls(x.level)}">${esc(x.words)}</span>`, hd = (r, j) => ` headers="${r} cmp-s${j}"`;
+  // A row's label is a band across the columns, with what every column shares said once under it.
+  const lab = (id, t, note = '') => `<tr class="lab"><th colspan="${n}" id="${id}"><span>${t}${note ? `<span class="lab-note">${note}</span>` : ''}</span></th></tr>`;
+  // A row whose cells all say the same is one cell across the columns.
+  const across = (id, cells) => cells.every(c => c === cells[0]) ? `<tr><td colspan="${n}" headers="${id} ${spots.map((s, j) => `cmp-s${j}`).join(' ')}">${cells[0]}</td></tr>`
+    : `<tr>${cells.map((c, j) => `<td${hd(id, j)}>${c}</td>`).join('')}</tr>`;
+  return `${head}<p class="meta">${esc(P.issuedWords(DATA, now()).text)}. A lower level is the forecast for sewage pollution, not a safety check: check the signs at the water.</p>
+    <div class="cmp-scroll" tabindex="0" role="region" aria-label="Place comparison"><table class="cmp" style="--cols:${n}">
+    <thead><tr>${spots.map((s, j) => `<th scope="col" id="cmp-s${j}"><a href="${link({ id: s.id, day: daily(s) ? day : null })}">${esc(s.name)}</a></th>`).join('')}</tr></thead><tbody>
+    ${lab('cmp-days', `Pollution risk, next ${ds.length === 4 ? 'four' : 'five'} days`)}
+    ${ds.map((iso, i) => `<tr${iso === day ? ' class="on" aria-current="true"' : ''}>${days.map((d, j) => !d.same
+        ? `<td${hd('cmp-days', j)}><span class="day">${shortDay(iso)}</span>${cell(d.days[i])}</td>`
+        : i ? '' : `<td class="same" rowspan="${ds.length}"${hd('cmp-days', j)}>${cell(d.days[0])}. The same on every day.</td>`).join('')}</tr>`).join('')}
+    ${lab('cmp-temp', 'Water temperature', 'Today')}${across('cmp-temp', water.map(w => w[0]))}
+    ${lab('cmp-level', 'Water level', 'Now. Not part of the level')}${across('cmp-level', water.map(w => w[1]))}
+    ${facts[0].map(([label, , note], k) => lab(`cmp-r${k}`, label, note) + across(`cmp-r${k}`, facts.map(f => f[k][1]))).join('')}
+    </tbody></table></div></section>`;
+}
+// The comparison drawn again where it is, the table kept where it was scrolled to: a place chosen, or a place's own
+// file arrived. The files of the places compared are asked for once each.
+function redrawCompare() {
+  const el = document.getElementById('compare'); if (!el || route.view !== 'saved') return;
+  const sc = el.querySelector('.cmp-scroll'), left = sc ? sc.scrollLeft : 0, focus = document.activeElement && document.activeElement.id;
+  const t = document.createElement('template'); t.innerHTML = compareHtml(shownList(LISTS).spots.map(spotOf).filter(Boolean), homeDay());
+  el.replaceWith(t.content); mountCompare();
+  const sc2 = document.querySelector('#compare .cmp-scroll'); if (sc2) sc2.scrollLeft = left;
+  if (focus && /^cmp-\d$/.test(focus)) { const f = document.getElementById(focus); if (f) f.focus({ preventScroll: true }); }
+}
+function mountCompare() {
+  if (!document.getElementById('compare')) return;
+  for (const id of cmpIds || []) if (!details.has(id)) loadDetail(id).then(redrawCompare);
+}
 function savedHtml() {
+  const sh = readShared(location.hash, dates()); if (sh) return sharedHtml(sh);
   const day = homeDay(), cur = shownList(LISTS), many = LISTS.lists.length > 1, S = P.savedRows(DATA.spots, cur.spots, day);
-  const row = r => `<li class="has-x">${rowLink(r, day)}<button type="button" class="x" data-do="unsave" data-id="${esc(r.id)}" aria-label="Remove ${esc(r.name)} from ${many ? esc(cur.name) : 'your saved places'}">${IC.x}</button></li>`;
+  const mine = cur.spots.map(spotOf).filter(Boolean), isToday = day === today();
+  // What changed since this browser last showed each place (since.js): a line under a place's row and one over them
+  // all, only while today is shown, since the note kept is of today's level. Nothing over them on a first look.
+  const sum = isToday && mine.length && typeof sinceSummaryFor === 'function' ? sinceSummaryFor(mine, DATA.generated_at) : null;
+  const since = id => isToday && typeof sinceSaid === 'function' ? sinceSaid(spotOf(id), DATA.generated_at) : '';
+  const row = r => `<li class="has-x">${rowLink(r, day)}<button type="button" class="x" data-do="unsave" data-id="${esc(r.id)}" aria-label="Remove ${esc(r.name)} from ${many ? esc(cur.name) : 'your saved places'}">${IC.x}</button>${since(r.id)}</li>`;
+  const movable = LISTS.lists.map(l => ({ l, spots: l.spots.map(spotOf).filter(Boolean) })).filter(x => x.spots.length);
   const tools = listForm === 'new' || listForm === 'rename' ? `<form class="listform" onsubmit="return false"><label for="list-name">${listForm === 'new' ? 'Name the new list' : 'A new name for this list'}</label>
       <div class="field"><input id="list-name" type="text" maxlength="40" autocomplete="off" enterkeyhint="done" value="${listForm === 'rename' ? esc(cur.name) : ''}"></div>
       <p class="chips"><button type="button" class="btn" data-do="list-save">${listForm === 'new' ? 'Make the list' : 'Rename'}</button><button type="button" class="textbtn" data-do="list-cancel">Cancel</button></p></form>`
     : listForm === 'delete' ? `<p class="confirm" role="group" aria-label="Delete this list">Delete “${esc(cur.name)}”${cur.spots.length ? ` and what is saved in it? A place saved in another list stays there.` : '?'}
       <span class="chips"><button type="button" class="btn" data-do="list-delete">Delete the list</button><button type="button" class="textbtn" data-do="list-cancel">Keep it</button></span></p>`
-    : S.rows.length || many ? `<p class="chips listtools"><button type="button" class="textbtn" data-do="list-new">New list</button><button type="button" class="textbtn" data-do="list-rename">Rename this list</button>${many ? '<button type="button" class="textbtn" data-do="list-del">Delete this list</button>' : ''}</p>` : '';
+    : listForm === 'move' && movable.length ? moveFormHtml(cur, movable)
+    : listForm === 'open' ? openFormHtml()
+    : `<p class="chips listtools">${S.rows.length || many ? `<button type="button" class="textbtn" data-do="list-new">New list</button><button type="button" class="textbtn" data-do="list-rename">Rename this list</button>${many ? '<button type="button" class="textbtn" data-do="list-del">Delete this list</button>' : ''}` : ''}${
+        many && movable.length ? '<button type="button" class="textbtn" data-do="list-mv">Move or copy a place</button>' : ''}<button type="button" class="textbtn" data-do="list-open">Open a list from a link</button></p>`;
   return `${bar()}<main id="main" class="home view-saved">
     <section class="opening slim"><h1 id="title" tabindex="-1">Saved</h1><p class="lede">Your places, kept in this browser and nowhere else.</p></section>
     ${stale()}
     <div class="home-body">
       ${dayTabsHtml(plainTabs(), day, 'Day shown', d => link({ view: 'saved', day: d }))}
       ${many ? `<p class="chips" role="group" aria-label="Which list">${LISTS.lists.map(l => `<button type="button" class="chip${l.id === cur.id ? ' on' : ''}" data-do="list" data-list="${esc(l.id)}" aria-pressed="${l.id === cur.id}">${esc(l.name)} <span class="chip-n">${l.spots.filter(spotOf).length}</span></button>`).join('')}</p>` : ''}
+      ${sum && sum.state !== 'none' ? `<section class="since-sum ${sum.state}" aria-labelledby="since-h"><h2 id="since-h">Since you last looked</h2><p>${esc(sum.text)}</p></section>` : ''}
       <section class="block">
         <h2>${many ? esc(cur.name) : 'Your places'}${S.rows.length ? ` <span class="meta">${S.low} of ${S.rows.length} at low risk ${esc(dayWord(day))}</span>` : ''}</h2>
         ${S.rows.length ? `<ul class="rows">${S.rows.map(row).join('')}</ul>` : `<p class="none">Nothing saved ${many ? 'in this list ' : ''}yet. Open a place and press Save. <a href="${link({ day })}">Find a place</a></p>`}
         ${S.gone ? `<p class="meta">${S.gone === 1 ? 'One saved place is' : `${S.gone} saved places are`} no longer in the forecast, so ${S.gone === 1 ? 'it is' : 'they are'} not shown.</p>` : ''}
         ${tools}<p class="meta" id="list-said" role="status"></p>
       </section>
+      ${mine.length > 1 && typeof fwSection === 'function' ? fwSection(mine, dates(), s => link({ id: s.id })) : ''}
+      ${compareHtml(mine, day)}
       ${alertsHtml()}
-      <p class="meta">A place saved here is saved on <a href="${classic('saved/')}">${OLD}</a> too, in this browser. Sharing a list, finding a low-risk day across your places and the swim journal are there.</p>
+      ${mine.length ? `<section class="sharelist" aria-labelledby="share-list-h"><h2 id="share-list-h">Share this list</h2>
+        <p class="sec-lede">A link that opens this list on another phone or browser, or for a friend, who can then add it to their own lists. It holds the list's name, ${esc(cur.name)}, and which spots are in it, nothing else.</p>
+        <p><button type="button" class="btn" data-do="share-list">${TOUCH && navigator.share ? 'Share this list' : 'Copy link to this list'}</button></p><p class="meta" id="share-list-msg" role="status"></p>
+        <p class="meta">For a club or a centre: these spots on one page to print, each with its five days. <a href="sites.html${esc(sitesHash(cur.name, mine.map(s => s.id)))}">Open the sites view</a>.</p></section>` : ''}
+      ${journalHtml()}
+      <p class="meta">A place saved here is saved on <a href="${classic('saved/')}">${OLD}</a> too, in this browser, and so is the journal.</p>
     </div>
     ${foot()}
   </main>${tabbar()}`;
@@ -395,6 +617,7 @@ function planTyping(v) {
 // ------------------------------------------------------------------------------------------------ one place
 const placeDay = s => { const ds = P.dates(DATA); return ds.includes(route.day) ? route.day : ds[0] || today(); };
 function kindLine(s) {
+  if (s.unlisted) return ['Unlisted point: not hand-checked', s.kind === 'lake' ? 'Lake' : s.kind === 'river' ? 'River' : ''].filter(Boolean).join(' · ');
   const lake = s.kind === 'lake' && !/\b(water|mere|tarn|lake|loch|pond|reservoir|llyn)\b/i.test(s.name + ' ' + (s.river || ''));
   return [s.river, lake ? 'Lake' : '', s.area, s.source === 'designated' ? 'Designated bathing water' : ''].filter(Boolean).join(' · ');
 }
@@ -453,6 +676,39 @@ function behindHtml(s, day) {
 // The space before a stop on the line, in px, from the water between it and the one before: the square root keeps a
 // 30 km gap readable beside a 300 m one.
 const gapPx = km => Math.round(Math.min(72, 6 + 16 * Math.sqrt(Math.max(0, km))));
+// The spill map (plume.js, the live site's own; docs/PLUME-MAP-2026-10.md): where water from the spills reported
+// upstream in the last 48 hours may be, moved at the forecast's travel time, with a slider from 48 hours before the
+// update to 48 after. A model estimate, said so on every line. After "Upstream" on a listed place with a daily
+// forecast. The script, the map's library and the place's three files (its routes, the replay and the trace) are
+// asked for when its place on the page comes within a screen of view, not before. A place with no routes file (a
+// lake, or one the build could not place) loses the section quietly. What is drawn is kept and put back when the
+// page is drawn again, so the slider stays where it was left.
+let plume = null, plumeLib = null;   // plume: { id, el, map }
+const plumeWanted = s => !s.unlisted && !!s.detail_file && daily(s);
+const plumeGone = () => { if (plume && plume.map) plume.map.remove(); plume = null; };
+function mountPlume(s) {
+  const slot = document.getElementById('plume-slot'); if (!slot) { plumeGone(); return; }
+  if (plume && plume.id === s.id) { slot.replaceWith(plume.el); return; }
+  plumeGone();
+  // Empty, it takes no room and draws no rule, but is still on the page for the browser to say when it is near.
+  const el = document.createElement('div'); el.id = 'plume-host'; el.className = 'spill'; slot.replaceWith(el);
+  const mine = plume = { id: s.id, el, map: null };
+  const go = () => {
+    plumeLib = plumeLib || new Promise((ok, no) => { const sc = document.createElement('script'); sc.src = 'plume.js'; sc.onload = ok; sc.onerror = no; document.head.appendChild(sc); });
+    plumeLib.catch(() => { plumeLib = null; });
+    const get = p => loadJson(`data/${s.detail_file.replace(/\.json$/, p)}`).catch(() => null);
+    Promise.all([plumeLib, window.PVMap.load(), get('-plume.json'), get('-replay.json'), get('-trace.json')]).then(([, , doc, replay, trace]) => {
+      if (plume !== mine) return;
+      if (!doc || !replay) return;
+      const gen = Date.parse((replay.window && replay.window.to) || doc.generated_at);
+      window.tiles = window.PVMap.tiles;   // plume.js draws on the page's own tiles where the page has them, by this name
+      plumeStyle(document); el.classList.add('on'); el.innerHTML = plumeTile(s, doc, replay, gen, now()); mine.map = plumeBind(el, s, doc, replay, trace, gen);
+    }).catch(() => { if (plume === mine) { el.classList.add('on'); el.innerHTML = '<p class="meta">The map of where spill water may be could not be loaded.</p>'; } });
+  };
+  if (!('IntersectionObserver' in window)) { go(); return; }
+  const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { io.disconnect(); go(); } }, { rootMargin: '100% 0px' });
+  io.observe(el);
+}
 function upstreamHtml(s, day) {
   const got = details.get(s.id), head = '<h2 id="upstream-h">Upstream</h2>';
   if (!daily(s)) return `<section class="upstream" id="upstream" aria-labelledby="upstream-h">${head}<p class="sec-lede">${isolated(s) ? 'No river or beck is drawn into this lake, so no monitored overflow can be traced to it.' : 'The trace found no monitored storm overflow on the river network upstream of here.'}</p>
@@ -526,6 +782,13 @@ function nearbyHtml(s, day) {
 }
 const TOPICS = { parking: 'Parking', transport: 'Bus and train', path: 'Path to the water', entry: 'Getting in', exit: 'Getting out', toilets: 'Toilets', changing: 'Changing',
   fees: 'Fees and booking', hours: 'Opening times', rules: 'Who can swim', launch: 'Launching a boat or board', carry: 'Carrying to the water', paddle: 'Paddling here' };
+// For someone taking a group in, and for telling Ethan: the live page's two lines under a place's buttons, in its
+// words. The event page, the clubs' tools and the decision record are pages of their own (organisers.html, clubs.html,
+// record.html), and each reads its place, and the record its day, from after the #. The record is for the day shown,
+// where the live page has a link under each day. Not for a point tapped on the map, which those pages cannot open.
+const groupLinks = s => { if (s.unlisted) return ''; const id = encodeURIComponent(s.id), day = placeDay(s);
+  return `<p class="meta">Taking a group in the water here, or running an event? <a href="organisers.html#spot=${id}">The event page</a>, with the overflows upstream, a checklist and signs; <a href="clubs.html">tools for clubs and centres</a>; and <a href="record.html#spot=${id}&amp;day=${esc(day)}">a decision record for ${esc(dayName(day))}</a> to print.</p>
+    <p class="meta">Did the forecast change where or when you swam? <a href="feedback.html?type=feedback&amp;spot=${encodeURIComponent(s.name)}">Tell&nbsp;Ethan</a>.</p>`; };
 function placeFactsHtml(s) {
   const got = details.get(s.id), g = got && got.detail ? got.detail.guide : null, hero = photoOf(s.id), facts = [], guide = [];
   const c = s.classification;
@@ -550,14 +813,39 @@ function placeFactsHtml(s) {
     ${facts.length ? dl(facts) : got === undefined ? '' : '<p class="sec-lede">No rating, sample or gauge is recorded for this place.</p>'}
     ${guide.length ? `<details class="guide"><summary>Getting there and getting in: ${guide.length} checked notes</summary>${dl(guide)}${g.checked ? `<p class="meta">Checked on ${esc(P.shortDate(g.checked))}${g.how === 'desk' ? ', from published sources, not on a visit' : ''}.</p>` : ''}</details>` : ''}
     ${photos.length ? `<div class="photos">${photos.map(p => `<figure><img src="guides/photos/${encodeURIComponent(p.file)}" width="${Number(p.w) || 640}" height="${Number(p.h) || 480}" alt="${esc(p.caption || s.name)}" loading="lazy" decoding="async"><figcaption>${esc(p.caption || '')} ${credit({ ...p, licence_name: p.licence && /by-sa\/2\.0/.test(p.licence) ? 'CC BY-SA 2.0' : '' })}</figcaption></figure>`).join('')}</div>` : ''}
-    <p class="meta">${esc(s.source === 'openstreetmap' ? 'This place is from OpenStreetMap, © OpenStreetMap contributors.' : String(s.notes || '').replace(/([^.])$/, '$1.'))} A listing is not a right to swim or a check that it is allowed. <a href="${classic(`spot/${encodeURIComponent(s.id)}/`)}">This place on ${OLD}</a>, with the record of how the forecast has done here</p></section>`;
+    <p class="meta">${esc(s.source === 'openstreetmap' ? 'This place is from OpenStreetMap, © OpenStreetMap contributors.' : String(s.notes || '').replace(/([^.])$/, '$1.'))} A listing is not a right to swim or a check that it is allowed. <a href="${classic(`spot/${encodeURIComponent(s.id)}/`)}">This place on ${OLD}</a></p>
+    ${groupLinks(s)}</section>`;
+}
+// A point's request to be listed, as the live page's (anypoint.js, request): a GitHub form with its position filled in.
+function requestHtml(s) {
+  const q = new URLSearchParams({ template: 'spot-request.yml', title: `Spot request: ${s.name}`, name: s.name, location: `${s.lat.toFixed(5)}, ${s.lon.toFixed(5)}`, kind: s.kind === 'lake' ? 'lake' : 'river' });
+  return `<p><a class="btn" href="https://github.com/ethanbuckley/swimsignal/issues/new?${esc(q.toString())}" rel="noopener">Request this as a spot</a></p>
+    <p class="meta">Opens a request on GitHub with this point's position filled in. A listed spot is checked by hand and gets its own rain forecast and E.&nbsp;coli estimate.</p>`;
+}
+// A point with no forecast: outside England, off the river network, or an isolated lake. Its reason in the live
+// script's own words, the official source for where it is, and the listed places near it.
+function pointNoneHtml(s, day) {
+  const see = s.outside && typeof AnyPoint === 'object' && (AnyPoint.OUTSIDE[s.outside] || {}).see;
+  return `${bar(true)}<main id="main" class="place">
+    <div class="top"><div class="tools"><a class="tool" href="${link({ view: 'map', day })}">${IC.back}<span>Map</span></a></div>
+      <div class="head"><h1 id="title" tabindex="-1">${esc(s.name || 'This point')}</h1><p class="kind">${esc(kindLine(s))}</p></div>
+      <div class="first"><section class="answer"><h2 class="level lv-none" id="answer-h">No forecast here</h2><p class="why">${esc(s.error)}</p>
+        ${see ? `<p class="why">${see}</p>` : ''}<p class="issued">A forecast, not a water test: check the signs at the water before you swim.</p></section></div></div>
+    <div class="more">${nearbyHtml(s, day)}</div>
+    ${s.location && s.location.mode === 'isolated' ? `<section class="theplace">${requestHtml(s)}</section>` : ''}
+    ${foot()}
+  </main>${tabbar()}`;
 }
 function placeHtml() {
-  const s = spotOf(route.id);
+  const s = spotOf(route.id), pt = route.point ? POINTS.get(route.id) : null;
+  if (!s && route.point) return `${bar(true)}<main id="main" class="home"><section class="opening"><p class="backline"><a href="${link({ view: 'map', day: route.day })}">${IC.back}Map</a></p>
+    <h1 id="title" tabindex="-1">${pt && pt.failed ? 'No forecast could be made' : 'Working out the forecast'}</h1>
+    <p class="lede" role="status">${pt && pt.failed ? `Could not make a forecast for this point: ${esc(pt.failed)}.` : 'For the point you picked on the map…'}</p></section>${foot()}</main>${tabbar()}`;
+  if (s && s.unlisted && s.error) return pointNoneHtml(s, placeDay(s));
   if (!s) return `${bar(true)}<main id="main" class="home"><section class="opening"><h1 id="title" tabindex="-1">That place is not listed</h1><p class="lede">The link names a place this forecast does not cover, or one that has been removed.</p><p><a class="btn primary" href="${HOME || './'}">Find a place</a></p></section>${foot()}</main>${tabbar()}`;
   const day = placeDay(s), hero = photoOf(s.id), isKept = shownList(LISTS).spots.includes(s.id), o = P.official(s);
   const missed = route.day && route.day !== day ? `<p class="notice" role="note"><b>This link was for ${esc(P.longDate(route.day))}.</b> That day is no longer in the forecast, so this shows today.</p>` : '';
-  const tools = `<div class="tools"><a class="tool" href="${link({ day })}">${IC.back}<span>All places</span></a><span class="tools-r"><button type="button" class="tool" data-do="keep" aria-pressed="${isKept}">${IC.save}<span>${isKept ? 'Saved' : 'Save'}</span></button><button type="button" class="tool" data-do="share" aria-label="Share this forecast">${IC.share}</button></span></div>`;
+  const tools = `<div class="tools"><a class="tool" href="${s.unlisted ? link({ view: 'map', day }) : link({ day })}">${IC.back}<span>${s.unlisted ? 'Map' : 'All places'}</span></a><span class="tools-r">${s.unlisted ? '' : `<button type="button" class="tool" data-do="keep" aria-pressed="${isKept}">${IC.save}<span>${isKept ? 'Saved' : 'Save'}</span></button>`}<button type="button" class="tool" data-do="share" aria-label="Share this forecast">${IC.share}</button></span></div>`;
   return `${bar(true)}<main id="main" class="place${hero ? ' has-photo' : ''}">
     <div class="top">
       ${hero ? `<figure class="hero"><img src="guides/photos/${encodeURIComponent(hero.file)}" width="${hero.w}" height="${hero.h}" alt="${esc(String(hero.caption || s.name).replace(/[.\s]+$/, ''))}." decoding="async" fetchpriority="high">${tools}<figcaption>${credit(hero)}</figcaption></figure>` : tools}
@@ -567,12 +855,74 @@ function placeHtml() {
         ${answerHtml(s, day)}</div>
       ${condsHtml(s, day)}
     </div>
-    <div class="more">${behindHtml(s, day)}${upstreamHtml(s, day)}${nearbyHtml(s, day)}</div>
-    ${placeFactsHtml(s)}
+    <div class="more">${behindHtml(s, day)}${upstreamHtml(s, day)}${plumeWanted(s) ? '<div id="plume-slot"></div>' : ''}${nearbyHtml(s, day)}</div>
+    ${recordHtml(s)}
+    ${s.unlisted ? `<section class="theplace" aria-labelledby="place-h"><h2 id="place-h">This point</h2><p class="sec-lede">Not one of the listed places: nobody has checked it by hand, and it has no rain forecast of its own and no E.&nbsp;coli estimate.${s.rain_km ? ` Rain is from the forecast for the area next to this point's, about ${esc(s.rain_km)} km away.` : ''}</p>${requestHtml(s)}</section>` : placeFactsHtml(s)}
+    ${logHtml(s)}
     ${swimmersHtml(s)}
     ${foot()}
   </main>${tabbar()}`;
 }
+// The record here: what the level rests on (evidence.js: each item's age and source, and the gaps), how the forecast
+// has done at the overflows upstream since live scoring began (spotscores.js), on how many days of each month a spill
+// was reported upstream (seasonal.js), lab results an organisation sent (measured.js), and everything dated the site
+// holds about the water here (timeline.js, read when its fold is opened). Sources and history, not a forecast, and
+// none of it changes with the day picked. Each is the live site's own script giving its part as markup, from the
+// place's own file and data/spot_scores.json. What is drawn is kept and put back when the page is drawn again, so a
+// fold opened stays open. For a listed place; a point tapped on the map has no record.
+let rec = null, SCORES = null, scoresAsked = false, scoresRead = false;   // rec: { key, el }
+const recordHtml = s => typeof evidenceTile !== 'function' || s.unlisted ? ''
+  : `<section class="record" id="record" aria-labelledby="record-h"><h2 id="record-h">The record here</h2>
+    <p class="sec-lede">What the level rests on, and what has happened here before. Sources and history, not a forecast: it does not change with the day picked.</p><div id="record-slot"></div></section>`;
+function mountRecord(s) {
+  const slot = document.getElementById('record-slot') || document.getElementById('record-body'); if (!slot) return;
+  const wanted = typeof scoresWanted === 'function' && scoresWanted(s);
+  if (wanted && !scoresAsked) { scoresAsked = true;
+    scoresLoad().then(d => { SCORES = d || null; scoresRead = true; const now = route && route.id && spotOf(route.id); if (now) mountRecord(now); }); }
+  const got = details.get(s.id), key = `${s.id}|${got ? 1 : 0}|${!wanted || scoresRead ? 1 : 0}`;
+  if (rec && rec.key === key) { if (slot !== rec.el) slot.replaceWith(rec.el); return; }
+  const open = rec && rec.el.isConnected ? [...rec.el.querySelectorAll('details[open]')].map(d => d.id || d.className) : [];
+  const el = document.createElement('div'); el.id = 'record-body';
+  // The place as its own file fills it out: the overflows that count most, its samples and its monthly history.
+  const full = got ? { ...s, ...(got.detail || {}) } : null, at = now();
+  const parts = !full ? ['<p class="meta">Reading the record…</p>'] : [evidenceTile(full, at, DATA.generated_at),
+    typeof measuredTile === 'function' ? measuredTile(full, at) : '',
+    !wanted ? '' : !scoresRead ? '<p class="meta">Reading how the forecast has done here…</p>' : scoresTile(s, SCORES),
+    typeof seasonalTile === 'function' ? seasonalTile(full) : '', typeof timelineTile === 'function' ? timelineTile(full) : ''];
+  el.innerHTML = parts.join('') || '<p class="meta">Nothing is recorded for this place yet.</p>';
+  el.querySelectorAll('details').forEach(d => { if (open.includes(d.id || d.className)) d.open = true; });
+  slot.replaceWith(el); rec = { key, el };
+}
+
+// Your swims: the swim journal (journal.js), a swimmer's own record, kept on this device and sent nowhere. On a
+// place's page it is one button, "Log a swim", whose form opens under it and keeps what the forecast showed. The
+// live script binds the button and draws the form; it looks for them by the live page's names (#swam, .actions,
+// #swam-msg). Kept and put back when the page is drawn again, as the reviews are, so a form half written stays.
+let jlog = null;   // { id, el }
+const logHtml = s => typeof journalLogBind !== 'function' || !reviewable(s) ? ''
+  : `<section class="yourswims" id="yourswims" aria-labelledby="yourswims-h"><h2 id="yourswims-h">Your swims</h2>
+    <p class="sec-lede">A private journal: where and when you swam, and what the forecast showed. Kept on this device only.</p><div id="log-slot"></div></section>`;
+function mountLog(s) {
+  const slot = document.getElementById('log-slot'); if (!slot) return;
+  if (jlog && jlog.id === s.id) { slot.replaceWith(jlog.el); return; }
+  const el = document.createElement('div'); el.id = 'log-body';
+  el.innerHTML = `<div class="actions"><button type="button" class="btn" id="swam" aria-expanded="false">Log a swim</button></div><p class="meta" id="swam-msg" role="status" aria-live="polite"></p>`;
+  slot.replaceWith(el); jlog = { id: s.id, el };
+  journalLogBind(s, DATA.generated_at);
+}
+// On Saved: the journal itself and the passport made from it (passport.js), each drawn and redrawn by its own
+// script. One element holds both and is put back when the page is drawn again.
+let jsaved = null;
+const journalHtml = () => typeof journalCard !== 'function' ? '' : '<div id="journal-slot"></div>';
+function mountJournal() {
+  const slot = document.getElementById('journal-slot'); if (!slot) return;
+  if (jsaved) { slot.replaceWith(jsaved); return; }
+  const el = document.createElement('div'); el.id = 'journal-body';
+  el.innerHTML = journalCard() + (typeof passportSection === 'function' ? passportSection(DATA.spots) : '');
+  slot.replaceWith(el); jsaved = el;
+  journalBindSection(); if (typeof passportBind === 'function') passportBind();
+}
+
 // From swimmers: notes on a visit, reviews and reports of illness, each the live site's own script (visits.js,
 // reviews.js, illness.js), which draws its own part and takes what a swimmer sends. They look for the place they
 // draw into by the live page's names (#result .stack .tiles), so the slot here is given those. What they have drawn
@@ -600,9 +950,15 @@ let lastKey = '';
 // Draw the screen for the address. Focus is kept on the control that was used (a day's tab, a distance), found
 // again by what it does, so a keyboard stays where it was; a new screen puts focus on its heading.
 function draw(opts = {}) {
-  route = P.parseAddress(location.pathname, location.search, BASE);
+  route = P.parseAddress(location.pathname, location.search, BASE, location.hash);
   // A link from before places had addresses ("?spot=<id>"): the same place, at its address.
-  if (route.screen === 'place' && !location.pathname.startsWith(BASE + 'spot/')) history.replaceState(null, '', link(route) + location.hash);
+  if (route.screen === 'place' && !route.point && !location.pathname.startsWith(BASE + 'spot/')) history.replaceState(null, '', link(route) + location.hash);
+  // A point on the map: worked out once, by the live site's own arithmetic, then drawn as a place is.
+  if (route.point && !POINTS.has(route.id) && typeof AnyPoint === 'object') { const id = route.id; POINTS.set(id, undefined);
+    AnyPoint.point(route.point[0], route.point[1]).then(d => { P.prepareOne(d, DATA, now()); d.id = id; POINTS.set(id, d);
+      details.set(id, { detail: { contributors: d.contributors || [] }, up: null }); })
+      .catch(e => { POINTS.set(id, { failed: (e && e.message) || 'the files could not be read' }); })
+      .then(() => { if (route && route.id === id) draw({ focus: true }); }); }
   if (route.screen === 'place' && spotOf(route.id) && !details.has(route.id)) loadDetail(route.id);
   if (route.screen === 'find' && route.q) nearWords(route.q);
   // A plan's day is the plan's own, from its address or the plan kept in this browser.
@@ -619,8 +975,14 @@ function draw(opts = {}) {
   document.title = `${s ? s.name : ({ map: 'Map', plan: 'Plan a swim', saved: 'Saved' })[route.view] || 'Where do you swim?'} · SwimSignal${PREVIEW ? ' preview' : ''}`;
   if (route.view === 'map') mountHomeMap();
   if (s && upView === 'map') mountPlaceMap();
+  // since.js: these places' levels are on screen, with no other day picked, so the note of what they showed is kept.
+  if (typeof lookedAt === 'function') { const saved = new Set(savedIds());
+    if (s && placeDay(s) === today()) lookedAt([s], DATA.generated_at, saved);
+    else if (route.view === 'saved' && homeDay() === today() && !readShared(location.hash, dates())) lookedAt(shownList(LISTS).spots.map(spotOf).filter(Boolean), DATA.generated_at, saved); }
   if (s) { const typing = swim && swim.id === s.id && active && swim.el.contains(active) ? active : null;
-    mountSwimmers(s); if (typing) typing.focus({ preventScroll: true }); } else swim = null;
+    const writing = jlog && jlog.id === s.id && active && jlog.el.contains(active) ? active : null;
+    mountPlume(s); mountRecord(s); mountLog(s); mountSwimmers(s); if (typing || writing) (typing || writing).focus({ preventScroll: true }); } else { swim = null; rec = null; jlog = null; plumeGone(); }
+  if (route.view === 'saved' && !readShared(location.hash, dates())) { mountJournal(); mountCompare(); } else jsaved = null;
   // Whether alerts are on is the browser's to say, and it answers a moment after the page is drawn.
   if (route.view === 'saved' && DATA.push && alertsOn === null && window.PVAlerts.can() === 'yes') window.PVAlerts.isOn().catch(() => false).then(on => { alertsOn = on; redrawAlerts(); });
   if (key !== lastKey) {
@@ -632,6 +994,8 @@ function draw(opts = {}) {
     const again = sel && app.querySelector(sel);
     if (again) { again.focus({ preventScroll: true }); if (caret !== null && again.setSelectionRange) again.setSelectionRange(caret, caret); }
   }
+  // "Your journal", from a swim just logged or from a link (saved/#journal): the journal, not the top of Saved.
+  if (key !== lastKey && route.view === 'saved' && location.hash === '#journal' && typeof journalFocus === 'function') journalFocus();
   lastKey = key;
   watchTabs();
 }
@@ -655,7 +1019,7 @@ async function loadDetail(id) {
 }
 function setDay(d) {
   if (route.view === 'plan') { planSet({ day: d }); say(`The plan now shows ${P.headDay(d) === 'today' ? 'today' : P.longDate(d)}.`); return; }
-  const r = { ...route, day: d }; history.replaceState(null, '', link(r) + (location.hash && location.hash !== '#find' ? location.hash : '')); draw();
+  const r = { ...route, day: d }; history.replaceState(null, '', link(r) + (!route.point && location.hash && location.hash !== '#find' ? location.hash : '')); draw();
   const s = route.id && spotOf(route.id);
   say(s ? `${P.dayTabs(s, DATA).find(t => t.date === d).said}. The page now shows ${P.headDay(d) === 'today' ? 'today' : P.longDate(d)}.` : `Levels shown for ${P.headDay(d) === 'today' ? 'today' : P.longDate(d)}.`);
 }
@@ -663,9 +1027,12 @@ function jump(id) { const el = document.getElementById(id); if (!el) return;
   const h = el.querySelector('h2') || el; el.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); h.focus({ preventScroll: true }); }
 
 app.addEventListener('input', e => { if (e.target.id === 'q') typed(e.target.value); else if (e.target.id === 'from') planTyping(e.target.value); });
+document.addEventListener('toggle', e => { if (e.target && e.target.classList && e.target.classList.contains('cmp-choose')) cmpOpen = e.target.open; }, true);
 app.addEventListener('change', async e => {
   if (e.target.id === 'plan-within') { planSet({ within: Number(e.target.value) || 0 }); return; }
   if (e.target.id === 'plan-kind') { planSet({ kind: e.target.value }); return; }
+  if (e.target.dataset.cmp) { cmpIds = comparisonIds([...app.querySelectorAll('[data-cmp]')].map(x => x.value), shownList(LISTS).spots.map(spotOf).filter(Boolean)); redrawCompare();
+    const n = cmpIds.length; say(n < 2 ? 'Choose at least two different places.' : `${n} places side by side.`); return; }
   if (e.target.id !== 'alerts-week') return;
   const box = e.target, want = box.checked; box.disabled = true;
   try { await window.PVAlerts.setWeekly(DATA.push, knownSaved(), want); alertsSaid = want ? 'The weekly note is on: Thursday evenings.' : 'The weekly note is off.'; }
@@ -684,6 +1051,8 @@ app.addEventListener('keydown', e => {
   if (e.target.id === 'q' && e.key === 'Enter') { const first = app.querySelector('#results a.row'); if (first) { e.preventDefault(); first.click(); } }
   if (e.target.id === 'from' && e.key === 'Enter') { const first = app.querySelector('#offers button'); if (first) { e.preventDefault(); first.click(); } }
   if (e.target.id === 'list-name' && e.key === 'Enter') { e.preventDefault(); listSave(); }
+  if (e.target.id === 'list-link' && e.key === 'Enter') { e.preventDefault(); listOpen(); }
+  if (e.target.id === 'list-link' && e.key === 'Escape') { listForm = null; draw(); const b = app.querySelector('[data-do="list-open"]'); if (b) b.focus(); }
   if (e.target.id === 'list-name' && e.key === 'Escape') { listForm = null; draw(); const b = app.querySelector('[data-do="list-new"]'); if (b) b.focus(); }
   // Left and right move along the days, as tabs do.
   const tab = e.target.closest && e.target.closest('.daytab');
@@ -717,11 +1086,25 @@ app.addEventListener('click', e => {
     if (act === 'list') { setLists(pickList(LISTS, b.dataset.list)); draw(); return; }
     if (act === 'list-new' || act === 'list-rename' || act === 'list-del') { listForm = act === 'list-new' ? 'new' : act === 'list-rename' ? 'rename' : 'delete'; draw();
       const to = document.getElementById('list-name') || app.querySelector('[data-do="list-delete"]'); if (to) { to.focus(); if (to.select) to.select(); } return; }
-    if (act === 'list-cancel') { listForm = null; draw(); const to = app.querySelector('[data-do="list-new"]'); if (to) to.focus(); return; }
+    if (act === 'list-mv' || act === 'list-open') { listForm = act === 'list-mv' ? 'move' : 'open'; moveSaid = ''; draw();
+      const to = document.getElementById(act === 'list-mv' ? 'mv-spot' : 'list-link'); if (to) to.focus(); return; }
+    if (act === 'list-move' || act === 'list-copy') { listMove(act === 'list-copy'); return; }
+    if (act === 'list-opened') { listOpen(); return; }
+    if (act === 'list-cancel') { const was = listForm; listForm = null; moveSaid = ''; draw();
+      const to = app.querySelector(`[data-do="${was === 'move' ? 'list-mv' : was === 'open' ? 'list-open' : 'list-new'}"]`) || app.querySelector('[data-do="list-open"]'); if (to) to.focus(); return; }
     if (act === 'list-save') { listSave(); return; }
     if (act === 'list-delete') { const gone = shownList(LISTS).name; setLists(deleteList(LISTS, shownList(LISTS).id)); listForm = null; draw();
       const t = document.getElementById('list-said'); if (t) t.textContent = `“${gone}” was deleted.`; const h = document.getElementById('title'); if (h) h.focus({ preventScroll: true }); return; }
     if (act === 'alerts') { alertsToggle(); return; }
+    if (act === 'offline') { offlineToggle(); return; }
+    if (act === 'to-data' && !PREVIEW) { e.preventDefault(); dataOpen = true; draw(); const d = document.getElementById('your-data'); if (d) { d.scrollIntoView(); const b = d.querySelector('button'); if (b) b.focus({ preventScroll: true }); } return; }
+    if (act === 'count') { countToggle(); return; }
+    if (act === 'share-list') { shareList(); return; }
+    if (act === 'shared-add' || act === 'shared-show') { const sh = readShared(location.hash, dates()); if (!sh) return;
+      const ids = sh.spots.filter(spotOf), kept = setLists(act === 'shared-add' ? addSharedList(LISTS, sh.name, ids) : pickList(LISTS, b.dataset.list));
+      history.replaceState(null, '', link({ view: 'saved', day: route.day })); draw({ focus: true });
+      const t = document.getElementById('list-said'); if (t && act === 'shared-add') t.textContent = kept ? `Added to your lists as ${shownList(LISTS).name}.` : 'This browser is not keeping site data, so this list is kept only for this visit.';
+      const h = document.getElementById('title'); if (h) h.focus({ preventScroll: true }); return; }
     if (act === 'plan-here') { const go = () => planSet({ from: { here: true } }); if (here) go(); else locate(go); return; }
     if (act === 'plan-from') { const lat = Number(b.dataset.lat), lon = Number(b.dataset.lon); if (Number.isFinite(lat) && Number.isFinite(lon)) planSet({ from: { name: String(b.dataset.name).slice(0, 80), lat, lon } });
       const h = app.querySelector('#results h2'); if (h) { h.tabIndex = -1; h.focus({ preventScroll: true }); } return; }
@@ -753,18 +1136,19 @@ document.addEventListener('click', e => {
 // Back returns to where the page was left: the list of places elsewhere, not the top of the page.
 const leftAt = new Map();
 if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
-// Two links these pages cannot yet show for what they are, when they are the site's own: a list someone shared
-// (saved/#list=...&spots=...) and an outing someone sent (plan/#...&spot=...). Both open on the earlier version, which
-// can. Only a link that opened the page, or an address put over this one: never this page's own Plan, whose address
-// carries an outing made there so that it is not lost.
+// One link these pages cannot yet show for what it is, when they are the site's own: an outing someone sent
+// (plan/#...&spot=...). It opens on the earlier version, which can. Only a link that opened the page, or an address
+// put over this one: never this page's own Plan, whose address carries an outing made there so that it is not lost.
+// (A list someone shared was passed on too, until Saved could show one: sharedHtml.)
 function passOn() {
   if (PREVIEW || !route || !DATA) return false;
-  const shared = route.view === 'saved' && readShared(location.hash, dates()), outing = route.view === 'plan' && /[#&]spot=/.test(location.hash);
-  if (!shared && !outing) return false;
-  location.replace(classic(route.view + '/') + location.hash); return true;
+  if (!(route.view === 'plan' && /[#&]spot=/.test(location.hash))) return false;
+  location.replace(classic('plan/') + location.hash); return true;
 }
-// A plan's choices are after the #: an address typed or pasted over this one is drawn.
-window.addEventListener('hashchange', () => { if (passOn()) return; if (route && route.view === 'plan') draw(); });
+// The fold over a visitor's data stays as they left it when the page is drawn again (a details' toggle does not bubble).
+document.addEventListener('toggle', e => { if (e.target && e.target.id === 'your-data') dataOpen = e.target.open; }, true);
+// A plan's choices, and a shared list, are after the #: an address typed or pasted over this one is drawn.
+window.addEventListener('hashchange', () => { if (passOn()) return; if (route && (route.view === 'plan' || route.view === 'saved' || route.point || /^#point=/.test(location.hash))) draw({ focus: true }); });
 window.addEventListener('popstate', () => { const at = leftAt.get(location.pathname + location.search) || { y: 0 };
   draw({ focus: true, y: at.y });
   // A keyboard comes back to the link it followed, so the next Tab goes on from there.
@@ -785,11 +1169,12 @@ window.PVBuilt = {
 // the offline copy has been turned off in this browser (the app's "Your data"). A preview starts no worker: it is
 // kept only where the worker is already running.
 if (!PREVIEW && 'serviceWorker' in navigator) { let off = false; try { off = localStorage.getItem('dipcast.offline') === 'off'; } catch (e) { off = false; }
-  if (!off) navigator.serviceWorker.register(new URL('sw.js', document.baseURI)).catch(() => {}); }
+  if (!off) startWorker(); }
 
 (async function start() {
   try { const [data, hero] = await Promise.all([loadJson('data/spots-lite.json'), loadJson('preview/hero-photos.json').catch(() => ({}))]);
-    DATA = P.prepare(data, now()); HERO = hero || {}; }
+    DATA = P.prepare(data, now()); HERO = hero || {};
+    window.DATA = DATA; }   // journal.js names a swim's place from the forecast the page holds, by this name, as on the live page
   catch (e) {
     // A page the build wrote keeps what it says, with a line on what it is: the forecast as at the build.
     if (app.hasAttribute && app.hasAttribute('data-built')) { const m = app.querySelector('main');
