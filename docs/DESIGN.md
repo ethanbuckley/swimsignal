@@ -2965,7 +2965,7 @@ without touching a live page. Marked: all new, none reversing a decision here.
 3. The worker to store the redesign's files at install, and the redesign to start the worker (with the existing
    "turn off the offline copy" choice honoured).
 4. The page-view counter and the action counter, which the preview does not have.
-5. Ethan's yes or no on the five reversals listed above.
+5. Ethan's yes or no on the five reversals listed above. (Given 25 November 2026: "The five reversals, decided", below.)
 
 **Checked, 24 November 2026, night:** every place page built from the 13:21 issue (133 of 133 with their answer).
 Ilkley's page in headless Chrome with scripts off at 375 and 1,440 px, and with scripts on: the two differ in height
@@ -3021,6 +3021,25 @@ a place opened and reloaded, Saved, Plan, the list, the map with its 133 places;
 site's root); `plan/#...`, `saved/`, a shared list, a sent outing, `?map=1` and an old `preview/?spot=` link.
 **Not checked:** the live tile provider and the counter on the redesign's pages at the root, alerts, the Home
 Screen app, a search engine's or a messaging app's reading of the new pages.
+
+### The five reversals, decided (25 November 2026)
+
+Ethan's answer to the five reversals listed under "A redesign kept as a preview", given on 25 November 2026 after
+seeing each before and after on the live site at phone width. All five stand, the first with one line put back.
+
+1. **No count across all spots on the home page: accepted, with one line kept.** The tile answered "how is the
+   country today", which is not what a swimmer asks. But the opening's five days showed only dates. Under them is now
+   one line, "62 of the 133 places are at low risk today", for the day shown. Low is a row's own group, so a place
+   under official advice, one with no monitored overflow found upstream and one with no forecast for the day are
+   never counted. On 25 November the five days read 62, 75, 64, 42 and 37, the earlier page's own figures. The line
+   is not drawn over a search or an area, whose rows say it.
+2. **No very high rows on the home page: accepted.** The map shows them.
+3. **The five days as tabs, not rows: accepted.** On a phone the tabs put all five levels on the first screen. The
+   cost, known: a day's rain and air need a tap.
+4. **The live-status sentence in "Behind the level": accepted.** The opening still leads with live status when it
+   changes the answer.
+5. **E. coli as a row, not a tile: accepted for now.** Out of season both say only "Out of season". To be looked at
+   again in May 2027, when there is a figure to show.
 
 ### A gap the switch opened: "Saved spots, offline use and your data" (24 November 2026, night)
 

@@ -395,6 +395,10 @@ function waters(spots, iso) {
     return { name, river: !!ps[0].river, ordered, rows: sorted.map(p => placeRow(p, iso)) };
   }).sort((a, b) => b.rows.length - a.rows.length || a.name.localeCompare(b.name));
 }
+// How many places are at low risk on a day, of all of them: the one line the opening keeps of the earlier home page's
+// count. Low is a row's own group (placeRow), so a place under official advice, one with no monitored overflow
+// found upstream and one with no forecast for the day are never counted as low.
+function tally(spots, iso) { return { n: spots.length, low: spots.filter(p => placeRow(p, iso).group === 'low').length }; }
 function areas(spots, iso) {
   const names = [...new Set(spots.map(p => p.area).filter(Boolean))];
   return names.map(a => { const ps = spots.filter(p => p.area === a), rows = ps.map(p => placeRow(p, iso));
@@ -503,7 +507,7 @@ function queryFor(r) {
 
 const api = { esc, capFirst, fold, list, num, longDate, weekday, shortDate, tabName, headDay, dayNm, kmBetween, compass, milesSaid, ageSpot, prepare, dates, issuedWords,
   official, levelWords, shortLevel, cls, dayRows, dayTabs, lowerDay, spillingSaid, waterTemp, answer, ledger, statusSaid, markOf, riverLine, placeRow, elsewhere,
-  nextSteps, waters, areas, findSpots, postcodeKeys, findTowns, nearest, parseQuery, parseAddress, queryFor, pointOf, prepareOne, pollAt, httpsLink, isNil,
+  nextSteps, waters, areas, tally, findSpots, postcodeKeys, findTowns, nearest, parseQuery, parseAddress, queryFor, pointOf, prepareOne, pollAt, httpsLink, isNil,
   savedRows, planRows, PLAN_HEADS, mapPoints, overflowPoints, decodeLine, VIEWS };
 if (typeof module === 'object' && module.exports) module.exports = api;
 else window.PV = api;

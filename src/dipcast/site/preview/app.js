@@ -171,6 +171,14 @@ const credit = p => [`Photo from ${esc(P.shortDate(p.taken))}`, esc(p.credit), p
 // ------------------------------------------------------------------------------------------------ the opening
 const homeDay = () => { const ds = P.dates(DATA); return ds.includes(route.day) ? route.day : ds[0] || today(); };
 const plainTabs = () => dates().map(d => ({ date: d, name: P.tabName(d), dom: new Date(d + 'T12:00:00').getDate() }));
+// One line under the opening's days: how many of all the places are at low risk on the day shown, so the days say
+// something before a place is found. All that is kept of the earlier home page's count (decided 25 November 2026).
+// Not while a search or an area is shown, whose own rows say it.
+function tallyHtml(day) {
+  if (route.q || route.area) return '';
+  const t = P.tally(DATA.spots, day), on = esc(dayWord(day));
+  return `<p class="tally">${t.low ? `${t.low} of the ${t.n} places ${t.low === 1 ? 'is' : 'are'} at low risk ${on}.` : `None of the ${t.n} places is at low risk ${on}.`}</p>`;
+}
 function homeHtml() {
   if (route.view === 'map') return mapViewHtml();
   if (route.view === 'saved') return savedHtml();
@@ -191,6 +199,7 @@ function homeHtml() {
     ${stale()}
     <div class="home-body">
       ${dayTabsHtml(tabs, day, 'Day shown', d => link({ q: route.q, area: route.area, day: d }))}
+      ${tallyHtml(day)}
       <div id="results">${resultsHtml(day)}</div>
       <p class="issued">${esc(issued.text)}. Levels are for ${esc(P.headDay(day) === 'today' ? 'today' : P.longDate(day))}.</p>
     </div>

@@ -343,6 +343,19 @@ test('as the site\'s own pages: the app is "the earlier version" at classic/, an
   assert.equal(LISTS.readShared('', DAYS), null);
 });
 
+test('the opening keeps one line of the earlier count: how many places are at low risk on the day shown', () => {
+  // Low is a row's own group: official advice, no monitored overflow and no forecast for the day are never counted.
+  const spots = [spot(ALL, {id: 'a'}), spot(['low', 'low', 'low', 'low', 'low'], {id: 'b'}), tarn(), spot(['low', 'low', 'low', 'low', 'low'], {id: 'c', official: NOTICE})];
+  const d = data(spots);
+  assert.deepEqual(M.tally(d.spots, DAYS[0]), {n: 4, low: 1});
+  assert.deepEqual(M.tally(d.spots, DAYS[2]), {n: 4, low: 2}, 'a place low on Thursday is counted on Thursday');
+  assert.equal(M.tally(d.spots, DAYS[0]).low, d.spots.filter(p => M.placeRow(p, DAYS[0]).group === 'low').length);
+  assert.match(JS, /\$\{t\.low\} of the \$\{t\.n\} places \$\{t\.low === 1 \? 'is' : 'are'\} at low risk \$\{on\}\./);
+  assert.match(JS, /`None of the \$\{t\.n\} places is at low risk \$\{on\}\.`/);
+  assert.match(JS, /if \(route\.q \|\| route\.area\) return '';/, 'not over a search or an area');
+  assert.match(JS, /\$\{dayTabsHtml\(tabs, day, 'Day shown', d => link\(\{ q: route\.q, area: route\.area, day: d \}\)\)\}\n      \$\{tallyHtml\(day\)\}/, 'under the days');
+});
+
 test('as the site\'s own pages they carry the two things the privacy notice says a visitor can turn off, under its name for them', () => {
   // The notice names the place: 'under "Saved spots, offline use and your data" at the bottom of the home page'.
   const NOTICE = fs.readFileSync(path.join(SITE, '../pages/privacy.html'), 'utf8');
