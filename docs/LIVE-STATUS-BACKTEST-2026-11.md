@@ -436,3 +436,18 @@ Decisions for Ethan before any switch, none of them taken here:
 - The shadow log (`forecast_overflows`, #262) was not downloaded or read. #262's window, read date and conditions,
   the A8 and nine-company windows, the 2027 evaluation and every issued forecast are unchanged.
 - No candidate was refitted. No threshold or margin changed.
+
+## Changes after this record
+
+**15 November 2026: the switch is wired into the build, still off.** `site.yml`'s build step now passes the
+repository variable `DIPCAST_LIVE_STATUS` to the build (branch `claude/live-status-wiring`). The variable is not set,
+so `config.LIVE_STATUS` stays false and the build is unchanged. Before this, "Nothing sets it: not `site.yml`"
+(above) meant that setting the variable alone would have done nothing. Switching on is now one step, after the
+23 Nov read and Ethan's decisions above:
+
+```bash
+gh variable set DIPCAST_LIVE_STATUS --body 1
+```
+
+The next scheduled build publishes the switched figure, and `model_version` gains `;status=live-status-v1`. To switch
+off: `gh variable delete DIPCAST_LIVE_STATUS`.
