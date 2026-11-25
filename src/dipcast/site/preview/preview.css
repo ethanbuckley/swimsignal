@@ -513,6 +513,22 @@ table.cmp td a { text-decoration: underline; text-underline-offset: 2px; }
 .view-plan .block h3 { margin-top: 20px; font: 700 var(--fs-note)/1.3 var(--font-text); }
 .view-plan .block h3 + .meta { margin-top: 2px; }
 
+/* ---------------------------------------------------------------- what each figure was tested on */
+/* One row for each figure the page shows (app.js, testedHtml): the figure in the sans, its basis in muted words beside
+   it (never a pill or a colour: colour on this page means a level), then what it was tested on, the result and what is
+   not known, between hairlines. A gap is in ink, as "Not known" is everywhere. */
+.tested { margin: 36px var(--gutter) 0; padding-top: 20px; border-top: 1px solid var(--line); }
+.tested > h2 { font: 600 var(--fs-head)/1.2 var(--font-display); }
+.tested > .meta { margin-top: 12px; }
+.tested-rows { margin-top: 8px; }
+.tr { padding: 12px 0; border-bottom: 1px solid var(--line); max-width: 68ch; }
+.tr dt { font-weight: 700; font-size: var(--fs-note); line-height: 1.35; }
+.tr-basis { display: block; font-weight: 400; font-size: var(--fs-meta); color: var(--muted); }
+.tr dd { margin-top: 4px; font-size: var(--fs-note); }
+.tr dd.tr-links { font-size: var(--fs-meta); }
+/* On a wide screen the rows sit two to a line, so the section is half as tall; rows are of like height. */
+@media (min-width: 960px) { .tested-rows { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 40px; } .tr { max-width: none; } .tested > .sec-lede { max-width: 68ch; } }
+
 /* ---------------------------------------------------------------- the record here */
 /* How the forecast has done at the overflows upstream (spotscores.js) and past spills by month (seasonal.js): the
    live site's own markup, dressed as this page's sections. The months are bars in grey, this month in ink: history

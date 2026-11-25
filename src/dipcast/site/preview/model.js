@@ -327,6 +327,34 @@ function ledger(s, iso, data, nowMs) {
   return rows;
 }
 
+// ------------------------------------------------------------------------------------------------ what each figure was tested on
+// The figures this place's page shows on a day, by the keys the research catalogue's rows name (data/research/
+// figures.json, build_site.figures_doc; docs/RESEARCH-ON-THE-SITE-2026-11.md). Each key follows the line that draws the
+// figure: the ledger's rows above (the sewage spill risk; the E. coli estimate in season, its winter word, or "Out of
+// season"), each overflow's chance and weight on the line upstream, and the water temperature as waterTemp words it. A
+// reading (a sensor's temperature, a gauge, a sample) is a measurement and has no key. A new figure on the page adds its
+// key here, where it is drawn, and a row to the catalogue; a beach's would add its own with "kinds": ["coast"].
+function figuresShown(s, iso, nowMs) {
+  const keys = [];
+  const row = daily(s) ? dayRows(s).find(d => d.date === iso) : null, x = row && row.x;
+  if (row && row.r && row.r.level) {
+    keys.push('spill');
+    if (upstreamCount(s)) keys.push('travel');
+    if (ecoliBand(s, x)) keys.push(!ecoliUntested(x) ? 'ecoli' : riverUsualWinter(x) ? 'ecoli-winter' : 'ecoli-off');
+  }
+  const e = s.water_temp_est, wt = waterTemp(s, iso, nowMs);
+  if (wt && e && !/^Measured/.test(wt.note))   // the same order of tests as waterTemp's wording
+    keys.push(!e.route || e.route === 'river_model' ? 'water-temp-river' : e.test === 'winter' && typeof e.typical_c === 'number' ? 'water-temp-winter'
+      : e.route.endsWith('_off_season') || typeof e.typical_c !== 'number' ? 'water-temp-untested' : 'water-temp-lake');
+  return keys;
+}
+// The rows for those keys at this kind of water, in the page's order. A key with no row is left out, never guessed.
+function testedRows(doc, s, keys) {
+  const fs = (doc && Array.isArray(doc.figures)) ? doc.figures : [], kind = s.kind === 'coast' ? 'coast' : s.kind === 'lake' ? 'lake' : 'river';
+  return keys.map(k => fs.find(f => f.figure === k && (f.kinds || []).includes(kind))).filter(Boolean)
+    .map(f => ({ ...f, said: (doc.bases || {})[f.basis] || '' })).filter(f => f.said);
+}
+
 // ------------------------------------------------------------------------------------------------ upstream: the river as a line
 const runningAtLastAnswer = c => c.status === -3 && c.last_status === 1;
 // An overflow's live status in words (index.html, statusText): a reading from a feed over six hours old says when
@@ -557,7 +585,7 @@ function queryFor(r) {
 const api = { esc, capFirst, fold, list, num, longDate, weekday, shortDate, tabName, headDay, dayNm, kmBetween, compass, milesSaid, ageSpot, prepare, dates, issuedWords,
   official, levelWords, shortLevel, cls, dayRows, dayTabs, lowerDay, spillingSaid, waterTemp, answer, pictureOf, ledger, statusSaid, markOf, riverLine, placeRow, elsewhere,
   nextSteps, waters, areas, tally, findSpots, postcodeKeys, findTowns, nearest, parseQuery, parseAddress, queryFor, pointOf, prepareOne, pollAt, httpsLink, isNil,
-  savedRows, planRows, PLAN_HEADS, mapPoints, overflowPoints, decodeLine, VIEWS };
+  savedRows, planRows, PLAN_HEADS, mapPoints, overflowPoints, decodeLine, VIEWS, figuresShown, testedRows };
 if (typeof module === 'object' && module.exports) module.exports = api;
 else window.PV = api;
 Object.assign(api, { researchNow, RESEARCH_PLAIN });   // the home page's research line, the earlier page's words

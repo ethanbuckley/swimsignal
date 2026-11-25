@@ -1,6 +1,6 @@
 {
  "schema": "swimsignal.research-catalogue",
- "version": "1.0.0",
+ "version": "1.1.0",
  "written": "2026-10-31",
  "register": "docs/RESEARCH-RECOVERY-2026-10.md",
  "contract": "docs/RESEARCH-CATALOGUE-CONTRACT-v1.md",
@@ -24,6 +24,12 @@
   "data": "Data and directions with a dependency",
   "negative": "Variants with negative evidence",
   "adopted": "Adopted, superseded and corrections"
+ },
+ "bases": {
+  "held_out": "Tested on data it never saw",
+  "seen": "Development result, on data already seen",
+  "checked": "Checked against samples: no gain shown",
+  "untested": "Not tested"
  },
  "prs": {
   "377": {
@@ -3838,6 +3844,319 @@
    ],
    "prs": [
     700
+   ]
+  }
+ ],
+ "figures": [
+  {
+   "id": "spill-risk",
+   "figure": "spill",
+   "kinds": [
+    "river",
+    "lake"
+   ],
+   "label": "Sewage spill risk, and each overflow's chance of a spill",
+   "basis": "held_out",
+   "tested_on": "United Utilities' overflows in 2025, a year the model never saw: 826,725 overflow-days. Since 28 September 2026 every live forecast is scored afterwards, at all nine companies.",
+   "result": "It ranked a spill day above a dry day 93 times in 100. Live, its chances run too high: 388 of 963 high warnings came true (40%).",
+   "not_known": "How well it does at the other eight companies' overflows: it learned from United Utilities only, and theirs get the same model. It does not see runoff, treated sewage or wildlife.",
+   "models": [
+    "production"
+   ],
+   "entries": [],
+   "quotes": [
+    {
+     "doc": "src/dipcast/pages/methods.html",
+     "quote": "it ranked a spill day above a dry day 93 times in 100 (AUC 0.930)"
+    }
+   ],
+   "links": [
+    {
+     "label": "The held-out test",
+     "href": "methods.html#holdout"
+    },
+    {
+     "label": "The live record",
+     "href": "verification.html"
+    }
+   ]
+  },
+  {
+   "id": "travel-river",
+   "figure": "travel",
+   "kinds": [
+    "river"
+   ],
+   "label": "How far spill water travels, and each overflow's weight",
+   "basis": "held_out",
+   "tested_on": "Environment Agency E. coli samples at bathing waters, each year left out in turn: every year picked a river speed of 0.2 m/s.",
+   "result": "That setting best picked out the days a river bathing water was worse than usual (held-out Brier 0.0919 against 0.0938). It is a fitted setting, not a measured speed.",
+   "not_known": "The real speed, which differs from river to river and rises with the flow. Timed rises at Environment Agency ammonium sensors were consistent with 0.2 m/s, not a measurement of it.",
+   "models": [],
+   "entries": [
+    "transport-fit",
+    "sonde-arrival-time"
+   ],
+   "quotes": [
+    {
+     "doc": "src/dipcast/pages/methods.html",
+     "quote": "they are the setting that best picked out the days when a river bathing water was worse than usual, not a measured speed or die-off rate"
+    },
+    {
+     "doc": "src/dipcast/pages/methods.html",
+     "quote": "Real speed differs from river to river, and rises with the flow."
+    }
+   ],
+   "links": [
+    {
+     "label": "Rough physics, on the method page",
+     "href": "methods.html#rough"
+    },
+    {
+     "label": "The fit",
+     "href": "https://github.com/ethanbuckley/swimsignal/blob/main/docs/TRANSPORT-FIT-TEST-2026-10.md"
+    }
+   ]
+  },
+  {
+   "id": "travel-lake",
+   "figure": "travel",
+   "kinds": [
+    "lake"
+   ],
+   "label": "How spill water crosses a lake, and each overflow's weight",
+   "basis": "checked",
+   "tested_on": "Environment Agency samples at English lake spots: the path through the lake, how long water stays in it and the distance through water.",
+   "result": "Each passed its stated conditions. Each record says the samples show no harm and cannot show a gain.",
+   "not_known": "Where the wind takes river water in a lake: the forecast does not use wind.",
+   "models": [],
+   "entries": [
+    "lake-transport"
+   ],
+   "quotes": [],
+   "links": [
+    {
+     "label": "The lake path test",
+     "href": "https://github.com/ethanbuckley/swimsignal/blob/main/docs/LAKE-PATH-TEST-2026-10.md"
+    }
+   ]
+  },
+  {
+   "id": "ecoli-river-season",
+   "figure": "ecoli",
+   "kinds": [
+    "river"
+   ],
+   "label": "E. coli estimate, May to September",
+   "basis": "held_out",
+   "tested_on": "1,502 Environment Agency samples at 31 inland bathing waters, 2024 to 2026, each year or each site left out in turn.",
+   "result": "On rivers it did better than rain alone in every test, by 5% to 10%: a small gain.",
+   "not_known": "How it does at rivers that are not bathing waters: at 59 sampling points it never saw, it put each place's days in order, but 44.3% of results were above its range.",
+   "models": [
+    "production"
+   ],
+   "entries": [
+    "river-unseen",
+    "soil-moisture-rivers"
+   ],
+   "quotes": [
+    {
+     "doc": "src/dipcast/pages/methods.html",
+     "quote": "On rivers the estimate scores better than rain alone in every test, by 5% to 10% of the Brier score. That gain is small."
+    }
+   ],
+   "links": [
+    {
+     "label": "Test 3, on the method page",
+     "href": "methods.html#ecoli"
+    },
+    {
+     "label": "The unseen rivers",
+     "href": "https://github.com/ethanbuckley/swimsignal/blob/main/docs/RIVER-UNSEEN-PROTOCOL-2026-11.md"
+    }
+   ]
+  },
+  {
+   "id": "ecoli-river-winter",
+   "figure": "ecoli-winter",
+   "kinds": [
+    "river"
+   ],
+   "label": "Higher or lower than usual here, October to April",
+   "basis": "held_out",
+   "tested_on": "2,754 October to April river samples from 2012 to 2022, at 28 Environment Agency sampling points no model here had scored, 18 of them in the South West. None is a swim spot.",
+   "result": "It put each place's days in the right order (a correlation of 0.485 within each place, where 0 is no order). Rain in the last 48 hours alone did about as well (0.473).",
+   "not_known": "How much higher or lower: its level was too low (a mean chance of 35.5% where 48.3% of results were over 900), so no figure is shown. It was tested on the day's own rain, so it is given for today only.",
+   "models": [],
+   "entries": [
+    "river-winter"
+   ],
+   "quotes": [],
+   "links": [
+    {
+     "label": "The winter read",
+     "href": "https://github.com/ethanbuckley/swimsignal/blob/main/docs/RIVER-WINTER-READ-2026-11.md"
+    }
+   ]
+  },
+  {
+   "id": "ecoli-off-season",
+   "figure": "ecoli-off",
+   "kinds": [
+    "river"
+   ],
+   "label": "E. coli estimate, October to April",
+   "basis": "untested",
+   "tested_on": "",
+   "result": "Its figure has not been tested in these months, so no percentage is shown and it is not counted in the level.",
+   "not_known": "Whether the chance it would give is right from October to April.",
+   "models": [],
+   "entries": [],
+   "quotes": [],
+   "links": [
+    {
+     "label": "Test 3, on the method page",
+     "href": "methods.html#ecoli"
+    }
+   ]
+  },
+  {
+   "id": "lake-range",
+   "figure": "lake-range",
+   "kinds": [
+    "lake"
+   ],
+   "label": "Likely E. coli reading and range at a lake, May to September",
+   "basis": "held_out",
+   "tested_on": "962 lake samples from 2012 to 2022 that the model never read, at five lake bathing waters on Windermere and Frensham.",
+   "result": "78.9% of results fell inside the stated 8-in-10 range.",
+   "not_known": "How it does at other lakes, which are not tested. The chance of a sample over 900 cannot be judged at lakes: there were 9 results over 900.",
+   "models": [],
+   "entries": [
+    "lake-range-hindcast"
+   ],
+   "quotes": [
+    {
+     "doc": "docs/RESEARCH-RECOVERY-2026-10.md",
+     "quote": "over-900 still unjudgeable (9 events)"
+    }
+   ],
+   "links": [
+    {
+     "label": "The lake range test",
+     "href": "https://github.com/ethanbuckley/swimsignal/blob/main/docs/LAKE-RANGE-HINDCAST-TEST-2026-11.md"
+    }
+   ]
+  },
+  {
+   "id": "water-temp-river-summer",
+   "figure": "water-temp-river",
+   "kinds": [
+    "river"
+   ],
+   "label": "Water temperature estimate, May to September",
+   "basis": "held_out",
+   "tested_on": "3,798 rivers it had not seen, from 2023 to 2025, with the test's rules written down first.",
+   "result": "It was typically within 1.6 °C, closer than the usual temperature for the date and the last 7 days' air.",
+   "not_known": "How close it is where you get in, which can be warmer or colder than the river as a whole.",
+   "models": [],
+   "entries": [
+    "river-temperature"
+   ],
+   "quotes": [
+    {
+     "doc": "src/dipcast/pages/methods.html",
+     "quote": "It was then tested once, on 3,798 rivers it had not seen, from 2023 to 2025, with the test's rules written down first"
+    },
+    {
+     "doc": "src/dipcast/pages/methods.html",
+     "quote": "It was typically within 1.6 °C, and closer than both simple guesses: the usual temperature for the date, and the last 7 days' air."
+    }
+   ],
+   "links": [
+    {
+     "label": "The water temperature estimate",
+     "href": "methods.html#watertemp"
+    }
+   ]
+  },
+  {
+   "id": "water-temp-winter",
+   "figure": "water-temp-winter",
+   "kinds": [
+    "river",
+    "lake"
+   ],
+   "label": "Water temperature estimate, October to April",
+   "basis": "held_out",
+   "tested_on": "Past winters that played no part in fitting it: 2,468 samples at 325 rivers and 634 samples at 94 lakes.",
+   "result": "Its typical error was 1.63 °C at rivers and 1.76 °C at lakes. Lakes read about 2 °C cold in April.",
+   "not_known": "How close it is where you get in: the test used samples at monitoring points, not swim spots.",
+   "models": [],
+   "entries": [
+    "water-temp-winter"
+   ],
+   "quotes": [
+    {
+     "doc": "src/dipcast/pages/methods.html",
+     "quote": "2,468 samples at 325 rivers and 634 samples at 94 lakes"
+    }
+   ],
+   "links": [
+    {
+     "label": "The winter test",
+     "href": "https://github.com/ethanbuckley/swimsignal/blob/main/docs/WATER-TEMP-WINTER-BACKTEST-2026-11.md"
+    }
+   ]
+  },
+  {
+   "id": "water-temp-lake-summer",
+   "figure": "water-temp-lake",
+   "kinds": [
+    "lake"
+   ],
+   "label": "Lake water temperature estimate, May to September",
+   "basis": "held_out",
+   "tested_on": "220 English lake waters it had not seen, May to September 2026.",
+   "result": "It failed twice: in the second test it was typically 2 °C out and no better than the last 7 days' air. So it is shown as a provisional estimate.",
+   "not_known": "How far out it is at a given lake on a given day.",
+   "models": [],
+   "entries": [
+    "lake-temperature"
+   ],
+   "quotes": [
+    {
+     "doc": "src/dipcast/pages/methods.html",
+     "quote": "where it was typically 2 °C out and no better than the last 7 days' air"
+    }
+   ],
+   "links": [
+    {
+     "label": "The water temperature estimate",
+     "href": "methods.html#watertemp"
+    }
+   ]
+  },
+  {
+   "id": "water-temp-untested",
+   "figure": "water-temp-untested",
+   "kinds": [
+    "river",
+    "lake"
+   ],
+   "label": "Water temperature estimate, provisional",
+   "basis": "untested",
+   "tested_on": "",
+   "result": "Not yet checked in these months, so it is said as a provisional estimate.",
+   "not_known": "How far out it is.",
+   "models": [],
+   "entries": [],
+   "quotes": [],
+   "links": [
+    {
+     "label": "The water temperature estimate",
+     "href": "methods.html#watertemp"
+    }
    ]
   }
  ]

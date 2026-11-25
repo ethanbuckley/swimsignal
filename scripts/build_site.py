@@ -3650,6 +3650,7 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
             s = s.replace(a, b)
         if name == "methods.html":
             s = with_river_winter(s)   # the winter river line's paragraph, only while its switch is on
+            s = with_figures(s, figures_doc())   # what each figure was tested on: the catalogue's rows, as a place's page reads them
         if name == "about.html":
             s = with_counts(s, results)
         if name in ("clubs.html", "about.html"):   # about.html since 5 Nov 2026: its "How good it is" gave no figure
@@ -3687,6 +3688,7 @@ def write_pages(site: Path, results: list[dict], token: str | None = None, root:
     shutil.copytree(STATIC / "fonts", site / "fonts", dirs_exist_ok=True)   # declared in page.css and index.html
     copy_app_files(site, stamp)
     (site / "app.js").write_text(app_js)
+    write_figures(site)   # what each figure was tested on, for a place's page: before the pages are drawn with it
     write_preview(site, results, tiles, root, spot_cards, cards_v)   # the redesign preview at preview/, beside the live pages; after the scripts it loads
     feeds = (site / "data" / "alerts.json").is_file()   # write_feeds writes them from it, after the spot pages
     home = PAGE_META.sub(lambda m: page_meta(HOME_TITLE, DESCRIPTION, root, root, base="./",
@@ -5130,6 +5132,76 @@ def write_research_catalogue(site: Path, token: str | None = None, root: str | N
     page = page.replace("<!-- CATALOGUE -->", body, 1)
     (site / "research-catalogue.html").write_text(with_counter(with_share_meta(page, "research-catalogue.html", root or site_url()), token))
     return {"available": False, "why": why} if why else {"available": True, "entries": len(doc["entries"]), "version": doc["version"]}
+# What each figure was tested on (docs/RESEARCH-ON-THE-SITE-2026-11.md, items 2, 3 and 9): the catalogue's `figures`, one
+# row for each figure a place's page can show (the sewage spill risk, the E. coli estimate, the winter word, the water
+# temperature, how far spill water travels), with what it was tested on, the result in one line and what is not known.
+# The rows are hand-written in the catalogue beside the entries they rest on; tests/test_research_figures.py holds every
+# number in a row to those entries or to a quote. The build writes the small public file a place's page reads,
+# data/research/figures.json, and the method page's section, both from the same rows, so the two cannot disagree. Each
+# row's label for its basis comes from the catalogue's `bases`, never from the row: an untested figure cannot read as
+# tested, and a development result always says so. A new figure is a row here and its key where the page draws it
+# (preview/model.js, figuresShown); a coastal one is a row with "kinds": ["coast"].
+FIGURES_SCHEMA = "swimsignal.figures"
+FIGURES_MARK = "<!-- FIGURES_TESTED -->\n"
+FIGURE_KINDS = {"river": "rivers", "lake": "lakes", "coast": "beaches"}
+
+
+def figures_doc(path: Path | None = None) -> dict | None:
+    """The public file's content, from the catalogue's `figures` (CATALOGUE unless path), or None when the catalogue is
+    missing, of another schema or major version, or has no figures."""
+    path = path or CATALOGUE
+    try:
+        doc = json.loads(path.read_text())
+    except (OSError, ValueError):
+        return None
+    if doc.get("schema") != CATALOGUE_SCHEMA or str(doc.get("version", "")).split(".")[0] != CATALOGUE_MAJOR or not doc.get("figures"):
+        return None
+    keep = ("id", "figure", "kinds", "label", "basis", "tested_on", "result", "not_known", "links", "shown_on")
+    return {"schema": FIGURES_SCHEMA, "version": "1.0.0", "from": f"data/research/research_catalogue.v1.json {doc['version']}",
+            "bases": doc["bases"], "figures": [{k: f[k] for k in keep if k in f} for f in doc["figures"]]}
+
+
+def write_figures(site: Path, path: Path | None = None) -> dict:
+    """data/research/figures.json for a place's page (preview/app.js, testedHtml), or no file: the page then shows no
+    such section. Returns the build's health entry."""
+    out = site / "data" / "research" / "figures.json"
+    out.unlink(missing_ok=True)
+    doc = figures_doc(path)
+    if not doc:
+        return {"available": False, "why": "no figures in the research catalogue"}
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(doc, ensure_ascii=False, separators=(",", ":")))
+    return {"available": True, "figures": len(doc["figures"])}
+
+
+def figures_section(doc: dict | None) -> str:
+    """The method page's "What each figure was tested on": every row, for every kind of place, each with its anchor."""
+    if not doc:
+        return ""
+    def row(f: dict) -> str:
+        kinds = " and ".join(FIGURE_KINDS.get(k, k) for k in f["kinds"])
+        links = " · ".join(f'<a href="{escape(x["href"])}">{escape(x["label"])}</a>' for x in f["links"])
+        on = f'<p>Tested on: {escape(f["tested_on"])}</p>' if f["tested_on"] else ""
+        return (f'<dt id="tested-{escape(f["id"])}">{escape(f["label"])}</dt><dd>'
+                f'<p class="small muted">{escape(doc["bases"][f["basis"]])} · {escape(kinds.capitalize())}</p>'
+                f'{on}<p>{escape(f["result"])}</p><p>Not known: {escape(f["not_known"])}</p>'
+                + (f"<p>{links}</p>" if links else "") + "</dd>")
+    return ('<section id="tested">\n<h2>What each figure was tested on</h2>\n'
+            "<p>Each figure a place's page can show, with what it was tested on, the result in one line and what is not "
+            "known. A place's page shows the same lines for the figures it shows that day. Readings (the overflows' "
+            "monitors, river gauges and the Environment Agency's samples, ratings and algae checks) are measurements, "
+            "not models, and each says where it is from where it is shown. "
+            '<a href="research-catalogue.html">Every research record</a>.</p>\n'
+            f'<dl class="fields">{"".join(row(f) for f in doc["figures"])}</dl>\n</section>\n\n')
+
+
+def with_figures(html: str, doc: dict | None) -> str:
+    """methods.html with its figures section in place of the marker, or with the marker gone when there are none."""
+    if html.count(FIGURES_MARK) != 1:
+        raise ValueError("methods.html has lost its FIGURES_TESTED marker")
+    return html.replace(FIGURES_MARK, figures_section(doc))
+
+
 # The sampling planner (docs/SAMPLING-PLANNER-CONTRACT-v1.md, issue #482): where the EA's E. coli samples behind the
 # model are thin, by spot, year, month and rain, and the sampling-priorities simulation's results (#381, failed) for its
 # four ways of spending a budget, from scripts/export_sampling_planner.py. Written whole, as the Waterhead page is;
