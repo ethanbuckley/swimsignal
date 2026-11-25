@@ -209,8 +209,19 @@ def test_the_workflow_gives_the_key_to_the_build_step_only():
     assert lines[hits[0]].strip() == "DIPCAST_OPEN_METEO_KEY: ${{ secrets.DIPCAST_OPEN_METEO_KEY }}"
     step = next(lines[i] for i in range(hits[0], -1, -1) if lines[i].lstrip().startswith("- name:"))
     assert step.strip() == "- name: Build forecasts and site"
-    run = next(lines[i] for i in range(hits[0], len(lines)) if lines[i].lstrip().startswith("run:"))
-    assert run.strip() == "run: uv run python scripts/build_site.py"
+    start = next(i for i in range(hits[0], len(lines)) if lines[i].lstrip().startswith("run:"))
+    assert lines[start].strip() == "run: |"
+    block = []
+    for line in lines[start + 1:]:
+        if line.strip() and not line.startswith(" " * 10):
+            break
+        block.append(line.strip())
+    # The step runs the build script and nothing else: page-only first where that is allowed, then in full
+    # (tests/test_page_only.py). The other lines are the shell's own.
+    block = [l for l in block if l]
+    commands = [l for l in block if not l.startswith(("if [", "fi", "echo ", "exit ", "rm -rf site", "#"))]
+    assert commands == ["if uv run python scripts/build_site.py --pages-only; then", "uv run python scripts/build_site.py"], commands
+    assert block[-1] == "uv run python scripts/build_site.py"
 
 
 def test_no_key_in_a_committed_file():
