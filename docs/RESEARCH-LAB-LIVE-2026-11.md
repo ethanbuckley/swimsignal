@@ -120,6 +120,24 @@ No forecast, level, model, threshold or evaluation window changed.
   both); a backdated part showed its warning outside the fold; the front page's gallery has four tab stops and no
   focusable point inside a cover; the header stays on one line at 820 and 1,030 px.
 
+## Review of the five exhibits (25 November 2026)
+
+Each exhibit was built by `write_lab` into a scratch site and loaded in headless Chrome at 1440 px and at 375 px, in
+light and dark system modes, and its opening, figures and limits were read against the register.
+
+- **Phone width and dark mode: nothing to fix.** No sideways page scroll at 375 px, no console error, no failed
+  request. The site is light only (DESIGN, "Light only"), and every page stayed light in dark mode.
+- **"Data as of": every exhibit has one.** One date was wrong: exhibit 2's research records were dated by the
+  catalogue's `written` field, 31 Oct 2026, the day the file was first written, while it held records to 25 Nov.
+  `write_lab_refresh` now dates the copy by the build, since the build copies the catalogue as committed.
+- **Exhibit 3 against the register.** Its figures are on seasons the model was built on (labelled exploratory).
+  It now says so in "What it cannot tell you", and names the later tests on unseen river samples (RIVER-UNSEEN,
+  RIVER-WINTER): days ordered better than chance, rain alone nearly as good, winter chance over 900 too low. A line
+  saying "several forecast changes are being tested on autumn data now" was dated by nothing; it now says the reads
+  are on dates fixed in advance and none is in the record.
+- Exhibits 1, 4 and 5 read against the register: no figure contradicts it. Exhibit 1's test stays "fails as stated";
+  exhibit 4's outcomes stop at 30 Sep 2026, as its line says.
+
 ## Left for later
 
 - **The rest of the refresh plan.**
