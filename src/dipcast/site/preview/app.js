@@ -9,7 +9,7 @@
 const P = window.PV, app = document.getElementById('app'), saidEl = document.getElementById('said');
 const { esc, capFirst, num } = P;
 let DATA = null, HERO = {}, PLACES = null, POSTCODES = null, here = null, hereNote = '', route = null;
-let miles = 20, upView = 'line', mapPick = null, PLAN = null, planTyped = null, listForm = null, alertsOn = null, alertsSaid = '', alertsRefused = 0;
+let miles = 20, upView = 'line', mapPick = null, PLAN = null, planPreview = false, planOff = null, planNew = false, planFresh = false, planSeen = null, planTyped = null, listForm = null, alertsOn = null, alertsSaid = '', alertsRefused = 0;
 const expanded = new Set(), LINE_FIRST = 6;   // the places whose line upstream is shown whole
 const traces = new Map();                     // id -> the traced water's lines, null if there is none; undefined while reading
 const details = new Map();                    // id -> { detail, up } once fetched; undefined while reading
@@ -159,7 +159,7 @@ function countToggle() {
 }
 const foot = () => { const c = (DATA && DATA.credits) || {};
   return `<footer class="foot"><p>${PREVIEW ? `This is a preview of a redesign, kept beside <a href="${classic()}">the current SwimSignal</a>. Both read the same forecast, and a place saved on one is saved on the other.`
-      : `Outings and the map of a spill's spread are still on <a href="${classic()}">the earlier version of SwimSignal</a>, which reads the same forecast. A place saved on one is saved on the other.`} Saved places stay on this device.</p>
+      : `Keeping an outing for offline use, and a place or a plan as a picture to send, are still on <a href="${classic()}">the earlier version of SwimSignal</a>, which reads the same forecast. A place saved on one is saved on the other.`} Saved places stay on this device.</p>
     <p><a href="methods.html">Method and limits</a> · <a href="verification.html">How accurate it has been</a> · <a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a></p>
     ${yourDataHtml()}
     <details><summary>Data sources and licences</summary><p>${esc(c.attribution || '')}</p><p>${esc(c.modified || '')} ${esc(c.endorsement || '')} <a href="terms.html#data">Full credits</a></p></details></footer>`; };
@@ -472,7 +472,7 @@ function compareHtml(mine, day) {
     : `<tr>${cells.map((c, j) => `<td${hd(id, j)}>${c}</td>`).join('')}</tr>`;
   return `${head}<p class="meta">${esc(P.issuedWords(DATA, now()).text)}. A lower level is the forecast for sewage pollution, not a safety check: check the signs at the water.</p>
     <div class="cmp-scroll" tabindex="0" role="region" aria-label="Place comparison"><table class="cmp" style="--cols:${n}">
-    <thead><tr>${spots.map((s, j) => `<th scope="col" id="cmp-s${j}"><a href="${link({ id: s.id, day: daily(s) ? day : null })}">${esc(s.name)}</a></th>`).join('')}</tr></thead><tbody>
+    <thead><tr>${spots.map((s, j) => `<th scope="col" id="cmp-s${j}"><a href="${link({ id: s.id, day: daily(s) ? day : null })}">${esc(s.name)}</a>${canPlanHere(s) ? `<a class="cmp-plan" href="${esc(planHereLink(s, day))}" data-plan-new aria-label="Plan an outing at ${esc(s.name)}">Plan here</a>` : ''}</th>`).join('')}</tr></thead><tbody>
     ${lab('cmp-days', `Pollution risk, next ${ds.length === 4 ? 'four' : 'five'} days`)}
     ${ds.map((iso, i) => `<tr${iso === day ? ' class="on" aria-current="true"' : ''}>${days.map((d, j) => !d.same
         ? `<td${hd('cmp-days', j)}><span class="day">${shortDay(iso)}</span>${cell(d.days[i])}</td>`
@@ -602,12 +602,119 @@ function planHtml() {
       ${dayTabsHtml(plainTabs(), day, 'Day of the swim', d => planLink(d))}
       <p class="picks"><label for="plan-within">How far<select id="plan-within">${[...RADII, 0].map(m => `<option value="${m}"${PLAN.within === m ? ' selected' : ''}>${m ? `${m} miles` : 'Any distance'}</option>`).join('')}</select></label>
         <label for="plan-kind">Which waters<select id="plan-kind">${KINDS.map(([k, w]) => `<option value="${k}"${PLAN.kind === k ? ' selected' : ''}>${w}</option>`).join('')}</select></label></p>
+      <div id="outing-box" class="outing-box"></div>
       <div id="results">${planResultsHtml()}</div>
       <p class="issued">${esc(P.issuedWords(DATA, now()).text)}.</p>
-      <p class="meta">An outing with a backup place, a time and a link to send is on <a href="${classic('plan/')}${planHash(PLAN)}">${OLD}'s Plan a swim</a>, which opens on this plan.</p>
     </div>
     ${foot()}
   </main>${tabbar()}`;
+}
+// ------------------------------------------------------------------------------------------------ your outing
+// A plan's outing (outing.js, the live site's own, with outingwatch.js and spotdate.js): when on the plan's day, the
+// spot, a backup beside it, what for and where to meet; what would change the plan; the calendar file, the link to
+// send, and alerts for its date. The script draws its own tile and answers its own controls, as on the live page:
+// drawOuting(box, shown) is called after each draw of Plan, and the names it expects of its page are given below.
+// It is kept as the plan is, in the plan's address and in this browser (PLAN_KEY), so an outing made on either design
+// opens on the other.
+//
+// An outing opened from a link is shown, not kept (plan.js, planInvited): the plan kept here stays as it was until
+// "Keep this outing". planArrived settles that once for each address that arrives (a link opened, Back, a link
+// pasted over this one), never for this page's own changes, which planAddress writes and notes in planSeen.
+function planAddress() {
+  const h = planHash(PLAN);
+  history.replaceState(null, '', HOME + '?view=plan' + h); planSeen = location.hash;
+  if (!planPreview) try { localStorage.setItem(PLAN_KEY, h); } catch (e) { /* kept for this visit only */ }
+}
+function planArrived() {
+  const hash = location.hash; if (planSeen === hash) return;
+  const kept = keptPlan(), had = hash.length > 1, started = planNew;
+  planPreview = planInvited(PLAN, kept, had, planPreview) && !(planNew && !planHasOuting(kept, dates()));
+  planFresh = planPreview && (planNew || planFresh); planNew = false;
+  planOff = planPreview && had ? planDayOff(hash, dates()) : null;
+  // "Plan a swim here" with no outing still to come in this browser: kept at once, as on the live page.
+  if (started && !planPreview) try { localStorage.setItem(PLAN_KEY, planHash(PLAN)); } catch (e) { /* kept for this visit only */ }
+  if (typeof OUTING_DAY !== 'undefined') OUTING_DAY = null;   // an address's day is not a change of day (outing.js, outingForDay)
+  planSeen = hash;
+}
+// "Plan a swim here", on a place's page and in a comparison's column (plan.js, planFromSpot): the plan with that place
+// as the outing's, starting from the place, on the day shown. Not for a point tapped on the map.
+function canPlanHere(s) { return typeof planFromSpot === 'function' && !!s && Number.isFinite(s.lat) && Number.isFinite(s.lon) && !s.unlisted; }
+// The plan a new outing starts from: the one kept here, as what this browser last chose to do on the water (plan.js,
+// readActs: a kayak or a board chosen on the live page's Plan a swim), so the link and its words follow it.
+function planBase() { const b = keptPlan(), a = actDefault(readActs(stored(ACTS_KEY))); return a ? { ...b, act: a } : b; }
+function planHereLink(s, day) { const base = planBase(); return HOME + '?view=plan' + planFromSpot(s, base, dates().includes(day) ? day : null); }
+function planHereWords() { const a = planBase().act; return OUTING_FINISH_ACTS.includes(a) && typeof OUTING_ACT_WORDS === 'object' ? `Plan ${OUTING_ACT_WORDS[a][1]} here` : 'Plan a swim here'; }
+// A place's own file, into the place itself, as the live page does (index.html, spotDetail): the outing reads the
+// guide, the link between two places and a paddle's stretches from the place it was given.
+async function spotDetail(s) {
+  if (!s || s.detail_loaded || s.detail_missing) return s;
+  if (!details.get(s.id)) await loadDetail(s.id);
+  const got = details.get(s.id), d = got && got.detail;
+  if (d) { for (const k of ['guide', 'linked', 'stretches']) if (k in d) s[k] = d[k]; s.detail_loaded = true; } else s.detail_missing = true;
+  return s;
+}
+// The two readings the outing's conditions give beside the weather, in the shape the live page's tiles have
+// (index.html, waterTile and riverTile): the figure, whether it is measured, and the level's own word.
+function outWater(w, e, kind) {
+  const t = P.waterTemp({ water_temp: w, water_temp_est: e, kind }, today(), now()); if (!t) return null;
+  return /^Measured/.test(t.note) ? { live: true, fig: `${Math.round(w.temp_c)}°`, unit: 'C', say: esc(t.note) }
+    : { fig: `${e.temp_c}°`, unit: /provisional/i.test(t.note) ? 'C, provisional estimate' : 'C, estimated', say: esc(t.note) };
+}
+function outLevel(rs) {
+  if (!rs || (!rs.stale && P.isNil(rs.level_m))) return null;
+  const lake = rs.water === 'lake', label = lake ? 'Lake level' : 'River level'; if (rs.stale) return { label, fig: '–' };
+  const lo = rs.typical_low_m, hi = rs.typical_high_m, ranged = !P.isNil(lo) && !P.isNil(hi) && hi > lo;
+  const word = lake ? (!ranged ? '' : rs.level_m < lo ? 'Below its usual range' : rs.level_m > hi ? 'Above its usual range' : 'In its usual range')
+    : (({ low: 'Low water', normal: 'Usual level', high: 'High water', 'very high': 'Very high water' })[rs.label] || '') + (rs.label === 'very high' ? ', above its usual range' : '');
+  return { label, fig: num(rs.level_m, 2), word, vis: '' };
+}
+// How much evidence sits behind a column's level (evidence.js; index.html, planEvidence): on a plan for today, a low
+// level whose right now is not known; and whose overflows these are, with how the live warnings have done there,
+// once the Accuracy page's figures are in.
+let planWarn = null, planWarnAsked = false;
+function planEvidence(s) {
+  if (typeof evidenceNowGap !== 'function') return '';
+  const line = [evidenceNowGap(s, PLAN.day === today() && dayLevel(s, PLAN.day) === 'low'), evidenceCompanyLine(s, planWarn)].filter(Boolean).join(' ');
+  return line ? `<p class="ev-line">${line}</p>` : '';
+}
+function bindShareLink(b, m, url, title, copyLabel) {
+  const touch = TOUCH && navigator.share; if (!touch) b.textContent = copyLabel;
+  b.addEventListener('click', async () => {
+    try { if (touch) await navigator.share({ title, url }); else { await navigator.clipboard.writeText(url); m.textContent = 'Link copied.'; } }
+    catch (e) { if (e.name !== 'AbortError') m.textContent = url; } });
+}
+// What outing.js expects of its page, by the names it uses there. PLAN and the three flags are read where they are.
+Object.defineProperties(window, { PLAN: { get: () => PLAN, configurable: true }, PLAN_PREVIEW: { get: () => planPreview, configurable: true },
+  PLAN_OFF: { get: () => planOff, configurable: true }, PLAN_FRESH: { get: () => planFresh, configurable: true }, SAVED: { get: () => knownSaved(), configurable: true } });
+Object.assign(window, { planAddress, keptPlan, keepPlan: () => { planPreview = false; planAddress(); }, spotDetail, planEvidence, bindShareLink,
+  planFrom: () => { const p = PLAN && PLAN.from ? planPoint() : null; return p ? [p.lat, p.lon] : null; },
+  km: (a, b) => P.kmBetween({ lat: a[0], lon: a[1] }, { lat: b[0], lon: b[1] }),
+  tone: level => P.cls(level),
+  // Why a place has its level on the plan's day: this page's own sentences for that day (model.js, answer).
+  planWhy: (s, day) => esc((P.answer(s, day, DATA, now()).why || []).join(' ')),
+  waterTile: outWater, riverTile: outLevel,
+  // "13:21, 14 min ago", from this page's own issue line, in the three parts outing.js joins.
+  issued: () => P.issuedWords(DATA, now()).text.replace(/^Issued /, '').replace(/, [^,]* ago$/, ''),
+  ageMin: () => (P.issuedWords(DATA, now()).text.match(/, ([^,]*) ago$/) || [])[1] || '', ago: t => t,
+  plainClick: e => !(e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button),
+  // A place's name in the tile, and its link to Saved, are plain links to these pages' own addresses: the page's own
+  // click handler follows them, once, so the two names the script calls for that do nothing here.
+  select: () => {}, openSaved: () => {},
+  // The plan's own address from the site's root, where a link to send must point: plan/ on the site, as both designs read.
+  planPath: () => { const u = new URL(PREVIEW ? HOME + '?view=plan' : 'plan/', document.baseURI); return u.pathname + u.search; },
+  SITE_ROOT: new URL('./', document.baseURI), BRAND: 'SwimSignal', TOUCH,
+  canPush: () => window.PVAlerts.capable(), pushSub: () => window.PVAlerts.subscription() });
+if (window.PVAlerts) { const w = window.PVAlerts.where; Object.assign(window, { IOS: w.ios, IN_APP: w.inApp, STANDALONE: w.app, SAFARI_MAC: w.safari }); }
+// The outing's tile, at the top of the plan's results, as on the live page: under a plan that has a start, or one
+// that already has a spot. shown: the plan's places, nearest first in their groups, which the tile offers first.
+function mountOuting() {
+  const box = document.getElementById('outing-box'); if (!box || typeof drawOuting !== 'function') return;
+  const start = PLAN.from ? planPoint() : null;
+  if (!start && !PLAN.spot) return;
+  drawOuting(box, start ? planSpots(DATA.spots, PLAN, s => P.kmBetween(start, s) / MILE_KM).groups.flat() : []);
+  if (!planWarnAsked && typeof evidenceWarnings === 'function') { planWarnAsked = true;
+    evidenceWarnings().then(W => { if (!W) return; planWarn = W;
+      if (route && route.view === 'plan' && !(document.activeElement && box.contains(document.activeElement))) mountOuting(); }); }
 }
 // A change to the plan: kept in this browser as the live site keeps it, written to the address, and drawn.
 function planSet(over) {
@@ -615,8 +722,7 @@ function planSet(over) {
   // own day: on another day they go, as the live plan drops them (plan.js, planKept).
   if (over.day && over.day !== PLAN.day) for (const k of ['when', 'sent', 'lv', 'blv', 'flv']) delete PLAN[k];
   PLAN = { ...PLAN, ...over }; planTyped = null;
-  const h = planHash(PLAN); try { localStorage.setItem(PLAN_KEY, h); } catch (e) { /* kept for this visit only */ }
-  history.replaceState(null, '', HOME + '?view=plan' + h); draw();
+  planAddress(); draw();
 }
 function planTyping(v) {
   planTyped = v; const box = document.getElementById('offers'); if (box) box.innerHTML = offersHtml(v);
@@ -861,7 +967,7 @@ function placeHtml() {
       <div class="head"><h1 id="title" tabindex="-1">${esc(s.name)}</h1><p class="kind">${esc(kindLine(s))}</p><p class="meta" id="tool-said" role="status"></p></div>
       <div class="first">${stale()}${missed}${officialHtml(o)}
         <i class="tabs-top" aria-hidden="true"></i>${dayTabsHtml(P.dayTabs(s, DATA), day, 'Day', d => link({ id: s.id, day: d }))}
-        ${answerHtml(s, day)}</div>
+        ${answerHtml(s, day)}${canPlanHere(s) ? `<p class="planhere"><a class="btn" href="${esc(planHereLink(s, day))}" data-plan-new>${esc(planHereWords())}</a></p>` : ''}</div>
       ${condsHtml(s, day)}
     </div>
     <div class="more">${behindHtml(s, day)}${upstreamHtml(s, day)}${plumeWanted(s) ? '<div id="plume-slot"></div>' : ''}${nearbyHtml(s, day)}</div>
@@ -962,6 +1068,8 @@ function draw(opts = {}) {
   route = P.parseAddress(location.pathname, location.search, BASE, location.hash);
   // A link from before places had addresses ("?spot=<id>"): the same place, at its address.
   if (route.screen === 'place' && !route.point && !location.pathname.startsWith(BASE + 'spot/')) history.replaceState(null, '', link(route) + location.hash);
+  // A day that came after the # (the live page's form) is put where these pages keep it, so a day picked next is not undone by it.
+  if (route.screen === 'place' && /^#day=/.test(location.hash)) history.replaceState(null, '', link(route));
   // A point on the map: worked out once, by the live site's own arithmetic, then drawn as a place is.
   if (route.point && !POINTS.has(route.id) && typeof AnyPoint === 'object') { const id = route.id; POINTS.set(id, undefined);
     AnyPoint.point(route.point[0], route.point[1]).then(d => { P.prepareOne(d, DATA, now()); d.id = id; POINTS.set(id, d);
@@ -971,8 +1079,8 @@ function draw(opts = {}) {
   if (route.screen === 'place' && spotOf(route.id) && !details.has(route.id)) loadDetail(route.id);
   if (route.screen === 'find' && route.q) nearWords(route.q);
   // A plan's day is the plan's own, from its address or the plan kept in this browser.
-  if (route.view === 'plan') { PLAN = readPlan(location.hash, dates(), keptPlan()); route.day = PLAN.day; } else { PLAN = null; planTyped = null; }
-  if (opts.first && passOn()) return;
+  if (route.view === 'plan') { PLAN = readPlan(location.hash, dates(), keptPlan()); route.day = PLAN.day; planArrived(); }
+  else { PLAN = null; planTyped = null; planPreview = planFresh = planNew = false; planOff = planSeen = null; }
   if (route.view !== 'saved') listForm = null;
   const y = window.scrollY, key = route.screen === 'place' ? `place/${route.id}` : `find/${route.view || ''}/${route.area || ''}`;
   const active = document.activeElement, ds = active && active !== document.body && app.contains(active) ? active.dataset : null;
@@ -992,6 +1100,7 @@ function draw(opts = {}) {
     const writing = jlog && jlog.id === s.id && active && jlog.el.contains(active) ? active : null;
     mountPlume(s); mountRecord(s); mountLog(s); mountSwimmers(s); if (typing || writing) (typing || writing).focus({ preventScroll: true }); } else { swim = null; rec = null; jlog = null; plumeGone(); }
   if (route.view === 'saved' && !readShared(location.hash, dates())) { mountJournal(); mountCompare(); } else jsaved = null;
+  if (route.view === 'plan') mountOuting();
   // Whether alerts are on is the browser's to say, and it answers a moment after the page is drawn.
   if (route.view === 'saved' && DATA.push && alertsOn === null && window.PVAlerts.can() === 'yes') window.PVAlerts.isOn().catch(() => false).then(on => { alertsOn = on; redrawAlerts(); });
   if (key !== lastKey) {
@@ -1133,6 +1242,7 @@ app.addEventListener('click', e => {
   if (rel === null || !(rel === '' || /^spot\/[A-Za-z0-9_-]+\/$/.test(rel))) return;
   if (a.getAttribute('href').startsWith('#')) return;
   if (a.dataset.day) { e.preventDefault(); setDay(a.dataset.day); return; }
+  if (a.dataset.planNew !== undefined) planNew = true;   // "Plan a swim here": started here, not opened from a link
   e.preventDefault(); leftAt.set(location.pathname + location.search, { y: window.scrollY, href: a.getAttribute('href') }); history.pushState(null, '', a.getAttribute('href')); draw({ focus: true });
 });
 // A link to a part of this page ("#main", the skip link): with a <base> the browser would read it as a link to the
@@ -1145,19 +1255,10 @@ document.addEventListener('click', e => {
 // Back returns to where the page was left: the list of places elsewhere, not the top of the page.
 const leftAt = new Map();
 if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
-// One link these pages cannot yet show for what it is, when they are the site's own: an outing someone sent
-// (plan/#...&spot=...). It opens on the earlier version, which can. Only a link that opened the page, or an address
-// put over this one: never this page's own Plan, whose address carries an outing made there so that it is not lost.
-// (A list someone shared was passed on too, until Saved could show one: sharedHtml.)
-function passOn() {
-  if (PREVIEW || !route || !DATA) return false;
-  if (!(route.view === 'plan' && /[#&]spot=/.test(location.hash))) return false;
-  location.replace(classic('plan/') + location.hash); return true;
-}
 // The fold over a visitor's data stays as they left it when the page is drawn again (a details' toggle does not bubble).
 document.addEventListener('toggle', e => { if (e.target && e.target.id === 'your-data') dataOpen = e.target.open; }, true);
 // A plan's choices, and a shared list, are after the #: an address typed or pasted over this one is drawn.
-window.addEventListener('hashchange', () => { if (passOn()) return; if (route && (route.view === 'plan' || route.view === 'saved' || route.point || /^#point=/.test(location.hash))) draw({ focus: true }); });
+window.addEventListener('hashchange', () => { if (route && (route.view === 'plan' || route.view === 'saved' || route.point || /^#point=/.test(location.hash))) draw({ focus: true }); });
 window.addEventListener('popstate', () => { const at = leftAt.get(location.pathname + location.search) || { y: 0 };
   draw({ focus: true, y: at.y });
   // A keyboard comes back to the link it followed, so the next Tab goes on from there.

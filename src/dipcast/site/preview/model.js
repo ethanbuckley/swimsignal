@@ -487,7 +487,9 @@ function parseQuery(search) {
 function parseAddress(pathname, search, base, hash = '') {
   const path = String(pathname || ''), rel = base && path.startsWith(base) ? path.slice(base.length) : '';
   const m = rel.match(/^spot\/([A-Za-z0-9_-]+)\/(?:index\.html)?$/), r = parseQuery(search);
-  if (m) return { screen: 'place', id: m[1], day: r.day };
+  // The live page's links to a place on a day end "#day=2026-11-28" (a shared place, an outing's calendar file): read too.
+  const hd = (String(hash || '').match(/^#day=(\d{4}-\d{2}-\d{2})$/) || [])[1] || null;
+  if (m) return { screen: 'place', id: m[1], day: r.day || hd };
   const pt = rel === '' || rel === 'index.html' ? pointOf((String(hash || '').match(/^#point=([^&]+)$/) || [])[1]) : null;
   if (pt) return { screen: 'place', id: pt.id, point: [pt.lat, pt.lon], day: r.day };
   const v = rel.match(/^(plan|saved)\/(?:index\.html)?$/);

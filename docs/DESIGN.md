@@ -3271,3 +3271,48 @@ last check, the latest lab sample), its timeline of 82 dated items with "Show al
 day picked; Wastwater, with no overflow upstream, has the items, the months' note and the timeline, and no forecast
 score. **Not checked:** a place with a lab result from an organisation (none exists on 24 November), 1,440 px by eye.
 
+
+### Ported: your outing, on Plan a swim (25 November 2026)
+
+The last feature that kept `classic/` necessary. The outing is `outing.js`, loaded as it is with `outingwatch.js`,
+`spotdate.js` and `guide.js`: the script draws its own tile and answers its own controls, and the page gives it the
+names it expects (`app.js`, "What outing.js expects of its page"). Marked:
+
+- **Already decided** ("Plan a swim", 3 October; "Your outing, back on Explore", 29 October; "How an outing's backup
+  is joined to its spot", 30 October; "Conditions for your outing", 2 November): everything the tile holds and says.
+  When, the spot, a backup, what for and where to meet, by fixed choices and never typed words; the two side by side
+  with what each level rests on; what would change the plan; the conditions; the calendar file with no level in it;
+  the link to send, with the forecast's issue time and each level when sent; alerts for its date, asked for by a
+  button; an outing from a link shown and not kept until "Keep this outing"; "Clear outing".
+- **Already decided** (17 November): "Plan a swim here" under a place's five days, its words following what the
+  link opens. Here it is under the day's answer, since the redesign shows one day at a time.
+- **Already decided:** "Plan here" in a comparison's column.
+- **New:** its look. A card at the top of the plan's results, the one card on Plan, with the redesign's selects,
+  type sizes and rules. A place's level keeps its colour and nothing else in the card is coloured.
+- **New:** a sent outing (`plan/#...&spot=`) opens on these pages. Until now it was passed on to `classic/`.
+- **New:** a place's address with the day after the `#` (`spot/<id>/#day=2026-11-28`, the live page's form, which
+  a calendar file made before the switch carries) opens on that day. It opened on today.
+- **Reversing nothing.** One difference in words: a column's "why" line is the redesign's own sentence for that
+  place and day (`model.js`, `answer`), where the live tile used the planner's (`planWhy`). Both come from the
+  same level and counts.
+
+**Not carried, and said in every page's foot:**
+
+- Keeping an outing for offline use (`outingpack.js`). The pack stores the files the worker lists for the app
+  (`sw.js`, `SHELL`), which are not the redesign's scripts, so a pack kept here could open a page that cannot
+  run. It needs the worker to list the redesign's files first: a change to `sw.js`, in a PR of its own.
+- The day plan's options ("Plan the day here") and the plan as a picture (`dayplan.js`), and a place as a picture.
+- The plan's rows do not change for a kayak or a board (the live list's launch and finish lines). The outing's own
+  "What for", its finish and its stretch are here.
+- `arrive.js` and `brief.js` are behind a query flag on the live page and stay there.
+
+**Checked:** in-app browser at 375 px and 1,280 px. On the source: "Plan a swim here" at Ilkley starts an outing
+and keeps it; a backup, a time and a meeting place change the address, the kept plan and the note of what each
+place shows; the link to send carries `sent=`, `lv=` and `blv=`; that link opened beside another kept outing reads
+"Outing shared with you", leaves the kept one alone through a change, and replaces it on "Keep this outing"; a
+place's name opens the place with one step of history; a day picked drops the time; "Clear outing"; Plan with
+nothing kept shows no tile; a kayak's outing from a link offers Ilkley's two finishes, and picking Greenholme
+draws the finish and the 5.5 km stretch with its six overflows. On a local build of the whole site with the switch on: `plan/#...&spot=...&sent=...`
+opens here, its link to send is `plan/#...`, its calendar file's place is `spot/<id>/#day=...`, and that address
+opens Thursday. **Not checked:** alerts for a date turned on (the test browser blocks notifications, and I will not
+send a test subscription to the alert service); a real phone; Safari.
