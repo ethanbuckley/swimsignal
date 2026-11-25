@@ -261,6 +261,51 @@ Owner: the research sessions. Ethan's steps: none unless a refusal happens or D4
 - Laboratory and sampling practice may differ before 2015.
 - The last-sample feature assumes the previous result was known by the next sampling day.
 
+## Amendment 1, 25 November 2026: the rain comes from the bulk ERA5-Land download
+
+Written before any C1 rain value is read, before anything is fitted, and before any 2012 to 2021 sample is fetched.
+Main was at `7b704b8e`. Section 3's Open-Meteo fetch never started: on 22 November its first day waited on the D4
+read, and no request was sent (`$HOME/dipcast-scratch/coastal-c1-rain` does not exist).
+
+**What changed since section 3 was written.** The Copernicus account exists. #702's bulk download
+(`$HOME/dipcast-scratch/era5land/raw/`) holds ERA5-Land hourly total precipitation for January 2012 to August 2026
+over 49.8° to 61° N and 8.3° W to 2° E, which covers every English coastal sampling point. September 2026 is fetched
+by the same script on 25 November (one request). That is the dataset section 2 named (`era5_land`), taken from its
+publisher instead of Open-Meteo's copy.
+
+**The change.**
+
+1. **Source.** Rain for every season, 2012 to 2026, is the CDS ERA5-Land download converted by
+   `scripts/era5land/to_cells.py` (de-accumulated to the hour's rain, metres to millimetres, rounded to 0.1 mm, time
+   the end of the hour in UTC). No Open-Meteo request is made for C1. Section 3's fetch script, budget and run
+   sheet are superseded and stay in the record unrun.
+2. **Which grid point.** Section 2 said "Open-Meteo's default land cell selection". The replacement rule is
+   `era5land_core.map_cells`: the cell's own 0.1° point when ERA5-Land has a value there, otherwise the nearest point
+   with a value within **3 grid steps** (about 33 km north-south), by flat-earth distance scaled by the cosine of
+   latitude. A cell with no such point is not covered. The point and its distance are kept for each cell and
+   reported. The cells are section 2's: the 0.1° cell of each mapped site (`fetch_rain.cells`).
+3. **Everything else in sections 2, 5 and 6 is unchanged**: target, features, window pairs, the choice rule, C0,
+   the freeze before any 2012 to 2021 sample is requested, the comparators, the metric, the bootstrap and the verdicts.
+4. **One clarification of section 2, made now.** "A training row's own year left out of k and n" applies to the 2022
+   to 2026 fit rows. A backtest row's season is not in the fit, so its site rate is the frozen table's (k + m·p0) /
+   (n + m) with nothing left out. The site-rate table is built from every 2022 to 2026 statutory row, as #692's R;
+   the logistic regressions for C0 and C1 are fitted on the covered rows only.
+5. **The over-250 report** (section 5, deciding nothing) needs models for that line too. C0 and C1 are fitted the
+   same way on the over-250 target, with the window pair chosen for over 500, and frozen in the same file. R is
+   frozen for both lines (fitted on every 2022 to 2026 row) as the reference section 5 names.
+6. **Section 5's comparison with cached archive rain** is kept: new ERA5-Land against the cached `best_match` files
+   on 2024 and 2025 for the coastal cells that have both, reported, deciding nothing.
+
+**Why this is not a change after a result.** No coastal rain value, from either source, has been joined to a coastal
+sample by this work, and no C1 or C0 coefficient exists. The river work (RIVER-UNSEEN) converted other cells from the
+same download; it read no coastal sample.
+
+**What it costs.** No Open-Meteo call. One CDS request. The conversion runs offline into
+`$HOME/dipcast-scratch/coastal-c1-era5land/`, outside every checkout; the shared caches are not read or written.
+
+**What would change the verdict's meaning.** ERA5-Land is a reanalysis, as section 9 said. The live product would
+use radar or forecast rain. This amendment does not alter that limit.
+
 ---
 
 *Results go below this line.*

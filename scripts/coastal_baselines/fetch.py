@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import sys
 import time
 from datetime import UTC, date, datetime, timedelta
@@ -37,7 +38,8 @@ WQA = "https://environment.data.gov.uk/water-quality"
 BWQ_CATALOGUE = "https://environment.data.gov.uk/doc/bathing-water.json"
 BWQ_PRF = "https://environment.data.gov.uk/doc/bathing-water-quality/stp-risk-prediction.json"
 DETERMINANDS = {"ecoli": "2348", "enterococci": "3723"}
-YEARS = (2022, 2023, 2024, 2025, 2026)
+# COASTAL_YEARS (comma-separated) sets other years: C1's backtest fetches 2012 to 2021 this way (C1 protocol, section 5).
+YEARS = tuple(int(y) for y in os.environ.get("COASTAL_YEARS", "2022,2023,2024,2025,2026").split(","))
 SEASON = ((5, 15), (9, 30))      # the EA's risk predictions run for the bathing season
 POINTS_A_REQUEST = 25
 PAGE = 250                       # the archive's page limit for JSON-LD
@@ -187,6 +189,10 @@ def main(out: Path, stages: list[str]) -> None:
                 observations(fx, stage)
             elif stage == "prf-probe":
                 print(f"prf-probe: {len(prf_day(fx, date(2022, 7, 15), 'prf-probe'))} predictions for 2022-07-15", flush=True)
+            elif stage == "prf-probe-years":
+                # C1 section 5: one request a year for 15 July, to see whether the EA's predictions exist then
+                for y in YEARS:
+                    print(f"prf-probe {y}: {len(prf_day(fx, date(y, 7, 15), 'prf-probe'))} predictions", flush=True)
             elif stage == "prf":
                 prf(fx)
             else:
