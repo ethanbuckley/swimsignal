@@ -313,6 +313,20 @@ function ledger(s, iso, data, nowMs) {
   return rows;
 }
 
+// ------------------------------------------------------------------------------------------------ the research line
+// What the home page's research line says is running (data/research/model_scorecard.json, the scorecard page's own
+// file): the candidates in shadow whose test has not been read yet, and the first date one is read. The earlier
+// page's rule and words (index.html, researchNow; docs/DESIGN.md, "After the review", 12 November 2026), word for word.
+// A candidate in shadow is scored beside the live forecast and changes nothing a swimmer is told.
+const RESEARCH_PLAIN = 'Research: a model is tested before it changes a forecast.';
+function researchNow(doc, iso) {
+  const on = ((doc || {}).models || []).filter(m => m.stage === 'shadow' && m.window && m.window.read_on >= iso);
+  if (!on.length) return '';
+  const next = on.map(m => m.window.read_on).sort()[0];
+  const day = new Date(next + 'T12:00:00Z').toLocaleDateString('en-GB', { day: 'numeric', month: 'long', timeZone: 'UTC' });
+  return `Research: ${on.length} candidate model${on.length === 1 ? ' is' : 's are'} being scored beside the live forecast, without changing it. The next test is read on ${day}.`;
+}
+
 // ------------------------------------------------------------------------------------------------ upstream: the river as a line
 const runningAtLastAnswer = c => c.status === -3 && c.last_status === 1;
 // An overflow's live status in words (index.html, statusText): a reading from a feed over six hours old says when
@@ -543,7 +557,7 @@ function queryFor(r) {
 const api = { esc, capFirst, fold, list, num, longDate, weekday, shortDate, tabName, headDay, dayNm, kmBetween, compass, milesSaid, ageSpot, prepare, dates, issuedWords,
   official, levelWords, shortLevel, cls, dayRows, dayTabs, lowerDay, spillingSaid, waterTemp, answer, pictureOf, ledger, statusSaid, markOf, riverLine, placeRow, elsewhere,
   nextSteps, waters, areas, tally, findSpots, postcodeKeys, findTowns, nearest, parseQuery, parseAddress, queryFor, pointOf, prepareOne, pollAt, httpsLink, isNil,
-  savedRows, planRows, PLAN_HEADS, mapPoints, overflowPoints, decodeLine, VIEWS };
+  savedRows, planRows, PLAN_HEADS, mapPoints, overflowPoints, decodeLine, VIEWS, researchNow, RESEARCH_PLAIN };
 if (typeof module === 'object' && module.exports) module.exports = api;
 else window.PV = api;
 })();
