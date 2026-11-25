@@ -402,6 +402,27 @@ test('reviews, notes on a visit and reports of illness are the live site\'s own 
     assert.match(CSS, new RegExp(`\\.${c}\\b`), c);
 });
 
+test('a place links to the pages for a group and to telling Ethan, and a list to its page to print, in the live page\'s words', () => {
+  // The live page's two lines under a place's buttons. Each page reads its place, and the record its day, from after the #.
+  for (const said of ['Taking a group in the water here, or running an event? <a href="organisers.html#spot=', '">The event page</a>, with the overflows upstream, a checklist and signs; ',
+    '<a href="clubs.html">tools for clubs and centres</a>; and ', 'Did the forecast change where or when you swam? <a href="', '">Tell&nbsp;Ethan</a>.',
+    'For a club or a centre: these spots on one page to print, each with its five days. <a href="', '">Open the sites view</a>.']) {
+    assert.ok(LIVE.includes(said), `the live page says: ${said}`); assert.ok(JS.includes(said), `and so does this one: ${said}`);
+  }
+  assert.match(LIVE, /const FEEDBACK = 'feedback\.html\?type=feedback';/);
+  assert.match(JS, /<a href="feedback\.html\?type=feedback&amp;spot=\$\{encodeURIComponent\(s\.name\)\}">/);
+  // The record is for the day shown, at the address record.js reads: record.html#spot=<id>&day=YYYY-MM-DD.
+  assert.match(fs.readFileSync(path.join(SITE, 'record.js'), 'utf8'), /record\.html#spot=<id>&day=YYYY-MM-DD/);
+  assert.match(JS, /<a href="record\.html#spot=\$\{id\}&amp;day=\$\{esc\(day\)\}">a decision record for \$\{esc\(dayName\(day\)\)\}<\/a> to print\./);
+  assert.match(JS, /const groupLinks = s => \{ if \(s\.unlisted\) return ''; const id = encodeURIComponent\(s\.id\), day = placeDay\(s\);/, 'not for a point tapped on the map');
+  // The pages exist beside the app's, where the links point: the site's root.
+  for (const f of ['organisers.html', 'record.html', 'sites.html']) assert.ok(fs.existsSync(path.join(SITE, f)), f);
+  for (const f of ['clubs.html', 'feedback.html']) assert.ok(fs.existsSync(path.join(SITE, '../pages', f)), f);
+  // A list's page to print holds its name and its places after the #, as lists.js writes them.
+  assert.match(JS, /<a href="sites\.html\$\{esc\(sitesHash\(cur\.name, mine\.map\(s => s\.id\)\)\)\}">Open the sites view<\/a>/);
+  assert.equal(LISTS.sitesHash('Club launches', ['a', 'b']), '#spots=a,b&name=Club%20launches');
+});
+
 test('the record at a place is the live site\'s own: how the forecast has done there, and past spills by month', () => {
   const SC = require(path.join(SITE, 'spotscores.js')), SE = require(path.join(SITE, 'seasonal.js'));
   // The page calls the live scripts for the markup, from the live site's own files.

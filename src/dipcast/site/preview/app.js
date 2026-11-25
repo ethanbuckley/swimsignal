@@ -524,7 +524,8 @@ function savedHtml() {
       ${alertsHtml()}
       ${mine.length ? `<section class="sharelist" aria-labelledby="share-list-h"><h2 id="share-list-h">Share this list</h2>
         <p class="sec-lede">A link that opens this list on another phone or browser, or for a friend, who can then add it to their own lists. It holds the list's name, ${esc(cur.name)}, and which spots are in it, nothing else.</p>
-        <p><button type="button" class="btn" data-do="share-list">${TOUCH && navigator.share ? 'Share this list' : 'Copy link to this list'}</button></p><p class="meta" id="share-list-msg" role="status"></p></section>` : ''}
+        <p><button type="button" class="btn" data-do="share-list">${TOUCH && navigator.share ? 'Share this list' : 'Copy link to this list'}</button></p><p class="meta" id="share-list-msg" role="status"></p>
+        <p class="meta">For a club or a centre: these spots on one page to print, each with its five days. <a href="sites.html${esc(sitesHash(cur.name, mine.map(s => s.id)))}">Open the sites view</a>.</p></section>` : ''}
       ${journalHtml()}
       <p class="meta">A place saved here is saved on <a href="${classic('saved/')}">${OLD}</a> too, in this browser, and so is the journal.</p>
     </div>
@@ -748,6 +749,13 @@ function nearbyHtml(s, day) {
 }
 const TOPICS = { parking: 'Parking', transport: 'Bus and train', path: 'Path to the water', entry: 'Getting in', exit: 'Getting out', toilets: 'Toilets', changing: 'Changing',
   fees: 'Fees and booking', hours: 'Opening times', rules: 'Who can swim', launch: 'Launching a boat or board', carry: 'Carrying to the water', paddle: 'Paddling here' };
+// For someone taking a group in, and for telling Ethan: the live page's two lines under a place's buttons, in its
+// words. The event page, the clubs' tools and the decision record are pages of their own (organisers.html, clubs.html,
+// record.html), and each reads its place, and the record its day, from after the #. The record is for the day shown,
+// where the live page has a link under each day. Not for a point tapped on the map, which those pages cannot open.
+const groupLinks = s => { if (s.unlisted) return ''; const id = encodeURIComponent(s.id), day = placeDay(s);
+  return `<p class="meta">Taking a group in the water here, or running an event? <a href="organisers.html#spot=${id}">The event page</a>, with the overflows upstream, a checklist and signs; <a href="clubs.html">tools for clubs and centres</a>; and <a href="record.html#spot=${id}&amp;day=${esc(day)}">a decision record for ${esc(dayName(day))}</a> to print.</p>
+    <p class="meta">Did the forecast change where or when you swam? <a href="feedback.html?type=feedback&amp;spot=${encodeURIComponent(s.name)}">Tell&nbsp;Ethan</a>.</p>`; };
 function placeFactsHtml(s) {
   const got = details.get(s.id), g = got && got.detail ? got.detail.guide : null, hero = photoOf(s.id), facts = [], guide = [];
   const c = s.classification;
@@ -772,7 +780,8 @@ function placeFactsHtml(s) {
     ${facts.length ? dl(facts) : got === undefined ? '' : '<p class="sec-lede">No rating, sample or gauge is recorded for this place.</p>'}
     ${guide.length ? `<details class="guide"><summary>Getting there and getting in: ${guide.length} checked notes</summary>${dl(guide)}${g.checked ? `<p class="meta">Checked on ${esc(P.shortDate(g.checked))}${g.how === 'desk' ? ', from published sources, not on a visit' : ''}.</p>` : ''}</details>` : ''}
     ${photos.length ? `<div class="photos">${photos.map(p => `<figure><img src="guides/photos/${encodeURIComponent(p.file)}" width="${Number(p.w) || 640}" height="${Number(p.h) || 480}" alt="${esc(p.caption || s.name)}" loading="lazy" decoding="async"><figcaption>${esc(p.caption || '')} ${credit({ ...p, licence_name: p.licence && /by-sa\/2\.0/.test(p.licence) ? 'CC BY-SA 2.0' : '' })}</figcaption></figure>`).join('')}</div>` : ''}
-    <p class="meta">${esc(s.source === 'openstreetmap' ? 'This place is from OpenStreetMap, © OpenStreetMap contributors.' : String(s.notes || '').replace(/([^.])$/, '$1.'))} A listing is not a right to swim or a check that it is allowed. <a href="${classic(`spot/${encodeURIComponent(s.id)}/`)}">This place on ${OLD}</a></p></section>`;
+    <p class="meta">${esc(s.source === 'openstreetmap' ? 'This place is from OpenStreetMap, © OpenStreetMap contributors.' : String(s.notes || '').replace(/([^.])$/, '$1.'))} A listing is not a right to swim or a check that it is allowed. <a href="${classic(`spot/${encodeURIComponent(s.id)}/`)}">This place on ${OLD}</a></p>
+    ${groupLinks(s)}</section>`;
 }
 // A point's request to be listed, as the live page's (anypoint.js, request): a GitHub form with its position filled in.
 function requestHtml(s) {
