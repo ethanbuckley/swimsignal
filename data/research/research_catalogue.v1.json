@@ -3741,9 +3741,9 @@
    ],
    "verdict": "Read once on 24 November 2026: both conditions pass. On 2,754 October to April river E. coli results from six winters (2012 to 2022) at Environment Agency sampling points, never scored by any model here, production's river chance as deployed put each point's days in the right order (mean within-point correlation 0.485, interval 0.393 to 0.525) and still did with each point's month means removed (0.484, interval 0.354 to 0.531), against a bar of 0.15 fixed before the read. Rain in the last 48 hours alone scored 0.473, and production was not shown better than it (difference +0.011, interval −0.022 to +0.032). The estimate's level was too low: a mean chance of 35.5% where 48.3% of results were over 900.",
    "scope": "28 monitoring points with 15 or more rows, in 8 river systems, 18 of them in the South West; not swim spots. Hindcast at lead 0 on ERA5-Land rain, the model file without soil moisture. Supports an order within a place in winter. Does not support a percentage, a count or a level, any gain from the overflow chain over rain, lakes, or a forecast made days ahead. Half the winters (2,561 rows) were held back unread.",
-   "stage": "waiting",
-   "stage_note": "Read on 24 November 2026. Nothing on the site changes. The river line for October to April is built behind a switch that is off (PR #736): one word on today's day, no percentage, no change to the level. Ethan decides whether to switch it on.",
-   "next": "Ethan looks at the pictures in the build's record and decides on the switch. The held-back winters are kept for one frozen test, first proposed for a rain-only word at river spots with no overflow upstream.",
+   "stage": "live",
+   "stage_note": "Read on 24 November 2026. The river line for October to April (PR #736) was switched on by Ethan on 25 November 2026: one word on today's day at river spots, no percentage, no change to the level. The first forecast with it was issued at 13:34 UTC.",
+   "next": "Watch how the word reads on the live pages. The held-back winters are kept for one frozen test, first proposed for a rain-only word at river spots with no overflow upstream.",
    "records": [
     {
      "doc": "docs/RIVER-WINTER-READ-2026-11.md",

@@ -2601,7 +2601,9 @@ request, #705): at a river spot in season, the E. coli tile's sentence gains one
 
 Built on Ethan's word of 24 November 2026 ("Build it, switched off. Decide on switching it on when you can see
 it."), from `docs/RIVER-WINTER-READ-2026-11.md`. Record: `docs/RIVER-WINTER-LINE-2026-11.md`. **Off unless the
-repository variable `DIPCAST_RIVER_WINTER_LINE` is 1. Not decided: whether to switch it on.**
+repository variable `DIPCAST_RIVER_WINTER_LINE` is 1. Not decided: whether to switch it on.** **Decided 25 November
+2026: switched on by Ethan, once the redesign's row read the word (set at 13:27 UTC; first forecast with it issued
+13:34 UTC). The reversal below is now in force.**
 
 - Switched on, it **reverses part of "The E. coli estimate out of season" (20 October 2026)**: from October to
   April the out-of-season tile at a river spot says "Today the estimate is higher than usual here for October to
