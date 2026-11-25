@@ -115,6 +115,12 @@ LIVE_STATUS = os.environ.get("DIPCAST_LIVE_STATUS", "") == "1"
 # no forecast. Off unless DIPCAST_RADAR_SHADOW=1, which Ethan sets to start it.
 RADAR_SHADOW = os.environ.get("DIPCAST_RADAR_SHADOW", "") == "1"
 
+# The river line from October to April (river_usual.winter_direction, docs/RIVER-WINTER-LINE-2026-11.md): one word
+# on today's day at a listed river spot, from the river model without soil moisture. Off unless
+# DIPCAST_RIVER_WINTER_LINE=1. Ethan decides whether to set it; setting it reverses part of DESIGN's 20 October 2026
+# out-of-season rule. While it is off no forecast, file or page differs.
+RIVER_WINTER_LINE = os.environ.get("DIPCAST_RIVER_WINTER_LINE", "") == "1"
+
 # ---------------------------------------------------------------------------
 # Rainfall: Open-Meteo. Archive is ERA5-Land reanalysis at ~0.1 deg. No key: the free hosts below;
 # with DIPCAST_OPEN_METEO_KEY set, the paid plan's customer- hosts (rainfall.customer).

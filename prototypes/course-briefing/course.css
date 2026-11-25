@@ -1,0 +1,77 @@
+/* The course briefing prototype, over the site's page.css: its tokens, its prose page, its fields, folds and
+   tables. Nothing here writes a colour, a size or a radius of its own (docs/DESIGN.md, Rules for changes, 1). */
+
+/* A numbered step, as the organisers' worked example (demo.html): the part the script draws under a hairline. */
+.c-n { display:inline-block; min-width:1.4em; font:600 var(--fs-note)/1 var(--font-mono); color:var(--muted); }
+.c-live { margin:12px 0 0; padding:12px 0 0; border-top:1px solid var(--hair); }
+main.doc .c-caveat { margin:0 0 20px; }
+
+/* A level's colour on its words, never on a surface, with the organisers' page's 4 px rule at its left. */
+main.doc .c-level { font:700 var(--fs-head)/1.25 var(--font-text); color:var(--k-na); margin:0 0 8px; padding-left:10px; border-left:4px solid var(--unknown); }
+main.doc .c-level.low { color:var(--k-low); border-left-color:var(--low); }
+main.doc .c-level.moderate { color:var(--k-moderate); border-left-color:var(--moderate); }
+main.doc .c-level.high { color:var(--k-high); border-left-color:var(--high); }
+main.doc .c-level.veryhigh { color:var(--k-veryhigh); border-left-color:var(--veryhigh); }
+main.doc .c-none { font-size:var(--fs-head); line-height:1.35; margin:0 0 8px; }
+
+/* The label on anything not issued at the time: words beside a rule, as the planner's value tags. */
+main.doc .c-tag { margin:8px 0; padding-left:8px; border-left:3px solid var(--notice-line); font-size:var(--fs-note); line-height:1.4; }
+.c-src { color:var(--muted); font-size:var(--fs-note); }
+main.doc ul.c-list { margin:6px 0 12px; }
+main.doc ul.c-list li { margin:6px 0; }
+
+/* The reveal's answers: each line opens with what kind of thing it is, in words. */
+main.doc ul.c-ans { list-style:none; padding:0; margin:6px 0 14px; border-top:1px solid var(--line); }
+main.doc ul.c-ans li { margin:0; padding:8px 0; border-bottom:1px solid var(--line); font-size:var(--fs-note); line-height:1.45; }
+.c-what { font-weight:700; }
+main.doc .c-actions { margin:14px 0; }
+main.doc details.fold h3 { margin-top:8px; }
+
+/* The dates: three buttons, the picked one in the brand. */
+.c-dates { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:8px; margin:10px 0; }
+.c-dates .btn { flex-direction:column; align-items:flex-start; gap:2px; text-align:left; padding:10px 12px; }
+.c-dates .btn span { font-weight:400; color:var(--muted); font-size:var(--fs-meta); }
+.c-dates .btn.on { color:var(--on-fill); background:var(--brand); border-color:var(--brand); }
+.c-dates .btn.on span { color:var(--on-fill); }
+main.doc .c-asof { font-size:var(--fs-note); margin:8px 0 0; }
+@media (max-width: 600px) { .c-dates { grid-template-columns:minmax(0, 1fr); } .c-dates .btn { flex-direction:row; justify-content:space-between; align-items:baseline; gap:12px; } }
+
+/* The sections, in the order a swimmer meets them. The rule at the left says what kind each is, with its words:
+   heavy where an overflow is added, dashed where that is unresolved, a hairline where nothing changes. */
+ol.c-secs { list-style:none; padding:0; margin:20px 0 0; }
+.c-sec { margin:0; padding:2px 0 14px 16px; border-left:4px solid var(--line); }
+.c-sec + .c-sec { margin-top:14px; }
+.c-sec.adds { border-left-color:var(--ink); }
+.c-sec.unresolved { border-left-style:dashed; border-left-color:var(--ink); }
+main.doc .c-sec h4 { margin:0; font:600 var(--fs-body)/1.3 var(--font-display); color:var(--ink); }
+main.doc .c-kind { font-size:var(--fs-meta); font-weight:600; color:var(--muted); margin:2px 0 8px; }
+main.doc .c-sec p { margin:0 0 8px; }
+main.doc .c-not { font-size:var(--fs-note); margin:18px 0 0; padding-top:12px; border-top:1px solid var(--line); }
+
+/* The drawing: a figure in the Research Lab's manner, square-cornered in an ink hairline, its caption opening
+   with its name (docs/DESIGN.md, "The Research Lab": a spot's Upstream map). */
+.c-plate { margin:24px 0; }
+.c-plate svg { display:block; width:100%; max-width:420px; height:auto; border:1px solid var(--ink); background:var(--card); }
+.c-plate figcaption { font-size:var(--fs-meta); line-height:1.45; color:var(--muted); margin-top:8px; }
+.c-plate figcaption b { font:600 var(--fs-note)/1.3 var(--font-display); color:var(--ink); }
+.c-water { fill:var(--brand-tint); stroke:var(--unknown); stroke-width:3; }
+.c-ditch, .c-traced { fill:none; stroke:var(--unknown); stroke-width:4; }
+.c-traced { stroke:var(--muted); stroke-dasharray:14 12; }
+.c-course { fill:none; stroke:var(--ink); stroke-width:10; stroke-linecap:round; }
+.c-course.adds { stroke-width:30; }
+.c-course.unresolved { stroke-width:30; stroke-dasharray:6 44; }
+.c-mouth { fill:var(--ink); stroke:var(--card); stroke-width:6; }
+.c-mouth.possible { fill:var(--card); stroke:var(--ink); }
+.c-cut { fill:var(--card); stroke:var(--ink); stroke-width:6; }
+.c-end { fill:var(--brand); stroke:var(--card); stroke-width:8; }
+.c-works { fill:var(--card); stroke:var(--ink); stroke-width:8; }
+.c-lab { font:600 46px var(--font-text); fill:var(--ink); paint-order:stroke; stroke:var(--card); stroke-width:14; }
+.c-lab.strong { font-size:54px; }
+.c-own { display:block; font-size:var(--fs-meta); color:var(--muted); }
+
+@media (min-width: 900px) {
+  /* Wider screens: the drawing beside the answer's first lines, the page still one column of prose. */
+  .c-plate { float:right; width:300px; margin:4px 0 16px 28px; }
+  main.doc h2 { clear:both; }
+}
+@media print { .c-actions, .c-dates, .skip { display:none; } }

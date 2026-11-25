@@ -1,0 +1,35 @@
+{
+ "name": "river-range-v0e",
+ "target": "log10 E. coli per 100 ml; a result below the lab limit kept at the limit",
+ "features": {
+  "lrain48": "ln(1 + mm of rain in the 48 h before the sample)",
+  "lrain24": "ln(1 + mm of rain in the 24 h before the sample)",
+  "logit_risk": "logit of the lead-0 upstream exposure, as the bench builds it",
+  "doy_sin": "sin of the day of year",
+  "doy_cos": "cos of the day of year"
+ },
+ "intercept": 2.8955651498247135,
+ "coef": {
+  "lrain48": 0.1273743834906023,
+  "lrain24": -0.03895198353370812,
+  "logit_risk": 0.1184916208438963,
+  "doy_sin": -0.01771319642423634,
+  "doy_cos": 0.09903743681236758
+ },
+ "sd_log10": 0.45738469671140447,
+ "range": "likely reading 10^mu; 8 in 10 between 10^(mu - z*sd) and 10^(mu + z*sd), z = 1.2816",
+ "fitted_on": {
+  "rows": 923,
+  "sites": 20,
+  "seasons": [
+   2023,
+   2024,
+   2025,
+   2026
+  ],
+  "file": "swimsignal-private/river-unseen/seen_river_rows_era5land.parquet",
+  "sha256": "7fac233ddea292fae7a0e036ebb2c05f1b3d66af9e1df5b079118959fe927629",
+  "row_version": "ecoli-rows-v1 rebuilt on the rain cache in use"
+ },
+ "frozen_at": "2026-11-16T13:04:00+00:00"
+}

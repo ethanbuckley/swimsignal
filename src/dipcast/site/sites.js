@@ -186,6 +186,9 @@ const Sites = (() => {
     const nameIn = document.getElementById('sm-name'), count = document.getElementById('sm-count'), out = document.getElementById('sm-out');
     const sel = document.getElementById('spot');
     if (!box || !list || !sel) return;
+    // A link that names the fold opens it (For organisations' "Compare your venues", 17 Nov 2026). This runs before
+    // organisers.js rewrites the address with the spot and the day.
+    if (location.hash === '#sites-maker') box.open = true;
     const picked = [];
     let spots = [];
     const norm = t => t.normalize('NFD').replace(/[̀-ͯ']/g, '').toLowerCase();

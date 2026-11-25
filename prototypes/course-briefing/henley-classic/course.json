@@ -1,0 +1,1338 @@
+{
+ "contract": "course-briefing-v1",
+ "made": "2026-11-17T23:53+00:00",
+ "course": {
+  "id": "henley-classic",
+  "name": "Henley Classic",
+  "organiser": "Henley Swim",
+  "source_url": "https://www.henleyswim.com/henley-classic/",
+  "source_read": "2026-11-17",
+  "said": "2.1 km upstream, from the official regatta start, a straight point-to-point swim with no turns",
+  "next_event": "2027-06-27",
+  "next_event_start": "04:00",
+  "length_m": 2112,
+  "river": "River Thames",
+  "spot": "thames-henley"
+ },
+ "km": 2.11,
+ "ends": {
+  "start": {
+   "lat": 51.55792,
+   "lon": -0.88891,
+   "snap_m": 1,
+   "how": "The downstream tip of Temple Island, as OS OpenMap Local (October 2026) draws the island, moved onto the OS Open Rivers line. Henley Royal Regatta says its course runs \"from below the Berkshire side of Temple Island\". The organiser's page says \"the official regatta start\".",
+   "sure": "About 60 m either way. The start pontoons were not located."
+  },
+  "finish": {
+   "lat": 51.54032,
+   "lon": -0.90011,
+   "snap_m": 0,
+   "how": "2,112 m upstream of the start along the OS Open Rivers line. That is 311 m downstream of Henley Bridge (Historic England list entries 1369131 and 1117419). Henley Royal Regatta names the finish Poplar Point, which no open-licence dataset used here places.",
+   "sure": "About 100 m either way: the start's 60 m, and the OS line being simpler than the river."
+  }
+ },
+ "pin_above_finish_m": 226,
+ "limits": "This is SwimSignal's pollution risk forecast for your planned session. It is one input to your own risk assessment. It is a forecast, not a water test: nothing was sampled at the water for it. It never says the water is safe or clean, and no level means that. It counts sewage from the monitored storm overflows upstream and the rain that makes them spill. It does not cover algae, leptospirosis (Weil's disease), runoff from farms and roads, outfalls no one monitors, or physical dangers. Missing data never means low risk: treat it as unknown.",
+ "decides": "The organiser makes the decision about this session, beside its own checks at the water, lab tests, the Environment Agency's advice and the water companies' own spill alerts. SwimSignal does not make it.",
+ "sections": [
+  {
+   "from_km": 0.0,
+   "to_km": 0.35,
+   "adds": [
+    "TWL00222"
+   ],
+   "unresolved": []
+  },
+  {
+   "from_km": 0.35,
+   "to_km": 0.86,
+   "adds": [],
+   "unresolved": [
+    "TWL00222"
+   ]
+  },
+  {
+   "from_km": 0.86,
+   "to_km": 2.11,
+   "adds": [],
+   "unresolved": []
+  }
+ ],
+ "inflows": [
+  {
+   "site_id": "TWL00222",
+   "join_km": 0.35,
+   "mouths": [
+    {
+     "km": 0.35,
+     "link": "mapped"
+    },
+    {
+     "km": 0.24,
+     "link": "mapped"
+    },
+    {
+     "km": 0.13,
+     "link": "mapped"
+    },
+    {
+     "km": -0.11,
+     "link": "mapped"
+    },
+    {
+     "km": 0.86,
+     "link": "possible"
+    }
+   ],
+   "site_name": "Henley STW",
+   "company": "Thames Water",
+   "water": "Fawley Court Stream",
+   "km": 1.9,
+   "travel_h": 2.7,
+   "weight": 0.0686,
+   "has_live": true,
+   "state_now": "live",
+   "returns": [
+    {
+     "year": 2021,
+     "spills": 9,
+     "hours": 144
+    },
+    {
+     "year": 2022,
+     "spills": 0,
+     "hours": 0
+    },
+    {
+     "year": 2023,
+     "spills": 1,
+     "hours": 4
+    },
+    {
+     "year": 2024,
+     "spills": 86,
+     "hours": 950
+    },
+    {
+     "year": 2025,
+     "spills": 0,
+     "hours": 0
+    }
+   ],
+   "last_event": "2024-09-26T17:45+01:00"
+  }
+ ],
+ "mouths": [
+  {
+   "name": "Channel at the stream's meadow end",
+   "link": "mapped",
+   "note": "The OS Open Rivers join. SwimSignal's network puts the works' overflow here.",
+   "lat": 51.55502,
+   "lon": -0.89098,
+   "km": 0.35,
+   "on_course": true
+  },
+  {
+   "name": "Second channel, 110 m further down",
+   "link": "mapped",
+   "note": null,
+   "lat": 51.55597,
+   "lon": -0.89066,
+   "km": 0.24,
+   "on_course": true
+  },
+  {
+   "name": "Backwater beside Temple Island, upper end",
+   "link": "mapped",
+   "note": null,
+   "lat": 51.5569,
+   "lon": -0.89016,
+   "km": 0.13,
+   "on_course": true
+  },
+  {
+   "name": "Backwater below Temple Island, lower end",
+   "link": "mapped",
+   "note": null,
+   "lat": 51.55876,
+   "lon": -0.88874,
+   "km": -0.11,
+   "on_course": false
+  },
+  {
+   "name": "Fawley Court canal",
+   "link": "possible",
+   "note": "Joined to the stream's channels only through ditches with gaps of up to 10 m on the map. Which way they flow is not known.",
+   "lat": 51.55078,
+   "lon": -0.89352,
+   "km": 0.86,
+   "on_course": true
+  }
+ ],
+ "on_route": [],
+ "above": 47,
+ "start_counts": 48,
+ "beyond_start": [
+  "TWL00044",
+  "TWL00259",
+  "TWL00260"
+ ],
+ "upstream": [
+  {
+   "site_id": "TWL00191",
+   "site_name": "Friday Street (Henley) SPS",
+   "company": "Thames Water",
+   "water": "River Thames",
+   "km": 0.3,
+   "travel_h": 0.4,
+   "weight": 0.988,
+   "has_live": true,
+   "state_now": "offline"
+  },
+  {
+   "site_id": "TWL00428",
+   "site_name": "Wargrave STW",
+   "company": "Thames Water",
+   "water": "River Loddon",
+   "km": 7.5,
+   "travel_h": 10.5,
+   "weight": 0.459,
+   "has_live": true,
+   "state_now": "live"
+  },
+  {
+   "site_id": "TWL00345",
+   "site_name": "Caversham (Reading) SPS",
+   "company": "Thames Water",
+   "water": "River Thames",
+   "km": 14.5,
+   "travel_h": 20.2,
+   "weight": 0.2473,
+   "has_live": true,
+   "state_now": "live"
+  },
+  {
+   "site_id": "TWL00343",
+   "site_name": "Reading STW",
+   "company": "Thames Water",
+   "water": "Foudry Brook",
+   "km": 18.5,
+   "travel_h": 25.6,
+   "weight": 0.1039,
+   "has_live": true,
+   "state_now": "live"
+  },
+  {
+   "site_id": "TWL00176",
+   "site_name": "New Mill STW",
+   "company": "Thames Water",
+   "water": "River Blackwater",
+   "km": 29.3,
+   "travel_h": 40.6,
+   "weight": 0.0814,
+   "has_live": true,
+   "state_now": "live"
+  },
+  {
+   "site_id": "TWL00199",
+   "site_name": "Goring STW",
+   "company": "Thames Water",
+   "water": "River Thames",
+   "km": 34.8,
+   "travel_h": 48.3,
+   "weight": 0.08,
+   "has_live": true,
+   "state_now": "live"
+  },
+  {
+   "site_id": "TWL00216",
+   "site_name": "Hartley Wintney STW",
+   "company": "Thames Water",
+   "water": "Tributary of River Whitewater",
+   "km": 35.2,
+   "travel_h": 48.9,
+   "weight": 0.0495,
+   "has_live": true,
+   "state_now": "live"
+  },
+  {
+   "site_id": "TWL00306",
+   "site_name": "Mortimer STW",
+   "company": "Thames Water",
+   "water": "Foudry Brook",
+   "km": 28.1,
+   "travel_h": 39.1,
+   "weight": 0.0482,
+   "has_live": true,
+   "state_now": "live"
+  },
+  {
+   "site_id": "TWL00324",
+   "site_name": "Pangbourne STW",
+   "company": "Thames Water",
+   "water": "Sulham Brook",
+   "km": 25.5,
+   "travel_h": 35.4,
+   "weight": 0.0423,
+   "has_live": true,
+   "state_now": "live"
+  },
+  {
+   "site_id": "TWL00014",
+   "site_name": "Arborfield STW",
+   "company": "Thames Water",
+   "water": "Barkham Brook",
+   "km": 21.5,
+   "travel_h": 29.8,
+   "weight": 0.0419,
+   "has_live": true,
+   "state_now": "live"
+  },
+  {
+   "site_id": "TWL00366",
+   "site_name": "Sherfield-on-Loddon STW",
+   "company": "Thames Water",
+   "water": "Bow Brook",
+   "km": 35.1,
+   "travel_h": 48.8,
+   "weight": 0.0361,
+   "has_live": true,
+   "state_now": "live"
+  },
+  {
+   "site_id": "TWL00309",
+   "site_name": "Newbury STW",
+   "company": "Thames Water",
+   "water": "River Kennet",
+   "km": 46.5,
+   "travel_h": 64.6,
+   "weight": 0.0353,
+   "has_live": true,
+   "state_now": "live"
+  },
+  {
+   "site_id": "TWL00459",
+   "site_name": "Ash Ridge (Wokingham) STW",
+   "company": "Thames Water",
+   "water": "Ashridge Stream",
+   "km": 18.5,
+   "travel_h": 25.7,
+   "weight": 0.0323,
+   "has_live": true,
+   "state_now": "live"
+  },
+  {
+   "site_id": "TWL00756",
+   "site_name": "Waterloo crescent outfall, wokingham",
+   "company": "Thames Water",
+   "water": "Tributary of Waterloo Road Stream",
+   "km": 22.4,
+   "travel_h": 31.1,
+   "weight": 0.0271,
+   "has_live": true,
+   "state_now": "live"
+  },
+  {
+   "site_id": "TWL00186",
+   "site_name": "Fleet STW",
+   "company": "Thames Water",
+   "water": "Fleet Brook",
+   "km": 40.6,
+   "travel_h": 56.3,
+   "weight": 0.0258,
+   "has_live": true,
+   "state_now": "live"
+  },
+  {
+   "site_id": "TWL00169",
+   "site_name": "Easthampstead Park STW",
+   "company": "Thames Water",
+   "water": "Emm Brook",
+   "km": 24.6,
+   "travel_h": 34.2,
+   "weight": 0.0256,
+   "has_live": true,
+   "state_now": "live"
+  },
+  {
+   "site_id": "TWL00121",
+   "site_name": "Crooked Billet (Hook) SPS & Storm SPS",
+   "company": "Thames Water",
+   "water": "River Whitewater",
+   "km": 38.9,
+   "travel_h": 54.1,
+   "weight": 0.0255,
+   "has_live": true,
+   "state_now": "live"
+  },
+  {
+   "site_id": "TWL00064",
+   "site_name": "Burghfield STW",
+   "company": "Thames Water",
+   "water": "Clayhill Brook",
+   "km": 25.1,
+   "travel_h": 34.8,
+   "weight": 0.0241,
+   "has_live": true,
+   "state_now": "live"
+  },
+  {
+   "site_id": "TWL00157",
+   "site_name": "Dorchester STW",
+   "company": "Thames Water",
+   "water": "River Thame",
+   "km": 50.3,
+   "travel_h": 69.8,
+   "weight": 0.0186,
+   "has_live": true,
+   "state_now": "live"
+  },
+  {
+   "site_id": "TWL00097",
+   "site_name": "Cholsey STW",
+   "company": "Thames Water",
+   "water": "Cholsey Brook",
+   "km": 41.6,
+   "travel_h": 57.8,
+   "weight": 0.0186,
+   "has_live": true,
+   "state_now": "live"
+  },
+  {
+   "site_id": "TWL00378",
+   "site_name": "South Moreton STW",
+   "company": "Thames Water",
+   "water": "Mill Brook",
+   "km": 47.3,
+   "travel_h": 65.6,
+   "weight": 0.0175,
+   "has_live": true,
+   "state_now": "live"
+  },
+  {
+   "site_id": "TWL00370",
+   "site_name": "Silchester STW",
+   "company": "Thames Water",
+   "water": "Silchester Brook",
+   "km": 36.1,
+   "travel_h": 50.1,
+   "weight": 0.0172,
+   "has_live": true,
+   "state_now": "live"
+  },
+  {
+   "site_id": "TWL00017",
+   "site_name": "Ash Vale STW",
+   "company": "Thames Water",
+   "water": "River Blackwater",
+   "km": 49.2,
+   "travel_h": 68.3,
+   "weight": 0.0162,
+   "has_live": true,
+   "state_now": "live"
+  },
+  {
+   "site_id": "TWL00431",
+   "site_name": "Water End (Newnham) SPS",
+   "company": "Thames Water",
+   "water": "River Lyde",
+   "km": 42.9,
+   "travel_h": 59.6,
+   "weight": 0.0162,
+   "has_live": true,
+   "state_now": "live"
+  },
+  {
+   "site_id": "TWL00031",
+   "site_name": "Beenham STW",
+   "company": "Thames Water",
+   "water": "Webbs Lane Stream",
+   "km": 36.3,
+   "travel_h": 50.4,
+   "weight": 0.0156,
+   "has_live": true,
+   "state_now": "live"
+  },
+  {
+   "site_id": "TWL00354",
+   "site_name": "Wedmans Lane (Rotherwick) SPS",
+   "company": "Thames Water",
+   "water": "Rotherwick Brook",
+   "km": 36.2,
+   "travel_h": 50.3,
+   "weight": 0.0147,
+   "has_live": true,
+   "state_now": "live"
+  },
+  {
+   "site_id": "TWL00081",
+   "site_name": "Chapel Row STW",
+   "company": "Thames Water",
+   "water": "Tributary of River Bourne",
+   "km": 38.0,
+   "travel_h": 52.7,
+   "weight": 0.0136,
+   "has_live": true,
+   "state_now": "live"
+  },
+  {
+   "site_id": "TWL00147",
+   "site_name": "Culham STW",
+   "company": "Thames Water",
+   "water": "Clifton Hampton Ditch",
+   "km": 55.1,
+   "travel_h": 76.6,
+   "weight": 0.0133,
+   "has_live": true,
+   "state_now": "live"
+  },
+  {
+   "site_id": "TWL00301",
+   "site_name": "Midgham STW",
+   "company": "Thames Water",
+   "water": "Kennet and Avon Canal",
+   "km": 38.8,
+   "travel_h": 53.8,
+   "weight": 0.0131,
+   "has_live": true,
+   "state_now": "live"
+  },
+  {
+   "site_id": "TWL00401",
+   "site_name": "Swains Road (Tadley) SPS",
+   "company": "Thames Water",
+   "water": "Silchester Brook",
+   "km": 38.9,
+   "travel_h": 54.0,
+   "weight": 0.013,
+   "has_live": true,
+   "state_now": "live"
+  },
+  {
+   "site_id": "TWL00359",
+   "site_name": "Sandhurst STW",
+   "company": "Thames Water",
+   "water": "River Blackwater",
+   "km": 39.1,
+   "travel_h": 54.4,
+   "weight": 0.0129,
+   "has_live": true,
+   "state_now": "live"
+  },
+  {
+   "site_id": "TWL00171",
+   "site_name": "Elvetham Road (Fleet) SPS",
+   "company": "Thames Water",
+   "water": "Basingstoke Canal",
+   "km": 41.4,
+   "travel_h": 57.5,
+   "weight": 0.0117,
+   "has_live": true,
+   "state_now": "live"
+  },
+  {
+   "site_id": "TWL00256",
+   "site_name": "Kingsclere STW",
+   "company": "Thames Water",
+   "water": "Kingsclere Brook",
+   "km": 47.7,
+   "travel_h": 66.3,
+   "weight": 0.0115,
+   "has_live": true,
+   "state_now": "live"
+  },
+  {
+   "site_id": "TWL00028",
+   "site_name": "Basingstoke STW",
+   "company": "Thames Water",
+   "water": "Tributary of River Loddon",
+   "km": 42.4,
+   "travel_h": 59.0,
+   "weight": 0.0111,
+   "has_live": true,
+   "state_now": "live"
+  },
+  {
+   "site_id": "TWL00070",
+   "site_name": "Camberley STW",
+   "company": "Thames Water",
+   "water": "River Blackwater",
+   "km": 42.5,
+   "travel_h": 59.0,
+   "weight": 0.0111,
+   "has_live": true,
+   "state_now": "live"
+  },
+  {
+   "site_id": "TWL00627",
+   "site_name": "Knightsbridge Road, Camberley",
+   "company": "Thames Water",
+   "water": "River Blackwater",
+   "km": 42.6,
+   "travel_h": 59.2,
+   "weight": 0.0111,
+   "has_live": true,
+   "state_now": "live"
+  },
+  {
+   "site_id": "TWL00319",
+   "site_name": "St Stephens Hall (Little London) SPS",
+   "company": "Thames Water",
+   "water": "Bow Brook",
+   "km": 43.4,
+   "travel_h": 60.3,
+   "weight": 0.0107,
+   "has_live": true,
+   "state_now": "live"
+  },
+  {
+   "site_id": "TWL00034",
+   "site_name": "Benson STW",
+   "company": "Thames Water",
+   "water": "Howbery Ditch",
+   "km": 44.0,
+   "travel_h": 61.1,
+   "weight": 0.0104,
+   "has_live": true,
+   "state_now": "live"
+  },
+  {
+   "site_id": "TWL00211",
+   "site_name": "Hampstead Norreys STW",
+   "company": "Thames Water",
+   "water": "River Pang",
+   "km": 45.9,
+   "travel_h": 63.7,
+   "weight": 0.0096,
+   "has_live": true,
+   "state_now": "live"
+  },
+  {
+   "site_id": "TWL00472",
+   "site_name": "Aldershot CSO",
+   "company": "Thames Water",
+   "water": "River Blackwater",
+   "km": 53.5,
+   "travel_h": 74.4,
+   "weight": 0.0093,
+   "has_live": true,
+   "state_now": "live"
+  },
+  {
+   "site_id": "TWL00007",
+   "site_name": "Aldershot STW",
+   "company": "Thames Water",
+   "water": "River Blackwater",
+   "km": 53.5,
+   "travel_h": 74.4,
+   "weight": 0.0093,
+   "has_live": true,
+   "state_now": "live"
+  },
+  {
+   "site_id": "TWL00743",
+   "site_name": "South lane, ash",
+   "company": "Thames Water",
+   "water": "Tributary of River Blackwater",
+   "km": 53.6,
+   "travel_h": 74.4,
+   "weight": 0.0093,
+   "has_live": true,
+   "state_now": "live"
+  },
+  {
+   "site_id": "TWL00061",
+   "site_name": "Briff Lane (Bucklebury) STW",
+   "company": "Thames Water",
+   "water": "Briff Lane Stream",
+   "km": 40.5,
+   "travel_h": 56.2,
+   "weight": 0.0085,
+   "has_live": true,
+   "state_now": "live"
+  },
+  {
+   "site_id": "TWL00044",
+   "site_name": "Blind Mans Gate (Highclere) SPS",
+   "company": "Thames Water",
+   "water": "Penwood Stream",
+   "km": 58.4,
+   "travel_h": 81.1,
+   "weight": 0.0079,
+   "has_live": true,
+   "state_now": "live"
+  },
+  {
+   "site_id": "TWL00259",
+   "site_name": "Kintbury STW",
+   "company": "Thames Water",
+   "water": "Kennet and Avon Canal",
+   "km": 58.9,
+   "travel_h": 81.9,
+   "weight": 0.0075,
+   "has_live": true,
+   "state_now": "live"
+  },
+  {
+   "site_id": "TWL00260",
+   "site_name": "Knights Lane (Ball Hill) SPS",
+   "company": "Thames Water",
+   "water": "River Enbourne",
+   "km": 59.0,
+   "travel_h": 81.9,
+   "weight": 0.0072,
+   "has_live": true,
+   "state_now": "live"
+  },
+  {
+   "site_id": "TWL00437",
+   "site_name": "West Heath (Charter Alley) SPS",
+   "company": "Thames Water",
+   "water": "Tributary of Bow Brook",
+   "km": 45.5,
+   "travel_h": 63.2,
+   "weight": 0.0068,
+   "has_live": true,
+   "state_now": "live"
+  },
+  {
+   "site_id": "TWL00430",
+   "site_name": "Wash Water STW",
+   "company": "Thames Water",
+   "water": "Pound Street Brook",
+   "km": 55.3,
+   "travel_h": 76.8,
+   "weight": 0.0063,
+   "has_live": true,
+   "state_now": "live"
+  },
+  {
+   "site_id": "TWL00212",
+   "site_name": "Hamstead Marshall STW",
+   "company": "Thames Water",
+   "water": "Hamstead Stream",
+   "km": 56.6,
+   "travel_h": 78.7,
+   "weight": 0.0059,
+   "has_live": true,
+   "state_now": "live"
+  },
+  {
+   "site_id": "TWL00021",
+   "site_name": "Avondale Road (Fleet) SPS",
+   "company": "Thames Water",
+   "water": "Fleet Brook",
+   "km": 43.7,
+   "travel_h": 90.3,
+   "weight": 0.0003,
+   "has_live": true,
+   "state_now": "live"
+  }
+ ],
+ "companies": [
+  "Thames Water"
+ ],
+ "observations": [
+  {
+   "what": "Live overflow status",
+   "where": "Every monitored Thames Water overflow upstream",
+   "source": "Thames Water's storm overflow feed, polled by SwimSignal's build",
+   "limit": "A status at each poll, not a continuous record. A monitor can be offline. The feed says nothing about volume."
+  },
+  {
+   "what": "Start and stop of past spills",
+   "where": "Every monitored Thames Water overflow upstream",
+   "source": "Environment Agency event duration monitoring files, 2024 and 2025",
+   "limit": "Published after the year ends. Not available on the day."
+  },
+  {
+   "what": "Laboratory samples",
+   "where": "None on the course",
+   "source": "The Environment Agency samples designated bathing waters only. The nearest upstream are Pangbourne Meadow and Wallingford Beach.",
+   "limit": "Their results describe those places in the bathing season, not Henley."
+  },
+  {
+   "what": "River level",
+   "where": "Hambleden Lock, downstream of the start",
+   "source": "Environment Agency flood monitoring gauge, as the site's build of 17 November 2026 reads it for the Henley spot",
+   "limit": "A level, not a flow or a water-quality reading. Not part of the pollution level."
+  },
+  {
+   "what": "Rain",
+   "where": "Each overflow's forecast cell",
+   "source": "Open-Meteo forecast, read by the build",
+   "limit": "A forecast for a grid cell, not a rain gauge."
+  }
+ ],
+ "bathing_waters": [
+  {
+   "id": "ukj1102-11941",
+   "name": "Pangbourne Meadow, River Thames",
+   "designated": "2026",
+   "km_above_finish": 25.8
+  },
+  {
+   "id": "ukj1403-11947",
+   "name": "Wallingford Beach, River Thames",
+   "designated": "2024",
+   "km_above_finish": 42.4
+  }
+ ],
+ "polls": {
+  "company": "Thames Water",
+  "polls": 304,
+  "to": "2026-11-17T10:58+00:00",
+  "median_gap_h": 1.1,
+  "longest_gap_h": 15.6,
+  "gaps_over_6h": 38
+ },
+ "log_from": "2026-09-12",
+ "records_from": "2026-10-31",
+ "recent_h": 48.0,
+ "dates": [
+  {
+   "id": "gap",
+   "day": "2026-11-14",
+   "as_of": "2026-11-14T07:30+00:00",
+   "title": "The same time: one monitor silent",
+   "kind": "same time",
+   "replay": {
+    "cutoff": "2026-11-14T07:30+00:00",
+    "window_h": 48.0,
+    "polls": 20,
+    "last_poll": "2026-11-14T07:13+00:00",
+    "prev_poll": "2026-11-14T00:36+00:00",
+    "counted": 50,
+    "known": 49,
+    "spilling": [],
+    "unproven_state": [],
+    "unknown": [
+     {
+      "site_id": "TWL00191",
+      "site_name": "Friday Street (Henley) SPS",
+      "km": 0.3,
+      "weight": 0.988,
+      "side": false,
+      "state": "unknown",
+      "last_known_at": "2026-11-13T04:12+00:00",
+      "unknown_polls": 13
+     }
+    ],
+    "side": [
+     {
+      "site_id": "TWL00222",
+      "site_name": "Henley STW",
+      "km": 1.9,
+      "weight": 0.0686,
+      "side": true,
+      "state": "not spilling",
+      "last_known_at": "2026-11-14T07:13+00:00",
+      "unknown_polls": 0
+     }
+    ],
+    "events": [
+     {
+      "site_id": "TWL00191",
+      "site_name": "Friday Street (Henley) SPS",
+      "km": 0.3,
+      "weight": 0.988,
+      "side": false,
+      "start": "2026-11-13T02:50+00:00",
+      "end": "2026-11-13T02:54+00:00",
+      "received_by": "2026-11-13T04:12+00:00"
+     }
+    ],
+    "unproven": 0
+   },
+   "issued": {
+    "issue": "6743baf-20261114T0718Z",
+    "issued_at": "2026-11-14T07:18+00:00",
+    "level": "low",
+    "now_level": "low",
+    "now_score": 0,
+    "days": [
+     {
+      "by": "sewage spills",
+      "date": "2026-11-14",
+      "expect": 0.2,
+      "level": "low",
+      "missing": 0,
+      "rain": 0,
+      "score": 3
+     },
+     {
+      "by": "sewage spills",
+      "date": "2026-11-15",
+      "expect": 2.8,
+      "level": "low",
+      "missing": 0,
+      "rain": 2.9,
+      "score": 4
+     },
+     {
+      "by": "sewage spills",
+      "date": "2026-11-16",
+      "expect": 17.2,
+      "level": "moderate",
+      "missing": 0,
+      "rain": 3.5,
+      "score": 27
+     },
+     {
+      "by": "sewage spills",
+      "date": "2026-11-17",
+      "expect": 16.9,
+      "level": "moderate",
+      "missing": 0,
+      "rain": 29.1,
+      "score": 36
+     },
+     {
+      "by": "sewage spills",
+      "date": "2026-11-18",
+      "expect": 3.8,
+      "level": "moderate",
+      "missing": 0,
+      "rain": 30,
+      "score": 32
+     }
+    ],
+    "reporting": 48,
+    "upstream": 49,
+    "discharging": 0,
+    "recent": 0,
+    "model": "spill=808da63d;cal=9b3cc24c;ecoli=f70c7723;rain=open-meteo-forecast"
+   },
+   "no_issue_why": null,
+   "rebuilt": {
+    "finish": 1,
+    "start": 12
+   },
+   "spills": [
+    {
+     "site_id": "TWL00191",
+     "start": "2026-11-13T02:50+00:00",
+     "end": "2026-11-13T02:54+00:00",
+     "ended_after": false,
+     "source": "SwimSignal's polls of the live feed",
+     "side": false,
+     "weight": 0.988
+    }
+   ],
+   "monitors": {
+    "polls": 6,
+    "counted": 51,
+    "not_reporting": {
+     "TWL00191": {
+      "state": "none",
+      "known": 0,
+      "unknown": 6,
+      "side": false
+     }
+    }
+   },
+   "names": {
+    "TWL00191": "Friday Street (Henley) SPS"
+   }
+  },
+  {
+   "id": "routine",
+   "day": "2026-11-01",
+   "as_of": "2026-11-01T08:40+00:00",
+   "title": "The same time: a quiet day",
+   "kind": "same time",
+   "replay": {
+    "cutoff": "2026-11-01T08:40+00:00",
+    "window_h": 48.0,
+    "polls": 43,
+    "last_poll": "2026-11-01T08:29+00:00",
+    "prev_poll": "2026-11-01T01:45+00:00",
+    "counted": 50,
+    "known": 50,
+    "spilling": [],
+    "unproven_state": [],
+    "unknown": [],
+    "side": [
+     {
+      "site_id": "TWL00222",
+      "site_name": "Henley STW",
+      "km": 1.9,
+      "weight": 0.0686,
+      "side": true,
+      "state": "not spilling",
+      "last_known_at": "2026-11-01T08:29+00:00",
+      "unknown_polls": 0
+     }
+    ],
+    "events": [],
+    "unproven": 0
+   },
+   "issued": {
+    "issue": "4deeedd-20261101T0832Z",
+    "issued_at": "2026-11-01T08:32+00:00",
+    "level": "low",
+    "now_level": "low",
+    "now_score": 0,
+    "days": [
+     {
+      "by": "sewage spills",
+      "date": "2026-11-01",
+      "expect": 0.3,
+      "level": "low",
+      "missing": 0,
+      "rain": 0,
+      "score": 1
+     },
+     {
+      "by": "sewage spills",
+      "date": "2026-11-02",
+      "expect": 0.4,
+      "level": "low",
+      "missing": 0,
+      "rain": 0,
+      "score": 1
+     },
+     {
+      "by": "sewage spills",
+      "date": "2026-11-03",
+      "expect": 0.2,
+      "level": "low",
+      "missing": 0,
+      "rain": 0,
+      "score": 1
+     },
+     {
+      "by": "sewage spills",
+      "date": "2026-11-04",
+      "expect": 0.3,
+      "level": "low",
+      "missing": 0,
+      "rain": 0,
+      "score": 1
+     },
+     {
+      "by": "sewage spills",
+      "date": "2026-11-05",
+      "expect": 0.3,
+      "level": "low",
+      "missing": 0,
+      "rain": 0,
+      "score": 1
+     }
+    ],
+    "reporting": 49,
+    "upstream": 49,
+    "discharging": 0,
+    "recent": 0,
+    "model": "spill=808da63d;cal=9b3cc24c;ecoli=f70c7723;rain=open-meteo-forecast"
+   },
+   "no_issue_why": null,
+   "rebuilt": {
+    "finish": 0,
+    "start": 0
+   },
+   "spills": [],
+   "monitors": {
+    "polls": 13,
+    "counted": 51,
+    "not_reporting": {
+     "TWL00171": {
+      "state": "part",
+      "known": 5,
+      "unknown": 8,
+      "side": false
+     }
+    }
+   },
+   "names": {}
+  },
+  {
+   "id": "differs",
+   "day": "2024-07-06",
+   "as_of": "2024-07-06T13:00+01:00",
+   "title": "Historical: evidence differs along the course",
+   "kind": "historical",
+   "replay": null,
+   "issued": null,
+   "no_issue_why": "SwimSignal's forecast log starts on 12 September 2026, so nothing was issued for this date.",
+   "rebuilt": {
+    "finish": 0,
+    "start": 6
+   },
+   "spills": [
+    {
+     "site_id": "TWL00222",
+     "start": "2024-07-06T11:45+01:00",
+     "end": "2024-07-06T12:45+01:00",
+     "ended_after": false,
+     "source": "Environment Agency start and stop record",
+     "side": true,
+     "weight": 0.0686
+    },
+    {
+     "site_id": "TWL00147",
+     "start": "2024-07-06T11:30+01:00",
+     "end": null,
+     "ended_after": true,
+     "source": "Environment Agency start and stop record",
+     "side": false,
+     "weight": 0.0133
+    },
+    {
+     "site_id": "TWL00186",
+     "start": "2024-07-06T08:45+01:00",
+     "end": null,
+     "ended_after": true,
+     "source": "Environment Agency start and stop record",
+     "side": false,
+     "weight": 0.0258
+    },
+    {
+     "site_id": "TWL00378",
+     "start": "2024-07-06T07:45+01:00",
+     "end": null,
+     "ended_after": true,
+     "source": "Environment Agency start and stop record",
+     "side": false,
+     "weight": 0.0175
+    },
+    {
+     "site_id": "TWL00186",
+     "start": "2024-07-06T06:45+01:00",
+     "end": "2024-07-06T07:15+01:00",
+     "ended_after": false,
+     "source": "Environment Agency start and stop record",
+     "side": false,
+     "weight": 0.0258
+    },
+    {
+     "site_id": "TWL00014",
+     "start": "2024-07-06T03:45+01:00",
+     "end": "2024-07-06T04:15+01:00",
+     "ended_after": false,
+     "source": "Environment Agency start and stop record",
+     "side": false,
+     "weight": 0.0419
+    },
+    {
+     "site_id": "TWL00186",
+     "start": "2024-07-06T03:30+01:00",
+     "end": "2024-07-06T06:15+01:00",
+     "ended_after": false,
+     "source": "Environment Agency start and stop record",
+     "side": false,
+     "weight": 0.0258
+    },
+    {
+     "site_id": "TWL00121",
+     "start": "2024-07-06T02:50+01:00",
+     "end": "2024-07-06T03:50+01:00",
+     "ended_after": false,
+     "source": "Environment Agency start and stop record",
+     "side": false,
+     "weight": 0.0255
+    },
+    {
+     "site_id": "TWL00378",
+     "start": "2024-07-06T02:45+01:00",
+     "end": "2024-07-06T06:00+01:00",
+     "ended_after": false,
+     "source": "Environment Agency start and stop record",
+     "side": false,
+     "weight": 0.0175
+    },
+    {
+     "site_id": "TWL00359",
+     "start": "2024-07-06T02:45+01:00",
+     "end": "2024-07-06T05:45+01:00",
+     "ended_after": false,
+     "source": "Environment Agency start and stop record",
+     "side": false,
+     "weight": 0.0129
+    },
+    {
+     "site_id": "TWL00171",
+     "start": "2024-07-06T02:30+01:00",
+     "end": "2024-07-06T03:30+01:00",
+     "ended_after": false,
+     "source": "Environment Agency start and stop record",
+     "side": false,
+     "weight": 0.0117
+    },
+    {
+     "site_id": "TWL00081",
+     "start": "2024-07-05T22:00+01:00",
+     "end": null,
+     "ended_after": true,
+     "source": "Environment Agency start and stop record",
+     "side": false,
+     "weight": 0.0136
+    },
+    {
+     "site_id": "TWL00031",
+     "start": "2024-07-05T21:45+01:00",
+     "end": "2024-07-05T22:15+01:00",
+     "ended_after": false,
+     "source": "Environment Agency start and stop record",
+     "side": false,
+     "weight": 0.0156
+    },
+    {
+     "site_id": "TWL00378",
+     "start": "2024-07-05T21:15+01:00",
+     "end": "2024-07-06T00:00+01:00",
+     "ended_after": false,
+     "source": "Environment Agency start and stop record",
+     "side": false,
+     "weight": 0.0175
+    },
+    {
+     "site_id": "TWL00212",
+     "start": "2024-07-05T20:45+01:00",
+     "end": null,
+     "ended_after": true,
+     "source": "Environment Agency start and stop record",
+     "side": false,
+     "weight": 0.0059
+    }
+   ],
+   "monitors": null,
+   "names": {
+    "TWL00222": "Henley STW",
+    "TWL00147": "Culham STW",
+    "TWL00186": "Fleet STW",
+    "TWL00378": "South Moreton STW",
+    "TWL00014": "Arborfield STW",
+    "TWL00121": "Crooked Billet (Hook) SPS & Storm SPS",
+    "TWL00359": "Sandhurst STW",
+    "TWL00171": "Elvetham Road (Fleet) SPS",
+    "TWL00081": "Chapel Row STW",
+    "TWL00031": "Beenham STW",
+    "TWL00212": "Hamstead Marshall STW"
+   }
+  }
+ ],
+ "plate": {
+  "w": 1604,
+  "h": 2583,
+  "water": "M522,1614L519,1627L509,1634L502,1651L479,1648L463,1641L459,1625L462,1611L478,1592L492,1590L504,1600L516,1599L522,1614ZM584,665L626,639L677,621L678,625L632,641L585,667L584,665ZM680,621L708,611L726,612L681,624L680,621ZM682,1880L711,1809L736,1820L737,1828L731,1843L690,1880L682,1880ZM697,1771L696,1760L780,1541L700,1758L699,1768L708,1775L707,1779L697,1771ZM729,340L741,302L696,464L729,340ZM729,608L812,546L855,526L859,529L813,551L747,601L729,608ZM749,296L751,293L813,319L827,290L830,292L823,311L838,303L837,312L873,330L857,326L839,359L841,366L832,372L820,395L866,420L879,431L877,434L793,387L794,370L812,322L749,296ZM810,343L795,382L815,393L835,360L810,343ZM836,316L824,320L829,331L826,332L819,317L810,339L836,358L854,324L836,316ZM794,1954L811,1965L852,1977L877,1975L848,1982L791,1960L794,1954ZM852,836L829,903L832,926L819,924L813,912L822,884L821,863L873,787L913,713L923,716L852,836ZM873,2266L857,2142L861,2136L898,2134L895,2053L901,1991L898,1985L854,1991L894,1982L901,1983L904,1992L898,2057L902,2137L861,2144L877,2262L911,2266L873,2266ZM860,525L886,496L905,462L914,452L880,436L882,432L922,450L907,466L889,499L868,523L860,525ZM950,904L964,777L925,750L916,776L930,790L940,792L937,800L946,810L940,825L917,830L887,815L893,795L904,790L915,772L923,748L917,743L920,738L972,775L955,900L950,904ZM942,1760L914,1758L915,1754L942,1760ZM950,957L1046,982L1046,985L956,965L950,957ZM989,1561L993,1516L1001,1499L1001,1472L1013,1448L1023,1462L1024,1481L998,1569L989,1561ZM998,1566L1020,1477L1019,1462L1013,1452L1004,1466L1004,1497L993,1534L992,1559L998,1566ZM1235,196L1237,199L1155,289L1131,342L1085,422L1033,487L1079,427L1127,345L1152,289L1165,273L1098,238L1166,270L1235,196ZM1604,71L1507,159L1471,212L1444,269L1432,326L1383,482L1343,554L1292,664L1196,909L1130,1099L1087,1250L1055,1331L1058,1338L1054,1338L1009,1443L943,1564L865,1745L891,1749L890,1752L866,1747L837,1828L917,1845L916,1848L836,1833L798,1936L732,2059L701,2133L642,2252L624,2316L618,2364L608,2508L614,2583L544,2583L529,2468L532,2400L539,2386L534,2383L534,2375L539,2332L560,2292L607,2118L454,2099L456,2086L593,2105L608,2112L622,2064L637,2037L633,2029L638,2028L676,1951L728,1877L758,1816L761,1800L721,1784L716,1786L711,1782L713,1777L768,1795L798,1702L853,1559L917,1425L940,1385L936,1382L966,1300L915,1283L892,1305L843,1306L818,1422L781,1537L817,1415L839,1306L844,1302L875,1305L893,1301L911,1267L915,1268L912,1274L984,1300L995,1274L1002,1252L988,1259L972,1289L928,1274L917,1263L912,1265L912,1252L903,1242L826,1224L796,1209L786,1198L777,1160L795,1119L780,1162L788,1194L794,1203L828,1221L901,1238L911,1244L928,1271L971,1285L986,1257L1004,1248L1029,1163L1026,1157L991,1144L985,1148L826,1101L817,1104L811,1115L804,1114L820,1068L829,1016L831,976L825,948L807,927L751,915L810,926L828,946L831,937L840,972L837,1041L833,1059L822,1071L829,1082L999,1137L998,1142L1015,1148L1024,1149L1031,1144L1030,1118L1049,1033L1052,983L1081,941L1116,869L1120,863L1128,862L1197,682L1115,647L1012,968L1113,646L1063,626L1056,661L1010,686L954,953L950,953L989,765L971,740L914,709L910,701L926,656L936,647L927,639L926,632L947,594L1013,512L1017,496L923,455L925,451L1029,498L1024,511L1032,525L1028,566L1025,565L1028,523L1019,511L968,578L1022,603L1024,569L1028,570L1025,604L1197,675L1206,636L1214,624L1211,608L1217,602L1221,577L1110,528L1102,534L1093,533L1086,526L1085,517L1031,493L1036,491L1087,514L1095,508L1104,509L1110,515L1111,525L1216,570L1248,471L1101,413L1100,401L1120,364L1128,358L1145,359L1207,276L1253,208L1241,199L1265,211L1275,196L1370,216L1369,193L1397,169L1430,120L1476,70L1346,9L1301,15L1291,25L1267,32L1250,55L1227,31L1186,22L1123,64L1099,67L1090,53L1093,33L1103,21L1143,18L1195,0L1345,0L1351,7L1479,66L1507,41L1568,0L1604,0L1604,71ZM1118,415L1255,468L1291,391L1310,343L1312,325L1344,265L1338,251L1256,210L1149,357L1125,393L1118,415ZM1010,683L1054,660L1060,625L1025,609L1010,683ZM1338,490L1366,411L1363,362L1357,364L1336,425L1315,465L1315,475L1298,517L1291,564L1296,563L1313,538L1338,490ZM1341,249L1346,261L1365,222L1274,200L1268,214L1341,249ZM1053,991L1051,1042L1033,1121L1038,1138L1082,998L1131,867L1120,868L1080,947L1053,991ZM989,762L1022,607L965,586L949,617L941,667L926,709L970,734L989,762ZM868,417L944,321L884,296L878,308L880,295L829,285L847,241L825,233L801,207L830,231L848,239L856,196L856,157L869,130L851,120L742,14L715,30L714,27L743,8L861,124L870,126L887,120L922,93L909,63L893,66L880,63L872,53L869,39L903,28L914,52L913,63L928,91L1049,53L1040,34L1013,0L1016,0L1074,78L1020,188L1032,154L1071,79L1055,57L945,88L900,116L1015,190L1030,207L1095,237L1030,209L1016,195L954,313L868,417ZM889,287L886,293L892,296L947,317L1014,192L898,118L875,130L862,149L852,241L835,283L875,290L877,283L860,270L878,280L885,259L862,244L888,258L876,290L885,292L889,287ZM770,197L765,185L754,173L759,154L781,147L801,149L805,155L784,199L779,203L770,197ZM301,1484L277,1484L264,1470L262,1451L235,1432L233,1397L236,1378L241,1378L258,1414L277,1431L288,1448L295,1451L297,1463L303,1468L301,1484ZM312,1425L279,1415L267,1396L268,1381L252,1373L247,1366L252,1317L248,1279L250,1244L256,1224L264,1125L281,1121L338,1119L385,1130L385,1134L351,1124L325,1124L329,1181L327,1209L340,1218L326,1214L323,1227L317,1226L325,1179L318,1129L313,1128L262,1183L256,1251L293,1252L293,1255L255,1254L256,1316L251,1365L270,1371L288,1301L292,1301L270,1394L281,1412L293,1419L308,1423L315,1408L328,1412L319,1413L312,1425ZM307,1128L269,1127L263,1177L307,1128ZM320,802L391,753L395,730L404,708L366,914L366,971L383,1105L380,1113L360,941L388,761L377,765L312,818L284,967L277,1020L281,1029L274,1042L269,1087L266,1086L279,978L309,817L320,802ZM410,2095L392,2093L389,2060L419,2070L419,2085L410,2095Z",
+  "ditches": "M1007,486L1128,306L1141,313M851,420L787,466L770,468L750,462L740,450L773,372L792,383M862,350L846,382M846,382L829,377M862,350L847,344M868,331L862,350M868,328L873,318M980,256L916,220M859,188L916,220M1016,66L1029,19M1014,1L909,40M854,1991L838,2004L799,2094M901,2007L854,1993M317,1670L307,1697M341,1624L350,1572L309,1563L312,1552M313,1547L324,1505M324,1505L290,1495M324,1505L328,1485M290,1495L219,1476M328,1485L342,1438M317,1430L328,1485M342,1438L347,1424M316,1418L341,1432L342,1438M303,1425L317,1430M958,916L950,904M866,827L887,815",
+  "traced": "M746,1935L897,1561L1013,1333L1069,1168M315,1417L280,1413L269,1376L249,1363L261,1165L268,1125L338,1120L383,1131L362,941L404,708L585,666L732,607L865,522L917,453M1069,1168L1170,870M828,949L835,990L823,1093L1069,1168M951,959L1053,984L1121,864L1170,870M1170,870L1238,689M917,453L1019,496L1030,524L1024,607L1238,689M1238,689L1292,448L1343,332L1381,310L1393,276M846,343L816,396L917,453M946,319L1016,193L1166,272L1237,198L1337,249L1346,264L1393,276M1393,276L1473,135L1604,23M576,2583L579,2343L669,2080L746,1935",
+  "sections": [
+   {
+    "from_km": 0.0,
+    "to_km": 0.35,
+    "d": "M1237,691L1240,680L1242,668L1245,657L1247,645L1250,634L1253,623L1255,611L1258,600L1260,589L1263,577L1265,566L1268,554L1271,543L1273,532L1276,520L1278,509L1281,498L1283,486L1286,475L1289,463L1291,452L1295,441L1300,430L1304,420L1309,409L1314,398L1318,388L1323,377L1328,366L1332,355"
+   },
+   {
+    "from_km": 0.35,
+    "to_km": 0.86,
+    "d": "M1068,1172L1074,1156L1079,1140L1084,1124L1090,1108L1095,1092L1101,1075L1106,1059L1112,1043L1117,1027L1122,1011L1128,995L1133,979L1139,963L1144,947L1150,930L1155,914L1160,898L1166,882L1171,866L1177,850L1183,834L1189,818L1195,802L1201,786L1207,771L1213,755L1219,739L1225,723L1231,707L1237,691"
+   },
+   {
+    "from_km": 0.86,
+    "to_km": 2.11,
+    "d": "M586,2323L600,2283L613,2244L627,2205L640,2165L653,2126L667,2086L685,2049L705,2012L724,1975L744,1939L760,1900L776,1861L791,1823L807,1784L822,1746L838,1707L853,1668L869,1630L885,1591L901,1553L920,1516L939,1478L958,1441L977,1404L996,1367L1014,1330L1028,1290L1041,1251L1055,1212L1068,1172"
+   }
+  ],
+  "marks": [
+   {
+    "kind": "start",
+    "label": "Start",
+    "at": [
+     1334,
+     354
+    ]
+   },
+   {
+    "kind": "finish",
+    "label": "Finish",
+    "at": [
+     587,
+     2323
+    ]
+   },
+   {
+    "kind": "cut",
+    "label": "0.35 km",
+    "at": [
+     1237,
+     691
+    ]
+   },
+   {
+    "kind": "cut",
+    "label": "0.86 km",
+    "at": [
+     1068,
+     1172
+    ]
+   },
+   {
+    "kind": "mouth",
+    "label": "Channel at the stream's meadow end",
+    "link": "mapped",
+    "at": [
+     1195,
+     678
+    ]
+   },
+   {
+    "kind": "mouth",
+    "label": "Second channel, 110 m further down",
+    "link": "mapped",
+    "at": [
+     1216,
+     572
+    ]
+   },
+   {
+    "kind": "mouth",
+    "label": "Backwater beside Temple Island, upper end",
+    "link": "mapped",
+    "at": [
+     1249,
+     469
+    ]
+   },
+   {
+    "kind": "mouth",
+    "label": "Backwater below Temple Island, lower end",
+    "link": "mapped",
+    "at": [
+     1344,
+     260
+    ]
+   },
+   {
+    "kind": "mouth",
+    "label": "Fawley Court canal",
+    "link": "possible",
+    "at": [
+     1026,
+     1153
+    ]
+   },
+   {
+    "kind": "works",
+    "label": "Henley STW",
+    "at": [
+     260,
+     1102
+    ]
+   }
+  ],
+  "credit": "Water: OS OpenMap Local, October 2026. Traced lines: OS Open Rivers, as SwimSignal mends them. Contains OS data © Crown copyright and database right 2026."
+ },
+ "inputs": {
+  "river_network.pkl": "fc66101dbf5fcdd1",
+  "annual_returns.parquet": "9f8604f9bbea29b9",
+  "overflow_joins.csv": "f858a34b7db29f3b",
+  "network_fixes.csv": "7ff7af1abd4b0379",
+  "live_latest.parquet": "913c430518055c43",
+  "live_history.parquet": "0f17de7532445c0a",
+  "live_coverage.parquet": "12a7e7a4da6e7d1e",
+  "poll_log.parquet": "ea589aca6b6d9903",
+  "ea_events": "4c8afc5a013c9430"
+ }
+}

@@ -1371,7 +1371,10 @@ position (`from=Kendal&at=54.33,-2.75`), and your own location is written
 districts, villages and other settlements in England and Wales, 771 kB (239 kB
 compressed), copied to `site/data/places.json` and fetched the first time a
 place is typed. `scripts/make_places.py` rebuilds it from OS's 103 MB download.
-Postcodes are not in it. If more of the spots in a plan are low on another of
+Postcodes have their own file, `data/raw/postcodes.json`
+(`scripts/make_postcodes.py`, the same download): 2,863 districts and 10,839
+sectors of Great Britain, 298 kB, and no whole postcodes. A postcode typed in
+the search or as a plan's start is read as its sector or district. If more of the spots in a plan are low on another of
 the five days (two more and a quarter more), the count line offers that day.
 
 **Alerts** (`push/`, set up by hand: `push/README.md`). A Cloudflare Worker

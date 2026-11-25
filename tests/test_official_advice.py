@@ -207,13 +207,13 @@ def test_the_build_writes_the_advice_into_spots_json_and_the_built_page(tmp_path
     assert page.index('<h1 class="spot-name"') < page.index(block) < page.index('id="risk-headline">Low risk')
     assert "o-apart" not in page and "notice above was last checked" not in page
     # A bathing water without a reviewed notice keeps the old line.
-    assert "Today's EA advice not checked" not in page.split('id="answer-words"', 1)[1].split("</section>", 1)[0]
+    assert "Today's official advice was not checked" not in page.split('id="answer-words"', 1)[1].split("</section>", 1)[0]
     # Nothing the build writes into the page says the advice was not checked. (The "Not known here" tile
     # is drawn by the script, not built; tests/site_official_tags.test.cjs checks its row.)
     built = page.split('<div id="result"', 1)[1].split("<script", 1)[0]
     assert "Not checked" not in built and "not checked" not in built
     plain_bw = (tmp_path / "spot" / "bw-uki2203-11942" / "index.html").read_text()
-    assert "Today's EA advice not checked: <a href=\"#ea-today\">open it</a> before you swim" in plain_bw
+    assert "Today's official advice was not checked. <a href=\"#ea-today\">Check Environment Agency advice</a>" in plain_bw
     assert 'id="official"' not in plain_bw and "notice above" not in plain_bw
     plain = (tmp_path / "spot" / "a" / "index.html").read_text()
     assert 'id="official"' not in plain and "o-apart" not in plain and 'id="risk-headline">Low risk' in plain
