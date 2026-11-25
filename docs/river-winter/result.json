@@ -1,0 +1,516 @@
+{
+ "read_at": "2026-11-24T16:29:45+00:00",
+ "commit": "89ba609d195a8f6d88446cf9e4e77dd3aba52aff",
+ "rows": 2754,
+ "points": 39,
+ "points_15_or_more": 28,
+ "systems": 18,
+ "winters": [
+  2012,
+  2014,
+  2016,
+  2018,
+  2020,
+  2022
+ ],
+ "over_900": 1330,
+ "share_at_a_lab_limit": 0.0033,
+ "condition_1_raw": {
+  "value": 0.4853,
+  "ci95": [
+   0.3926,
+   0.5249
+  ]
+ },
+ "condition_1_pass": true,
+ "condition_2_month_removed": {
+  "value": 0.484,
+  "ci95": [
+   0.3537,
+   0.5305
+  ]
+ },
+ "condition_2_pass": true,
+ "reported": {
+  "rho_by_figure": {
+   "z_prod": {
+    "raw": 0.4853,
+    "month_removed": 0.484
+   },
+   "mu_candidate": {
+    "raw": 0.482,
+    "month_removed": 0.4764
+   },
+   "rain": {
+    "raw": 0.4561,
+    "month_removed": 0.4726
+   },
+   "exposure": {
+    "raw": 0.4727,
+    "month_removed": 0.4713
+   },
+   "z_prod_noseason": {
+    "raw": 0.4816,
+    "month_removed": 0.4839
+   }
+  },
+  "rain_month_removed": {
+   "value": 0.4726,
+   "ci95": [
+    0.347,
+    0.5207
+   ]
+  },
+  "production_minus_rain_month_removed": {
+   "value": 0.0114,
+   "ci95": [
+    -0.0217,
+    0.0319
+   ]
+  },
+  "exposure_month_removed": {
+   "value": 0.4713,
+   "ci95": [
+    0.3674,
+    0.5298
+   ]
+  },
+  "production_minus_exposure_month_removed": {
+   "value": 0.0127,
+   "ci95": [
+    -0.0319,
+    0.0149
+   ]
+  },
+  "candidate_month_removed": {
+   "value": 0.4764,
+   "ci95": [
+    0.3501,
+    0.5241
+   ]
+  },
+  "production_minus_candidate_month_removed": {
+   "value": 0.0076,
+   "ci95": [
+    -0.0016,
+    0.0085
+   ]
+  },
+  "no_season_terms_month_removed": {
+   "value": 0.4839,
+   "ci95": [
+    0.3537,
+    0.5305
+   ]
+  },
+  "production_minus_no_season_terms_month_removed": {
+   "value": 0.0001,
+   "ci95": [
+    0.0,
+    0.0
+   ]
+  },
+  "level": {
+   "rows": 2754,
+   "share_over_900": 0.4829,
+   "mean_production_chance": 0.3549,
+   "median_count": 838.0,
+   "brier_production": 0.2187,
+   "brier_own_rate_hindsight": 0.2497
+  },
+  "subsets": {
+   "oct_nov": {
+    "rows": 785,
+    "points_15_or_more": 16,
+    "z_prod": {
+     "raw": 0.4317,
+     "month_removed": 0.4554
+    },
+    "rain": {
+     "raw": 0.4441,
+     "month_removed": 0.4548
+    },
+    "exposure": {
+     "raw": 0.4178,
+     "month_removed": 0.4413
+    },
+    "share_over_900": 0.5389
+   },
+   "dec_feb": {
+    "rows": 1167,
+    "points_15_or_more": 24,
+    "z_prod": {
+     "raw": 0.4437,
+     "month_removed": 0.4461
+    },
+    "rain": {
+     "raw": 0.4447,
+     "month_removed": 0.4526
+    },
+    "exposure": {
+     "raw": 0.4126,
+     "month_removed": 0.4218
+    },
+    "share_over_900": 0.5099
+   },
+   "mar_apr": {
+    "rows": 802,
+    "points_15_or_more": 26,
+    "z_prod": {
+     "raw": 0.5001,
+     "month_removed": 0.4987
+    },
+    "rain": {
+     "raw": 0.478,
+     "month_removed": 0.4808
+    },
+    "exposure": {
+     "raw": 0.5125,
+     "month_removed": 0.4925
+    },
+    "share_over_900": 0.389
+   },
+   "winters_to_2016": {
+    "rows": 2036,
+    "points_15_or_more": 26,
+    "z_prod": {
+     "raw": 0.495,
+     "month_removed": 0.5019
+    },
+    "rain": {
+     "raw": 0.4723,
+     "month_removed": 0.4882
+    },
+    "exposure": {
+     "raw": 0.4867,
+     "month_removed": 0.495
+    },
+    "share_over_900": 0.4671
+   },
+   "winters_from_2018": {
+    "rows": 718,
+    "points_15_or_more": 9,
+    "z_prod": {
+     "raw": 0.4699,
+     "month_removed": 0.4721
+    },
+    "rain": {
+     "raw": 0.4554,
+     "month_removed": 0.4672
+    },
+    "exposure": {
+     "raw": 0.4602,
+     "month_removed": 0.4602
+    },
+    "share_over_900": 0.5279
+   },
+   "band_large": {
+    "rows": 891,
+    "points_15_or_more": 8,
+    "z_prod": {
+     "raw": 0.5652,
+     "month_removed": 0.6103
+    },
+    "rain": {
+     "raw": 0.5683,
+     "month_removed": 0.5772
+    },
+    "exposure": {
+     "raw": 0.586,
+     "month_removed": 0.6088
+    },
+    "share_over_900": 0.5264
+   },
+   "band_medium": {
+    "rows": 1693,
+    "points_15_or_more": 17,
+    "z_prod": {
+     "raw": 0.436,
+     "month_removed": 0.4266
+    },
+    "rain": {
+     "raw": 0.4109,
+     "month_removed": 0.4251
+    },
+    "exposure": {
+     "raw": 0.4146,
+     "month_removed": 0.4073
+    },
+    "share_over_900": 0.4631
+   },
+   "band_small": {
+    "rows": 170,
+    "points_15_or_more": 3,
+    "z_prod": {
+     "raw": 0.5519,
+     "month_removed": 0.4723
+    },
+    "rain": {
+     "raw": 0.413,
+     "month_removed": 0.463
+    },
+    "exposure": {
+     "raw": 0.4999,
+     "month_removed": 0.4673
+    },
+    "share_over_900": 0.4529
+   },
+   "purpose_MN": {
+    "rows": 2,
+    "points_15_or_more": 0,
+    "z_prod": {
+     "raw": NaN,
+     "month_removed": NaN
+    },
+    "rain": {
+     "raw": NaN,
+     "month_removed": NaN
+    },
+    "exposure": {
+     "raw": NaN,
+     "month_removed": NaN
+    },
+    "share_over_900": 0.0
+   },
+   "purpose_MS": {
+    "rows": 229,
+    "points_15_or_more": 4,
+    "z_prod": {
+     "raw": 0.3757,
+     "month_removed": 0.2958
+    },
+    "rain": {
+     "raw": 0.3558,
+     "month_removed": 0.304
+    },
+    "exposure": {
+     "raw": 0.3333,
+     "month_removed": 0.2886
+    },
+    "share_over_900": 0.5371
+   },
+   "purpose_MU": {
+    "rows": 2295,
+    "points_15_or_more": 26,
+    "z_prod": {
+     "raw": 0.5109,
+     "month_removed": 0.5001
+    },
+    "rain": {
+     "raw": 0.48,
+     "month_removed": 0.4854
+    },
+    "exposure": {
+     "raw": 0.5001,
+     "month_removed": 0.4875
+    },
+    "share_over_900": 0.4767
+   },
+   "purpose_PI": {
+    "rows": 52,
+    "points_15_or_more": 1,
+    "z_prod": {
+     "raw": 0.2494,
+     "month_removed": 0.464
+    },
+    "rain": {
+     "raw": 0.3055,
+     "month_removed": 0.5475
+    },
+    "exposure": {
+     "raw": 0.1974,
+     "month_removed": 0.3459
+    },
+    "share_over_900": 0.6346
+   },
+   "purpose_PN": {
+    "rows": 176,
+    "points_15_or_more": 2,
+    "z_prod": {
+     "raw": 0.1157,
+     "month_removed": 0.3888
+    },
+    "rain": {
+     "raw": -0.0051,
+     "month_removed": 0.4198
+    },
+    "exposure": {
+     "raw": 0.1665,
+     "month_removed": 0.3639
+    },
+    "share_over_900": 0.4545
+   }
+  },
+  "leave_one_system_out": {
+   "S01": {
+    "condition_1": 0.4853,
+    "condition_2": 0.484
+   },
+   "S03": {
+    "condition_1": 0.4853,
+    "condition_2": 0.484
+   },
+   "S05": {
+    "condition_1": 0.4853,
+    "condition_2": 0.484
+   },
+   "S06": {
+    "condition_1": 0.4931,
+    "condition_2": 0.4981
+   },
+   "S07": {
+    "condition_1": 0.3948,
+    "condition_2": 0.4063
+   },
+   "S08": {
+    "condition_1": 0.4853,
+    "condition_2": 0.484
+   },
+   "S11": {
+    "condition_1": 0.504,
+    "condition_2": 0.5116
+   },
+   "S12": {
+    "condition_1": 0.4865,
+    "condition_2": 0.4806
+   },
+   "S16": {
+    "condition_1": 0.4853,
+    "condition_2": 0.484
+   },
+   "S21": {
+    "condition_1": 0.4853,
+    "condition_2": 0.484
+   },
+   "S24": {
+    "condition_1": 0.494,
+    "condition_2": 0.4847
+   },
+   "S25": {
+    "condition_1": 0.5174,
+    "condition_2": 0.5077
+   },
+   "S30": {
+    "condition_1": 0.4752,
+    "condition_2": 0.4774
+   },
+   "S32": {
+    "condition_1": 0.4853,
+    "condition_2": 0.484
+   },
+   "S35": {
+    "condition_1": 0.4862,
+    "condition_2": 0.4792
+   },
+   "S38": {
+    "condition_1": 0.4853,
+    "condition_2": 0.484
+   },
+   "S40": {
+    "condition_1": 0.4853,
+    "condition_2": 0.484
+   },
+   "S48": {
+    "condition_1": 0.4853,
+    "condition_2": 0.484
+   }
+  },
+  "no_overflow": {
+   "rows": 1122,
+   "points_15_or_more": 8,
+   "level": {
+    "rows": 1122,
+    "share_over_900": 0.4554,
+    "mean_production_chance": 0.087,
+    "median_count": 740.0,
+    "brier_production": 0.3647,
+    "brier_own_rate_hindsight": 0.248
+   },
+   "rho_by_figure": {
+    "z_prod": {
+     "raw": 0.4653,
+     "month_removed": 0.4239
+    },
+    "rain": {
+     "raw": 0.439,
+     "month_removed": 0.4575
+    },
+    "z_prod_noseason": {
+     "raw": 0.4132,
+     "month_removed": 0.4269
+    }
+   },
+   "rain_month_removed": {
+    "value": 0.4575,
+    "ci95": [
+     0.3256,
+     0.521
+    ]
+   },
+   "production_month_removed": {
+    "value": 0.4239,
+    "ci95": [
+     0.2888,
+     0.4986
+    ]
+   }
+  },
+  "summer_rows_already_read": {
+   "all_59_points": {
+    "rows": 6322,
+    "z_prod": {
+     "raw": 0.3763,
+     "month_removed": 0.3849
+    },
+    "rain": {
+     "raw": 0.3552,
+     "month_removed": 0.3829
+    },
+    "exposure": {
+     "raw": 0.3321,
+     "month_removed": 0.365
+    },
+    "level": {
+     "rows": 6322,
+     "share_over_900": 0.4832,
+     "mean_production_chance": 0.2033,
+     "median_count": 818.0,
+     "brier_production": 0.3003,
+     "brier_own_rate_hindsight": 0.2497
+    }
+   },
+   "points_of_this_read": {
+    "rows": 4644,
+    "z_prod": {
+     "raw": 0.3917,
+     "month_removed": 0.397
+    },
+    "rain": {
+     "raw": 0.3776,
+     "month_removed": 0.4063
+    },
+    "exposure": {
+     "raw": 0.3323,
+     "month_removed": 0.365
+    },
+    "level": {
+     "rows": 4644,
+     "share_over_900": 0.4765,
+     "mean_production_chance": 0.2271,
+     "median_count": 790.0,
+     "brier_production": 0.277,
+     "brier_own_rate_hindsight": 0.2494
+    }
+   }
+  }
+ },
+ "outcome": "both pass",
+ "inputs": {
+  "winter_rows_kept": "6b8e0af34fc5e94f67e7742698edc5c6430a1ef25d62f53a6c6de98519eafae4",
+  "winter_rows_no_overflow": "b340a64243771bd6c64e13fa750c2ef17eddab960fbf9d41c40af0c9afc69fd3",
+  "summer_rows": "382a335e0d6b010e8611bedf7d7fa409cab0c8ba56bb8a8bc9d9ad3ae20b3678",
+  "production": "7daf7c8e407a82ba1344ab1b925092953791c138d690d5dc18093221d49ca09c",
+  "candidate": "3c8bfe59ad92665aa7323c0ca2c5c355d6522a5edf65bff6c5bc5229b8b446c8",
+  "sealed_samples": "95ca8c9f5e371ff0dd99defaa542a2a1a869b75910fa7900f4293054669cae9b"
+ }
+}

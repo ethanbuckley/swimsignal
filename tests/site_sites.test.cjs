@@ -125,7 +125,7 @@ test('the page, its links from the Saved page and the organisers\' page, and its
   const org = fs.readFileSync(path.join(SITE, 'organisers.html'), 'utf8');
   assert.ok(org.includes('id="sites-maker"') && org.includes('Make a sites link') && org.includes('<script src="sites.js"></script>'));
   const app = fs.readFileSync(path.join(SITE, 'index.html'), 'utf8');
-  assert.ok(app.includes("new URL('sites.html', ROOT).href + sitesHash(l.name") && app.includes('id="sites-link">Make a sites link</button>'));
+  assert.ok(app.includes("new URL('sites.html', SITE_ROOT).href + sitesHash(l.name") && app.includes('id="sites-link">Make a sites link</button>'));
 });
 
 // ------------------------------------------------------------------------------ OP2, OP3 (docs/ORGANISER-PIVOT-2026-10.md)

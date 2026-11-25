@@ -41,7 +41,7 @@ const text = h => h.replace(/<[^>]+>/g, ' ').replace(/&nbsp;| /g, ' ').replace(
 // The helpers nearby() calls for each row's reason and the other-water rule (site_nearby_reasons.test.cjs).
 const NEAR_REASONS = ['joined', 'otherWater', 'unread', 'fewerUnread', 'nearWhy', 'otherAsWell'];
 const ANSWER = ['esc', 'tone', 'headTone', 'rainSaid', 'answerParts', 'flowLine', 'ageMin', 'ago', 'agoSpan', 'issued', 'nextDay', 'yesterdayLine', 'answerWords',
-  'sinceTime', 'spillFor', 'overflowSaid', 'longSpillLine', 'eaSaid', 'coverWords', 'coverLine', 'answerAfter', 'liveRow', 'polledMs', 'pollAt'];
+  'sinceTime', 'spillFor', 'overflowSaid', 'longSpillLine', 'eaSaid', 'coverWords', 'coverLine', 'eaAdviceLine', 'answerAfter', 'liveRow', 'polledMs', 'pollAt'];
 
 // ------------------------------------------------------------------------------ 1. the EA's advice for today
 // Frensham Great Pond: "Low risk for the next five days" and "Usual care", while the EA's own panel said
@@ -63,7 +63,7 @@ test('at every designated bathing water the answer says the EA advice could not 
   // on what it could read keeps the EA advice.
   assert.match(h, /^<h2 /);
   assert.equal(vm.runInContext('liveRow', ctx)(frensham), '<p class="live-row">Live status from the overflow upstream: not spilling at the last poll.</p>');
-  assert.match(h, /<p class="cover">Today's EA advice not checked: <a href="https:\/\/environment\.data\.gov\.uk\/bwq\/profiles\/profile\.html\?site=ukj2310-11945">see the EA's page<\/a> before you swim\.<\/p><p class="issued">/);
+  assert.match(h, /<p class="cover">Today's official advice was not checked\. <a href="https:\/\/environment\.data\.gov\.uk\/bwq\/profiles\/profile\.html\?site=ukj2310-11945">Check Environment Agency advice<\/a>\.<\/p><p class="issued">/);
   // The embed card says it under what to do, and links the EA's page.
   const card = Embed.card(frensham, { generated_at: GEN }, NOW);
   assert.match(text(card), /Usual care: [^.]+\. The Environment Agency's advice for today could not be checked\. The Environment Agency’s page says when bathing is not advised\./);
@@ -620,6 +620,32 @@ test('the five days say when spills that stopped lately set today, and how long 
   // With the rain forecast setting today, nothing is said of spills that stopped.
   s.now = { label: 'low', risk: 0, discharging_upstream: 0, recent_upstream: 1, monitored_upstream: 3 };
   assert.match(text(vm.runInContext('daysSentence', ctx)(s)), /^A spill from one of the 3 overflows upstream is possible, not expected today\./);
+});
+
+// Henley, 17 Nov 2026 (outside design audit): Saturday picked, the sentence over the five days still led with "4 upstream
+// overflows are discharging now" and "expected to spill today", over Saturday's answer. A picked day other than today
+// gets that day's sentence alone; the live status keeps its own line under the rows (liveRow), with the poll's time.
+test('a picked day\'s sentence over the five days is that day\'s, with nothing of today\'s', () => {
+  const s = week(['moderate', 'moderate', 'moderate', 'moderate', 'low'], { upstream_summary: { overflows: 49 },
+    now: { label: 'moderate', risk: 0.23, discharging_upstream: 4, monitored_upstream: 48 } });
+  [11, 14, 10, 6, 0.2].forEach((e, i) => { s.days[i].expected_spilling_overflows = e; });
+  const ctx = page(['esc', 'fmt', 'tone', 'initial', 'week', 'spilling', 'summary', 'daysSentence', 'pickedSentence'], { DATA: { generated_at: GEN } });
+  const said = iso => text(vm.runInContext('daysSentence', ctx)(s, iso));
+  // Today's view, and today picked: unchanged, the overflows discharging now first.
+  assert.match(said(null), /^4 upstream overflows are discharging now: moderate risk from them right now\. About 11 of the 49 overflows upstream are expected to spill today/);
+  assert.equal(said(DATES[0]), said(null));
+  // Wednesday picked: Wednesday's expected spills, and no "now" or "today".
+  assert.equal(said(DATES[3]), 'About 6 of the 49 overflows upstream are expected to spill on Wednesday.');
+  assert.equal(said(DATES[4]), 'A spill from one of the 49 overflows upstream is possible, not expected on Thursday.');
+  for (const iso of DATES.slice(1)) assert.doesNotMatch(said(iso), /discharging now|right now|today/, iso);
+  // A day with no forecast says so; a water rated poor keeps its floor, said for that day.
+  s.days[2] = { date: DATES[2], label: 'unknown', risk: null };
+  assert.equal(said(DATES[2]), 'No forecast on Tuesday.');
+  const poor = { ...s, classification: { class: 'Poor' } };
+  assert.equal(text(vm.runInContext('daysSentence', ctx)(poor, DATES[3])),
+    'Rated poor, so every day is at least high risk. The sewage spill forecast on its own is moderate on Wednesday. About 6 of the 49 overflows upstream are expected to spill on Wednesday.');
+  // The page draws it again when a day is picked, over the rows, and measures it again on a phone.
+  assert.match(html, /const sent = document\.querySelector\('#days-h \+ \.t-sent'\);\n  if \(sent\) \{ sent\.innerHTML = daysSentence\(d, DAY\);/);
 });
 
 // ------------------------------------------------------------------------------ too few report for a 0

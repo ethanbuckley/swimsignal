@@ -1023,9 +1023,10 @@ swam here today", and reads its entries.
   already the page about what this device keeps, and the one-tap log was there. The journal is its last
   tile.
 - **"Log a swim"** takes the log's place in a spot's four actions and opens a form in a tile under them,
-  the reviews' form: the day and the time side by side (one above the other at 360 px and under), the
-  minutes in the water, a note of 280 characters, up to three photos, then "Kept with the swim", what will
-  be kept, in the journal's words. The day and the time are filled in, so logging is two taps where it
+  the reviews' form: the day, a note of 280 characters, up to three photos, then the time and the minutes in
+  the water side by side (one above the other at 360 px and under), then "Kept with the swim", what will
+  be kept, in the journal's words. Until 17 November 2026 the time and the minutes came before the note
+  (see "Saved and the journal, less in the way"). The day and the time are filled in, so logging is two taps where it
   was one. No health questions: the illness reports are separate.
 - **"Only on this device."** in bold leads the form's line and the journal's: reviews and notes on a visit,
   further up the same page, are public.
@@ -1041,7 +1042,8 @@ swam here today", and reads its entries.
   size, the note, the photos as 72 px squares that open full size, then Delete. No link that sends anything,
   since the journal is private (Ethan, 4 October 2026: the one-tap log's "How was it?" went). Five show,
   newest first; "Show all" opens the rest. A one-tap log entry shows its level "in the day's forecast".
-- **A copy**: "Save a copy" makes a file of the swims, notes and photos (a phone offers its share sheet);
+- **A copy**: over the swims, under the journal's first line (17 November 2026; it was under the swims, with Delete
+  all, which stays at the foot). "Save a copy" makes a file of the swims, notes and photos (a phone offers its share sheet);
   "Add swims from a copy" reads one back, leaving out swims already there. It is how the journal moves to
   another phone, or between Safari and the Home Screen app on an iPhone, which keep separate storage.
 
@@ -1595,6 +1597,14 @@ the line says it in full.
   Scottish Environment Protection Agency's page for the rest. An Irish row shows a restriction in
   force, or DAERA's advice against bathing, in semibold before the sample, in the source's own words
   with its date; nothing on the page is coloured by a SwimSignal level. A sample more than 30 days old says so.
+- **Sewage overflows near each English beach (22 November 2026, new).** An English coastal row ends with the
+  overflows near or upstream of its sampling point and how many reported a spill in the 48 hours to the build
+  (`coastal_spills.py`, the coastal baselines' rule: within 2 km in a straight line, or upstream on a river that
+  reaches within 2 km, up to 30 km along it). One note above the list says what "near or upstream" means, that
+  the counts are the monitors' reports and not volumes, and that this is not a water test, a forecast or the EA's
+  advice; the row repeats none of it. Plain text like the rest of the row, no colour, no level. Overflows that are
+  not reporting live are counted as able to have spilled unseen, never as quiet. Asked for by a windsurfer on
+  Facebook (15 Nov) who wanted her own beaches compared after a storm; the page has no coastal forecast to do it.
 - Opening the Welsh list asks Natural Resources Wales's data service for current samples and
   forecasts, from the reader's browser, and the privacy notice names it. Rule 8 under Rules for
   changes does not yet list this request.
@@ -2023,7 +2033,8 @@ colour, radius or box.
 
 **Since you last looked.** The summary uses the cards' own rules (`sinceLine`), so it never says more than they do,
 and it never says why something changed.
-- First look: "This browser has not shown these spots before, so there is nothing to compare yet."
+- First look: no tile (17 November 2026). Until then it said "This browser has not shown these spots before, so there is
+  nothing to compare yet.", above the places. `sinceSummary` still gives it, state `none`, and `renderSaved` draws nothing.
 - Same forecast as last time: "No new forecast since you looked on Friday at 18:20."
 - Newer forecast, nothing the cards would say: it lists what was checked: no level, rating or official notice
   changed, and no overflow upstream was reported starting or stopping. It never says "safe" or "all clear".
@@ -2564,3 +2575,744 @@ A measured tile under "Latest readings" (`sondeTile` in `index.html`; the data i
 
 **Checked:** headless Chrome at 375 and 1,440 px on the live data of 13 November with the run's readings (Dedham,
 Dosthill); `tests/site_sonde.test.cjs`. Not checked: 320 px, Safari, a screen reader.
+
+## Higher or lower than usual, at river spots (17 November 2026)
+
+Ethan's decision of 17 November 2026, from `docs/RIVER-ORDER-LINE-PROPOSAL-2026-11.md` (on the RIVER-UNSEEN pull
+request, #705): at a river spot in season, the E. coli tile's sentence gains one more after the percentage's.
+
+- The three forms: "That is higher than usual here.", "That is lower than usual here.", "That is about usual here."
+  (`RIVER_USUAL` in `levels.js`). After "Chance a water sample would show E. coli over 900 per 100 ml today; 9%
+  tomorrow." and before what the estimate counts. Today's only: tomorrow's figure gets no sentence.
+- **The percentage, its band, its scale and the level do not change.** Words in place of the percentage at spots
+  that are not bathing waters were proposed and not taken: with the estimate out of the level, 57% of season
+  spot-days at those spots would have shown a lower level, while the test that prompted this found E. coli there
+  running higher than the estimate says.
+- Usual is the middle third of the spot's own figures on May to September days of 2023 to 2026
+  (`river_usual.py`, `data/processed/river_usual.v1.json`). It compares the estimate with itself. It is not a
+  reading, a safety claim or a level, takes no colour, and uses none of "safe", "clean", "exceed" or "breach".
+- No sentence out of season, at a lake (which has its own line), on a point clicked on the map, at a spot with no
+  cut-points, or when the file is missing or is not the frozen one. The tile then reads as before.
+- Plain weight, as the lake's line.
+- Not done: the same word in the day-by-day table, a picked day's row, the organisers' page and the record; the
+  test's sentence in the tile's corner fold.
+
+### The same word in winter, built and switched off (24 November 2026)
+
+Built on Ethan's word of 24 November 2026 ("Build it, switched off. Decide on switching it on when you can see
+it."), from `docs/RIVER-WINTER-READ-2026-11.md`. Record: `docs/RIVER-WINTER-LINE-2026-11.md`. **Off unless the
+repository variable `DIPCAST_RIVER_WINTER_LINE` is 1. Not decided: whether to switch it on.**
+
+- Switched on, it **reverses part of "The E. coli estimate out of season" (20 October 2026)**: from October to
+  April the out-of-season tile at a river spot says "Today the estimate is higher than usual here for October to
+  April." (or lower, or about usual), then one sentence on what that rests on (`RIVER_USUAL_WINTER`,
+  `RIVER_USUAL_WINTER_SAID`, `ecoliOffSaid` in `levels.js`). The reason: that rule kept the estimate out of view
+  because it was untested out of season, and its order has since been tested on winter samples it never saw.
+- What the 20 October rule keeps: the tile's figure still reads "Out of season"; no percentage, band or scale;
+  the estimate is not part of the level; the organisers' page, the decision record, the shared picture and the
+  day-by-day table do not change.
+- Today's day only, from the river model without soil moisture, against the spot's own October to April days
+  (`river_usual.winter_direction`, `data/processed/river_usual_winter.v1.json`). The method page gains one
+  paragraph only while the switch is on (`build_site.with_river_winter`).
+- Switched off, which is now: the page's words are as before, and no day carries the field.
+
+## Share at the top of a spot's page (17 November 2026)
+
+A first-visit review on 17 November 2026 found "Share this spot" only at the foot of a phone page some eleven
+screens long (Long Bridges measured 8,712 px). A second button now sits beside Save in the top row, opposite the
+back link: the stroke set's share glyph and "Share", at Save's size and style. It shares the same link as the one at
+the foot (`bindShare`): the share sheet on a phone, a copied link elsewhere, said under the row where Save says what
+it did. Under 400 px wide it is the glyph alone and keeps its name for a screen reader. Measured at 320, 375 and
+1024 px: the row keeps one line and nothing overflows. The button at the foot stays.
+
+## The map never moves to where you are (decided earlier; restated 17 November 2026)
+
+The map does not centre on a visitor's own location, and has no "near me" button. Its images are fetched from
+OpenStreetMap, so asking for the ones around a visitor would tell OpenStreetMap roughly where they are. The
+privacy page promises this of "Near me" on the list and "Use my location" on Plan a swim: "Neither choice moves
+the map". The code says the same where Plan a swim draws its start (`offerOnMap` in `index.html`).
+
+A first-visit review on 17 November 2026 proposed a "where I am" button on the map as new. It would reverse this
+rule and make the privacy page's sentence false. Ethan's decision, 17 November 2026: keep the rule. "What is near
+me" is answered by the list's Near me sort and by Plan a swim. Any later change needs the privacy page changed in
+the same PR.
+
+## A postcode is a place (17 November 2026)
+
+Until 17 November 2026 a postcode typed in the search or on Plan a swim got "Postcodes do not work here yet". Now it
+is a place, as a town is (`postcodePlace` in `plan.js`; `offerOnMap` and `planType` in `index.html`).
+
+- **What is read.** A district ("LS29"), a sector ("LS29 9") or a whole postcode, in any case, with or without the
+  space. A whole postcode is read as its sector. A sector missing from the file falls back to its district.
+- **What is shown.** In the search: "Near LS29 9" with the spots within 10 miles, then "Plan a swim · from a
+  postcode" and the map row, as under a town. A postcode far from every spot gets the same line a far town gets
+  ("No listed spot within 20 miles. The nearest is ..."). On Plan a swim the field changes to the sector and the
+  plan starts from it.
+- **Named by the sector, never the whole postcode.** The plan's address and a shared link hold "LS29 9". A whole
+  postcode can be a handful of houses, and a link is something people pass on.
+- **The file.** `data/postcodes.json` (`scripts/make_postcodes.py`): 2,863 districts and 10,839 sectors of Great
+  Britain from OS Open Names, each at the mean position of its postcodes to two decimal places, 298 kB (73 kB
+  compressed). Fetched the first time a postcode is typed and looked up on the device, as places are.
+- **Not found.** "No postcode found for “BT1 5GS”: type a town, a village or a river." Northern Ireland's
+  postcodes are not in OS Open Names, and SwimSignal has no spot there.
+- Checked in a local preview at 375 px and desktop width with LS29 9BZ, LA22, OX1 4, CF10 1AA, EH1, BT1 5GS and
+  ZZ99. Not checked: 320 px, dark mode, a real phone's keyboard.
+
+## The answer first on Accuracy, Research and For organisations (17 November 2026)
+
+An outside design audit of 17 November 2026 (sections 9 to 11) found these three pages slow to reach their answer.
+Order and wording only: no figure, anchor or tool changed.
+
+- **Accuracy.** The lede is its first sentence. Under it, "Issued forecasts: live results" opens with one paragraph
+  in the page's own numbers: how many spill forecasts for monitored overflows were scored, from and to which day, on
+  how many days, the share of spills warned of and the share of warnings that came true, and that these describe
+  monitored overflows, not whether the water at a spot is safe (`liveMeaning`). Then the two warning figures, the
+  line by company, and the two simple rules in the verdicts' own words (`rulesLine`). The error read as a chance has
+  its own h3 naming its reference ("against a flat forecast at this period's own rate", or "against each overflow's
+  long-run rate" without one), over its figure. The held-out test, In short and the rest follow as before. The rest
+  of the lede and its caveat paragraph follow the summary, word for word. Still four figures in ruled lists
+  ("Accuracy page", above).
+- **Research and data** opens "Explore satellite images, river maps and lab results." Each item keeps its status line.
+- **For organisations** opens on two tasks, "Brief a session" (the organisers' page) and "Compare your venues" (its
+  sites fold, which `#sites-maker` now opens), then one line: "It is a forecast, not a water test. It misses many
+  spills, and your organisation makes the decision." "What it cannot do" follows at once, word for word with its
+  build-time figures. Who the page is for moved under "Tools for planning a session". The worked example's briefing
+  step no longer names `scripts/briefing.py`; the "Free today" box is unchanged.
+
+## Saved and the journal, less in the way (17 November 2026)
+
+An outside design audit of the live site (17 November 2026, section 7) found the Saved page and the journal opened on
+setup words, not on what is saved. Six changes, nothing stored changes, and the privacy notice is untouched.
+
+1. **A first look shows no "Since you last looked" tile.** It said there was nothing to compare yet, above the one
+   spot just saved. The cards already say nothing on a first look ("Since you last looked", 4 October 2026), and a part
+   that cannot be used yet is not shown (Compare, above). This changes the first-look line of "Saved as a starting
+   page" (2 November 2026), which gave no reason for it.
+2. **Where saved spots are kept is said once.** With nothing saved and one list, the lede ("Spots you save are kept in
+   this browser.") went: the empty tile from #600 already says "Saved spots stay in this browser: nothing is sent to
+   SwimSignal." With several lists the lede stays, since the tile does not say it then.
+3. **One saved spot:** "Its page has why, and what it is like at the water: <name>." went. The card's name links to
+   the page. "Going? Plan a swim here." stays.
+4. **Cancel goes back to what opened the form.** On a phone's low day "Log a swim here" sits over the five days and
+   the form opens under the spot's actions, about 6,000 px further down. Cancel moved focus to "Log a swim" there.
+   Now it goes to the control pressed (`journalLogFrom`, `jnBackTo` in `journal.js`) and scrolls it to the middle of
+   the screen. Saving still goes to "Log a swim", where "Logged in your swim journal" is said.
+5. **The form: day, note and photos first,** then the optional time and minutes, then "Kept with the swim". The time
+   is still filled in, so what is kept with a swim is unchanged. The notice about unsent answers sits over the buttons
+   (`data-draft-note`, `draftTrack`), not over the first field. The reviews', visit notes' and illness forms keep it
+   at the top. At 320 px the day, the note and Add photos fit on the screen under the heading.
+6. **The copy is over the swims.** "Save a copy" and "Add swims from a copy" moved from under the list to under the
+   journal's first line, with one more sentence: "Clearing this browser's data deletes the journal, so a copy is its
+   backup." Delete all stays at the foot, in its own row.
+
+**Not built, and why:** the audit's map of visited places, monthly photo strip and moving Water-wise behind an opt-in.
+The passport beside the journal is a decision of PR #458; a map and a strip are new features, not friction.
+
+**Checked:** `tests/site_saved_friction.test.cjs`; `tests/browser_smoke.mjs` (one spot, empty, and the form opened
+and cancelled at 375 and 1,440 px, which fail on the code before this change); a local build on the live forecast of
+17 November 2026 at 390 and 320 px, by pointer and by keyboard (Enter on "Log a swim here", Enter on Cancel). Not
+checked: Safari, a screen reader, a real phone.
+
+## Four states that misled (17 November 2026)
+
+An outside design audit of the live site (17 November 2026, sections 2, 4 and 5) found four states that said
+something the page did not mean. Presentation only: no level, forecast or alert changes.
+
+- **A picked day's sentence over the five days.** Saturday picked at Henley still read "4 upstream overflows are
+  discharging now: moderate risk from them right now. About 14 of the 49 overflows upstream are expected to spill
+  today", over Saturday's answer. The sentence was drawn once with the tile and a picked day never drew it again.
+  Now a day other than today gets its own ("About 3 of the 49 overflows upstream are expected to spill on Saturday.",
+  `pickedSentence`). Today's view is unchanged. The live status keeps its line under the rows, with the poll's time
+  (`liveRow`, "The live status before the level" above). This completes "One date on a spot's page" (22 October).
+- **"Plan a swim here" for a paddler.** The link carries the activity this browser chose (`act=`, kept since 31
+  October), so it opened Kayak/canoe under the words "Plan a swim here". The words now follow what the link opens:
+  "Plan kayaking or canoeing here", "Plan paddleboarding here" (`planHereWords`, from `OUTING_ACT_WORDS`). A first
+  visit and a swim keep "Plan a swim here". The other choice, a swim link that drops the chosen activity, would undo
+  the 31 October rule that a paddler's next plan starts as paddling. Not changed here: Saved's one-spot line, "Going?
+  Plan a swim here" (`savedOneNext`), which has the same fault.
+- **A postcode with spots near it.** "LS29 9BZ" listed four spots under "No listed spot matches.". Where spots near
+  the place are found, that line is hidden and their heading leads with the count: "4 spots near LS29 9 · within 10
+  miles, nearest first" (`nearHead`, which replaced `nearSaid`). Towns take the same heading ("5 spots near
+  Ambleside · the nearest of 6 within 10 miles"). The postcode is still named by its sector.
+- **A day's words for a screen reader, where the rain runs' band shows.** "Saturday 21 November: moderate risk.
+  Three Met Office rain forecasts give low risk." read as two answers. Now: "Saturday 21 November: forecast moderate
+  risk. Range from three other Met Office rain runs: low risk." (`bandSaid`, `dayRows`).
+
+**Checked:** a local preview built from the live data of 17 November 2026, headless Chrome at 390 and 320 px with the
+clock at 21:00 that evening; `tests/site_honest_headlines`, `site_plan_here`, `site_postcode_said`, `site_town_search`,
+`site_ensemble_band`. Not checked: a screen reader, Safari, a real phone.
+
+## What to do under the level (18 November 2026)
+
+An outside audit of the live site (17 November 2026) measured Wharfe at Cromwheel, Ilkley at 390 px: the level at
+about 427 px, and "Avoid swimming here right now: choose a lower day or spot." at about 1,159 px, under the five days.
+Ethan was shown three mock-ups and chose option A: the action under the level. The photo opening is unchanged (212 px
+on a phone, "A spot's page: the place first").
+
+- **The kind line** (`spotTop`): the water's name, the kind only where the name does not say it, then "Designated
+  bathing water". "River Wharfe · Designated bathing water", not "River · Environment Agency designated bathing water ·
+  River Wharfe"; "Lake · Windermere · 14.7 km² · Designated bathing water". Without a photo it now sits under the name
+  too, drawn with `order` as with one; the page's own order, and a screen reader's, is unchanged.
+- **The level, then one grey line**: the level's day and the issue time, "Today, Tuesday 17 November · Issued 19:40, 1 h
+  ago" (`cardDay`). Tomorrow's date where tomorrow sets the headline; the picked day's on a picked day. The issue time
+  drops its weekday where it is the same day. The build's copy has no age, as before.
+- **The card** (`actCard`), at moderate risk or higher, or at a water rated poor:
+  - the what-to-do line, word for word ("What to do", 4 October), its first sentence in bold;
+  - why and when, from the answer's own words (`actWhy`: `sub` and `next`): "Recent sewage spills. Rated poor, so every
+    day here is at least high risk." "Rated poor, so every day here is at least high risk" is the mock-up's; the rest is
+    the page's. "Rated poor, advice against bathing" keeps its words;
+  - a way on, only where one exists (`actGo`, `actPlan`): "Find another spot", Plan a swim from here on the day shown,
+    where the plan's reach (20 miles unless changed) holds a listed spot at low or moderate risk that day, not rated poor
+    and not under a notice restricting swimming, as "Lower risk nearby" chooses; and the first of the five days at low
+    risk, or else at moderate, after the one shown ("Low risk on Saturday"), which opens that day. Neither: no button.
+    At Ilkley on 17 November every listed spot within 20 miles was high or very high, so the card had no button;
+  - today's official advice, where it was not checked (`eaAdviceLine`).
+- **No card at low risk, or with no level.** A low level has no action to bring forward: its line is "Usual care", and a
+  card over it would read as a warning. It keeps its place under the five days, as does a plain level's.
+- **Said once.** With the card, what to do is not said again under the five days (`answerAfter`), and the advice is not
+  in the line by the issue time.
+- **An official notice** stays above the level, in its own block, as before. With one that restricts swimming, the
+  card's line is "Follow the official advice above first." (`eaTodayAct`).
+- **Today's advice, not checked**, everywhere the answer says it: "Today's official advice was not checked. Check
+  Environment Agency advice", the link on the second sentence. It was "Today's EA advice not checked: open it before you
+  swim" ("A tighter opening", 20 October). The share picture and the sites view keep their own short words.
+- **Reverses:** "What to do" (4 October) kept the line "never a level's colour, a box or a bold lead", and "A tighter
+  opening" (20 October) put it under the five days. Ethan chose option A knowing both. The card is in ink on white with
+  a hairline, never a level's colour.
+- **Contrast** of what is new: ink on the card 15.9:1, links 7.9:1, white on the button 7.9:1, the grey line on the paper
+  5.7:1. No level colour is used under 30 px.
+
+**Measured** in a local preview of the live data of 17 November 2026 (clock 21:00 that evening), the what-to-do line's
+top, before and after, at 390 px: Ilkley 1,159 to 554; Linton Falls (high) 1,043 to 521; Devil's Bridge (moderate)
+1,076 to 554; Henley with Saturday picked 1,073 to 532; Houghton Mill (no photo) 899 to 388; Wye at Hereford (no live
+status) 1,050 to 640; Frensham Great Pond with a notice (its level raised in a copy of the data) 1,205 to 736; Ilkley
+with the stale notice 1,333 to 727. Windermere at Millerground (low) has no card: 1,367 and 1,370.
+`tests/site_act_card.test.cjs`. Not checked: a point clicked on the map in the browser (the card is tested in
+`site_act_card`), Safari, a screen reader, a real phone.
+
+## Tried and removed: the poster home page (19 to 20 November 2026)
+
+A trial home page ran behind `?home=bold` for one day (PR #726). It showed the day's spots as five coloured bands, sized
+by how many spots sat at each level, above the same search box, day strip and list. Ethan rejected it on 20 November:
+"kind of the same but just massive color blocks for no reason at the top". The code is removed.
+
+What it taught: a count of spots per level across the country answers a question no swimmer asks. Changing how the home
+page looks, while it still does the same job with the same parts, does not read as a new page. Do not bring the bands
+back as a restyle.
+
+## A redesign kept as a preview (24 November 2026, for Ethan's review)
+
+A working redesign of the swimmer's journey, in `src/dipcast/site/preview/` (`index.html`, `preview.css`, `model.js`,
+`app.js`, and from later the same day `map.js` and `alerts.js`: "The map, alerts, Plan and Saved" below). Ethan asked for it to be published once checked ("get it live", 24 November 2026): the build copies it to
+`preview/` beside the live pages (`build_site.write_preview`), marked `noindex`, in no sitemap and linked from no live
+page, so it is reached only by its address, `https://swimsignal.co.uk/preview/`. The live pages are unchanged but for one
+line in `sw.js`, which leaves `preview/` to the browser: the offline copy would otherwise hand a slow first visit the
+app's home page in its place. `python3 scripts/preview_redesign.py` serves the same files locally on the live forecast at
+`http://localhost:8797/preview/`. It loads the live `levels.js` and `eatoday.js`, so a level and an official notice read
+the same in both. The build writes it one file, `preview/hero-photos.json`: each spot's opening photo by `guideHero`'s
+rule (`src/dipcast/hero_photos.py`), so a list can show a photo beside each place without reading 133 files.
+`tests/site_preview.test.cjs` and `tests/test_preview_site.py` hold the rules below.
+
+**What prompted it.** Walked on a phone on 24 November 2026: the home page's first screen named no place; at Ilkley the
+day rows began 728 px down and Saturday sat at 1,092 px; picking it changed a headline that was off the screen; "Find
+another spot" opened Plan a swim, whose first option was 789 px down a 7,813 px page; the spot's page was
+8,739 px and 1,971 words (the preview's: 5,761 px and 956 words, the day tabs 409 px down). Two layouts were built on that day's data and compared: A (photo, day tabs, one answer) and B (the week as a
+table, nearby places as a grid of days, the photo a thumbnail). A was taken. B lost the photo and the action card,
+which are what the live page does best. Two of B's parts were kept: the score for all five days, and places by river.
+
+**Kept, as already decided here:** the two typefaces, six sizes, paper, slate bar, teal, four level colours, one 8 px
+radius, hairlines and no shadows ("Decisions"); the photo from the header down with the back link and Save on it, one
+quiet credit line, words down the left edge ("A spot's page: the place first", 11 November); the action in a white card
+under the level, its first sentence bold ("What to do under the level", 18 November); an official notice in its own
+block before the level, and the level said to be apart from it; "No monitored overflow found upstream" in teal, never
+counted or listed as low; a level always with "risk"; plain overflow names; miles for a swimmer, km for the water;
+"Lower risk nearby never offers a spot at high or very high risk" (11 November); the stale notice from 8 hours.
+
+**New:**
+- **The opening asks "Where do you swim?"** (the /next/ trial's question, PR #729): a search for a river, lake, town or
+  postcode, "Places near me" in words, saved places, then the 13 areas under a photo of one of their places. An area's
+  page lists its places by river, from the top of the river down where each place's `downstream` list links the next.
+- **The five days are tabs over the answer**, each with the day, a mark in its level's colour and the level's word. On a
+  phone they stay at the top of the screen for the whole page. The day shown is in the address (`?spot=<id>&day=<date>`),
+  so a shared link opens on the day that was meant; a day that has passed falls back to today and says so.
+- **One date for the whole page** ("One date on a spot's page", 22 October, taken further): the answer, the conditions,
+  Behind the level, each overflow's chance of a spill, and Elsewhere all follow the tab.
+- **Behind the level**: three things a level word runs together, on separate rows. The level and what set it; the
+  sewage spill risk, modelled, as "27 of 100", with its own word, its four bands and the five days' scores; live
+  readings upstream, as how many report and what the rest could hide. Then what is not counted.
+- **Upstream is the river as a line**, drawn in the mark's own terms: this place is the ring, each monitored overflow a
+  stop set off by the water between, the nearest first, all of them behind "Show all". One discharging is always drawn.
+- **Elsewhere is on the place's page**, on the day shown: low risk first, then moderate where this place is high or
+  very high ("lower than here"), then places with no daily level under their own heading, then official advice. The
+  action card's button says how many and goes there.
+
+**Reverses, for Ethan to accept or not:** the home page's count across all spots and its very high rows ("Today: the
+home page", 11 November) are not in the preview; the five days are tabs, not Apple's rows ("Shape and surface"); the
+live status sentence before the level (30 October) moved into Behind the level, except where no overflow reports,
+which still leads the answer in bold; the E. coli estimate is a row, not a tile.
+
+**Where the live site is better, and the preview does not replace it** (so it is a second way in, not the site): a
+forecast for any river or lake tapped on the map; an outing with a backup, a time and a link to send; sharing a list and
+finding a low-risk day across saved places; the swim journal and passport; swimmers' reviews and visit notes; the record
+of how the forecast has done here; past spills by month; a page built without scripts, which is what a search engine and
+a link preview read; the offline copy. The preview links to the live page for each. The map, alerts, Plan a swim and
+Saved were on this list until they were added (below).
+
+**Each area's photo** is one place's, picked by eye from the photos the guides hold (`AREA_PHOTO` in `app.js`): open
+water in good light. The first build took each area's first landscape photo, and Cumbria's was the bow of a kayak.
+
+**Its own storage, until the same evening:** saved places were first kept under `swimsignal.preview.places`, apart from
+the live site's `dipcast.saved`. That is reversed below: the preview now keeps what the live site keeps, under the live
+site's keys.
+
+**Checked:** headless Chrome on the live issue of 24 November 2026 13:21 at 320, 390, 820 and 1,440 px; keyboard and
+pointer in the in-app browser; Safari on an iPhone 17 simulator (iOS 27): the opening of Ilkley, a day picked by tap,
+the tabs pinned while scrolling. Every control: an overflow's details, "Show all", the three distances, Save, Share
+(the copied-link fallback), a search with no match, a postcode not in the file, a place that is not listed, a location
+refused. Contrast: every text colour is 4.5:1 or more on each surface it sits on; the dashed ring for "no current
+reading" is 3.5:1. The scripts use no syntax Safari before 16.4 refuses. Ilkley (rated poor), Dartington (very high), Bolton Abbey (moderate on Saturday), Linton
+Falls (low), Frensham Great Pond (official advice), Janet's Foss (no daily forecast), Symonds Yat (no live reading),
+Shrewsbury (no photo, Wales not counted), the forecast read nine hours late, and a link for a day that has passed. No
+sideways scroll at 320 px on the four pages measured. Not checked: a real phone, a screen reader, an iPhone older
+than the simulator's, dark mode (the site is light only), a location actually given to "Places near me".
+
+### The map, alerts, Plan and Saved (24 November 2026, evening)
+
+Ethan, told these four were why the preview could not stand in for the site: "lets add these to it and then get it
+live". They are in the preview now, each made from the live site's own rules and data, not a second copy of them.
+Pictures 9 to 14 in `docs/redesign-preview-2026-11/`.
+
+- **The four places** (already decided: "Plan a swim", four places in a phone's bar at the bottom, each icon over its
+  label). Today, Map, Plan, Saved: the bar at the bottom on a phone, links in the header from 960 px. `?view=map`,
+  `?view=plan` and `?view=saved` are their addresses, so each can be linked and Back works.
+- **One set of saved places** (reverses this section's "Its own storage"). `lists.js` reads and writes the lists under
+  `dipcast.lists` and `dipcast.saved`, the live page's keys, so a place saved on one page is saved on the other, and a
+  list made on the live site shows here. What the preview had kept under its own key is moved across once. Saved shows
+  the list on the day picked, lets a place be taken off, and makes, renames and deletes lists. Sharing a list, Find a
+  window and the journal stay on the live Saved page, which it links to.
+- **Alerts are the live site's alerts** (new here; the words already decided). The same alert service, the same record
+  in the browser (`dipcast.push`), the same body sent, so they are one setting. What is sent, to whom and how to take it
+  back is the live tile's text word for word, and a test holds the two together. Nothing is asked of the browser, and
+  the worker is not started, until "Turn on alerts" is pressed. On an iPhone alerts need the Home Screen app, which
+  opens the live site and keeps its own saved places, so there the tile sends the reader to the live Saved page.
+- **Plan a swim is the live plan's rules** (`plan.js`: `planSpots`, `betterDay`, `planAreas`), and its choices sit after
+  the `#` in the live site's own form, so they reach no server and the same link opens on either page. The plan kept
+  in the browser is the live site's (`dipcast.plan`); a plan opened from a link is shown and not kept until it is
+  changed. **Reverses, in part:** the kinds of water are a menu beside the distance, not the list's chips ("Plan a
+  swim": "the kinds of water as the list's chips"): as chips the two choices took four rows on a 375 px screen; as two menus
+  they take one, and the first place begins 608 px down (measured; the live plan's first option: 789 px). An outing, with its backup,
+  time and link to send, stays on the live plan, which the page links to on the same plan.
+- **The map** (new). Every listed place as a dot in its level's colour on the day picked, ringed where there is an
+  official notice, in the live map's colours and on the live map's tiles: the build writes the provider's address,
+  credit and colour filter to `preview/map.json` (`build_site.preview_map`). A tap picks the nearest place within
+  26 px, so a 16 px dot is not a 16 px target, and its row opens under the map; the key is under the map in words, not
+  on it. The library is the live site's copy of Leaflet, asked for only when a map is opened. A forecast for any water
+  tapped stays on the live map.
+- **Upstream, "As a line" or "On a map"** (new). The map draws the water the forecast traced
+  (`data/spot/<id>-trace.json`) and each monitored overflow with the line's own mark and words, so the two cannot
+  disagree. On a touch screen one finger scrolls the page and two move the map, as on the live spot page.
+
+**Still not a replacement for the home page.** What the list above ("Where the live site is better") names is still
+only on the live pages. Two of them decided it on the evening of 24 November: the pages built without scripts are what
+search engines index and what a shared link previews, and the offline copy is what works at the water's edge. Both are
+answered for the preview in the next section; what a swap still needs is at its end.
+
+**Checked, 24 November 2026, evening:** in-app browser at 375 and 1,280 px and headless Chrome at 375 and 1,440 px, on
+the 13:21 issue: the map drawn and a place picked; Saved on Saturday with a place saved from its page, a list made,
+renamed and deleted, a place removed; a plan from Ilkley typed and picked by Enter, its distance, waters and day
+changed, a shared `from=here` link (asks, and leaves the kept plan alone); Ilkley's water upstream on a map. No page
+error, and no sideways scroll at 320 px on Map, Saved or Plan. The alerts tile was walked with the browser and the alert service stood in for (on, the weekly note, off, a
+refusal, the service not answering); viewing the page registered no worker. Safari on an iPhone 17 simulator (iOS 27): the map drawn in the live colours, a place
+picked by tap, Saved with the iPhone's own alerts line. **Not checked:** turning alerts on for
+real in any browser, a real phone, a screen reader, the CARTO tiles the live build uses (locally the map drew
+OpenStreetMap's).
+
+### A page for each place, written by the build (24 November 2026, night)
+
+Ethan chose the home-page swap as the next work. This is the part of it that can be built and checked at `preview/`
+without touching a live page. Marked: all new, none reversing a decision here.
+
+- **A place has an address of its own**, `preview/spot/<id>/?day=<date>`, as a live spot page has. Every address the
+  page writes is relative to where the pages are published, and every page carries a `<base>` there, so the same
+  script would work at the site's root. A link from earlier in the day (`?spot=<id>`) opens the same place and the
+  address in the bar becomes the new one.
+- **The build writes each of those pages with its answer in the HTML** (`build_site.write_preview`,
+  `scripts/prerender_preview.js`), as it does for the live spot pages: the preview's own `app.js` is run in Node on
+  the build's data, as at the moment the forecast was issued, and what it draws is put in the page. The script then
+  draws the same markup in the same place. 133 pages, 3.8 MB in all on the 13:21 issue of 24 November. The whole page
+  is built, down to the overflows upstream and the places elsewhere. A live spot page has its top built.
+- **Without scripts** a place's page reads in full. A note says when the forecast was issued and what scripts would
+  add (the other days, the map, saved places), and the buttons only a script answers are hidden. The day tabs stay:
+  they show the five levels.
+- **Each place's `<head>` is the live spot page's** (`page_meta`): its title, description and share card. While it is
+  a preview it keeps `noindex` and stays out of the sitemap. `preview_place_page(..., live=True)` gives the form a swap
+  would publish (the site's own address as canonical, no `noindex`, the live page's structured data); a test holds it
+  and the build does not ask for it.
+- **The offline copy keeps a preview page once it has been opened** (`sw.js`), the network first as for the site's
+  own pages. A preview page never opened before gets the preview's opening as its stand-in, never the app's home
+  page, which is why the preview had been left to the browser. The preview's files are not among those every visitor
+  stores at install, and the preview does not start the worker itself: only a browser that already has it (from the
+  live site, or from turning alerts on) keeps these pages.
+- **If the forecast cannot be read**, a built page keeps what it says and adds a line that it is the forecast as it
+  was when the page was made.
+
+**What a swap still needs, in the order I would do it.** None of it is built.
+1. A switch in the build that publishes these pages at the site's root (`/`, `spot/<id>/`) in place of the app's, with
+   `plan/` and `saved/` opening the redesign's Plan and Saved, so every address already shared keeps working.
+2. Somewhere for the app to live on after that (`classic/`, say), because a forecast for any water tapped on the map,
+   outings, the journal, reviews and visit notes exist only there. Each then needs a decision: port it, link to it,
+   or let it go.
+3. The worker to store the redesign's files at install, and the redesign to start the worker (with the existing
+   "turn off the offline copy" choice honoured).
+4. The page-view counter and the action counter, which the preview does not have.
+5. Ethan's yes or no on the five reversals listed above. (Given 25 November 2026: "The five reversals, decided", below.)
+
+**Checked, 24 November 2026, night:** every place page built from the 13:21 issue (133 of 133 with their answer).
+Ilkley's page in headless Chrome with scripts off at 375 and 1,440 px, and with scripts on: the two differ in height
+by the note alone, so nothing moves when the script draws. In the in-app browser on the built pages: a link opened on
+Saturday, a day picked, a place opened from Elsewhere, Back. An old `?spot=` link. The skip link. No page error.
+**Not checked:** the worker in a real browser (its rules are tested in Node with a stand-in cache, as the site's
+others are), a link preview in a messaging app, a crawler.
+
+### The switch: the redesign as the site (24 November 2026, night)
+
+Ethan, the same evening: "lets get the redesign site live rn and then lets add these features once the redesign is
+actually live". So the redesign takes the site's addresses now, and the app it replaces is kept whole at `classic/`
+until each thing only it has is in the redesign. Marked: new, and it supersedes "What a swap still needs" above.
+
+- **One build setting.** With the repository variable `DIPCAST_REDESIGN` set to `1`, the build writes the redesign at
+  `/`, `spot/<id>/`, `plan/` and `saved/` (`build_site.write_redesign`) and the app at `classic/`,
+  `classic/spot/<id>/`, `classic/plan/` and `classic/saved/` (`classic_page`). Unset, or any other value, and every
+  page is as before, with the redesign at `preview/`. Deleting the variable puts the app back at the next build.
+- **Checked that off changes nothing:** the site was built from `main` (9fc0c570) and from this change with the
+  switch off, on the same forecast. All 1,851 pages outside `preview/` are the same but for the build's stamp. Four
+  lines differ in the app's script, and they do the same thing while the app is at the root (next point).
+- **The app has two roots** (`index.html`): `ROOT`, where its own pages are, and `SITE_ROOT`, where the site's files
+  are. They are the same place unless the build writes `<html data-home="classic/">`. The app already read its page
+  from the end of the address (`/spot/<id>/`, `/saved/`, `/plan/`), so nothing else in it had to change. The build
+  rewrites the six links in its header and phone bar.
+- **The redesign reads everything from the site's root too**, where each page's `<base>` points, and
+  `<html data-home>` says where its own pages are under that: `preview/`, or nothing. Its files stay in `preview/`
+  either way (the app has an `app.js` of its own at the root).
+- **Addresses already in the world keep working.** A place, Plan a swim (`plan/#...`) and Saved open in the
+  redesign. A list someone shared (`saved/#list=...`) and an outing someone sent (`plan/#...&spot=...`) are passed on
+  to `classic/`, which can show them. `?map=1` opens the map. A `preview/` address opens the same page at the site's
+  address. An alert's link is `spot/<id>/`, which is now the redesign's page.
+- **As the site's own pages** they lose `noindex`, carry the app's page's title, description, share card and
+  structured data, the Home Screen app's manifest, and the page-view counter, and they start the offline worker
+  (unless the offline copy was turned off). The sitemap is unchanged: the same addresses.
+- **The app at `classic/`** is out of search engines, names the redesign's page as its canonical one, and says at
+  the top what it is, with a link to the new site.
+- **Words.** As the site the redesign says nothing of a preview. It calls the app "the earlier version".
+
+**Only at `classic/` until ported** (the order I would port them; the first is done, below): swimmers' reviews,
+visit notes and illness reports on a place; the record of how the forecast has done there, past spills by month and
+lab results; sharing a
+list, Find a window and what changed since you last looked, on Saved; the swim journal and passport; a forecast for
+any water tapped on the map; outings. The action counter is not in the redesign.
+
+**Not right in this first cut, and known:** a few links inside the app at `classic/` are written without `ROOT`
+(the journal's links to a place, a kept outing's list of pages) and open the redesign's page for that address; the
+app's built pages point "All spots" at the redesign until its script has run.
+
+**Checked, 24 November 2026, night,** on a local build of the whole site from the 18:59 forecast with the switch on:
+the redesign at `/` (search, a place, a day, Saved, Plan, the map, the worker started); the app at `classic/` (home,
+a place opened and reloaded, Saved, Plan, the list, the map with its 133 places; every file asked for from the
+site's root); `plan/#...`, `saved/`, a shared list, a sent outing, `?map=1` and an old `preview/?spot=` link.
+**Not checked:** the live tile provider and the counter on the redesign's pages at the root, alerts, the Home
+Screen app, a search engine's or a messaging app's reading of the new pages.
+
+### The five reversals, decided (25 November 2026)
+
+Ethan's answer to the five reversals listed under "A redesign kept as a preview", given on 25 November 2026 after
+seeing each before and after on the live site at phone width. All five stand, the first with one line put back.
+
+1. **No count across all spots on the home page: accepted, with one line kept.** The tile answered "how is the
+   country today", which is not what a swimmer asks. But the opening's five days showed only dates. Under them is now
+   one line, "62 of the 133 places are at low risk today", for the day shown. Low is a row's own group, so a place
+   under official advice, one with no monitored overflow found upstream and one with no forecast for the day are
+   never counted. On 25 November the five days read 62, 75, 64, 42 and 37, the earlier page's own figures. The line
+   is not drawn over a search or an area, whose rows say it.
+2. **No very high rows on the home page: accepted.** The map shows them.
+3. **The five days as tabs, not rows: accepted.** On a phone the tabs put all five levels on the first screen. The
+   cost, known: a day's rain and air need a tap.
+4. **The live-status sentence in "Behind the level": accepted.** The opening still leads with live status when it
+   changes the answer.
+5. **E. coli as a row, not a tile: accepted for now.** Out of season both say only "Out of season". To be looked at
+   again in May 2027, when there is a figure to show.
+
+### A gap the switch opened: "Saved spots, offline use and your data" (24 November 2026, night)
+
+**Reversing nothing; restoring a thing the switch dropped.** The privacy notice tells a visitor that the offline
+copy can be turned off, and "Don't count my visits" chosen, 'under "Saved spots, offline use and your data" at the
+bottom of the home page'. The redesign had no such fold. From 19:53 UTC on 24 November, when it became the home
+page, until this was published, the two controls were only at `classic/`, where the notice did not send anyone.
+The counter still honoured a choice already made, Global Privacy Control and Do Not Track (`counter.js`), and the
+worker was still not started in a browser that had turned it off. What was missing was the way to make the choice.
+
+- **Already decided** (PECR, Schedule A1; the comments in `index.html` and `counter.js`): storage and a counter the
+  site works without need clear information and a free, simple way to object. So where the redesign is the site
+  it has the fold, by the notice's name, with the live page's words, keys and order of work: alerts off first,
+  then the worker, then everything it stored, a kept outing included.
+- **New:** it is on the foot of every redesign page and not the home page alone, since a place's page is where
+  most visits land. It is not drawn at `/preview/`, where the home page is still the app's.
+- **New:** the alerts card's "Turn it back on" opens this fold on the same page.
+- The footer's sentence about what is still on the earlier version no longer lists the forecast for any river or
+  lake, which the redesign has had since that port.
+
+**Checked:** in a browser on a local build with the switch on (below, in the pull request). **Not checked:** the
+counter's row on the live site, which needs the build's token.
+
+### Ported: the spill map, "Where spill water may be" (24 November 2026, night)
+
+The live page's spill map (`plume.js`, docs/PLUME-MAP-2026-10.md), which was only at `classic/` after the switch.
+
+- **Already decided:** everything it shows and says. It is the live script, loaded unchanged: the official notice
+  first, "A model estimate of where water from reported spills may be, not a measurement of pollution", the
+  slider from 48 hours before the update to 48 after, the key, the words under the map, the two folds. The script,
+  the map's library and the place's three files are asked for when its place on the page is within a screen of
+  view, as on the live page.
+- **New:** its place, after "Upstream" and before "Elsewhere today", with its heading as a section's on this page.
+  It draws on the redesign's own map tiles. Kept through a redraw, so a day picked does not move the slider.
+- For a listed place with a daily forecast. A place with no routes file (a lake) shows nothing, with no rule or gap.
+
+**Checked:** in-app browser at 375 px on the live forecast: Ilkley's map with its two overflows, the slider moved
+and its words following, a day picked with the slider and the map staying put; Wastwater has none. **Not checked:**
+Play, which did not advance in the hidden browser pane (it runs on animation frames, which a hidden page does not
+get); a place with a spill's water drawn (none was reported upstream of the places tried); 1,440 px by eye.
+
+### Ported: reviews, notes on a visit and reports of illness (24 November 2026, night)
+
+The redesign went live at 19:53 UTC on 24 November 2026 (`DIPCAST_REDESIGN=1`, #738), and Ethan said to port what
+was only at `classic/`. This is the first. Marked: the words and rules are already decided ("Swimmer reviews",
+"Visit notes"); the section and its look are new.
+
+- **The live scripts, as they are.** `reviews.js`, `visits.js` and `illness.js` are loaded by the redesign and draw
+  themselves into the place's page, in a section named "From swimmers" under "The place". What a swimmer is asked,
+  told and sent is one set of code for both sites. `preview/host.js` gives those scripts the few names they expect
+  of their page (`showRest`, `draftTrack`, `draftForget`, and the question before leaving a form half written), with
+  the live page's own sentences; a test holds each sentence to the live page's.
+- **This is how the rest can be ported.** The redesign reads from the site's root as the app does, so a live
+  script's own requests work here unchanged. Each needs a place to draw into, named as the live page names it, and
+  rules in `preview.css` for the classes it writes.
+- **Kept when the page is drawn again.** The page redraws when a day is picked or the place's file arrives. What the
+  three have drawn is one element, put back each time, so a form half written keeps its words and the cursor.
+- **The look.** No tile: each is a block under a hairline, its name in the serif, the figure in the level's size but
+  in ink, since a review is not a level. Every class the scripts write has a rule; a test lists them.
+- **Not in a built page.** The list of reviews is read in the browser, as on the live page, so the section appears
+  when the script runs. On 24 November the live list held no review and no note: the section then offers the two
+  forms.
+
+**Checked:** in-app browser at 375 px with a stand-in list (four reviews, one note) and a stand-in for the service:
+the notes and reviews drawn, "Show all", the review form opened, a day picked with the form open (same form, words
+and cursor kept), the question before leaving, a review sent and kept as this browser's own. With the live list
+(empty): both forms offered. Headless Chrome at 375 and 1,440 px. **Not checked:** a review really sent, a photo
+added, the illness tile (off on the live site), the report form.
+
+### Ported: the links for a group, the decision record, and telling Ethan (24 November 2026, night)
+
+The redesign's place page had no way to the event page, the clubs' tools, the decision record or the feedback
+form, and Saved had none to the sites view. All five are pages of their own that were never part of the app, so
+this is five links, in the live page's words. Marked:
+
+- **Already decided:** the two lines under a place's buttons ("Taking a group in the water here, or running an
+  event?" and "Did the forecast change where or when you swam? Tell Ethan."), and the line under Share this list
+  ("For a club or a centre: these spots on one page to print").
+- **New:** where they sit. The two lines close "The place"; the sites view's line closes "Share this list".
+- **New:** one decision record link, for the day shown ("a decision record for Thursday"). The live page has a
+  link under each of the five days; the redesign shows one day at a time.
+- Not on a point tapped on the map, which those pages cannot open.
+
+**Checked:** in-app browser, Ilkley on Thursday: the four addresses, the record's with the day shown; all five
+pages answer on the live site. **Not checked:** each page opened from the link on a phone.
+
+### Ported: the record at a place (24 November 2026, night)
+
+The second port from `classic/`. Marked: the words and the counts are already decided ("How the forecast has done
+here", "Past spills upstream, by month"); the section is new.
+
+- **"The record here"**, a section of a place's page under the three about the forecast, for a place where the
+  forecast counts an overflow upstream. Two parts, both the live site's own scripts giving their markup:
+  `spotscores.js` (how the forecast has done at the overflows upstream since live scoring began, from
+  `data/spot_scores.json`) and `seasonal.js` (on how many days of each month a spill was reported upstream, from the
+  place's own file, folded).
+- **It does not follow the day picked**, and says so: it is history. What is drawn is kept when the page is drawn
+  again, so the months stay open.
+- **The look.** The months are grey bars with this month in ink. History takes no level's colour.
+- **Still only at `classic/` from this group:** lab results an organisation sent (`measured.js`). No place has any on
+  24 November 2026, and it needs the evidence script's ages, so it waits for the evidence timeline's port.
+
+**Checked:** in-app browser at 375 px on the 13:21 issue and the live record file: Ilkley's counts (531
+overflow-days, 16 with a spill; 27 of 70 forecasts for those spills reached the High risk line), its twelve months
+with November marked, the fold kept open through a day picked; Wastwater, with no overflow upstream, has no such
+section. Headless Chrome at 1,440 px. **Not checked:** a place whose entry in the record file is missing.
+
+### Ported: Saved's extras (24 November 2026, night)
+
+The third port from `classic/`. Marked: the rules and words are already decided ("Saved as a starting page", the
+lists, Find a window); their place in the redesign's Saved is new.
+
+- **Since you last looked** (`since.js`): one sentence over the places and a line under each place that changed,
+  only while today is shown, and nothing over them on a first look. The note of what a place showed is the live
+  site's own (`dipcast.seen`), so the two sites share one. It is written when a saved place's level is on screen
+  with today picked: on Saved and on the place's own page.
+- **Find a window** (`findwindow.js`): the live section, for two saved places or more, its links to the redesign's
+  addresses.
+- **Share this list**, and **a list someone shared**: the live link's own form (`saved/#list=...&spots=...`) and
+  words. A shared list is shown, not kept, with one thing to do, "Add to my lists"; one already held says so. It
+  was passed on to `classic/` until this port; an outing someone sent still is.
+- **Still only at `classic/` on Saved:** the swim journal and passport, comparing places day by day, moving a place
+  between lists, and pasting a list's link.
+
+**Checked:** in-app browser at 375 px, with three places saved and a note written a day earlier that Linton Falls
+was at high risk: the sentence names it, its row says "Was high risk when you looked on Monday at 18:19; now low
+risk", and the notes are rewritten for the forecast on screen. Find a window's three rows. The link copied. A shared
+list of three, one not in the forecast: shown with two, added, then said to be held already, with "Show it".
+**Not checked:** a phone's own share sheet, 1,440 px by eye.
+
+### Ported: a place moved between lists, and a list opened from a pasted link (24 November 2026, night)
+
+Both were in the live page's "Your lists" fold and only at `classic/` after the switch. Marked:
+
+- **Already decided** (the phone audit of 25 October 2026): the Home Screen app on an iPhone has no address bar
+  and keeps its lists apart from Safari's, so a list's link is pasted into the page. Only a link to a Saved page
+  of this site that holds a list is taken (`lists.js`, `pastedList`), and it opens as a shared list, read only,
+  with its own "Add to my lists". Nothing is read from the clipboard.
+- **Already decided:** a place can be moved or copied between lists (`moveToList`, `copyToList`), with the live
+  page's words for what happened.
+- **New:** where they sit. The redesign has no "Your lists" fold. Its list tools are a row of text buttons under
+  the list, and these are two more: "Move or copy a place" (with two lists or more) and "Open a list from a
+  link" (always, an empty Saved included, since that is where a new Home Screen app starts). Each opens a small
+  form in the row's place. The move form stays up after a move, since sorting a list takes several.
+
+**Checked:** in-app browser at 375 px on two lists: a move, a copy, "is in Club already", the four refusals of a
+pasted link, a good link opening the shared list, and Back returning to Saved. **Not checked:** the Home Screen
+app on an iPhone, where the paste matters most.
+
+### Ported: compare your places (24 November 2026, night)
+
+The live page's "Compare your spots", which was only at `classic/` after the switch. Marked:
+
+- **Already decided** (experience.js, compareDays and compareRows; "Compare" in this document): up to three saved
+  places side by side, a column each; the five days first, the day shown shaded; then the water today and what
+  each level rests on and leaves out. Every cell says something. No column is called the best. It opens on the
+  first three places of the list shown. On a phone the three selects fold once two are chosen (6 November 2026).
+- **New:** it is a section of Saved, after "Find a window", and not a fold: the redesign's Saved has no folds
+  around its sections. Drawn only with two places or more in the list shown.
+- **Reversing, in one sentence:** the live table's note says a lower level "does not mean safe water". The redesign
+  never uses that word (its test refuses it), so the note is its own: "A lower level is the forecast for sewage
+  pollution, not a safety check".
+- **Not carried:** the names pinned under the header while a phone reads the table down (the redesign's header is
+  not fixed, so there is nothing to pin under), and "Plan here" in a column (outings are not ported yet).
+
+**Checked:** in-app browser at 375 px and 1,280 px on four saved places: Ilkley, Wastwater (one cell for the five
+days) and a second Wharfe place side by side; a third place removed and another chosen; the Access row filled in
+when the places' own files arrived; the table scrolls sideways inside itself at 375 px with three columns and the
+page does not. **Not checked:** a screen reader's reading of the table.
+
+### Ported: the swim journal and the passport (24 November 2026, night)
+
+The fourth port from `classic/`. Marked: the journal's rules and words are already decided ("The swim journal", the
+passport); where they sit in the redesign is new.
+
+- **"Your swims" on a place's page**: one button, "Log a swim", whose form opens under it and keeps what the
+  forecast showed. The live script (`journal.js`) binds the button and draws the form.
+- **On Saved**: the journal, then the passport made from it (`passport.js`), each drawn and redrawn by its own
+  script. A swim just logged links to the journal there.
+- **One journal for both sites**: the live site's own key (`dipcast.swims`) and its photo store. Nothing in it is
+  sent anywhere; a test checks the script makes no request.
+- **Kept when the page is drawn again**, as the reviews are, so a form half written keeps its words.
+
+**Checked:** in-app browser at 375 px: a swim logged at Linton Falls (the form, "Kept with the swim: Low risk in
+the forecast issued Tue 24 Nov, 13:21", a day picked with the form open, the swim stored), the link to the journal,
+the journal's one entry and the passport's first badge on Saved, the entry's link back to the place.
+**Not checked:** a photo added, a copy saved and added back, the passport's lesson, 1,440 px by eye.
+
+### Ported: a forecast for any river or lake on the map (24 November 2026, night)
+
+The fifth port from `classic/`. Marked: the arithmetic and its words are already decided ("Click anywhere"); how the
+redesign shows a point is new, and one thing differs from the live page on purpose (the address).
+
+- **A tap on the map that is on no listed place** is read as a river or lake to forecast. `anypoint.js` is loaded as
+  it is and its own arithmetic is called (`AnyPoint.point`), from the same files under `data/anypoint/`. Its page
+  wiring is for the live page's map and does not run here.
+- **Further out than the live map's own zoom** a tap zooms in and the line under the map asks for another, as the live
+  map does. A tap outside Britain and Ireland is said to be.
+- **A point is drawn as a place is**, by the same page: its name, "Unlisted point: not hand-checked", the five days,
+  the answer, Behind the level, the overflows upstream as a line, and the places elsewhere. It has no Save, no
+  journal, no reviews and no record, and a section "This point" says what it lacks beside a listed place, with the
+  live page's "Request this as a spot".
+- **A point with no forecast** (outside England, off the network, an isolated lake) says why in the live script's own
+  words, gives the official source for where it is, and lists the places near it.
+- **The address differs from the live page's, on purpose.** The live page keeps a point out of the address
+  altogether. Here it is after the `#` (`#point=<lat>,<lon>`), which a browser never sends to a server, so a point
+  can be reloaded, kept or sent and where someone tapped still reaches nobody. A point in the query is not read.
+
+**Checked:** in-app browser at 375 px against the live point files: a point on the Wharfe above Ilkley (five days,
+ten overflows upstream, Saturday picked), Windermere's north basin (a lake, three overflows), a point in Wales
+("England only", with the official sources), a point in the sea (no forecast), a far tap (zooms in and asks again),
+a near tap (the point's page), and Map back from it. **Not checked:** 1,440 px by eye, a point in Scotland during
+the trial, a link to a point opened on another device.
+
+### Ported: what the level rests on, lab results and the evidence timeline (24 November 2026, night)
+
+The sixth port from `classic/`. Marked: the content is already decided ("What the level rests on", the evidence
+timeline, lab results an organisation sent); its place in "The record here" is new.
+
+- **"The record here" is on every listed place's page.** Before this port it was on those with an overflow
+  upstream. In order:
+  what the level rests on (`evidence.js`: each item's age and whose it is, and the gaps), lab results an
+  organisation sent (`measured.js`, where there are any), how the forecast has done here, past spills by month, and
+  the evidence timeline (`timeline.js`), which reads its files when it is opened.
+- **A point tapped on the map has no record**, as on the live page.
+
+**Checked:** in-app browser at 375 px: Ilkley's five items (overflows upstream, rain here, the rating, algae at the
+last check, the latest lab sample), its timeline of 82 dated items with "Show all", both folds kept open through a
+day picked; Wastwater, with no overflow upstream, has the items, the months' note and the timeline, and no forecast
+score. **Not checked:** a place with a lab result from an organisation (none exists on 24 November), 1,440 px by eye.
+
+
+### Ported: your outing, on Plan a swim (25 November 2026)
+
+The last feature that kept `classic/` necessary. The outing is `outing.js`, loaded as it is with `outingwatch.js`,
+`spotdate.js` and `guide.js`: the script draws its own tile and answers its own controls, and the page gives it the
+names it expects (`app.js`, "What outing.js expects of its page"). Marked:
+
+- **Already decided** ("Plan a swim", 3 October; "Your outing, back on Explore", 29 October; "How an outing's backup
+  is joined to its spot", 30 October; "Conditions for your outing", 2 November): everything the tile holds and says.
+  When, the spot, a backup, what for and where to meet, by fixed choices and never typed words; the two side by side
+  with what each level rests on; what would change the plan; the conditions; the calendar file with no level in it;
+  the link to send, with the forecast's issue time and each level when sent; alerts for its date, asked for by a
+  button; an outing from a link shown and not kept until "Keep this outing"; "Clear outing".
+- **Already decided** (17 November): "Plan a swim here" under a place's five days, its words following what the
+  link opens. Here it is under the day's answer, since the redesign shows one day at a time.
+- **Already decided:** "Plan here" in a comparison's column.
+- **New:** its look. A card at the top of the plan's results, the one card on Plan, with the redesign's selects,
+  type sizes and rules. A place's level keeps its colour and nothing else in the card is coloured.
+- **New:** a sent outing (`plan/#...&spot=`) opens on these pages. Until now it was passed on to `classic/`.
+- **New:** a place's address with the day after the `#` (`spot/<id>/#day=2026-11-28`, the live page's form, which
+  a calendar file made before the switch carries) opens on that day. It opened on today.
+- **Reversing nothing.** One difference in words: a column's "why" line is the redesign's own sentence for that
+  place and day (`model.js`, `answer`), where the live tile used the planner's (`planWhy`). Both come from the
+  same level and counts.
+
+**Not carried, and said in every page's foot:**
+
+- Keeping an outing for offline use (`outingpack.js`). The pack stores the files the worker lists for the app
+  (`sw.js`, `SHELL`), which are not the redesign's scripts, so a pack kept here could open a page that cannot
+  run. It needs the worker to list the redesign's files first: a change to `sw.js`, in a PR of its own.
+- The day plan's options ("Plan the day here") and the plan as a picture (`dayplan.js`), and a place as a picture.
+- The plan's rows do not change for a kayak or a board (the live list's launch and finish lines). The outing's own
+  "What for", its finish and its stretch are here.
+- `arrive.js` and `brief.js` are behind a query flag on the live page and stay there.
+
+**Checked:** in-app browser at 375 px and 1,280 px. On the source: "Plan a swim here" at Ilkley starts an outing
+and keeps it; a backup, a time and a meeting place change the address, the kept plan and the note of what each
+place shows; the link to send carries `sent=`, `lv=` and `blv=`; that link opened beside another kept outing reads
+"Outing shared with you", leaves the kept one alone through a change, and replaces it on "Keep this outing"; a
+place's name opens the place with one step of history; a day picked drops the time; "Clear outing"; Plan with
+nothing kept shows no tile; a kayak's outing from a link offers Ilkley's two finishes, and picking Greenholme
+draws the finish and the 5.5 km stretch with its six overflows. On a local build of the whole site with the switch on: `plan/#...&spot=...&sent=...`
+opens here, its link to send is `plan/#...`, its calendar file's place is `spot/<id>/#day=...`, and that address
+opens Thursday. **Not checked:** alerts for a date turned on (the test browser blocks notifications, and I will not
+send a test subscription to the alert service); a real phone; Safari.

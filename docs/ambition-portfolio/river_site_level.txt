@@ -1,0 +1,38 @@
+river rows 943 over 900 199 sites 20 seasons [np.int32(2023), np.int32(2024), np.int32(2025), np.int32(2026)]
+  Brier prod_form            0.1375   mean pred 0.207
+  Brier site_rate            0.1670   mean pred 0.221
+  Brier prod_plus_site       0.1375   mean pred 0.211
+  Brier prod_plus_site_dry   0.1395   mean pred 0.212
+  prod_plus_site minus prod_form: +0.0000  95% (site bootstrap) [-0.0102  0.0113]  skill -0.0%
+  prod_plus_site_dry minus prod_form: +0.0020  95% (site bootstrap) [-0.0069  0.0114]  skill -1.5%
+  site_rate minus prod_form: +0.0296  95% (site bootstrap) [0.0105 0.0487]  skill -21.5%
+  forward to 2025: n 280, Brier prod_form 0.1274, plus site 0.1802
+  forward to 2026: n 339, Brier prod_form 0.1002, plus site 0.0973
+
+Dry days (rain_48h<2 mm): rows 508 over 900 54
+  mean chance from production's form on dry-day results over 900: 0.125 ; with site level: 0.161
+  dry-day Brier prod_form 0.0919 plus site 0.0951
+  at Tone, Cam, Nidd dry days: n 89 over 31 mean prod_form chance 0.096 observed rate 0.348
+                                        n   obs  prod  plus
+name                                                       
+Sheep's Green, River Cam               57  0.51  0.19  0.44
+River Tone at French Weir Park         59  0.49  0.22  0.46
+River Ribble at Edisford Bridge        59  0.42  0.32  0.51
+Nidd at the Lido, Knaresborough        57  0.37  0.29  0.38
+Wharfe at Cromwheel, Ilkley            77  0.29  0.29  0.33
+Swale above Richmond Falls             17  0.29  0.20  0.19
+River Avon at Queen Elizabeth Gardens  17  0.24  0.09  0.13
+River Frome at Farleigh Hungerford     57  0.19  0.23  0.18
+River Severn at Ironbridge             58  0.19  0.20  0.16
+River Severn in Shrewsbury             57  0.18  0.23  0.17
+Wharfe at Wilderness Carpark           56  0.14  0.26  0.14
+River Teme in Ludlow                   58  0.14  0.14  0.10
+Sandy Lane, Chester                    17  0.12  0.15  0.17
+Friars Meadow, River Stour             58  0.09  0.15  0.06
+Ham and Kingston, River Thames         18  0.06  0.13  0.15
+River Avon at Fordingbridge            57  0.05  0.21  0.06
+Wolvercote Mill Stream                 75  0.04  0.16  0.03
+Wallingford Beach, River Thames        56  0.04  0.14  0.04
+Pangbourne Meadow, River Thames        16  0.00  0.10  0.13
+Falcon Meadow, River Waveney           17  0.00  0.13  0.14
+site-level |obs - pred| mean: prod_form 0.1 plus site 0.05

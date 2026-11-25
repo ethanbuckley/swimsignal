@@ -18,11 +18,12 @@ on:
     branches: [main]
     # The two hand-checked data files change what is counted where, so a push of either builds too
     # (until 12 Oct 2026 they waited for the next scheduled run, a median 2.9 h).
-    # The four scripts build_site.py runs as files are listed too: #413's fix to build_any_point.py
+    # The five scripts build_site.py runs as files are listed too: #413's fix to build_any_point.py
     # (27 Oct 2026) did not rebuild the site.
     paths: [spots.csv, spots-osm.csv, "src/**", scripts/build_site.py, .github/workflows/site.yml,
             data/raw/overflow_joins.csv, data/raw/network_fixes.csv,
-            scripts/build_any_point.py, scripts/alerts.js, scripts/prerender_spots.js, scripts/prerender_verification.js]
+            scripts/build_any_point.py, scripts/alerts.js, scripts/prerender_spots.js, scripts/prerender_verification.js,
+            scripts/prerender_preview.js]
 
 concurrency:
   group: site
@@ -42,7 +43,11 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    # The two long steps have a limit each (tests 15, build 25), and this is their sum with 5 minutes for the
+    # rest. Until 24 Nov 2026 the job had one limit of 25 for both: that day the tests took 9.2 minutes and the
+    # build, with the side-arm cache stale after a merge and Open-Meteo and the EA slow, about 15.9, and the job
+    # was cancelled seconds from the end with nothing published (run 45426174017, tests/test_site_limits.py).
+    timeout-minutes: 45
     permissions:
       contents: write     # release assets for state, heartbeat commit
       actions: read       # whether Test Python passed this commit (step tested)
@@ -76,24 +81,78 @@ jobs:
       # The same tests on the same commit need not run twice. A scheduled or chained build mostly builds a commit
       # that Test Python (python-tests.yml: lint, then this same pytest) already passed when it was pushed to main,
       # hours before. Only that exact commit, pushed to main, with a successful run counts; anything else, a failed
-      # lookup included, runs the tests here. A push build usually starts with Test Python, so it runs them here.
+      # lookup included, runs the tests here. A push build usually starts with Test Python, finds no finished run
+      # and runs them here; one that waited behind another build, or is run again by hand, finds it and does not
+      # (the second attempt of 24 Nov 2026 ran them for 9 minutes, 36 minutes after Test Python had passed).
       - name: Did Test Python already pass this commit on main?
         id: tested
-        if: github.event_name != 'push' && github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           n=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/python-tests.yml/runs?head_sha=$GITHUB_SHA&branch=main&event=push&status=success" \
                 --jq "[.workflow_runs[] | select(.head_sha == \"$GITHUB_SHA\" and .conclusion == \"success\" and .event == \"push\" and .head_branch == \"main\")] | length" 2>&1) || n=0
+          # The same files, tested on the pull request. A merge commit whose branch already held all of main has
+          # the branch head's tree, and Test Python's pull request run tested that head merged with main as it
+          # then was, which is the same tree again. All three are checked: two parents, the second parent's tree
+          # is this commit's, and the first parent (main before the merge) is behind the second by nothing. Then a
+          # successful pull request run of the second parent counts. 24 of the 40 merges to 24 Nov 2026 were like
+          # this, and each ran the tests a second time here while Test Python ran them a third time for the push.
+          # Not covered: a pull request whose base branch was changed after its last test run.
+          same_tree_tested() {
+            local c tree np p1 p2 m
+            c=$(gh api "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA" \
+                  --jq '[.commit.tree.sha, (.parents | length), .parents[0].sha, .parents[1].sha] | @tsv') || return 1
+            read -r tree np p1 p2 <<<"$c"
+            [ "$np" = 2 ] && [[ $tree =~ ^[0-9a-f]{40}$ && $p1 =~ ^[0-9a-f]{40}$ && $p2 =~ ^[0-9a-f]{40}$ ]] || return 1
+            [ "$(gh api "repos/$GITHUB_REPOSITORY/commits/$p2" --jq .commit.tree.sha)" = "$tree" ] || return 1
+            [ "$(gh api "repos/$GITHUB_REPOSITORY/compare/$p1...$p2" --jq .behind_by)" = 0 ] || return 1
+            m=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/python-tests.yml/runs?head_sha=$p2&event=pull_request&status=success" \
+                  --jq "[.workflow_runs[] | select(.head_sha == \"$p2\" and .conclusion == \"success\" and .event == \"pull_request\")] | length") || return 1
+            [[ $m =~ ^[1-9][0-9]*$ ]] && echo "$p2"
+          }
           if [[ $n =~ ^[1-9][0-9]*$ ]]; then
             echo "Test Python passed $GITHUB_SHA on main ($n run(s)): not running the same tests again."
             echo "passed=true" >> "$GITHUB_OUTPUT"
+          elif head=$(same_tree_tested 2>&1); then
+            echo "Test Python passed $head on its pull request, and $GITHUB_SHA has the same files: not running the same tests again."
+            echo "passed=true" >> "$GITHUB_OUTPUT"
           else
-            echo "No successful Test Python run of $GITHUB_SHA on main found (${n:-none}): the tests run here."
+            echo "No successful Test Python run of $GITHUB_SHA on main found (${n:-none}), nor of the same files on a pull request: the tests run here."
           fi
+
+      # A page-only build (docs/PAGE-ONLY-BUILDS-2026-11.md). A push that changes only what the pages are made from
+      # need not forecast again: the build step writes the pages over the last build's published site and leaves
+      # its data, so its issue time, as they are. Three steps decide, and each can only say no: this one (the
+      # commits since the last published build change nothing else, scripts/page_only.py), the fetch below (that
+      # build's site is there and its forecast is under two hours old) and build_site.py --pages-only itself (the
+      # state and settings are that forecast's). Any no, or any failure, is the full build. Scheduled, chained
+      # and manual runs always build in full: they are there to forecast.
+      - name: Can this push rebuild the pages only?
+        id: plan
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        continue-on-error: true   # a failure here leaves no output, which is the full build
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          full() { echo "Full build: $1"; exit 0; }
+          # The last build that published: the newest successful run of this workflow on main other than this one.
+          last=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/site.yml/runs?branch=main&status=success&per_page=5" \
+                   --jq "[.workflow_runs[] | select(.id != $GITHUB_RUN_ID and .head_branch == \"main\" and .conclusion == \"success\")][0] | \"\(.id) \(.head_sha)\"" 2>&1) \
+            || full "could not list this workflow's runs ($last)"
+          read -r run base <<<"$last"
+          [[ $run =~ ^[0-9]+$ && $base =~ ^[0-9a-f]{40}$ ]] || full "no earlier successful run found ($last)"
+          # Its commit must be an ancestor of this one, or the changes between them are not what this push added.
+          cmp=$(gh api "repos/$GITHUB_REPOSITORY/compare/$base...$GITHUB_SHA" --jq '"\(.status) \(.behind_by)"' 2>&1) \
+            || full "could not compare $base with this commit ($cmp)"
+          [ "$cmp" = "ahead 0" ] || full "the last build's commit $base is not behind this one ($cmp)"
+          git fetch --quiet --depth=1 origin "$base" || full "could not fetch $base"
+          python3 scripts/page_only.py changes "$base" "$GITHUB_SHA" || full "the changes since run $run ($base) are not page-only"
+          echo "run=$run" >> "$GITHUB_OUTPUT"
 
       - name: Tests (the build does not run if these fail)
         if: steps.tested.outputs.passed != 'true'
+        timeout-minutes: 15   # its own limit, so slow tests cannot use up the build's time (the job's comment)
         # On the runner's four cores (pytest-xdist): 6 Nov 2026, 2,189 tests in 193 s against 381 s one at a time.
         run: uv run pytest -q -n auto
 
@@ -129,8 +188,28 @@ jobs:
         run: |
           test -f data/processed/river_network.pkl || gh release download data-v1 -p river_network.pkl -D data/processed
 
-      - name: Build forecasts and site
+      - name: Fetch the last build's published site (page-only build)
+        id: published
+        if: steps.plan.outputs.run != ''
+        continue-on-error: true   # a failure here leaves no output, which is the full build
         env:
+          GH_TOKEN: ${{ github.token }}
+          RUN: ${{ steps.plan.outputs.run }}
+        run: |
+          full() { echo "Full build: $1"; exit 0; }
+          # The Pages artifact of that run: the site as it was published, kept one day.
+          gh run download "$RUN" -R "$GITHUB_REPOSITORY" -n github-pages -D "$RUNNER_TEMP/published" \
+            || full "could not download the published site of run $RUN"
+          mkdir site
+          tar -xf "$RUNNER_TEMP/published/artifact.tar" -C site || full "could not unpack the published site"
+          python3 scripts/page_only.py age site/data/spots.json || full "that forecast is too old to keep"
+          echo "ready=true" >> "$GITHUB_OUTPUT"
+
+      - name: Build forecasts and site
+        id: build
+        timeout-minutes: 25   # the build's own; the longest in 200 runs to 24 Nov 2026 that finished took 13.9
+        env:
+          PAGES_ONLY: ${{ steps.published.outputs.ready }}
           DIPCAST_CF_BEACON_TOKEN: ${{ vars.DIPCAST_CF_BEACON_TOKEN }}   # page-view counter; unset = off
           DIPCAST_SITE_URL: ${{ vars.DIPCAST_SITE_URL }}   # custom domain for share links; unset = the Pages address
           # Alerts (push/README.md): the Worker's address and its public key; unset = no alerts button.
@@ -167,19 +246,36 @@ jobs:
           # English companies' overflows where the polled status is known; unset = off, production published. Ethan
           # decides; its record says to switch only after the 23 Nov 2026 shadow read, which the switch would end.
           DIPCAST_LIVE_STATUS: ${{ vars.DIPCAST_LIVE_STATUS }}
+          # River line in winter (docs/RIVER-WINTER-LINE-2026-11.md): 1 adds one word to today's day at river spots from
+          # October to April and a paragraph to the method page; unset = off, and nothing differs. Ethan's decision.
+          DIPCAST_RIVER_WINTER_LINE: ${{ vars.DIPCAST_RIVER_WINTER_LINE }}
+          # The redesign as the site: 1 publishes it at /, spot/<id>/, plan/ and saved/, and the app under classic/
+          # (docs/DESIGN.md, "The switch"). Unset, every page is as before and the redesign stays at preview/.
+          DIPCAST_REDESIGN: ${{ vars.DIPCAST_REDESIGN }}
           # Open-Meteo's paid plan (README, "Rainfall API"): its key; unset = the free, non-commercial API.
           # In this step only, so the tests never hold it; the code keeps it out of logs and pages.
           DIPCAST_OPEN_METEO_KEY: ${{ secrets.DIPCAST_OPEN_METEO_KEY }}
-        run: uv run python scripts/build_site.py
+        run: |
+          if [ "$PAGES_ONLY" = true ]; then
+            if uv run python scripts/build_site.py --pages-only; then
+              echo "pages_only=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            echo "::notice title=page-only build::the pages could not be rebuilt from the published data (see the log): building in full"
+          fi
+          rm -rf site   # nothing of a fetched or half-rewritten site may be left under a full build
+          uv run python scripts/build_site.py
 
       - name: Save mutable state
         uses: actions/cache/save@v6
-        if: always()
+        # Not after a page-only build, which polls nothing and logs no forecast: the last full build's copy stands.
+        if: always() && steps.build.outputs.pages_only != 'true'
         with:
           path: state
           key: dipcast-state-${{ github.run_id }}
 
       - name: Publish state to the rolling release (durable copy, when over 12 hours old)
+        if: steps.build.outputs.pages_only != 'true'
         continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}

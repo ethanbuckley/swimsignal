@@ -209,8 +209,12 @@ const OutingPack = (() => {
         msg.textContent = 'Keeping this outing on this device…';
         try {
           const sh = await shell();
-          const list = files({ shell: sh.shell, spots: spots.map(x => ({ id: x.id, page: PAGE_ID.test(x.id), file: x.detail_file || null, upstream: !!pair.finish && x.id === pair.finish.id })) });
-          await store(list, p => fetch(new URL(p, ROOT).href, { cache: 'no-cache', credentials: 'omit' }), ROOT.href,
+          const listed = files({ shell: sh.shell, spots: spots.map(x => ({ id: x.id, page: PAGE_ID.test(x.id), file: x.detail_file || null, upstream: !!pair.finish && x.id === pair.finish.id })) });
+          // The app's own pages are under ROOT, which is the site's root unless the app is published in a folder of
+          // it (index.html, ROOT); everything else is the site's, at SITE_ROOT, which is also where the worker looks.
+          const home = ROOT.pathname.slice(SITE_ROOT.pathname.length), at = p => (/^(plan|spot)\//.test(p) ? home + p : p);
+          const list = { ...listed, need: listed.need.map(at), may: listed.may.map(at) };
+          await store(list, p => fetch(new URL(p, SITE_ROOT).href, { cache: 'no-cache', credentials: 'omit' }), SITE_ROOT.href,
             { v: 1, ...want, names, keptAt: Date.now(), issuedAt: DATA.generated_at, build: sh.build });
           paint(); msg.textContent = 'Kept for offline use.';
         } catch (e) { paint(); msg.textContent = `Could not keep this outing: ${e.message}.`; }

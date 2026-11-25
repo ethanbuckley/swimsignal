@@ -43,8 +43,18 @@ test('a band on days 3 to 5 only, on the bar\'s own scale', () => {
   assert.equal(rows.split('<button').length - 1, 5);
   assert.equal(rows.split('<button')[1].includes('class="band"'), false);   // today
   assert.equal(rows.split('<button')[2].includes('class="band"'), false);   // tomorrow
-  assert.match(rows, /<span class="sr">Three Met Office rain forecasts give low to high risk\.<\/span>/);
-  assert.equal(run('bandSaid({low: 0.2, high: 0.3})'), 'Three Met Office rain forecasts give moderate risk.');
+  assert.match(rows, /<span class="sr">Range from three other Met Office rain runs: low to high risk\.<\/span>/);
+  assert.equal(run('bandSaid({low: 0.2, high: 0.3})'), 'Range from three other Met Office rain runs: moderate risk.');
+});
+
+test('a screen reader hears which is the forecast and which is the range from other rain runs', () => {
+  // 17 Nov 2026, outside design audit: Henley's Saturday said "moderate risk" and then "Three Met Office rain forecasts
+  // give low risk", two answers that disagree. The row's level is called the forecast where a band follows it.
+  const run = page([spot([0, 1, 2, 3, 4].map(i => day(i, 0.2, {low: 0.05, high: 0.1})))]);
+  const said = run('dayRows(DATA.spots[0])').split('<button').slice(1).map(r => [...r.matchAll(/<span class="sr">([^<]*)<\/span>/g)].map(m => m[1]).join(' '));
+  assert.equal(said[0], 'Today, Sunday 18 October: moderate risk.');                  // no band: no "forecast" word
+  assert.equal(said[3], 'Wednesday 21 October: forecast moderate risk. Range from three other Met Office rain runs: low risk.');
+  assert.doesNotMatch(said.join(' '), /rain forecasts give/);
 });
 
 test('no band where the three agree, where the members did not reach the day, or where the bar is not the spills\'', () => {
@@ -58,7 +68,7 @@ test('no band where the three agree, where the members did not reach the day, or
   assert.deepEqual(bands(run('dayRows(DATA.spots[0])')), []);
   assert.deepEqual(bands(run('dayRows(DATA.spots[1])')), []);
   assert.deepEqual(bands(run('dayRows(DATA.spots[2])')), []);
-  assert.doesNotMatch(run('dayRows(DATA.spots[2])'), /Three Met Office rain forecasts/);
+  assert.doesNotMatch(run('dayRows(DATA.spots[2])'), /Met Office rain runs/);
 });
 
 test('the band is drawn in ink, two pixels inside the bar, and named in the page\'s CSS once', () => {
