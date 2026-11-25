@@ -172,6 +172,20 @@ function waterTemp(s, iso, nowMs) {
   }
   return null;
 }
+// ------------------------------------------------------------------------------------------------ the research line
+// What the home page's research line says is running (data/research/model_scorecard.json, the scorecard page's own
+// file): the candidates in shadow whose test has not been read yet, and the first date one is read. The earlier
+// page's rule and words (index.html, researchNow; docs/DESIGN.md, "After the review", 12 November 2026), word for word.
+// A candidate in shadow is scored beside the live forecast and changes nothing a swimmer is told.
+const RESEARCH_PLAIN = 'Research: a model is tested before it changes a forecast.';
+function researchNow(doc, iso) {
+  const on = ((doc || {}).models || []).filter(m => m.stage === 'shadow' && m.window && m.window.read_on >= iso);
+  if (!on.length) return '';
+  const next = on.map(m => m.window.read_on).sort()[0];
+  const day = new Date(next + 'T12:00:00Z').toLocaleDateString('en-GB', { day: 'numeric', month: 'long', timeZone: 'UTC' });
+  return `Research: ${on.length} candidate model${on.length === 1 ? ' is' : 's are'} being scored beside the live forecast, without changing it. The next test is read on ${day}.`;
+}
+
 // A day's rain in the 48 hours to midday, as the answer and the picture both say it.
 const rainSaid = mm => `${num(mm, mm < 1 ? 1 : 0)} mm`;
 // The answer for one day at one place: every line the opening of a place's page shows. `iso` is a date the forecast
@@ -311,20 +325,6 @@ function ledger(s, iso, data, nowMs) {
   gaps.push(levelScope(s, iso).replace(/^This forecast counts[^.]*\.\s*/, ''));
   rows.push({ key: 'gaps', label: 'Not counted', value: '', cls: 'lv-none', lines: gaps.filter(Boolean) });
   return rows;
-}
-
-// ------------------------------------------------------------------------------------------------ the research line
-// What the home page's research line says is running (data/research/model_scorecard.json, the scorecard page's own
-// file): the candidates in shadow whose test has not been read yet, and the first date one is read. The earlier
-// page's rule and words (index.html, researchNow; docs/DESIGN.md, "After the review", 12 November 2026), word for word.
-// A candidate in shadow is scored beside the live forecast and changes nothing a swimmer is told.
-const RESEARCH_PLAIN = 'Research: a model is tested before it changes a forecast.';
-function researchNow(doc, iso) {
-  const on = ((doc || {}).models || []).filter(m => m.stage === 'shadow' && m.window && m.window.read_on >= iso);
-  if (!on.length) return '';
-  const next = on.map(m => m.window.read_on).sort()[0];
-  const day = new Date(next + 'T12:00:00Z').toLocaleDateString('en-GB', { day: 'numeric', month: 'long', timeZone: 'UTC' });
-  return `Research: ${on.length} candidate model${on.length === 1 ? ' is' : 's are'} being scored beside the live forecast, without changing it. The next test is read on ${day}.`;
 }
 
 // ------------------------------------------------------------------------------------------------ upstream: the river as a line
@@ -557,7 +557,8 @@ function queryFor(r) {
 const api = { esc, capFirst, fold, list, num, longDate, weekday, shortDate, tabName, headDay, dayNm, kmBetween, compass, milesSaid, ageSpot, prepare, dates, issuedWords,
   official, levelWords, shortLevel, cls, dayRows, dayTabs, lowerDay, spillingSaid, waterTemp, answer, pictureOf, ledger, statusSaid, markOf, riverLine, placeRow, elsewhere,
   nextSteps, waters, areas, tally, findSpots, postcodeKeys, findTowns, nearest, parseQuery, parseAddress, queryFor, pointOf, prepareOne, pollAt, httpsLink, isNil,
-  savedRows, planRows, PLAN_HEADS, mapPoints, overflowPoints, decodeLine, VIEWS, researchNow, RESEARCH_PLAIN };
+  savedRows, planRows, PLAN_HEADS, mapPoints, overflowPoints, decodeLine, VIEWS };
 if (typeof module === 'object' && module.exports) module.exports = api;
 else window.PV = api;
+Object.assign(api, { researchNow, RESEARCH_PLAIN });   // the home page's research line, the earlier page's words
 })();
