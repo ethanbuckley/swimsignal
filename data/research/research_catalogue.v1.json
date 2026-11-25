@@ -1015,10 +1015,17 @@
   },
   "718": {
    "n": 718,
-   "state": "open",
+   "state": "merged",
    "branch": "claude/overflow-ledger-stage-1",
    "branch_exists": true,
-   "date": "2026-11-17"
+   "date": "2026-11-19"
+  },
+  "727": {
+   "n": 727,
+   "state": "open",
+   "branch": "claude/overflow-ledger-season",
+   "branch_exists": true,
+   "date": "2026-11-19"
   },
   "733": {
    "n": 733,
@@ -3676,18 +3683,18 @@
   },
   {
    "id": "overflow-ledger",
-   "title": "The overflow ledger: what each overflow contributes to the model's exposure at listed spots, and the Ilkley audit statement",
+   "title": "The overflow ledger: what each overflow contributes to the model's exposure at listed spots, its season figure, and the Ilkley audit statement",
    "section": "promising",
    "topics": [
     "model",
     "overflows",
     "samples"
    ],
-   "verdict": "No test and no new result, 17 Nov 2026. A table of model accounting: 1,414 overflows traced to 89 of the 121 listed spots through 2,099 links, added up from the forecast's own weights. The audit statement for Ilkley is written and not run.",
-   "scope": "An account of the forecast model, not of measured bacteria. The weights are the model's settings, and at 59 unseen river points the production estimate ordered days at 0.376 against 0.355 for rain alone. No row says an overflow caused a sample result or broke a permit. The Ilkley audit is one seen site with 17 samples in 2026.",
+   "verdict": "Stage 1, 17 Nov 2026, no test: a table of model accounting, 1,414 overflows traced to 89 of the 121 listed spots through 2,099 links, added up from the forecast's own weights. Stage 2, 19 Nov 2026, a season hindcast run once after its statement: the reproduction of CATCH-SIM failed as stated (137 of 139 scores at Cromwheel 2025, every level equal; cause, the export's 0.1-hour rounding of travel times). In 2025, 986 high spot-days, 60% of them depending on no single overflow; the per-overflow figure correlates at 0.18 between 2024 and 2025 and at 0.14 and 0.11 between recorded and modelled spill days. The Ilkley audit statement is written and not run.",
+   "scope": "An account of the forecast model, not of measured bacteria. The weights are the model's settings, and at 59 unseen river points the production estimate ordered days at 0.376 against 0.355 for rain alone. The season figure covers 15 May to 30 September 2024 and 2025, with EA recorded spill days where usable; no sample is joined, United Utilities' modelled chances are in-sample, and two seasons are a spread, not an interval. No row says an overflow caused a sample result or broke a permit. The Ilkley audit is one seen site with 17 samples in 2026.",
    "stage": "development",
-   "stage_note": "A research file with a contract and a Lab prototype page (prototypes/research-lab/overflow-ledger/), left out of the site build. Not published.",
-   "next": "Ethan decides whether it is public and whether it names overflows nationally. Then a season figure with its protocol first (by 15 Dec 2026), and the Ilkley audit after option B's read on or after 2 Dec 2026.",
+   "stage_note": "Two research files with contracts (overflow_ledger.v1.json, overflow_ledger_season.v1.json) and a Lab prototype page (prototypes/research-lab/overflow-ledger/), left out of the site build. Not published, as Ethan decided on 19 Nov 2026.",
+   "next": "The gap diagnosis the season statement names (which overflows and companies carry the difference between recorded and modelled runs, Thames 2025 first) by 15 Dec 2026. Ethan decides whether to accept the reproduction diagnosis and what a page shows. The Ilkley audit after option B's read, on or after 2 Dec 2026.",
    "records": [
     {
      "doc": "docs/OVERFLOW-LEDGER-2026-11.md",
@@ -3700,10 +3707,19 @@
     {
      "doc": "docs/RESTORE-ILKLEY-STATEMENT-2026-11.md",
      "quote": "**Result: not run.** Nothing in this file is a finding about 2026 samples."
+    },
+    {
+     "doc": "docs/OVERFLOW-LEDGER-SEASON-2026-11.md",
+     "quote": "Cromwheel 2025: 139 of 139 levels equal, 137 of 139 shown scores equal, largest difference 1 point."
+    },
+    {
+     "doc": "docs/OVERFLOW-LEDGER-SEASON-CONTRACT-v1.md",
+     "quote": "**A single season's per-overflow figure is unstable.**"
     }
    ],
    "prs": [
-    718
+    718,
+    727
    ]
   },
   {
