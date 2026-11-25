@@ -172,6 +172,8 @@ function waterTemp(s, iso, nowMs) {
   }
   return null;
 }
+// A day's rain in the 48 hours to midday, as the answer and the picture both say it.
+const rainSaid = mm => `${num(mm, mm < 1 ? 1 : 0)} mm`;
 // The answer for one day at one place: every line the opening of a place's page shows. `iso` is a date the forecast
 // covers; a place with no daily forecast has one level for every day, and its date still sets the conditions.
 function answer(s, iso, data, nowMs) {
@@ -208,7 +210,7 @@ function answer(s, iso, data, nowMs) {
     if (trialWords(s)) out.notes.push(trialWords(s));
   }
   const x = (s.days || []).find(d => d.date === iso), w = ((s.weather || {}).days || []).find(d => d.date === iso);
-  if (x && !isNil(x.rain_48h_mm)) out.conditions.push({ k: 'Rain', v: `${num(x.rain_48h_mm, x.rain_48h_mm < 1 ? 1 : 0)} mm`, note: 'in the 48 hours to midday' });
+  if (x && !isNil(x.rain_48h_mm)) out.conditions.push({ k: 'Rain', v: rainSaid(x.rain_48h_mm), note: 'in the 48 hours to midday' });
   if (w) out.conditions.push({ k: 'Air', v: `${w.tmax}°`, note: `high; wind ${w.wind_kmh} km/h` }, { k: 'Daylight', v: `${w.sunrise} to ${w.sunset}`, note: '' });
   const wt = waterTemp(s, iso, nowMs);
   if (wt) out.conditions.push({ k: 'Water', v: wt.value, note: wt.note });
@@ -216,6 +218,34 @@ function answer(s, iso, data, nowMs) {
   // The Environment Agency's own advice for today cannot be read by the build or the page: said, with where to look.
   if (!o && eaUnchecked(s)) out.unchecked = { text: "Today's official advice was not checked.", link: httpsLink((s.classification || {}).url) ? s.classification.url : '', words: 'Check Environment Agency advice' };
   return out;
+}
+
+// ------------------------------------------------------------------------------------------------ a picture to share
+// Everything the picture of a place says on the day shown, in the order app.js draws it (drawPicture). The layout and
+// the fixed sentences are the earlier version's (index.html, shareImage); the level, the headline, why and the days are
+// this page's own (answer, dayTabs), so the picture and the page cannot disagree. An official notice comes first, in
+// the earlier picture's words (index.html, shareNotice), and its short notes are its own (docs/DESIGN.md, "What to do").
+// Under each day the rain, never the E. coli estimate: the earlier picture showed its percentage in the tested season
+// only, and that is not carried. A place with no daily forecast has no level on any day, only its rain. The site's
+// host and the place's address are added where it is drawn.
+const PICTURE_DAYS = 'Pollution risk each day, and rain in the 48 h to midday.', PICTURE_RAIN = 'Rain in the 48 h to midday.';
+const PICTURE_NOT = 'A pollution risk forecast, not a water test: check the signs at the water.';
+// Which of the page's colours a level takes: "--k-<tone>" for its words, "--<tone>" for its mark.
+const toneOf = l => ORDER[l] !== undefined ? l.replace(' ', '') : plainLevel(l) ? 'clear' : 'na';
+function pictureOf(s, iso, data, nowMs) {
+  const a = answer(s, iso, data, nowMs), on = daily(s), brief = eaTodayBrief(s), t = Date.parse(data.generated_at);
+  const days = dayTabs(s, data).map(d => { const x = (s.days || []).find(y => y.date === d.date), lv = on && ORDER[d.level] !== undefined ? d.level : null;
+    return { date: d.date, name: d.name, level: lv, tone: lv ? toneOf(lv) : 'na', word: !on ? '–' : lv ? capFirst(lv) : 'No data', risk: lv ? 'risk' : '',
+      rain: x && !isNil(x.rain_48h_mm) ? rainSaid(x.rain_48h_mm) : '–' }; });
+  return { brand: 'SwimSignal', name: s.name, on,
+    notice: brief ? `Official: ${brief}. ${eaTodayFirst(s)}; the level is SwimSignal's sewage forecast only.` : '',
+    when: a.dateLabel + (a.everyDay ? '. The level here is the same every day.' : ''),
+    lead: a.lead ? a.lead.replace(/\.?$/, '.') : '', head: a.head, level: a.level, tone: toneOf(a.level),
+    why: [a.modelled, ...a.why].filter(Boolean),
+    // Today's advice not checked where the page says so (not under an official notice), in the picture's short words.
+    notes: [walesWords(s, true), trialWords(s, true), a.unchecked ? "Today's EA advice not checked: see the EA's page" : ''].filter(Boolean),
+    days, caption: days.length ? (on ? PICTURE_DAYS : PICTURE_RAIN) : '',
+    issued: `${Number.isFinite(t) ? `Forecast issued ${new Date(t).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}, ${hm(t)}. ` : ''}${PICTURE_NOT}` };
 }
 
 // ------------------------------------------------------------------------------------------------ behind the level
@@ -508,7 +538,7 @@ function queryFor(r) {
 }
 
 const api = { esc, capFirst, fold, list, num, longDate, weekday, shortDate, tabName, headDay, dayNm, kmBetween, compass, milesSaid, ageSpot, prepare, dates, issuedWords,
-  official, levelWords, shortLevel, cls, dayRows, dayTabs, lowerDay, spillingSaid, waterTemp, answer, ledger, statusSaid, markOf, riverLine, placeRow, elsewhere,
+  official, levelWords, shortLevel, cls, dayRows, dayTabs, lowerDay, spillingSaid, waterTemp, answer, pictureOf, ledger, statusSaid, markOf, riverLine, placeRow, elsewhere,
   nextSteps, waters, areas, tally, findSpots, postcodeKeys, findTowns, nearest, parseQuery, parseAddress, queryFor, pointOf, prepareOne, pollAt, httpsLink, isNil,
   savedRows, planRows, PLAN_HEADS, mapPoints, overflowPoints, decodeLine, VIEWS };
 if (typeof module === 'object' && module.exports) module.exports = api;

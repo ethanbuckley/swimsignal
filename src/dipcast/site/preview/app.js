@@ -159,7 +159,7 @@ function countToggle() {
 }
 const foot = () => { const c = (DATA && DATA.credits) || {};
   return `<footer class="foot"><p>${PREVIEW ? `This is a preview of a redesign, kept beside <a href="${classic()}">the current SwimSignal</a>. Both read the same forecast, and a place saved on one is saved on the other.`
-      : `Keeping an outing for offline use, and a place or a plan as a picture to send, are still on <a href="${classic()}">the earlier version of SwimSignal</a>, which reads the same forecast. A place saved on one is saved on the other.`} Saved places stay on this device.</p>
+      : `Keeping an outing for offline use, and a plan as a picture to send, are still on <a href="${classic()}">the earlier version of SwimSignal</a>, which reads the same forecast. A place saved on one is saved on the other.`} Saved places stay on this device.</p>
     <p><a href="methods.html">Method and limits</a> · <a href="verification.html">How accurate it has been</a> · <a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a></p>
     ${yourDataHtml()}
     <details><summary>Data sources and licences</summary><p>${esc(c.attribution || '')}</p><p>${esc(c.modified || '')} ${esc(c.endorsement || '')} <a href="terms.html#data">Full credits</a></p></details></footer>`; };
@@ -729,6 +729,67 @@ function planTyping(v) {
   loadNear(v).then(() => { const again = document.getElementById('offers'); if (again && planTyped === v) again.innerHTML = offersHtml(v); });
 }
 
+// ------------------------------------------------------------------------------------------------ a picture to share
+// A place's forecast for the day shown, drawn into a picture on the device for a swim group's chat, in the earlier
+// version's layout and type sizes (index.html, shareImage) with this page's colours and fonts. What it says is
+// model.js's (pictureOf). Nothing leaves the device until the share sheet; without one (a desktop browser) the picture
+// is saved instead. Drawn only when asked for: the build runs this file where there is no canvas.
+function wrapText(g, text, x, y, maxW, lh) {
+  let line = '';
+  for (const w of String(text).split(' ')) { const t = line ? `${line} ${w}` : w;
+    if (line && g.measureText(t).width > maxW) { g.fillText(line, x, y); y += lh; line = w; } else line = t; }
+  if (line) { g.fillText(line, x, y); y += lh; }
+  return y;
+}
+function saveFile(blob, name) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000); }
+// Said in the line under the place's name, looked up when said: the page may have been drawn again meanwhile.
+const toolSaid = msg => { const t = document.getElementById('tool-said'); if (t) t.textContent = msg; };
+async function sharePicture(s, day) {
+  const p = P.pictureOf(s, day, DATA, now()), W = 1080, H = 1350, c = document.createElement('canvas'); c.width = W; c.height = H;
+  const v = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  const g = c.getContext('2d'), F = v('--font-text'), FD = v('--font-display');
+  if (document.fonts && document.fonts.load) await Promise.all([document.fonts.load(`600 66px ${FD}`), document.fonts.load(`600 30px ${F}`)]).catch(() => {});
+  g.fillStyle = v('--bg'); g.fillRect(0, 0, W, H);
+  // The site's header: the wordmark in teal on the paper, the host, and a hairline under them.
+  g.fillStyle = v('--brand'); g.font = `600 56px ${FD}`; g.fillText(p.brand, 60, 96);
+  g.fillStyle = v('--muted'); g.font = `600 30px ${F}`; g.textAlign = 'right'; g.fillText(location.host, W - 60, 96); g.textAlign = 'left';
+  g.fillStyle = v('--line'); g.fillRect(0, 148, W, 2);
+  g.fillStyle = v('--ink'); g.font = `600 66px ${FD}`; let y = wrapText(g, p.name, 60, 270, W - 120, 78);
+  // An official notice first, with its rule beside it as on the page: a picture in a chat is read as the answer.
+  if (p.notice) { const top = y + 44; g.fillStyle = v('--ink'); g.font = `600 34px ${F}`; y = wrapText(g, p.notice, 84, top, W - 144, 44);
+    g.fillStyle = v('--notice-line'); g.fillRect(60, top - 32, 6, y - top - 2); }
+  // The day it is for, then the answer as the page gives it that day: the live status first where it leads.
+  g.fillStyle = v('--muted'); g.font = `600 32px ${F}`; y = wrapText(g, p.when, 60, y + 24, W - 120, 42);
+  if (p.lead) { g.fillStyle = v('--ink'); g.font = `700 40px ${F}`; y = wrapText(g, p.lead, 60, y + 28, W - 120, 50) - 30; }
+  g.fillStyle = v(`--k-${p.tone}`) || v('--ink'); g.font = `700 60px ${F}`; y = wrapText(g, p.head, 60, y + 40, W - 120, 70);
+  if (p.why.length) { g.fillStyle = v('--muted'); g.font = `600 36px ${F}`; y = wrapText(g, p.why.join(' '), 60, y + 6, W - 120, 46); }
+  if (p.notes.length) { g.fillStyle = v('--ink'); g.font = `500 30px ${F}`; y = wrapText(g, p.notes.join('. ') + '.', 60, y + 10, W - 120, 40); }
+  // The five days: a bar in the level's colour, the day, the level with "risk" under it, and the rain.
+  const cw = (W - 120) / 5; y += 30;
+  p.days.forEach((d, i) => { const lx = 60 + i * cw;
+    if (i) { g.fillStyle = v('--line'); g.fillRect(lx, y, 2, 230); }
+    g.fillStyle = d.level ? v(`--${d.tone}`) : v('--unknown'); g.fillRect(lx, y, cw, 12);
+    g.textAlign = 'center'; g.fillStyle = v('--muted'); g.font = `600 30px ${F}`; g.fillText(d.name, lx + cw / 2, y + 62);
+    g.fillStyle = d.level ? v(`--k-${d.tone}`) : v('--muted'); g.font = `700 32px ${F}`; g.fillText(d.word, lx + cw / 2, y + 112);
+    if (d.risk) g.fillText(d.risk, lx + cw / 2, y + 150);
+    g.fillStyle = v('--muted'); g.font = `600 28px ${F}`; g.fillText(d.rain, lx + cw / 2, y + 200); g.textAlign = 'left'; });
+  if (p.days.length) y += 230 + 40;
+  g.fillStyle = v('--muted'); g.font = `500 28px ${F}`;
+  if (p.caption) y = wrapText(g, p.caption, 60, y, W - 120, 38);
+  y = wrapText(g, p.issued, 60, y + 16, W - 120, 38);
+  // Cut the canvas to its content, then the place's own page for the day shown along the bottom.
+  const out = document.createElement('canvas'); out.width = W; out.height = Math.min(H, Math.max(900, Math.round(y + 120)));
+  const o = out.getContext('2d'); o.drawImage(c, 0, 0);
+  o.fillStyle = v('--link'); o.font = `700 30px ${F}`; o.fillText(new URL(link({ id: s.id, day }), document.baseURI).href.replace(/^https?:\/\//, ''), 60, out.height - 50);
+  const blob = await new Promise(res => out.toBlob(res, 'image/png'));
+  if (!blob) throw new Error('the browser would not make the image');
+  const file = new File([blob], `swimsignal-${s.id}.png`, { type: 'image/png' });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try { await navigator.share({ files: [file], title: `${s.name} · ${p.brand}` }); }
+    catch (e) { if (e.name !== 'AbortError') { saveFile(blob, file.name); toolSaid('The share sheet would not open, so the picture was saved instead.'); } }
+  } else { saveFile(blob, file.name); toolSaid('The picture has been saved to your downloads.'); }
+}
+
 // ------------------------------------------------------------------------------------------------ one place
 const placeDay = s => { const ds = P.dates(DATA); return ds.includes(route.day) ? route.day : ds[0] || today(); };
 function kindLine(s) {
@@ -967,7 +1028,8 @@ function placeHtml() {
       <div class="head"><h1 id="title" tabindex="-1">${esc(s.name)}</h1><p class="kind">${esc(kindLine(s))}</p><p class="meta" id="tool-said" role="status"></p></div>
       <div class="first">${stale()}${missed}${officialHtml(o)}
         <i class="tabs-top" aria-hidden="true"></i>${dayTabsHtml(P.dayTabs(s, DATA), day, 'Day', d => link({ id: s.id, day: d }))}
-        ${answerHtml(s, day)}${canPlanHere(s) ? `<p class="planhere"><a class="btn" href="${esc(planHereLink(s, day))}" data-plan-new>${esc(planHereWords())}</a></p>` : ''}</div>
+        ${answerHtml(s, day)}${canPlanHere(s) || !s.unlisted ? `<p class="planhere">${canPlanHere(s) ? `<a class="btn" href="${esc(planHereLink(s, day))}" data-plan-new>${esc(planHereWords())}</a>` : ''}${
+          s.unlisted ? '' : '<button type="button" class="btn" data-do="share-picture">Share as a picture</button>'}</p>` : ''}</div>
       ${condsHtml(s, day)}
     </div>
     <div class="more">${behindHtml(s, day)}${upstreamHtml(s, day)}${plumeWanted(s) ? '<div id="plume-slot"></div>' : ''}${nearbyHtml(s, day)}</div>
@@ -1235,6 +1297,8 @@ app.addEventListener('click', e => {
       else if (navigator.clipboard) navigator.clipboard.writeText(url).then(() => done(`Link copied. It opens this place on ${P.headDay(day) === 'today' ? 'today' : P.longDate(day)}.`), () => done('Copy the address from the bar above.'));
       else done('Copy the address from the bar above.');
       return; }
+    if (act === 'share-picture') { const s = spotOf(route.id); if (!s || s.unlisted) return;
+      sharePicture(s, placeDay(s)).catch(e => toolSaid(`Could not make the picture: ${e.message}.`)); return; }
   }
   // Only these pages' own addresses are drawn here (the opening and its views, and a place); a link to the live
   // site, or out, is left to the browser.
