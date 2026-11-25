@@ -376,7 +376,72 @@ button { font: inherit; color: inherit; }
 
 .picks { margin-top: 12px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; max-width: 560px; }
 .picks label { display: grid; gap: 4px; font-size: var(--fs-meta); font-weight: 600; color: var(--muted); }
-.picks select { width: 100%; height: 48px; padding: 0 34px 0 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--card) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235a6166' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 9.5 7 7 7-7'/%3E%3C/svg%3E") right 10px center / 18px no-repeat; color: var(--ink); font: 600 var(--fs-note)/1 var(--font-text); appearance: none; -webkit-appearance: none; }
+.picks select, .outing-fields select { width: 100%; height: 48px; padding: 0 34px 0 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--card) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235a6166' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 9.5 7 7 7-7'/%3E%3C/svg%3E") right 10px center / 18px no-repeat; color: var(--ink); font: 600 var(--fs-note)/1 var(--font-text); appearance: none; -webkit-appearance: none; }
+/* Your outing on Plan a swim (outing.js draws and binds it; app.js, mountOuting): a card over the plan's results, since
+   it is the one part of Plan that is the swimmer's own. Its markup and words are the live script's; the look is this
+   page's. A place's level keeps its colour; nothing else in the card is coloured. */
+.outing-box:empty { display: none; }
+.outing { margin-top: 20px; padding: 0 16px; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); }
+.outing[open] { padding-bottom: 16px; }
+.outing > summary { cursor: pointer; list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 56px; padding: 10px 0; font: 600 var(--fs-head)/1.2 var(--font-display); }
+.outing > summary::-webkit-details-marker { display: none; }
+.outing > summary::after { content: ""; flex: none; width: 9px; height: 9px; margin: 0 4px 4px 0; border-right: 1.75px solid var(--muted); border-bottom: 1.75px solid var(--muted); transform: rotate(45deg); }
+.outing[open] > summary::after { transform: rotate(-135deg); margin-bottom: -4px; }
+.outing > summary .k { display: block; margin-top: 2px; font: 400 var(--fs-meta)/1.3 var(--font-text); color: var(--muted); overflow-wrap: anywhere; }
+.outing p { margin: 0 0 8px; }
+.outing .sub { font-size: var(--fs-note); color: var(--muted); max-width: 44em; }
+.outing .small { font-size: var(--fs-meta); line-height: 1.45; max-width: 46em; }
+.outing .muted { color: var(--muted); }
+.outing-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 14px 0; max-width: 560px; }
+.outing-fields label { display: grid; gap: 4px; min-width: 0; font-size: var(--fs-meta); font-weight: 600; color: var(--muted); }
+.outing-fields label:nth-child(-n+3), .outing-fields > p { grid-column: 1 / -1; }
+.outing-fields select { font: inherit; font-size: var(--fs-body); font-weight: 400; color: var(--ink); text-overflow: ellipsis; }
+.outing-said { font-weight: 600; }
+.outing-poor, .outing-notices { padding-left: 10px; border-left: 3px solid var(--line); font-size: var(--fs-note); line-height: 1.4; }
+.outing-notices ul { padding-left: 1.1em; list-style: disc; }
+.outing-join { font-size: var(--fs-note); line-height: 1.4; }
+.outing-join:empty { display: none; }
+.outing-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 12px 0; padding-top: 12px; border-top: 1px solid var(--hair); }
+.outing-pair.one { grid-template-columns: minmax(0, 1fr); }
+.outing-col { min-width: 0; }
+.outing-col p { margin: 0 0 4px; }
+.outing-role { font-size: var(--fs-meta); font-weight: 600; color: var(--muted); }
+.outing-nm { font: 600 var(--fs-body)/1.3 var(--font-display); overflow-wrap: anywhere; }
+.outing-nm a { display: inline-block; padding: 10px 0; margin: -10px 0; }
+.outing-col .k { font-size: var(--fs-meta); color: var(--muted); }
+.outing-col .hl { font-weight: 600; }
+.outing-col .why { font-size: var(--fs-note); line-height: 1.4; }
+.outing .ev-line { font-size: var(--fs-meta); line-height: 1.4; color: var(--muted); }
+.outing-access { margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--hair); }
+.outing .g-facts { margin: 4px 0 0; }
+.outing .g-row { padding: 8px 0; border-top: 1px solid var(--hair); }
+.outing .g-row dt { font-size: var(--fs-meta); font-weight: 600; color: var(--muted); }
+.outing .g-row dd { margin: 2px 0 0; }
+.outing .g-text { margin: 0; font-size: var(--fs-note); line-height: 1.45; overflow-wrap: anywhere; }
+.outing .g-src { margin: 2px 0 0; font-size: var(--fs-meta); line-height: 1.4; color: var(--muted); overflow-wrap: anywhere; }
+.outing .g-src a { color: var(--muted); }
+.outing .g-who { font-weight: 600; color: var(--ink); }
+.outing .g-gap { margin: 0; padding-top: 8px; border-top: 1px solid var(--hair); font-size: var(--fs-meta); line-height: 1.4; color: var(--muted); }
+.outing details.fold > summary { font-size: var(--fs-note); font-weight: 600; color: var(--link); }
+.outing-watch, .outing-cond, .outing-keep, .outing-stretch { margin: 12px 0 0; padding-top: 12px; border-top: 1px solid var(--hair); }
+.outing-watch-h { margin: 0 0 6px; font: 600 var(--fs-body)/1.3 var(--font-display); }
+.outing-watch-who { overflow-wrap: anywhere; }
+.outing-watch-list { margin: 0 0 8px; padding-left: 20px; list-style: disc; font-size: var(--fs-note); line-height: 1.4; overflow-wrap: anywhere; }
+.outing-cond-spot { margin: 0 0 10px; }
+.outing-cond .cond { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.outing-cond .cell { min-width: 0; padding: 8px 10px 10px; background: var(--bg); border-radius: var(--radius-mark); }
+.outing-cond .t-lab { display: block; min-height: 2.6em; font: 600 var(--fs-meta)/1.3 var(--font-text); color: var(--muted); }   /* two lines, so a row's figures line up */
+.outing .cfig { margin: 2px 0 0; font-size: var(--fs-head); line-height: 1.2; font-variant-numeric: tabular-nums; }
+.outing .csub { margin: 2px 0 0; font-size: var(--fs-meta); line-height: 1.35; color: var(--muted); overflow-wrap: anywhere; }
+.outing .csub .vt { display: inline; }
+.outing-acts { display: flex; flex-wrap: wrap; gap: 8px; }
+.outing-watch > p, .outing-cond > p { max-width: 46em; }
+@media (min-width: 900px) { .outing-cond .cond { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
+.outing-alert-on { font-size: var(--fs-note); }
+#outing-clear { min-height: 44px; margin-right: 8px; }
+/* "Plan a swim here" under a place's answer, and "Plan here" in a comparison's column. */
+.planhere { margin-top: 16px; }
+table.cmp thead th a.cmp-plan { min-height: 0; margin-top: 4px; font-size: var(--fs-meta); font-weight: 600; color: var(--link); text-decoration: underline; text-underline-offset: 2px; padding: 8px 0; }
 /* Saved, from the live site's own scripts: what changed since you last looked (since.js), each place's low-risk days
    (findwindow.js), and a list to share or one someone shared. */
 .has-x .place-since { grid-column: 1 / -1; margin: -4px 0 12px 76px; font-size: var(--fs-note); line-height: 1.35; color: var(--muted); }

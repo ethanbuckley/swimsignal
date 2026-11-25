@@ -37,7 +37,7 @@ test('the page is out of search engines, shares only the rules, and keeps the li
   assert.match(PAGE, /<meta name="robots" content="noindex, nofollow">/);
   assert.deepEqual([...PAGE.matchAll(/<script src="([^"]+)"/g)].map(m => m[1]),
     ['levels.js', 'eatoday.js', 'experience.js', 'lists.js', 'plan.js', 'preview/host.js', 'reviews.js', 'visits.js', 'illness.js',
-      'spotscores.js', 'seasonal.js', 'evidence.js', 'measured.js', 'timeline.js', 'since.js', 'findwindow.js', 'journal.js', 'passport.js', 'anypoint.js', 'preview/model.js', 'preview/alerts.js', 'preview/map.js', 'preview/app.js']);
+      'spotscores.js', 'seasonal.js', 'evidence.js', 'measured.js', 'timeline.js', 'since.js', 'findwindow.js', 'journal.js', 'passport.js', 'anypoint.js', 'guide.js', 'spotdate.js', 'outing.js', 'outingwatch.js', 'preview/model.js', 'preview/alerts.js', 'preview/map.js', 'preview/app.js']);
   // Every address is read against the site's root, as the live pages' are: the page says where that is, and where it is under it.
   assert.match(PAGE, /<html lang="en-GB" data-home="preview\/">/); assert.match(PAGE, /<base href="\.\.\/">\n<title>/);
   assert.ok(PAGE.indexOf('<base href="../">') < PAGE.indexOf('href="fonts/'), 'the <base> comes before the first relative address');
@@ -330,14 +330,14 @@ test('the build draws each page with the page\'s own script, as at the moment th
   assert.match(JS, /if \(!DATA \|\| e\.metaKey/);
 });
 
-test('as the site\'s own pages: the app is "the earlier version" at classic/, and a sent outing is passed on to it', () => {
+test('as the site\'s own pages: the app is "the earlier version" at classic/, and nothing sent to these pages is passed on to it', () => {
   assert.match(JS, /const classic = \(path = ''\) => \(\(PREVIEW \? '' : 'classic\/'\) \+ path\) \|\| '\.\/';/);
   assert.match(JS, /const link = r => \{ const a = P\.queryFor\(r\); return a === '\.\/' \? HOME \|\| '\.\/' : HOME \+ a; \};/);
-  // A sent outing is a thing only the app can show: passed on, but never for this page's own Plan. A shared list is shown here.
-  assert.match(JS, /if \(!\(route\.view === 'plan' && \/\[#&\]spot=\/\.test\(location\.hash\)\)\) return false;\n  location\.replace\(classic\('plan\/'\) \+ location\.hash\); return true;/);
-  assert.match(JS, /if \(PREVIEW \|\| !route \|\| !DATA\) return false;/);
+  // A shared list and a sent outing (plan/#...&spot=) are both shown here: until 25 November 2026 a sent outing was
+  // passed on to the earlier version, which alone could show it.
+  assert.doesNotMatch(JS, /passOn|location\.replace\(classic/);
   assert.match(JS, /const sh = readShared\(location\.hash, dates\(\)\); if \(sh\) return sharedHtml\(sh\);/);
-  assert.match(JS, /if \(opts\.first && passOn\(\)\) return;/);
+  assert.equal(M.parseAddress('/plan/', '', '/', '#day=2026-11-28&spot=a').view, 'plan', 'plan/ is these pages\' Plan where they are the site\'s own');
   assert.equal(typeof LISTS.readShared, 'function');
   assert.ok(LISTS.readShared('#list=Weekend&spots=a,b', DAYS), 'a shared list is read from the address');
   assert.equal(LISTS.readShared('', DAYS), null);
@@ -354,6 +354,81 @@ test('the opening keeps one line of the earlier count: how many places are at lo
   assert.match(JS, /`None of the \$\{t\.n\} places is at low risk \$\{on\}\.`/);
   assert.match(JS, /if \(route\.q \|\| route\.area\) return '';/, 'not over a search or an area');
   assert.match(JS, /\$\{dayTabsHtml\(tabs, day, 'Day shown', d => link\(\{ q: route\.q, area: route\.area, day: d \}\)\)\}\n      \$\{tallyHtml\(day\)\}/, 'under the days');
+});
+
+test('a live script\'s link to Saved or to a place still opens it, though the script stops the browser following it', () => {
+  // journal.js and outing.js call preventDefault on their own links once the page gives them openSaved and select,
+  // because on the live page those open the view. Here the two names do nothing and the page's own click handler
+  // opens the address, so it has to take every address those links have: a place, and saved/ where these pages are
+  // the site's (host.js, savedPath). Before 25 November 2026 it took only a place, and "Your journal" did nothing.
+  const J = fs.readFileSync(path.join(SITE, 'journal.js'), 'utf8'), O = fs.readFileSync(path.join(SITE, 'outing.js'), 'utf8');
+  assert.match(J, /typeof openSaved !== 'function' \|\| \(typeof plainClick === 'function' && !plainClick\(e\)\)\) return;\n    e\.preventDefault\(\); openSaved\(\);/);
+  assert.match(O, /e\.preventDefault\(\); openSaved\(\);/);
+  assert.match(JS, /select: \(\) => \{\}, openSaved: \(\) => \{\},/);
+  assert.match(HOST, /const savedPath = /);
+  const m = JS.match(/if \(rel === null \|\| !\(rel === '' \|\| (\/.+?\/)\.test\(rel\)\)\) return;/);
+  assert.ok(m, 'the handler names the addresses it opens');
+  const takes = new RegExp(m[1].slice(1, -1));
+  for (const rel of ['saved/', 'plan/', 'spot/wharfe-linton-falls/']) assert.ok(takes.test(rel), rel);
+  for (const rel of ['classic/', 'methods.html', 'saved/x/', 'spot/', 'data/spots.json']) assert.ok(!takes.test(rel), `${rel} is left to the browser`);
+  assert.doesNotMatch(JS.slice(JS.indexOf("app.addEventListener('click'"), JS.indexOf("app.addEventListener('click'") + 400), /defaultPrevented/, 'a prevented click is still opened by the page');
+});
+
+test('an outing on Plan is the live site\'s own script, kept as the plan is, and one from a link is shown before it is kept', () => {
+  const OUT = require(path.join(SITE, 'outing.js')), WATCH = require(path.join(SITE, 'outingwatch.js')), DATESJS = require(path.join(SITE, 'spotdate.js'));
+  // The script draws and binds its own tile; the page gives it a place at the top of the plan's results, and the plan's places.
+  assert.equal(typeof OUT.drawOuting, 'undefined', 'drawOuting is the page\'s, not an export: the script calls the page by name');
+  assert.match(fs.readFileSync(path.join(SITE, 'outing.js'), 'utf8'), /^function drawOuting\(box, shown\) \{/m);
+  assert.match(JS, /<div id="outing-box" class="outing-box"><\/div>\n      <div id="results">/);
+  assert.match(JS, /drawOuting\(box, start \? planSpots\(DATA\.spots, PLAN, s => P\.kmBetween\(start, s\) \/ MILE_KM\)\.groups\.flat\(\) : \[\]\);/);
+  assert.match(JS, /if \(!start && !PLAN\.spot\) return;/, 'under a plan with a start, or one that has a spot already');
+  // Every name the script asks of its page is given: read where it is, never copied, so the plan the script changes is the page's.
+  assert.match(JS, /PLAN: \{ get: \(\) => PLAN, configurable: true \}, PLAN_PREVIEW: \{ get: \(\) => planPreview, configurable: true \}/);
+  const src = ['outing.js', 'outingwatch.js'].map(f => fs.readFileSync(path.join(SITE, f), 'utf8')).join('\n');
+  for (const name of ['planAddress', 'keptPlan', 'keepPlan', 'spotDetail', 'planEvidence', 'bindShareLink', 'planFrom', 'km', 'tone', 'planWhy', 'waterTile', 'riverTile', 'issued', 'ageMin', 'ago',
+    'plainClick', 'select', 'openSaved', 'planPath', 'SITE_ROOT', 'BRAND', 'TOUCH', 'canPush', 'pushSub', 'IOS', 'IN_APP', 'STANDALONE', 'SAFARI_MAC']) {
+    assert.match(src, new RegExp(`(?<![\\w.$])${name}(?![\\w$])`), `outing.js uses ${name}`);
+    assert.match(JS.slice(JS.indexOf('// What outing.js expects of its page'), JS.indexOf('function mountOuting')), new RegExp(`(?<![\\w.$])${name}(?![\\w$])`), `the page gives ${name}`);
+  }
+  // The live page's names its own page also has, from the scripts both load.
+  for (const f of ['guideRuns', 'guideChecked']) assert.equal(typeof require(path.join(SITE, 'guide.js'))[f], 'function', f);
+  for (const f of ['dateAlertsOn', 'sendDates', 'storeDates', 'keptDates', 'icsCalendar']) assert.equal(typeof DATESJS[f], 'function', f);
+  assert.equal(typeof WATCH.outingWatchDraw, 'function');
+  // Kept as the plan is: in the address, in the live site's own form, and in this browser, but not while it is one
+  // from a link. A sent outing is the address's alone until "Keep this outing".
+  assert.match(JS, /history\.replaceState\(null, '', HOME \+ '\?view=plan' \+ h\); planSeen = location\.hash;\n  if \(!planPreview\) try \{ localStorage\.setItem\(PLAN_KEY, h\); \}/);
+  assert.match(JS, /planPreview = planInvited\(PLAN, kept, had, planPreview\) && !\(planNew && !planHasOuting\(kept, dates\(\)\)\);/);
+  assert.match(JS, /const hash = location\.hash; if \(planSeen === hash\) return;/, 'settled once for an address that arrives, not for this page\'s own changes');
+  const mine = PLAN.readPlan('#day=' + SAT + '&from=X&at=54,-2&within=20&spot=a', DAYS), sent = PLAN.readPlan('#day=' + SAT + '&from=X&at=54,-2&within=20&spot=b&backup=a&sent=20261124T1321Z&lv=low&blv=high', DAYS);
+  assert.equal(PLAN.planInvited(sent, mine, true), true, 'another outing, from an address: shown, not kept');
+  assert.equal(PLAN.planInvited(mine, mine, true), false, 'my own outing opened again is mine');
+  assert.equal(PLAN.planHash(sent).includes('sent=20261124T1321Z'), true);
+  // The link to send is the plan's address from the top of the site, plan/ where these pages are the site's own, which both designs read.
+  assert.match(JS, /planPath: \(\) => \{ const u = new URL\(PREVIEW \? HOME \+ '\?view=plan' : 'plan\/', document\.baseURI\); return u\.pathname \+ u\.search; \},/);
+  // "Plan a swim here" on a place and "Plan here" in a comparison start one, by plan.js's own rule; never for a tapped point.
+  assert.match(JS, /function planBase\(\) \{ const b = keptPlan\(\), a = actDefault\(readActs\(stored\(ACTS_KEY\)\)\); return a \? \{ \.\.\.b, act: a \} : b; \}/);
+  assert.match(JS, /function planHereLink\(s, day\) \{ const base = planBase\(\); return HOME \+ '\?view=plan' \+ planFromSpot\(s, base, dates\(\)\.includes\(day\) \? day : null\); \}/);
+  assert.match(JS, /function canPlanHere\(s\) \{ return typeof planFromSpot === 'function' && !!s && Number\.isFinite\(s\.lat\) && Number\.isFinite\(s\.lon\) && !s\.unlisted; \}/);
+  assert.match(JS, /data-plan-new aria-label="Plan an outing at \$\{esc\(s\.name\)\}">Plan here<\/a>/);
+  assert.match(JS, /if \(a\.dataset\.planNew !== undefined\) planNew = true;/);
+  assert.match(PLAN.planFromSpot({id: 'a', name: 'A', lat: 54, lon: -2}, PLAN.PLAN_DEFAULT, SAT), /spot=a/);
+  // Alerts for the outing's date: nothing is asked of the browser or sent to the alert service until a button in the
+  // tile is pressed. The page only says what this browser can do, from what it already holds.
+  assert.match(ALERTS, /window\.PVAlerts = \{ can, capable: canPush, subscription, isOn,/);
+  assert.match(JS, /canPush: \(\) => window\.PVAlerts\.capable\(\), pushSub: \(\) => window\.PVAlerts\.subscription\(\)/);
+  assert.doesNotMatch(JS, /sendDates|requestPermission/);
+  assert.match(src, /el\.querySelectorAll\('\[data-outing-alert\]'\)\.forEach\(b => b\.addEventListener\('click', async \(\) => \{[\s\S]{0,400}await D\.sendDates\(/, 'sent only from a press');
+  assert.doesNotMatch(src.slice(src.indexOf('async function outingPushState')), /requestPermission/);
+  // The calendar file is made in the browser: a place's address in it is from the top of the site, and a day after
+  // the # (the live page's form, which the file carries) is read on a place's page here.
+  assert.equal(M.parseAddress('/spot/a/', '', '/', '#day=' + SAT).day, SAT);
+  assert.equal(M.parseAddress('/spot/a/', '?day=' + DAYS[1], '/', '#day=' + SAT).day, DAYS[1], 'these pages\' own form comes first');
+  assert.equal(M.parseAddress('/spot/a/', '', '/', '#day=tomorrow').day, null);
+  const ics = OUT.outingIcs({day: SAT, when: 'morning', act: null, meet: 'parking', main: {id: 'a', name: 'A', url: 'https://x/spot/a/#day=' + SAT, practical: []}, backup: null, plan: 'https://x/plan/#day=' + SAT, host: 'x'}, NOW);
+  assert.match(ics, /SUMMARY:Swim: A/); assert.doesNotMatch(ics, /risk/i, 'no level in a calendar: it would be out of date');
+  // Not here yet, and said so on every page: keeping an outing for offline use, and the pictures to send.
+  assert.doesNotMatch(PAGE, /outingpack\.js|dayplan\.js/);
+  assert.match(JS, /Keeping an outing for offline use, and a place or a plan as a picture to send, are still on <a href="\$\{classic\(\)\}">the earlier version of SwimSignal<\/a>/);
 });
 
 test('as the site\'s own pages they carry the two things the privacy notice says a visitor can turn off, under its name for them', () => {
@@ -504,7 +579,7 @@ test('Saved has the live site\'s own: what changed since you last looked, each p
     'Once added, it stays under Saved, where you can set up alerts for its spots.', 'None of the spots in this link is in the forecast now, or the link was cut short.']) {
     assert.ok(JS.includes(said), said); assert.ok(LIVE.includes(said), `the live page no longer says: ${said}`); }
   assert.match(JS, /addSharedList\(LISTS, sh\.name, ids\)/); assert.match(JS, /sameList\(LISTS, sh\.name, spots\.map\(s => s\.id\)\)/);
-  assert.match(HOST, /const spotPath = id => `\$\{document\.documentElement\.dataset\.home \|\| ''\}spot\/\$\{encodeURIComponent\(id\)\}\/`;/);
+  assert.match(HOST, /const spotPath = id => new URL\(`\$\{document\.documentElement\.dataset\.home \|\| ''\}spot\/\$\{encodeURIComponent\(id\)\}\/`, document\.baseURI\)\.pathname;/);
   for (const c of ['place-since', 'since-ev', 'since-sum', 'fw-list', 'fw-nm', 'fw-note', 'fw-apart', 'o-tag', 'sharelist']) assert.match(CSS, new RegExp(`\\.${c}\\b`), c);
 });
 

@@ -4,8 +4,9 @@
 // (app.js, mountSwimmers). On the live page these few names are the page's own (index.html and guide.js); a plain
 // script, so they are globals here too, as those scripts expect.
 
-// A place's address, from the site's root, wherever these pages are published (since.js links a line to it).
-const spotPath = id => `${document.documentElement.dataset.home || ''}spot/${encodeURIComponent(id)}/`;
+// A place's address as a path from the top of the site, wherever these pages are published (since.js links a line
+// to it; outing.js puts it in a calendar file, read against the page's own address, so it cannot be a relative one).
+const spotPath = id => new URL(`${document.documentElement.dataset.home || ''}spot/${encodeURIComponent(id)}/`, document.baseURI).pathname;
 
 // The Saved page's address, from the site's root (journal.js links a logged swim to the journal there): the live
 // site's own "saved/" where these pages are the site's, the Saved view under preview/ where they are a preview.
