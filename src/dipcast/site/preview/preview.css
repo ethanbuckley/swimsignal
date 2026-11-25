@@ -448,6 +448,13 @@ table.cmp td a { text-decoration: underline; text-underline-offset: 2px; }
    takes no level's colour. */
 .record { margin: 36px var(--gutter) 0; padding-top: 20px; border-top: 1px solid var(--line); }
 .record > h2 { font: 600 var(--fs-head)/1.2 var(--font-display); }
+/* The spill map (plume.js, which brings its own rules for the slider, the map and the key): its heading as a section's
+   on this page and its words at a reading width. Until it is drawn it takes no room and has no rule over it. */
+.spill.on { margin-top: 32px; padding-top: 20px; border-top: 1px solid var(--line); }
+.spill .pl > .t-lab { font: 600 var(--fs-head)/1.2 var(--font-display); }
+.spill .t-say, .spill .pl-said, .spill .pl-official, .spill .pl-more p { max-width: 44em; }
+.spill .pl-map { border: 1px solid var(--line); }
+.spill .pl-more summary { color: var(--link); }
 .record .tile { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line); }
 .record .t-say { max-width: 44em; }
 details.fold > summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; list-style: none; }

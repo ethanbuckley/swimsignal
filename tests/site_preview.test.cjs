@@ -379,6 +379,31 @@ test('as the site\'s own pages they carry the two things the privacy notice says
   assert.match(CSS, /\.foot summary \{ cursor: pointer; padding: 12px 0; \}/); assert.match(CSS, /\.yourdata \.textbtn \{ min-height: 44px; \}/);
 });
 
+test('the spill map is the live site\'s own script, asked for only when its place on the page is near', () => {
+  const PL = require(path.join(SITE, 'plume.js'));
+  // The script draws the tile and the map; the page gives it a place, the map's library and the page's own tiles.
+  assert.match(JS, /plumeStyle\(document\); el\.classList\.add\('on'\); el\.innerHTML = plumeTile\(s, doc, replay, gen, now\(\)\); mine\.map = plumeBind\(el, s, doc, replay, trace, gen\);/);
+  for (const f of ['plumeStyle', 'plumeTile', 'plumeBind']) assert.equal(typeof PL[f], 'function', f);
+  assert.match(MAP, /window\.PVMap = \{ home, homeTo, place, load, tiles \};/);
+  assert.match(JS, /window\.tiles = window\.PVMap\.tiles;/);
+  assert.match(fs.readFileSync(path.join(SITE, 'plume.js'), 'utf8'), /\(typeof tiles === 'function' \? tiles\(\) : L\.tileLayer\(/);
+  // Not in the page's own scripts: plume.js, the map's library and the place's three files come when the slot is
+  // within a screen of view, as on the live page.
+  assert.doesNotMatch(PAGE, /plume\.js/);
+  assert.match(JS, /const io = new IntersectionObserver\(es => \{ if \(es\.some\(e => e\.isIntersecting\)\) \{ io\.disconnect\(\); go\(\); \} \}, \{ rootMargin: '100% 0px' \}\);/);
+  assert.match(JS, /Promise\.all\(\[plumeLib, window\.PVMap\.load\(\), get\('-plume\.json'\), get\('-replay\.json'\), get\('-trace\.json'\)\]\)/);
+  // For a listed place with a daily forecast; a place with no routes file keeps an empty slot that takes no room.
+  assert.match(JS, /const plumeWanted = s => !s\.unlisted && !!s\.detail_file && daily\(s\);/);
+  assert.match(JS, /if \(!doc \|\| !replay\) return;/);
+  assert.match(CSS, /\.spill\.on \{ margin-top: 32px; padding-top: 20px; border-top: 1px solid var\(--line\); \}/);
+  assert.doesNotMatch(CSS, /\.spill \{/, 'the empty slot has no room or rule of its own');
+  // Kept through a redraw, so the slider stays where it was left; the map is let go when the place is left.
+  assert.match(JS, /if \(plume && plume\.id === s\.id\) \{ slot\.replaceWith\(plume\.el\); return; \}/);
+  assert.match(JS, /const plumeGone = \(\) => \{ if \(plume && plume\.map\) plume\.map\.remove\(\); plume = null; \};/);
+  // What it is: a model estimate, said in the script's own first line under the heading.
+  assert.match(PL.PLUME_ESTIMATE, /model estimate/i); assert.match(PL.PLUME_ESTIMATE, /not a measurement/i);
+});
+
 test('reviews, notes on a visit and reports of illness are the live site\'s own scripts, drawn into the place\'s page', () => {
   // Loaded as they are, after the few names they expect of their page; the page gives them the place they look for.
   const order = [...PAGE.matchAll(/<script src="([^"]+)"/g)].map(m => m[1]);

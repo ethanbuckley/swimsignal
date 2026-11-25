@@ -127,5 +127,5 @@ async function place(slot, s, points, lines) {
     const b = L.latLngBounds([[s.lat, s.lon], ...points.map(p => [p.lat, p.lon])]);
     if (points.length) PLACE.map.fitBounds(b, { padding: [28, 28], maxZoom: 14, animate: false }); else PLACE.map.setView([s.lat, s.lon], 12, { animate: false }); }
 }
-window.PVMap = { home, homeTo, place, load };
+window.PVMap = { home, homeTo, place, load, tiles };
 })();
