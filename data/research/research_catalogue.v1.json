@@ -896,14 +896,14 @@
   },
   "686": {
    "n": 686,
-   "state": "open",
+   "state": "merged",
    "branch": "claude/combined-v1-shadow-logger-a9b35a",
    "branch_exists": true,
    "date": "2026-11-13"
   },
   "685": {
    "n": 685,
-   "state": "open",
+   "state": "merged",
    "branch": "claude/scotland-shadow-map-arm-97cd94",
    "branch_exists": true,
    "date": "2026-11-13"
@@ -924,14 +924,14 @@
   },
   "688": {
    "n": 688,
-   "state": "open",
+   "state": "merged",
    "branch": "research/wessex-river-samples",
    "branch_exists": true,
    "date": "2026-11-13"
   },
   "691": {
    "n": 691,
-   "state": "open",
+   "state": "merged",
    "branch": "claude/irish-welsh-sample-histories-15578f",
    "branch_exists": true,
    "date": "2026-11-13"
@@ -945,7 +945,7 @@
   },
   "687": {
    "n": 687,
-   "state": "open",
+   "state": "merged",
    "branch": "feat/sonde-readings-on-page",
    "branch_exists": true,
    "date": "2026-11-13"
@@ -994,10 +994,17 @@
   },
   "699": {
    "n": 699,
-   "state": "open",
+   "state": "merged",
    "branch": "claude/radar-shadow-logger-a011b5",
    "branch_exists": true,
    "date": "2026-11-14"
+  },
+  "690": {
+   "n": 690,
+   "state": "open",
+   "branch": "claude/sonde-arrival-check-311284",
+   "branch_exists": true,
+   "date": "2026-11-13"
   },
   "704": {
    "n": 704,
@@ -1008,10 +1015,17 @@
   },
   "718": {
    "n": 718,
-   "state": "open",
+   "state": "merged",
    "branch": "claude/overflow-ledger-stage-1",
    "branch_exists": true,
-   "date": "2026-11-17"
+   "date": "2026-11-19"
+  },
+  "727": {
+   "n": 727,
+   "state": "open",
+   "branch": "claude/overflow-ledger-season",
+   "branch_exists": true,
+   "date": "2026-11-19"
   },
   "733": {
    "n": 733,
@@ -1227,7 +1241,7 @@
    "verdict": "Scored once on January to August 2026 as a frozen-model backtest. It passed its bar at eight companies and for all nine together: lower Brier score than today's model, same-day persistence and a 10 mm rain rule at leads 1 and 2, every interval below zero (lead 1, all nine: 0.0307 against 0.0419). It failed at United Utilities, where it was not shown better than today's model beyond lead 0. It was not shown better than the live-status input alone. Development evidence: the routing rule and the combination were chosen after 2026 had been seen.",
    "scope": "EA start/stop records, January to August 2026, 13,426 overflows at nine English companies; status rebuilt from the complete record at 00:00 UTC; reanalysis rain decides, archived forecast rain reported. Not yet tested on polled status or on unseen months: the shadow log is built for that and has no rows yet.",
    "stage": "development",
-   "stage_note": "Frozen (commit 4d66d7c7) and not adopted. Nothing on the site changes. United Utilities stays on today's model. A shadow logger is built (PR #686, open): it logs the candidate beside today's model in its own table, with the window, the bar and the read date stated before any row. Logging starts once Ethan merges that PR.",
+   "stage_note": "Frozen (commit 4d66d7c7) and not adopted. Nothing on the site changes. United Utilities stays on today's model. A shadow logger is built (PR #686, merged 13 November 2026): it logs the candidate beside today's model in its own table, with the window, the bar and the read date stated before any row. Logging was to start with that merge; whether rows are being written was not checked in this update.",
    "next": "After the merge, confirm the window's dates from the first logged rows (28 target days, opening four days after the first logged forecast; about 22 November to 19 December 2026, read on or after 21 December, if logging starts by 18 November). The read script is due one week before the window ends. Later, rerun the backtest unchanged on the EA's September to December 2026 records.",
    "records": [
     {
@@ -2039,6 +2053,30 @@
     403
    ],
    "register_note": "The register says \"71 matched river rows\"; the doc's 71 is an upper bound from metadata, with nothing matched."
+  },
+  {
+   "id": "sonde-arrival-time",
+   "title": "Spill arrival times against EA ammonium sondes",
+   "section": "data",
+   "topics": [
+    "sensors",
+    "transport",
+    "rivers"
+   ],
+   "verdict": "Exploratory. As first stated: 4 rises and no signal, a fault in a rule that counted 15-minute slots when 61 of 66 sondes report every 30 or 60 minutes. Under rules amended after that first look, on 2024-25 records: 49 single-source rises at 57 sondes; 4 sondes on 4 rivers with a signal and 5 or more rises, none with 10; pooled median implied speed 0.25 m/s (95% interval 0.13 to 1.42). Extended to January-August 2026 at 7 sondes, stated before any 2026 reading: 10 rises in 56 new events; the Calder repeats (10 rises in all, 0.47 m/s, 0.20 to 0.63), the two Witham sondes had none in 30 new events and lose their signal; pooled 0.44 m/s (0.13 to 1.42), which still includes the model's 0.2 m/s. Consistent with 0.2 m/s, not a measurement of it.",
+   "scope": "Travel time from overflow to sonde only, on small rivers (about 29 to 135 km2 upstream). Ammonium is a proxy, not E. coli. The rises are not ordered by distance, so a travel time cannot be told from a response that ignores distance. Changes no transport setting or forecast. Separate from the sonde signal test (#403), which stays unrun with its gate unchanged.",
+   "stage": "waiting",
+   "stage_note": "Waits on more clean events at the same sondes: one sonde has 10 rises and the outcome needs three. 99 of 100 EA requests used.",
+   "next": "Rerun the amended rules, unchanged, on the EA's 2027 year-to-August start/stop file, read by 30 November 2027 (about 10 EA requests under a new cap). A candidate speed test follows only if 3 sondes on 2 rivers show a signal with 10 rises each and the pooled interval excludes 0.2 m/s.",
+   "records": [
+    {
+     "doc": "docs/ARRIVAL-TIME-SONDE-CHECK-2026-11.md",
+     "quote": "**Consistent with 0.2 m/s, not measured.**"
+    }
+   ],
+   "prs": [
+    690
+   ]
   },
   {
    "id": "radar-rain",
@@ -3579,8 +3617,8 @@
    "verdict": "An observation feature, not a test: 2 of 85 river spots have a live EA ammonium sonde on their own river, upstream within 20 km or at the spot, on 13 November 2026. Nothing was scored.",
    "scope": "Shows the latest readings with their time and the EA's quality label. No level, colour or advice is drawn from them. Lake spots, turbidity-only stations and downstream sondes are not shown.",
    "stage": "development",
-   "stage_note": "Draft PR; the public wording is Ethan's decision.",
-   "next": "Ethan reads the tile's wording and decides whether lake spots get an inflow-beck rule; then merge.",
+   "stage_note": "PR #687 merged 13 November 2026. Whether the tile is showing on the site was not checked in this update.",
+   "next": "Ethan reads the tile's wording and decides whether lake spots get an inflow-beck rule.",
    "records": [
     {
      "doc": "docs/SONDE-READINGS-CONTRACT-v1.md",
@@ -3603,7 +3641,7 @@
    "verdict": "No result yet. A logger and its statement, written before any row was logged. It logs #697's frozen candidate (cell radar up to the build's listing, forecast rain for the rest of the day, live status as at the build) beside its frozen reference (the build's forecast rain with the same status) at lead 0 on every build, for the nine English companies.",
    "scope": "The eighteen 2025 fits of #694 and #697, unchanged; the nearest issue hour's model at each build. Status from SwimSignal's own polls, labels from the live feed. Lead 0 only. Says nothing about leads 1 to 4 or about a refitted production model.",
    "stage": "development",
-   "stage_note": "Built and tested; not running. Off until Ethan sets the repository variable DIPCAST_RADAR_SHADOW to 1 after the PR merges. Window to issue day 31 August 2027; interim read on or after 8 April 2027, final read on or after 8 September 2027. Measured cold start on this Mac: 196 composites, 41.1 MB, 61.5 s; a following build 0.2 s. No Open-Meteo call.",
+   "stage_note": "Built and tested; not running. Off until Ethan sets the repository variable DIPCAST_RADAR_SHADOW to 1 (the PR merged 14 November 2026). Window to issue day 31 August 2027; interim read on or after 8 April 2027, final read on or after 8 September 2027. Measured cold start on this Mac: 196 composites, 41.1 MB, 61.5 s; a following build 0.2 s. No Open-Meteo call.",
    "records": [
     {
      "doc": "docs/RADAR-SHADOW-2026-11.md",
@@ -3645,18 +3683,18 @@
   },
   {
    "id": "overflow-ledger",
-   "title": "The overflow ledger: what each overflow contributes to the model's exposure at listed spots, and the Ilkley audit statement",
+   "title": "The overflow ledger: what each overflow contributes to the model's exposure at listed spots, its season figure, and the Ilkley audit statement",
    "section": "promising",
    "topics": [
     "model",
     "overflows",
     "samples"
    ],
-   "verdict": "No test and no new result, 17 Nov 2026. A table of model accounting: 1,414 overflows traced to 89 of the 121 listed spots through 2,099 links, added up from the forecast's own weights. The audit statement for Ilkley is written and not run.",
-   "scope": "An account of the forecast model, not of measured bacteria. The weights are the model's settings, and at 59 unseen river points the production estimate ordered days at 0.376 against 0.355 for rain alone. No row says an overflow caused a sample result or broke a permit. The Ilkley audit is one seen site with 17 samples in 2026.",
+   "verdict": "Stage 1, 17 Nov 2026, no test: a table of model accounting, 1,414 overflows traced to 89 of the 121 listed spots through 2,099 links, added up from the forecast's own weights. Stage 2, 19 Nov 2026, a season hindcast run once after its statement: the reproduction of CATCH-SIM failed as stated (137 of 139 scores at Cromwheel 2025, every level equal; cause, the export's 0.1-hour rounding of travel times). In 2025, 986 high spot-days, 60% of them depending on no single overflow; the per-overflow figure correlates at 0.18 between 2024 and 2025 and at 0.14 and 0.11 between recorded and modelled spill days. The Ilkley audit statement is written and not run.",
+   "scope": "An account of the forecast model, not of measured bacteria. The weights are the model's settings, and at 59 unseen river points the production estimate ordered days at 0.376 against 0.355 for rain alone. The season figure covers 15 May to 30 September 2024 and 2025, with EA recorded spill days where usable; no sample is joined, United Utilities' modelled chances are in-sample, and two seasons are a spread, not an interval. No row says an overflow caused a sample result or broke a permit. The Ilkley audit is one seen site with 17 samples in 2026.",
    "stage": "development",
-   "stage_note": "A research file with a contract and a Lab prototype page (prototypes/research-lab/overflow-ledger/), left out of the site build. Not published.",
-   "next": "Ethan decides whether it is public and whether it names overflows nationally. Then a season figure with its protocol first (by 15 Dec 2026), and the Ilkley audit after option B's read on or after 2 Dec 2026.",
+   "stage_note": "Two research files with contracts (overflow_ledger.v1.json, overflow_ledger_season.v1.json) and a Lab prototype page (prototypes/research-lab/overflow-ledger/), left out of the site build. Not published, as Ethan decided on 19 Nov 2026.",
+   "next": "The gap diagnosis the season statement names (which overflows and companies carry the difference between recorded and modelled runs, Thames 2025 first) by 15 Dec 2026. Ethan decides whether to accept the reproduction diagnosis and what a page shows. The Ilkley audit after option B's read, on or after 2 Dec 2026.",
    "records": [
     {
      "doc": "docs/OVERFLOW-LEDGER-2026-11.md",
@@ -3669,10 +3707,19 @@
     {
      "doc": "docs/RESTORE-ILKLEY-STATEMENT-2026-11.md",
      "quote": "**Result: not run.** Nothing in this file is a finding about 2026 samples."
+    },
+    {
+     "doc": "docs/OVERFLOW-LEDGER-SEASON-2026-11.md",
+     "quote": "Cromwheel 2025: 139 of 139 levels equal, 137 of 139 shown scores equal, largest difference 1 point."
+    },
+    {
+     "doc": "docs/OVERFLOW-LEDGER-SEASON-CONTRACT-v1.md",
+     "quote": "**A single season's per-overflow figure is unstable.**"
     }
    ],
    "prs": [
-    718
+    718,
+    727
    ]
   },
   {

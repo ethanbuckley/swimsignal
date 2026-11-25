@@ -74,5 +74,5 @@ async function sync(push, ids) {
   await send(push, sub, ids);
 }
 const serviceDown = e => !!e && (e.name === 'TypeError' || e.name === 'TimeoutError' || e.name === 'AbortError' || /alert service answered 5/.test(e.message || ''));
-window.PVAlerts = { can, isOn, turnOn, turnOff, setWeekly, sync, weeklyOn, serviceDown, where: { ios: IOS, app: STANDALONE, safari: SAFARI_MAC, touch: TOUCH, inApp: IN_APP, own: OWN_BROWSER } };
+window.PVAlerts = { can, capable: canPush, subscription, isOn, turnOn, turnOff, setWeekly, sync, weeklyOn, serviceDown, where: { ios: IOS, app: STANDALONE, safari: SAFARI_MAC, touch: TOUCH, inApp: IN_APP, own: OWN_BROWSER } };
 })();
