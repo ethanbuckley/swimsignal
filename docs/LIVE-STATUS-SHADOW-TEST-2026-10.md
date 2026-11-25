@@ -316,3 +316,60 @@ which would then be a fresher one. Their owners should say before the variable i
 
 Readiness re-check: run `scripts/live_status_shadow_readiness.py` again on 28 November. It should show a known
 status on most decision forecasts from that issue day.
+
+### The read, 23 November 2026: stopped at the coverage check (no score computed)
+
+Run by a scheduled session from `cffdf2f5` (origin/main, 22 Nov 01:57 UTC), on the `state` release of 22 Nov 2026
+23:51 UTC (`dipcast.duckdb`, `live_coverage.parquet`, opened read-only) and the published
+`data/verification_live.csv` fetched 23 Nov. `scripts/live_status_shadow_check.py` was **not** run. No shadow value
+was compared with an outcome.
+
+**Dates.** Re-derived from the log, they match the ones above. The first build with `p_status` was issued 20 Oct
+12:24 UTC; the two builds before it (12:13 and 12:14 UTC) logged none, and every build since, to 22 Nov 23:45 UTC,
+logged it on every row. The first issue day with the shadow by 08:00 local was 21 Oct. Where a decision forecast
+exists for target days 25 Oct to 21 Nov, it carries the shadow at every lead. Some target days have no decision
+forecast at some leads because no build ran by 08:00 on issue days 25 and 26 Oct (missed deadlines). The window
+stays 25 Oct to 21 Nov.
+
+**Change rules.** `git log origin/main --since=2026-10-20` on `data/processed/live_status` and
+`src/dipcast/model/live_status.py` printed nothing, because `--since` stops walking at the first older commit. The
+full log lists four commits after be75d83 (20 Oct, the PR itself): 5ac15db1 and 46d3572c (23 Oct) and da8ed379
+(24 Oct) change comments, docstrings and one log message only; a5921053 (6 Nov) adds `adopted()`, the switch, off
+by default, and leaves `shadow_forecast()` as it was. None changes the candidates, the inputs or the fallback, so
+the window does not end early. The full log on `spill_model.pkl` and `lead_calibration.json` ends on 16 Sep: the B
+map was not adopted inside the window.
+
+**Coverage fails, and waiting will not fix it.** The published file's last target day is 18 Nov. Target days 19, 20
+and 21 Nov are absent. The log has the lead-0 decision forecast for 21 Nov. From `live_coverage.parquet`, by the
+scorer's own `coverage_checks`:
+
+| Target day | Median known polls | Share with 6 or more | Share with no gap over 8 h |
+|---|---|---|---|
+| 18 Nov | 7 | 97.1% | 96.8% |
+| 19 Nov | 8 | 97.8% | 0.0% |
+| 20 Nov | 4 | 0.0% | 97.4% |
+| 21 Nov | 4 | 0.0% | 97.6% |
+
+Builds on 21 Nov were issued at 02:58, 10:33, 17:47 and 22:41 UTC, so no overflow reached 6 known polls. 21 Nov
+can never be scored under the coverage rules. Of the 28 target days, 13 are scored (27 Oct to 1 Nov, 6, 7, 8, 10,
+12, 14 and 18 Nov).
+
+**Counts (`scripts/live_status_shadow_readiness.py`, counts only).** Unchanged since 16 November. No decision
+forecast has had a known status since issue day 27 Oct (21 to 24 Oct: 84% to 86%). Known-status spill rows in the
+scored window: 0, 0, 0, 130 and 180 at leads 0 to 4, against the minimum of 200. Three more stretches over 8 hours
+with no current reading at any overflow came after the 16 November note: 10.5 h ending 16 Nov 18:45 UTC, 8.5 h
+ending 17 Nov 10:45 and 9.0 h ending 19 Nov 17:15. The sanity checks the readiness script makes hold: every scored
+row has a logged `p_status`.
+
+**`SELF_PACE` is not set.** `gh variable list` on 23 Nov shows no `SELF_PACE`. The decision of 16 November was to set
+it on or after 21 November. Until it is set, no status can become known, and the 14-day extension cannot add a
+known-status row.
+
+**What this means (inferred from the counts above, not a scored result).** The minimum data falls short at every
+lead whether or not 21 Nov is ever scored, since no day after 28 Oct can add a known-status row. Under "The window",
+that takes the one 14-day extension: target days to 5 Dec 2026, read on or after 7 Dec. The read on 7 Dec needs 5 Dec
+scored, which needs at least 6 builds that day. If `SELF_PACE` is set by 24 Nov and a clear week follows, about
+8 target days could carry a known status, which may still fall short of 200 at each lead. If it falls short on
+7 Dec, the test is inconclusive as stated.
+
+No condition was evaluated. No lead is eligible. Nothing is switched.
