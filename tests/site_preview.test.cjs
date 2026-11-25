@@ -426,9 +426,9 @@ test('an outing on Plan is the live site\'s own script, kept as the plan is, and
   assert.equal(M.parseAddress('/spot/a/', '', '/', '#day=tomorrow').day, null);
   const ics = OUT.outingIcs({day: SAT, when: 'morning', act: null, meet: 'parking', main: {id: 'a', name: 'A', url: 'https://x/spot/a/#day=' + SAT, practical: []}, backup: null, plan: 'https://x/plan/#day=' + SAT, host: 'x'}, NOW);
   assert.match(ics, /SUMMARY:Swim: A/); assert.doesNotMatch(ics, /risk/i, 'no level in a calendar: it would be out of date');
-  // Not here yet, and said so on every page: keeping an outing for offline use, and the pictures to send.
+  // Not here yet, and said so on every page: keeping an outing for offline use, and a plan as a picture to send.
   assert.doesNotMatch(PAGE, /outingpack\.js|dayplan\.js/);
-  assert.match(JS, /Keeping an outing for offline use, and a place or a plan as a picture to send, are still on <a href="\$\{classic\(\)\}">the earlier version of SwimSignal<\/a>/);
+  assert.match(JS, /Keeping an outing for offline use, and a plan as a picture to send, are still on <a href="\$\{classic\(\)\}">the earlier version of SwimSignal<\/a>/);
 });
 
 test('as the site\'s own pages they carry the two things the privacy notice says a visitor can turn off, under its name for them', () => {
@@ -530,6 +530,55 @@ test('reviews, notes on a visit and reports of illness are the live site\'s own 
   for (const c of ['rv-tile', 't-lab', 't-fig', 't-say', 't-key', 't-more', 'rv-bar', 'rv-list', 'rv-v', 'rv-meta', 'rv-text', 'rv-pics', 'rv-pic', 'rv-acts', 'linkbtn', 'rv-write', 'rv-said',
     'rv-form', 'rv-q', 'rv-opt', 'rv-choice', 'vn-kinds', 'rv-add', 'rv-file', 'rv-consent', 'rv-hp', 'rv-hint', 'rv-send', 'rv-msg', 'rv-report', 'rv-view', 'rv-close', 'rv-previews', 'rv-sure', 'vn-flag', 'vn-caveat'])
     assert.match(CSS, new RegExp(`\\.${c}\\b`), c);
+});
+
+test('a place as a picture says what its page says that day, the official notice first, and nothing leaves the device before the share sheet', () => {
+  const adv = spot(ALL, {id: 'adv', official: NOTICE}), s = spot(ALL), t = tarn(), d = data([adv, s, t]);
+  // An official notice first, in the earlier picture's words (index.html, shareNotice), from the live rules.
+  const pa = M.pictureOf(adv, DAYS[0], d, NOW);
+  assert.equal(pa.notice, `Official: ${EA.eaTodayBrief(adv)}. ${EA.eaTodayFirst(adv)}; the level is SwimSignal's sewage forecast only.`);
+  assert.match(pa.notice, /^Official: EA advice against bathing \(harmful algae\) · since 19 Jun · not re-checked since 26 Oct\. Follow it first;/);
+  assert.equal(M.pictureOf(s, DAYS[0], d, NOW).notice, '');
+  const JS_DRAW = JS.slice(JS.indexOf('async function sharePicture'), JS.indexOf('// ----', JS.indexOf('async function sharePicture')));
+  assert.ok(JS_DRAW.indexOf('p.notice') < JS_DRAW.indexOf('p.head') && JS_DRAW.indexOf('p.name') < JS_DRAW.indexOf('p.notice'), 'drawn after the name and before the level');
+  // The headline, its level and why are the page's own answer for the day shown, today or later.
+  for (const day of [DAYS[0], SAT]) { const p = M.pictureOf(s, day, d, NOW), a = M.answer(s, day, d, NOW);
+    assert.equal(p.head, a.head); assert.equal(p.level, a.level); assert.equal(p.when, a.dateLabel);
+    for (const w of a.why) assert.ok(p.why.includes(w), w); }
+  const sat = M.pictureOf(s, SAT, d, NOW);
+  assert.equal(sat.head, 'Moderate risk from sewage spills'); assert.equal(sat.when, 'Saturday 28 November'); assert.equal(sat.tone, 'moderate');
+  assert.equal(M.pictureOf(s, DAYS[2], d, NOW).head, M.answer(s, DAYS[2], d, NOW).head);
+  // Five days: the day's name as its tab, the level with "risk" under it, and the rain.
+  assert.deepEqual(sat.days.map(x => x.name), M.dayTabs(s, d).map(x => x.name));
+  assert.deepEqual(sat.days.map(x => x.word), ['Moderate', 'Moderate', 'Low', 'High', 'Moderate']);
+  assert.ok(sat.days.every(x => x.risk === 'risk' && x.rain === '4 mm'));
+  assert.equal(sat.caption, 'Pollution risk each day, and rain in the 48 h to midday.');
+  assert.equal(sat.issued, 'Forecast issued Tuesday 24 November, 13:21. A pollution risk forecast, not a water test: check the signs at the water.');
+  const gap = M.pictureOf(spot(['moderate', null, 'low', 'low', 'low']), DAYS[0], d, NOW);
+  assert.deepEqual([gap.days[1].word, gap.days[1].risk, gap.days[1].rain], ['No data', '', '–']);
+  // A place with no daily forecast has no level on any day, and is never low.
+  const pt = M.pictureOf(t, SAT, d, NOW);
+  assert.equal(pt.on, false); assert.equal(pt.days.length, 5);
+  assert.ok(pt.days.every(x => x.level === null && x.word === '–' && x.risk === ''));
+  assert.equal(pt.caption, 'Rain in the 48 h to midday.');
+  assert.equal(pt.head, M.answer(t, SAT, d, NOW).head);
+  // Never the word low where there is no level, and no percentage anywhere: the E. coli estimate is not carried.
+  for (const p of [pa, sat, pt, gap]) assert.doesNotMatch(JSON.stringify(p), /%/);
+  assert.doesNotMatch(JSON.stringify({...pt, issued: ''}), /\blow\b/i);
+  // The earlier picture's three messages and its fixed sentences, word for word on both.
+  for (const said of ['The share sheet would not open, so the picture was saved instead.', 'The picture has been saved to your downloads.', 'Could not make the picture: ']) {
+    assert.ok(LIVE.includes(said), `the live page says: ${said}`); assert.ok(JS.includes(said), `and so does this one: ${said}`); }
+  for (const said of ['Pollution risk each day, and rain in the 48 h to midday', 'A pollution risk forecast, not a water test: check the signs at the water.', 'Forecast issued ']) {
+    assert.ok(LIVE.includes(said), `the live page says: ${said}`); assert.ok(MODEL.includes(said), `and so does this one: ${said}`); }
+  assert.match(JS, /`swimsignal-\$\{s\.id\}\.png`/);
+  // Nothing is sent anywhere: drawn on the device, then the share sheet or a saved file.
+  assert.doesNotMatch(JS_DRAW, /fetch\(|XMLHttpRequest|sendBeacon/);
+  assert.match(JS_DRAW, /navigator\.share\(\{ files: \[file\]/);
+  // The button sits beside "Plan a swim here", not on a point tapped on the map, and is drawn on the page alone.
+  assert.match(JS, /s\.unlisted \? '' : '<button type="button" class="btn" data-do="share-picture">Share as a picture<\/button>'/);
+  assert.match(JS, /if \(act === 'share-picture'\) \{ const s = spotOf\(route\.id\); if \(!s \|\| s\.unlisted\) return;/);
+  assert.ok(['--bg', '--brand', '--muted', '--line', '--ink', '--notice-line', '--link', '--unknown', '--font-text', '--font-display',
+    '--k-low', '--k-moderate', '--k-high', '--k-veryhigh', '--k-na', '--k-clear', '--low', '--moderate', '--high', '--veryhigh'].every(n => CSS.includes(`${n}:`)), 'every colour it reads is the page\'s');
 });
 
 test('a place links to the pages for a group and to telling Ethan, and a list to its page to print, in the live page\'s words', () => {

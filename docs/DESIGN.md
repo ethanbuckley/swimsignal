@@ -3125,6 +3125,31 @@ and cursor kept), the question before leaving, a review sent and kept as this br
 (empty): both forms offered. Headless Chrome at 375 and 1,440 px. **Not checked:** a review really sent, a photo
 added, the illness tile (off on the live site), the report form.
 
+### Ported: a place as a picture to share (25 November 2026)
+
+The earlier version's "Share as a picture" (`index.html`, `shareImage`), which was only at `classic/`. Marked:
+
+- **Already decided:** what the picture says and in what order. The wordmark and the host, the place's name, an
+  official notice, the headline in its level's colour with why, the five days with the level, "risk" under it and the
+  rain, "Pollution risk each day, and rain in the 48 h to midday.", "Forecast issued <day and time>. A pollution risk
+  forecast, not a water test: check the signs at the water." and the place's address. Its layout and type sizes at
+  1,080 px wide.
+- **Already decided:** the official notice comes first, in the earlier picture's words (`shareNotice`). The short notes
+  (overflows in Wales, the Scotland trial, today's EA advice not checked) keep the picture's own words (`levels.js`,
+  `walesWords`; "What to do under the level", 18 November).
+- **Already decided:** nothing leaves the device before the share sheet. Without one the picture is saved, and the
+  three messages are the earlier page's, word for word.
+- **New:** the button, "Share as a picture", beside "Plan a swim here" under the answer. Not on a point tapped on the
+  map. What it says goes in the line under the place's name, as Save and Share do.
+- **New:** the words come from this page's own answer for the day shown (`model.js`, `pictureOf` from `answer` and
+  `dayTabs`), so the picture and the page cannot disagree. The day it is for is said above the headline, as on the page.
+  The address is the place's page for that day.
+- **Not carried:** the E. coli percentage under each day in the tested season (May to September). The picture gives the
+  rain under each day all year.
+
+**Checked:** the model's words against `answer` in tests, and the button in every page the build draws. **Not
+checked:** the picture itself in a browser.
+
 ### Ported: the links for a group, the decision record, and telling Ethan (24 November 2026, night)
 
 The redesign's place page had no way to the event page, the clubs' tools, the decision record or the feedback

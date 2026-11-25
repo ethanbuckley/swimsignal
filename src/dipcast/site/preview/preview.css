@@ -439,8 +439,8 @@ button { font: inherit; color: inherit; }
 @media (min-width: 900px) { .outing-cond .cond { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
 .outing-alert-on { font-size: var(--fs-note); }
 #outing-clear { min-height: 44px; margin-right: 8px; }
-/* "Plan a swim here" under a place's answer, and "Plan here" in a comparison's column. */
-.planhere { margin-top: 16px; }
+/* "Plan a swim here" and "Share as a picture" under a place's answer, and "Plan here" in a comparison's column. */
+.planhere { margin-top: 16px; display: flex; flex-wrap: wrap; gap: 8px; }
 table.cmp thead th a.cmp-plan { min-height: 0; margin-top: 4px; font-size: var(--fs-meta); font-weight: 600; color: var(--link); text-decoration: underline; text-underline-offset: 2px; padding: 8px 0; }
 /* Saved, from the live site's own scripts: what changed since you last looked (since.js), each place's low-risk days
    (findwindow.js), and a list to share or one someone shared. */
