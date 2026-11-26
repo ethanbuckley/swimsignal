@@ -5918,6 +5918,15 @@ def build(refresh: bool = True) -> dict:
     # The latest statutory sample at each site from the EA's archive, kept six hours in the cache.
     coastal = attach_samples(fetch_coastal(), cache=config.CACHE / "coastal_samples.json")
     n_coastal_typical = attach_coastal_typical(coastal)   # a committed export: no request
+    from dipcast import rain_history
+    n_coastal_rain = rain_history.attach(coastal, "england")   # a committed export: no request
+    try:   # today's rain at each beach's square, from the click-anywhere file this build wrote: no request
+        _days = json.loads((SITE / "data" / "anypoint" / "overflow_days.json").read_text())
+        _points = json.loads(BATHING_WATER_POINTS.read_text()).get("england") or {}
+        n_coastal_rain_now = rain_history.attach_live(coastal, _days, _points)
+    except Exception as e:  # noqa: BLE001 - a line beside the directory must not sink the build
+        log.warning("coastal rain now: %s", e)
+        _days, n_coastal_rain_now = None, 0
     coastal_water = attach_directory_water_temp(coastal["sites"], anypoint_water_air(SITE))
     coastal_spills = attach_coastal_spills(coastal["sites"], generated)
     (SITE / "data" / "coastal.json").write_text(json.dumps(coastal))
@@ -5925,11 +5934,13 @@ def build(refresh: bool = True) -> dict:
                          "samples": coastal.get("samples", {}).get("state"),
                          "with_sample": sum((s.get("sample") or {}).get("state") == "ok" for s in coastal["sites"]),
                          "water_temperature_estimate": coastal_water, "typical_readings": n_coastal_typical,
+                         "rain_history": n_coastal_rain, "rain_now": n_coastal_rain_now,
                          "spills_nearby": coastal_spills}
     # Welsh bathing waters: NRW's sites and latest samples, live or from the dated snapshot (wales.py).
     from dipcast.wales import fetch as fetch_wales
     wales = fetch_wales()
     attach_typical(wales, "wales")   # committed past samples (scripts/export_typical_readings.py): no request
+    rain_history.attach(wales, "wales")   # past samples by rain (scripts/coastal_c1/export_rain_history.py): no request
     attach_history(wales, "wales")   # the link to every sample at Hay-on-Wye and Llandeilo (sample_history.py): no request
     health["wales"] = {"state": wales["state"], "sites": len(wales["sites"]), "fetched_at": wales["fetched_at"],
                        **({"error": wales["error"]} if wales.get("error") else {})}
@@ -5951,6 +5962,7 @@ def build(refresh: bool = True) -> dict:
     from dipcast.northern_ireland import fetch as fetch_ni
     northern_ireland = fetch_ni()
     attach_typical(northern_ireland, "northern_ireland")
+    rain_history.attach(northern_ireland, "northern_ireland")   # past samples by rain: no request
     health["northern_ireland"] = {"state": northern_ireland["state"], "sites": len(northern_ireland["sites"]),
                                   **({"error": northern_ireland["error"]} if northern_ireland.get("error") else {})}
     # Their water temperature (#492 stage 4): the cached air around them, and cells of their own where none reaches.

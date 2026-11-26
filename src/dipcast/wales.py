@@ -19,7 +19,7 @@ from pathlib import Path
 
 import httpx
 
-from dipcast import config, sample_history, typical
+from dipcast import config, rain_history, sample_history, typical
 from dipcast.coastal import ID, TZ, instant, uri, value, when
 
 BASE = "https://environment.data.gov.uk/wales/bathing-waters/doc"
@@ -143,6 +143,11 @@ def _sample_text(sample: dict) -> str:
             + (f', intestinal enterococci {count(ent)}' if ent else '') + ' per 100 ml')
 
 
+def _rain_lines(site: dict, snapshot: dict) -> str:
+    """The card's past samples by rain and today's rain (rain_history), each on its own line."""
+    return "".join(f"<br>{x}" for x in rain_history.card_lines(site, snapshot))
+
+
 def _water(site: dict) -> str:
     """The site's provisional water temperature line (coastal.water_line), after a break, or nothing."""
     from dipcast.coastal import water_line
@@ -167,6 +172,7 @@ def render(snapshot: dict) -> str:
                      f'<span class="wales-advice">Current NRW forecast: open the profile</span><br>'
                      f'<span class="wales-sample">{_sample_text(sample)}</span>{_water(s)}'
                      + (f'<br>{escape(typical.line(s["typical"]))}' if s.get("typical") else '')
+                     + _rain_lines(s, snapshot)
                      + (f'<br><a class="wales-history" href="samples.html#wales={escape(s["id"], quote=True)}">'
                         f'{escape(sample_history.history_line(s["history"]))}</a>' if s.get("history") else '')
                      + '</p></li>')
@@ -176,7 +182,7 @@ def render(snapshot: dict) -> str:
     return (f'<p class="small">{len(cards)} designated Welsh bathing waters, {inland} of them on lakes or rivers. '
             f'{dated} NRW forecasts pollution risk at some sites in the season; a forecast of no increased risk '
             'is not a water test, and no forecast does not mean clean water.</p>'
-            + typical.note(snapshot, inland=True) +
+            + typical.note(snapshot, inland=True) + rain_history.note(snapshot) +
             '<p class="small" id="wales-status" aria-live="polite"></p>'
             '<label for="wales-search">Find a Welsh bathing water</label> '
             '<input type="search" id="wales-search" placeholder="Bathing-water name">'

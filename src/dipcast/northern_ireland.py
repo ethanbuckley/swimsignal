@@ -22,7 +22,7 @@ from pathlib import Path
 
 import httpx
 
-from dipcast import config, typical
+from dipcast import config, rain_history, typical
 from dipcast.coastal import TZ, instant, when
 
 LAYER = ("https://services-eu1.arcgis.com/kswen6BYexuc1SUk/arcgis/rest/services/"
@@ -165,6 +165,7 @@ def render(snapshot: dict) -> str:
         lines = [escape(", ".join(about)), _line(s, today)]
         if s.get("typical"):
             lines.append(escape(typical.line(s["typical"])))
+        lines += rain_history.card_lines(s, snapshot)
         advice = SEASON_ADVICE.get(s.get("code"))
         if advice and today.year <= advice[0]:
             lines.append(f'{escape(advice[1])} <a href="{ABOUT}">DAERA\'s note</a>')
@@ -179,7 +180,7 @@ def render(snapshot: dict) -> str:
     return (f'<p class="small">{len(cards)} bathing waters, {len(cards) - inland} on the coast and {inland} inland, {dated}. '
             'Each name links to DAERA\'s profile of the water. Each line gives DAERA\'s water quality indicator and the '
             'sampling time DAERA gives with it.</p>'
-            + typical.note(snapshot, inland=True) +
+            + typical.note(snapshot, inland=True) + rain_history.note(snapshot) +
             '<label for="ni-search">Find a bathing water in Northern Ireland</label> '
             '<input type="search" id="ni-search" placeholder="Bathing-water name">'
             f'<p id="ni-count" class="small" aria-live="polite">{len(cards)} sites</p>'
