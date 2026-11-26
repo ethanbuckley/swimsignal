@@ -1,0 +1,64 @@
+{
+ "c0_brier_loyo": 0.014699127935965312,
+ "chosen": "W1",
+ "frozen_file": "data/research/coastal/c1_frozen.v1.json",
+ "frozen_sha256": "90b390ba251c5ddb48ac9783902dfa1480cf822261f0edfd7e4736c3d99515e6",
+ "info": {
+  "cells": 183,
+  "cells_with_no_rain_file": [],
+  "covered_over_500": 499,
+  "covered_rows": 32868,
+  "rows": 32868,
+  "rows_without_cell": 0,
+  "sites": 404
+ },
+ "nested": {
+  "2022": {
+   "brier_c0": 0.014981428999190471,
+   "brier_c1": 0.014837993162301373,
+   "difference": -0.00014343583688909874,
+   "over_500": 105,
+   "rows": 6754,
+   "window": "W3"
+  },
+  "2023": {
+   "brier_c0": 0.015134270327362554,
+   "brier_c1": 0.014852895038190822,
+   "difference": -0.0002813752891717321,
+   "over_500": 106,
+   "rows": 6733,
+   "window": "W3"
+  },
+  "2024": {
+   "brier_c0": 0.01986095528013064,
+   "brier_c1": 0.020063517783186387,
+   "difference": 0.00020256250305574625,
+   "over_500": 132,
+   "rows": 6464,
+   "window": "W1"
+  },
+  "2025": {
+   "brier_c0": 0.01241988089024666,
+   "brier_c1": 0.012230308411488337,
+   "difference": -0.00018957247875832361,
+   "over_500": 84,
+   "rows": 6578,
+   "window": "W1"
+  },
+  "2026": {
+   "brier_c0": 0.01103772393087811,
+   "brier_c1": 0.01078743888423825,
+   "difference": -0.0002502850466398598,
+   "over_500": 72,
+   "rows": 6339,
+   "window": "W1"
+  }
+ },
+ "note": "Development evidence on 2022-26 rows. Decides nothing beyond the window choice.",
+ "window_brier_loyo": {
+  "W1": 0.014534590081616979,
+  "W2": 0.014542830808364746,
+  "W3": 0.014560448372189472,
+  "W4": 0.014554470816716463
+ }
+}

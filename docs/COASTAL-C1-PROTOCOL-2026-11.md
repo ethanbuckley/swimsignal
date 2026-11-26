@@ -261,6 +261,120 @@ Owner: the research sessions. Ethan's steps: none unless a refusal happens or D4
 - Laboratory and sampling practice may differ before 2015.
 - The last-sample feature assumes the previous result was known by the next sampling day.
 
+## Amendment 1, 25 November 2026: the rain comes from the bulk ERA5-Land download
+
+Written before any C1 rain value is read, before anything is fitted, and before any 2012 to 2021 sample is fetched.
+Main was at `7b704b8e`. Section 3's Open-Meteo fetch never started: on 22 November its first day waited on the D4
+read, and no request was sent (`$HOME/dipcast-scratch/coastal-c1-rain` does not exist).
+
+**What changed since section 3 was written.** The Copernicus account exists. #702's bulk download
+(`$HOME/dipcast-scratch/era5land/raw/`) holds ERA5-Land hourly total precipitation for January 2012 to August 2026
+over 49.8° to 61° N and 8.3° W to 2° E, which covers every English coastal sampling point. September 2026 is fetched
+by the same script on 25 November (one request). That is the dataset section 2 named (`era5_land`), taken from its
+publisher instead of Open-Meteo's copy.
+
+**The change.**
+
+1. **Source.** Rain for every season, 2012 to 2026, is the CDS ERA5-Land download converted by
+   `scripts/era5land/to_cells.py` (de-accumulated to the hour's rain, metres to millimetres, rounded to 0.1 mm, time
+   the end of the hour in UTC). No Open-Meteo request is made for C1. Section 3's fetch script, budget and run
+   sheet are superseded and stay in the record unrun.
+2. **Which grid point.** Section 2 said "Open-Meteo's default land cell selection". The replacement rule is
+   `era5land_core.map_cells`: the cell's own 0.1° point when ERA5-Land has a value there, otherwise the nearest point
+   with a value within **3 grid steps** (about 33 km north-south), by flat-earth distance scaled by the cosine of
+   latitude. A cell with no such point is not covered. The point and its distance are kept for each cell and
+   reported. The cells are section 2's: the 0.1° cell of each mapped site (`fetch_rain.cells`).
+3. **Everything else in sections 2, 5 and 6 is unchanged**: target, features, window pairs, the choice rule, C0,
+   the freeze before any 2012 to 2021 sample is requested, the comparators, the metric, the bootstrap and the verdicts.
+4. **One clarification of section 2, made now.** "A training row's own year left out of k and n" applies to the 2022
+   to 2026 fit rows. A backtest row's season is not in the fit, so its site rate is the frozen table's (k + m·p0) /
+   (n + m) with nothing left out. The site-rate table is built from every 2022 to 2026 statutory row, as #692's R;
+   the logistic regressions for C0 and C1 are fitted on the covered rows only.
+5. **The over-250 report** (section 5, deciding nothing) needs models for that line too. C0 and C1 are fitted the
+   same way on the over-250 target, with the window pair chosen for over 500, and frozen in the same file. R is
+   frozen for both lines (fitted on every 2022 to 2026 row) as the reference section 5 names.
+6. **Section 5's comparison with cached archive rain** is kept: new ERA5-Land against the cached `best_match` files
+   on 2024 and 2025 for the coastal cells that have both, reported, deciding nothing.
+
+**Why this is not a change after a result.** No coastal rain value, from either source, has been joined to a coastal
+sample by this work, and no C1 or C0 coefficient exists. The river work (RIVER-UNSEEN) converted other cells from the
+same download; it read no coastal sample.
+
+**What it costs.** No Open-Meteo call. One CDS request. The conversion runs offline into
+`$HOME/dipcast-scratch/coastal-c1-era5land/`, outside every checkout; the shared caches are not read or written.
+
+**What would change the verdict's meaning.** ERA5-Land is a reanalysis, as section 9 said. The live product would
+use radar or forecast rain. This amendment does not alter that limit.
+
 ---
 
 *Results go below this line.*
+
+## Freeze, 25 November 2026
+
+Fitted by `scripts/coastal_c1/fit.py` on the committed 2022 to 2026 samples and ERA5-Land rain (amendment 1). No 2012
+to 2021 sample had been requested.
+
+- Rows: 32,868 statutory samples at 404 sites, May to September, 499 over 500. Every row's rain windows are covered:
+  all 183 cells used have rain (80 of the 185 listed cells from their own grid point, 105 from the nearest land point,
+  median 6.6 km, furthest 22.2 km at Portland).
+- Window pairs, leave one year out, pooled Brier on 2022 to 2026: W4 0.014554, **W1 0.014535**, W2 0.014543,
+  W3 0.014560. C0 (no rain) 0.014699. **Chosen: W1, rain over 24 and 72 hours.**
+- Nested estimate (the choice made inside each outer year), development evidence that decides nothing: C1 minus C0
+  is below zero in 2022, 2023, 2025 and 2026 and above it in 2024 (`docs/coastal-c1/fit.json`).
+- **Frozen file:** `data/research/coastal/c1_frozen.v1.json`, SHA-256
+  `90b390ba251c5ddb48ac9783902dfa1480cf822261f0edfd7e4736c3d99515e6`. It holds R, C0 and C1 for over 500 and over
+  250, the site tables, the window and the cell map. Nothing in it changes after this commit.
+
+Next, per section 5: fetch the 2012 to 2021 statutory samples, then score once with `scripts/coastal_c1/backtest.py`.
+
+## The backtest, 25 November 2026: supported on unseen seasons
+
+Fetched after the freeze was pushed (`eacad1c3`): 323 Water Quality Archive requests, no refusal, one dropped
+connection retried, every request group added up to the archive's `totalItems`. Scored once at 14:41 UTC by
+`scripts/coastal_c1/backtest.py`, frozen file hash checked first; logged in `docs/coastal-c1/reads.jsonl`, every
+figure in `docs/coastal-c1/result.json`.
+
+**Rows.** 65,350 statutory samples, May to September 2012 to 2021, at 403 sites; 1,203 over 500. Every row's rain
+window was covered. 2020 has 1,320 rows (sampling was cut that year).
+
+| Check | Result | Rule | |
+|---|---|---|---|
+| C1 minus C0, Brier, two-way interval (sites and seasons) | −0.00041 (−0.00084 to −0.00012) | wholly below 0 | pass |
+| Seasons with the difference below zero | 9 of 10 (2016: +0.00006) | 6 or more | pass |
+| Exceedances | 1,203 | 300 or more | enough |
+
+**Verdict: supported on unseen seasons.** Rain at the beach's ERA5-Land cell, over 24 and 72 hours, improves the
+chance of a result over 500 on seasons that played no part in building the model. Rain counts as a confirmed coastal
+input (section 6).
+
+**Reported, deciding nothing.**
+
+| | B0 pooled | R site and month | C0 + last sample | C1 + rain |
+|---|---|---|---|---|
+| Brier | 0.01808 | 0.01793 | 0.01796 | 0.01755 |
+| AUC (two-way interval) | | 0.654 (0.616 to 0.688) | 0.665 (0.628 to 0.697) | **0.786 (0.744 to 0.816)** |
+
+- Brier skill of C1 against the pooled rate: 2.9%. Small, as on the fit years. **No probability is shown.**
+- Calibration of C1: mean chance 1.58% against 1.84% observed (in the large −0.0026), slope 0.94. C0's slope 0.69.
+- Site-only interval: −0.00052 to −0.00029.
+- 2015 to 2021 alone (revised directive years): −0.00024 (−0.00052 to −0.00003), 6 of 7 seasons below zero, AUC 0.771.
+- Over 250 (C0 and C1 frozen for that line): −0.00107 (−0.00196 to −0.00044), 10 of 10 seasons, AUC 0.763 against 0.679.
+- The EA's predictions exist on 15 July in 2014 to 2021 (154 to 421 a day) and not in 2012 or 2013 (10 probes).
+  The secondary comparison with them needs its own sized amendment; not done.
+- ERA5-Land against the cached archive rain (`best_match`) at the coastal cells, 2024-25: 320 cell-years, daily
+  correlation median 0.875 (IQR 0.850 to 0.893); ERA5-Land totals 86% of the cached rain.
+
+**What this supports.** Past samples at English beaches have been worse after rain, in a way that a frozen model
+predicted in ten seasons it never saw. It does not support a chance or a level for today, and it does not say rain is
+the only cause. ERA5-Land is reanalysis; a live word reads forecast-service rain, which matches it at r about 0.88 day
+to day.
+
+**What follows (section 6).**
+
+1. A coastal research observation on each English beach's card: the beach's own past samples split by rain, and
+   today's rain at the beach's square, with one note saying what this test showed. Built in the next PR.
+2. ANYWATER-UK (`docs/ANYWATER-UK-STATEMENT-2026-11.md`): the gate is open. Score the frozen C1 on Welsh and Northern
+   Irish samples.
+3. A protocol for a 2027 shadow log of C1 with issue-time rain, comparator C0, fallback the card lines; calibration
+   fixed before any chance is shown. Owner: research sessions; due before 1 May 2027.
