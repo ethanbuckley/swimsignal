@@ -3190,6 +3190,33 @@ overflow-days, 16 with a spill; 27 of 70 forecasts for those spills reached the 
 with November marked, the fold kept open through a day picked; Wastwater, with no overflow upstream, has no such
 section. Headless Chrome at 1,440 px. **Not checked:** a place whose entry in the record file is missing.
 
+### Ported: Explore the evidence, the foot's links and where the places stop (25 November 2026)
+
+Ethan, 25 November 2026: the redesign had no link to the Lab, to Research and data or to the coverage page. Proposal:
+`docs/RESEARCH-ON-THE-SITE-2026-11.md`, items 1, 6 and 7. Marked:
+
+- **Already decided** ("The Research Lab, and its manner on the rest of the site", Places, 1 November 2026): "Explore
+  the evidence" on a place's page, the exhibits that hold that place's record, each opened on it, from the keys in its
+  own file (`lab`, `build_site.attach_lab_links`), in the earlier tile's words and covers (`labHtml` in `app.js`). A
+  place no exhibit holds is told so. A point tapped on the map has none. The routes are drawn as page.css draws them
+  (`.labx .routes` in `preview.css`): the cover in an ink hairline, "Exhibit n" in the monospaced face, the name in
+  the serif, one line, between hairlines, two columns from 620 px.
+- **Already decided** ("One foot, one opening", 12 November 2026): the foot's links are `build_site.FOOT_LINKS`, less
+  Data credits, as on the earlier app's foot, since the foot's own fold gives the credits
+  (`tests/test_preview_research_links.py`). It had four links of its own. The redesign's first sentence, "Saved spots,
+  offline use and your data" and the credits fold are unchanged.
+- **Already decided** ("One product in the bar", 6 November 2026): no Lab link in the header.
+- **New:** "Explore the evidence" is last before the foot, after From swimmers. Its id is `lab-exhibits`: `evidence`
+  is the record's "What the level rests on" (`evidence.js`). Its last line adds Research and data and the coverage page.
+- **New:** one line under the opening's areas, and under a search that found nothing: "Beaches, and waters in Wales,
+  Scotland and Ireland that are not listed here: their official sources and past samples", linked to `coverage.html`
+  (`COVERAGE_LINE`). "Not listed here", not "not forecast": the Scotland trial lists some Scottish places.
+
+**Checked:** headless Chrome at 375 and 1,440 px on the forecast of 25 November 2026, 13:34, through
+`scripts/preview_redesign.py`: Windermere, Lakeside YMCA (all four exhibits), Wastwater (none), the opening's line, a
+search. No sideways scroll. The site is light only, so a dark preference changes nothing (captured, the same).
+`tests/site_preview_lab.test.cjs`. **Not checked:** Safari, a screen reader, the built pages on the live host.
+
 ### Ported: Saved's extras (24 November 2026, night)
 
 The third port from `classic/`. Marked: the rules and words are already decided ("Saved as a starting page", the
