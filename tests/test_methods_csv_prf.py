@@ -65,7 +65,8 @@ def _rows(page: str, section: str) -> list[list[str]]:
 
 
 def test_the_method_page_is_well_formed_with_one_title_and_working_anchors():
-    page = (STATIC / "methods.html").read_text()
+    bs = _script("build_site")   # as built: "What each figure was tested on" is written in from the research catalogue
+    page = bs.with_figures((STATIC / "methods.html").read_text(), bs.figures_doc())
     p = _Nesting()
     p.feed(page)
     assert not p.errors and p.stack == [], (p.errors, p.stack)

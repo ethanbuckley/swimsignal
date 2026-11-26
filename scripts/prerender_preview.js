@@ -5,8 +5,8 @@
 //
 //   node scripts/prerender_preview.js site/ out.json [home]     (- for stdout)
 //
-// site/ holds data/spots-lite.json, data/spot/<id>.json, data/upstream/<id>.json and preview/hero-photos.json, as
-// the build has written them by then. home is where the pages are under the site's root: "preview/" (the default)
+// site/ holds data/spots-lite.json, data/spot/<id>.json, data/upstream/<id>.json, data/research/figures.json and
+// preview/hero-photos.json, as the build has written them by then. home is where the pages are under the site's root: "preview/" (the default)
 // while they are a preview, "" when they are the site's own pages; every link in what is drawn starts with it.
 // out.json is {home: html, spots: {id: html}}.
 const fs = require('fs');
@@ -44,8 +44,8 @@ function prerender(site, home = 'preview/') {
   const data = readJson(path.join(site, 'data', 'spots-lite.json'));
   if (!data || !Array.isArray(data.spots) || !Number.isFinite(Date.parse(data.generated_at))) throw new Error('no data/spots-lite.json with an issue time');
   const ctx = context(Date.parse(data.generated_at), home);
-  ctx.IN = { data, hero: readJson(path.join(site, 'preview', 'hero-photos.json')) || {} };
-  vm.runInContext('PVBuilt.load(IN.data, IN.hero);', ctx);
+  ctx.IN = { data, hero: readJson(path.join(site, 'preview', 'hero-photos.json')) || {}, figs: readJson(path.join(site, 'data', 'research', 'figures.json')) };
+  vm.runInContext('PVBuilt.load(IN.data, IN.hero, IN.figs);', ctx);
   const out = { home: ageless(vm.runInContext('PVBuilt.home()', ctx)), spots: {} };
   for (const s of data.spots) {
     if (!/^[A-Za-z0-9_-]+$/.test(String(s.id))) continue;

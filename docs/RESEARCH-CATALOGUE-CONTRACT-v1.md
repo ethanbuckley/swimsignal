@@ -19,6 +19,8 @@ record files, PRs and branches, so a negative result or an adopted change can be
 | `sections` | The register's sections, in its order |
 | `prs` | Every PR an entry names, by number: `state` (merged, closed, open), `branch`, `branch_exists` and the merge or close date, as `gh pr list --state all` and `git ls-remote --heads origin` gave them on the date in `checked.prs` (first 31 October 2026) |
 | `entries` | One per register record, below |
+| `bases` | Since 1.1.0. The fixed words for how a figure was tested: `held_out` "Tested on data it never saw", `seen` "Development result, on data already seen", `checked` "Checked against samples: no gain shown", `untested` "Not tested" |
+| `figures` | Since 1.1.0. One row for each figure a place's page can show, below ("Figures") |
 
 Each entry:
 
@@ -33,6 +35,31 @@ Each entry:
 | `records` | Record files. `quote` is a verbatim line fragment of the verdict, checked by the test. A record only on a closed PR's branch has `branch` instead |
 | `prs`, `links` | PR numbers (see `prs` above) and links to the site's pages for the work |
 | `register_note` | Where the register's summary and the record differ, said rather than settled silently |
+
+## Figures (version 1.1.0, 25 November 2026)
+
+What each figure on a place's page was tested on (`docs/RESEARCH-ON-THE-SITE-2026-11.md`). The build writes the rows,
+without their sources, to `data/research/figures.json` (`build_site.write_figures`), which a place's page reads
+(`preview/app.js`, `testedHtml`), and into the method page's "What each figure was tested on"
+(`build_site.with_figures`). `tests/test_research_figures.py` checks them.
+
+| Field | Content |
+|---|---|
+| `id` | The row's own id, and its anchor on the method page (`#tested-<id>`) |
+| `figure` | The key a place's page draws the figure by (`preview/model.js`, `figuresShown`). Rows for the same figure at different kinds of water share the key |
+| `kinds` | Where the row applies: `river`, `lake`, `coast` |
+| `label` | The figure's name, as a heading |
+| `basis` | One of `bases`. The page shows the base's words, never words of the row's own |
+| `tested_on` | Years and places. Empty when, and only when, `basis` is `untested` |
+| `result` | The result in one or two plain sentences, with its numbers |
+| `not_known` | What the test does not tell. A gap is said as not known, never as a negative |
+| `links` | The test's record or the page that explains it |
+| `shown_on` | Optional: the page that shows the figure where it is not a place's page, such as a beach card on `coverage.html`. Such a row needs no key in `figuresShown`, and shows on the method page |
+| `entries`, `models`, `quotes` | What the row rests on: catalogue entries, scorecard models, and verbatim quotes with their file. Every number in `tested_on`, `result` and `not_known` must appear in their text |
+
+Adding one: a new result for a figure already drawn is a changed row. A new figure is a row and its key in
+`figuresShown`, where the page draws it; a beach's has `"kinds": ["coast"]` and a key of its own, or `shown_on` where it is drawn on another page. A row about a
+satellite index says it is not a toxin measurement (checked). No row says safe, clean or accurate (checked).
 
 ## Rules
 

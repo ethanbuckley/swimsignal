@@ -3402,3 +3402,37 @@ draws the finish and the 5.5 km stretch with its six overflows. On a local build
 opens here, its link to send is `plan/#...`, its calendar file's place is `spot/<id>/#day=...`, and that address
 opens Thursday. **Not checked:** alerts for a date turned on (the test browser blocks notifications, and I will not
 send a test subscription to the alert service); a real phone; Safari.
+
+### What each figure was tested on (25 November 2026)
+
+Ethan, 25 November 2026: results lived in documents a swimmer never sees. Proposal:
+`docs/RESEARCH-ON-THE-SITE-2026-11.md`, items 2, 3, 9 and 10. All new; none reverses a decision here.
+
+- **A section on a place's page**, "What each figure was tested on", after Behind the level, Upstream and Elsewhere
+  and before The record here (`testedHtml` in `app.js`). One row for each figure the page shows for that place on the
+  day shown (`figuresShown` in `model.js`): the sewage spill risk and each overflow's chance, how far spill water
+  travels and each overflow's weight, the E. coli estimate (its percentage in season, its winter word today, or out of
+  season), the water temperature estimate by its route. A reading (a sensor, a gauge, a sample, a rating) is a
+  measurement and gets no row; one line says so.
+- **A row:** the figure's name in the sans, 700, at the notes' size; under it, muted, the basis in the catalogue's
+  fixed words ("Tested on data it never saw", "Development result, on data already seen", "Checked against samples:
+  no gain shown", "Not tested"); then "Tested on:", the result, "Not known:" in ink, and the links. Between hairlines,
+  68 characters wide; two rows to a line from 960 px. No pill, badge or colour: colour on the page means a level.
+- **Named so, not "What this rests on"**: "What the level rests on" (4 October 2026) is the inputs-and-ages tile in The
+  record here, and the two would read as one.
+- **One file drives it**: the research catalogue's `figures` (version 1.1.0), written by the build to
+  `data/research/figures.json` (`build_site.write_figures`), which the page reads with the forecast and the build's
+  copy of each place's page holds (`prerender_preview.js`). The method page's section (`#tested`, `with_figures`) is
+  the same rows for every kind of water. `tests/test_research_figures.py` holds every number in a row to the entries,
+  models or quotes it names, so a row cannot drift from its record.
+- **The wording rules, held by the data:** an untested row has no "Tested on" line (checked); a development result
+  carries "Development result" (its basis); a gap is "Not known", never a negative; a row about a satellite index must
+  say it is not a toxin measurement (checked); no row says safe, clean or accurate (checked).
+- **A beach later:** a row with `"kinds": ["coast"]` and either a key drawn on a place's page or `shown_on` naming the
+  page that shows it (a beach card on `coverage.html`).
+- **Research and data** links the method page's section under "Tests and their results".
+
+**Checked:** headless Chrome at 375 and 1,440 px on the forecast of 25 November 2026, 13:34: Wharfe at Cromwheel,
+Ilkley today (four rows: the spill risk, travel, the winter word, the winter water estimate), Windermere at Lakeside
+YMCA on Saturday (the spill risk and the lake row); the method page at both widths. No sideways scroll. **Not
+checked:** Safari, a screen reader, a lake in season (May), the built site on the live host.

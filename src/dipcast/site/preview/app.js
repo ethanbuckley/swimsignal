@@ -8,7 +8,7 @@
 'use strict';
 const P = window.PV, app = document.getElementById('app'), saidEl = document.getElementById('said');
 const { esc, capFirst, num } = P;
-let DATA = null, HERO = {}, PLACES = null, POSTCODES = null, here = null, hereNote = '', route = null;
+let DATA = null, HERO = {}, FIGS = null, PLACES = null, POSTCODES = null, here = null, hereNote = '', route = null;
 let miles = 20, upView = 'line', mapPick = null, PLAN = null, planPreview = false, planOff = null, planNew = false, planFresh = false, planSeen = null, planTyped = null, listForm = null, alertsOn = null, alertsSaid = '', alertsRefused = 0;
 const expanded = new Set(), LINE_FIRST = 6;   // the places whose line upstream is shown whole
 const traces = new Map();                     // id -> the traced water's lines, null if there is none; undefined while reading
@@ -1061,6 +1061,7 @@ function placeHtml() {
       ${condsHtml(s, day)}
     </div>
     <div class="more">${behindHtml(s, day)}${upstreamHtml(s, day)}${plumeWanted(s) ? '<div id="plume-slot"></div>' : ''}${nearbyHtml(s, day)}</div>
+    ${testedHtml(s, day)}
     ${recordHtml(s)}
     ${s.unlisted ? `<section class="theplace" aria-labelledby="place-h"><h2 id="place-h">This point</h2><p class="sec-lede">Not one of the listed places: nobody has checked it by hand, and it has no rain forecast of its own and no E.&nbsp;coli estimate.${s.rain_km ? ` Rain is from the forecast for the area next to this point's, about ${esc(s.rain_km)} km away.` : ''}</p>${requestHtml(s)}</section>` : placeFactsHtml(s)}
     ${logHtml(s)}
@@ -1068,6 +1069,20 @@ function placeHtml() {
     ${labHtml(s)}
     ${foot()}
   </main>${tabbar()}`;
+}
+// What each figure was tested on (docs/RESEARCH-ON-THE-SITE-2026-11.md, item 2): for each figure this page shows for
+// this place and day (model.js, figuresShown), the research catalogue's row (data/research/figures.json, written by the
+// build from the catalogue): its basis in the catalogue's fixed words, what it was tested on, the result in one line,
+// what is not known, and its links. Follows the day picked, as the figures do. No file, or no figure: no section.
+function testedHtml(s, day) {
+  const rows = P.testedRows(FIGS, s, P.figuresShown(s, day, now()));
+  if (!rows.length) return '';
+  return `<section class="tested" id="tested" aria-labelledby="tested-h"><h2 id="tested-h">What each figure was tested on</h2>
+    <p class="sec-lede">For the figures above, ${esc(dayWord(day))}. Readings, such as the overflows' monitors and the Environment Agency's samples, are measurements and say where they are from.</p>
+    <dl class="tested-rows">${rows.map(f => `<div class="tr" id="tested-${esc(f.id)}"><dt>${esc(f.label)}<span class="tr-basis">${esc(f.said)}</span></dt>
+      ${f.tested_on ? `<dd>Tested on: ${esc(f.tested_on)}</dd>` : ''}<dd>${esc(f.result)}</dd><dd class="tr-gap">Not known: ${esc(f.not_known)}</dd>
+      ${(f.links || []).length ? `<dd class="tr-links">${f.links.map(x => `<a href="${esc(x.href)}">${esc(x.label)}</a>`).join(' · ')}</dd>` : ''}</div>`).join('')}</dl>
+    <p class="meta"><a href="methods.html#tested">Every figure, on the method page</a> · <a href="research.html">Research and data</a></p></section>`;
 }
 // The record here: what the level rests on (evidence.js: each item's age and source, and the gaps), how the forecast
 // has done at the overflows upstream since live scoring began (spotscores.js), on how many days of each month a spill
@@ -1387,7 +1402,7 @@ window.addEventListener('popstate', () => { const at = leftAt.get(location.pathn
 // answer before this script runs, and for a reader or a crawler without scripts. files: the place's own file and
 // its overflows upstream, which the page would otherwise fetch.
 window.PVBuilt = {
-  load(data, hero) { DATA = P.prepare(data, now()); HERO = hero || {}; },
+  load(data, hero, figs) { DATA = P.prepare(data, now()); HERO = hero || {}; FIGS = figs || null; },
   home() { route = { screen: 'find', view: '', day: null, q: '', area: '' }; return homeHtml(); },
   place(id, files) { route = { screen: 'place', id, day: null }; details.set(id, files || { detail: null, up: null }); return placeHtml(); },
 };
@@ -1399,8 +1414,9 @@ if (!PREVIEW && 'serviceWorker' in navigator) { let off = false; try { off = loc
   if (!off) startWorker(); }
 
 (async function start() {
-  try { const [data, hero] = await Promise.all([loadJson('data/spots-lite.json'), loadJson('preview/hero-photos.json').catch(() => ({}))]);
-    DATA = P.prepare(data, now()); HERO = hero || {};
+  try { const [data, hero, figs] = await Promise.all([loadJson('data/spots-lite.json'), loadJson('preview/hero-photos.json').catch(() => ({})),
+      loadJson('data/research/figures.json').catch(() => null)]);   // what each figure was tested on: small, and in the built page, so read with the forecast
+    DATA = P.prepare(data, now()); HERO = hero || {}; FIGS = figs;
     window.DATA = DATA; }   // journal.js names a swim's place from the forecast the page holds, by this name, as on the live page
   catch (e) {
     // A page the build wrote keeps what it says, with a line on what it is: the forecast as at the build.
