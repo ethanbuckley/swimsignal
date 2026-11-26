@@ -199,7 +199,7 @@ exactly on points. 42.0% of results were over 900; 4.3% sat at a lab limit.
 
 **What is supported.** At river monitoring points with no monitored overflow upstream, in six winters that no figure
 here had been scored on, a three-way word made only from the rain in the last 48 hours against the point's own
-usual put a point's winter days in the right order, and not only by the calendar. Samples on "more rain than usual"
+usual put a point's winter days in the right order, and still did with the calendar taken out. Samples on "more rain than usual"
 days tended to read higher than on "less" days at the same point. This is confirmation evidence for the order, at
 these points, at lead 0 with reanalysis rain: the word, its cut-points and the conditions were pushed first, and the
 reserve's results had not been joined to anything.
