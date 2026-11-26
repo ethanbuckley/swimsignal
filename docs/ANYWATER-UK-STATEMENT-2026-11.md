@@ -72,3 +72,28 @@ The first scoring run stopped while reading times, before any rain was joined or
 give a sample's date and no time. Rule: **a sample with a date and no time counts as taken at 12:00 UK time** that
 day (the hour `ecoli.SAMPLE_HOUR` uses for the site's own rain windows). NRW's samples carry their times and are
 unchanged. Reported with the result: how many rows took this rule.
+
+---
+
+## Result, 25 November 2026: pass
+
+Gate: C1's own read was "supported on unseen seasons" (`docs/COASTAL-C1-PROTOCOL-2026-11.md`). Scored once by
+`scripts/coastal_c1/anywater_uk.py score`; figures in `docs/coastal-c1/anywater_uk.json`. Fetch: NRW's catalogue and
+in-season samples and DAERA's layer and 2023-26 tables, 147 sites, 7,227 samples, no refusal.
+
+**Rows.** 7,019 samples at 141 coastal and estuary sites with 20 or more (Wales 4,455 at 109; Northern Ireland 2,564
+at 32), 133 over 500. Every rain window covered. All 2,564 Northern Irish rows took amendment 1's 12:00 rule.
+
+| Mean within-site rho with the measured count | Pooled | Wales | Northern Ireland |
+|---|---|---|---|
+| **C1 (frozen, with rain)** | **0.303 (0.245 to 0.338)** | 0.310 (0.232 to 0.356) | 0.279 (0.221 to 0.341) |
+| C0 (no rain) | 0.181 (0.113 to 0.220) | 0.192 | 0.142 |
+| Month alone | 0.198 (0.132 to 0.260) | 0.204 | 0.180 |
+| C1 minus C0 | +0.122 (+0.092 to +0.162) | +0.118 (+0.078 to +0.162) | +0.137 (+0.083 to +0.217) |
+
+**Pass:** the pooled interval for C1 lies wholly above 0.10. Rain adds to the order within a beach in both nations,
+with intervals above zero. Brier for over 500 (reported): C1 0.01795, C0 0.01852, month 0.01854.
+
+**What follows (the statement's table):** the past-samples-by-rain line goes on Welsh and Northern Irish beach cards,
+labelled as tested this way. It is not a chance or a level. Limits as stated: four seasons; Northern Irish times are
+assumed to be midday.

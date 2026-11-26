@@ -18,7 +18,7 @@ One page. Counts are from files in the repository on 25 November 2026 (main `7b7
 | Rank | Water | Places added | What we could honestly say | What is tested | What stands in the way | On the site |
 |---|---|---|---|---|---|---|
 | 1 | **England's coast** | 404 bathing waters with samples | A rain word ("heavy rain here in the last 3 days") with the beach's own past samples after rain like that. A "higher than usual after rain" word only if the frozen test passes. Never a chance or a level: best skill on seen years is 3.4% | **Passed 25 Nov on 2012-21, unseen:** rain improved the over-500 chance (Brier −0.00041, interval below zero, 9 of 10 seasons; AUC 0.786 against 0.665) | Nothing for the card lines. A chance would need calibration and a 2027 shadow | Card lines: next PR |
-| 2 | **Wales and Northern Ireland coast** | 112 + 33 | The same word, from England's frozen model, scored on Welsh and NI samples it never saw (ANYWATER) | Nothing yet | C1 must pass first. Per-sample Welsh results need one NRW archive fetch (answers this Mac, OGL). NI samples are held. Rain is on disk (box reaches 8.3° W) | A week after rank 1 |
+| 2 | **Wales and Northern Ireland coast** | 112 + 33 | The same lines, from England's frozen model | **Passed 25 Nov:** on 7,019 Welsh and NI samples it never saw, within-beach order 0.303 (0.245 to 0.338); rain adds +0.122 | C1 must pass first. Per-sample Welsh results need one NRW archive fetch (answers this Mac, OGL). NI samples are held. Rain is on disk (box reaches 8.3° W) | A week after rank 1 |
 | 3 | **Republic of Ireland coast and lakes** | 210 | As rank 2 | Nothing | Outside the UK. Rain box stops at 8.3° W: one more CDS download, free | After rank 2, optional |
 | 4 | **Scotland's coast** | 90 | Rain word and a link to SEPA's own sign. No past samples | Nothing | SEPA's terms forbid republishing its samples (Ethan's contact). SEPA runs its own predictions at 30 beaches | When SEPA answers |
 | 5 | **England rivers with no overflow upstream** | 15 spots (they read "nothing upstream" every day now) | A rain word, all year | Rain ordered winter days at such points at 0.458 (0.326 to 0.521), seen rows; a sealed reserve read exists | One read of the reserve, then wording | Days |
@@ -38,3 +38,4 @@ at this resolution, not the coast.
 
 C1 passed: "supported on unseen seasons" (`docs/COASTAL-C1-PROTOCOL-2026-11.md`, results). Rank 2 (Wales and
 Northern Ireland) is now open to test.
+Wales and Northern Ireland passed too (`docs/ANYWATER-UK-STATEMENT-2026-11.md`).
