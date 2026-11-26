@@ -210,9 +210,23 @@ function homeHtml() {
       ${tallyHtml(day)}
       <div id="results">${resultsHtml(day)}</div>
       <p class="issued">${esc(issued.text)}. Levels are for ${esc(P.headDay(day) === 'today' ? 'today' : P.longDate(day))}.</p>
+      ${researchHtml()}
     </div>
     ${foot()}
   </main>${tabbar()}`;
+}
+// The research line, after the list (docs/DESIGN.md, "After the review: near me, the record, the research, a shorter
+// phone page", 12 November 2026, ported here 25 November): what is being tested beside the live forecast, from the
+// scorecard's own file, read once a visit after the page is drawn, with the way to the scorecard and the Research Lab.
+// Until the file is read, or if it cannot be, the plain line; the built page has the plain line, so it is the same
+// height when the count arrives.
+let researchSaid = '', researchAsked = false;
+const researchHtml = () => `<p class="meta research-line"><span id="research-now">${esc(researchSaid || P.RESEARCH_PLAIN)}</span> <a href="models.html">What is being tested now</a> · <a href="lab/">Research Lab</a>.</p>`;
+function researchLine() {
+  if (researchAsked || typeof fetch !== 'function') return;
+  researchAsked = true;
+  loadJson('data/research/model_scorecard.json').then(doc => { researchSaid = P.researchNow(doc, today());
+    const el = document.getElementById('research-now'); if (el && researchSaid) el.textContent = researchSaid; }).catch(() => {});
 }
 // The place whose photo stands for each area, picked by eye on 24 November 2026 from the photos the guides hold: open
 // water in good light, level horizon, no boat or sign filling the frame. An area not named here, or whose place has
@@ -1188,6 +1202,7 @@ function draw(opts = {}) {
   const s = route.screen === 'place' ? spotOf(route.id) : null;
   document.title = `${s ? s.name : ({ map: 'Map', plan: 'Plan a swim', saved: 'Saved' })[route.view] || 'Where do you swim?'} · SwimSignal${PREVIEW ? ' preview' : ''}`;
   if (route.view === 'map') mountHomeMap();
+  if (route.screen === 'find' && !route.view) researchLine();
   if (s && upView === 'map') mountPlaceMap();
   // since.js: these places' levels are on screen, with no other day picked, so the note of what they showed is kept.
   if (typeof lookedAt === 'function') { const saved = new Set(savedIds());

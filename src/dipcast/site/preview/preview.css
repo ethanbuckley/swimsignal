@@ -282,6 +282,8 @@ button { font: inherit; color: inherit; }
 .theplace > .meta { margin-top: 16px; }
 
 .foot { margin-top: 40px; padding: 20px var(--gutter) 32px; border-top: 1px solid var(--line); font-size: var(--fs-meta); color: var(--muted); display: grid; gap: 8px; }
+/* The research line under the opening's lists (app.js, researchHtml). */
+.research-line { margin-top: 8px; }
 /* The opening's one line of count, under its days (app.js, tallyHtml). */
 .tally { margin-top: 12px; font-size: var(--fs-note); color: var(--muted); }
 .foot summary { cursor: pointer; padding: 12px 0; }   /* a thumb's height, and the fold's own marker kept */

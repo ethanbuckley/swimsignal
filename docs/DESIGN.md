@@ -3043,6 +3043,22 @@ seeing each before and after on the live site at phone width. All five stand, th
 5. **E. coli as a row, not a tile: accepted for now.** Out of season both say only "Out of season". To be looked at
    again in May 2027, when there is a figure to show.
 
+### Ported: the research line on the home page (25 November 2026)
+
+Proposal: `docs/RESEARCH-ON-THE-SITE-2026-11.md`, item 4. It was dropped when the redesign became the site and is not
+among the five reversals above.
+
+- **Already decided** ("After the review: near me, the record, the research, a shorter phone page", 12 November
+  2026): one line after the list, how many candidate models are being scored beside the live forecast, without changing
+  it, and the date the next test is read, from the scorecard's own file, with "What is being tested now" (the
+  scorecard) and "Research Lab"; "Research: a model is tested before it changes a forecast." without the file. The rule
+  and words are the earlier page's (`researchNow`, now also in `model.js`; a test holds the two together).
+- **New:** its place, under the issue line at the foot of the opening's lists, at the meta size. The built page has the
+  plain line, so the page is the same height when the count arrives. Only on the opening, not on Map, Plan or Saved.
+
+**Checked:** headless Chrome at 375 and 1,440 px on the forecast of 25 November 2026, 13:34, with the live scorecard
+file. `tests/site_preview_research_line.test.cjs`. **Not checked:** Safari, a screen reader.
+
 ### A gap the switch opened: "Saved spots, offline use and your data" (24 November 2026, night)
 
 **Reversing nothing; restoring a thing the switch dropped.** The privacy notice tells a visitor that the offline
