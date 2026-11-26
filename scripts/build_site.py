@@ -4420,8 +4420,13 @@ def write_lab_refresh(site: Path, paths_from_build: bool = False) -> dict:
                           "short": "analysis" if key == "lake-analysis" else "record",
                           "as_of": made, "outcomes_to": _lab_date(f, "cutoff"),
                           "refresh": "a dated analysis: a new season brings a new version", "stale_days": None}
+    # The catalogue is edited with each record and copied at every build, so the copy is as current as the build. Its
+    # `written` is the day the file was first written (31 Oct 2026), which read as the records' age on 25 Nov 2026.
+    now = pd.Timestamp.now(tz="UTC")
+    if parts["catalogue"].get("as_of"):
+        parts["catalogue"].update(as_of=now.strftime("%Y-%m-%d"), refresh="copied from the register's catalogue at every build")
     parts = {k: {kk: vv for kk, vv in v.items() if vv is not None} for k, v in parts.items() if v.get("as_of")}
-    doc = {"built": pd.Timestamp.now(tz="UTC").isoformat(timespec="seconds"), "parts": parts}
+    doc = {"built": now.isoformat(timespec="seconds"), "parts": parts}
     (out / "refresh.json").write_text(json.dumps(doc, indent=1) + "\n")
     return doc
 

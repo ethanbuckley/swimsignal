@@ -222,3 +222,18 @@ def test_every_page_gives_its_published_address(site):
         rel = f.relative_to(site).as_posix()
         want = root + (rel[: -len("index.html")] if rel.endswith("index.html") else rel)
         assert re.findall(r'<link rel="canonical" href="([^"]+)">', f.read_text()) == [want], f
+
+
+def test_the_records_are_dated_by_the_copy_not_the_files_first_day(site):
+    # The catalogue is edited with each record and copied at every build: its `written` (31 Oct 2026, the day the file
+    # was first written) read as the records' age on exhibit 2 when it held records to 25 Nov 2026.
+    doc = json.loads((site / "lab" / "refresh.json").read_text())
+    part = doc["parts"]["catalogue"]
+    assert part["as_of"] == doc["built"][:10] and "stale_days" not in part and "every build" in part["refresh"]
+
+
+def test_the_forecast_record_says_its_seasons_were_seen(site):
+    # Exhibit 3's river headline is on seasons the model was built on; the later unseen tests are named beside it.
+    page = (site / "lab" / "forecasts" / "index.html").read_text()
+    assert "These seasons were seen before." in page and "RIVER-UNSEEN-PROTOCOL-2026-11.md" in page and "RIVER-WINTER-READ-2026-11.md" in page
+    assert "being tested on autumn data now" not in page   # a line that went stale
