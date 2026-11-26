@@ -166,7 +166,7 @@ const riverUsualWinter = x => ecoliUntested(x) ? (RIVER_USUAL_WINTER[(x || {}).e
 // about rain, under the plain level: it sets no level, colour or chance, and the plain level and its line stay.
 const RAIN_USUAL = { more: 'More rain than usual here in the last two days.', about: 'About the usual rain here in the last two days.',
   less: 'Less rain than usual here in the last two days.' };
-const RAIN_USUAL_SAID = 'At river sampling points with no overflow upstream, E. coli tended to be higher on days with more rain than usual. That held on past winter samples kept back to test it, and less strongly on summer samples. They were Environment Agency monitoring points, not swim spots. This is not a level.';
+const RAIN_USUAL_SAID = 'At river sampling points with no overflow upstream, E. coli tended to be higher on days with more rain than usual. That held on past winter samples kept back to test it, and less strongly on summer samples. They were Environment Agency monitoring points on lowland rivers, not upland streams like this one, and not swim spots. This is not a level.';
 const rainUsual = x => RAIN_USUAL[(x || {}).rain_usual] || '';
 // The out-of-season tile's sentence in view: the winter word and what it rests on where today's day carries one,
 // else the first of ecoliNotes, as before.

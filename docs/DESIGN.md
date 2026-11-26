@@ -3108,8 +3108,8 @@ decide"); it is his to overrule.
   "No monitored overflow found upstream" gains one sentence: "More rain than usual here in the last two days." (or
   "About the usual rain here in the last two days.", "Less rain than usual here in the last two days."). Under the
   answer, after "Other risks apply", one sentence says what it rests on: river sampling points with no overflow
-  upstream, past winter samples kept back for the test, weaker on summer samples, Environment Agency monitoring
-  points not swim spots, "This is not a level." (`RAIN_USUAL`, `RAIN_USUAL_SAID`, `rainUsual` in `levels.js`;
+  upstream, past winter samples kept back for the test, weaker on summer samples, Environment Agency monitoring points on
+  lowland rivers, not upland streams like this one and not swim spots, "This is not a level." (`RAIN_USUAL`, `RAIN_USUAL_SAID`, `rainUsual` in `levels.js`;
   `answer` in `preview/model.js`). Usual is the middle third of the spot's own 48-hour rain to midday, 2023 to 2026,
   October to April or May to September (`rain_usual.py`, `data/processed/rain_usual.v1.json`, frozen).
 - **Already decided, kept** (3 and 11 October 2026, "Where the model has nothing to forecast"): the plain level and

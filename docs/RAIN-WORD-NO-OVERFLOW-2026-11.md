@@ -260,6 +260,10 @@ By the statement: **the word goes on the site**, as fixed above, in its own pull
 - **The wording, against the kill rule.** "More rain than usual here in the last two days" is a statement about rain.
   The sentence under it says what the word rests on and "This is not a level". So the shortlist's second kill
   condition (no wording avoids implying a level) is not met, on this project's judgement; Ethan can overrule it.
+- **One change to the wording fixed above, after review on 26 November.** The scored points were all lowland or
+  coastal rivers, so the sentence under the word now says so: "They were Environment Agency monitoring points on
+  lowland rivers, not upland streams like this one, and not swim spots. This is not a level." The method page says
+  the same. The word, the rule and the cut-points are unchanged.
 - **The reserve.** This read used the reserve's no-overflow rows. The reserve's rows at points with an overflow
   upstream are still sealed for RIVER-WINTER's own use.
 - **Next check** (owner: this project's family): when winter samples at a listed upland beck exist (none known now),
