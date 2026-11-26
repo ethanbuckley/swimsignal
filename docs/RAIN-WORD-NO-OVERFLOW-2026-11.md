@@ -180,7 +180,10 @@ Built rows hold results and stay out of git, in a scratch folder; `result.json` 
 
 ## The read, 25 November 2026: both conditions pass
 
-Run once, at 14:38 UTC on 25 November 2026, at commit `f44527ec` (the statement as pushed). Logged in
+Run once, at 14:38 UTC on 25 November 2026, at commit `f44527ec` (the statement as pushed at 14:31 UTC). On 26
+November the branch was rebased onto main for its pull request, so that commit is now `a34399c5`; this file, the
+cut-points file and the scripts are byte for byte the same in both (`git diff f44527ec a34399c5` touches only files
+main changed). Logged in
 `docs/rain-word/reads.jsonl`; every figure is in `docs/rain-word/result.json`. The builder took 1,028 reserve samples
 in and gave 1,020 rows out at 12 points in 8 river systems; 8 rows had no full rain window
 (`docs/rain-word/reserve_rows.audit.json`). 8 points have 15 or more rows, in 5 river systems: the River Brock (3
