@@ -1791,7 +1791,7 @@ size are gone.
 **Navigation.** The header's desktop links gained "Research Lab" (`lab/`) and renamed "Research" to "Research &amp;
 data" (`research.html`, now titled "Research and data"). The phone's More menu has both. The four primary phone
 destinations are unchanged. Under the header each Lab page has its own bar: "Research Lab", then the exhibits
-numbered (five from 2 November 2026, when sampling gaps was added; six from 25 November 2026, the overflow ledger). The page you are on is in white with a rule under it, so colour is not the only sign. On a phone the bar
+numbered (five from 2 November 2026, when sampling gaps was added; six from 25 November 2026, the overflow ledger; seven the same day, the river tests, with the bar's link padding 10 px to 8 px so seven fit at 1,440 px). The page you are on is in white with a rule under it, so colour is not the only sign. On a phone the bar
 scrolls sideways, and the current one is scrolled into view. Each exhibit ends with the previous and next exhibit by
 name, the overview at either end, and "Back to the forecasts".
 

@@ -6,9 +6,9 @@
 <!-- The Research Lab's front page. Built into the site at lab/ by scripts/build_site.py write_lab, which points the data reads at
      lab/data/ and the fonts at the site's own; served from the repository root, it reads data/research/ as committed. -->
 <title>Research Lab · SwimSignal</title>
-<meta name="description" content="SwimSignal's Research Lab: exploratory exhibits on satellite pictures of lakes, the rivers joining sewage overflows to swim spots, how past E. coli estimates did, where lab samples are thin, and how many overflows the forecast model counts at each spot.">
+<meta name="description" content="SwimSignal's Research Lab: exploratory exhibits on satellite pictures of lakes, the rivers joining sewage overflows to swim spots, how past E. coli estimates did, where lab samples are thin, and how many overflows the forecast model counts at each spot, and two tests of the river estimate on samples no model had seen.">
 <link rel="stylesheet" href="../../src/dipcast/pages/page.css">
-<link rel="stylesheet" href="lab.css?v=11">
+<link rel="stylesheet" href="lab.css?v=12">
 <link rel="stylesheet" href="pollution/pollution.css?v=1">
 <style>
   .gallery { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px 28px; }
@@ -59,12 +59,13 @@
   <a href="workspace/"><span class="n">4</span>Catchment workspace</a>
   <a href="sampling/"><span class="n">5</span>Sampling gaps</a>
   <a href="overflow-ledger/"><span class="n">6</span>Overflow ledger</a>
+  <a href="rivers/"><span class="n">7</span>River tests</a>
 </div></nav>
 <div class="front intro"><div class="wrap">
   <h1>Research Lab</h1>
   <p class="say">What SwimSignal is investigating, the evidence so far, and what it does not yet show.</p>
   <p>Exploratory work on data already read: it changes no forecast. Missing data is drawn as missing.</p>
-  <p class="status" data-asof="satellite,paths,forecast-record,workspace,sampling,ledger"></p>
+  <p class="status" data-asof="satellite,paths,forecast-record,workspace,sampling,ledger,river-reads"></p>
 </div></div>
 <main><section class="sec gal"><div class="wrap">
   <div class="gallery">
@@ -104,12 +105,18 @@
       <p>How many monitored overflows the forecast model counts at each listed spot, and how much of a spot's weight rests on one of them.</p>
       <p class="kind">Model accounting · no test run</p>
     </a>
+    <a class="ex" href="rivers/">
+      <div class="cover" aria-hidden="true"><div class="map-cover dark"><div class="drawn-map dark" id="rv-cover"></div></div><span class="no">7</span></div>
+      <h2>A river's bad days</h2>
+      <p>At rivers no model had seen, the estimate put bad days in order in summer and winter, and rain alone nearly matched it.</p>
+      <p class="kind">Tested · two reads, Nov 2026</p>
+    </a>
   </div>
   <p class="back"><a href="https://swimsignal.co.uk/">Back to the forecasts</a> · <a href="https://swimsignal.co.uk/research.html">Research &amp; data</a>: every observation, test and record.</p>
 </div></section>
 </main>
 <footer class="foot"><div class="wrap">
-  <p>Covers: Contains modified Copernicus Sentinel data [2026]. <span id="map-credit"></span> Exhibit 2's cover: the mapped rivers joining every spot's overflows to it (OS Open Rivers). Exhibit 3's cover is one dot per sample over 900 and per false alarm, rivers and lakes, 2024–2026, in date order. Exhibit 5's: every spot, filled where it has lab samples, ringed where it has none. Exhibit 6's: every monitored overflow the model traces to a listed spot.</p>
+  <p>Covers: Contains modified Copernicus Sentinel data [2026]. <span id="map-credit"></span> Exhibit 2's cover: the mapped rivers joining every spot's overflows to it (OS Open Rivers). Exhibit 3's cover is one dot per sample over 900 and per false alarm, rivers and lakes, 2024–2026, in date order. Exhibit 5's: every spot, filled where it has lab samples, ringed where it has none. Exhibit 6's: every monitored overflow the model traces to a listed spot. Exhibit 7's: the river monitoring points of its summer test.</p>
   <p>Exploratory work on data already read. It changes nothing in the forecast. Each spot's own page gives the forecast and official advice.</p>
   <p class="site-links"><a href="https://swimsignal.co.uk/about.html">About SwimSignal</a> · <a href="https://swimsignal.co.uk/verification.html">How accurate is it?</a> · <a href="https://swimsignal.co.uk/methods.html">Method</a> · <a href="https://swimsignal.co.uk/spots.html">Every spot</a> · <a href="https://swimsignal.co.uk/research.html">Research and data</a> · <a href="https://swimsignal.co.uk/coverage.html">Coasts, Wales, Scotland, Ireland and algae</a> · <a href="https://swimsignal.co.uk/clubs.html">For organisations</a> · <a href="https://swimsignal.co.uk/feedback.html">Feedback</a> · <a href="https://swimsignal.co.uk/feedback.html?type=spot">Request a spot</a> · <a href="https://swimsignal.co.uk/terms.html">Terms of use</a> · <a href="https://swimsignal.co.uk/privacy.html">Privacy</a> · <a href="https://swimsignal.co.uk/terms.html#data">Data credits</a> · <a href="https://github.com/ethanbuckley/swimsignal">Source code</a> (MIT)</p>
 </div></footer>
@@ -139,6 +146,11 @@
     const o = d.overflows;
     LAB.drawMap(document.getElementById('lg-cover'), o.site_id.map((id, i) => ({ id, lat: o.lat[i], lon: o.lon[i], name: '',
       mark: '<circle r="1.8" fill="#e0766b"/>' })).filter(p => p.lat != null), { inert: true });
+  });
+  // exhibit 7's cover: the river monitoring points of its summer test, from the exhibit's own file
+  Promise.all([LAB.loadOutline(''), fetch('rivers/reads.json').then(r => r.json())]).then(([, d]) => {
+    LAB.drawMap(document.getElementById('rv-cover'), d.points.map(p => ({ id: p.id, lat: p.lat, lon: p.lon, name: '',
+      mark: '<circle r="3.2" fill="#7fc4c9" stroke="#0e1c21" stroke-width="1"/>' })), { inert: true });
   });
 </script>
 </body>

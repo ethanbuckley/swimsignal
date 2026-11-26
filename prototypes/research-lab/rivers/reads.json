@@ -1,0 +1,866 @@
+{
+ "schema": "swimsignal.lab-river-reads",
+ "version": "1.0.0",
+ "last_read": "2026-11-24T16:29:45+00:00",
+ "sources": {
+  "docs/river-unseen/result.json": "ae9818c22f8d18e768bb70b794da7b8d62262dd232e0c66950fc714272da8b76",
+  "docs/river-winter/result.json": "98a6c7223e9b59c69e61494bb2c0321e8400efbd83df1ba4529f0b7bf15e1e5a",
+  "docs/river-unseen/points.csv": "ffcb9762105dff76842ec8ead0c810426e9485534e2b33998c7c23c76f1b0d03"
+ },
+ "records": {
+  "summer": "docs/RIVER-UNSEEN-PROTOCOL-2026-11.md",
+  "winter": "docs/RIVER-WINTER-READ-2026-11.md"
+ },
+ "bars": {
+  "order": 0.15,
+  "summer_range": [
+   0.72,
+   0.88
+  ]
+ },
+ "summer": {
+  "read_at": "2026-11-16T18:19:18+00:00",
+  "rows": 6322,
+  "points": 59,
+  "systems": 33,
+  "seasons": [
+   2012,
+   2013,
+   2014,
+   2015,
+   2016,
+   2017,
+   2018,
+   2019,
+   2021,
+   2022
+  ],
+  "over_900": 3055,
+  "outcome": "order passes, range fails",
+  "order": {
+   "candidate": {
+    "value": 0.3604,
+    "ci95": [
+     0.3139,
+     0.3938
+    ]
+   },
+   "pass": true,
+   "production_deployed": 0.3763,
+   "production_refit": 0.347,
+   "rain_48h": 0.3552
+  },
+  "range": {
+   "inside": 0.531,
+   "pass": false
+  },
+  "brier_over_900": {
+   "p_candidate": 0.3064,
+   "production_refit": 0.3049,
+   "production_deployed": 0.3003,
+   "month_rate": 0.3186,
+   "rain_rule": 0.2863
+  },
+  "bands": {
+   "large": {
+    "rows": 1154,
+    "points": 10,
+    "rho": 0.447,
+    "coverage": 0.6681,
+    "over_900": 469
+   },
+   "medium": {
+    "rows": 3614,
+    "points": 29,
+    "rho": 0.3671,
+    "coverage": 0.5208,
+    "over_900": 1844
+   },
+   "small": {
+    "rows": 1554,
+    "points": 20,
+    "rho": 0.3074,
+    "coverage": 0.453,
+    "over_900": 742
+   }
+  },
+  "purposes": {
+   "MS": {
+    "rows": 313,
+    "points": 29,
+    "rho": 0.2735,
+    "coverage": 0.6422,
+    "over_900": 106
+   },
+   "MU": {
+    "rows": 3063,
+    "points": 30,
+    "rho": 0.4037,
+    "coverage": 0.6066,
+    "over_900": 1407
+   },
+   "PI": {
+    "rows": 2290,
+    "points": 29,
+    "rho": 0.3253,
+    "coverage": 0.4022,
+    "over_900": 1258
+   },
+   "PN": {
+    "rows": 655,
+    "points": 20,
+    "rho": 0.3151,
+    "coverage": 0.5756,
+    "over_900": 283
+   }
+  },
+  "development": {
+   "exposure_alone": 0.3321,
+   "level": {
+    "rows": 6322,
+    "share_over_900": 0.4832,
+    "mean_production_chance": 0.2033,
+    "median_count": 818.0,
+    "brier_production": 0.3003,
+    "brier_own_rate_hindsight": 0.2497
+   }
+  }
+ },
+ "winter": {
+  "read_at": "2026-11-24T16:29:45+00:00",
+  "rows": 2754,
+  "points": 39,
+  "points_15_or_more": 28,
+  "systems": 18,
+  "winters": [
+   2012,
+   2014,
+   2016,
+   2018,
+   2020,
+   2022
+  ],
+  "over_900": 1330,
+  "order": {
+   "production": {
+    "value": 0.4853,
+    "ci95": [
+     0.3926,
+     0.5249
+    ]
+   },
+   "pass": true,
+   "month_removed": {
+    "production": {
+     "value": 0.484,
+     "ci95": [
+      0.3537,
+      0.5305
+     ]
+    },
+    "pass": true,
+    "rain": {
+     "value": 0.4726,
+     "ci95": [
+      0.347,
+      0.5207
+     ]
+    },
+    "exposure": {
+     "value": 0.4713,
+     "ci95": [
+      0.3674,
+      0.5298
+     ]
+    },
+    "production_minus_rain": {
+     "value": 0.0114,
+     "ci95": [
+      -0.0217,
+      0.0319
+     ]
+    }
+   }
+  },
+  "level": {
+   "rows": 2754,
+   "share_over_900": 0.4829,
+   "mean_production_chance": 0.3549,
+   "median_count": 838.0,
+   "brier_production": 0.2187,
+   "brier_own_rate_hindsight": 0.2497
+  },
+  "seasons_of_winter": {
+   "oct_nov": {
+    "rows": 785,
+    "points_15_or_more": 16,
+    "z_prod": {
+     "raw": 0.4317,
+     "month_removed": 0.4554
+    },
+    "rain": {
+     "raw": 0.4441,
+     "month_removed": 0.4548
+    },
+    "exposure": {
+     "raw": 0.4178,
+     "month_removed": 0.4413
+    },
+    "share_over_900": 0.5389
+   },
+   "dec_feb": {
+    "rows": 1167,
+    "points_15_or_more": 24,
+    "z_prod": {
+     "raw": 0.4437,
+     "month_removed": 0.4461
+    },
+    "rain": {
+     "raw": 0.4447,
+     "month_removed": 0.4526
+    },
+    "exposure": {
+     "raw": 0.4126,
+     "month_removed": 0.4218
+    },
+    "share_over_900": 0.5099
+   },
+   "mar_apr": {
+    "rows": 802,
+    "points_15_or_more": 26,
+    "z_prod": {
+     "raw": 0.5001,
+     "month_removed": 0.4987
+    },
+    "rain": {
+     "raw": 0.478,
+     "month_removed": 0.4808
+    },
+    "exposure": {
+     "raw": 0.5125,
+     "month_removed": 0.4925
+    },
+    "share_over_900": 0.389
+   }
+  },
+  "no_overflow": {
+   "rows": 1122,
+   "points_15_or_more": 8,
+   "level": {
+    "rows": 1122,
+    "share_over_900": 0.4554,
+    "mean_production_chance": 0.087,
+    "median_count": 740.0,
+    "brier_production": 0.3647,
+    "brier_own_rate_hindsight": 0.248
+   },
+   "rain_month_removed": {
+    "value": 0.4575,
+    "ci95": [
+     0.3256,
+     0.521
+    ]
+   },
+   "production_month_removed": {
+    "value": 0.4239,
+    "ci95": [
+     0.2888,
+     0.4986
+    ]
+   }
+  }
+ },
+ "points": [
+  {
+   "id": "AN-DEB020",
+   "name": "R.Deben A1120 Rd.Br.Ashfield",
+   "water": "River Deben",
+   "lat": 52.20766,
+   "lon": 1.22285,
+   "region": "East Anglia",
+   "rows": 202,
+   "overflows_upstream": 1
+  },
+  {
+   "id": "AN-DEB030",
+   "name": "R.Deben Brandeston Br.Cretingham",
+   "water": "River Deben",
+   "lat": 52.19548,
+   "lon": 1.2732,
+   "region": "East Anglia",
+   "rows": 86,
+   "overflows_upstream": 1
+  },
+  {
+   "id": "AN-DEB085",
+   "name": "R.Deben Naunton Hall Gauging Station",
+   "water": "River Deben",
+   "lat": 52.13009,
+   "lon": 1.39116,
+   "region": "East Anglia",
+   "rows": 106,
+   "overflows_upstream": 3
+  },
+  {
+   "id": "AN-ORE040",
+   "name": "R.Ore Beversham Bridge",
+   "water": "River Ore",
+   "lat": 52.17161,
+   "lon": 1.44907,
+   "region": "East Anglia",
+   "rows": 236,
+   "overflows_upstream": 4
+  },
+  {
+   "id": "AN-TUD070",
+   "name": "R.Tud Costessey Park Bridge",
+   "water": "River Tud",
+   "lat": 52.65508,
+   "lon": 1.20688,
+   "region": "East Anglia",
+   "rows": 120,
+   "overflows_upstream": 1
+  },
+  {
+   "id": "NW-88003840",
+   "name": "River Wyre Ptc River Brock",
+   "water": "River Wyre",
+   "lat": 53.86807,
+   "lon": -2.81301,
+   "region": "North West",
+   "rows": 195,
+   "overflows_upstream": 7
+  },
+  {
+   "id": "NW-88003867",
+   "name": "Woodplumpton Brook Ptc Barton Brook",
+   "water": "Woodplumpton Brook",
+   "lat": 53.8251,
+   "lon": -2.79776,
+   "region": "North West",
+   "rows": 204,
+   "overflows_upstream": 2
+  },
+  {
+   "id": "NW-88003870",
+   "name": "New Draught Brook Ptc Old River Brock",
+   "water": "New Draught",
+   "lat": 53.85455,
+   "lon": -2.79338,
+   "region": "North West",
+   "rows": 86,
+   "overflows_upstream": 3
+  },
+  {
+   "id": "NW-88003872",
+   "name": "River Wyre At St Michaels",
+   "water": "River Wyre",
+   "lat": 53.86408,
+   "lon": -2.81799,
+   "region": "North West",
+   "rows": 402,
+   "overflows_upstream": 10
+  },
+  {
+   "id": "SO-G0003625",
+   "name": "Hermitage Stream At B2150 Havant - New Road",
+   "water": "Hermitage Stream",
+   "lat": 50.85616,
+   "lon": -0.99163,
+   "region": "South",
+   "rows": 41,
+   "overflows_upstream": 3
+  },
+  {
+   "id": "SW-50020113",
+   "name": "Bourne Stream",
+   "water": "The Bourne",
+   "lat": 50.71703,
+   "lon": -1.87574,
+   "region": "South West",
+   "rows": 121,
+   "overflows_upstream": 2
+  },
+  {
+   "id": "SW-50210209",
+   "name": "Hampshire Avon At Str Sub Castle",
+   "water": "River Avon",
+   "lat": 51.09564,
+   "lon": -1.81684,
+   "region": "South West",
+   "rows": 80,
+   "overflows_upstream": 18
+  },
+  {
+   "id": "SW-50220110",
+   "name": "River Nadder At Bemerton",
+   "water": "River Nadder",
+   "lat": 51.0744,
+   "lon": -1.83489,
+   "region": "South West",
+   "rows": 79,
+   "overflows_upstream": 18
+  },
+  {
+   "id": "SW-50220136",
+   "name": "River Nadder At Wilton",
+   "water": "River Nadder",
+   "lat": 51.07758,
+   "lon": -1.86436,
+   "region": "South West",
+   "rows": 80,
+   "overflows_upstream": 8
+  },
+  {
+   "id": "SW-50220329",
+   "name": "River Nadder At Wardour",
+   "water": "River Nadder",
+   "lat": 51.04473,
+   "lon": -2.11154,
+   "region": "South West",
+   "rows": 80,
+   "overflows_upstream": 1
+  },
+  {
+   "id": "SW-50230145",
+   "name": "River Wylye At South Newton",
+   "water": "River Wylye",
+   "lat": 51.10383,
+   "lon": -1.87539,
+   "region": "South West",
+   "rows": 80,
+   "overflows_upstream": 9
+  },
+  {
+   "id": "SW-50240116",
+   "name": "River Bourne At Laverstock",
+   "water": "River Bourne",
+   "lat": 51.07109,
+   "lon": -1.77971,
+   "region": "South West",
+   "rows": 80,
+   "overflows_upstream": 6
+  },
+  {
+   "id": "SW-50250634",
+   "name": "River Wylye At B3095 Bridge",
+   "water": "River Wylye",
+   "lat": 51.1674,
+   "lon": -2.18721,
+   "region": "South West",
+   "rows": 79,
+   "overflows_upstream": 2
+  },
+  {
+   "id": "SW-50280344",
+   "name": "Hampshire Avon At Avon Causeway",
+   "water": "River Avon",
+   "lat": 50.77941,
+   "lon": -1.78946,
+   "region": "South West",
+   "rows": 80,
+   "overflows_upstream": 16
+  },
+  {
+   "id": "SW-50280476",
+   "name": "Avon At Ringwood Ds Substation At A338",
+   "water": "River Avon",
+   "lat": 50.84934,
+   "lon": -1.7944,
+   "region": "South West",
+   "rows": 80,
+   "overflows_upstream": 23
+  },
+  {
+   "id": "SW-50280585",
+   "name": "Hampshire Avon At Fordingbridge",
+   "water": "River Avon",
+   "lat": 50.92844,
+   "lon": -1.77729,
+   "region": "South West",
+   "rows": 80,
+   "overflows_upstream": 26
+  },
+  {
+   "id": "SW-50370220",
+   "name": "River Stour At Conifer Close",
+   "water": "River Stour",
+   "lat": 50.75616,
+   "lon": -1.80814,
+   "region": "South West",
+   "rows": 78,
+   "overflows_upstream": 47
+  },
+  {
+   "id": "SW-60580103",
+   "name": "Pill R Blue Anchor",
+   "water": "Pill River",
+   "lat": 51.18233,
+   "lon": -3.39319,
+   "region": "South West",
+   "rows": 60,
+   "overflows_upstream": 3
+  },
+  {
+   "id": "SW-70410301",
+   "name": "Knowle Brook In Budleigh At Last Culvert Before Beach",
+   "water": "",
+   "lat": 50.6291,
+   "lon": -3.32266,
+   "region": "South West",
+   "rows": 100,
+   "overflows_upstream": 4
+  },
+  {
+   "id": "SW-70515502",
+   "name": "Dawlish Town  -  Dawlish Water",
+   "water": "Dawlish Water",
+   "lat": 50.57997,
+   "lon": -3.4648,
+   "region": "South West",
+   "rows": 118,
+   "overflows_upstream": 5
+  },
+  {
+   "id": "SW-70613502",
+   "name": "Goodrington Beach    Stream A",
+   "water": "",
+   "lat": 50.42317,
+   "lon": -3.55892,
+   "region": "South West",
+   "rows": 39,
+   "overflows_upstream": 1
+  },
+  {
+   "id": "SW-70811912",
+   "name": "Salcombe North Sands - Collaton Stream  (Beach Survey)",
+   "water": "",
+   "lat": 50.22995,
+   "lon": -3.78139,
+   "region": "South West",
+   "rows": 92,
+   "overflows_upstream": 1
+  },
+  {
+   "id": "SW-70816009",
+   "name": "River Avon Boat House",
+   "water": "River Avon",
+   "lat": 50.28067,
+   "lon": -3.87707,
+   "region": "South West",
+   "rows": 42,
+   "overflows_upstream": 7
+  },
+  {
+   "id": "SW-70817003",
+   "name": "Challaborough Beach - Stream A          (Beach Survey)",
+   "water": "",
+   "lat": 50.2887,
+   "lon": -3.89855,
+   "region": "South West",
+   "rows": 134,
+   "overflows_upstream": 1
+  },
+  {
+   "id": "SW-70920104",
+   "name": "River Erme At Sequer'S Bridge",
+   "water": "River Erme",
+   "lat": 50.3509,
+   "lon": -3.92408,
+   "region": "South West",
+   "rows": 101,
+   "overflows_upstream": 11
+  },
+  {
+   "id": "SW-81010825",
+   "name": "Silverbridge Lake At Kitley Hotel (U/S Lake)",
+   "water": "Silverbridge Lake",
+   "lat": 50.34738,
+   "lon": -4.02553,
+   "region": "South West",
+   "rows": 77,
+   "overflows_upstream": 3
+  },
+  {
+   "id": "SW-81011006",
+   "name": "Wembury Beach    -    Stream A",
+   "water": "",
+   "lat": 50.3179,
+   "lon": -4.0841,
+   "region": "South West",
+   "rows": 61,
+   "overflows_upstream": 1
+  },
+  {
+   "id": "SW-81020105",
+   "name": "R Yealm At Puslinch Gauging Station",
+   "water": "River Yealm",
+   "lat": 50.34269,
+   "lon": -4.00541,
+   "region": "South West",
+   "rows": 215,
+   "overflows_upstream": 10
+  },
+  {
+   "id": "SW-81020137",
+   "name": "River Yealm At Popple'S Bridge",
+   "water": "River Yealm",
+   "lat": 50.37197,
+   "lon": -3.97234,
+   "region": "South West",
+   "rows": 79,
+   "overflows_upstream": 5
+  },
+  {
+   "id": "SW-81020165",
+   "name": "River Yealm At Fardel Mill Farm Bridge",
+   "water": "River Yealm",
+   "lat": 50.39795,
+   "lon": -3.96766,
+   "region": "South West",
+   "rows": 192,
+   "overflows_upstream": 1
+  },
+  {
+   "id": "SW-81020802",
+   "name": "River Piall At Marks Bridge",
+   "water": "Piall River",
+   "lat": 50.39753,
+   "lon": -3.96914,
+   "region": "South West",
+   "rows": 190,
+   "overflows_upstream": 2
+  },
+  {
+   "id": "SW-81020826",
+   "name": "Slade Bridge     Piall River",
+   "water": "Piall River",
+   "lat": 50.41249,
+   "lon": -3.97216,
+   "region": "South West",
+   "rows": 79,
+   "overflows_upstream": 2
+  },
+  {
+   "id": "SW-81212002",
+   "name": "Stream At Bovisand Beach",
+   "water": "",
+   "lat": 50.33554,
+   "lon": -4.11921,
+   "region": "South West",
+   "rows": 81,
+   "overflows_upstream": 1
+  },
+  {
+   "id": "SW-81212011",
+   "name": "Bovisand Stream U/S Bovisand Lodge",
+   "water": "",
+   "lat": 50.33716,
+   "lon": -4.11042,
+   "region": "South West",
+   "rows": 60,
+   "overflows_upstream": 1
+  },
+  {
+   "id": "SW-81310200",
+   "name": "R Seaton At Beach D/S Rd Bridge By Beach Car Park",
+   "water": "River Seaton",
+   "lat": 50.36499,
+   "lon": -4.38621,
+   "region": "South West",
+   "rows": 203,
+   "overflows_upstream": 8
+  },
+  {
+   "id": "SW-81420273",
+   "name": "East Looe River Above Liskeard (Lodge Hill) Stw",
+   "water": "East Looe River",
+   "lat": 50.44062,
+   "lon": -4.47742,
+   "region": "South West",
+   "rows": 39,
+   "overflows_upstream": 2
+  },
+  {
+   "id": "SW-81610110",
+   "name": "Par River At Par Beach",
+   "water": "Par River",
+   "lat": 50.34775,
+   "lon": -4.70327,
+   "region": "South West",
+   "rows": 161,
+   "overflows_upstream": 7
+  },
+  {
+   "id": "SW-81610134",
+   "name": "Par River At St. Blazey Bridge",
+   "water": "Par River",
+   "lat": 50.36481,
+   "lon": -4.71436,
+   "region": "South West",
+   "rows": 41,
+   "overflows_upstream": 5
+  },
+  {
+   "id": "SW-81810717",
+   "name": "Port Mellon Beach - Stream A            (Beach Survey)",
+   "water": "",
+   "lat": 50.26164,
+   "lon": -4.78636,
+   "region": "South West",
+   "rows": 80,
+   "overflows_upstream": 2
+  },
+  {
+   "id": "SW-81810720",
+   "name": "Portmellon Stream At Galowras Mill",
+   "water": "",
+   "lat": 50.25851,
+   "lon": -4.79997,
+   "region": "South West",
+   "rows": 60,
+   "overflows_upstream": 1
+  },
+  {
+   "id": "SW-81811103",
+   "name": "Caerhays Stream At Porthluney Beach",
+   "water": "",
+   "lat": 50.23705,
+   "lon": -4.84125,
+   "region": "South West",
+   "rows": 230,
+   "overflows_upstream": 1
+  },
+  {
+   "id": "SW-81811127",
+   "name": "Caerhays Stream At Tubbs Mill",
+   "water": "",
+   "lat": 50.25432,
+   "lon": -4.86184,
+   "region": "South West",
+   "rows": 116,
+   "overflows_upstream": 1
+  },
+  {
+   "id": "SW-82211501",
+   "name": "Stennack Stream At Culvert By Lifeboat Station",
+   "water": "Stennack River",
+   "lat": 50.21239,
+   "lon": -5.47932,
+   "region": "South West",
+   "rows": 50,
+   "overflows_upstream": 1
+  },
+  {
+   "id": "SW-82310103",
+   "name": "Red River At Gwithian Towans",
+   "water": "Red River",
+   "lat": 50.22871,
+   "lon": -5.38477,
+   "region": "South West",
+   "rows": 129,
+   "overflows_upstream": 9
+  },
+  {
+   "id": "SW-82510114",
+   "name": "Porth Stream At Rialton Bridge",
+   "water": "",
+   "lat": 50.4212,
+   "lon": -5.03147,
+   "region": "South West",
+   "rows": 99,
+   "overflows_upstream": 1
+  },
+  {
+   "id": "SW-82511002",
+   "name": "Watergate Beach - Stream A",
+   "water": "",
+   "lat": 50.44417,
+   "lon": -5.04217,
+   "region": "South West",
+   "rows": 45,
+   "overflows_upstream": 1
+  },
+  {
+   "id": "SW-82511902",
+   "name": "Treyarnon Bay Beach - Stream A          (Beach Survey)",
+   "water": "",
+   "lat": 50.52558,
+   "lon": -5.02343,
+   "region": "South West",
+   "rows": 81,
+   "overflows_upstream": 1
+  },
+  {
+   "id": "SW-82517005",
+   "name": "Polzeath Beach - Stream A",
+   "water": "",
+   "lat": 50.57331,
+   "lon": -4.9156,
+   "region": "South West",
+   "rows": 100,
+   "overflows_upstream": 1
+  },
+  {
+   "id": "SW-82517015",
+   "name": "Polzeath Stream At Shilla Mill U/S Ford",
+   "water": "",
+   "lat": 50.56822,
+   "lon": -4.91035,
+   "region": "South West",
+   "rows": 80,
+   "overflows_upstream": 1
+  },
+  {
+   "id": "SW-82610105",
+   "name": "Trebarwith Strand - Stream A",
+   "water": "",
+   "lat": 50.64454,
+   "lon": -4.76087,
+   "region": "South West",
+   "rows": 93,
+   "overflows_upstream": 1
+  },
+  {
+   "id": "SW-82611375",
+   "name": "Crackington Haven Stream B At Beach",
+   "water": "",
+   "lat": 50.74077,
+   "lon": -4.63342,
+   "region": "South West",
+   "rows": 42,
+   "overflows_upstream": 1
+  },
+  {
+   "id": "SW-82710129",
+   "name": "River Strat At Hele Bridge",
+   "water": "River Strat",
+   "lat": 50.80544,
+   "lon": -4.53401,
+   "region": "South West",
+   "rows": 121,
+   "overflows_upstream": 2
+  },
+  {
+   "id": "SW-82710406",
+   "name": "River Neet At Tea Room Entrance (Formerly 'D/S Widemouth Bay Stw')",
+   "water": "River Neet",
+   "lat": 50.80438,
+   "lon": -4.53494,
+   "region": "South West",
+   "rows": 119,
+   "overflows_upstream": 2
+  },
+  {
+   "id": "TH-PRTS0046",
+   "name": "R. Thames U/S Of The Runnymede Channel Intake",
+   "water": "River Thames",
+   "lat": 51.42274,
+   "lon": -0.51011,
+   "region": "Thames",
+   "rows": 38,
+   "overflows_upstream": 21
+  }
+ ],
+ "credit": "Environment Agency Water Quality Archive, Open Government Licence v3.0. Rain: ERA5-Land (Copernicus Climate Change Service)."
+}

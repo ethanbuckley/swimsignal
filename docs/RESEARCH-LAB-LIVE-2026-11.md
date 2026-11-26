@@ -173,3 +173,26 @@ Ethan asked to finish what was half done in the Lab, naming the overflow ledger'
   resolves, the sitemap). Served from a scratch build at 1440 and 375 px in headless Chrome and the app's browser: no
   console error, no failed request, no sideways page scroll on a phone.
 
+## Exhibit 7, a river's bad days (25 November 2026)
+
+Ethan asked for new exhibits only where a tested result deserves one. Of the candidates (RIVER-UNSEEN with the winter
+read, bench read 1 on lake ranges, the Scotland 2021 backtest), the river pair has the clearest value to a swimmer: it
+says what the estimate does and does not know about a river's bad days, at points no model had seen, in both seasons.
+Bench read 1 applies to 7 lake bathing waters and changed nothing a reader sees; Scotland 2021 supports a trial that is
+switched off. Both stay in the register.
+
+- **What it shows.** The order passed in summer (6,322 results, 59 points, 2012-22) and winter (2,754 results, six even
+  winters); rain in the 48 hours before did nearly as well, and the estimate is not shown better than it; the chance
+  of a result over 900 was too low, far too low with no overflow upstream. What it changed on the site: the
+  "higher or lower than usual here" line, and nothing in the level.
+- **How the figures get there.** `scripts/lab_river_reads.py` copies them from `docs/river-unseen/result.json` and
+  `docs/river-winter/result.json` into `rivers/reads.json`, with the summer read's 59 points from
+  `docs/river-unseen/points.csv`. `check` compares the file with the results; `tests/test_lab_river_reads.py` runs it
+  and checks that no figure is typed into the page. Figures the winter result reports on summer rows already read
+  (the overflow figure alone, the estimate's summer chance) are labelled development.
+- **Dates.** `refresh.json` has a `river-reads` part dated by the later read, never called old: each read was made
+  once, and a new one would be a new version.
+- **Shell.** Every Lab bar has eight links. "River tests" is the bar's short name. The bar's links went from 10 to
+  8 px padding so all of them fit at 1,440 px (`lab.css?v=12` on every page). Exhibit 6 leads to 7, which leads back
+  to the overview. Cover `assets/covers/rivers.jpg`, taken from the front page's drawn cover.
+

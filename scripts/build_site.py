@@ -4437,6 +4437,9 @@ def write_lab_refresh(site: Path, paths_from_build: bool = False) -> dict:
         # its own trace at every build, so the ledger drifts from it and is called old after 90 days, as the workspace is
         "ledger": {"label": "Overflow ledger weights", "short": "ledger", "as_of": _lab_date(out / "data" / "overflow_ledger.v1.json", "generated_at"),
                    "refresh": "by hand, from exhibit 2's export", "stale_days": 90},
+        # exhibit 7: two dated reads (RIVER-UNSEEN, RIVER-WINTER), each made once; a new read would be a new version
+        "river-reads": {"label": "River tests on unseen samples", "short": "river tests", "as_of": _lab_date(out / "rivers" / "reads.json", "last_read"),
+                        "refresh": "two dated reads, each made once", "stale_days": None},
         "catalogue": {"label": "Research records", "short": "records", "as_of": _lab_date(out / "data" / "research_catalogue.v1.json", "written"),
                       "refresh": "with each research record", "stale_days": None},
     }
