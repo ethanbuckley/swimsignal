@@ -1,0 +1,8698 @@
+{
+ "credit": "Contains Environment Agency, Natural Resources Wales and DAERA data, OGL v3.0. Rain generated using Copernicus Climate Change Service information 2026.",
+ "generated_at": "2026-11-26T22:15:06+00:00",
+ "nations": {
+  "england": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 762,
+    "samples": 13425,
+    "share_over_500": 0.0568
+   },
+   "beaches": 407,
+   "dry": {
+    "median": "<10",
+    "over_500": 248,
+    "samples": 41792,
+    "share_over_500": 0.0059
+   },
+   "period": "May to September, 2012 to 2026",
+   "samples": 98218,
+   "tested": "A frozen model with rain in it predicted results over 500 better than the same model without rain on 65,350 samples from 2012 to 2021 at 403 English beaches, seasons it never saw (9 of 10 seasons better). That supports these lines; it is not a chance for today."
+  },
+  "northern_ireland": {
+   "after_rain": {
+    "median": 16.0,
+    "over_500": 34,
+    "samples": 642,
+    "share_over_500": 0.053
+   },
+   "beaches": 32,
+   "dry": {
+    "median": 10.0,
+    "over_500": 7,
+    "samples": 719,
+    "share_over_500": 0.0097
+   },
+   "period": "May to September, 2023 to 2026",
+   "samples": 2564,
+   "tested": "England's frozen model, never fitted on Welsh or Northern Irish samples, put each beach's 2023 to 2026 samples in order better with rain than without (7,019 samples at 141 beaches). That supports these lines; it is not a chance for today."
+  },
+  "wales": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 48,
+    "samples": 893,
+    "share_over_500": 0.0538
+   },
+   "beaches": 110,
+   "dry": {
+    "median": "<10",
+    "over_500": 8,
+    "samples": 1555,
+    "share_over_500": 0.0051
+   },
+   "period": "May to September, 2023 to 2026",
+   "samples": 4471,
+   "tested": "England's frozen model, never fitted on Welsh or Northern Irish samples, put each beach's 2023 to 2026 samples in order better with rain than without (7,019 samples at 141 beaches). That supports these lines; it is not a chance for today."
+  }
+ },
+ "rain": "ERA5-Land hourly reanalysis (Copernicus Climate Change Service), the beach's 0.1 degree cell or the nearest land point within about 30 km, summed over the 48 hours before each sample",
+ "records": [
+  "docs/COASTAL-C1-PROTOCOL-2026-11.md",
+  "docs/ANYWATER-UK-STATEMENT-2026-11.md"
+ ],
+ "rule": {
+  "after_rain_mm": 10.0,
+  "dry_mm": 1.0,
+  "hours": 48,
+  "min_group": 10
+ },
+ "schema": "swimsignal.coastal-rain-history",
+ "sites": {
+  "daera-30003": {
+   "after_rain": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 24
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 14
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "northern_ireland",
+   "samples": 80
+  },
+  "daera-30010": {
+   "after_rain": {
+    "median": 22.0,
+    "over_500": 2,
+    "samples": 22
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 14
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "northern_ireland",
+   "samples": 80
+  },
+  "daera-30015": {
+   "after_rain": {
+    "median": 24.0,
+    "over_500": 3,
+    "samples": 22
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 14
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "northern_ireland",
+   "samples": 80
+  },
+  "daera-30039": {
+   "after_rain": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 21
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 19
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "northern_ireland",
+   "samples": 80
+  },
+  "daera-30045": {
+   "after_rain": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 22
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 19
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "northern_ireland",
+   "samples": 80
+  },
+  "daera-30047": {
+   "after_rain": {
+    "median": 16.0,
+    "over_500": 1,
+    "samples": 22
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 19
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "northern_ireland",
+   "samples": 80
+  },
+  "daera-30052": {
+   "after_rain": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 22
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 19
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "northern_ireland",
+   "samples": 80
+  },
+  "daera-30061": {
+   "after_rain": {
+    "median": 10.0,
+    "over_500": 2,
+    "samples": 20
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 19
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "northern_ireland",
+   "samples": 80
+  },
+  "daera-30074": {
+   "after_rain": {
+    "median": 50.0,
+    "over_500": 3,
+    "samples": 21
+   },
+   "dry": {
+    "median": 19.0,
+    "over_500": 0,
+    "samples": 23
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "northern_ireland",
+   "samples": 80
+  },
+  "daera-30082": {
+   "after_rain": {
+    "median": 16.0,
+    "over_500": 0,
+    "samples": 21
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 20
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "northern_ireland",
+   "samples": 80
+  },
+  "daera-30095": {
+   "after_rain": {
+    "median": 53.0,
+    "over_500": 1,
+    "samples": 21
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 25
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "northern_ireland",
+   "samples": 80
+  },
+  "daera-30099": {
+   "after_rain": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 20
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 21
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "northern_ireland",
+   "samples": 80
+  },
+  "daera-30103": {
+   "after_rain": {
+    "median": 13.0,
+    "over_500": 1,
+    "samples": 20
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 21
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "northern_ireland",
+   "samples": 80
+  },
+  "daera-30109": {
+   "after_rain": {
+    "median": 20.0,
+    "over_500": 1,
+    "samples": 21
+   },
+   "dry": {
+    "median": 17.0,
+    "over_500": 0,
+    "samples": 24
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "northern_ireland",
+   "samples": 80
+  },
+  "daera-30115": {
+   "after_rain": {
+    "median": 19.0,
+    "over_500": 0,
+    "samples": 21
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 3,
+    "samples": 24
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "northern_ireland",
+   "samples": 80
+  },
+  "daera-30119": {
+   "after_rain": {
+    "median": 12.0,
+    "over_500": 0,
+    "samples": 21
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 24
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "northern_ireland",
+   "samples": 80
+  },
+  "daera-30127": {
+   "after_rain": {
+    "median": 33.0,
+    "over_500": 0,
+    "samples": 19
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 23
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "northern_ireland",
+   "samples": 80
+  },
+  "daera-30141": {
+   "after_rain": {
+    "median": 11.0,
+    "over_500": 0,
+    "samples": 17
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 26
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "northern_ireland",
+   "samples": 80
+  },
+  "daera-30151": {
+   "after_rain": {
+    "median": 120.0,
+    "over_500": 4,
+    "samples": 17
+   },
+   "dry": {
+    "median": 25.0,
+    "over_500": 2,
+    "samples": 28
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "northern_ireland",
+   "samples": 81
+  },
+  "daera-30157": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 2,
+    "samples": 17
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 28
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "northern_ireland",
+   "samples": 80
+  },
+  "daera-30173": {
+   "after_rain": {
+    "median": 14.0,
+    "over_500": 2,
+    "samples": 17
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 30
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "northern_ireland",
+   "samples": 80
+  },
+  "daera-30182": {
+   "after_rain": {
+    "median": 21.0,
+    "over_500": 2,
+    "samples": 22
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 25
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "northern_ireland",
+   "samples": 81
+  },
+  "daera-30184": {
+   "after_rain": {
+    "median": 10.0,
+    "over_500": 1,
+    "samples": 22
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 18
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "northern_ireland",
+   "samples": 80
+  },
+  "daera-30185": {
+   "after_rain": {
+    "median": 32.0,
+    "over_500": 0,
+    "samples": 18
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 27
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "northern_ireland",
+   "samples": 80
+  },
+  "daera-30186": {
+   "after_rain": {
+    "median": 10.0,
+    "over_500": 1,
+    "samples": 16
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 25
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "northern_ireland",
+   "samples": 80
+  },
+  "daera-30187": {
+   "after_rain": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 18
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 27
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "northern_ireland",
+   "samples": 80
+  },
+  "daera-30195": {
+   "after_rain": {
+    "median": 22.0,
+    "over_500": 3,
+    "samples": 21
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 23
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "northern_ireland",
+   "samples": 80
+  },
+  "daera-30197": {
+   "after_rain": {
+    "median": 25.0,
+    "over_500": 0,
+    "samples": 21
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 25
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "northern_ireland",
+   "samples": 80
+  },
+  "daera-30200": {
+   "after_rain": {
+    "median": 21.0,
+    "over_500": 0,
+    "samples": 20
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 25
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "northern_ireland",
+   "samples": 81
+  },
+  "daera-30202": {
+   "after_rain": {
+    "median": 10.0,
+    "over_500": 1,
+    "samples": 21
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 21
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "northern_ireland",
+   "samples": 81
+  },
+  "daera-30205": {
+   "after_rain": {
+    "median": 47.0,
+    "over_500": 2,
+    "samples": 21
+   },
+   "dry": {
+    "median": 22.0,
+    "over_500": 0,
+    "samples": 24
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "northern_ireland",
+   "samples": 80
+  },
+  "daera-30206": {
+   "after_rain": {
+    "median": 51.0,
+    "over_500": 2,
+    "samples": 14
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 2,
+    "samples": 25
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "northern_ireland",
+   "samples": 80
+  },
+  "ukc1101-06000": {
+   "after_rain": {
+    "median": 27.0,
+    "over_500": 3,
+    "samples": 32
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 2,
+    "samples": 96
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 283
+  },
+  "ukc1101-06100": {
+   "after_rain": {
+    "median": 27.0,
+    "over_500": 2,
+    "samples": 30
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 94
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 277
+  },
+  "ukc1101-06200": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 2,
+    "samples": 25
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 73
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 231
+  },
+  "ukc1202-06300": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 7,
+    "samples": 41
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 108
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 283
+  },
+  "ukc1202-06400": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 4,
+    "samples": 33
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 107
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 268
+  },
+  "ukc1202-06500": {
+   "after_rain": {
+    "median": 45.0,
+    "over_500": 7,
+    "samples": 37
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 107
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 275
+  },
+  "ukc1202-06600": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 2,
+    "samples": 37
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 99
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 261
+  },
+  "ukc1202-06650": {
+   "after_rain": {
+    "median": 45.0,
+    "over_500": 3,
+    "samples": 35
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 97
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 264
+  },
+  "ukc1202-06700": {
+   "after_rain": {
+    "median": 55.0,
+    "over_500": 5,
+    "samples": 35
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 106
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 278
+  },
+  "ukc1404-05700": {
+   "after_rain": {
+    "median": 45.0,
+    "over_500": 6,
+    "samples": 25
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 99
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 278
+  },
+  "ukc1404-05800": {
+   "after_rain": {
+    "median": 45.0,
+    "over_500": 5,
+    "samples": 23
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 102
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 275
+  },
+  "ukc1404-05900": {
+   "after_rain": {
+    "median": 45.0,
+    "over_500": 7,
+    "samples": 35
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 97
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 285
+  },
+  "ukc2100-04220": {
+   "after_rain": {
+    "samples": 2
+   },
+   "dry": {
+    "samples": 9
+   },
+   "first_year": 2026,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 20
+  },
+  "ukc2101-04000": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 30
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 76
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 198
+  },
+  "ukc2101-04200": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 2,
+    "samples": 29
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 69
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 183
+  },
+  "ukc2101-04250": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 4,
+    "samples": 45
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 100
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 268
+  },
+  "ukc2102-03600": {
+   "after_rain": {
+    "median": 45.0,
+    "over_500": 12,
+    "samples": 45
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 2,
+    "samples": 91
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 281
+  },
+  "ukc2102-03700": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 26
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 64
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 183
+  },
+  "ukc2102-03800": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 26
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 64
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 183
+  },
+  "ukc2102-03900": {
+   "after_rain": {
+    "median": 27.0,
+    "over_500": 1,
+    "samples": 33
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 87
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 237
+  },
+  "ukc2103-04600": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 2,
+    "samples": 35
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 87
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 261
+  },
+  "ukc2103-04700": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 4,
+    "samples": 34
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 89
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 270
+  },
+  "ukc2104-04280": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 4,
+    "samples": 45
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 96
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 263
+  },
+  "ukc2104-04300": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 28
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 63
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 178
+  },
+  "ukc2106-04400": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 45
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 98
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 273
+  },
+  "ukc2106-04500": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 2,
+    "samples": 43
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 3,
+    "samples": 92
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 258
+  },
+  "ukc2203-04800": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 2,
+    "samples": 28
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 79
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 233
+  },
+  "ukc2203-04900": {
+   "after_rain": {
+    "median": 55.0,
+    "over_500": 2,
+    "samples": 36
+   },
+   "dry": {
+    "median": 27.0,
+    "over_500": 1,
+    "samples": 101
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 281
+  },
+  "ukc2203-05000": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 2,
+    "samples": 29
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 82
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 233
+  },
+  "ukc2203-05100": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 20
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 63
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 178
+  },
+  "ukc2203-05200": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 1,
+    "samples": 20
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 62
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 178
+  },
+  "ukc2204-05300": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 4,
+    "samples": 35
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 99
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 282
+  },
+  "ukc2204-05400": {
+   "after_rain": {
+    "median": 45.0,
+    "over_500": 3,
+    "samples": 29
+   },
+   "dry": {
+    "median": 18.0,
+    "over_500": 1,
+    "samples": 98
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 275
+  },
+  "ukc2300-05500": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 1,
+    "samples": 32
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 100
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 283
+  },
+  "ukc2300-05600": {
+   "after_rain": {
+    "median": 27.0,
+    "over_500": 3,
+    "samples": 30
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 98
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 278
+  },
+  "ukd1101-46100": {
+   "after_rain": {
+    "median": 73.0,
+    "over_500": 11,
+    "samples": 62
+   },
+   "dry": {
+    "median": 18.0,
+    "over_500": 3,
+    "samples": 80
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 272
+  },
+  "ukd1102-44200": {
+   "after_rain": {
+    "median": 36.0,
+    "over_500": 8,
+    "samples": 84
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 2,
+    "samples": 76
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 284
+  },
+  "ukd1102-44300": {
+   "after_rain": {
+    "median": 27.0,
+    "over_500": 6,
+    "samples": 82
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 2,
+    "samples": 73
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 277
+  },
+  "ukd1102-44400": {
+   "after_rain": {
+    "median": 27.0,
+    "over_500": 5,
+    "samples": 82
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 4,
+    "samples": 71
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 275
+  },
+  "ukd1103-44800": {
+   "after_rain": {
+    "median": 160.0,
+    "over_500": 13,
+    "samples": 60
+   },
+   "dry": {
+    "median": 27.0,
+    "over_500": 3,
+    "samples": 76
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 269
+  },
+  "ukd1103-45200": {
+   "after_rain": {
+    "median": 27.0,
+    "over_500": 5,
+    "samples": 78
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 75
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 263
+  },
+  "ukd1103-45600": {
+   "after_rain": {
+    "median": 120.0,
+    "over_500": 9,
+    "samples": 89
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 75
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 283
+  },
+  "ukd1103-45920": {
+   "after_rain": {
+    "median": 36.0,
+    "over_500": 6,
+    "samples": 84
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 78
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 271
+  },
+  "ukd4200-42100": {
+   "after_rain": {
+    "median": 73.0,
+    "over_500": 6,
+    "samples": 69
+   },
+   "dry": {
+    "median": 36.0,
+    "over_500": 3,
+    "samples": 83
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 260
+  },
+  "ukd4200-42300": {
+   "after_rain": {
+    "median": 73.0,
+    "over_500": 6,
+    "samples": 70
+   },
+   "dry": {
+    "median": 55.0,
+    "over_500": 1,
+    "samples": 83
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 260
+  },
+  "ukd4200-42500": {
+   "after_rain": {
+    "median": 100.0,
+    "over_500": 8,
+    "samples": 74
+   },
+   "dry": {
+    "median": 73.0,
+    "over_500": 1,
+    "samples": 83
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 265
+  },
+  "ukd4200-42600": {
+   "after_rain": {
+    "median": 45.0,
+    "over_500": 4,
+    "samples": 68
+   },
+   "dry": {
+    "median": 18.0,
+    "over_500": 0,
+    "samples": 83
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 263
+  },
+  "ukd4303-41800": {
+   "after_rain": {
+    "median": 110.0,
+    "over_500": 11,
+    "samples": 67
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 74
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 271
+  },
+  "ukd4303-41900": {
+   "after_rain": {
+    "median": 100.0,
+    "over_500": 11,
+    "samples": 59
+   },
+   "dry": {
+    "median": 18.0,
+    "over_500": 1,
+    "samples": 65
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 230
+  },
+  "ukd4305-43260": {
+   "after_rain": {
+    "median": 82.0,
+    "over_500": 12,
+    "samples": 71
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 2,
+    "samples": 83
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 276
+  },
+  "ukd4305-43550": {
+   "after_rain": {
+    "median": 91.0,
+    "over_500": 7,
+    "samples": 70
+   },
+   "dry": {
+    "median": 18.0,
+    "over_500": 3,
+    "samples": 81
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 276
+  },
+  "ukd4312-42800": {
+   "after_rain": {
+    "median": 73.0,
+    "over_500": 8,
+    "samples": 79
+   },
+   "dry": {
+    "median": 18.0,
+    "over_500": 0,
+    "samples": 83
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 278
+  },
+  "ukd4312-43000": {
+   "after_rain": {
+    "median": 73.0,
+    "over_500": 9,
+    "samples": 70
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 74
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 266
+  },
+  "ukd5300-41200": {
+   "after_rain": {
+    "median": 36.0,
+    "over_500": 3,
+    "samples": 63
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 74
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 260
+  },
+  "ukd5300-41300": {
+   "after_rain": {
+    "median": 55.0,
+    "over_500": 5,
+    "samples": 75
+   },
+   "dry": {
+    "median": 36.0,
+    "over_500": 1,
+    "samples": 79
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 274
+  },
+  "ukd5300-41500": {
+   "after_rain": {
+    "median": 82.0,
+    "over_500": 13,
+    "samples": 78
+   },
+   "dry": {
+    "median": 27.0,
+    "over_500": 3,
+    "samples": 86
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 273
+  },
+  "ukd5400-40750": {
+   "after_rain": {
+    "median": 55.0,
+    "over_500": 3,
+    "samples": 49
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 82
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 282
+  },
+  "ukd5400-40800": {
+   "after_rain": {
+    "median": 27.0,
+    "over_500": 1,
+    "samples": 50
+   },
+   "dry": {
+    "median": 18.0,
+    "over_500": 0,
+    "samples": 83
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 283
+  },
+  "ukd5400-40900": {
+   "after_rain": {
+    "median": 27.0,
+    "over_500": 1,
+    "samples": 48
+   },
+   "dry": {
+    "median": 18.0,
+    "over_500": 0,
+    "samples": 84
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 278
+  },
+  "ukd5400-41000": {
+   "after_rain": {
+    "median": 36.0,
+    "over_500": 2,
+    "samples": 50
+   },
+   "dry": {
+    "median": 18.0,
+    "over_500": 0,
+    "samples": 83
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 283
+  },
+  "uke1200-07900": {
+   "after_rain": {
+    "median": 45.0,
+    "over_500": 2,
+    "samples": 25
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 114
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 279
+  },
+  "uke1200-07950": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 25
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 107
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 258
+  },
+  "uke1200-08000": {
+   "after_rain": {
+    "median": 27.0,
+    "over_500": 1,
+    "samples": 26
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 114
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 280
+  },
+  "uke1200-08100": {
+   "after_rain": {
+    "median": 36.0,
+    "over_500": 1,
+    "samples": 27
+   },
+   "dry": {
+    "median": 18.0,
+    "over_500": 0,
+    "samples": 117
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 284
+  },
+  "uke1200-08200": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 0,
+    "samples": 26
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 113
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 278
+  },
+  "uke1200-08300": {
+   "after_rain": {
+    "median": 55.0,
+    "over_500": 1,
+    "samples": 27
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 109
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 279
+  },
+  "uke1200-08600": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 0,
+    "samples": 26
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 91
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 230
+  },
+  "uke1200-08700": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 0,
+    "samples": 35
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 123
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 283
+  },
+  "uke1200-08900": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 0,
+    "samples": 39
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 112
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 277
+  },
+  "uke1301-09000": {
+   "after_rain": {
+    "median": 36.0,
+    "over_500": 2,
+    "samples": 39
+   },
+   "dry": {
+    "median": 18.0,
+    "over_500": 2,
+    "samples": 120
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 281
+  },
+  "uke1301-09020": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 4,
+    "samples": 40
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 110
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 286
+  },
+  "uke2206-06900": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 41
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 91
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 281
+  },
+  "uke2206-07000": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 8,
+    "samples": 41
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 93
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 284
+  },
+  "uke2206-07100": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 1,
+    "samples": 40
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 91
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 267
+  },
+  "uke2206-07200": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 3,
+    "samples": 38
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 2,
+    "samples": 94
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 267
+  },
+  "uke2206-07300": {
+   "after_rain": {
+    "median": 27.0,
+    "over_500": 5,
+    "samples": 38
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 98
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 281
+  },
+  "uke2206-07400": {
+   "after_rain": {
+    "median": 45.0,
+    "over_500": 2,
+    "samples": 35
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 102
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 277
+  },
+  "uke2206-07500": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 19
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 64
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 172
+  },
+  "uke2206-07600": {
+   "after_rain": {
+    "median": 36.0,
+    "over_500": 0,
+    "samples": 32
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 2,
+    "samples": 114
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 279
+  },
+  "uke2206-07700": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 2,
+    "samples": 31
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 5,
+    "samples": 118
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 276
+  },
+  "ukf3102-09100": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 2,
+    "samples": 36
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 114
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 273
+  },
+  "ukf3102-09200": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 2,
+    "samples": 31
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 84
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 201
+  },
+  "ukf3102-09300": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 25
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 73
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 181
+  },
+  "ukf3102-09400": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 26
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 75
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 187
+  },
+  "ukf3102-09500": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 3,
+    "samples": 38
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 96
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 244
+  },
+  "ukf3102-09600": {
+   "after_rain": {
+    "median": 27.0,
+    "over_500": 2,
+    "samples": 28
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 59
+   },
+   "first_year": 2012,
+   "last_year": 2021,
+   "nation": "england",
+   "samples": 152
+  },
+  "ukf3102-09700": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 35
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 106
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 262
+  },
+  "ukh1303-10325": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 25
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 87
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 193
+  },
+  "ukh1303-10350": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 36
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 133
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 282
+  },
+  "ukh1303-10400": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 33
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 121
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 262
+  },
+  "ukh1303-10500": {
+   "after_rain": {
+    "median": 27.0,
+    "over_500": 1,
+    "samples": 37
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 116
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 261
+  },
+  "ukh1303-10600": {
+   "after_rain": {
+    "median": 27.0,
+    "over_500": 0,
+    "samples": 37
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 116
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 262
+  },
+  "ukh1303-10650": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 0,
+    "samples": 30
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 96
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 208
+  },
+  "ukh1304-09800": {
+   "after_rain": {
+    "median": 64.0,
+    "over_500": 4,
+    "samples": 46
+   },
+   "dry": {
+    "median": 27.0,
+    "over_500": 0,
+    "samples": 118
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 281
+  },
+  "ukh1304-09850": {
+   "after_rain": {
+    "median": 55.0,
+    "over_500": 4,
+    "samples": 44
+   },
+   "dry": {
+    "median": 18.0,
+    "over_500": 1,
+    "samples": 116
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 278
+  },
+  "ukh1304-09900": {
+   "after_rain": {
+    "median": 55.0,
+    "over_500": 5,
+    "samples": 49
+   },
+   "dry": {
+    "median": 18.0,
+    "over_500": 1,
+    "samples": 115
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 280
+  },
+  "ukh1305-10000": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 46
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 123
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 281
+  },
+  "ukh1305-10100": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 31
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 121
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 266
+  },
+  "ukh1305-10125": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 0,
+    "samples": 26
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 83
+   },
+   "first_year": 2016,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 187
+  },
+  "ukh1305-10150": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 23
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 89
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 189
+  },
+  "ukh1305-10200": {
+   "after_rain": {
+    "median": 36.0,
+    "over_500": 0,
+    "samples": 21
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 85
+   },
+   "first_year": 2017,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 177
+  },
+  "ukh1305-10300": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 1,
+    "samples": 25
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 108
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 217
+  },
+  "ukh1305-10310": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 23
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 91
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 199
+  },
+  "ukh1406-10900": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 0,
+    "samples": 35
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 116
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 262
+  },
+  "ukh1406-11000": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 0,
+    "samples": 27
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 103
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 232
+  },
+  "ukh1407-10750": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 0,
+    "samples": 33
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 108
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 248
+  },
+  "ukh1407-10800": {
+   "after_rain": {
+    "median": 36.0,
+    "over_500": 0,
+    "samples": 32
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 111
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 253
+  },
+  "ukh1407-10830": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 1,
+    "samples": 37
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 3,
+    "samples": 122
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 267
+  },
+  "ukh1407-10850": {
+   "after_rain": {
+    "median": 36.0,
+    "over_500": 2,
+    "samples": 38
+   },
+   "dry": {
+    "median": 18.0,
+    "over_500": 3,
+    "samples": 126
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 277
+  },
+  "ukh3100-11770": {
+   "after_rain": {
+    "median": 36.0,
+    "over_500": 0,
+    "samples": 33
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 109
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 281
+  },
+  "ukh3100-11780": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 1,
+    "samples": 32
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 113
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 281
+  },
+  "ukh3100-11800": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 0,
+    "samples": 30
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 114
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 283
+  },
+  "ukh3100-11830": {
+   "after_rain": {
+    "median": 45.0,
+    "over_500": 3,
+    "samples": 28
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 116
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 272
+  },
+  "ukh3100-11850": {
+   "after_rain": {
+    "median": 27.0,
+    "over_500": 2,
+    "samples": 30
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 114
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 270
+  },
+  "ukh3100-11900": {
+   "after_rain": {
+    "median": 45.0,
+    "over_500": 0,
+    "samples": 27
+   },
+   "dry": {
+    "median": 18.0,
+    "over_500": 1,
+    "samples": 98
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 248
+  },
+  "ukh3100-11902": {
+   "after_rain": {
+    "median": 64.0,
+    "over_500": 1,
+    "samples": 31
+   },
+   "dry": {
+    "median": 18.0,
+    "over_500": 1,
+    "samples": 114
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 280
+  },
+  "ukh3100-11904": {
+   "after_rain": {
+    "median": 73.0,
+    "over_500": 2,
+    "samples": 30
+   },
+   "dry": {
+    "median": 27.0,
+    "over_500": 2,
+    "samples": 114
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 285
+  },
+  "ukh3306-11750": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 34
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 2,
+    "samples": 123
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 282
+  },
+  "ukh3311-11100": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 28
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 89
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 190
+  },
+  "ukh3311-11250": {
+   "after_rain": {
+    "median": 45.0,
+    "over_500": 0,
+    "samples": 36
+   },
+   "dry": {
+    "median": 18.0,
+    "over_500": 2,
+    "samples": 130
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 268
+  },
+  "ukh3311-11300": {
+   "after_rain": {
+    "median": 36.0,
+    "over_500": 2,
+    "samples": 27
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 100
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 202
+  },
+  "ukh3311-11350": {
+   "after_rain": {
+    "median": 36.0,
+    "over_500": 3,
+    "samples": 38
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 133
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 277
+  },
+  "ukh3311-11500": {
+   "after_rain": {
+    "median": 36.0,
+    "over_500": 0,
+    "samples": 34
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 121
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 256
+  },
+  "ukh3311-11600": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 38
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 128
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 272
+  },
+  "ukh3311-11650": {
+   "after_rain": {
+    "median": 36.0,
+    "over_500": 0,
+    "samples": 39
+   },
+   "dry": {
+    "median": 18.0,
+    "over_500": 0,
+    "samples": 136
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 280
+  },
+  "ukh3311-11700": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 2,
+    "samples": 24
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 102
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 232
+  },
+  "ukj2100-14800": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 25
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 97
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 203
+  },
+  "ukj2100-14900": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 0,
+    "samples": 31
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 130
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 264
+  },
+  "ukj2100-14950": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 26
+   },
+   "dry": {
+    "median": 18.0,
+    "over_500": 1,
+    "samples": 116
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 239
+  },
+  "ukj2100-15000": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 27
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 3,
+    "samples": 120
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 245
+  },
+  "ukj2201-14400": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 1,
+    "samples": 39
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 2,
+    "samples": 146
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 286
+  },
+  "ukj2201-14550": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 29
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 102
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 197
+  },
+  "ukj2202-14100": {
+   "after_rain": {
+    "median": 27.0,
+    "over_500": 0,
+    "samples": 20
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 111
+   },
+   "first_year": 2015,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 205
+  },
+  "ukj2202-14150": {
+   "after_rain": {
+    "median": 36.0,
+    "over_500": 0,
+    "samples": 33
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 134
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 271
+  },
+  "ukj2203-14600": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 34
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 124
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 257
+  },
+  "ukj2204-13900": {
+   "after_rain": {
+    "median": 45.0,
+    "over_500": 1,
+    "samples": 29
+   },
+   "dry": {
+    "median": 18.0,
+    "over_500": 2,
+    "samples": 145
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 283
+  },
+  "ukj2204-14000": {
+   "after_rain": {
+    "median": 27.0,
+    "over_500": 0,
+    "samples": 31
+   },
+   "dry": {
+    "median": 18.0,
+    "over_500": 2,
+    "samples": 138
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 283
+  },
+  "ukj2205-14200": {
+   "after_rain": {
+    "median": 45.0,
+    "over_500": 3,
+    "samples": 28
+   },
+   "dry": {
+    "median": 27.0,
+    "over_500": 4,
+    "samples": 139
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 266
+  },
+  "ukj2205-14300": {
+   "after_rain": {
+    "median": 36.0,
+    "over_500": 0,
+    "samples": 31
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 125
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 245
+  },
+  "ukj2401-15100": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 22
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 95
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 211
+  },
+  "ukj2401-15200": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 21
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 2,
+    "samples": 115
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 223
+  },
+  "ukj2401-15300": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 2,
+    "samples": 22
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 142
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 269
+  },
+  "ukj2402-15500": {
+   "after_rain": {
+    "median": 73.0,
+    "over_500": 4,
+    "samples": 37
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 140
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 283
+  },
+  "ukj2402-15600": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 1,
+    "samples": 36
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 123
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 258
+  },
+  "ukj2402-15650": {
+   "after_rain": {
+    "median": 36.0,
+    "over_500": 8,
+    "samples": 38
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 4,
+    "samples": 135
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 283
+  },
+  "ukj2402-15680": {
+   "after_rain": {
+    "median": 36.0,
+    "over_500": 3,
+    "samples": 37
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 2,
+    "samples": 128
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 275
+  },
+  "ukj2402-15700": {
+   "after_rain": {
+    "median": 45.0,
+    "over_500": 5,
+    "samples": 38
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 2,
+    "samples": 132
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 281
+  },
+  "ukj2402-15800": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 1,
+    "samples": 43
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 2,
+    "samples": 129
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 282
+  },
+  "ukj2403-15900": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 2,
+    "samples": 36
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 2,
+    "samples": 116
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 258
+  },
+  "ukj2403-16000": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 29
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 2,
+    "samples": 96
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 213
+  },
+  "ukj2403-16100": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 31
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 88
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 203
+  },
+  "ukj2407-15400": {
+   "after_rain": {
+    "median": 27.0,
+    "over_500": 1,
+    "samples": 22
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 2,
+    "samples": 142
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 266
+  },
+  "ukj3100-16500": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 32
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 105
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 233
+  },
+  "ukj3100-16600": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 3,
+    "samples": 34
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 8,
+    "samples": 113
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 239
+  },
+  "ukj3304-16850": {
+   "after_rain": {
+    "median": 45.0,
+    "over_500": 2,
+    "samples": 41
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 129
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 283
+  },
+  "ukj3305-16700": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 0,
+    "samples": 41
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 127
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 283
+  },
+  "ukj3305-16800": {
+   "after_rain": {
+    "median": 27.0,
+    "over_500": 0,
+    "samples": 28
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 95
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 213
+  },
+  "ukj3307-16300": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 23
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 2,
+    "samples": 91
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 202
+  },
+  "ukj3307-16350": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 24
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 91
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 203
+  },
+  "ukj3307-16400": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 25
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 92
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 203
+  },
+  "ukj3308-16900": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 26
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 94
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 213
+  },
+  "ukj3308-17000": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 26
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 92
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 213
+  },
+  "ukj3308-17100": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 0,
+    "samples": 27
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 95
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 203
+  },
+  "ukj3400-17400": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 29
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 88
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 204
+  },
+  "ukj3400-17500": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 33
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 109
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 244
+  },
+  "ukj3400-17600": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 1,
+    "samples": 35
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 116
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 257
+  },
+  "ukj3400-17700": {
+   "after_rain": {
+    "median": 27.0,
+    "over_500": 2,
+    "samples": 35
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 2,
+    "samples": 132
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 274
+  },
+  "ukj3400-17800": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 2,
+    "samples": 36
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 124
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 265
+  },
+  "ukj3400-17850": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 11
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 48
+   },
+   "first_year": 2022,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 95
+  },
+  "ukj3400-17900": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 2,
+    "samples": 30
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 146
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 277
+  },
+  "ukj3400-18000": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 6,
+    "samples": 35
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 136
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 260
+  },
+  "ukj3400-18100": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 35
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 143
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 268
+  },
+  "ukj3400-18200": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 3,
+    "samples": 38
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 3,
+    "samples": 150
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 283
+  },
+  "ukj3400-18300": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 2,
+    "samples": 35
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 141
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 268
+  },
+  "ukj3400-18350": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 38
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 149
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 283
+  },
+  "ukj3400-18400": {
+   "after_rain": {
+    "median": 27.0,
+    "over_500": 1,
+    "samples": 36
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 149
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 282
+  },
+  "ukj3400-18500": {
+   "after_rain": {
+    "median": 36.0,
+    "over_500": 3,
+    "samples": 30
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 148
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 278
+  },
+  "ukj3400-18600": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 33
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 139
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 268
+  },
+  "ukj4202-12100": {
+   "after_rain": {
+    "median": 45.0,
+    "over_500": 0,
+    "samples": 46
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 109
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 278
+  },
+  "ukj4202-12120": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 1,
+    "samples": 31
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 110
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 267
+  },
+  "ukj4202-12150": {
+   "after_rain": {
+    "median": 36.0,
+    "over_500": 1,
+    "samples": 29
+   },
+   "dry": {
+    "median": 18.0,
+    "over_500": 1,
+    "samples": 123
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 278
+  },
+  "ukj4202-12200": {
+   "after_rain": {
+    "median": 27.0,
+    "over_500": 0,
+    "samples": 30
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 122
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 283
+  },
+  "ukj4204-13000": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 33
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 114
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 263
+  },
+  "ukj4204-13100": {
+   "after_rain": {
+    "median": 36.0,
+    "over_500": 2,
+    "samples": 37
+   },
+   "dry": {
+    "median": 18.0,
+    "over_500": 0,
+    "samples": 116
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 262
+  },
+  "ukj4204-13200": {
+   "after_rain": {
+    "median": 27.0,
+    "over_500": 1,
+    "samples": 30
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 119
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 258
+  },
+  "ukj4208-13300": {
+   "after_rain": {
+    "median": 27.0,
+    "over_500": 0,
+    "samples": 34
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 127
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 282
+  },
+  "ukj4208-13400": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 0,
+    "samples": 31
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 131
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 266
+  },
+  "ukj4208-13500": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 0,
+    "samples": 29
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 126
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 256
+  },
+  "ukj4208-13600": {
+   "after_rain": {
+    "median": 82.0,
+    "over_500": 1,
+    "samples": 30
+   },
+   "dry": {
+    "median": 36.0,
+    "over_500": 3,
+    "samples": 135
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 282
+  },
+  "ukj4208-13700": {
+   "after_rain": {
+    "median": 73.0,
+    "over_500": 3,
+    "samples": 34
+   },
+   "dry": {
+    "median": 27.0,
+    "over_500": 2,
+    "samples": 136
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 288
+  },
+  "ukj4208-13800": {
+   "after_rain": {
+    "median": 82.0,
+    "over_500": 5,
+    "samples": 35
+   },
+   "dry": {
+    "median": 55.0,
+    "over_500": 2,
+    "samples": 130
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 283
+  },
+  "ukj4209-11950": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 1,
+    "samples": 41
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 102
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 263
+  },
+  "ukj4209-11975": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 4,
+    "samples": 37
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 96
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 241
+  },
+  "ukj4209-12000": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 1,
+    "samples": 42
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 116
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 283
+  },
+  "ukj4210-12300": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 32
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 115
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 263
+  },
+  "ukj4210-12350": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 3,
+    "samples": 34
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 3,
+    "samples": 125
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 282
+  },
+  "ukj4210-12400": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 34
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 122
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 278
+  },
+  "ukj4210-12450": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 2,
+    "samples": 37
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 113
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 257
+  },
+  "ukj4210-12500": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 34
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 125
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 283
+  },
+  "ukj4210-12600": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 1,
+    "samples": 35
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 122
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 277
+  },
+  "ukj4210-12630": {
+   "after_rain": {
+    "median": 36.0,
+    "over_500": 2,
+    "samples": 39
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 128
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 283
+  },
+  "ukj4210-12660": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 33
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 113
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 272
+  },
+  "ukj4210-12700": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 35
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 3,
+    "samples": 114
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 273
+  },
+  "ukj4210-12750": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 33
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 2,
+    "samples": 110
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 263
+  },
+  "ukj4210-12800": {
+   "after_rain": {
+    "median": 45.0,
+    "over_500": 2,
+    "samples": 34
+   },
+   "dry": {
+    "median": 27.0,
+    "over_500": 4,
+    "samples": 121
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 281
+  },
+  "ukj4210-12850": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 30
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 4,
+    "samples": 107
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 248
+  },
+  "ukj4210-12900": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 1,
+    "samples": 33
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 4,
+    "samples": 123
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 284
+  },
+  "ukk1202-35700": {
+   "after_rain": {
+    "median": 73.0,
+    "over_500": 2,
+    "samples": 36
+   },
+   "dry": {
+    "median": 45.0,
+    "over_500": 2,
+    "samples": 133
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 270
+  },
+  "ukk1202-35800": {
+   "after_rain": {
+    "median": 91.0,
+    "over_500": 2,
+    "samples": 39
+   },
+   "dry": {
+    "median": 45.0,
+    "over_500": 2,
+    "samples": 134
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 280
+  },
+  "ukk1202-35900": {
+   "after_rain": {
+    "median": 45.0,
+    "over_500": 2,
+    "samples": 43
+   },
+   "dry": {
+    "median": 18.0,
+    "over_500": 1,
+    "samples": 135
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 287
+  },
+  "ukk1202-36000": {
+   "after_rain": {
+    "median": 100.0,
+    "over_500": 2,
+    "samples": 28
+   },
+   "dry": {
+    "median": 27.0,
+    "over_500": 2,
+    "samples": 78
+   },
+   "first_year": 2012,
+   "last_year": 2021,
+   "nation": "england",
+   "samples": 179
+  },
+  "ukk2101-19000": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 0,
+    "samples": 18
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 90
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 173
+  },
+  "ukk2101-19020": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 18
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 91
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 173
+  },
+  "ukk2101-19030": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 0,
+    "samples": 19
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 92
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 173
+  },
+  "ukk2101-19050": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 0,
+    "samples": 19
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 74
+   },
+   "first_year": 2018,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 143
+  },
+  "ukk2101-19060": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 2,
+    "samples": 38
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 131
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 266
+  },
+  "ukk2101-19100": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 3,
+    "samples": 38
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 131
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 268
+  },
+  "ukk2101-19150": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 37
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 114
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 238
+  },
+  "ukk2101-19160": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 2,
+    "samples": 36
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 111
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 233
+  },
+  "ukk2102-19170": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 20
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 88
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 193
+  },
+  "ukk2102-19190": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 21
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 79
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 173
+  },
+  "ukk2102-19200": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 21
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 79
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 173
+  },
+  "ukk2102-19350": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 22
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 79
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 173
+  },
+  "ukk2102-19400": {
+   "after_rain": {
+    "median": 36.0,
+    "over_500": 2,
+    "samples": 30
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 130
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 268
+  },
+  "ukk2102-19450": {
+   "after_rain": {
+    "median": 73.0,
+    "over_500": 2,
+    "samples": 27
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 121
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 253
+  },
+  "ukk2201-17200": {
+   "after_rain": {
+    "median": 27.0,
+    "over_500": 0,
+    "samples": 27
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 98
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 213
+  },
+  "ukk2201-17300": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 3,
+    "samples": 34
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 120
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 263
+  },
+  "ukk2201-18700": {
+   "after_rain": {
+    "median": 36.0,
+    "over_500": 0,
+    "samples": 39
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 126
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 268
+  },
+  "ukk2201-18750": {
+   "after_rain": {
+    "median": 27.0,
+    "over_500": 2,
+    "samples": 40
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 127
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 273
+  },
+  "ukk2201-18800": {
+   "after_rain": {
+    "median": 36.0,
+    "over_500": 5,
+    "samples": 42
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 127
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 273
+  },
+  "ukk2201-18900": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 37
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 104
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 233
+  },
+  "ukk2204-19600": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 21
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 78
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 172
+  },
+  "ukk2204-19700": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 18
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 82
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 173
+  },
+  "ukk2204-19800": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 0,
+    "samples": 28
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 124
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 262
+  },
+  "ukk2204-19900": {
+   "after_rain": {
+    "median": 27.0,
+    "over_500": 2,
+    "samples": 24
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 79
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 171
+  },
+  "ukk2204-20000": {
+   "after_rain": {
+    "median": 27.0,
+    "over_500": 2,
+    "samples": 36
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 124
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 257
+  },
+  "ukk2204-20100": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 23
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 73
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 166
+  },
+  "ukk2204-20200": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 22
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 75
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 165
+  },
+  "ukk2205-20970": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 1,
+    "samples": 22
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 84
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 168
+  },
+  "ukk2205-21000": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 3,
+    "samples": 26
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 99
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 205
+  },
+  "ukk2205-21100": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 21
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 80
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 167
+  },
+  "ukk2205-21200": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 20
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 88
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 188
+  },
+  "ukk2205-21300": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 2,
+    "samples": 33
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 131
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 264
+  },
+  "ukk2205-21500": {
+   "after_rain": {
+    "median": 27.0,
+    "over_500": 3,
+    "samples": 34
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 130
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 277
+  },
+  "ukk2206-20300": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 2,
+    "samples": 31
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 87
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 194
+  },
+  "ukk2206-20400": {
+   "after_rain": {
+    "median": 27.0,
+    "over_500": 4,
+    "samples": 39
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 142
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 283
+  },
+  "ukk2206-20500": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 25
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 88
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 168
+  },
+  "ukk2206-20600": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 27
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 88
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 183
+  },
+  "ukk2206-20700": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 37
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 119
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 248
+  },
+  "ukk2206-20800": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 26
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 85
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 175
+  },
+  "ukk2206-20900": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 2,
+    "samples": 37
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 132
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 263
+  },
+  "ukk2302-35500": {
+   "after_rain": {
+    "median": 27.0,
+    "over_500": 1,
+    "samples": 41
+   },
+   "dry": {
+    "median": 18.0,
+    "over_500": 0,
+    "samples": 127
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 280
+  },
+  "ukk2302-35600": {
+   "after_rain": {
+    "median": 27.0,
+    "over_500": 0,
+    "samples": 43
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 127
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 283
+  },
+  "ukk2305-34900": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 32
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 66
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 177
+  },
+  "ukk2305-35000": {
+   "after_rain": {
+    "median": 45.0,
+    "over_500": 0,
+    "samples": 45
+   },
+   "dry": {
+    "median": 18.0,
+    "over_500": 0,
+    "samples": 108
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 279
+  },
+  "ukk2305-35100": {
+   "after_rain": {
+    "median": 45.0,
+    "over_500": 1,
+    "samples": 25
+   },
+   "dry": {
+    "median": 27.0,
+    "over_500": 0,
+    "samples": 61
+   },
+   "first_year": 2012,
+   "last_year": 2019,
+   "nation": "england",
+   "samples": 158
+  },
+  "ukk2305-35200": {
+   "after_rain": {
+    "median": 36.0,
+    "over_500": 3,
+    "samples": 46
+   },
+   "dry": {
+    "median": 18.0,
+    "over_500": 0,
+    "samples": 111
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 286
+  },
+  "ukk3008-27080": {
+   "after_rain": {
+    "samples": 1
+   },
+   "dry": {
+    "median": 210.0,
+    "over_500": 1,
+    "samples": 10
+   },
+   "first_year": 2026,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 20
+  },
+  "ukk3101-26520": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 3,
+    "samples": 42
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 3,
+    "samples": 115
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 284
+  },
+  "ukk3101-26530": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 2,
+    "samples": 40
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 109
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 268
+  },
+  "ukk3101-26560": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 20
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 52
+   },
+   "first_year": 2018,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 135
+  },
+  "ukk3101-26570": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 28
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 59
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 149
+  },
+  "ukk3101-26600": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 2,
+    "samples": 32
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 72
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 185
+  },
+  "ukk3101-26700": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 2,
+    "samples": 44
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 97
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 258
+  },
+  "ukk3101-26800": {
+   "after_rain": {
+    "median": 55.0,
+    "over_500": 8,
+    "samples": 43
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 103
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 267
+  },
+  "ukk3101-26900": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 2,
+    "samples": 46
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 108
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 283
+  },
+  "ukk3101-27000": {
+   "after_rain": {
+    "median": 27.0,
+    "over_500": 4,
+    "samples": 42
+   },
+   "dry": {
+    "median": 27.0,
+    "over_500": 2,
+    "samples": 107
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 279
+  },
+  "ukk3102-28500": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 3,
+    "samples": 26
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 81
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 188
+  },
+  "ukk3102-28550": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 3,
+    "samples": 27
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 112
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 258
+  },
+  "ukk3102-28600": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 15
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 93
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 193
+  },
+  "ukk3102-28700": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 1,
+    "samples": 26
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 133
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 283
+  },
+  "ukk3102-28800": {
+   "after_rain": {
+    "median": 36.0,
+    "over_500": 2,
+    "samples": 25
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 128
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 278
+  },
+  "ukk3102-31600": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 21
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 82
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 192
+  },
+  "ukk3102-31650": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 21
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 79
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 183
+  },
+  "ukk3102-31700": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 0,
+    "samples": 32
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 2,
+    "samples": 129
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 283
+  },
+  "ukk3102-31800": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 2,
+    "samples": 29
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 128
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 278
+  },
+  "ukk3102-31900": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 19
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 79
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 183
+  },
+  "ukk3102-32000": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 30
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 121
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 273
+  },
+  "ukk3103-28900": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 2,
+    "samples": 25
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 126
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 263
+  },
+  "ukk3103-29000": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 16
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 90
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 188
+  },
+  "ukk3103-29100": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 24
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 131
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 258
+  },
+  "ukk3103-29200": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 16
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 99
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 188
+  },
+  "ukk3103-29400": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 15
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 97
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 185
+  },
+  "ukk3103-29500": {
+   "after_rain": {
+    "median": 36.0,
+    "over_500": 2,
+    "samples": 20
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 120
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 238
+  },
+  "ukk3103-29501": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 16
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 94
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 183
+  },
+  "ukk3103-29800": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 24
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 102
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 225
+  },
+  "ukk3103-29900": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 23
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 75
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 188
+  },
+  "ukk3103-30000": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 21
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 74
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 182
+  },
+  "ukk3103-31500": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 2,
+    "samples": 22
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 85
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 193
+  },
+  "ukk3104-32550": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 0,
+    "samples": 26
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 99
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 261
+  },
+  "ukk3104-32600": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 22
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 67
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 193
+  },
+  "ukk3104-32700": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 22
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 61
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 183
+  },
+  "ukk3104-32750": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 16
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 59
+   },
+   "first_year": 2018,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 138
+  },
+  "ukk3104-32800": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 21
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 58
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 185
+  },
+  "ukk3104-32900": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 34
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 99
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 278
+  },
+  "ukk3104-33000": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 1,
+    "samples": 32
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 101
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 280
+  },
+  "ukk3104-33200": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 2,
+    "samples": 37
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 94
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 268
+  },
+  "ukk3104-33300": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 3,
+    "samples": 40
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 101
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 283
+  },
+  "ukk3104-33350": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 4,
+    "samples": 36
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 2,
+    "samples": 89
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 253
+  },
+  "ukk3104-33360": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 5,
+    "samples": 34
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 99
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 270
+  },
+  "ukk3104-33400": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 3,
+    "samples": 30
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 66
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 192
+  },
+  "ukk3104-33500": {
+   "after_rain": {
+    "median": 27.0,
+    "over_500": 6,
+    "samples": 34
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 101
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 276
+  },
+  "ukk3104-33600": {
+   "after_rain": {
+    "median": 45.0,
+    "over_500": 7,
+    "samples": 38
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 102
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 280
+  },
+  "ukk3104-33650": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 21
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 55
+   },
+   "first_year": 2018,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 147
+  },
+  "ukk3104-33700": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 3,
+    "samples": 40
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 91
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 260
+  },
+  "ukk3105-30100": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 21
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 76
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 188
+  },
+  "ukk3105-30200": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 4,
+    "samples": 33
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 123
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 273
+  },
+  "ukk3105-30400": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 1,
+    "samples": 37
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 129
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 281
+  },
+  "ukk3105-30500": {
+   "after_rain": {
+    "median": 36.0,
+    "over_500": 5,
+    "samples": 36
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 131
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 283
+  },
+  "ukk3105-30600": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 25
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 87
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 185
+  },
+  "ukk3105-30700": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 25
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 90
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 188
+  },
+  "ukk3105-30750": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 14
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 74
+   },
+   "first_year": 2018,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 135
+  },
+  "ukk3105-30800": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 17
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 79
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 188
+  },
+  "ukk3105-30900": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 16
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 80
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 188
+  },
+  "ukk3105-31000": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 27
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 127
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 283
+  },
+  "ukk3105-31100": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 20
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 80
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 188
+  },
+  "ukk3105-31200": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 21
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 83
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 195
+  },
+  "ukk3105-31250": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 13
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 67
+   },
+   "first_year": 2018,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 135
+  },
+  "ukk3105-31300": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 20
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 72
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 180
+  },
+  "ukk3105-31350": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 13
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 68
+   },
+   "first_year": 2018,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 135
+  },
+  "ukk3105-31400": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 23
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 120
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 268
+  },
+  "ukk3105-31450": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 13
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 69
+   },
+   "first_year": 2018,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 135
+  },
+  "ukk3106-27100": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 3,
+    "samples": 44
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 104
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 276
+  },
+  "ukk3106-27200": {
+   "after_rain": {
+    "median": 45.0,
+    "over_500": 7,
+    "samples": 47
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 100
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 272
+  },
+  "ukk3106-27300": {
+   "after_rain": {
+    "median": 55.0,
+    "over_500": 9,
+    "samples": 40
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 106
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 273
+  },
+  "ukk3106-27400": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 39
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 99
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 257
+  },
+  "ukk3106-27500": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 29
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 68
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 183
+  },
+  "ukk3106-27600": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 35
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 108
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 258
+  },
+  "ukk3106-27700": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 25
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 77
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 180
+  },
+  "ukk3106-27800": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 26
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 76
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 188
+  },
+  "ukk3106-27900": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 35
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 111
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 278
+  },
+  "ukk3106-28000": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 25
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 73
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 185
+  },
+  "ukk3106-28100": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 2,
+    "samples": 36
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 109
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 278
+  },
+  "ukk3106-28200": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 2,
+    "samples": 33
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 119
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 277
+  },
+  "ukk3106-28300": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 26
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 75
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 186
+  },
+  "ukk3106-28400": {
+   "after_rain": {
+    "median": 130.0,
+    "over_500": 4,
+    "samples": 32
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 126
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 278
+  },
+  "ukk3106-32100": {
+   "after_rain": {
+    "median": 27.0,
+    "over_500": 1,
+    "samples": 27
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 120
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 280
+  },
+  "ukk3106-32150": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 20
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 73
+   },
+   "first_year": 2018,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 158
+  },
+  "ukk3106-32200": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 19
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 80
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 193
+  },
+  "ukk3106-32300": {
+   "after_rain": {
+    "median": 27.0,
+    "over_500": 0,
+    "samples": 30
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 117
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 283
+  },
+  "ukk3106-32310": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 28
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 109
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 263
+  },
+  "ukk3106-32320": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 0,
+    "samples": 21
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 75
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 188
+  },
+  "ukk3106-32330": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 20
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 70
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 180
+  },
+  "ukk3106-32340": {
+   "after_rain": {
+    "median": 55.0,
+    "over_500": 1,
+    "samples": 27
+   },
+   "dry": {
+    "median": 18.0,
+    "over_500": 0,
+    "samples": 116
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 278
+  },
+  "ukk3106-32400": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 21
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 71
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 193
+  },
+  "ukk3106-32500": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 2,
+    "samples": 33
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 105
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 278
+  },
+  "ukk4100-26400": {
+   "after_rain": {
+    "median": 45.0,
+    "over_500": 9,
+    "samples": 29
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 104
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 258
+  },
+  "ukk4100-26500": {
+   "after_rain": {
+    "median": 45.0,
+    "over_500": 4,
+    "samples": 30
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 102
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 261
+  },
+  "ukk4200-23100": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 21
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 80
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 180
+  },
+  "ukk4200-23200": {
+   "after_rain": {
+    "median": 27.0,
+    "over_500": 0,
+    "samples": 29
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 98
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 217
+  },
+  "ukk4200-23300": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 2,
+    "samples": 21
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 80
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 183
+  },
+  "ukk4200-23400": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 33
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 3,
+    "samples": 118
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 263
+  },
+  "ukk4200-23501": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 27
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 92
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 218
+  },
+  "ukk4200-23600": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 10
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 33
+   },
+   "first_year": 2017,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 83
+  },
+  "ukk4200-23700": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 30
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 2,
+    "samples": 119
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 260
+  },
+  "ukk4200-23800": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 1,
+    "samples": 27
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 122
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 265
+  },
+  "ukk4200-23900": {
+   "after_rain": {
+    "median": 27.0,
+    "over_500": 1,
+    "samples": 29
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 141
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 283
+  },
+  "ukk4200-24000": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 25
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 127
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 258
+  },
+  "ukk4200-24100": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 25
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 2,
+    "samples": 139
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 278
+  },
+  "ukk4200-24200": {
+   "after_rain": {
+    "median": 36.0,
+    "over_500": 0,
+    "samples": 28
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 142
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 285
+  },
+  "ukk4200-24300": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 27
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 2,
+    "samples": 115
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 233
+  },
+  "ukk4200-24500": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 21
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 95
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 193
+  },
+  "ukk4200-24600": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 22
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 91
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 200
+  },
+  "ukk4301-21600": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 4,
+    "samples": 32
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 138
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 281
+  },
+  "ukk4301-21700": {
+   "after_rain": {
+    "median": 73.0,
+    "over_500": 2,
+    "samples": 29
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 122
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 247
+  },
+  "ukk4301-21800": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 1,
+    "samples": 20
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 99
+   },
+   "first_year": 2016,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 202
+  },
+  "ukk4301-21900": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 28
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 124
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 258
+  },
+  "ukk4301-22000": {
+   "after_rain": {
+    "median": 36.0,
+    "over_500": 3,
+    "samples": 32
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 2,
+    "samples": 132
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 275
+  },
+  "ukk4301-22100": {
+   "after_rain": {
+    "median": 73.0,
+    "over_500": 5,
+    "samples": 28
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 135
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 277
+  },
+  "ukk4301-22200": {
+   "after_rain": {
+    "median": 27.0,
+    "over_500": 3,
+    "samples": 36
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 2,
+    "samples": 131
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 283
+  },
+  "ukk4301-22300": {
+   "after_rain": {
+    "median": 45.0,
+    "over_500": 4,
+    "samples": 32
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 131
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 276
+  },
+  "ukk4304-34100": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 2,
+    "samples": 46
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 107
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 278
+  },
+  "ukk4304-34200": {
+   "after_rain": {
+    "median": 27.0,
+    "over_500": 1,
+    "samples": 45
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 106
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 281
+  },
+  "ukk4304-34300": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 28
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 64
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 178
+  },
+  "ukk4304-34400": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 45
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 100
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 272
+  },
+  "ukk4304-34410": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 31
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 60
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 175
+  },
+  "ukk4304-34450": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 2,
+    "samples": 51
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 86
+   },
+   "first_year": 2012,
+   "last_year": 2024,
+   "nation": "england",
+   "samples": 235
+  },
+  "ukk4304-34600": {
+   "after_rain": {
+    "median": 64.0,
+    "over_500": 4,
+    "samples": 52
+   },
+   "dry": {
+    "median": 18.0,
+    "over_500": 2,
+    "samples": 102
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 276
+  },
+  "ukk4304-34700": {
+   "after_rain": {
+    "median": 100.0,
+    "over_500": 7,
+    "samples": 44
+   },
+   "dry": {
+    "median": 18.0,
+    "over_500": 2,
+    "samples": 110
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 268
+  },
+  "ukk4304-34800": {
+   "after_rain": {
+    "median": 27.0,
+    "over_500": 3,
+    "samples": 48
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 82
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 228
+  },
+  "ukk4305-24700": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 0,
+    "samples": 36
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 119
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 244
+  },
+  "ukk4305-24800": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 25
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 97
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 188
+  },
+  "ukk4305-24900": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 26
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 93
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 183
+  },
+  "ukk4305-25000": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 26
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 95
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 183
+  },
+  "ukk4305-25100": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 28
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 108
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 206
+  },
+  "ukk4305-25200": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 3,
+    "samples": 40
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 140
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 277
+  },
+  "ukk4305-25300": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 4,
+    "samples": 40
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 141
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 277
+  },
+  "ukk4305-25400": {
+   "after_rain": {
+    "median": 27.0,
+    "over_500": 2,
+    "samples": 40
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 141
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 268
+  },
+  "ukk4305-25500": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 2,
+    "samples": 39
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 120
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 263
+  },
+  "ukk4305-25600": {
+   "after_rain": {
+    "median": 36.0,
+    "over_500": 1,
+    "samples": 39
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 123
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 268
+  },
+  "ukk4305-25700": {
+   "after_rain": {
+    "median": 55.0,
+    "over_500": 6,
+    "samples": 37
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 125
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 271
+  },
+  "ukk4305-25800": {
+   "after_rain": {
+    "median": 55.0,
+    "over_500": 5,
+    "samples": 37
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 116
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 258
+  },
+  "ukk4305-25900": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 34
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 89
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 208
+  },
+  "ukk4305-26000": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 1,
+    "samples": 39
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 118
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 262
+  },
+  "ukk4305-26100": {
+   "after_rain": {
+    "median": 64.0,
+    "over_500": 10,
+    "samples": 41
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 3,
+    "samples": 112
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 275
+  },
+  "ukk4305-26150": {
+   "after_rain": {
+    "samples": 1
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 13
+   },
+   "first_year": 2026,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 20
+  },
+  "ukk4305-26200": {
+   "after_rain": {
+    "median": 64.0,
+    "over_500": 5,
+    "samples": 36
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 111
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 276
+  },
+  "ukk4305-26300": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 1,
+    "samples": 35
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 111
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 276
+  },
+  "ukk4306-22400": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 0,
+    "samples": 22
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 92
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 198
+  },
+  "ukk4306-22500": {
+   "after_rain": {
+    "median": 45.0,
+    "over_500": 2,
+    "samples": 16
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 93
+   },
+   "first_year": 2016,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 193
+  },
+  "ukk4306-22600": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 33
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 119
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 257
+  },
+  "ukk4306-22700": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 1,
+    "samples": 32
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 111
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 244
+  },
+  "ukk4306-22800": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 2,
+    "samples": 29
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 132
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 276
+  },
+  "ukk4306-22900": {
+   "after_rain": {
+    "median": 55.0,
+    "over_500": 5,
+    "samples": 27
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 130
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 277
+  },
+  "ukk4306-23000": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 35
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 112
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 255
+  },
+  "ukk4307-33800": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 2,
+    "samples": 25
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 61
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 177
+  },
+  "ukk4307-33900": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 2,
+    "samples": 40
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 110
+   },
+   "first_year": 2012,
+   "last_year": 2026,
+   "nation": "england",
+   "samples": 283
+  },
+  "ukl1100-39980": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 12
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 12
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 40
+  },
+  "ukl1100-39985": {
+   "after_rain": {
+    "samples": 8
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 13
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 40
+  },
+  "ukl1100-39990": {
+   "after_rain": {
+    "samples": 8
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 13
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 40
+  },
+  "ukl1100-39993": {
+   "after_rain": {
+    "samples": 7
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 13
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 40
+  },
+  "ukl1100-39995": {
+   "after_rain": {
+    "samples": 7
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 13
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 40
+  },
+  "ukl1100-40000": {
+   "after_rain": {
+    "samples": 6
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 12
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 40
+  },
+  "ukl1100-40010": {
+   "after_rain": {
+    "samples": 7
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 13
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 40
+  },
+  "ukl1100-40030": {
+   "after_rain": {
+    "samples": 3
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 16
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 40
+  },
+  "ukl1100-40050": {
+   "after_rain": {
+    "samples": 5
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 20
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 47
+  },
+  "ukl1100-40085": {
+   "after_rain": {
+    "samples": 5
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 18
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 46
+  },
+  "ukl1100-40100": {
+   "after_rain": {
+    "samples": 4
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 14
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 40
+  },
+  "ukl1100-40105": {
+   "after_rain": {
+    "samples": 4
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 14
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 40
+  },
+  "ukl1100-40140": {
+   "after_rain": {
+    "samples": 4
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 14
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 40
+  },
+  "ukl1200-39050": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 10
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 14
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 45
+  },
+  "ukl1200-39070": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 12
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 13
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 40
+  },
+  "ukl1200-39100": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 0,
+    "samples": 12
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 13
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 40
+  },
+  "ukl1200-39200": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 0,
+    "samples": 11
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 13
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 40
+  },
+  "ukl1200-39300": {
+   "after_rain": {
+    "samples": 9
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 12
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 40
+  },
+  "ukl1200-39350": {
+   "after_rain": {
+    "median": 91.0,
+    "over_500": 2,
+    "samples": 10
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 10
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 40
+  },
+  "ukl1200-39360": {
+   "after_rain": {
+    "median": 110.0,
+    "over_500": 2,
+    "samples": 10
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 12
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 40
+  },
+  "ukl1200-39400": {
+   "after_rain": {
+    "median": 55.0,
+    "over_500": 1,
+    "samples": 10
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 12
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 40
+  },
+  "ukl1200-39500": {
+   "after_rain": {
+    "median": 27.0,
+    "over_500": 0,
+    "samples": 12
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 11
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 40
+  },
+  "ukl1200-39600": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 0,
+    "samples": 16
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 12
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 40
+  },
+  "ukl1200-39700": {
+   "after_rain": {
+    "median": 36.0,
+    "over_500": 2,
+    "samples": 15
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 13
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 44
+  },
+  "ukl1200-39790": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 2,
+    "samples": 13
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 14
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 40
+  },
+  "ukl1200-39800": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 13
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 15
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 40
+  },
+  "ukl1200-39900": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 12
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 15
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 40
+  },
+  "ukl1200-39920": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 12
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 15
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 40
+  },
+  "ukl1200-39950": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 12
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 15
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 40
+  },
+  "ukl1200-39960": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 11
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 14
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 40
+  },
+  "ukl1200-39965": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 14
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 18
+   },
+   "first_year": 2024,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 46
+  },
+  "ukl1200-39970": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 12
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 10
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 40
+  },
+  "ukl1301-40170": {
+   "after_rain": {
+    "samples": 9
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 12
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 40
+  },
+  "ukl1301-40180": {
+   "after_rain": {
+    "samples": 9
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 14
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 40
+  },
+  "ukl1301-40200": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 10
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 15
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 46
+  },
+  "ukl1301-40300": {
+   "after_rain": {
+    "samples": 9
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 13
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 40
+  },
+  "ukl1301-40400": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 10
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 13
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 40
+  },
+  "ukl1301-40425": {
+   "after_rain": {
+    "samples": 9
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 13
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 40
+  },
+  "ukl1301-40450": {
+   "after_rain": {
+    "samples": 9
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 18
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 47
+  },
+  "ukl1301-40500": {
+   "after_rain": {
+    "samples": 9
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 17
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 48
+  },
+  "ukl1302-40550": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 11
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 20
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 58
+  },
+  "ukl1302-40600": {
+   "after_rain": {
+    "median": 82.0,
+    "over_500": 1,
+    "samples": 11
+   },
+   "dry": {
+    "median": 45.0,
+    "over_500": 1,
+    "samples": 23
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 65
+  },
+  "ukl1302-40650": {
+   "after_rain": {
+    "samples": 9
+   },
+   "dry": {
+    "median": 64.0,
+    "over_500": 0,
+    "samples": 17
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 47
+  },
+  "ukl1302-40700": {
+   "after_rain": {
+    "samples": 8
+   },
+   "dry": {
+    "median": 18.0,
+    "over_500": 0,
+    "samples": 17
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 46
+  },
+  "ukl1401-37700": {
+   "after_rain": {
+    "samples": 7
+   },
+   "dry": {
+    "samples": 9
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 35
+  },
+  "ukl1401-37800": {
+   "after_rain": {
+    "samples": 5
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 16
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 38
+  },
+  "ukl1402-38630": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 2,
+    "samples": 10
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 13
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 39
+  },
+  "ukl1402-38640": {
+   "after_rain": {
+    "samples": 7
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 12
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 33
+  },
+  "ukl1402-38660": {
+   "after_rain": {
+    "samples": 7
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 10
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 34
+  },
+  "ukl1402-38670": {
+   "after_rain": {
+    "samples": 6
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 11
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 34
+  },
+  "ukl1402-38675": {
+   "after_rain": {
+    "samples": 6
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 11
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 34
+  },
+  "ukl1402-38680": {
+   "after_rain": {
+    "samples": 7
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 15
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 39
+  },
+  "ukl1402-38685": {
+   "after_rain": {
+    "samples": 5
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 12
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 33
+  },
+  "ukl1402-38688": {
+   "after_rain": {
+    "median": 45.0,
+    "over_500": 1,
+    "samples": 10
+   },
+   "dry": {
+    "samples": 9
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 41
+  },
+  "ukl1402-38690": {
+   "after_rain": {
+    "samples": 9
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 10
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 42
+  },
+  "ukl1402-38700": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 10
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 10
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 41
+  },
+  "ukl1402-38750": {
+   "after_rain": {
+    "samples": 9
+   },
+   "dry": {
+    "samples": 8
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 37
+  },
+  "ukl1402-38800": {
+   "after_rain": {
+    "samples": 8
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 13
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 41
+  },
+  "ukl1402-38900": {
+   "after_rain": {
+    "samples": 6
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 11
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 37
+  },
+  "ukl1402-38920": {
+   "after_rain": {
+    "samples": 9
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 12
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 42
+  },
+  "ukl1402-39000": {
+   "after_rain": {
+    "samples": 8
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 10
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 37
+  },
+  "ukl1403-37900": {
+   "after_rain": {
+    "samples": 5
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 16
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 38
+  },
+  "ukl1403-37940": {
+   "after_rain": {
+    "samples": 5
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 16
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 38
+  },
+  "ukl1403-37980": {
+   "after_rain": {
+    "samples": 5
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 15
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 38
+  },
+  "ukl1403-38000": {
+   "after_rain": {
+    "samples": 5
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 15
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 38
+  },
+  "ukl1403-38100": {
+   "after_rain": {
+    "samples": 5
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 15
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 38
+  },
+  "ukl1403-38150": {
+   "after_rain": {
+    "samples": 5
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 15
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 38
+  },
+  "ukl1403-38200": {
+   "after_rain": {
+    "samples": 5
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 15
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 38
+  },
+  "ukl1403-38210": {
+   "after_rain": {
+    "samples": 4
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 13
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 36
+  },
+  "ukl1403-38220": {
+   "after_rain": {
+    "samples": 4
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 13
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 36
+  },
+  "ukl1403-38230": {
+   "after_rain": {
+    "samples": 4
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 13
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 36
+  },
+  "ukl1403-38235": {
+   "after_rain": {
+    "samples": 4
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 14
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 36
+  },
+  "ukl1403-38238": {
+   "after_rain": {
+    "samples": 4
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 16
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 36
+  },
+  "ukl1403-38240": {
+   "after_rain": {
+    "samples": 4
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 15
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 36
+  },
+  "ukl1403-38248": {
+   "after_rain": {
+    "samples": 7
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 14
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 36
+  },
+  "ukl1403-38250": {
+   "after_rain": {
+    "samples": 7
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 14
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 36
+  },
+  "ukl1403-38255": {
+   "after_rain": {
+    "samples": 8
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 13
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 36
+  },
+  "ukl1403-38260": {
+   "after_rain": {
+    "samples": 8
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 13
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 36
+  },
+  "ukl1403-38280": {
+   "after_rain": {
+    "samples": 8
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 15
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 36
+  },
+  "ukl1403-38295": {
+   "after_rain": {
+    "samples": 8
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 15
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 36
+  },
+  "ukl1403-38300": {
+   "after_rain": {
+    "samples": 6
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 20
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 40
+  },
+  "ukl1403-38340": {
+   "after_rain": {
+    "samples": 8
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 16
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 36
+  },
+  "ukl1403-38380": {
+   "after_rain": {
+    "samples": 8
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 16
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 36
+  },
+  "ukl1403-38400": {
+   "after_rain": {
+    "samples": 6
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 10
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 36
+  },
+  "ukl1403-38460": {
+   "after_rain": {
+    "samples": 6
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 10
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 36
+  },
+  "ukl1403-38500": {
+   "after_rain": {
+    "samples": 7
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 10
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 36
+  },
+  "ukl1403-38520": {
+   "after_rain": {
+    "samples": 7
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 10
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 36
+  },
+  "ukl1403-38540": {
+   "after_rain": {
+    "samples": 7
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 10
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 36
+  },
+  "ukl1403-38600": {
+   "after_rain": {
+    "samples": 6
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 11
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 41
+  },
+  "ukl1701-36500": {
+   "after_rain": {
+    "samples": 6
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 15
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 38
+  },
+  "ukl1701-36600": {
+   "after_rain": {
+    "samples": 7
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 15
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 38
+  },
+  "ukl1701-36700": {
+   "after_rain": {
+    "samples": 6
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 16
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 38
+  },
+  "ukl1702-36800": {
+   "after_rain": {
+    "samples": 6
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 13
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 38
+  },
+  "ukl1800-36900": {
+   "after_rain": {
+    "median": 45.0,
+    "over_500": 1,
+    "samples": 13
+   },
+   "dry": {
+    "median": 27.0,
+    "over_500": 0,
+    "samples": 17
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 60
+  },
+  "ukl1800-37000": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 10
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 13
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 38
+  },
+  "ukl1800-37100": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 10
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 13
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 38
+  },
+  "ukl1800-37200": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 10
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 12
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 38
+  },
+  "ukl1800-37300": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 10
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 13
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 38
+  },
+  "ukl1800-37400": {
+   "after_rain": {
+    "samples": 9
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 14
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 38
+  },
+  "ukl1800-37500": {
+   "after_rain": {
+    "samples": 9
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 14
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 38
+  },
+  "ukl1800-37600": {
+   "after_rain": {
+    "samples": 9
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 14
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 38
+  },
+  "ukl2202-36050": {
+   "after_rain": {
+    "samples": 5
+   },
+   "dry": {
+    "median": 18.0,
+    "over_500": 0,
+    "samples": 18
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 46
+  },
+  "ukl2202-36100": {
+   "after_rain": {
+    "median": 36.0,
+    "over_500": 0,
+    "samples": 13
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 24
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 64
+  },
+  "ukl2202-36200": {
+   "after_rain": {
+    "median": 18.0,
+    "over_500": 0,
+    "samples": 13
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 24
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 64
+  },
+  "ukl2202-36300": {
+   "after_rain": {
+    "samples": 3
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 16
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 40
+  },
+  "ukl2202-36325": {
+   "after_rain": {
+    "median": 82.0,
+    "over_500": 1,
+    "samples": 14
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 26
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 72
+  },
+  "ukl2202-36330": {
+   "after_rain": {
+    "samples": 4
+   },
+   "dry": {
+    "samples": 7
+   },
+   "first_year": 2026,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 16
+  },
+  "ukl2202-36350": {
+   "after_rain": {
+    "samples": 6
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 15
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 46
+  },
+  "ukl2202-36400": {
+   "after_rain": {
+    "samples": 6
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 15
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 40
+  },
+  "ukl2202-36450": {
+   "after_rain": {
+    "median": 260.0,
+    "over_500": 4,
+    "samples": 10
+   },
+   "dry": {
+    "median": 27.0,
+    "over_500": 0,
+    "samples": 33
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "nation": "wales",
+   "samples": 72
+  }
+ },
+ "sources": {
+  "england": "Environment Agency Water Quality Archive, statutory samples (purpose MS), OGL v3.0",
+  "northern_ireland": "DAERA bathing water results tables, OGL v3.0",
+  "wales": "Natural Resources Wales in-season bathing water samples, OGL v3.0"
+ },
+ "version": "1.1.0"
+}

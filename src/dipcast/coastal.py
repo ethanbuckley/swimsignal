@@ -353,7 +353,7 @@ def when(iso):
 
 def render(snapshot):
     """Server-rendered list works without JavaScript; dates are always visible."""
-    from dipcast import typical
+    from dipcast import rain_history, typical
     if not snapshot or not snapshot.get("sites"):
         return '<p>The official directory could not be loaded for this build. Use the EA link above.</p>'
     messages = {"increased": "EA: increased pollution risk",
@@ -374,6 +374,7 @@ def render(snapshot):
         expiry = f' data-advice-expires="{escape(advice["expires_at"], quote=True)}"' if advice.get("expires_at") else ''
         sample = f'<br>{sample_line(site["sample"], (snapshot.get("samples") or {}).get("since"))}' if "sample" in site else ''
         sample += f'<br>{escape(typical.line(site["typical"]))}' if site.get("typical") else ''
+        sample += "".join(f"<br>{x}" for x in rain_history.card_lines(site, snapshot))
         water = water_line(site)
         sample += f'<br>{escape(water)}' if water else ''
         spills = spills_line(site)   # carries its own <time> element, escaped inside
@@ -401,6 +402,7 @@ def render(snapshot):
                 + '. The archive can lag the official profile by several days. A sample describes the water when '
                 'it was taken, not today. The rating uses four seasons of samples.</p>') if snapshot.get("samples") else '')
             + typical.note(snapshot)
+            + rain_history.note(snapshot)
             + (spills_note() if any(s.get("spills_nearby") for s in snapshot["sites"]) else '') +
             '<label for="coastal-search">Find a beach or estuary</label> '
             '<input type="search" id="coastal-search" placeholder="Bathing-water name">'
@@ -408,4 +410,4 @@ def render(snapshot):
             '<ul id="coastal-sites">' + ''.join(cards) + '</ul>'
             '<p class="small">Contains Environment Agency data, © Environment Agency copyright and/or '
             'database right, <a href="https://environment.data.gov.uk/bwq/">Open Government Licence v3.0</a>. '
-            'The EA does not endorse SwimSignal.</p>')
+            'The EA does not endorse SwimSignal.</p>' + rain_history.credit(snapshot))
