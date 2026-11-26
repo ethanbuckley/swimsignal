@@ -62,6 +62,17 @@ def test_every_row_holds_the_rules():
                 assert (ROOT / "docs" / link["href"].rsplit("/", 1)[1]).is_file(), (f["id"], link)
 
 
+def test_only_data_that_played_no_part_reads_as_never_seen():
+    """Review of #759, 26 Nov 2026: a test that leaves out one year or site of the seasons the model was built and
+    chosen on is a development result, not data the model never saw."""
+    for f in _doc()["figures"]:
+        if f["basis"] == "held_out":
+            assert not re.search(r"left out in turn|built on|built from|chosen on", f["tested_on"]), f["id"]
+    rows = {f["id"]: f for f in _doc()["figures"]}
+    assert rows["travel-river"]["basis"] == "seen"
+    assert "2012 to 2022" in rows["ecoli-river-season"]["tested_on"] and "development result" in rows["ecoli-river-season"]["not_known"]
+
+
 def test_every_number_in_a_row_comes_from_what_it_rests_on():
     doc = _doc()
     entries = {x["id"]: x for x in doc["entries"]}

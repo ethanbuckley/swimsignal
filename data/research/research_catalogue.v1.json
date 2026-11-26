@@ -3888,11 +3888,13 @@
     "river"
    ],
    "label": "How far spill water travels, and each overflow's weight",
-   "basis": "held_out",
-   "tested_on": "Environment Agency E. coli samples at bathing waters, each year left out in turn: every year picked a river speed of 0.2 m/s.",
-   "result": "That setting best picked out the days a river bathing water was worse than usual (held-out Brier 0.0919 against 0.0938). It is a fitted setting, not a measured speed.",
+   "basis": "seen",
+   "tested_on": "Environment Agency E. coli samples at bathing waters, 2024 to 2026, each year left out in turn: the seasons the model is built on. Every year picked a river speed of 0.2 m/s.",
+   "result": "That setting best picked out the days a river bathing water was worse than usual (Brier score 0.0919 against 0.0938, lower is better). It is a fitted setting, not a measured speed.",
    "not_known": "The real speed, which differs from river to river and rises with the flow. Timed rises at Environment Agency ammonium sensors were consistent with 0.2 m/s, not a measurement of it.",
-   "models": [],
+   "models": [
+    "production"
+   ],
    "entries": [
     "transport-fit",
     "sonde-arrival-time"
@@ -3949,30 +3951,33 @@
    ],
    "label": "E. coli estimate, May to September",
    "basis": "held_out",
-   "tested_on": "1,502 Environment Agency samples at 31 inland bathing waters, 2024 to 2026, each year or each site left out in turn.",
-   "result": "On rivers it did better than rain alone in every test, by 5% to 10%: a small gain.",
-   "not_known": "How it does at rivers that are not bathing waters: at 59 sampling points it never saw, it put each place's days in order, but 44.3% of results were above its range.",
+   "tested_on": "6,322 river E. coli results from 2012 to 2022 at 59 Environment Agency sampling points that no model here had used, May to September. 48 of the 59 are in the South West. None is a bathing water or a swim spot.",
+   "result": "As deployed, it put each place's days in the right order (a correlation of 0.376 within each place, where 0 is no order). Rain in the last 48 hours alone did nearly as well (0.355). Its chance of a result over 900 scored worse than a simple rain rule there (0.300 against 0.286, lower is better).",
+   "not_known": "How close its percentage is at a swim spot that is not a bathing water: no samples are taken there. On the 2024 to 2026 bathing-water samples it was built from, it did a little better than rain alone, but that is a development result on seen seasons.",
    "models": [
     "production"
    ],
    "entries": [
-    "river-unseen",
-    "soil-moisture-rivers"
+    "river-unseen"
    ],
    "quotes": [
     {
-     "doc": "src/dipcast/pages/methods.html",
-     "quote": "On rivers the estimate scores better than rain alone in every test, by 5% to 10% of the Brier score. That gain is small."
+     "doc": "docs/RIVER-UNSEEN-PROTOCOL-2026-11.md",
+     "quote": "| Production as deployed | 0.376 |"
+    },
+    {
+     "doc": "docs/RIVER-UNSEEN-PROTOCOL-2026-11.md",
+     "quote": "Brier score for a result over 900 (lower is better; 48.3% of results were over 900): rain rule 0.286, production as deployed 0.300"
     }
    ],
    "links": [
     {
-     "label": "Test 3, on the method page",
-     "href": "methods.html#ecoli"
-    },
-    {
      "label": "The unseen rivers",
      "href": "https://github.com/ethanbuckley/swimsignal/blob/main/docs/RIVER-UNSEEN-PROTOCOL-2026-11.md"
+    },
+    {
+     "label": "Test 3, on the method page",
+     "href": "methods.html#ecoli"
     }
    ]
   },
