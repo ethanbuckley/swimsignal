@@ -1060,6 +1060,13 @@
    "branch": "claude/swimsignal-uk-forecasting-0ded08",
    "branch_exists": true,
    "date": "2026-11-25"
+  },
+  "763": {
+   "n": 763,
+   "state": "open",
+   "branch": "claude/rain-word-no-overflow",
+   "branch_exists": true,
+   "date": "2026-11-25"
   }
  },
  "entries": [
@@ -3770,6 +3777,31 @@
    "prs": [
     733,
     736
+   ]
+  },
+  {
+   "id": "rain-word-no-overflow",
+   "title": "A rain word where no overflow is upstream",
+   "section": "promising",
+   "topics": [
+    "e. coli",
+    "rivers",
+    "evaluation",
+    "winter"
+   ],
+   "verdict": "Read once on 25 November 2026: both conditions pass. A word made only from the rain in the last 48 hours against a place's own thirds (less, about or more than usual) was scored on 1,020 held-back winter river samples (2013 to 2023) at Environment Agency points with no monitored overflow upstream. It put each point's days in order (mean within-point correlation 0.504, interval 0.353 to 0.531) and still did with month means removed (0.415, interval 0.287 to 0.495), against a bar of 0.15 fixed before the read. Rain as a number scored 0.432 with month means removed; the three-way word loses 0.017. On summer samples already seen it scored 0.297 (0.241 to 0.367), a development figure.",
+   "scope": "8 points scored, on 5 rivers in Lancashire, Suffolk, Wiltshire and Devon; lowland and coastal, not upland becks and not swim spots. Without the River Brock the month-removed figure falls to 0.284. Lead 0, reanalysis rain. Supports an order within a place. Does not support a count, a chance or a level.",
+   "stage": "waiting",
+   "stage_note": "Built in PR #763: the word on today's day under the plain level at the 15 river spots with no overflow upstream, with one sentence on what it rests on. Ethan decides whether to merge.",
+   "next": "Ethan merges or not. Score the word at a listed upland beck when winter samples there exist (none known).",
+   "records": [
+    {
+     "doc": "docs/RAIN-WORD-NO-OVERFLOW-2026-11.md",
+     "quote": "## The read, 25 November 2026: both conditions pass"
+    }
+   ],
+   "prs": [
+    763
    ]
   },
   {

@@ -16,7 +16,7 @@ from dipcast.ingest.flows import nearest_level_station, reading_fields
 from dipcast.ingest.live import with_data_states
 from dipcast.ingest import soil
 from dipcast.ingest.rainfall import cells_for_sites, fetch_forecast, forecast_age
-from dipcast import lake_range, river_usual, shadow_combined, shadow_radar, shadow_regional
+from dipcast import lake_range, rain_usual, river_usual, shadow_combined, shadow_radar, shadow_regional
 from dipcast.model import ecoli, live_status
 from dipcast.model.features import (
     ALL_FEATURES,
@@ -204,6 +204,7 @@ def reload_caches() -> None:
         shadow_radar.models.cache_clear()   # not the build's radar, which prefetch set for this build
         lake_range.clear_cache()
         river_usual.clear_cache()
+        rain_usual.clear_cache()
         # the network itself is immutable at runtime; keep it loaded
 
 
@@ -588,6 +589,13 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
                         winter = river_usual.winter_direction(lat, lon, round(float(p_plain[j]), 3), days[j].month)
                         if winter:
                             row["ecoli_usual_winter"] = winter
+                # At a listed river spot with no monitored overflow upstream, whether today's rain in the 48 hours to
+                # midday is more or less than usual there (rain_usual.py; docs/RAIN-WORD-NO-OVERFLOW-2026-11.md). Today
+                # only, as the read was at lead 0. A word about rain: no level, figure or colour.
+                if pin.mode == "river" and not here.any() and days[j] == now.floor("D"):
+                    rain_word = rain_usual.direction(lat, lon, row["rain_48h_mm"], days[j].month)
+                    if rain_word:
+                        row["rain_usual"] = rain_word
                 if ranges is not None:   # E. coli per 100 ml, two significant figures; None where an input is missing
                     # In season at a sampled lake, also the lake's usual reading for the date and higher/lower/about.
                     row["ecoli_range"] = ({**{k: lake_range.sig2(ranges[k][j]) for k in ("low", "median", "high")},

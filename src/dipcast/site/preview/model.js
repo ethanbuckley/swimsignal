@@ -201,7 +201,12 @@ function answer(s, iso, data, nowMs) {
     out.act = o ? o.act : levelAction(s);
     if (plainLevel(l)) out.why.push(isolated(s) ? ISOLATED_WHY : `The trace found no monitored storm overflow within ${(s.assumptions || {}).max_upstream_km ?? 60} km upstream of here, so there is no daily level to give.`);
     else if (COVER[l] && s.error) out.why.push(String(s.error));
+    // Today only, where the build put it (a river spot with no overflow upstream): the rain word, then what it rests on
+    // after the other risks (levels.js, rainUsual; docs/RAIN-WORD-NO-OVERFLOW-2026-11.md). It sets nothing.
+    const rw = isToday ? rainUsual((s.days || []).find(d => d.date === iso)) : '';
+    if (rw) out.why.push(rw);
     if (plainLevel(l)) out.notes.push(OTHER_RISKS);
+    if (rw) out.notes.push(RAIN_USUAL_SAID);
   } else {
     const row = dayRows(s).find(d => d.date === iso), r = row ? row.r : { level: null };
     if (!row || !r.level) { out.head = 'No forecast for this day'; out.act = o ? o.act : PLAIN_ACTION; }

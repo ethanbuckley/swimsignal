@@ -3097,6 +3097,37 @@ it is off no day carries `ecoli_usual_winter`, so the row reads as before.
   before. The row reads the day shown, so a later day never borrows today's word. Until now the word would have shown
   only at `classic/`.
 
+### A rain word where no overflow is upstream (25 November 2026)
+
+From `docs/RAIN-WORD-NO-OVERFLOW-2026-11.md` (rank 2 of the November shortlist): a rain-only word, frozen and read
+once on the winter reserve at river monitoring points with no overflow upstream. Both conditions passed (0.504 raw,
+0.415 with month means removed; bar 0.15). Ethan left the wording to this work ("Everything else is yours to
+decide"); it is his to overrule.
+
+- **New:** at a river spot with no monitored overflow found upstream, on today's day only, the answer's line under
+  "No monitored overflow found upstream" gains one sentence: "More rain than usual here in the last two days." (or
+  "About the usual rain here in the last two days.", "Less rain than usual here in the last two days."). Under the
+  answer, after "Other risks apply", one sentence says what it rests on: river sampling points with no overflow
+  upstream, past winter samples kept back for the test, weaker on summer samples, Environment Agency monitoring points on
+  lowland rivers, not upland streams like this one and not swim spots, "This is not a level." (`RAIN_USUAL`, `RAIN_USUAL_SAID`, `rainUsual` in `levels.js`;
+  `answer` in `preview/model.js`). Usual is the middle third of the spot's own 48-hour rain to midday, 2023 to 2026,
+  October to April or May to September (`rain_usual.py`, `data/processed/rain_usual.v1.json`, frozen).
+- **Already decided, kept** (3 and 11 October 2026, "Where the model has nothing to forecast"): the plain level and
+  its words, the teal, "Other risks apply: algae, wildlife, runoff and bathers. Check the signs at the water.", no E.
+  coli estimate at these spots, and the rain in the 48 hours to midday as a figure. The word sits beside that figure
+  and does not replace it. It is a word about rain, not an estimate, so the "no E. coli estimate" rule stands.
+- **Already decided, followed** ("higher or lower than usual here", #709, and its winter form, #736): a spot's own
+  thirds, a word with no colour, no level and no figure, today only where the test was at lead 0, and none of
+  "safe", "clean", "exceed" or "breach".
+- **Reverses nothing.** The shortlist said this needed Ethan's wording decision against the 11 October rule; the
+  rule's words all stay, and the decision was delegated.
+- Not at a lake, a clicked point, a spot with any monitored overflow upstream, or on a later day. Not in the list
+  rows, the five-day tabs, the shared picture, the planner, alerts or `classic/` (whose plain-level rain sentence is
+  unchanged).
+
+**Checked:** a local build in a scratch root with the redesign on, a spot page at 375 and 1,440 px (in the pull
+request). **Not checked:** the live site, which needs the merge.
+
 ### Ported: the spill map, "Where spill water may be" (24 November 2026, night)
 
 The live page's spill map (`plume.js`, docs/PLUME-MAP-2026-10.md), which was only at `classic/` after the switch.
