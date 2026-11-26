@@ -145,9 +145,27 @@ def test_the_build_publishes_it_as_exhibit_6(tmp_path):
     build_site.write_lab(tmp_path)
     lab = tmp_path / "lab"
     assert (lab / "overflow-ledger" / "index.html").is_file() and (lab / "data" / "overflow_ledger.v1.json").is_file()
-    assert json.loads((lab / "data" / "overflow_ledger.v1.json").read_text()) == json.loads(FILE.read_text())   # a frozen copy, as it is
+    pub, full = json.loads((lab / "data" / "overflow_ledger.v1.json").read_text()), json.loads(FILE.read_text())
+    assert pub == build_site.lab_ledger_copy(full)   # the frozen copy, less its company dimension
     assert "lab/overflow-ledger/" in build_site.lab_pages()
     js = (lab / "overflow-ledger" / "ledger.js").read_text()
     assert "const FILE = '../data/overflow_ledger.v1.json';" in js
     part = json.loads((lab / "refresh.json").read_text())["parts"]["ledger"]
     assert part["as_of"] == json.loads(FILE.read_text())["generated_at"][:10] and part["stale_days"] == 90
+
+
+def test_the_published_copy_has_no_totals_by_company(tmp_path):
+    """Ethan, 19 Nov 2026: no table by company. The research file's `company` block would be one at a public URL, so the
+    site's copy leaves out every company total, name and index, and keeps everything the page and its cover read."""
+    build_site.write_lab(tmp_path)
+    pub, full = json.loads((tmp_path / "lab" / "data" / "overflow_ledger.v1.json").read_text()), json.loads(FILE.read_text())
+    assert "company" in full and "companies" in full   # the research file keeps them
+    assert "company" not in pub and "companies" not in pub and "company" not in pub["overflows"]
+    assert not any("compan" in k.lower() for k in pub) and not any("compan" in k.lower() for k in pub["overflows"])
+    for name in {c["company"] for c in full["company"]}:   # no company named anywhere in the copy
+        assert name not in json.dumps(pub), name
+    assert "published_copy" in pub
+    for k in ("schema", "version", "spots", "groups", "definitions", "claim", "coverage", "attribution", "source_export"):
+        assert pub[k] == full[k], k
+    for k in ("site_id", "name", "water", "lat", "lon", "links", "weight_sum", "group", "spots_reached"):
+        assert pub["overflows"][k] == full["overflows"][k], k

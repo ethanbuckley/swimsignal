@@ -130,10 +130,11 @@ unpublished prototype. His other decisions of 19 November hold, so the published
 - **No season figure.** Section 5 says a season count was made and why it is not shown (check 4 failed as stated;
   the per-overflow figure moved between seasons), with a link to its record. The season file is not copied to the
   site.
-- The weighted-spills year figure is left off the page. It is in the published file and its contract.
-
-The research file is copied to `lab/data/` as it is (`build_site.LAB_DATA`). It holds every overflow's name and the
-by-company roll-up, as exhibit 2's per-spot files already hold the same rows spot by spot. Whether a published file may
-hold the by-company roll-up is a question for Ethan; a trimmed public copy is the alternative.
+- The weighted-spills year figure is left off the page. It is in the published copy and the contract.
+- **The published file has no company dimension** (decided 26 Nov 2026 for #757: the research file's `company` block
+  would be the table by company at a public URL). `build_site.lab_ledger_copy` writes `lab/data/overflow_ledger.v1.json`
+  without `company`, `companies` and each overflow's company index, and adds a `published_copy` note saying so.
+  Everything the page and its cover read is unchanged. `data/research/overflow_ledger.v1.json`, its contract and its
+  script are unchanged. A test checks that the published copy names no company and holds no company total.
 
 Nothing in the ledger, its contract or its claim changed. Stage unchanged: model accounting, no test.

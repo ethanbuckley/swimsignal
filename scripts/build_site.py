@@ -4277,6 +4277,12 @@ LAB = ROOT / "prototypes" / "research-lab"
 LAB_DATA = ("ecoli_evidence.v1.json", "lake_observations.v1.json", "lake_imagery.v1.json",
             "satellite/pilot_runs.json", "research_catalogue.v1.json", "sampling_planner.v1.json", "lake-img",
             "overflow_ledger.v1.json")   # exhibit 6 (25 Nov 2026); the season file (stage 2) stays out: no page shows it
+# The overflow ledger's public copy (exhibit 6, 25 Nov 2026): without its company dimension. Ethan decided on 19 Nov 2026
+# that the table by company is not shown, and the file's `company` block would be that table at a public URL; the page
+# draws no company, so `companies` and each overflow's company index go too. Everything the page reads stays.
+LAB_LEDGER = "overflow_ledger.v1.json"
+LAB_LEDGER_DROP = ("company", "companies")
+LAB_LEDGER_DROP_COLUMNS = ("company",)
 LAB_REWRITES = (("../../../data/research/", "../data/"),            # an exhibit's reads, one folder down
                 ("../../data/research/", "data/"),                   # the front page's (exhibit 6's cover)
                 ("../../../src/dipcast/pages/page.css", "../../page.css"),   # an exhibit's link to the site's stylesheet
@@ -4313,6 +4319,8 @@ def write_lab(site: Path, token: str | None = None, lab: Path = LAB, research: P
             shutil.copytree(src, dst)
         elif src.is_file():
             shutil.copy(src, dst)
+    if (out / "data" / LAB_LEDGER).is_file():
+        (out / "data" / LAB_LEDGER).write_text(json.dumps(lab_ledger_copy(json.loads((out / "data" / LAB_LEDGER).read_text())), separators=(",", ":")))
     pages = 0
     for f in sorted(out.rglob("*")):
         if f.suffix not in (".html", ".js", ".css") or (out / "data") in f.parents:
@@ -4336,6 +4344,17 @@ def write_lab(site: Path, token: str | None = None, lab: Path = LAB, research: P
         f.write_text(s)
     write_lab_refresh(site)
     return pages
+
+
+def lab_ledger_copy(doc: dict) -> dict:
+    """The ledger as the site publishes it: the research file less its company dimension (LAB_LEDGER_DROP), with a note
+    saying so. The research file itself is unchanged."""
+    out = {k: v for k, v in doc.items() if k not in LAB_LEDGER_DROP}
+    out["overflows"] = {k: v for k, v in doc.get("overflows", {}).items() if k not in LAB_LEDGER_DROP_COLUMNS}
+    out["published_copy"] = ("The site's copy of data/research/overflow_ledger.v1.json without its company dimension (the "
+                             "by-company totals, the company names and each overflow's company): SwimSignal does not publish "
+                             "a table by company, because which spots are listed is its own choice.")
+    return out
 
 
 def attach_lab_links(results: list[dict], lab: Path = LAB, research: Path = ROOT / "data" / "research") -> int:

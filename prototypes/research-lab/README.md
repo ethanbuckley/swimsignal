@@ -15,8 +15,8 @@ research files it reads. Run from the repository root, as below, the exhibits re
 
 Exhibit 6 keeps Ethan's decisions of 19 Nov 2026: no national list of overflows (they are named one catchment at a
 time, as exhibit 2 and each spot page name them), no table by company, and no season figure (stage 2's reproduction
-check failed as stated, `docs/OVERFLOW-LEDGER-SEASON-2026-11.md`). Its research file is copied as it is; the season
-file is not copied.
+check failed as stated, `docs/OVERFLOW-LEDGER-SEASON-2026-11.md`). The build publishes its research file without
+the company dimension (`build_site.lab_ledger_copy`); the season file is not copied.
 
 Prototypes the site build leaves out (`build_site.LAB_UNPUBLISHED`), linked from no page:
 
