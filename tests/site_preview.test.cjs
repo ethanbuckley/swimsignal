@@ -484,6 +484,25 @@ test('out of season, the E. coli row reads the winter word on the day that carri
   for (const iso of [DAYS[0], DAYS[1]]) assert.deepEqual(lv(withWord, iso), lv(without, iso));
 });
 
+test('a river place with no overflow upstream reads the rain word today, under its plain level, and nothing else changes', () => {
+  // The build puts rain_usual on today's day only, at a river spot with no monitored overflow upstream (rain_usual.py).
+  const beck = word => { const s = spot([], {id: 'beck', name: 'Gordale Beck, Janet\'s Foss', river: 'Gordale Beck', upstream_summary: {overflows: 0},
+    days: DAYS.map(d => ({date: d, label: 'low', risk: 0, rain_48h_mm: 12, in_validated_season: false}))});
+    if (word) s.days[0].rain_usual = word; return s; };
+  const a = (s, iso) => M.answer(s, iso, data([s]), NOW);
+  const withWord = a(beck('more'), DAYS[0]), without = a(beck(null), DAYS[0]);
+  assert.equal(withWord.head, L.FOUND_NONE);
+  assert.deepEqual(withWord.why, [...without.why, 'More rain than usual here in the last two days.']);
+  assert.deepEqual(withWord.notes, [L.OTHER_RISKS, L.RAIN_USUAL_SAID], 'the other risks first, then what the word rests on');
+  assert.deepEqual(without.notes, [L.OTHER_RISKS]);
+  for (const k of ['head', 'cls', 'level', 'act', 'conditions']) assert.deepEqual(withWord[k], without[k], k);
+  assert.deepEqual(a(beck('more'), DAYS[1]), a(beck(null), DAYS[1]), 'another day does not borrow today\'s word');
+  assert.equal(a(beck('less'), DAYS[0]).why.slice(-1)[0], 'Less rain than usual here in the last two days.');
+  assert.equal(a(beck('about'), DAYS[0]).why.slice(-1)[0], 'About the usual rain here in the last two days.');
+  assert.deepEqual(a(beck('wet'), DAYS[0]), without, 'an unknown word says nothing');
+  for (const t of [...Object.values(L.RAIN_USUAL), L.RAIN_USUAL_SAID]) assert.doesNotMatch(t, /\d|%|safe|clean|chance|risk|—/i, t);
+});
+
 test('the spill map is the live site\'s own script, asked for only when its place on the page is near', () => {
   const PL = require(path.join(SITE, 'plume.js'));
   // The script draws the tile and the map; the page gives it a place, the map's library and the page's own tiles.
