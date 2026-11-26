@@ -1,6 +1,7 @@
 """The overflow ledger (LEDGER stage 1, docs/OVERFLOW-LEDGER-CONTRACT-v1.md): the roll-up adds exhibit 2's weights and
-makes none of its own, the committed file holds its contract and says what it is, and the site build leaves the
-prototype page out."""
+makes none of its own, the committed file holds its contract and says what it is, and the site build publishes it as
+Research Lab exhibit 6 (25 Nov 2026) within Ethan's decisions of 19 Nov 2026: no national list of overflows, no table
+by company, no season figure."""
 import json
 import sys
 from pathlib import Path
@@ -119,28 +120,52 @@ def test_cromwheel_matches_the_forecasts_own_export(doc):
 
 def test_the_page_says_what_it_is():
     html = (PAGE / "index.html").read_text()
-    assert '<meta name="robots" content="noindex">' in html
-    assert "An account of the model, not of measured bacteria" in html and "Not published" in html
+    assert "An account of the model, not of measured bacteria" in html and "no test was run" in html
     js = (PAGE / "ledger.js").read_text()
-    assert "Model weights, not measurements" in js
+    assert "Model weights, not measurements" in js and "The ledger itself was not tested." in js
+    assert "which does not make them clean" in js and "None of them is called clean" in js
     for word in ("causes", "caused by", "responsible for", "polluter", "worst"):   # no blame, no league table
         assert word not in html.lower() and word not in js.lower(), word
 
 
-def test_the_build_leaves_the_ledger_out(tmp_path):
-    assert "overflow-ledger" in build_site.LAB_UNPUBLISHED and "overflow_ledger.v1.json" not in build_site.LAB_DATA
+def test_the_page_keeps_ethans_decisions():
+    """19 Nov 2026: overflows not named nationally in public, no table by company, and (check 4 failed) no season
+    figure. The national view is by spot; overflow names appear only in one catchment's grid, as on exhibit 2."""
+    html, js = (PAGE / "index.html").read_text(), (PAGE / "ledger.js").read_text()
+    assert "doc.company" not in js and "By company" not in html and 'id="company"' not in html   # no company table or filter
+    assert js.count("title(r.name)") == 1 and "function grid()" in js   # a name is written in the catchment grid only
+    assert js.index("title(r.name)") > js.index("function grid()") and js.index("title(r.name)") < js.index("function controls()")
+    assert "weighted_spills" not in js and "overflow_ledger_season" not in html + js   # neither the year figure nor the season file
+    assert "Its figures are not shown." in html
+    assert "overflow_ledger_season.v1.json" not in build_site.LAB_DATA
+
+
+def test_the_build_publishes_it_as_exhibit_6(tmp_path):
+    assert "overflow-ledger" not in build_site.LAB_UNPUBLISHED and "overflow_ledger.v1.json" in build_site.LAB_DATA
     build_site.write_lab(tmp_path)
     lab = tmp_path / "lab"
-    assert (lab / "pollution" / "index.html").is_file() and not (lab / "overflow-ledger").exists()
-    assert "lab/overflow-ledger/" not in build_site.lab_pages()   # nor in the sitemap
-    for f in lab.rglob("*"):
-        if f.suffix in (".html", ".js", ".css"):
-            text = f.read_text(errors="ignore")
-            assert "overflow-ledger" not in text and "overflow_ledger" not in text, f
+    assert (lab / "overflow-ledger" / "index.html").is_file() and (lab / "data" / "overflow_ledger.v1.json").is_file()
+    pub, full = json.loads((lab / "data" / "overflow_ledger.v1.json").read_text()), json.loads(FILE.read_text())
+    assert pub == build_site.lab_ledger_copy(full)   # the frozen copy, less its company dimension
+    assert "lab/overflow-ledger/" in build_site.lab_pages()
+    js = (lab / "overflow-ledger" / "ledger.js").read_text()
+    assert "const FILE = '../data/overflow_ledger.v1.json';" in js
+    part = json.loads((lab / "refresh.json").read_text())["parts"]["ledger"]
+    assert part["as_of"] == json.loads(FILE.read_text())["generated_at"][:10] and part["stale_days"] == 90
 
 
-def test_no_published_page_links_the_ledger():
-    for f in [*(ROOT / "src" / "dipcast").rglob("*.html"), *(ROOT / "src" / "dipcast").rglob("*.js"),
-              *(ROOT / "prototypes" / "research-lab").rglob("*")]:
-        if f.is_file() and f.suffix in (".html", ".js") and PAGE not in f.parents:
-            assert "overflow-ledger" not in f.read_text() and "overflow_ledger" not in f.read_text(), f
+def test_the_published_copy_has_no_totals_by_company(tmp_path):
+    """Ethan, 19 Nov 2026: no table by company. The research file's `company` block would be one at a public URL, so the
+    site's copy leaves out every company total, name and index, and keeps everything the page and its cover read."""
+    build_site.write_lab(tmp_path)
+    pub, full = json.loads((tmp_path / "lab" / "data" / "overflow_ledger.v1.json").read_text()), json.loads(FILE.read_text())
+    assert "company" in full and "companies" in full   # the research file keeps them
+    assert "company" not in pub and "companies" not in pub and "company" not in pub["overflows"]
+    assert not any("compan" in k.lower() for k in pub) and not any("compan" in k.lower() for k in pub["overflows"])
+    for name in {c["company"] for c in full["company"]}:   # no company named anywhere in the copy
+        assert name not in json.dumps(pub), name
+    assert "published_copy" in pub
+    for k in ("schema", "version", "spots", "groups", "definitions", "claim", "coverage", "attribution", "source_export"):
+        assert pub[k] == full[k], k
+    for k in ("site_id", "name", "water", "lat", "lon", "links", "weight_sum", "group", "spots_reached"):
+        assert pub["overflows"][k] == full["overflows"][k], k

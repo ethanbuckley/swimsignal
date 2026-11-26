@@ -11,13 +11,18 @@ research files it reads. Run from the repository root, as below, the exhibits re
 | 3. How good are the forecasts? | `forecasts/` | live, exploratory | `docs/FORECAST-RECORD-EXPLORATION-2026-11.md` |
 | 4. Catchment workspace | `workspace/` | live, exploratory | `docs/CATCHMENT-WORKSPACE-2026-11.md` |
 | 5. Sampling gaps | `sampling/` | exploratory planning aid | `docs/SAMPLING-GAPS-EXHIBIT-2026-11.md` |
+| 6. The overflow ledger | `overflow-ledger/` | live from 25 Nov 2026, model accounting, no test | `docs/OVERFLOW-LEDGER-2026-11.md` |
+
+Exhibit 6 keeps Ethan's decisions of 19 Nov 2026: no national list of overflows (they are named one catchment at a
+time, as exhibit 2 and each spot page name them), no table by company, and no season figure (stage 2's reproduction
+check failed as stated, `docs/OVERFLOW-LEDGER-SEASON-2026-11.md`). The build publishes its research file without
+the company dimension (`build_site.lab_ledger_copy`); the season file is not copied.
 
 Prototypes the site build leaves out (`build_site.LAB_UNPUBLISHED`), linked from no page:
 
-| Prototype | Folder | Record |
-|---|---|---|
-| What if (CATCH-SIM) | `workspace/whatif/` | `docs/CATCH-SIM-2026-12.md` |
-| The overflow ledger (LEDGER) | `overflow-ledger/` | `docs/OVERFLOW-LEDGER-2026-11.md` |
+| Prototype | Folder | Record | Why it stays out |
+|---|---|---|---|
+| What if (CATCH-SIM) | `workspace/whatif/` | `docs/CATCH-SIM-2026-12.md` | Its checks passed (0 of 20 overflows non-monotone; 562 of 562 issued levels rebuilt), so the record supports the claim it makes: the model's answer to a what-if on past days. But a scenario view is a new kind of public page, one a reader can take for the effect of a real upgrade, and the record leaves two decisions to Ethan that he has not made: whether a scenario view is shown publicly at all, and whether "remove an overflow" may name a company's overflow. The record's own calibration figures (observed ÷ expected spill days 1.22 to 1.25 at Cromwheel, 0.72 to 0.81 at Waterhead in sample) would also need to sit beside every figure. Publish when Ethan decides both; rollback is the ignore entry |
 
 ## Run it
 
@@ -29,7 +34,7 @@ Prototypes the site build leaves out (`build_site.LAB_UNPUBLISHED`), linked from
 
 2. Open http://localhost:8823/prototypes/research-lab/
 
-It worked if the front page lists five exhibits and each one opens with its answer and "The figures behind it".
+It worked if the front page lists six exhibits and each one opens with its answer and "The figures behind it".
 "This exhibit's data could not be loaded" means the server was started in the wrong folder. From the repository the
 header is a stand-in with the name only; the site build puts the site's own header and phone bar there. A page showing the main
 SwimSignal app means another server or an old service worker holds that port: pick another.
@@ -56,9 +61,11 @@ SwimSignal app means another server or an old service worker holds that port: pi
 - `lab.css`: the Lab's editorial variant over `page.css`: the warmer paper, the deep frontispiece, plates and captions.
 - `sampling/gaps.json`: every spot's place and samples, the calendar and the fixed-day rain shares, from
   `scripts/lab_sampling_gaps.py` (committed files only; `check` matches it to the planner's file, which exhibit 5 also reads).
-- `assets/covers/`: the five exhibits' covers as 320 px pictures, for the Research page, Accuracy, the home page and a
+- `assets/covers/`: the six exhibits' covers as 320 px pictures, for the Research page, Accuracy, the home page and a
   spot's "Explore the evidence". Taken on 1 Nov 2026 from this front page's own drawn covers (headless Chrome, the big
-  numbers hidden). Retake them if an exhibit's cover changes.
+  numbers and corner ticks hidden); exhibit 6's on 25 Nov 2026 the same way. Retake them if an exhibit's cover changes.
+- `../../data/research/overflow_ledger.v1.json` (exhibit 6 and its cover on this front page): ledger v1 as committed,
+  from `scripts/export_overflow_ledger.py`. The build copies it to `lab/data/`.
 - Links in: `#lake=`, `#spot=`, `#bw=` and `#c=…&spot=` open an exhibit on a place; a place an exhibit lacks is said in a
   status line, never swapped quietly. Each exhibit links back to "Today's forecast for" the place it shows.
 - Each exhibit: a question and a plain answer with figures; numbered sections; real data only, missing data drawn as
