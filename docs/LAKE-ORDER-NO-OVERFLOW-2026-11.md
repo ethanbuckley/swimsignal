@@ -68,8 +68,8 @@ On the bench's seen rows at these 5 lakes (2023 to 2026, the same years the cut-
 Higher over lower within each lake: 2.66 at the Serpentine, 2.91 Ladies, 1.21 Mens, 2.40 Mixed, and **0.49 at
 Colwick**, which went the wrong way. Pooled within lake 1.62. Colwick stays: the test pooled all 7 lakes, and dropping
 one on its 64 seen samples would choose a subgroup after looking. Its 2012-22 figure alone was not reported by the
-bench and is not computed here, because that would read held-out rows outside the bench's ledger. This is the part
-Ethan may want to overrule.
+bench and is not computed here, because that would read held-out rows outside the bench's ledger. Ethan was asked
+on 27 November 2026 whether to keep Colwick and answered "Keep Colwick".
 
 ## How strong it is, said plainly
 

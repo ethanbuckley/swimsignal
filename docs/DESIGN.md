@@ -3152,6 +3152,8 @@ lake-range-v1's likely reading at lake bathing waters it has no own level for (0
   with their own level keep it.
 - Not at Cotswold Country Park or Henleaze Lake (isolated, no daily forecast), any other lake, a clicked point, a later
   day, the list rows, tabs, picture, planner, alerts or `classic/`.
+- **Decided by Ethan, 27 November 2026:** Colwick stays in, though its seen-years samples ran the wrong way (higher
+  over lower 0.49); his answer to "Keep Colwick in the lake word?" was "Keep Colwick".
 
 **Checked:** the rule in `tests/site_preview.test.cjs` and `tests/test_lake_order.py`. **Not checked:** a word on the
 live site, which cannot appear before 1 May 2027.
