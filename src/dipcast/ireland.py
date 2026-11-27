@@ -27,7 +27,7 @@ from pathlib import Path
 
 import httpx
 
-from dipcast import config, sample_history, typical
+from dipcast import config, rain_history, sample_history, typical
 from dipcast.coastal import TZ, instant, when
 
 BASE = "https://data.epa.ie/bw/api/v1/"
@@ -388,6 +388,7 @@ def render(snapshot: dict) -> str:
         lines.append(_sample_text(s["sample"], today, season))
         if s.get("typical"):
             lines.append(escape(typical.line(s["typical"])))
+        lines += rain_history.card_lines(s, snapshot)   # past samples by rain, coast and estuary only
         if s.get("history"):   # every sample since 2014 on the shared sample viewer (sample_history.py)
             lines.append(f'<a href="samples.html#ireland={escape(s["id"], quote=True)}">'
                          f'{escape(sample_history.history_line(s["history"]))}</a>')
@@ -418,10 +419,10 @@ def render(snapshot: dict) -> str:
             f'monitor, designated first.{kept}</p>'
             f'<p class="small">{alerts_text}</p>'
             f'<p class="small">{samples_text}</p>'
-            + typical.note(snapshot, inland=True) +
+            + typical.note(snapshot, inland=True) + rain_history.note(snapshot) +
             '<label for="ireland-search">Find a bathing water in the Republic</label> '
             '<input type="search" id="ireland-search" placeholder="Name, with or without accents">'
             f'<p id="ireland-count" class="small" aria-live="polite">{len(cards)} sites</p>'
             '<ul id="ireland-sites">' + ''.join(cards) + '</ul>'
             f'<p class="small">{escape(CREDIT)} <a href="{SOURCE}">Source</a> · <a href="{LICENCE}">Licence</a>. '
-            'The EPA does not endorse SwimSignal.</p>')
+            'The EPA does not endorse SwimSignal.</p>' + rain_history.credit(snapshot))

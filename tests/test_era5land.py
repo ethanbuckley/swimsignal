@@ -571,3 +571,15 @@ def test_match_check_thresholds_are_the_records(tmp_path):
                                          "paired_cell_days": 20000})
     assert rep_rows[0] == "PASS"
     assert json.dumps(rep_rows[1])
+
+
+def test_to_cells_a_season_only_download_starts_at_its_first_month(tmp_path):
+    out = tmp_path / "s"
+    truth = write_months(out, ["2024-05", "2024-06"])
+    assert to_cells.run(out, out / "c", None, {(51.0, 0.0)}, all_land=False)["years"]["2024"]["months"] == []
+    man = to_cells.run(out, out / "c", None, {(51.0, 0.0)}, all_land=False, first_month=5, force=True)
+    assert man["years"]["2024"]["months"] == ["2024-05", "2024-06"] and man["years"]["2024"]["first_month"] == 5
+    df = pd.read_parquet(out / "c" / "archive_51.000_0.000_2024.parquet")
+    assert df["time"].iloc[0] == pd.Timestamp("2024-05-01 00:00", tz="UTC")
+    assert np.isnan(df["precip_mm"].iloc[0]) and df["precip_mm"].iloc[1:].notna().all()   # no April: first hour unknown
+    assert np.allclose(df["precip_mm"].iloc[1:], truth[(2, 1)].reindex(df["time"].iloc[1:]).to_numpy())

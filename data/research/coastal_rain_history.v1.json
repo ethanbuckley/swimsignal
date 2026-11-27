@@ -1,6 +1,6 @@
 {
- "credit": "Contains Environment Agency, Natural Resources Wales and DAERA data, OGL v3.0. Rain generated using Copernicus Climate Change Service information 2026.",
- "generated_at": "2026-11-26T22:15:06+00:00",
+ "credit": "Contains Environment Agency, Natural Resources Wales and DAERA data, OGL v3.0, and data from the Environmental Protection Agency (Ireland), CC BY 4.0. Rain generated using Copernicus Climate Change Service information 2026.",
+ "generated_at": "2026-11-27T10:45:49+00:00",
  "nations": {
   "england": {
    "after_rain": {
@@ -19,6 +19,24 @@
    "period": "May to September, 2012 to 2026",
    "samples": 98218,
    "tested": "A frozen model with rain in it predicted results over 500 better than the same model without rain on 65,350 samples from 2012 to 2021 at 403 English beaches, seasons it never saw (9 of 10 seasons better). That supports these lines; it is not a chance for today."
+  },
+  "ireland": {
+   "after_rain": {
+    "median": 20.0,
+    "over_500": 238,
+    "samples": 5246,
+    "share_over_500": 0.0454
+   },
+   "beaches": 220,
+   "dry": {
+    "median": "<10",
+    "over_500": 83,
+    "samples": 7619,
+    "share_over_500": 0.0109
+   },
+   "period": "May to September, 2014 to 2026",
+   "samples": 24530,
+   "tested": "England's frozen model, never fitted on Irish samples, put each beach's 2014 to 2026 samples in order better with rain than without (24,413 samples at 210 beaches). That supports these lines; it is not a chance for today."
   },
   "northern_ireland": {
    "after_rain": {
@@ -60,7 +78,8 @@
  "rain": "ERA5-Land hourly reanalysis (Copernicus Climate Change Service), the beach's 0.1 degree cell or the nearest land point within about 30 km, summed over the 48 hours before each sample",
  "records": [
   "docs/COASTAL-C1-PROTOCOL-2026-11.md",
-  "docs/ANYWATER-UK-STATEMENT-2026-11.md"
+  "docs/ANYWATER-UK-STATEMENT-2026-11.md",
+  "docs/ANYWATER-IE-STATEMENT-2026-11.md"
  ],
  "rule": {
   "after_rain_mm": 10.0,
@@ -70,6 +89,3440 @@
  },
  "schema": "swimsignal.coastal-rain-history",
  "sites": {
+  "BPNBF050000140001": {
+   "after_rain": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 13
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 20
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 66
+  },
+  "BPNBF050000150001": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 13
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 19
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 65
+  },
+  "BPNBF050000170001": {
+   "after_rain": {
+    "samples": 9
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 26
+   },
+   "first_year": 2015,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 63
+  },
+  "BPNBF050000200001": {
+   "after_rain": {
+    "median": 20.0,
+    "over_500": 0,
+    "samples": 13
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 20
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 69
+  },
+  "BPNBF050000210001": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 20
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 18
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 65
+  },
+  "BPNBF050000230001": {
+   "after_rain": {
+    "samples": 5
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 28
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 65
+  },
+  "BPNBF050000280001": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 12
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 22
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 66
+  },
+  "BPNBF050000300001": {
+   "after_rain": {
+    "median": 86.0,
+    "over_500": 0,
+    "samples": 11
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 31
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 73
+  },
+  "BPNBF050000320001": {
+   "after_rain": {
+    "samples": 6
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 31
+   },
+   "first_year": 2015,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 62
+  },
+  "BPNBF050000330001": {
+   "after_rain": {
+    "samples": 7
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 29
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 67
+  },
+  "BPNBF050000400001": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 12
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 22
+   },
+   "first_year": 2015,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 60
+  },
+  "BPNBF050000420001": {
+   "after_rain": {
+    "samples": 5
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 20
+   },
+   "first_year": 2018,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 46
+  },
+  "BPNBF070000020002": {
+   "after_rain": {
+    "median": 150.0,
+    "over_500": 14,
+    "samples": 52
+   },
+   "dry": {
+    "median": 97.0,
+    "over_500": 6,
+    "samples": 70
+   },
+   "first_year": 2016,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 243
+  },
+  "BPNBF070000040003": {
+   "after_rain": {
+    "median": 390.0,
+    "over_500": 15,
+    "samples": 35
+   },
+   "dry": {
+    "median": 86.0,
+    "over_500": 4,
+    "samples": 60
+   },
+   "first_year": 2017,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 205
+  },
+  "BPNBF070000060001": {
+   "after_rain": {
+    "median": 85.0,
+    "over_500": 1,
+    "samples": 39
+   },
+   "dry": {
+    "median": 52.0,
+    "over_500": 9,
+    "samples": 62
+   },
+   "first_year": 2017,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 206
+  },
+  "BPNBF100000060001": {
+   "after_rain": {
+    "samples": 4
+   },
+   "dry": {
+    "samples": 7
+   },
+   "first_year": 2026,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 17
+  },
+  "BPNBF100000070001": {
+   "after_rain": {
+    "samples": 4
+   },
+   "dry": {
+    "samples": 9
+   },
+   "first_year": 2026,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 17
+  },
+  "BPNBF100000080001": {
+   "after_rain": {
+    "samples": 3
+   },
+   "dry": {
+    "samples": 8
+   },
+   "first_year": 2026,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 17
+  },
+  "BPNBF120000060002": {
+   "after_rain": {
+    "median": 480.0,
+    "over_500": 13,
+    "samples": 27
+   },
+   "dry": {
+    "median": 20.0,
+    "over_500": 0,
+    "samples": 21
+   },
+   "first_year": 2015,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 90
+  },
+  "BPNBF120000140001": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 20
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 20
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 66
+  },
+  "BPNBF120000150001": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 18
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 14
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 64
+  },
+  "BPNBF120000160001": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 18
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 15
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 65
+  },
+  "BPNBF120000180001": {
+   "after_rain": {
+    "median": 10.0,
+    "over_500": 1,
+    "samples": 18
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 16
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 69
+  },
+  "BPNBF120000190001": {
+   "after_rain": {
+    "median": 10.0,
+    "over_500": 1,
+    "samples": 16
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 16
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 53
+  },
+  "BPNBF120000210001": {
+   "after_rain": {
+    "median": 20.0,
+    "over_500": 2,
+    "samples": 18
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 16
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 66
+  },
+  "BPNBF120000220001": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 17
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 17
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 65
+  },
+  "BPNBF120000230001": {
+   "after_rain": {
+    "median": 20.0,
+    "over_500": 0,
+    "samples": 17
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 16
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 65
+  },
+  "BPNBF120000240001": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 15
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 16
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 66
+  },
+  "BPNBF120000260001": {
+   "after_rain": {
+    "samples": 8
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 16
+   },
+   "first_year": 2019,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 46
+  },
+  "BPNBF130000160001": {
+   "after_rain": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 25
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 21
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 101
+  },
+  "BPNBF130000170001": {
+   "after_rain": {
+    "median": 53.0,
+    "over_500": 2,
+    "samples": 21
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 14
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 67
+  },
+  "BPNBF130000190001": {
+   "after_rain": {
+    "median": 42.0,
+    "over_500": 0,
+    "samples": 25
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 24
+   },
+   "first_year": 2016,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 90
+  },
+  "BPNBF130000200001": {
+   "after_rain": {
+    "median": 53.0,
+    "over_500": 2,
+    "samples": 24
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 23
+   },
+   "first_year": 2016,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 100
+  },
+  "BPNBF130000210001": {
+   "after_rain": {
+    "median": 10.0,
+    "over_500": 1,
+    "samples": 21
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 21
+   },
+   "first_year": 2017,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 79
+  },
+  "BPNBF130000220001": {
+   "after_rain": {
+    "median": 10.0,
+    "over_500": 2,
+    "samples": 10
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 15
+   },
+   "first_year": 2019,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 50
+  },
+  "BPNBF220000110002": {
+   "after_rain": {
+    "median": 10.0,
+    "over_500": 2,
+    "samples": 20
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 17
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 68
+  },
+  "BPNBF220000170001": {
+   "after_rain": {
+    "median": 10.0,
+    "over_500": 2,
+    "samples": 20
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 15
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 68
+  },
+  "BPNBF220000190001": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 15
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 17
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 66
+  },
+  "BPNBF220000200001": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 16
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 16
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 64
+  },
+  "BPNBF220000210001": {
+   "after_rain": {
+    "median": 60.0,
+    "over_500": 4,
+    "samples": 27
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 13
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 69
+  },
+  "BPNBF220000260001": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 13
+   },
+   "dry": {
+    "samples": 7
+   },
+   "first_year": 2018,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 40
+  },
+  "BPNBF220000340001": {
+   "after_rain": {
+    "median": 10.0,
+    "over_500": 1,
+    "samples": 14
+   },
+   "dry": {
+    "samples": 8
+   },
+   "first_year": 2020,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 43
+  },
+  "BPNBF220000350001": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 15
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 17
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 64
+  },
+  "BPNBF230000020001": {
+   "after_rain": {
+    "median": 52.0,
+    "over_500": 0,
+    "samples": 15
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 22
+   },
+   "first_year": 2015,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 76
+  },
+  "BPNBF230000030001": {
+   "after_rain": {
+    "samples": 1
+   },
+   "dry": {
+    "samples": 6
+   },
+   "first_year": 2024,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 18
+  },
+  "BPNBF310000100001": {
+   "after_rain": {
+    "median": 20.0,
+    "over_500": 1,
+    "samples": 10
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 32
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 68
+  },
+  "BPNBF310000110001": {
+   "after_rain": {
+    "samples": 6
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 27
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 63
+  },
+  "BPNBF310000120001": {
+   "after_rain": {
+    "samples": 8
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 28
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 63
+  },
+  "BPNBF310000130001": {
+   "after_rain": {
+    "samples": 9
+   },
+   "dry": {
+    "median": 20.0,
+    "over_500": 0,
+    "samples": 30
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 68
+  },
+  "BPNBF310000140001": {
+   "after_rain": {
+    "samples": 4
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 28
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 64
+  },
+  "BPNBF310000150001": {
+   "after_rain": {
+    "samples": 6
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 28
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 65
+  },
+  "BPNBF310000160001": {
+   "after_rain": {
+    "samples": 9
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 24
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 63
+  },
+  "BPNBF310000170001": {
+   "after_rain": {
+    "samples": 8
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 1,
+    "samples": 33
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 69
+  },
+  "BPNBF310000180001": {
+   "after_rain": {
+    "samples": 9
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 26
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 64
+  },
+  "BPNBF310000190001": {
+   "after_rain": {
+    "samples": 6
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 1,
+    "samples": 29
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 63
+  },
+  "BPNBF310000200001": {
+   "after_rain": {
+    "samples": 6
+   },
+   "dry": {
+    "median": 20.0,
+    "over_500": 0,
+    "samples": 26
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 61
+  },
+  "BPNBF310000210001": {
+   "after_rain": {
+    "median": 300.0,
+    "over_500": 7,
+    "samples": 14
+   },
+   "dry": {
+    "median": 53.0,
+    "over_500": 5,
+    "samples": 34
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 88
+  },
+  "BPNBF330000130001": {
+   "after_rain": {
+    "median": 20.0,
+    "over_500": 1,
+    "samples": 26
+   },
+   "dry": {
+    "median": 2.0,
+    "over_500": 1,
+    "samples": 85
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 197
+  },
+  "BPNBF330000140001": {
+   "after_rain": {
+    "median": 10.0,
+    "over_500": 1,
+    "samples": 26
+   },
+   "dry": {
+    "median": 1.0,
+    "over_500": 0,
+    "samples": 77
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 197
+  },
+  "BPNBF330000150001": {
+   "after_rain": {
+    "median": 1.0,
+    "over_500": 0,
+    "samples": 25
+   },
+   "dry": {
+    "median": 1.0,
+    "over_500": 0,
+    "samples": 81
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 195
+  },
+  "BPNBF330000180001": {
+   "after_rain": {
+    "median": 12.0,
+    "over_500": 0,
+    "samples": 27
+   },
+   "dry": {
+    "median": 1.0,
+    "over_500": 1,
+    "samples": 70
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 197
+  },
+  "BPNBF330000200001": {
+   "after_rain": {
+    "median": 4.0,
+    "over_500": 0,
+    "samples": 24
+   },
+   "dry": {
+    "median": 1.0,
+    "over_500": 0,
+    "samples": 70
+   },
+   "first_year": 2016,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 163
+  },
+  "BPNBF330000210001": {
+   "after_rain": {
+    "median": 15.0,
+    "over_500": 1,
+    "samples": 22
+   },
+   "dry": {
+    "median": 2.0,
+    "over_500": 1,
+    "samples": 66
+   },
+   "first_year": 2016,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 167
+  },
+  "BPNBF330000220001": {
+   "after_rain": {
+    "median": 30.0,
+    "over_500": 0,
+    "samples": 21
+   },
+   "dry": {
+    "median": 1.0,
+    "over_500": 2,
+    "samples": 68
+   },
+   "first_year": 2016,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 169
+  },
+  "BPNBF330000230001": {
+   "after_rain": {
+    "median": 12.0,
+    "over_500": 3,
+    "samples": 24
+   },
+   "dry": {
+    "median": 1.0,
+    "over_500": 1,
+    "samples": 72
+   },
+   "first_year": 2016,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 166
+  },
+  "BPNBF330000250001": {
+   "after_rain": {
+    "median": 7.0,
+    "over_500": 1,
+    "samples": 24
+   },
+   "dry": {
+    "median": 4.0,
+    "over_500": 0,
+    "samples": 73
+   },
+   "first_year": 2016,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 171
+  },
+  "BPNBF330000270001": {
+   "after_rain": {
+    "samples": 9
+   },
+   "dry": {
+    "median": 4.0,
+    "over_500": 0,
+    "samples": 35
+   },
+   "first_year": 2021,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 88
+  },
+  "BPNBF340000070001": {
+   "after_rain": {
+    "median": 31.0,
+    "over_500": 1,
+    "samples": 19
+   },
+   "dry": {
+    "median": 20.0,
+    "over_500": 0,
+    "samples": 27
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 84
+  },
+  "BPNBF340000090001": {
+   "after_rain": {
+    "median": 52.0,
+    "over_500": 0,
+    "samples": 13
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 22
+   },
+   "first_year": 2017,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 75
+  },
+  "BPNBF340000100001": {
+   "after_rain": {
+    "median": 200.0,
+    "over_500": 2,
+    "samples": 13
+   },
+   "dry": {
+    "median": 41.0,
+    "over_500": 1,
+    "samples": 21
+   },
+   "first_year": 2017,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 68
+  },
+  "BPNBF340000110001": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 11
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 18
+   },
+   "first_year": 2017,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 58
+  },
+  "BPNBF340000120001": {
+   "after_rain": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 10
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 17
+   },
+   "first_year": 2017,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 62
+  },
+  "BPNBF340000130001": {
+   "after_rain": {
+    "samples": 9
+   },
+   "dry": {
+    "median": 20.0,
+    "over_500": 1,
+    "samples": 16
+   },
+   "first_year": 2020,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 53
+  },
+  "IEEABWC020_0000_0100": {
+   "after_rain": {
+    "median": 20.0,
+    "over_500": 0,
+    "samples": 25
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 45
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 119
+  },
+  "IEEABWC020_0000_0200": {
+   "after_rain": {
+    "median": 31.0,
+    "over_500": 1,
+    "samples": 25
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 45
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 120
+  },
+  "IEEABWC020_0000_0300": {
+   "after_rain": {
+    "median": 41.0,
+    "over_500": 0,
+    "samples": 26
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 1,
+    "samples": 44
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 120
+  },
+  "IEEABWC020_0000_0350": {
+   "after_rain": {
+    "median": 41.0,
+    "over_500": 1,
+    "samples": 21
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 37
+   },
+   "first_year": 2016,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 100
+  },
+  "IEEABWC020_0000_0400": {
+   "after_rain": {
+    "median": 120.0,
+    "over_500": 5,
+    "samples": 26
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 1,
+    "samples": 45
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 120
+  },
+  "IEEABWC020_0000_0500": {
+   "after_rain": {
+    "median": 63.0,
+    "over_500": 3,
+    "samples": 25
+   },
+   "dry": {
+    "median": 20.0,
+    "over_500": 1,
+    "samples": 43
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 120
+  },
+  "IEEABWC020_0000_0600": {
+   "after_rain": {
+    "median": 110.0,
+    "over_500": 7,
+    "samples": 28
+   },
+   "dry": {
+    "median": 41.0,
+    "over_500": 0,
+    "samples": 50
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 143
+  },
+  "IEEABWC020_0000_0700": {
+   "after_rain": {
+    "median": 31.0,
+    "over_500": 0,
+    "samples": 39
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 1,
+    "samples": 71
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 211
+  },
+  "IEEABWC070_0000_0100": {
+   "after_rain": {
+    "median": 41.0,
+    "over_500": 0,
+    "samples": 27
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 1,
+    "samples": 42
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 119
+  },
+  "IEEABWC070_0000_0200": {
+   "after_rain": {
+    "median": 20.0,
+    "over_500": 0,
+    "samples": 27
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 42
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 119
+  },
+  "IEEABWC070_0000_0500": {
+   "after_rain": {
+    "median": 75.0,
+    "over_500": 3,
+    "samples": 27
+   },
+   "dry": {
+    "median": 41.0,
+    "over_500": 4,
+    "samples": 42
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 119
+  },
+  "IEEABWC090_0000_0040": {
+   "after_rain": {
+    "median": 20.0,
+    "over_500": 1,
+    "samples": 23
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 2,
+    "samples": 49
+   },
+   "first_year": 2018,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 143
+  },
+  "IEEABWC090_0000_0050": {
+   "after_rain": {
+    "median": 30.0,
+    "over_500": 2,
+    "samples": 23
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 49
+   },
+   "first_year": 2018,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 143
+  },
+  "IEEABWC090_0000_0060": {
+   "after_rain": {
+    "samples": 5
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 1,
+    "samples": 10
+   },
+   "first_year": 2025,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 33
+  },
+  "IEEABWC090_0000_0100": {
+   "after_rain": {
+    "median": 20.0,
+    "over_500": 3,
+    "samples": 46
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 68
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 221
+  },
+  "IEEABWC090_0000_0300": {
+   "after_rain": {
+    "median": 75.0,
+    "over_500": 9,
+    "samples": 48
+   },
+   "dry": {
+    "median": 41.0,
+    "over_500": 6,
+    "samples": 74
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 256
+  },
+  "IEEABWC090_0000_0350": {
+   "after_rain": {
+    "median": 30.0,
+    "over_500": 0,
+    "samples": 10
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 18
+   },
+   "first_year": 2024,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 60
+  },
+  "IEEABWC090_0000_0400": {
+   "after_rain": {
+    "median": 86.0,
+    "over_500": 5,
+    "samples": 43
+   },
+   "dry": {
+    "median": 20.0,
+    "over_500": 2,
+    "samples": 76
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 257
+  },
+  "IEEABWC100_0000_0100": {
+   "after_rain": {
+    "median": 86.0,
+    "over_500": 0,
+    "samples": 24
+   },
+   "dry": {
+    "median": 31.0,
+    "over_500": 1,
+    "samples": 39
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 125
+  },
+  "IEEABWC100_0000_0200": {
+   "after_rain": {
+    "median": 10.0,
+    "over_500": 1,
+    "samples": 25
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 39
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 129
+  },
+  "IEEABWC100_0000_0220": {
+   "after_rain": {
+    "samples": 2
+   },
+   "dry": {
+    "samples": 8
+   },
+   "first_year": 2024,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 30
+  },
+  "IEEABWC100_0000_0300": {
+   "after_rain": {
+    "median": 74.0,
+    "over_500": 0,
+    "samples": 21
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 41
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 127
+  },
+  "IEEABWC100_0000_0400": {
+   "after_rain": {
+    "median": 10.0,
+    "over_500": 2,
+    "samples": 46
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 72
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 221
+  },
+  "IEEABWC100_0000_0450": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 23
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 49
+   },
+   "first_year": 2018,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 143
+  },
+  "IEEABWC140_0000_0100": {
+   "after_rain": {
+    "median": 41.0,
+    "over_500": 2,
+    "samples": 22
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 41
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 123
+  },
+  "IEEABWC140_0000_0200": {
+   "after_rain": {
+    "median": 31.0,
+    "over_500": 0,
+    "samples": 23
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 37
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 129
+  },
+  "IEEABWC140_0000_0300": {
+   "after_rain": {
+    "median": 20.0,
+    "over_500": 0,
+    "samples": 23
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 37
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 129
+  },
+  "IENBBWC025_0000_0100": {
+   "after_rain": {
+    "median": 31.0,
+    "over_500": 3,
+    "samples": 50
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 1,
+    "samples": 92
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 260
+  },
+  "IENBBWC025_0000_0200": {
+   "after_rain": {
+    "median": 20.0,
+    "over_500": 1,
+    "samples": 50
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 92
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 260
+  },
+  "IENBBWC025_0000_0300": {
+   "after_rain": {
+    "median": 31.0,
+    "over_500": 1,
+    "samples": 48
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 88
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 260
+  },
+  "IENBBWC040_0000_0100": {
+   "after_rain": {
+    "median": 20.0,
+    "over_500": 0,
+    "samples": 66
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 72
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 260
+  },
+  "IENWBWC010_0000_0100": {
+   "after_rain": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 49
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 25
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 143
+  },
+  "IENWBWC010_0000_0200": {
+   "after_rain": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 49
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 25
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 143
+  },
+  "IENWBWC010_0000_0300": {
+   "after_rain": {
+    "median": 14.0,
+    "over_500": 2,
+    "samples": 41
+   },
+   "dry": {
+    "median": 30.0,
+    "over_500": 2,
+    "samples": 21
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 117
+  },
+  "IENWBWC020_0000_0100": {
+   "after_rain": {
+    "median": 20.0,
+    "over_500": 0,
+    "samples": 44
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 26
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 143
+  },
+  "IENWBWC070_0000_0100": {
+   "after_rain": {
+    "median": 20.0,
+    "over_500": 0,
+    "samples": 48
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 28
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 143
+  },
+  "IENWBWC100_0000_0100": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 16
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 22
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 79
+  },
+  "IENWBWC100_0000_0200": {
+   "after_rain": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 19
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 18
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 78
+  },
+  "IENWBWC100_0000_0300": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 16
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 17
+   },
+   "first_year": 2016,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 66
+  },
+  "IENWBWC120_0000_0100": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 53
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 27
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 143
+  },
+  "IENWBWC120_0000_0200": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 21
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 13
+   },
+   "first_year": 2016,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 66
+  },
+  "IENWBWC160_0000_0100": {
+   "after_rain": {
+    "median": 30.0,
+    "over_500": 3,
+    "samples": 21
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 19
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 78
+  },
+  "IENWBWC160_0000_0200": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 47
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 30
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 143
+  },
+  "IENWBWC190_0000_0100": {
+   "after_rain": {
+    "median": 20.0,
+    "over_500": 0,
+    "samples": 41
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 34
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 143
+  },
+  "IENWBWC190_0000_0200": {
+   "after_rain": {
+    "median": 19.0,
+    "over_500": 0,
+    "samples": 39
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 28
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 143
+  },
+  "IENWBWC190_0000_0300": {
+   "after_rain": {
+    "median": 52.0,
+    "over_500": 0,
+    "samples": 17
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 17
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 78
+  },
+  "IENWBWC190_0000_0400": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 40
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 30
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 143
+  },
+  "IENWBWC220_0000_0100": {
+   "after_rain": {
+    "median": 41.0,
+    "over_500": 0,
+    "samples": 34
+   },
+   "dry": {
+    "median": 20.0,
+    "over_500": 0,
+    "samples": 35
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 143
+  },
+  "IENWBWC220_0000_0200": {
+   "after_rain": {
+    "median": 63.0,
+    "over_500": 0,
+    "samples": 41
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 35
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 143
+  },
+  "IENWBWC220_0000_0300": {
+   "after_rain": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 41
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 33
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 143
+  },
+  "IENWBWC230_0000_0100": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 47
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 34
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 143
+  },
+  "IENWBWC230_0000_0200": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 38
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 35
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 143
+  },
+  "IENWBWT220_0400_0100": {
+   "after_rain": {
+    "median": 140.0,
+    "over_500": 3,
+    "samples": 25
+   },
+   "dry": {
+    "median": 41.0,
+    "over_500": 0,
+    "samples": 23
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 108
+  },
+  "IESEBWC010_0000_0100": {
+   "after_rain": {
+    "median": 4.0,
+    "over_500": 0,
+    "samples": 26
+   },
+   "dry": {
+    "median": 1.0,
+    "over_500": 0,
+    "samples": 87
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 195
+  },
+  "IESEBWC010_0000_0200": {
+   "after_rain": {
+    "median": 2.0,
+    "over_500": 0,
+    "samples": 25
+   },
+   "dry": {
+    "median": 1.0,
+    "over_500": 0,
+    "samples": 81
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 195
+  },
+  "IESEBWC010_0000_0250": {
+   "after_rain": {
+    "median": 2.0,
+    "over_500": 0,
+    "samples": 25
+   },
+   "dry": {
+    "median": 1.0,
+    "over_500": 0,
+    "samples": 74
+   },
+   "first_year": 2015,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 181
+  },
+  "IESEBWC010_0000_0300": {
+   "after_rain": {
+    "median": 34.0,
+    "over_500": 2,
+    "samples": 25
+   },
+   "dry": {
+    "median": 2.0,
+    "over_500": 0,
+    "samples": 76
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 195
+  },
+  "IESEBWC010_0000_0400": {
+   "after_rain": {
+    "median": 10.0,
+    "over_500": 3,
+    "samples": 26
+   },
+   "dry": {
+    "median": 1.0,
+    "over_500": 1,
+    "samples": 70
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 195
+  },
+  "IESEBWC010_0000_0500": {
+   "after_rain": {
+    "median": 70.0,
+    "over_500": 4,
+    "samples": 26
+   },
+   "dry": {
+    "median": 3.0,
+    "over_500": 1,
+    "samples": 69
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 194
+  },
+  "IESEBWC050_0000_0100": {
+   "after_rain": {
+    "median": 10.0,
+    "over_500": 1,
+    "samples": 20
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 2,
+    "samples": 50
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 126
+  },
+  "IESEBWC050_0000_0200": {
+   "after_rain": {
+    "median": 87.0,
+    "over_500": 4,
+    "samples": 14
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 1,
+    "samples": 48
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 105
+  },
+  "IESEBWC050_0000_0235": {
+   "after_rain": {
+    "samples": 1
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 11
+   },
+   "first_year": 2026,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 15
+  },
+  "IESEBWC050_0000_0300": {
+   "after_rain": {
+    "median": 15.0,
+    "over_500": 2,
+    "samples": 19
+   },
+   "dry": {
+    "median": 1.0,
+    "over_500": 0,
+    "samples": 65
+   },
+   "first_year": 2017,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 151
+  },
+  "IESEBWC100_0000_0100": {
+   "after_rain": {
+    "median": 20.0,
+    "over_500": 0,
+    "samples": 16
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 51
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 114
+  },
+  "IESEBWC100_0000_0200": {
+   "after_rain": {
+    "median": 20.0,
+    "over_500": 0,
+    "samples": 16
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 51
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 114
+  },
+  "IESEBWC110_0000_0100": {
+   "after_rain": {
+    "median": 31.0,
+    "over_500": 1,
+    "samples": 18
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 51
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 114
+  },
+  "IESEBWC140_0000_0100": {
+   "after_rain": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 15
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 52
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 114
+  },
+  "IESEBWT100_0100_0100": {
+   "after_rain": {
+    "median": 28.0,
+    "over_500": 1,
+    "samples": 24
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 2,
+    "samples": 82
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 197
+  },
+  "IESHBWC040_0000_0100": {
+   "after_rain": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 35
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 55
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 182
+  },
+  "IESHBWC040_0000_0200": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 38
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 47
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 157
+  },
+  "IESHBWC040_0000_0250": {
+   "after_rain": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 40
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 54
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 185
+  },
+  "IESHBWC040_0000_0300": {
+   "after_rain": {
+    "median": 10.0,
+    "over_500": 1,
+    "samples": 29
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 30
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 110
+  },
+  "IESHBWC040_0000_0400": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 36
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 49
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 156
+  },
+  "IESHBWC060_0000_0050": {
+   "after_rain": {
+    "median": 20.0,
+    "over_500": 0,
+    "samples": 13
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 22
+   },
+   "first_year": 2020,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 70
+  },
+  "IESHBWC060_0000_0100": {
+   "after_rain": {
+    "median": 31.0,
+    "over_500": 1,
+    "samples": 27
+   },
+   "dry": {
+    "median": 20.0,
+    "over_500": 0,
+    "samples": 39
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 130
+  },
+  "IESHBWC060_0000_0200": {
+   "after_rain": {
+    "median": 75.0,
+    "over_500": 2,
+    "samples": 36
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 56
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 185
+  },
+  "IESHBWC060_0000_0300": {
+   "after_rain": {
+    "median": 53.0,
+    "over_500": 2,
+    "samples": 36
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 56
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 185
+  },
+  "IESHBWC070_0000_0100": {
+   "after_rain": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 30
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 33
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 129
+  },
+  "IESHBWC070_0000_0200": {
+   "after_rain": {
+    "median": 62.0,
+    "over_500": 0,
+    "samples": 29
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 34
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 130
+  },
+  "IESHBWC070_0000_0300": {
+   "after_rain": {
+    "median": 63.0,
+    "over_500": 1,
+    "samples": 28
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 36
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 130
+  },
+  "IESHBWC070_0000_0330": {
+   "after_rain": {
+    "median": 30.0,
+    "over_500": 1,
+    "samples": 17
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 20
+   },
+   "first_year": 2020,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 70
+  },
+  "IESHBWC070_0000_0350": {
+   "after_rain": {
+    "median": 10.0,
+    "over_500": 1,
+    "samples": 23
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 28
+   },
+   "first_year": 2017,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 100
+  },
+  "IESHBWC070_0000_0400": {
+   "after_rain": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 24
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 35
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 130
+  },
+  "IESHBWC080_0000_0100": {
+   "after_rain": {
+    "median": 20.0,
+    "over_500": 0,
+    "samples": 26
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 35
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 130
+  },
+  "IESHBWC100_0000_0100": {
+   "after_rain": {
+    "median": 90.0,
+    "over_500": 0,
+    "samples": 28
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 33
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 130
+  },
+  "IESWBWC010_0000_0100": {
+   "after_rain": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 16
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 34
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 94
+  },
+  "IESWBWC020_0000_0100": {
+   "after_rain": {
+    "median": 20.0,
+    "over_500": 0,
+    "samples": 15
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 45
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 104
+  },
+  "IESWBWC020_0000_0200": {
+   "after_rain": {
+    "median": 41.0,
+    "over_500": 0,
+    "samples": 16
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 1,
+    "samples": 45
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 105
+  },
+  "IESWBWC020_0000_0300": {
+   "after_rain": {
+    "median": 41.0,
+    "over_500": 0,
+    "samples": 15
+   },
+   "dry": {
+    "median": 20.0,
+    "over_500": 1,
+    "samples": 45
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 104
+  },
+  "IESWBWC040_0000_0100": {
+   "after_rain": {
+    "median": 160.0,
+    "over_500": 4,
+    "samples": 16
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 1,
+    "samples": 46
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 102
+  },
+  "IESWBWC050_0000_0100": {
+   "after_rain": {
+    "median": 110.0,
+    "over_500": 1,
+    "samples": 13
+   },
+   "dry": {
+    "median": 20.0,
+    "over_500": 0,
+    "samples": 51
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 107
+  },
+  "IESWBWC050_0000_0300": {
+   "after_rain": {
+    "samples": 0
+   },
+   "dry": {
+    "samples": 3
+   },
+   "first_year": 2026,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 6
+  },
+  "IESWBWC080_0000_0100": {
+   "after_rain": {
+    "samples": 0
+   },
+   "dry": {
+    "samples": 4
+   },
+   "first_year": 2026,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 5
+  },
+  "IESWBWC090_0000_0200": {
+   "after_rain": {
+    "median": 31.0,
+    "over_500": 0,
+    "samples": 17
+   },
+   "dry": {
+    "median": 20.0,
+    "over_500": 0,
+    "samples": 39
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 102
+  },
+  "IESWBWC090_0000_0300": {
+   "after_rain": {
+    "median": 20.0,
+    "over_500": 0,
+    "samples": 16
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 38
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 98
+  },
+  "IESWBWC100_0000_0100": {
+   "after_rain": {
+    "median": 31.0,
+    "over_500": 1,
+    "samples": 19
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 38
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 102
+  },
+  "IESWBWC100_0000_0150": {
+   "after_rain": {
+    "median": 30.0,
+    "over_500": 1,
+    "samples": 10
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 24
+   },
+   "first_year": 2019,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 57
+  },
+  "IESWBWC110_0000_0100": {
+   "after_rain": {
+    "median": 86.0,
+    "over_500": 0,
+    "samples": 19
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 40
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 110
+  },
+  "IESWBWC110_0000_0200": {
+   "after_rain": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 15
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 38
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 99
+  },
+  "IESWBWC140_0000_0450": {
+   "after_rain": {
+    "samples": 0
+   },
+   "dry": {
+    "samples": 4
+   },
+   "first_year": 2026,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 5
+  },
+  "IESWBWC150_0000_0100": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 34
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 45
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 156
+  },
+  "IESWBWC150_0000_0200": {
+   "after_rain": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 18
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 28
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 95
+  },
+  "IESWBWC160_0000_0200": {
+   "after_rain": {
+    "samples": 0
+   },
+   "dry": {
+    "samples": 4
+   },
+   "first_year": 2026,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 5
+  },
+  "IESWBWC200_0000_0100": {
+   "after_rain": {
+    "median": 10.0,
+    "over_500": 1,
+    "samples": 41
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 47
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 174
+  },
+  "IESWBWC200_0000_0200": {
+   "after_rain": {
+    "median": 110.0,
+    "over_500": 4,
+    "samples": 34
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 40
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 153
+  },
+  "IESWBWC220_0000_0100": {
+   "after_rain": {
+    "median": 42.0,
+    "over_500": 3,
+    "samples": 40
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 48
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 180
+  },
+  "IESWBWC230_0000_0100": {
+   "after_rain": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 35
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 44
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 180
+  },
+  "IESWBWC230_0000_0200": {
+   "after_rain": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 39
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 41
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 154
+  },
+  "IESWBWC230_0000_0300": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 39
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 44
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 156
+  },
+  "IESWBWC230_0000_0400": {
+   "after_rain": {
+    "median": 10.0,
+    "over_500": 2,
+    "samples": 40
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 45
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 180
+  },
+  "IESWBWC230_0000_0500": {
+   "after_rain": {
+    "median": 75.0,
+    "over_500": 1,
+    "samples": 15
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 25
+   },
+   "first_year": 2019,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 93
+  },
+  "IEWEBWC010_0000_0040": {
+   "after_rain": {
+    "samples": 9
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 10
+   },
+   "first_year": 2021,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 31
+  },
+  "IEWEBWC010_0000_0100": {
+   "after_rain": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 19
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 18
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 65
+  },
+  "IEWEBWC010_0000_0200": {
+   "after_rain": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 28
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 22
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 104
+  },
+  "IEWEBWC010_0000_0250": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 16
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 16
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 67
+  },
+  "IEWEBWC010_0000_0300": {
+   "after_rain": {
+    "median": 31.0,
+    "over_500": 3,
+    "samples": 22
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 31
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 104
+  },
+  "IEWEBWC010_0000_0400": {
+   "after_rain": {
+    "median": 52.0,
+    "over_500": 1,
+    "samples": 12
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 2,
+    "samples": 25
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 77
+  },
+  "IEWEBWC100_0000_0100": {
+   "after_rain": {
+    "median": 180.0,
+    "over_500": 5,
+    "samples": 22
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 1,
+    "samples": 33
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 104
+  },
+  "IEWEBWC110_0000_0100": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 27
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 33
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 129
+  },
+  "IEWEBWC160_0000_0100": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 21
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 35
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 104
+  },
+  "IEWEBWC170_0000_0100": {
+   "after_rain": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 30
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 31
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 116
+  },
+  "IEWEBWC170_0000_0200": {
+   "after_rain": {
+    "median": 31.0,
+    "over_500": 0,
+    "samples": 30
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 31
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 116
+  },
+  "IEWEBWC200_0000_0100": {
+   "after_rain": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 23
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 27
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 104
+  },
+  "IEWEBWC230_0000_0100": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 20
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 19
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 65
+  },
+  "IEWEBWC250_0000_0100": {
+   "after_rain": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 44
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 22
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 116
+  },
+  "IEWEBWC250_0000_0200": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 43
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 22
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 116
+  },
+  "IEWEBWC250_0000_0300": {
+   "after_rain": {
+    "median": 10.0,
+    "over_500": 1,
+    "samples": 35
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 20
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 104
+  },
+  "IEWEBWC250_0000_0350": {
+   "after_rain": {
+    "median": 20.0,
+    "over_500": 2,
+    "samples": 28
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 19
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 89
+  },
+  "IEWEBWC340_0000_0100": {
+   "after_rain": {
+    "median": 40.0,
+    "over_500": 2,
+    "samples": 33
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 18
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 87
+  },
+  "IEWEBWC340_0000_0200": {
+   "after_rain": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 44
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 23
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 116
+  },
+  "IEWEBWC340_0000_0300": {
+   "after_rain": {
+    "median": 20.0,
+    "over_500": 0,
+    "samples": 44
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 1,
+    "samples": 29
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 126
+  },
+  "IEWEBWC340_0000_0400": {
+   "after_rain": {
+    "median": 20.0,
+    "over_500": 3,
+    "samples": 41
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 1,
+    "samples": 24
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 116
+  },
+  "IEWEBWC350_0000_0100": {
+   "after_rain": {
+    "median": 10.0,
+    "over_500": 2,
+    "samples": 37
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 22
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 102
+  },
+  "IEWEBWC360_0000_0100": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 1,
+    "samples": 21
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 25
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 90
+  },
+  "IEWEBWC360_0000_0200": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 21
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 25
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 90
+  },
+  "IEWEBWC360_0000_0300": {
+   "after_rain": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 39
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 19
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 102
+  },
+  "IEWEBWC360_0000_0400": {
+   "after_rain": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 36
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 20
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 104
+  },
+  "IEWEBWC360_0000_0500": {
+   "after_rain": {
+    "samples": 5
+   },
+   "dry": {
+    "samples": 1
+   },
+   "first_year": 2025,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 12
+  },
+  "IEWEBWC400_0000_0100": {
+   "after_rain": {
+    "median": 10.0,
+    "over_500": 1,
+    "samples": 22
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 19
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 87
+  },
+  "IEWEBWC420_0000_0100": {
+   "after_rain": {
+    "median": 31.0,
+    "over_500": 3,
+    "samples": 39
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 27
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 133
+  },
+  "IEWEBWC420_0000_0200": {
+   "after_rain": {
+    "median": 20.0,
+    "over_500": 1,
+    "samples": 39
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 23
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 102
+  },
+  "IEWEBWC430_0000_0100": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 41
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 20
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 115
+  },
+  "IEWEBWC450_0000_0100": {
+   "after_rain": {
+    "median": 12.0,
+    "over_500": 0,
+    "samples": 44
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 26
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 132
+  },
+  "IEWEBWC450_0000_0200": {
+   "after_rain": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 40
+   },
+   "dry": {
+    "median": "<10",
+    "over_500": 0,
+    "samples": 20
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 115
+  },
+  "IEWEBWT170_0700_0100": {
+   "after_rain": {
+    "median": 98.0,
+    "over_500": 7,
+    "samples": 49
+   },
+   "dry": {
+    "median": 30.0,
+    "over_500": 2,
+    "samples": 59
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 209
+  },
+  "IEWEBWT170_0700_0200": {
+   "after_rain": {
+    "median": 63.0,
+    "over_500": 6,
+    "samples": 48
+   },
+   "dry": {
+    "median": 20.0,
+    "over_500": 0,
+    "samples": 58
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 206
+  },
+  "IEWEBWT180_0100_0100": {
+   "after_rain": {
+    "median": 52.0,
+    "over_500": 2,
+    "samples": 22
+   },
+   "dry": {
+    "median": 10.0,
+    "over_500": 0,
+    "samples": 26
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "nation": "ireland",
+   "samples": 85
+  },
   "daera-30003": {
    "after_rain": {
     "median": 10.0,
@@ -8691,6 +12144,7 @@
  },
  "sources": {
   "england": "Environment Agency Water Quality Archive, statutory samples (purpose MS), OGL v3.0",
+  "ireland": "EPA (Ireland) Bathing Water Open Data API, in-season samples, CC BY 4.0",
   "northern_ireland": "DAERA bathing water results tables, OGL v3.0",
   "wales": "Natural Resources Wales in-season bathing water samples, OGL v3.0"
  },

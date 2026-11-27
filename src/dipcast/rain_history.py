@@ -1,6 +1,7 @@
-"""What an English beach's own past samples read after rain and after dry spells (data/research/coastal_rain_history.
-v1.json, written off CI by scripts/coastal_c1/export_rain_history.py), and the rain at the beach's square today. Past
-samples, never a forecast. Two lines on each beach's card on the coverage page, and one note above the list that says
+"""What a beach's own past samples read after rain and after dry spells, in England, Wales, Northern Ireland and the
+Republic of Ireland (data/research/coastal_rain_history.v1.json, written off CI by
+scripts/coastal_c1/export_rain_history.py), and the rain at an English beach's square today. Past samples, never a
+forecast. Two lines on each beach's card on the coverage page, and one note above the list that says
 what was tested (C1's frozen-model backtest, docs/COASTAL-C1-PROTOCOL-2026-11.md).
 """
 
@@ -15,7 +16,7 @@ SCHEMA, MAJOR = "swimsignal.coastal-rain-history", "1"
 RULE = {"hours": 48, "after_rain_mm": 10, "dry_mm": 1}
 
 
-NATION_WORDS = {"england": "English", "wales": "Welsh", "northern_ireland": "Northern Irish"}
+NATION_WORDS = {"england": "English", "wales": "Welsh", "northern_ireland": "Northern Irish", "ireland": "Irish"}
 
 
 def attach(snapshot: dict | None, nation: str = "england", path: Path | None = None) -> int:
@@ -89,7 +90,7 @@ def line(h: dict, rule: dict | None = None) -> str | None:
     dry = _part(h.get("dry"), f'after 2 dry days (under {rule["dry_mm"]:g} mm)')
     if not wet and not dry:
         return None
-    years = f'{h["first_year"]}–{h["last_year"]}'
+    years = str(h["first_year"]) if h["first_year"] == h["last_year"] else f'{h["first_year"]}–{h["last_year"]}'
     parts = "; ".join(p for p in (wet, dry) if p)
     return f"Past samples here by rain, {years}: {parts}. E. coli per 100 ml. Not a forecast"
 

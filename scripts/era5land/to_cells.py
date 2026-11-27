@@ -51,11 +51,11 @@ def months_on_disk(out: Path) -> dict[str, Path]:
     return found
 
 
-def year_months(year: int, on_disk: dict[str, Path]) -> list[str]:
-    """The months of `year` on disk, from January on without a gap. A year whose January is missing gets none: a file
-    that skipped a month would look whole."""
+def year_months(year: int, on_disk: dict[str, Path], first: int = 1) -> list[str]:
+    """The months of `year` on disk, from month `first` (default January) on without a gap. A year whose first month is
+    missing gets none: a file that skipped a month would look whole. `first` 5 serves a season-only download (May on)."""
     out = []
-    for m in range(1, 13):
+    for m in range(first, 13):
         k = f"{year:04d}-{m:02d}"
         if k not in on_disk:
             break
@@ -101,15 +101,21 @@ class Source:
         return f
 
 
-def convert_year(year: int, src: Source, cmap: pd.DataFrame, cells_out: Path, step: float) -> dict:
-    """Writes every mapped cell's file for `year`. Returns what was done, for the manifest."""
-    months = year_months(year, src.on_disk)
+def prev_key(year: int, first: int = 1) -> str:
+    """The month whose last hour starts the series: the previous December, or the month before `first`. The manifest
+    keeps the key `previous_december` for it either way."""
+    return f"{year - 1:04d}-12" if first == 1 else f"{year:04d}-{first - 1:02d}"
+
+
+def convert_year(year: int, src: Source, cmap: pd.DataFrame, cells_out: Path, step: float, first: int = 1) -> dict:
+    """Writes every mapped cell's file for `year`, from month `first`. Returns what was done, for the manifest."""
+    months = year_months(year, src.on_disk, first)
     if not months:
-        return {"months": [], "written": 0, "note": "January not on disk"}
+        return {"months": [], "written": 0, "note": f"month {first} not on disk"}
     use = cmap[cmap["how"].isin(["centre", "nearest with data"])].reset_index(drop=True)
     ii, jj = use["i"].to_numpy(int), use["j"].to_numpy(int)
     blocks, times = [], []
-    prev_month = f"{year - 1:04d}-12"
+    prev_month = prev_key(year, first)
     had_prev = prev_month in src.on_disk
     if had_prev:
         f = src.read(prev_month)
@@ -123,12 +129,13 @@ def convert_year(year: int, src: Source, cmap: pd.DataFrame, cells_out: Path, st
     t = pd.DatetimeIndex(np.concatenate([x.tz_convert(None).to_numpy() for x in times])).tz_localize("UTC")
     lead = 1 if had_prev else 0
     body = t[lead:]
-    if body[0] != pd.Timestamp(f"{year}-01-01", tz="UTC"):
-        raise ValueError(f"{year}: first valid time {body[0]}, expected {year}-01-01 00:00 UTC")
+    start = pd.Timestamp(f"{year}-{first:02d}-01", tz="UTC")
+    if body[0] != start:
+        raise ValueError(f"{year}: first valid time {body[0]}, expected {start}")
     if not ((body[1:] - body[:-1]) == pd.Timedelta(hours=1)).all():
         raise ValueError(f"{year}: the valid times are not every hour without a gap")
     if had_prev and t[0] != body[0] - pd.Timedelta(hours=1):
-        raise ValueError(f"{year}: the previous December's last step is {t[0]}, not the hour before {body[0]}")
+        raise ValueError(f"{year}: the previous month's last step is {t[0]}, not the hour before {body[0]}")
     mm, big_negative = core.deaccumulate(acc, t)
     mm = core.round_to(mm[lead:], step)
     time_col = pd.Series(body.astype("datetime64[us, UTC]"))
@@ -140,7 +147,7 @@ def convert_year(year: int, src: Source, cmap: pd.DataFrame, cells_out: Path, st
         tmp = p.with_suffix(".tmp")
         df.to_parquet(tmp, index=False)
         tmp.replace(p)
-    return {"months": months, "previous_december": had_prev, "written": len(use), "hours": int(len(body)),
+    return {"months": months, "first_month": first, "previous_december": had_prev, "written": len(use), "hours": int(len(body)),
             "first_hour_nan": int(np.isnan(mm[0]).sum()), "steps_below_minus_0.05mm": big_negative}
 
 
@@ -153,7 +160,7 @@ def _commit() -> str | None:
 
 
 def run(out: Path, cells_out: Path, years: list[int] | None, cells: set | None, all_land: bool,
-        step: float = 0.1, max_step: int = 1, force: bool = False) -> dict:
+        step: float = 0.1, max_step: int = 1, force: bool = False, first_month: int = 1) -> dict:
     for p in (out, cells_out):
         problem = core.out_ok(p)
         if problem:
@@ -182,11 +189,11 @@ def run(out: Path, cells_out: Path, years: list[int] | None, cells: set | None, 
         files_there = all((cells_out / f"archive_{core.cell_key(a, b)}_{y}.parquet").exists()
                           for a, b in cmap.loc[cmap["how"].isin(["centre", "nearest with data"]),
                                                ["cell_lat", "cell_lon"]].itertuples(index=False))
-        if not force and files_there and done.get(str(y), {}).get("months") == year_months(y, on_disk) \
-                and done[str(y)].get("previous_december") == (f"{y - 1}-12" in on_disk):
+        if not force and files_there and done.get(str(y), {}).get("months") == year_months(y, on_disk, first_month) \
+                and done[str(y)].get("previous_december") == (prev_key(y, first_month) in on_disk):
             print(f"{y}: already converted")
             continue
-        info = convert_year(y, src, cmap, cells_out, step)
+        info = convert_year(y, src, cmap, cells_out, step, first_month)
         done[str(y)] = info
         print(f"{y}: {info['written']} cells, months {info['months'][0] if info['months'] else '-'} to "
               f"{info['months'][-1] if info['months'] else '-'}")
@@ -223,12 +230,14 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--round", type=float, default=0.1, help="mm step; 0 keeps full precision (default %(default)s)")
     ap.add_argument("--max-step", type=int, default=1, help="grid steps to look for a point with data")
     ap.add_argument("--force", action="store_true", help="rewrite years already converted")
+    ap.add_argument("--first-month", type=int, default=1, choices=range(1, 13),
+                    help="each year from this month (default January; 5 for a May-to-September download)")
     a = ap.parse_args(argv)
     cells = cells_from_dirs(a.cells_from) if a.cells_from else set()
     if a.points:
         cells |= cells_from_points(a.points)
     m = run(a.out, a.cells_out or a.out / "cache" / "rain", parse_years(a.years), cells, a.all_land,
-            a.round, a.max_step, a.force)
+            a.round, a.max_step, a.force, a.first_month)
     print(json.dumps({"cells": m["cells"], "cells_by_how": m["cells_by_how"], "years": sorted(m["years"])}, indent=1))
     return 0
 

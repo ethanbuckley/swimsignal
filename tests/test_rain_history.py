@@ -32,6 +32,8 @@ def test_attach_and_line(tmp_path):
     b = rain_history.line(snap["sites"][1]["rain_history"])
     assert "after 10 mm" not in b and "the middle of 30 read 18 (1 over 500)" in b
     assert rain_history.line(snap["sites"][2]["rain_history"]) is None
+    one = {**snap["sites"][1]["rain_history"], "first_year": 2026}
+    assert rain_history.line(one).startswith("Past samples here by rain, 2026: ")   # one season, not "2026–2026"
     note = rain_history.note(snap)
     assert "Across English beaches (May to September, 2012 to 2026), 4.4% of samples taken after 10 mm or more of rain in 2 days were over 500, against 0.5% after 2 dry days." in note
     assert "Tested on unseen seasons." in note
@@ -71,3 +73,24 @@ def test_rain_now_from_the_click_anywhere_squares(tmp_path):
                  "That is as wet as the after-rain samples above.")
     assert "as dry as the dry-day samples" in rain_history.now_line(snap["sites"][1])
     assert rain_history.now_line(snap["sites"][2]) is None
+
+
+def test_an_irish_card_carries_the_line(tmp_path):
+    import importlib
+
+    from dipcast import ireland
+    t = importlib.import_module("test_ireland")
+    snap = t.fetch(tmp_path / "c")
+    first = snap["sites"][0]
+    doc = {**DOC, "nations": {"ireland": {**DOC["nations"]["england"], "period": "May to September, 2014 to 2026",
+                                          "tested": "Tested on Irish beaches."}},
+           "sites": {first["id"]: {**DOC["sites"]["a"], "nation": "ireland", "first_year": 2014}}}
+    f = tmp_path / "h.json"
+    f.write_text(json.dumps(doc))
+    assert rain_history.attach(snap, "england", f) == 0   # a nation the file does not hold adds nothing
+    assert rain_history.attach(snap, "ireland", f) == 1
+    html = ireland.render(snap)
+    assert "Past samples here by rain, 2014–2026" in html and html.count("Past samples here by rain") == 1
+    assert "Across Irish beaches (May to September, 2014 to 2026)" in html and "Tested on Irish beaches." in html
+    assert "Contains Environment Agency data, OGL v3.0." in html   # the file's credit under the list
+    assert "Rain here in the 2 days" not in html
