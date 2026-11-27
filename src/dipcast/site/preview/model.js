@@ -205,8 +205,13 @@ function answer(s, iso, data, nowMs) {
     // after the other risks (levels.js, rainUsual; docs/RAIN-WORD-NO-OVERFLOW-2026-11.md). It sets nothing.
     const rw = isToday ? rainUsual((s.days || []).find(d => d.date === iso)) : '';
     if (rw) out.why.push(rw);
+    // The same place, the same rule, at a lake bathing water that bench read 1 scored: whether today's lake estimate is
+    // higher or lower than usual there (levels.js, lakeOrder; docs/LAKE-ORDER-NO-OVERFLOW-2026-11.md). It sets nothing.
+    const lw = isToday ? lakeOrder((s.days || []).find(d => d.date === iso)) : '';
+    if (lw) out.why.push(lw);
     if (plainLevel(l)) out.notes.push(OTHER_RISKS);
     if (rw) out.notes.push(RAIN_USUAL_SAID);
+    if (lw) out.notes.push(LAKE_ORDER_SAID);
   } else {
     const row = dayRows(s).find(d => d.date === iso), r = row ? row.r : { level: null };
     if (!row || !r.level) { out.head = 'No forecast for this day'; out.act = o ? o.act : PLAIN_ACTION; }

@@ -168,6 +168,13 @@ const RAIN_USUAL = { more: 'More rain than usual here in the last two days.', ab
   less: 'Less rain than usual here in the last two days.' };
 const RAIN_USUAL_SAID = 'At river sampling points with no overflow upstream, E. coli tended to be higher on days with more rain than usual. That held on past winter samples kept back to test it, and less strongly on summer samples. They were Environment Agency monitoring points on lowland rivers, not upland streams like this one, and not swim spots. This is not a level.';
 const rainUsual = x => RAIN_USUAL[(x || {}).rain_usual] || '';
+// At a lake bathing water with no monitored overflow upstream that bench read 1 scored, whether today's lake estimate
+// is higher or lower than usual there (lake_order.py: `lake_order` on today's day only, in season;
+// docs/LAKE-ORDER-NO-OVERFLOW-2026-11.md). Only the estimate's order is tested, so a word: no figure, colour or level.
+const LAKE_ORDER = { higher: 'Today E. coli is estimated higher than usual for this lake.',
+  about: 'Today E. coli is estimated about usual for this lake.', lower: 'Today E. coli is estimated lower than usual for this lake.' };
+const LAKE_ORDER_SAID = 'Higher or lower than usual comes from the rain here and the time of year, as nothing upstream is monitored. Only its order is tested: on past summer samples kept back to test it, at this lake and six other lake bathing waters with no overflow upstream, days it put higher tended to read higher. Its size is not tested, so it gives no figure. This is not a level.';
+const lakeOrder = x => LAKE_ORDER[(x || {}).lake_order] || '';
 // The out-of-season tile's sentence in view: the winter word and what it rests on where today's day carries one,
 // else the first of ecoliNotes, as before.
 const ecoliOffSaid = (s, check, x) => riverUsualWinter(x) ? `${riverUsualWinter(x)} ${RIVER_USUAL_WINTER_SAID}` : ecoliNotes(s, check, x)[0];
@@ -887,6 +894,6 @@ if (typeof module === 'object' && module.exports) {
   module.exports = { nameCase, plainName, overflowNames, ORDER, NOT_COVERED, NO_FORECAST, NO_OVERFLOWS, NO_RIVER, OTHER_RISKS, SPILL_CUTS, ECOLI_CUTS, spillLevel, shownRisk, tooFar, allUpstream, tooFarSaid, WEIGHT_SAID, setToday, today, dayWord, readerDay, fromDay, rank, risk, nowUnknown, nowUnknownWhy, nowFew, nowWatched, NOW_WATCHED_SHARE, LIVE_NONE, liveCover, liveHead, liveLine, liveParts, MODELLED_FROM, level, dayLevel, headParts, headline, levelScope, nowBecause, dayBecause, dayHeadline, tileLine, weekNext, laterWords, coverage, COVER, FOUND_NONE, ISOLATED_WHY, plainLevel, inBathingSeason, poorReason, poorAdvice, daily, ecoliBand, ecoliLevel, ecoliUntested, bestDay, weekendWords, yoursLevelled, lowAnswerDay, lowAnswerWords, mostWords, clockWords, clearWords, RAIN_OLD_H, rainAgeLine, backToLow,
     ACTION, POOR_ACTION, ALGAE_ACTION, PLAIN_ACTION, actionFor, levelAction, dayAction, HEAD_SCOPE, spillSet, worstNear,
     SAMPLE_LINE, SAMPLE_DAYS, sampleLevel, standingLevel, eaUnchecked, EA_UNCHECKED, walesShare, walesWords, trialWords, ecoliNotes,
-    ECOLI_OFF, ECOLI_EXPERIMENTAL, ECOLI_FOLD, ECOLI_OFF_SAID, RIVER_USUAL, riverUsual, RIVER_USUAL_WINTER, RIVER_USUAL_WINTER_SAID, riverUsualWinter, ecoliOffSaid, RAIN_USUAL, RAIN_USUAL_SAID, rainUsual,
+    ECOLI_OFF, ECOLI_EXPERIMENTAL, ECOLI_FOLD, ECOLI_OFF_SAID, RIVER_USUAL, riverUsual, RIVER_USUAL_WINTER, RIVER_USUAL_WINTER_SAID, riverUsualWinter, ecoliOffSaid, RAIN_USUAL, RAIN_USUAL_SAID, rainUsual, LAKE_ORDER, LAKE_ORDER_SAID, lakeOrder,
     companyName, atSpot, overflowWhere, travelSaid, SPILL_LONG_H, spillStart, longSpill, LONG_SPILL, isolated };
 }

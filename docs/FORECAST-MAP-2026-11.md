@@ -22,7 +22,7 @@ One page. Counts are from files in the repository on 25 November 2026 (main `7b7
 | 3 | **Republic of Ireland coast and lakes** | 210 | As rank 2 | **Passed 27 Nov:** on 24,413 Irish samples 2014-26 it never saw, within-beach order 0.320 (0.274 to 0.356); rain adds +0.083 | Done: one CDS download over Ireland (65 months). Lakes need a 900 line first | **#766** (coast and estuary) |
 | 4 | **Scotland's coast** | 90 | Rain word and a link to SEPA's own sign. No past samples | Nothing | SEPA's terms forbid republishing its samples (Ethan's contact). SEPA runs its own predictions at 30 beaches | When SEPA answers |
 | 5 | **England rivers with no overflow upstream** | 15 spots (they read "nothing upstream" every day now) | A rain word, all year | Rain ordered winter days at such points at 0.458 (0.326 to 0.521), seen rows; a sealed reserve read exists | Passed 25 Nov: 0.415 (0.287 to 0.495) on reserve winters | **Live 26 Nov** (#763) |
-| 6 | **England lakes without their own samples** | 7 bathing lakes (bench read 1 passed for the likely reading's order) + 20 lake spots with no daily level | "Higher or lower than usual for this lake", order only | 0.289 against −0.015 on 2012-22, unseen (bench read 1) | Ethan's choice of what to show (register, BACKTEST-BENCH row) | When decided |
+| 6 | **England lakes without their own samples** | 7 bathing lakes (bench read 1 passed for the likely reading's order) + 20 lake spots with no daily level | "Higher or lower than usual for this lake", order only | 0.289 against −0.015 on 2012-22, unseen (bench read 1) | Decided 27 Nov: a word at the 5 lake spots with daily inputs; other lake spots get nothing: the test covered only lake bathing waters | **#767**, shows from 1 May 2027 |
 | 7 | **Scotland inland** | 12 now, more with access statements | The trial forecast | 2021 frozen backtest passed at lead 0; live shadow not yet | A switch (Ethan's), and Gate B in February | Already built |
 | 8 | **Wales inland** | 4 bathing waters, plus rivers | Rain word only | Nothing | Dŵr Cymru's overflow data has no licence | Rain word: after rank 5 |
 
@@ -53,3 +53,5 @@ Wales and Northern Ireland passed too (`docs/ANYWATER-UK-STATEMENT-2026-11.md`).
 The Republic of Ireland passed the same transfer test (`docs/ANYWATER-IE-STATEMENT-2026-11.md`): 220 Irish coast and
 estuary cards get past samples by rain. Next, by places added: lakes without their own samples (your choice from
 bench read 1), then Irish lakes with a 900 line.
+
+Lakes, the same day: at the Serpentine, the three Hampstead Heath ponds and Colwick, today's E. coli word (higher, about or lower than usual for this lake), May to September only, from bench read 1's order (`docs/LAKE-ORDER-NO-OVERFLOW-2026-11.md`). Next by places: Irish lakes with a 900 line.

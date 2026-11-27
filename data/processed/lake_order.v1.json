@@ -1,0 +1,89 @@
+{
+ "rule": "lake-order-v1",
+ "made": "2026-11-27",
+ "record": "docs/LAKE-ORDER-NO-OVERFLOW-2026-11.md",
+ "what": "Per lake spot with no monitored overflow upstream, the cut-points at one third and two thirds of log10 of lake-range-v1's likely reading (average-lake basis, exposure 0) on May to September days of 2023 to 2026, hindcast at lead 0 (scripts/lake_order.py). A figure under `low` is lower than usual there, over `high` higher, else about usual; compared at 3 decimal places.",
+ "model_sha256": "5566b12e5fc6acc1686f2aeb201ec2b9f8cd7e38a39f4352de314c5e32c3fcca",
+ "inputs": "Open-Meteo archive rain at the spot's cell, 48 h and 24 h to 12:00 Europe/London; exposure 0",
+ "rain_files_sha256": {
+  "archive_51.500_-0.200_2023.parquet": "108efbad9df5010f66af1abeaa874a445939340c332783c95699d515f73869e6",
+  "archive_51.500_-0.200_2024.parquet": "f7ef9bc9680e4c7277ae042a60c6fdb1294371ec0c8e6020d35632d95d46306a",
+  "archive_51.500_-0.200_2025.parquet": "40248b7935fed09f60787a3858fab5d3378e01729817fbc5bcb25603f4c14a92",
+  "archive_51.500_-0.200_2026.parquet": "a24c6dd0e4ccd8f43dec6ec0fa083d1b8f9f3f2e1f2ffb372b2617942cd5f515",
+  "archive_51.600_-0.200_2023.parquet": "03dbb98333c932bb017bf5aab3643d720de6f30779bdc0cd6e4c0d0810fe8798",
+  "archive_51.600_-0.200_2024.parquet": "2d6d8d2daca3c2543089226d8d451fdbf019e058803d5b48dc735938d70f8a31",
+  "archive_51.600_-0.200_2025.parquet": "90fbdde770b8f55496f73f063ab212e6f80e9ed8e7debc406737f307350d10f5",
+  "archive_51.600_-0.200_2026.parquet": "dcae110df37de1a3580ab99ab3727558beb5ab34ea92231362bdc014e3c7acd2",
+  "archive_52.900_-1.100_2023.parquet": "d1487adfb05c5d01326aaec5e084dfd2788b93c7bb64e5f5915e094e8a590a94",
+  "archive_52.900_-1.100_2024.parquet": "954db4b0154da5851097e5570bc9093f84417b33aa4f2fc08d84ec1f39865f92",
+  "archive_52.900_-1.100_2025.parquet": "22d9d5d1b63dd6960012af287d8e3ecd6c957e378c497b467572069cc5d0214f",
+  "archive_52.900_-1.100_2026.parquet": "0422aef08f212f5ea4db2b59d082c38569250bec0c4f83a2b3dab5b6a519c138"
+ },
+ "spots": {
+  "51.50491,-0.16907": {
+   "id": "bw-uki1106-11940",
+   "name": "The Serpentine - Hyde Park",
+   "cell": [
+    51.5,
+    -0.2
+   ],
+   "low": 1.035,
+   "high": 1.121,
+   "days": 588,
+   "lower": 0.332,
+   "higher": 0.33
+  },
+  "51.56071,-0.16625": {
+   "id": "bw-uki1101-11930",
+   "name": "Hampstead Heath (Mixed Pond)",
+   "cell": [
+    51.6,
+    -0.2
+   ],
+   "low": 1.034,
+   "high": 1.125,
+   "days": 588,
+   "lower": 0.332,
+   "higher": 0.333
+  },
+  "51.56334,-0.15662": {
+   "id": "bw-uki1101-11920",
+   "name": "Hampstead Heath (Mens Pond)",
+   "cell": [
+    51.6,
+    -0.2
+   ],
+   "low": 1.034,
+   "high": 1.125,
+   "days": 588,
+   "lower": 0.332,
+   "higher": 0.333
+  },
+  "51.56672,-0.16009": {
+   "id": "bw-uki1101-11910",
+   "name": "Hampstead Heath (Ladies Pond)",
+   "cell": [
+    51.6,
+    -0.2
+   ],
+   "low": 1.034,
+   "high": 1.125,
+   "days": 588,
+   "lower": 0.332,
+   "higher": 0.333
+  },
+  "52.94516,-1.09815": {
+   "id": "bw-ukf1400-09750",
+   "name": "Colwick Country Park (West Lake)",
+   "cell": [
+    52.9,
+    -1.1
+   ],
+   "low": 1.049,
+   "high": 1.138,
+   "days": 588,
+   "lower": 0.33,
+   "higher": 0.332
+  }
+ }
+}
