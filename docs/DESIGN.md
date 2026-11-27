@@ -3128,6 +3128,34 @@ decide"); it is his to overrule.
 **Checked:** a local build in a scratch root with the redesign on, a spot page at 375 and 1,440 px (in the pull
 request). **Not checked:** the live site, which needs the merge.
 
+### A lake word where no overflow is upstream (27 November 2026)
+
+From `docs/LAKE-ORDER-NO-OVERFLOW-2026-11.md` (rank 6 of the forecast map): bench read 1 passed for the order of
+lake-range-v1's likely reading at lake bathing waters it has no own level for (0.289 against production's −0.015,
+2012-22, unseen). Ethan said "Yes, lakes next" and left the rest to this work; it is his to overrule.
+
+- **New:** at the Serpentine, the three Hampstead Heath ponds and Colwick (West Lake), on today's day only and May to
+  September only, the answer's line under "No monitored overflow found upstream" gains one sentence: "Today E. coli is
+  estimated higher than usual for this lake." (or "about usual", "lower than usual"). After "Other risks apply", one
+  sentence says what it rests on: rain and the time of year, only its order tested, on past summer samples kept back,
+  at this lake and six others with no overflow upstream, no figure, "This is not a level." (`LAKE_ORDER`,
+  `LAKE_ORDER_SAID`, `lakeOrder` in `levels.js`; `answer` in `preview/model.js`). Usual is the spot's own thirds of
+  2023-26 season days (`lake_order.py`, `data/processed/lake_order.v1.json`, frozen).
+- **Reverses, at these 5 lakes only:** "no E. coli estimate at these spots" (3 and 11 October 2026, "Where the model
+  has nothing to forecast"). That rule stood because nothing had tested an estimate there. Bench read 1 has, for
+  order, so a word about order is shown; still no figure, and the level is unchanged.
+- **Already decided, followed:** the rain word's place and form (25 November 2026, above): the plain level, its words,
+  the teal and "Other risks apply" all stay; a spot's own thirds; no colour, level or figure; today only; none of
+  "safe", "clean", "exceed" or "breach".
+- **Changed from the lake proposal's rule** (twice or half usual, `LAKE-RANGE-DIRECTION-PROPOSAL-2026-11.md`), at
+  these 5 only: it read "about usual" on 402 of 403 past sample days there, so the rivers' thirds are used. The 11 lakes
+  with their own level keep it.
+- Not at Cotswold Country Park or Henleaze Lake (isolated, no daily forecast), any other lake, a clicked point, a later
+  day, the list rows, tabs, picture, planner, alerts or `classic/`.
+
+**Checked:** the rule in `tests/site_preview.test.cjs` and `tests/test_lake_order.py`. **Not checked:** a word on the
+live site, which cannot appear before 1 May 2027.
+
 ### Ported: the spill map, "Where spill water may be" (24 November 2026, night)
 
 The live page's spill map (`plume.js`, docs/PLUME-MAP-2026-10.md), which was only at `classic/` after the switch.
