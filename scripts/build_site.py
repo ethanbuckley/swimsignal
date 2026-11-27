@@ -6055,6 +6055,7 @@ def build(refresh: bool = True) -> dict:
     ireland = fetch_ireland()
     attach_typical(ireland, "ireland")
     attach_history(ireland, "ireland")
+    rain_history.attach(ireland, "ireland")   # past samples by rain (ANYWATER-IE): no request
     health["ireland"] = {"state": ireland["state"], "sites": len(ireland["sites"]),
                          "restrictions": sum(len(s["alerts"] or []) for s in ireland["sites"]),
                          **({"error": ireland["error"]} if ireland.get("error") else {})}

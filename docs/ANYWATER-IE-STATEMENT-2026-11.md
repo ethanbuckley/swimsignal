@@ -70,3 +70,43 @@ Inland Irish waters get the line with no tested label whatever the inland figure
 - A pass shows rain orders days within a beach in another country. It does not show a level or a chance there.
 - No today's-rain line for Ireland: the site's rain squares are made for England's tap-anywhere map and none
   falls on an Irish beach.
+
+## How the rain was converted, 27 November 2026, before the score
+
+The download is May to September only, and `to_cells.py` converted only years that start in January. It gained
+`--first-month` (default 1, so earlier conversions are unchanged; test in `tests/test_era5land.py`). With 5, each
+year runs from 1 May 00:00 UTC, and its first hour is unknown because April is not on disk. The rain rule is the
+same. All 65 months downloaded; 158 cells (73 with their own data, 85 from the nearest point with data within 3
+steps), 3,672 hours a year, no step below −0.05 mm.
+
+---
+
+## Result, 27 November 2026: pass
+
+Scored once at 10:30 UTC by `scripts/coastal_c1/anywater_ie.py score`; figures in `docs/coastal-c1/anywater_ie.json`.
+One EPA request (the list of waters, all 243 with a position). Every rain window covered.
+
+**Rows.** 24,413 samples at 210 coast and estuary waters with 20 or more, 532 over 500. All took the 12:00 rule.
+
+| Mean within-water rho with the measured count | Coast and estuary, 2014 to 2026 |
+|---|---|
+| **C1 (frozen, with rain)** | **0.320 (0.274 to 0.356)** |
+| C0 (no rain) | 0.237 (0.194 to 0.266) |
+| Month alone | 0.214 (0.175 to 0.259) |
+| C1 minus C0 | +0.083 (+0.057 to +0.111) |
+| C1 minus month | +0.105 (+0.067 to +0.130) |
+
+**Pass:** the interval for C1 lies wholly above 0.10. Rain adds to the order within a beach, with an interval above
+zero.
+
+**Reported, deciding nothing.** Brier for over 500: C1 0.02076, C0 0.02111, month 0.02129. Seasons 2014 to 2021: C1
+0.341 (0.284 to 0.394), rain +0.094. Seasons 2022 to 2026: C1 0.281 (0.207 to 0.330), rain +0.085. Inland waters
+(18 lakes and the river, 1,331 samples): C1 0.205 (0.058 to 0.331), rain +0.119 (+0.023 to +0.237). C1 was not
+built for them, and this was not the test.
+
+**What follows (the statement's table):** the past-samples-by-rain line goes on Irish coast and estuary cards,
+labelled as tested this way. It is not a chance or a level.
+
+**One change from the table.** Inland Irish waters do not get the line yet. The line counts results over 500, and an
+inland water's line is 900 in the sample history (`lines` in `sample_history_ireland.v1.json`), so the same words would mislead there. A lake
+version needs its own threshold first.
