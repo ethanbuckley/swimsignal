@@ -32,346 +32,24 @@
   "untested": "Not tested"
  },
  "prs": {
-  "377": {
-   "n": 377,
+  "23": {
+   "n": 23,
    "state": "merged",
-   "branch": "docs/lake-algae-satellite-test",
+   "branch": "gpt-ux",
    "branch_exists": true,
-   "date": "2026-10-26"
-  },
-  "386": {
-   "n": 386,
-   "state": "merged",
-   "branch": "test/lake-chlorophyll-ndci",
-   "branch_exists": true,
-   "date": "2026-10-27"
-  },
-  "407": {
-   "n": 407,
-   "state": "merged",
-   "branch": "docs/386-promising-not-validated",
-   "branch_exists": true,
-   "date": "2026-10-27"
-  },
-  "468": {
-   "n": 468,
-   "state": "merged",
-   "branch": "research/satellite-recovery",
-   "branch_exists": true,
-   "date": "2026-10-30"
-  },
-  "470": {
-   "n": 470,
-   "state": "merged",
-   "branch": "feat/research-lakes",
-   "branch_exists": true,
-   "date": "2026-10-31"
-  },
-  "537": {
-   "n": 537,
-   "state": "merged",
-   "branch": "research/satellite-pilot",
-   "branch_exists": true,
-   "date": "2026-10-31"
-  },
-  "385": {
-   "n": 385,
-   "state": "merged",
-   "branch": "test/lake-algae-incidents",
-   "branch_exists": true,
-   "date": "2026-10-27"
-  },
-  "396": {
-   "n": 396,
-   "state": "closed",
-   "branch": "docs/lake-algae-2027-forward",
-   "branch_exists": true,
-   "date": "2026-10-27"
-  },
-  "251": {
-   "n": 251,
-   "state": "merged",
-   "branch": "claude/nine-company-model",
-   "branch_exists": true,
-   "date": "2026-10-17"
-  },
-  "357": {
-   "n": 357,
-   "state": "merged",
-   "branch": "claude/nine-company-v2-statement",
-   "branch_exists": true,
-   "date": "2026-10-26"
-  },
-  "466": {
-   "n": 466,
-   "state": "merged",
-   "branch": "research/concentration-model",
-   "branch_exists": true,
-   "date": "2026-10-30"
-  },
-  "531": {
-   "n": 531,
-   "state": "merged",
-   "branch": "feat/labs-ecoli-evidence",
-   "branch_exists": true,
-   "date": "2026-10-31"
-  },
-  "459": {
-   "n": 459,
-   "state": "merged",
-   "branch": "research/spill-duration",
-   "branch_exists": true,
-   "date": "2026-10-30"
-  },
-  "461": {
-   "n": 461,
-   "state": "merged",
-   "branch": "research/spill-duration-diagnostics",
-   "branch_exists": true,
-   "date": "2026-10-30"
-  },
-  "539": {
-   "n": 539,
-   "state": "merged",
-   "branch": "research/spill-duration-replay",
-   "branch_exists": true,
-   "date": "2026-10-31"
-  },
-  "530": {
-   "n": 530,
-   "state": "merged",
-   "branch": "feat/labs-spill-durations",
-   "branch_exists": true,
-   "date": "2026-10-31"
-  },
-  "342": {
-   "n": 342,
-   "state": "merged",
-   "branch": "docs/lake-ecoli-line-test",
-   "branch_exists": true,
-   "date": "2026-10-26"
-  },
-  "419": {
-   "n": 419,
-   "state": "merged",
-   "branch": "test/lake-temperature-model",
-   "branch_exists": true,
-   "date": "2026-10-29"
-  },
-  "529": {
-   "n": 529,
-   "state": "merged",
-   "branch": "feat/labs-lake-temperatures",
-   "branch_exists": true,
-   "date": "2026-10-31"
-  },
-  "178": {
-   "n": 178,
-   "state": "merged",
-   "branch": "claude/live-recalibration-test",
-   "branch_exists": true,
-   "date": "2026-10-11"
-  },
-  "340": {
-   "n": 340,
-   "state": "merged",
-   "branch": "analysis/calibration-check",
-   "branch_exists": true,
-   "date": "2026-10-26"
-  },
-  "374": {
-   "n": 374,
-   "state": "merged",
-   "branch": "docs/calibration-test-proposal-2026-11",
-   "branch_exists": true,
-   "date": "2026-10-26"
-  },
-  "318": {
-   "n": 318,
-   "state": "merged",
-   "branch": "model/dry-spell-test",
-   "branch_exists": true,
-   "date": "2026-10-24"
-  },
-  "381": {
-   "n": 381,
-   "state": "merged",
-   "branch": "proto/sampling-priorities",
-   "branch_exists": true,
-   "date": "2026-10-26"
-  },
-  "313": {
-   "n": 313,
-   "state": "merged",
-   "branch": "waterhead/direction-rule",
-   "branch_exists": true,
-   "date": "2026-10-24"
-  },
-  "187": {
-   "n": 187,
-   "state": "closed",
-   "branch": "claude/lake-near-field",
-   "branch_exists": true,
-   "date": "2026-10-16"
-  },
-  "181": {
-   "n": 181,
-   "state": "closed",
-   "branch": "claude/outfall-channel-test",
-   "branch_exists": true,
-   "date": "2026-10-16"
-  },
-  "254": {
-   "n": 254,
-   "state": "merged",
-   "branch": "claude/live-status-feature-test",
-   "branch_exists": true,
-   "date": "2026-10-18"
-  },
-  "262": {
-   "n": 262,
-   "state": "merged",
-   "branch": "claude/live-status-shadow",
-   "branch_exists": true,
-   "date": "2026-10-20"
-  },
-  "252": {
-   "n": 252,
-   "state": "merged",
-   "branch": "claude/lead-calibration-b-test",
-   "branch_exists": true,
-   "date": "2026-10-17"
-  },
-  "333": {
-   "n": 333,
-   "state": "merged",
-   "branch": "claude/company-calibration-094b7d",
-   "branch_exists": true,
-   "date": "2026-10-25"
-  },
-  "257": {
-   "n": 257,
-   "state": "merged",
-   "branch": "claude/ensemble-rain",
-   "branch_exists": true,
-   "date": "2026-10-18"
-  },
-  "325": {
-   "n": 325,
-   "state": "merged",
-   "branch": "model/upgraded-overflows-test-b",
-   "branch_exists": true,
-   "date": "2026-10-24"
-  },
-  "349": {
-   "n": 349,
-   "state": "merged",
-   "branch": "docs/option-b-recency-note",
-   "branch_exists": true,
-   "date": "2026-10-25"
-  },
-  "383": {
-   "n": 383,
-   "state": "merged",
-   "branch": "proto/river-rises-scope",
-   "branch_exists": true,
-   "date": "2026-11-06"
-  },
-  "384": {
-   "n": 384,
-   "state": "merged",
-   "branch": "measure/missing-event-end",
-   "branch_exists": true,
-   "date": "2026-10-26"
-  },
-  "121": {
-   "n": 121,
-   "state": "merged",
-   "branch": "claude/preregister-2027",
-   "branch_exists": true,
-   "date": "2026-10-04"
-  },
-  "353": {
-   "n": 353,
-   "state": "merged",
-   "branch": "docs/spot-scoring-rulings",
-   "branch_exists": true,
-   "date": "2026-10-25"
-  },
-  "403": {
-   "n": 403,
-   "state": "merged",
-   "branch": "test/sonde-signal",
-   "branch_exists": true,
-   "date": "2026-10-27"
-  },
-  "343": {
-   "n": 343,
-   "state": "merged",
-   "branch": "model/radar-rain-check",
-   "branch_exists": true,
-   "date": "2026-10-25"
-  },
-  "255": {
-   "n": 255,
-   "state": "merged",
-   "branch": "claude/glofas-check",
-   "branch_exists": true,
-   "date": "2026-10-18"
-  },
-  "420": {
-   "n": 420,
-   "state": "merged",
-   "branch": "docs/coastal-sea-temperature-brief",
-   "branch_exists": true,
-   "date": "2026-10-29"
-  },
-  "331": {
-   "n": 331,
-   "state": "merged",
-   "branch": "claude/sea-currents-scoping",
-   "branch_exists": true,
-   "date": "2026-10-25"
-  },
-  "358": {
-   "n": 358,
-   "state": "merged",
-   "branch": "docs/overflow-data-sources",
-   "branch_exists": true,
-   "date": "2026-10-25"
-  },
-  "258": {
-   "n": 258,
-   "state": "merged",
-   "branch": "claude/optimistic-booth-013d5d",
-   "branch_exists": true,
-   "date": "2026-10-19"
-  },
-  "220": {
-   "n": 220,
-   "state": "merged",
-   "branch": "claude/pe-sources-parked",
-   "branch_exists": true,
-   "date": "2026-10-16"
-  },
-  "561": {
-   "n": 561,
-   "state": "merged",
-   "branch": "claude/tim-bowden-email-reply-449f9c",
-   "branch_exists": true,
-   "date": "2026-10-31"
-  },
-  "123": {
-   "n": 123,
-   "state": "merged",
-   "branch": "claude/wales-plan",
-   "branch_exists": true,
-   "date": "2026-10-04"
+   "date": "2026-09-30"
   },
   "117": {
    "n": 117,
    "state": "merged",
    "branch": "claude/scotland-plan",
+   "branch_exists": true,
+   "date": "2026-10-04"
+  },
+  "121": {
+   "n": 121,
+   "state": "merged",
+   "branch": "claude/preregister-2027",
    "branch_exists": true,
    "date": "2026-10-04"
   },
@@ -382,40 +60,12 @@
    "branch_exists": true,
    "date": "2026-10-04"
   },
-  "228": {
-   "n": 228,
+  "123": {
+   "n": 123,
    "state": "merged",
-   "branch": "claude/source-scottish-water",
+   "branch": "claude/wales-plan",
    "branch_exists": true,
-   "date": "2026-10-16"
-  },
-  "239": {
-   "n": 239,
-   "state": "merged",
-   "branch": "claude/neural-challenger-test",
-   "branch_exists": true,
-   "date": "2026-10-18"
-  },
-  "259": {
-   "n": 259,
-   "state": "merged",
-   "branch": "claude/multi-year-test",
-   "branch_exists": true,
-   "date": "2026-10-20"
-  },
-  "260": {
-   "n": 260,
-   "state": "merged",
-   "branch": "claude/covariate-year-test",
-   "branch_exists": true,
-   "date": "2026-10-20"
-  },
-  "404": {
-   "n": 404,
-   "state": "merged",
-   "branch": "test/flow-dilution",
-   "branch_exists": true,
-   "date": "2026-10-27"
+   "date": "2026-10-04"
   },
   "166": {
    "n": 166,
@@ -431,10 +81,73 @@
    "branch_exists": true,
    "date": "2026-10-13"
   },
+  "176": {
+   "n": 176,
+   "state": "merged",
+   "branch": "claude/lake-path-option",
+   "branch_exists": true,
+   "date": "2026-10-11"
+  },
+  "178": {
+   "n": 178,
+   "state": "merged",
+   "branch": "claude/live-recalibration-test",
+   "branch_exists": true,
+   "date": "2026-10-11"
+  },
+  "181": {
+   "n": 181,
+   "state": "closed",
+   "branch": "claude/outfall-channel-test",
+   "branch_exists": true,
+   "date": "2026-10-16"
+  },
+  "187": {
+   "n": 187,
+   "state": "closed",
+   "branch": "claude/lake-near-field",
+   "branch_exists": true,
+   "date": "2026-10-16"
+  },
   "197": {
    "n": 197,
    "state": "merged",
    "branch": "claude/spill-size-test",
+   "branch_exists": true,
+   "date": "2026-10-13"
+  },
+  "199": {
+   "n": 199,
+   "state": "merged",
+   "branch": "claude/eval-site-pins",
+   "branch_exists": true,
+   "date": "2026-10-12"
+  },
+  "200": {
+   "n": 200,
+   "state": "merged",
+   "branch": "claude/validate-ecoli-missing-rain",
+   "branch_exists": true,
+   "date": "2026-10-12"
+  },
+  "203": {
+   "n": 203,
+   "state": "merged",
+   "branch": "claude/ecoli-refit-site-pins",
+   "branch_exists": true,
+   "date": "2026-10-12"
+  },
+  "208": {
+   "n": 208,
+   "state": "closed",
+   "branch": "claude/anypoint-side-arm",
+   "branch_exists": true,
+   "date": "2026-10-15"
+  },
+  "209": {
+   "n": 209,
+   "state": "merged",
+   "branch": "claude/overflow-positions-2026-10",
    "branch_exists": true,
    "date": "2026-10-13"
   },
@@ -445,6 +158,167 @@
    "branch_exists": true,
    "date": "2026-10-13"
   },
+  "211": {
+   "n": 211,
+   "state": "merged",
+   "branch": "claude/lake-residence-2026-10",
+   "branch_exists": true,
+   "date": "2026-10-13"
+  },
+  "214": {
+   "n": 214,
+   "state": "merged",
+   "branch": "claude/overflow-sea-outfalls",
+   "branch_exists": true,
+   "date": "2026-10-15"
+  },
+  "218": {
+   "n": 218,
+   "state": "merged",
+   "branch": "claude/anypoint-side-arm-most",
+   "branch_exists": true,
+   "date": "2026-10-16"
+  },
+  "219": {
+   "n": 219,
+   "state": "closed",
+   "branch": "claude/overflow-catchments",
+   "branch_exists": true,
+   "date": "2026-10-16"
+  },
+  "220": {
+   "n": 220,
+   "state": "merged",
+   "branch": "claude/pe-sources-parked",
+   "branch_exists": true,
+   "date": "2026-10-16"
+  },
+  "221": {
+   "n": 221,
+   "state": "merged",
+   "branch": "claude/overflow-spot-conflicts",
+   "branch_exists": true,
+   "date": "2026-10-15"
+  },
+  "225": {
+   "n": 225,
+   "state": "merged",
+   "branch": "claude/anypoint-full-lines",
+   "branch_exists": true,
+   "date": "2026-10-16"
+  },
+  "227": {
+   "n": 227,
+   "state": "merged",
+   "branch": "claude/anypoint-lake-shores",
+   "branch_exists": true,
+   "date": "2026-10-16"
+  },
+  "228": {
+   "n": 228,
+   "state": "merged",
+   "branch": "claude/source-scottish-water",
+   "branch_exists": true,
+   "date": "2026-10-16"
+  },
+  "231": {
+   "n": 231,
+   "state": "merged",
+   "branch": "claude/lake-distance",
+   "branch_exists": true,
+   "date": "2026-10-16"
+  },
+  "239": {
+   "n": 239,
+   "state": "merged",
+   "branch": "claude/neural-challenger-test",
+   "branch_exists": true,
+   "date": "2026-10-18"
+  },
+  "248": {
+   "n": 248,
+   "state": "merged",
+   "branch": "claude/transport-fit",
+   "branch_exists": true,
+   "date": "2026-10-17"
+  },
+  "249": {
+   "n": 249,
+   "state": "merged",
+   "branch": "claude/transport-fit-2",
+   "branch_exists": true,
+   "date": "2026-10-17"
+  },
+  "251": {
+   "n": 251,
+   "state": "merged",
+   "branch": "claude/nine-company-model",
+   "branch_exists": true,
+   "date": "2026-10-17"
+  },
+  "252": {
+   "n": 252,
+   "state": "merged",
+   "branch": "claude/lead-calibration-b-test",
+   "branch_exists": true,
+   "date": "2026-10-17"
+  },
+  "254": {
+   "n": 254,
+   "state": "merged",
+   "branch": "claude/live-status-feature-test",
+   "branch_exists": true,
+   "date": "2026-10-18"
+  },
+  "255": {
+   "n": 255,
+   "state": "merged",
+   "branch": "claude/glofas-check",
+   "branch_exists": true,
+   "date": "2026-10-18"
+  },
+  "257": {
+   "n": 257,
+   "state": "merged",
+   "branch": "claude/ensemble-rain",
+   "branch_exists": true,
+   "date": "2026-10-18"
+  },
+  "258": {
+   "n": 258,
+   "state": "merged",
+   "branch": "claude/optimistic-booth-013d5d",
+   "branch_exists": true,
+   "date": "2026-10-19"
+  },
+  "259": {
+   "n": 259,
+   "state": "merged",
+   "branch": "claude/multi-year-test",
+   "branch_exists": true,
+   "date": "2026-10-20"
+  },
+  "260": {
+   "n": 260,
+   "state": "merged",
+   "branch": "claude/covariate-year-test",
+   "branch_exists": true,
+   "date": "2026-10-20"
+  },
+  "262": {
+   "n": 262,
+   "state": "merged",
+   "branch": "claude/live-status-shadow",
+   "branch_exists": true,
+   "date": "2026-10-20"
+  },
+  "277": {
+   "n": 277,
+   "state": "merged",
+   "branch": "claude/comprehension-test",
+   "branch_exists": true,
+   "date": "2026-10-20"
+  },
   "303": {
    "n": 303,
    "state": "merged",
@@ -452,10 +326,80 @@
    "branch_exists": true,
    "date": "2026-10-24"
   },
+  "313": {
+   "n": 313,
+   "state": "merged",
+   "branch": "waterhead/direction-rule",
+   "branch_exists": true,
+   "date": "2026-10-24"
+  },
+  "318": {
+   "n": 318,
+   "state": "merged",
+   "branch": "model/dry-spell-test",
+   "branch_exists": true,
+   "date": "2026-10-24"
+  },
+  "325": {
+   "n": 325,
+   "state": "merged",
+   "branch": "model/upgraded-overflows-test-b",
+   "branch_exists": true,
+   "date": "2026-10-24"
+  },
+  "331": {
+   "n": 331,
+   "state": "merged",
+   "branch": "claude/sea-currents-scoping",
+   "branch_exists": true,
+   "date": "2026-10-25"
+  },
   "332": {
    "n": 332,
    "state": "merged",
    "branch": "claude/farm-pressure-test-de62ed",
+   "branch_exists": true,
+   "date": "2026-10-25"
+  },
+  "333": {
+   "n": 333,
+   "state": "merged",
+   "branch": "claude/company-calibration-094b7d",
+   "branch_exists": true,
+   "date": "2026-10-25"
+  },
+  "338": {
+   "n": 338,
+   "state": "merged",
+   "branch": "docs/interim-usefulness-2026-10",
+   "branch_exists": true,
+   "date": "2026-10-26"
+  },
+  "340": {
+   "n": 340,
+   "state": "merged",
+   "branch": "analysis/calibration-check",
+   "branch_exists": true,
+   "date": "2026-10-26"
+  },
+  "342": {
+   "n": 342,
+   "state": "merged",
+   "branch": "docs/lake-ecoli-line-test",
+   "branch_exists": true,
+   "date": "2026-10-26"
+  },
+  "343": {
+   "n": 343,
+   "state": "merged",
+   "branch": "model/radar-rain-check",
+   "branch_exists": true,
+   "date": "2026-10-25"
+  },
+  "344": {
+   "n": 344,
+   "state": "merged",
+   "branch": "claude/soil-moisture-test-1d5133",
    "branch_exists": true,
    "date": "2026-10-25"
   },
@@ -473,17 +417,45 @@
    "branch_exists": true,
    "date": "2026-10-25"
   },
-  "249": {
-   "n": 249,
+  "347": {
+   "n": 347,
    "state": "merged",
-   "branch": "claude/transport-fit-2",
+   "branch": "docs/soil-ecoli-adoption-plan",
    "branch_exists": true,
-   "date": "2026-10-17"
+   "date": "2026-10-25"
   },
-  "344": {
-   "n": 344,
+  "349": {
+   "n": 349,
    "state": "merged",
-   "branch": "claude/soil-moisture-test-1d5133",
+   "branch": "docs/option-b-recency-note",
+   "branch_exists": true,
+   "date": "2026-10-25"
+  },
+  "353": {
+   "n": 353,
+   "state": "merged",
+   "branch": "docs/spot-scoring-rulings",
+   "branch_exists": true,
+   "date": "2026-10-25"
+  },
+  "356": {
+   "n": 356,
+   "state": "merged",
+   "branch": "docs/noise-audit",
+   "branch_exists": true,
+   "date": "2026-10-25"
+  },
+  "357": {
+   "n": 357,
+   "state": "merged",
+   "branch": "claude/nine-company-v2-statement",
+   "branch_exists": true,
+   "date": "2026-10-26"
+  },
+  "358": {
+   "n": 358,
+   "state": "merged",
+   "branch": "docs/overflow-data-sources",
    "branch_exists": true,
    "date": "2026-10-25"
   },
@@ -494,68 +466,110 @@
    "branch_exists": true,
    "date": "2026-10-25"
   },
-  "248": {
-   "n": 248,
-   "state": "merged",
-   "branch": "claude/transport-fit",
-   "branch_exists": true,
-   "date": "2026-10-17"
-  },
-  "176": {
-   "n": 176,
-   "state": "merged",
-   "branch": "claude/lake-path-option",
-   "branch_exists": true,
-   "date": "2026-10-11"
-  },
-  "211": {
-   "n": 211,
-   "state": "merged",
-   "branch": "claude/lake-residence-2026-10",
-   "branch_exists": true,
-   "date": "2026-10-13"
-  },
-  "231": {
-   "n": 231,
-   "state": "merged",
-   "branch": "claude/lake-distance",
-   "branch_exists": true,
-   "date": "2026-10-16"
-  },
-  "199": {
-   "n": 199,
-   "state": "merged",
-   "branch": "claude/eval-site-pins",
-   "branch_exists": true,
-   "date": "2026-10-12"
-  },
-  "203": {
-   "n": 203,
-   "state": "merged",
-   "branch": "claude/ecoli-refit-site-pins",
-   "branch_exists": true,
-   "date": "2026-10-12"
-  },
-  "200": {
-   "n": 200,
-   "state": "merged",
-   "branch": "claude/validate-ecoli-missing-rain",
-   "branch_exists": true,
-   "date": "2026-10-12"
-  },
-  "347": {
-   "n": 347,
-   "state": "merged",
-   "branch": "docs/soil-ecoli-adoption-plan",
-   "branch_exists": true,
-   "date": "2026-10-25"
-  },
   "361": {
    "n": 361,
    "state": "merged",
    "branch": "claude/soil-moisture-adopt",
    "branch_exists": true,
    "date": "2026-10-26"
+  },
+  "374": {
+   "n": 374,
+   "state": "merged",
+   "branch": "docs/calibration-test-proposal-2026-11",
+   "branch_exists": true,
+   "date": "2026-10-26"
+  },
+  "377": {
+   "n": 377,
+   "state": "merged",
+   "branch": "docs/lake-algae-satellite-test",
+   "branch_exists": true,
+   "date": "2026-10-26"
+  },
+  "379": {
+   "n": 379,
+   "state": "merged",
+   "branch": "proto/advisory-finder",
+   "branch_exists": true,
+   "date": "2026-10-26"
+  },
+  "381": {
+   "n": 381,
+   "state": "merged",
+   "branch": "proto/sampling-priorities",
+   "branch_exists": true,
+   "date": "2026-10-26"
+  },
+  "382": {
+   "n": 382,
+   "state": "merged",
+   "branch": "proto/monitoring-anomalies",
+   "branch_exists": true,
+   "date": "2026-10-26"
+  },
+  "383": {
+   "n": 383,
+   "state": "merged",
+   "branch": "proto/river-rises-scope",
+   "branch_exists": true,
+   "date": "2026-11-06"
+  },
+  "384": {
+   "n": 384,
+   "state": "merged",
+   "branch": "measure/missing-event-end",
+   "branch_exists": true,
+   "date": "2026-10-26"
+  },
+  "385": {
+   "n": 385,
+   "state": "merged",
+   "branch": "test/lake-algae-incidents",
+   "branch_exists": true,
+   "date": "2026-10-27"
+  },
+  "386": {
+   "n": 386,
+   "state": "merged",
+   "branch": "test/lake-chlorophyll-ndci",
+   "branch_exists": true,
+   "date": "2026-10-27"
+  },
+  "396": {
+   "n": 396,
+   "state": "closed",
+   "branch": "docs/lake-algae-2027-forward",
+   "branch_exists": true,
+   "date": "2026-10-27"
+  },
+  "400": {
+   "n": 400,
+   "state": "merged",
+   "branch": "feat/water-temperature",
+   "branch_exists": true,
+   "date": "2026-10-27"
+  },
+  "403": {
+   "n": 403,
+   "state": "merged",
+   "branch": "test/sonde-signal",
+   "branch_exists": true,
+   "date": "2026-10-27"
+  },
+  "404": {
+   "n": 404,
+   "state": "merged",
+   "branch": "test/flow-dilution",
+   "branch_exists": true,
+   "date": "2026-10-27"
+  },
+  "407": {
+   "n": 407,
+   "state": "merged",
+   "branch": "docs/386-promising-not-validated",
+   "branch_exists": true,
+   "date": "2026-10-27"
   },
   "414": {
    "n": 414,
@@ -571,12 +585,82 @@
    "branch_exists": true,
    "date": "2026-10-28"
   },
-  "400": {
-   "n": 400,
+  "419": {
+   "n": 419,
    "state": "merged",
-   "branch": "feat/water-temperature",
+   "branch": "test/lake-temperature-model",
    "branch_exists": true,
-   "date": "2026-10-27"
+   "date": "2026-10-29"
+  },
+  "420": {
+   "n": 420,
+   "state": "merged",
+   "branch": "docs/coastal-sea-temperature-brief",
+   "branch_exists": true,
+   "date": "2026-10-29"
+  },
+  "459": {
+   "n": 459,
+   "state": "merged",
+   "branch": "research/spill-duration",
+   "branch_exists": true,
+   "date": "2026-10-30"
+  },
+  "461": {
+   "n": 461,
+   "state": "merged",
+   "branch": "research/spill-duration-diagnostics",
+   "branch_exists": true,
+   "date": "2026-10-30"
+  },
+  "465": {
+   "n": 465,
+   "state": "merged",
+   "branch": "docs/comprehension-task-3b",
+   "branch_exists": true,
+   "date": "2026-10-30"
+  },
+  "466": {
+   "n": 466,
+   "state": "merged",
+   "branch": "research/concentration-model",
+   "branch_exists": true,
+   "date": "2026-10-30"
+  },
+  "468": {
+   "n": 468,
+   "state": "merged",
+   "branch": "research/satellite-recovery",
+   "branch_exists": true,
+   "date": "2026-10-30"
+  },
+  "470": {
+   "n": 470,
+   "state": "merged",
+   "branch": "feat/research-lakes",
+   "branch_exists": true,
+   "date": "2026-10-31"
+  },
+  "529": {
+   "n": 529,
+   "state": "merged",
+   "branch": "feat/labs-lake-temperatures",
+   "branch_exists": true,
+   "date": "2026-10-31"
+  },
+  "530": {
+   "n": 530,
+   "state": "merged",
+   "branch": "feat/labs-spill-durations",
+   "branch_exists": true,
+   "date": "2026-10-31"
+  },
+  "531": {
+   "n": 531,
+   "state": "merged",
+   "branch": "feat/labs-ecoli-evidence",
+   "branch_exists": true,
+   "date": "2026-10-31"
   },
   "536": {
    "n": 536,
@@ -585,10 +669,24 @@
    "branch_exists": true,
    "date": "2026-10-31"
   },
+  "537": {
+   "n": 537,
+   "state": "merged",
+   "branch": "research/satellite-pilot",
+   "branch_exists": true,
+   "date": "2026-10-31"
+  },
   "538": {
    "n": 538,
    "state": "merged",
    "branch": "feat/temp-anypoint",
+   "branch_exists": true,
+   "date": "2026-10-31"
+  },
+  "539": {
+   "n": 539,
+   "state": "merged",
+   "branch": "research/spill-duration-replay",
    "branch_exists": true,
    "date": "2026-10-31"
   },
@@ -606,110 +704,19 @@
    "branch_exists": true,
    "date": "2026-10-31"
   },
-  "379": {
-   "n": 379,
+  "561": {
+   "n": 561,
    "state": "merged",
-   "branch": "proto/advisory-finder",
+   "branch": "claude/tim-bowden-email-reply-449f9c",
    "branch_exists": true,
-   "date": "2026-10-26"
+   "date": "2026-10-31"
   },
-  "382": {
-   "n": 382,
+  "566": {
+   "n": 566,
    "state": "merged",
-   "branch": "proto/monitoring-anomalies",
+   "branch": "research/sampling-planner-482",
    "branch_exists": true,
-   "date": "2026-10-26"
-  },
-  "225": {
-   "n": 225,
-   "state": "merged",
-   "branch": "claude/anypoint-full-lines",
-   "branch_exists": true,
-   "date": "2026-10-16"
-  },
-  "227": {
-   "n": 227,
-   "state": "merged",
-   "branch": "claude/anypoint-lake-shores",
-   "branch_exists": true,
-   "date": "2026-10-16"
-  },
-  "208": {
-   "n": 208,
-   "state": "closed",
-   "branch": "claude/anypoint-side-arm",
-   "branch_exists": true,
-   "date": "2026-10-15"
-  },
-  "218": {
-   "n": 218,
-   "state": "merged",
-   "branch": "claude/anypoint-side-arm-most",
-   "branch_exists": true,
-   "date": "2026-10-16"
-  },
-  "209": {
-   "n": 209,
-   "state": "merged",
-   "branch": "claude/overflow-positions-2026-10",
-   "branch_exists": true,
-   "date": "2026-10-13"
-  },
-  "214": {
-   "n": 214,
-   "state": "merged",
-   "branch": "claude/overflow-sea-outfalls",
-   "branch_exists": true,
-   "date": "2026-10-15"
-  },
-  "221": {
-   "n": 221,
-   "state": "merged",
-   "branch": "claude/overflow-spot-conflicts",
-   "branch_exists": true,
-   "date": "2026-10-15"
-  },
-  "219": {
-   "n": 219,
-   "state": "closed",
-   "branch": "claude/overflow-catchments",
-   "branch_exists": true,
-   "date": "2026-10-16"
-  },
-  "23": {
-   "n": 23,
-   "state": "merged",
-   "branch": "gpt-ux",
-   "branch_exists": true,
-   "date": "2026-09-30"
-  },
-  "277": {
-   "n": 277,
-   "state": "merged",
-   "branch": "claude/comprehension-test",
-   "branch_exists": true,
-   "date": "2026-10-20"
-  },
-  "465": {
-   "n": 465,
-   "state": "merged",
-   "branch": "docs/comprehension-task-3b",
-   "branch_exists": true,
-   "date": "2026-10-30"
-  },
-  "356": {
-   "n": 356,
-   "state": "merged",
-   "branch": "docs/noise-audit",
-   "branch_exists": true,
-   "date": "2026-10-25"
-  },
-  "588": {
-   "n": 588,
-   "state": "merged",
-   "branch": "research/ambitious-scoping-2026-11",
-   "branch_exists": true,
-   "date": "2026-11-01"
+   "date": "2026-10-31"
   },
   "584": {
    "n": 584,
@@ -722,13 +729,6 @@
    "n": 585,
    "state": "merged",
    "branch": "claude/lake-range-shadow",
-   "branch_exists": true,
-   "date": "2026-11-01"
-  },
-  "592": {
-   "n": 592,
-   "state": "merged",
-   "branch": "claude/lab-live",
    "branch_exists": true,
    "date": "2026-11-01"
   },
@@ -746,6 +746,13 @@
    "branch_exists": true,
    "date": "2026-11-06"
   },
+  "588": {
+   "n": 588,
+   "state": "merged",
+   "branch": "research/ambitious-scoping-2026-11",
+   "branch_exists": true,
+   "date": "2026-11-01"
+  },
   "591": {
    "n": 591,
    "state": "merged",
@@ -753,12 +760,12 @@
    "branch_exists": true,
    "date": "2026-11-01"
   },
-  "566": {
-   "n": 566,
+  "592": {
+   "n": 592,
    "state": "merged",
-   "branch": "research/sampling-planner-482",
+   "branch": "claude/lab-live",
    "branch_exists": true,
-   "date": "2026-10-31"
+   "date": "2026-11-01"
   },
   "611": {
    "n": 611,
@@ -830,17 +837,17 @@
    "branch_exists": true,
    "date": "2026-11-06"
   },
-  "631": {
-   "n": 631,
-   "state": "merged",
-   "branch": "claude/river-rise-history",
-   "branch_exists": true,
-   "date": "2026-11-06"
-  },
   "630": {
    "n": 630,
    "state": "merged",
    "branch": "claude/lake-usual-line",
+   "branch_exists": true,
+   "date": "2026-11-06"
+  },
+  "631": {
+   "n": 631,
+   "state": "merged",
+   "branch": "claude/river-rise-history",
    "branch_exists": true,
    "date": "2026-11-06"
   },
@@ -851,17 +858,17 @@
    "branch_exists": true,
    "date": "2026-11-06"
   },
-  "640": {
-   "n": 640,
-   "state": "merged",
-   "branch": "claude/radar-per-overflow-test",
-   "branch_exists": true,
-   "date": "2026-11-06"
-  },
   "639": {
    "n": 639,
    "state": "merged",
    "branch": "claude/live-status-2026-backtest-6e8c93",
+   "branch_exists": true,
+   "date": "2026-11-06"
+  },
+  "640": {
+   "n": 640,
+   "state": "merged",
+   "branch": "claude/radar-per-overflow-test",
    "branch_exists": true,
    "date": "2026-11-06"
   },
@@ -872,12 +879,12 @@
    "branch_exists": true,
    "date": "2026-11-08"
   },
-  "338": {
-   "n": 338,
+  "658": {
+   "n": 658,
    "state": "merged",
-   "branch": "docs/interim-usefulness-2026-10",
+   "branch": "claude/scotland-2021-backtest",
    "branch_exists": true,
-   "date": "2026-10-26"
+   "date": "2026-11-10"
   },
   "662": {
    "n": 662,
@@ -893,17 +900,10 @@
    "branch_exists": true,
    "date": "2026-11-10"
   },
-  "658": {
-   "n": 658,
-   "state": "merged",
-   "branch": "claude/scotland-2021-backtest",
-   "branch_exists": true,
-   "date": "2026-11-10"
-  },
-  "686": {
-   "n": 686,
-   "state": "merged",
-   "branch": "claude/combined-v1-shadow-logger-a9b35a",
+  "684": {
+   "n": 684,
+   "state": "open",
+   "branch": "claude/thames-same-day-diagnosis-d85ae6",
    "branch_exists": true,
    "date": "2026-11-13"
   },
@@ -914,38 +914,10 @@
    "branch_exists": true,
    "date": "2026-11-13"
   },
-  "694": {
-   "n": 694,
+  "686": {
+   "n": 686,
    "state": "merged",
-   "branch": "claude/radar-issue-hour-test-36a617",
-   "branch_exists": true,
-   "date": "2026-11-13"
-  },
-  "684": {
-   "n": 684,
-   "state": "open",
-   "branch": "claude/thames-same-day-diagnosis-d85ae6",
-   "branch_exists": true,
-   "date": "2026-11-13"
-  },
-  "688": {
-   "n": 688,
-   "state": "merged",
-   "branch": "research/wessex-river-samples",
-   "branch_exists": true,
-   "date": "2026-11-13"
-  },
-  "691": {
-   "n": 691,
-   "state": "merged",
-   "branch": "claude/irish-welsh-sample-histories-15578f",
-   "branch_exists": true,
-   "date": "2026-11-13"
-  },
-  "695": {
-   "n": 695,
-   "state": "open",
-   "branch": "claude/uu-diagnosis-d4d5a5",
+   "branch": "claude/combined-v1-shadow-logger-a9b35a",
    "branch_exists": true,
    "date": "2026-11-13"
   },
@@ -956,10 +928,45 @@
    "branch_exists": true,
    "date": "2026-11-13"
   },
+  "688": {
+   "n": 688,
+   "state": "merged",
+   "branch": "research/wessex-river-samples",
+   "branch_exists": true,
+   "date": "2026-11-13"
+  },
+  "690": {
+   "n": 690,
+   "state": "open",
+   "branch": "claude/sonde-arrival-check-311284",
+   "branch_exists": true,
+   "date": "2026-11-13"
+  },
+  "691": {
+   "n": 691,
+   "state": "merged",
+   "branch": "claude/irish-welsh-sample-histories-15578f",
+   "branch_exists": true,
+   "date": "2026-11-13"
+  },
   "692": {
    "n": 692,
    "state": "open",
    "branch": "claude/coastal-explorer-baselines-d3beaf",
+   "branch_exists": true,
+   "date": "2026-11-13"
+  },
+  "694": {
+   "n": 694,
+   "state": "merged",
+   "branch": "claude/radar-issue-hour-test-36a617",
+   "branch_exists": true,
+   "date": "2026-11-13"
+  },
+  "695": {
+   "n": 695,
+   "state": "open",
+   "branch": "claude/uu-diagnosis-d4d5a5",
    "branch_exists": true,
    "date": "2026-11-13"
   },
@@ -977,13 +984,6 @@
    "branch_exists": true,
    "date": "2026-11-13"
   },
-  "707": {
-   "n": 707,
-   "state": "open",
-   "branch": "claude/level-rise-check",
-   "branch_exists": true,
-   "date": "2026-11-16"
-  },
   "698": {
    "n": 698,
    "state": "open",
@@ -991,26 +991,12 @@
    "branch_exists": true,
    "date": "2026-11-14"
   },
-  "705": {
-   "n": 705,
-   "state": "open",
-   "branch": "claude/river-unseen-staging",
-   "branch_exists": true,
-   "date": "2026-11-15"
-  },
   "699": {
    "n": 699,
    "state": "merged",
    "branch": "claude/radar-shadow-logger-a011b5",
    "branch_exists": true,
    "date": "2026-11-14"
-  },
-  "690": {
-   "n": 690,
-   "state": "open",
-   "branch": "claude/sonde-arrival-check-311284",
-   "branch_exists": true,
-   "date": "2026-11-13"
   },
   "700": {
    "n": 700,
@@ -1025,6 +1011,20 @@
    "branch": "claude/swimsignal-world-class-6a9aed",
    "branch_exists": true,
    "date": "2026-11-15"
+  },
+  "705": {
+   "n": 705,
+   "state": "open",
+   "branch": "claude/river-unseen-staging",
+   "branch_exists": true,
+   "date": "2026-11-15"
+  },
+  "707": {
+   "n": 707,
+   "state": "open",
+   "branch": "claude/level-rise-check",
+   "branch_exists": true,
+   "date": "2026-11-16"
   },
   "718": {
    "n": 718,
@@ -1067,6 +1067,13 @@
    "branch": "claude/rain-word-no-overflow",
    "branch_exists": true,
    "date": "2026-11-25"
+  },
+  "766": {
+   "n": 766,
+   "state": "open",
+   "branch": "claude/anywater-ie",
+   "branch_exists": true,
+   "date": "2026-11-27"
   }
  },
  "entries": [
@@ -3898,7 +3905,7 @@
    "verdict": "Supported on unseen seasons. Frozen on 2022-26 before any older sample was fetched, C1 (site, month, last sample, ERA5-Land rain over 24 and 72 hours) beat the same model without rain on 65,350 English samples 2012-21 at 403 beaches: Brier difference -0.00041 (-0.00084 to -0.00012), 9 of 10 seasons, AUC 0.786 against 0.665. On 7,019 Welsh and Northern Irish samples 2023-26 it never saw, it ordered each beach's samples at 0.303 (0.245 to 0.338); rain added +0.122. On 24,413 Irish samples 2014-26 at 210 beaches it never saw, it ordered each beach's samples at 0.320 (0.274 to 0.356); rain added +0.083.",
    "scope": "Statutory bathing-water samples, May to September, E. coli over 500. ERA5-Land is a reanalysis, not issue-time rain. Brier skill against the pooled rate is 2.9%, so it supports past samples by rain, not a chance for today. Northern Irish and Irish sample times assumed midday.",
    "stage": "development",
-   "stage_note": "Results recorded in #760 and the ANYWATER-IE statement. Past samples by rain are on English, Welsh, Northern Irish (#764) and Irish coast and estuary cards.",
+   "stage_note": "Results recorded in #760 and the ANYWATER-IE statement. Past samples by rain are on English, Welsh, Northern Irish (#764) and Irish coast and estuary cards (#766).",
    "next": "A 2027 shadow protocol with issue-time rain before 1 May 2027; an inland version with a 900 line for Irish lakes.",
    "records": [
     {
@@ -3920,7 +3927,8 @@
    ],
    "prs": [
     696,
-    760
+    760,
+    766
    ]
   }
  ],
