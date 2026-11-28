@@ -96,6 +96,13 @@ def _water(site: dict) -> str:
     return f'<br>{escape(line)}' if line else ''
 
 
+def _rain(site: dict) -> str:
+    """Today's rain at the water (rain_history.attach_cached, no samples to compare it with), after a break, or ''."""
+    from dipcast.rain_history import now_line
+    line = now_line(site, groups=False)
+    return f'<br>{escape(line)}' if line else ''
+
+
 def render(snapshot: dict) -> str:
     """The Scottish list, server-rendered and searchable on the page. Ratings only: signs, samples
     and current advice are on each water's SEPA page."""
@@ -107,7 +114,7 @@ def render(snapshot: dict) -> str:
                   else f'Not yet rated (SEPA: unclassified, {s["unrated_year"]})' if s.get("unrated_year") else "No rating listed")
         cards.append(f'<li class="scotland-site"><a href="{escape(s["page"], quote=True)}">{escape(s["name"])}</a>'
                      f'<p class="small">{escape(rating)}<br>Signs, samples and current advice: on SEPA\'s page'
-                     f'{_water(s)}</p></li>')
+                     f'{_water(s)}{_rain(s)}</p></li>')
     return (f'<p class="small">{len(cards)} designated Scottish bathing waters, as SEPA listed them '
             f'{when(snapshot["fetched_at"])}. A rating covers up to four seasons of samples; it is not '
             'today\'s water quality.</p>'

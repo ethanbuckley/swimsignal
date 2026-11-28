@@ -149,17 +149,40 @@ def test_directory_cards_take_todays_rain_from_the_nearest_cached_cell(tmp_path)
     _cache(tmp_path, 52.2, -3.2, 0.1, now, issued="2026-11-26T06:00:00+00:00")   # fetched 57 hours before: too old
     f = tmp_path / "h.json"
     f.write_text(json.dumps({**DOC, "nations": {"wales": DOC["nations"]["england"]},
-                             "sites": {k: {**DOC["sites"]["a"], "nation": "wales"} for k in ("river", "short", "far")}}))
-    snap = {"sites": [{"id": "river"}, {"id": "short"}, {"id": "far"}, {"id": "none"}]}
+                             "sites": {k: {**DOC["sites"]["a"], "nation": "wales"} for k in ("river", "short", "far", "near")}}))
+    snap = {"sites": [{"id": "river"}, {"id": "short"}, {"id": "far"}, {"id": "none"}, {"id": "near"}]}
     rain_history.attach(snap, "wales", f)
-    pts = {"river": [52.0765, -3.1371], "short": [51.8845, -3.986], "far": [52.19, -3.21], "none": [52.08, -3.14]}
+    pts = {"river": [52.0765, -3.1371], "short": [51.8845, -3.986], "far": [52.19, -3.21], "none": [52.08, -3.14],
+           "near": [52.16, -3.10]}
     assert rain_history.attach_cached(snap, pts, tmp_path, now) == 2
     r = snap["sites"][0]["rain_now"]
     assert r["mm"] == 12.0 and r["date"] == "2026-11-28" and "km" not in r and r["fetched"] == "28 Nov 06:00"
     assert "rain_now" not in snap["sites"][1], "a window under 90% covered gives nothing"
-    far = snap["sites"][2]["rain_now"]
-    assert far["km"] >= 1, "a neighbouring square is named as a point away"
+    assert "rain_now" not in snap["sites"][2], "the nearest fresh square is 12 km away: over the 10 km cap"
+    near = snap["sites"][4]["rain_now"]
+    assert 1 <= near["km"] <= 10, "a neighbouring square within 10 km is named as a point away"
     assert "rain_now" not in snap["sites"][3], "no past samples by rain, no line"
     assert rain_history.now_line(snap["sites"][0]) == ("Rain here in the 2 days to midday on 2026-11-28: 12 mm "
                                                        "(forecast service, fetched 28 Nov 06:00). That is as wet as the after-rain samples above.")
-    assert rain_history.now_line(snap["sites"][2]).startswith(f"Rain at a point {far['km']} km away in the 2 days")
+    assert rain_history.now_line(snap["sites"][4]).startswith(f"Rain at a point {near['km']} km away in the 2 days")
+    assert "samples above" not in rain_history.now_line(snap["sites"][0], groups=False), "no groups without samples"
+
+
+def test_scottish_and_missing_english_cards(tmp_path):
+    """require_history off (Scotland: no past samples) and only_missing (English beaches the squares missed)."""
+    import pandas as pd
+    now = pd.Timestamp("2026-11-28T15:00:00+00:00")
+    _cache(tmp_path, 56.1, -4.6, 0.25, now)
+    scot = {"sites": [{"id": "sepa-125079", "lat": 56.10341, "lon": -4.63805}]}
+    assert rain_history.attach_cached(scot, {}, tmp_path, now) == 0, "no past samples by rain: needs require_history off"
+    assert rain_history.attach_cached(scot, {}, tmp_path, now, require_history=False) == 1
+    from dipcast import scotland
+    html = scotland.render({"fetched_at": "2026-11-28T10:00:00+00:00", "sites": [{**scot["sites"][0], "name": "Luss Bay",
+                            "page": "https://bathingwaters.sepa.org.uk/x", "rating": None}]})
+    assert "Rain here in the 2 days to midday on 2026-11-28: 12 mm" in html and "samples above" not in html
+    eng = {"sites": [{"id": "a", "rain_history": DOC["sites"]["a"], "rain_now": {"mm": 1.0, "date": "2026-11-28"}},
+                     {"id": "b", "rain_history": DOC["sites"]["a"]}]}
+    pts = {"a": [56.1, -4.6], "b": [56.1, -4.6]}
+    assert rain_history.attach_cached(eng, pts, tmp_path, now, only_missing=True) == 1
+    assert eng["sites"][0]["rain_now"] == {"mm": 1.0, "date": "2026-11-28"}, "a square's figure is kept"
+    assert eng["sites"][1]["rain_now"]["mm"] == 12.0

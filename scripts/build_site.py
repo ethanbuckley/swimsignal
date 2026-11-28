@@ -6113,12 +6113,26 @@ def build(refresh: bool = True) -> dict:
     except Exception:  # noqa: BLE001
         wales_points = {}
     where = [p for snap in nations.values() for x in snap["sites"] if (p := site_point(x, wales_points))]
+    # English beaches with past samples by rain that the click-anywhere squares missed: their cells join the same fetch,
+    # so their cards can take today's rain too (docs/RAIN-LINES-MORE-2026-11.md).
+    try:
+        _eng_pts = json.loads(BATHING_WATER_POINTS.read_text()).get("england") or {}
+    except Exception:  # noqa: BLE001
+        _eng_pts = {}
+    where += [(float(p[0]), float(p[1])) for x in coastal["sites"]
+              if x.get("rain_history") and not x.get("rain_now") and (p := _eng_pts.get(x.get("id")))]
     air, health["directory_air"] = directory_air(where)
+    n_more = rain_history.attach_cached(coastal, _eng_pts, rainfall.CACHE, generated, DIRECTORY_AIR_MAX_AGE_H,
+                                        only_missing=True)
+    health["coastal"]["rain_now"] = health["coastal"].get("rain_now", 0) + n_more
+    health["coastal"]["rain_now_cached"] = n_more
+    (SITE / "data" / "coastal.json").write_text(json.dumps(coastal))
     for name, snap in nations.items():
         health[name]["water_temperature_estimate"] = attach_directory_water_temp(snap["sites"], air, nation=name)
         # Today's rain beside the past samples by rain, from the same cached cells (docs/DIRECTORY-RAIN-NOW-2026-11.md).
         health[name]["rain_now"] = rain_history.attach_cached(snap, wales_points, rainfall.CACHE, generated,
-                                                              DIRECTORY_AIR_MAX_AGE_H)
+                                                              DIRECTORY_AIR_MAX_AGE_H,
+                                                              require_history=name != "scotland")
         (SITE / "data" / f"{name}.json").write_text(json.dumps(snap))
     push, email, ask = push_config(), email_config(), ask_config()
     doc = {"generated_at": generated.isoformat(), "version": __version__, "n": len(results), "build": health,

@@ -3158,6 +3158,16 @@ lake-range-v1's likely reading at lake bathing waters it has no own level for (0
 **Checked:** the rule in `tests/site_preview.test.cjs` and `tests/test_lake_order.py`. **Not checked:** a word on the
 live site, which cannot appear before 1 May 2027.
 
+### Today's rain lines: 10 km cap, English gaps, Scotland (28 November 2026, night)
+
+From `docs/RAIN-LINES-MORE-2026-11.md`. Ethan: "Yes, build them".
+
+- **Changed:** a neighbouring square farther than 10 km from the water gives no rain line (a card's own square still
+  counts as "here"). Llanishen Reservoir's 17 km line goes.
+- **New:** English beach cards the click-anywhere squares missed take today's rain from the directory cells; Scottish
+  cards take today's rain with no comparison (no past samples are allowed there).
+- **Already decided, followed:** the line's words (#764, #774).
+
 ### Past samples after rain at the 5 no-overflow lakes (28 November 2026, night)
 
 From `docs/AFTER-RAIN-LAKES-2026-11.md`, rebuilding #703 (Ethan's choice of 15 November; "Yes, rebuild it", 28 November).
