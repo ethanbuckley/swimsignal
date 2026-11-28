@@ -46,6 +46,12 @@ SITE_RADIUS_M = 100        # a spot this close to a bathing water's spots.csv po
 SEASON = range(5, 10)      # the months the EA samples, and the test's
 USUAL_FILE = config.PROCESSED / "lake_range_usual.v1.json"
 USUAL_SHA256 = "8be2d127bc168d0dca73fdc6ef3ba53e926a92263aec6349475c8b107fdfb040"
+# Own levels for the 7 lake bathing waters lake-range-v1 has none for, frozen from their 2023-26 samples by the rule
+# bench read 2 passed with (docs/LAKE-RANGE-OWN-LEVELS-2026-11.md). Used only where no overflow is upstream, so the
+# range at every lake with overflows, and the shadow table, are unchanged.
+LEVELS_FILE = config.PROCESSED / "lake_range_levels.v1.json"
+LEVELS_SHA256 = "145d939b4d87a13b842a010aefad298390926b56644ef43705c824e8b8fbf042"
+OWN_LEVEL = "own level, tested here"
 HIGHER, LOWER = 2.0, 0.5   # fixed in the proposal before any 2027 sample
 LAB_LIMIT = 10             # the page says "under 10" below it
 COLUMNS = ("issued_at", "issue_day", "lat", "lon", "bw_id", "basis", "target_day", "lead", "in_season",
@@ -80,9 +86,35 @@ def usual_inputs() -> dict | None:
     return u if u.get("model_sha256") == SHA256 else None
 
 
+@lru_cache(maxsize=1)
+def levels() -> dict:
+    """{bw_id: site} from the own-levels file, or {} when it is missing, not the committed one, or made for another
+    model file."""
+    try:
+        raw = LEVELS_FILE.read_bytes()
+    except OSError:
+        return {}
+    if hashlib.sha256(raw).hexdigest() != LEVELS_SHA256:
+        log.warning("lake own levels off: %s is not the committed file", LEVELS_FILE.name)
+        return {}
+    doc = json.loads(raw)
+    return doc.get("sites") or {} if doc.get("model_sha256") == SHA256 else {}
+
+
+def level_for(lat: float, lon: float) -> str | None:
+    """The bathing water in the own-levels file at this spot (within SITE_RADIUS_M), or None."""
+    return site_for({"sites": levels()}, lat, lon) if levels() else None
+
+
+def with_levels(m: dict) -> dict:
+    """lake-range-v1 with the own levels added beside its 11; every parameter unchanged."""
+    return {**m, "sites": {**m["sites"], **{k: {**v, "own_level": True} for k, v in levels().items()}}}
+
+
 def clear_cache() -> None:
     model.cache_clear()
     usual_inputs.cache_clear()
+    levels.cache_clear()
 
 
 def site_for(m: dict, lat: float, lon: float) -> str | None:
@@ -118,17 +150,22 @@ def _quantiles(m: dict, X: pd.DataFrame, bw: str | None, qs=(0.1, 0.5, 0.9)) -> 
     return out
 
 
-def ranges(lat: float, lon: float, X: pd.DataFrame, m: dict | None = None) -> dict | None:
+def ranges(lat: float, lon: float, X: pd.DataFrame, m: dict | None = None, own_level: bool = False) -> dict | None:
     """lake-range-v1 for each row of X (ecoli.features' frame, one row a day), or None with the model off. A row with
-    a missing input gets NaN, never a range computed as if it were dry. Inputs are not altered."""
+    a missing input gets NaN, never a range computed as if it were dry. Inputs are not altered. With own_level (a lake
+    with no overflow upstream), the 7 own levels are added; a spot that matches none of them gets None."""
     m = m if m is not None else model()
     if m is None or X is None or not len(X):
         return None
+    if own_level:
+        m = with_levels(m)
+        if site_for({"sites": levels()}, lat, lon) is None:
+            return None
     bw = site_for(m, lat, lon)
     ok = np.isfinite(X[m["cols"]].to_numpy(dtype=float)).all(axis=1)
     q = _quantiles(m, X.fillna(0.0), bw)
     nan = lambda a: np.where(ok, a, np.nan)   # noqa: E731
-    return {"bw_id": bw, "basis": basis(bw), "low": nan(q[0.1]), "median": nan(q[0.5]), "high": nan(q[0.9]),
+    return {"bw_id": bw, "basis": OWN_LEVEL if own_level else basis(bw), "low": nan(q[0.1]), "median": nan(q[0.5]), "high": nan(q[0.9]),
             "usual": usual(m, bw, X)}
 
 

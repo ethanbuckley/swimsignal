@@ -59,3 +59,5 @@ Lakes, the same day: at the Serpentine, the three Hampstead Heath ponds and Colw
 ## 28 November 2026
 
 Irish lakes: 14 inland cards in the Republic, Wales and Northern Ireland show past samples by rain, counted over 900, labelled not tested (`docs/INLAND-RAIN-HISTORY-2026-11.md`, #769). Next by places: Scotland's coast waits on SEPA; Scotland inland on Ethan's switch; Wales inland's rain word.
+
+Lakes again, the same day: bench read 2 passed (the range held 87 in 100 at the 7 lakes given their own level), so the Serpentine, the Hampstead ponds and Colwick get the likely reading and 8-in-10 range from 1 May 2027, and the redesign shows the lake range as a row at every lake that has one (`docs/LAKE-RANGE-OWN-LEVELS-2026-11.md`, #771).

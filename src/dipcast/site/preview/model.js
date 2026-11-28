@@ -284,6 +284,9 @@ function ledger(s, iso, data, nowMs) {
       lines: [plainLevel(l) ? 'Not a low level: there is no forecast to give here, low or high.' : why ? `Set by: ${why}.` : ''].filter(Boolean) });
     rows.push({ key: 'spill', label: 'Sewage spill risk, modelled', value: 'None here', cls: 'lv-none',
       lines: [isolated(s) ? 'The model has no overflow to work from at this lake.' : 'The model works from monitored overflows upstream, and the trace found none.'] });
+    // A lake bathing water with its own level and no overflow upstream: the lake range (levels.js, lakeRangeRow).
+    const lr = lakeRangeRow(s, (s.days || []).find(d => d.date === iso), when);
+    if (lr) rows.push(lr);
     rows.push({ key: 'cover', label: 'Not covered', value: 'Everything else', cls: 'lv-none',
       lines: ['Unmonitored outfalls, treated sewage from sewage works, runoff from farmland and roads, wildlife and other bathers.'] });
     return rows;
@@ -317,6 +320,9 @@ function ledger(s, iso, data, nowMs) {
         lines: [riverUsualWinter(x) ? `${riverUsualWinter(x)} ${RIVER_USUAL_WINTER_SAID}` : 'Tested only for May to September, so it is not counted in the level now.'] }
     : { key: 'ecoli', label: 'E. coli estimate, experimental', value: `${Math.round(x.p_ecoli_gt900 * 100)}%`, word: ecoliBand(s, x), cls: cls(ecoliBand(s, x)),
         lines: [`Chance a water sample would show over 900 E. coli per 100 ml ${when}. ${riverUsual(x)}`.trim(), tileLine(s, 'water', iso)].filter(Boolean) });
+  // At a lake the chance stays unshown (no skill there); the likely reading and its 8-in-10 range instead (levels.js).
+  const lr = lakeRangeRow(s, x, when);
+  if (lr) rows.push(lr);
   // What was not seen: live readings missing, and what the trace leaves out.
   const cover = liveCover(s), n = s.now || {}, gaps = [];
   if (cover) {
