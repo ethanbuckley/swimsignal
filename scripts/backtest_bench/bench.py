@@ -19,6 +19,9 @@ A candidate is a .py file with two functions:
 
 `predict` returns P(E. coli > 900) for each row, or a dict with "p900" and optionally "p500" (P over 500) and "rank"
 (any score that orders a site's samples, e.g. a predicted median log10 count). The rows' columns are in the record.
+For a range, it may also give "q10" and "q90" (the central 80% range on log10 E. coli) with "p_le10" and "p_le10000"
+(its chance of a count at or under the lab's limits, 10 and 10,000): the bench then scores how many results fall
+inside the range (cover80), below it and above it.
 Outcome columns (ecoli, log_ecoli, over, ecoli_qual) are removed from the rows `predict` sees.
 """
 from __future__ import annotations
@@ -207,6 +210,31 @@ def site_rho(d: pd.DataFrame, s: np.ndarray) -> float:
     return float(np.mean(v)) if v else float("nan")
 
 
+LAB_LOW, LAB_HIGH = 10.0, 10000.0   # the EA's reporting limits on these rows ("<10", ">10000")
+
+
+def inside80(d: pd.DataFrame, f: dict) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Per row, the chance that its randomised PIT lies in 0.1 to 0.9 (inside the central 80% range), below 0.1, and
+    above 0.9: #584's condition 1, taken as its expectation over the randomisation. A measured count is inside when
+    q10 <= log10 count <= q90. A "<10" result's PIT is uniform on [0, F(10)] and a ">10000" result's on [F(10000), 1],
+    from the candidate's `p_le10` and `p_le10000`. (Added 28 November 2026 for bench read 2, before that read.)"""
+    y, q = d["log_ecoli"].to_numpy(dtype=float), d["ecoli_qual"].astype(str).to_numpy()
+    lo, hi = f["q10"], f["q90"]
+    ins = ((y >= lo) & (y <= hi)).astype(float)
+    below, above = (y < lo).astype(float), (y > hi).astype(float)
+    a = np.clip(f["p_le10"], 1e-12, 1.0)
+    c = q == "<"
+    ins[c] = (np.clip(np.minimum(a, 0.9) - 0.1, 0, None) / a)[c]
+    below[c] = (np.minimum(a, 0.1) / a)[c]
+    above[c] = (np.clip(a - 0.9, 0, None) / a)[c]
+    g = np.clip(f["p_le10000"], 0.0, 1 - 1e-12)
+    c = q == ">"
+    ins[c] = (np.clip(0.9 - np.maximum(g, 0.1), 0, None) / (1 - g))[c]
+    above[c] = ((1 - np.maximum(g, 0.9)) / (1 - g))[c]
+    below[c] = (np.clip(0.1 - g, 0, None) / (1 - g))[c]
+    return ins, below, above
+
+
 def metrics(d: pd.DataFrame, f: dict) -> dict:
     y9 = (d["ecoli"] > 900).to_numpy(dtype=float)
     y5 = (d["ecoli"] > 500).to_numpy(dtype=float)
@@ -214,6 +242,9 @@ def metrics(d: pd.DataFrame, f: dict) -> dict:
            "rho_site": site_rho(d, f.get("rank", f["p900"]))}
     if "p500" in f:
         out["brier500"] = brier(y5, f["p500"])
+    if "q10" in f:
+        ins, below, above = inside80(d, f)
+        out.update(cover80=float(ins.mean()), below80=float(below.mean()), above80=float(above.mean()))
     return out
 
 
@@ -253,7 +284,14 @@ def report(d: pd.DataFrame, figs: dict[str, dict], cand: str | None) -> dict:
     diffs = {f"{a}-{b}": {k: {"mean": round(point[a][k] - point[b][k], 5), "ci95": ci.get(f"{a}-{b}.{k}"),
                               "ci95_season": cs.get(f"{a}-{b}.{k}")}
                           for k in point[a] if k in point[b]} for a, b in pairs}
+    by_cluster = {}
+    for n, f in figs.items():
+        if "q10" in f:
+            ins = inside80(d, f)[0]
+            by_cluster[n] = {k: {"rows": int(len(i)), "cover80": round(float(ins[i].mean()), 5)}
+                             for k, i in d.groupby("cluster").indices.items()}
     return {"rows": int(len(d)), "sites": int(d["bw_id"].nunique()), "clusters": int(d["cluster"].nunique()),
+            **({"cover80_by_water_body": by_cluster} if by_cluster else {}),
             "season_clusters": int((d["cluster"] + "|" + d["season"].astype(str)).nunique()),
             "over_900": int((d["ecoli"] > 900).sum()), "over_500": int((d["ecoli"] > 500).sum()),
             "scores": {n: {k: {"value": v, "ci95": ci.get(f"{n}.{k}"), "ci95_season": cs.get(f"{n}.{k}")}
