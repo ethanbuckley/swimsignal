@@ -24,7 +24,7 @@ One page. Counts are from files in the repository on 25 November 2026 (main `7b7
 | 5 | **England rivers with no overflow upstream** | 15 spots (they read "nothing upstream" every day now) | A rain word, all year | Rain ordered winter days at such points at 0.458 (0.326 to 0.521), seen rows; a sealed reserve read exists | Passed 25 Nov: 0.415 (0.287 to 0.495) on reserve winters | **Live 26 Nov** (#763) |
 | 6 | **England lakes without their own samples** | 7 bathing lakes (bench read 1 passed for the likely reading's order) + 20 lake spots with no daily level | "Higher or lower than usual for this lake", order only | 0.289 against −0.015 on 2012-22, unseen (bench read 1) | Decided 27 Nov: a word at the 5 lake spots with daily inputs; other lake spots get nothing: the test covered only lake bathing waters | **#767**, shows from 1 May 2027 |
 | 7 | **Scotland inland** | 12 now, more with access statements | The trial forecast | 2021 frozen backtest passed at lead 0; live shadow not yet | A switch (Ethan's), and Gate B in February | Already built |
-| 8 | **Wales inland** | 4 bathing waters, plus rivers | Rain word only | Nothing | Dŵr Cymru's overflow data has no licence | Rain word: after rank 5 |
+| 8 | **Wales inland** | 4 bathing waters, plus rivers | Today's rain beside past samples by rain | Nothing: a count | Dŵr Cymru's overflow data has no licence | **#774** (3 of 4, with every Welsh, NI and Irish card that has past samples by rain) |
 
 ## What I am building first
 
@@ -65,3 +65,5 @@ Lakes again, the same day: bench read 2 passed (the range held 87 in 100 at the 
 Average-lake spots, later the same day: the average lake's range failed when sampled lakes were treated as unknown (69% inside), so 15 lake spots (Ullswater, Bassenthwaite, Grasmere, Rydal, Elter, Loch Ness, Loch Lomond) no longer show a range, and Windermere Waterhead and Derwent Water Calfclose Bay show their lake's level (`docs/LAKE-AVERAGE-BASIS-CHECK-2026-11.md`, #772).
 
 The 7 English lakes among them (Ullswater ×3, Bassenthwaite, Grasmere, Rydal, Elter) then got the lake word, today only, from 1 May 2027 (`docs/LAKE-ORDER-OVERFLOW-LAKES-2026-11.md`, #773). The 8 Scottish loch spots get nothing.
+
+Wales inland, the same evening: today's rain beside past samples by rain on Welsh, Northern Irish and Irish cards, from the build's cached directory cells, no new request (`docs/DIRECTORY-RAIN-NOW-2026-11.md`, #774).
