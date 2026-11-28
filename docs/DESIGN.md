@@ -3158,6 +3158,17 @@ lake-range-v1's likely reading at lake bathing waters it has no own level for (0
 **Checked:** the rule in `tests/site_preview.test.cjs` and `tests/test_lake_order.py`. **Not checked:** a word on the
 live site, which cannot appear before 1 May 2027.
 
+### Today's rain on Welsh, Northern Irish and Irish cards (28 November 2026, evening)
+
+From `docs/DIRECTORY-RAIN-NOW-2026-11.md`. Ethan: "Yes, Wales inland".
+
+- **New:** each card in Wales, Northern Ireland and the Republic with "Past samples here by rain" gains the English
+  cards' today's-rain line (#764), from the cached forecast cells the build keeps for water temperature: "Rain here in
+  the 2 days to midday on <date>: <mm> mm (forecast service, fetched <time>)", with the group it falls in; "at a point
+  N km away" for a neighbouring square. No request.
+- **Already decided, followed:** the line's words and groups (#764).
+- The English rain word (#763) is not used here: it was tested at English rivers with no overflow upstream.
+
 ### The lake word where the range is withheld (28 November 2026, evening)
 
 From `docs/LAKE-ORDER-OVERFLOW-LAKES-2026-11.md`. Ethan: "Yes, lake word".

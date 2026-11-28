@@ -69,6 +69,67 @@ def attach_live(snapshot: dict | None, overflow_days: dict | None, points: dict 
     return n
 
 
+def attach_cached(snapshot: dict | None, points: dict | None, cache_dir: Path, now, max_age_h: float = 30.0,
+                  min_coverage: float = 0.9) -> int:
+    """Each site's `rain_now` from the forecast cells the build already caches near the directories for their water
+    temperature (build_site.directory_air; docs/DIRECTORY-RAIN-NOW-2026-11.md): the rain in the 48 hours to midday
+    today at the nearest cell, its own 0.1 degree square or one of the eight around it, whose file is at most
+    `max_age_h` old and covers `min_coverage` of the window. Only sites with past samples by rain (`rain_history`).
+    `points` maps a site id to [lat, lon] where the site has no position of its own. No request."""
+    import math
+
+    import numpy as np
+    import pandas as pd
+    if not snapshot:
+        return 0
+    now = pd.Timestamp(now).tz_convert("Europe/London")
+    noon = now.normalize() + pd.Timedelta(hours=12)
+    start, day = noon - pd.Timedelta(hours=48), now.date().isoformat()
+    cells: dict = {}
+
+    def cell(a: float, b: float):
+        if (a, b) not in cells:
+            f = Path(cache_dir) / f"forecast_{a:.3f}_{b:.3f}.parquet"
+            cells[(a, b)] = None
+            try:
+                if f.exists():   # fresh by the file's own fetch time: a restored cache keeps old data under a new mtime
+                    d = pd.read_parquet(f, columns=["time", "precip_mm", "issued_at"])
+                    issued = pd.Timestamp(d["issued_at"].max())
+                    t = pd.to_datetime(d["time"], utc=True).dt.tz_convert("Europe/London")
+                    w = d[(t > start) & (t <= noon)]
+                    if ((now - issued.tz_convert("Europe/London")) <= pd.Timedelta(hours=max_age_h) and len(w)
+                            and w["precip_mm"].notna().sum() >= min_coverage * 48):
+                        cells[(a, b)] = (round(float(np.nansum(w["precip_mm"])), 1), pd.Timestamp(d["issued_at"].max()))
+            except Exception:  # noqa: BLE001 - a torn or older cache file counts as none
+                cells[(a, b)] = None
+        return cells[(a, b)]
+    n = 0
+    for site in snapshot.get("sites") or []:
+        if not site.get("rain_history"):
+            continue
+        p = (points or {}).get(site.get("id"))
+        lat, lon = (site.get("lat"), site.get("lon")) if site.get("lat") is not None else (p or (None, None))[:2]
+        if lat is None or lon is None:
+            continue
+        a0, b0 = round(round(float(lat) / 0.1) * 0.1, 1), round(round(float(lon) / 0.1) * 0.1, 1)
+        best = None
+        for i in (-1, 0, 1):
+            for j in (-1, 0, 1):
+                a, b = round(a0 + i / 10, 1) + 0.0, round(b0 + j / 10, 1) + 0.0
+                got = cell(a, b)
+                if got is None:
+                    continue
+                km = math.hypot((a - float(lat)) * 111.2, (b - float(lon)) * 111.2 * math.cos(math.radians(float(lat))))
+                if best is None or (i, j) == (0, 0) or (best[2] != (0, 0) and km < best[0]):
+                    best = (km, got, (i, j))   # the site's own square first, as on English cards; else the nearest
+        if best:
+            km, (mm, issued), at = best
+            site["rain_now"] = {"mm": mm, "date": day, **({} if at == (0, 0) else {"km": max(1, round(km))}),
+                                "fetched": issued.tz_convert("Europe/London").strftime("%-d %b %H:%M")}
+            n += 1
+    return n
+
+
 def _reading(v) -> str:
     if isinstance(v, str):
         return f'{"under" if v[:1] == "<" else "over"} {float(v[1:]):,.0f}'
@@ -106,7 +167,9 @@ def now_line(site: dict, rule: dict | None = None) -> str | None:
     mm = r["mm"]
     group = (" That is as wet as the after-rain samples above." if mm >= rule["after_rain_mm"]
              else " That is as dry as the dry-day samples above." if mm < rule["dry_mm"] else "")
-    return f'Rain here in the 2 days to midday on {r["date"]}: {mm:g} mm (forecast service, this build).{group}'
+    where = f'at a point {r["km"]} km away' if r.get("km") else "here"
+    source = f'forecast service, fetched {r["fetched"]}' if r.get("fetched") else "forecast service, this build"
+    return f'Rain {where} in the 2 days to midday on {r["date"]}: {mm:g} mm ({source}).{group}'
 
 
 def card_lines(site: dict, snapshot: dict) -> list[str]:

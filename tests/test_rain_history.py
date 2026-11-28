@@ -129,3 +129,37 @@ def test_the_committed_file_gives_inland_waters_900_and_leaves_beaches_at_500():
     for n in ("ireland", "wales", "northern_ireland"):
         assert "share_over_900" in doc["nations"][n]["inland"]["after_rain"]
         assert "share_over_500" in doc["nations"][n]["after_rain"]   # the beaches' pooled figure stays coast only
+
+
+def _cache(tmp_path, a, b, mm_per_hour, now, hours=48, issued="2026-11-28T06:00:00+00:00"):
+    import pandas as pd
+    noon = pd.Timestamp(now).tz_convert("Europe/London").normalize() + pd.Timedelta(hours=12)
+    t = pd.date_range(noon - pd.Timedelta(hours=hours - 1), noon, freq="h").tz_convert("UTC")
+    pd.DataFrame({"cell_lat": a, "cell_lon": b, "time": t, "precip_mm": mm_per_hour, "air_c": 8.0,
+                  "issued_at": pd.Timestamp(issued)}).to_parquet(tmp_path / f"forecast_{a:.3f}_{b:.3f}.parquet")
+
+
+def test_directory_cards_take_todays_rain_from_the_nearest_cached_cell(tmp_path):
+    """docs/DIRECTORY-RAIN-NOW-2026-11.md: no request; the nearest fresh cell in the site's own square or the eight
+    around it; only sites with past samples by rain; a window under 90% covered gives nothing."""
+    import pandas as pd
+    now = pd.Timestamp("2026-11-28T15:00:00+00:00")
+    _cache(tmp_path, 52.1, -3.1, 0.25, now)            # the site's own square: 12 mm
+    _cache(tmp_path, 51.9, -4.0, 0.0, now, hours=20)    # under 90% of the window
+    _cache(tmp_path, 52.2, -3.2, 0.1, now, issued="2026-11-26T06:00:00+00:00")   # fetched 57 hours before: too old
+    f = tmp_path / "h.json"
+    f.write_text(json.dumps({**DOC, "nations": {"wales": DOC["nations"]["england"]},
+                             "sites": {k: {**DOC["sites"]["a"], "nation": "wales"} for k in ("river", "short", "far")}}))
+    snap = {"sites": [{"id": "river"}, {"id": "short"}, {"id": "far"}, {"id": "none"}]}
+    rain_history.attach(snap, "wales", f)
+    pts = {"river": [52.0765, -3.1371], "short": [51.8845, -3.986], "far": [52.19, -3.21], "none": [52.08, -3.14]}
+    assert rain_history.attach_cached(snap, pts, tmp_path, now) == 2
+    r = snap["sites"][0]["rain_now"]
+    assert r["mm"] == 12.0 and r["date"] == "2026-11-28" and "km" not in r and r["fetched"] == "28 Nov 06:00"
+    assert "rain_now" not in snap["sites"][1], "a window under 90% covered gives nothing"
+    far = snap["sites"][2]["rain_now"]
+    assert far["km"] >= 1, "a neighbouring square is named as a point away"
+    assert "rain_now" not in snap["sites"][3], "no past samples by rain, no line"
+    assert rain_history.now_line(snap["sites"][0]) == ("Rain here in the 2 days to midday on 2026-11-28: 12 mm "
+                                                       "(forecast service, fetched 28 Nov 06:00). That is as wet as the after-rain samples above.")
+    assert rain_history.now_line(snap["sites"][2]).startswith(f"Rain at a point {far['km']} km away in the 2 days")
