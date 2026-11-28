@@ -1098,8 +1098,15 @@
   },
   "771": {
    "n": 771,
-   "state": "open",
+   "state": "merged",
    "branch": "claude/lake-own-range",
+   "branch_exists": true,
+   "date": "2026-11-28"
+  },
+  "772": {
+   "n": 772,
+   "state": "open",
+   "branch": "claude/lake-average-check",
    "branch_exists": true,
    "date": "2026-11-28"
   }
@@ -3900,7 +3907,7 @@
    "verdict": "Pass, as stated before the read. At the 7 lake bathing waters lake-range-v1 has no own level for (5 water bodies, 1,373 samples 2012-22 never read before), its likely reading ordered each lake's samples with a mean within-site rho of 0.289 against production's -0.015; difference +0.304 (interval over water-body seasons +0.197 to +0.409). Its chance over 900 was not better (Brier +0.0002, interval +0.0000 to +0.0005). Bench read 2 (28 Nov), with each of the 7 given its own level from 2023-26 samples: 86.9% (84.9 to 88.6) of held-out results inside the 8-in-10 range, every water body 80 to 94%.",
    "scope": "Order within a lake at lead 0 on archive rain; the 7 lakes have no monitored overflow upstream, so rain and season only. Says nothing about the 8-in-10 range's coverage, the chance's level, rivers, or leads 1 to 4.",
    "stage": "scheduled",
-   "stage_note": "Ethan chose lakes next on 27 November 2026. Built: at the 5 lake spots with daily inputs (the Serpentine, the three Hampstead Heath ponds, Colwick), today's word, May to September only: higher, about or lower than usual for this lake, from the spot's own thirds of 2023-26 season days. No figure, colour or level. The 2 isolated lakes get nothing. Colwick ran the wrong way on seen years and is kept (Ethan, 27 Nov). Nothing shows before 1 May 2027. 28 Nov: the range on own levels at the 5 lakes with daily inputs, and the lake range as a row in the redesign (#771); shows in season from 1 May 2027.",
+   "stage_note": "Ethan chose lakes next on 27 November 2026. Built: at the 5 lake spots with daily inputs (the Serpentine, the three Hampstead Heath ponds, Colwick), today's word, May to September only: higher, about or lower than usual for this lake, from the spot's own thirds of 2023-26 season days. No figure, colour or level. The 2 isolated lakes get nothing. Colwick ran the wrong way on seen years and is kept (Ethan, 27 Nov). Nothing shows before 1 May 2027. 28 Nov: the range on own levels at the 5 lakes with daily inputs, and the lake range as a row in the redesign (#771); shows in season from 1 May 2027. 28 Nov, later: the average-lake range is no longer shown (it held 69% at sampled lakes treated as unknown); spots on a lake with sampled sites show that lake's level (#772).",
    "next": "The lake word judged on 2027 samples on or after 15 Oct 2027; the 5 lakes' range coverage read on 2027 samples after the season.",
    "records": [
     {
@@ -3926,13 +3933,18 @@
     {
      "doc": "docs/LAKE-RANGE-OWN-LEVELS-2026-11.md",
      "quote": "No colour, band or level."
+    },
+    {
+     "doc": "docs/LAKE-AVERAGE-BASIS-CHECK-2026-11.md",
+     "quote": "A misses both ways"
     }
    ],
    "prs": [
     700,
     767,
     770,
-    771
+    771,
+    772
    ],
    "read_on": "2027-10-15"
   },

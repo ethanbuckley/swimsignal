@@ -52,6 +52,15 @@ USUAL_SHA256 = "8be2d127bc168d0dca73fdc6ef3ba53e926a92263aec6349475c8b107fdfb040
 LEVELS_FILE = config.PROCESSED / "lake_range_levels.v1.json"
 LEVELS_SHA256 = "145d939b4d87a13b842a010aefad298390926b56644ef43705c824e8b8fbf042"
 OWN_LEVEL = "own level, tested here"
+# What the page shows at a lake spot on the average-lake basis (docs/LAKE-AVERAGE-BASIS-CHECK-2026-11.md): the average
+# lake's range did not hold at lakes the model knew nothing about (69% inside, 41% at the worst lake), so it is not
+# shown. A spot on a lake with sampled sites elsewhere on it takes that lake's level instead (83% inside when a site was
+# left out). The figures logged in the shadow table are unchanged.
+SAME_LAKE = {
+    "osm-windermere-waterhead": ((54.41897, -2.96235), ("ukd1203-45625", "ukd1203-45650", "ukd1203-45675", "ukd1203-45700")),
+    "derwent-water-calfclose": ((54.586, -3.133), ("ukd1101-45800",)),
+}
+SAME_LAKE_BASIS = "this lake's sampled sites"
 HIGHER, LOWER = 2.0, 0.5   # fixed in the proposal before any 2027 sample
 LAB_LIMIT = 10             # the page says "under 10" below it
 COLUMNS = ("issued_at", "issue_day", "lat", "lon", "bw_id", "basis", "target_day", "lead", "in_season",
@@ -167,6 +176,33 @@ def ranges(lat: float, lon: float, X: pd.DataFrame, m: dict | None = None, own_l
     nan = lambda a: np.where(ok, a, np.nan)   # noqa: E731
     return {"bw_id": bw, "basis": OWN_LEVEL if own_level else basis(bw), "low": nan(q[0.1]), "median": nan(q[0.5]), "high": nan(q[0.9]),
             "usual": usual(m, bw, X)}
+
+
+def same_lake(lat: float, lon: float) -> tuple[str, tuple[str, ...]] | None:
+    """(spot id, the lake's sampled sites) for a spot in SAME_LAKE within SITE_RADIUS_M, or None."""
+    for sid, ((a, b), sites) in SAME_LAKE.items():
+        dy, dx = (a - lat) * 111_195.0, (b - lon) * 111_195.0 * np.cos(np.radians(lat))
+        if float(np.hypot(dx, dy)) <= SITE_RADIUS_M:
+            return sid, sites
+    return None
+
+
+def shown(lat: float, lon: float, X: pd.DataFrame, out: dict | None, m: dict | None = None) -> dict | None:
+    """What the page shows of `out` (ranges()'s result): the same, except on the average-lake basis, where it is None
+    (withheld) or, on a lake with sampled sites, the range on that lake's level (the mean of its sites' node weights)."""
+    if out is None or out.get("basis") != "average lake":
+        return out
+    hit = same_lake(lat, lon)
+    m = m if m is not None else model()
+    if hit is None or m is None or not all(s in m["sites"] for s in hit[1]):
+        return None
+    w = np.mean([np.exp(np.asarray(m["sites"][s]["log_weights"]) - logsumexp(m["sites"][s]["log_weights"])) for s in hit[1]], axis=0)
+    mm = {**m, "sites": {"lake": {"log_weights": np.log(w / w.sum()).tolist()}}}
+    ok = np.isfinite(X[m["cols"]].to_numpy(dtype=float)).all(axis=1)
+    q = _quantiles(mm, X.fillna(0.0), "lake")
+    nan = lambda a: np.where(ok, a, np.nan)   # noqa: E731
+    return {"bw_id": None, "lake_sites": list(hit[1]), "basis": SAME_LAKE_BASIS, "low": nan(q[0.1]),
+            "median": nan(q[0.5]), "high": nan(q[0.9]), "usual": np.full(len(X), np.nan)}
 
 
 def usual(m: dict, bw: str | None, X: pd.DataFrame, typical: dict | None = None) -> np.ndarray:

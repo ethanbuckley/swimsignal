@@ -3158,6 +3158,19 @@ lake-range-v1's likely reading at lake bathing waters it has no own level for (0
 **Checked:** the rule in `tests/site_preview.test.cjs` and `tests/test_lake_order.py`. **Not checked:** a word on the
 live site, which cannot appear before 1 May 2027.
 
+### No range on the average-lake basis (28 November 2026, later)
+
+From `docs/LAKE-AVERAGE-BASIS-CHECK-2026-11.md` (plan pushed before the run; seen rows, development): treated as
+unknown, sampled lakes held only 69% of their samples inside the average lake's 8-in-10 range, 41% at the worst; a
+mixture of known lakes failed at Derwent Water (53%); another site on the same lake held 83%. Ethan: "Yes, check it".
+
+- **Reverses, at 15 spots:** the average-lake range shown since #585 (Ullswater ×3, Bassenthwaite, Grasmere, Rydal,
+  Elter, Loch Ness, Loch Lomond ×7). The row says "Not given here", with the reason (`LAKE_RANGE_WITHHELD`); `classic/`'s
+  E. coli row says "Not shown here" with the same reason. The reason for the reversal: the range failed when checked.
+- **Changed, at 2 spots:** Windermere Waterhead and Derwent Water Calfclose Bay show their lake's level, basis "this
+  lake's sampled sites" (`lake_range.SAME_LAKE`), with its own sentence.
+- **Unchanged:** the shadow table's rows, lake-range-v1, the 11 lakes, the 5 with own levels.
+
 ### Ported, and at 5 more lakes: the lake range as a row (28 November 2026)
 
 From `docs/LAKE-RANGE-OWN-LEVELS-2026-11.md`, after bench read 2 passed (86.9% of 2012-22 samples inside the range at
