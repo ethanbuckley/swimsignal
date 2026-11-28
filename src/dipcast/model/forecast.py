@@ -553,7 +553,7 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
 
     # E. coli exceedance: rain at the spot itself (not at the overflows) plus the day's exposure.
     em = ecoli.load()
-    p_ec = r48 = spot_rain = ranges = None
+    p_ec = r48 = spot_rain = ranges = shown = None
     if em is not None:
         try:
             spot_rain = fetch_forecast(cells_for_sites(pd.Series([lat]), pd.Series([lon])))
@@ -575,6 +575,13 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
                     ranges = lake_range.ranges(lat, lon, X, own_level=own_level)
                 except Exception as e:  # noqa: BLE001 - an optional layer must not fail the forecast
                     log.warning("lake range skipped: %s", e)
+            # What the page shows: the same range, except on the average-lake basis (lake_range.shown). The shadow
+            # table below logs `ranges`, unchanged.
+            try:
+                shown = lake_range.shown(lat, lon, X, ranges)
+            except Exception as e:  # noqa: BLE001
+                log.warning("lake range not shown: %s", e)
+                shown = None
             for row in day_rows:
                 j = days.get_loc(pd.Timestamp(row["date"], tz=LOCAL_TZ))
                 ok = not (np.isnan(r48[j]) or np.isnan(p_ec[j]))
@@ -607,16 +614,19 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
                     lake_word = lake_order.direction(lat, lon, X.iloc[[j]], days[j].month)
                     if lake_word:
                         row["lake_order"] = lake_word
-                if ranges is not None:   # E. coli per 100 ml, two significant figures; None where an input is missing
+                if shown is not None:   # E. coli per 100 ml, two significant figures; None where an input is missing
                     # In season at a sampled lake, also the lake's usual reading for the date and higher/lower/about.
-                    row["ecoli_range"] = ({**{k: lake_range.sig2(ranges[k][j]) for k in ("low", "median", "high")},
-                                           **lake_range.compared(ranges, j, days[j])}
-                                          if np.isfinite(ranges["median"][j]) else None)
+                    row["ecoli_range"] = ({**{k: lake_range.sig2(shown[k][j]) for k in ("low", "median", "high")},
+                                           **lake_range.compared(shown, j, days[j])}
+                                          if np.isfinite(shown["median"][j]) else None)
                 if not ok and row["data_status"] == "ok":
                     row["data_status"] = "rain unavailable"
             out["assumptions"]["ecoli_model"] = ecoli_provenance(em, soil_state)
-            if ranges is not None:
-                out["ecoli_range_scope"] = {"rule": lake_range.RULE, "basis": ranges["basis"], "bw_id": ranges["bw_id"]}
+            if shown is not None:
+                out["ecoli_range_scope"] = {"rule": lake_range.RULE, "basis": shown["basis"], "bw_id": shown["bw_id"]}
+            elif ranges is not None:   # computed and logged, not shown (docs/LAKE-AVERAGE-BASIS-CHECK-2026-11.md)
+                out["ecoli_range_withheld"] = {"rule": lake_range.RULE, "basis": ranges["basis"],
+                                               "record": "docs/LAKE-AVERAGE-BASIS-CHECK-2026-11.md"}
             # Where the E. coli figure has been checked: rivers, in the May-September sampling
             # season, at designated bathing waters. Lakes showed no ranking skill.
             out["ecoli_scope"] = {

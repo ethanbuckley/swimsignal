@@ -540,7 +540,10 @@ test('a lake with a range shows its likely reading and 8-in-10 range as a row be
   for (const k of ['head', 'cls', 'level', 'act']) assert.deepEqual(M.answer(withRange, DAYS[0], data([withRange]), NOW)[k], M.answer(plain, DAYS[0], data([plain]), NOW)[k], k);
   const river = {...withRange, kind: 'river', location: {mode: 'river'}};
   assert.equal(row(river), undefined, 'a river never gets the lake row');
-  for (const t of [...Object.values(L.LAKE_RANGE_BASIS), L.LAKE_RANGE_OFF]) assert.doesNotMatch(t, /safe|clean|chance|exceed|breach|—/i, t);
+  // An average-lake spot whose range is withheld (docs/LAKE-AVERAGE-BASIS-CHECK-2026-11.md) says so, with no figure.
+  const held = {...plain, ecoli_range_withheld: {rule: 'lake-range-v1', basis: 'average lake'}};
+  assert.deepEqual(row(held), {key: 'ecoli', label: 'E.\u00a0coli estimate at a lake, experimental', value: 'Not given', cls: 'lv-none', lines: [L.LAKE_RANGE_WITHHELD]});
+  for (const t of [...Object.values(L.LAKE_RANGE_BASIS), L.LAKE_RANGE_OFF, L.LAKE_RANGE_WITHHELD]) assert.doesNotMatch(t, /safe|clean|chance|exceed|breach|—/i, t);
 });
 
 test('the spill map is the live site\'s own script, asked for only when its place on the page is near', () => {

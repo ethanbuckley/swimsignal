@@ -2511,6 +2511,7 @@ const usualLine = x => { const r = rangeOf(x);
 const RANGE_BASIS = {
   tested: "From this lake's own Environment Agency samples, rain at the lake and spills upstream. Tested on 2012–2022 samples it never saw at five sampling sites on Windermere and Frensham Great Pond, including this one: 79% fell inside its 8-in-10 range overall, from 74% to 87% site by site.",
   'own samples': "From this lake's own Environment Agency samples since 2023, rain at the lake and spills upstream. Not yet tested on past seasons here; the same model held 79% of results inside its 8-in-10 range at Windermere and Frensham.",
+  "this lake's sampled sites": "From the Environment Agency samples at this lake's bathing waters elsewhere on it, rain here and the spills upstream. Checked on 2023–2026 samples by leaving one sampled site out and using the lake's others: 83 in 100 fell inside its 8-in-10 range.",
   'average lake': "This lake has no Environment Agency samples, so the estimate starts from a typical lake's level, with this lake's rain and the spills upstream. Less certain than at a sampled lake: where it knew nothing of a lake, real samples more often read below its range than above.",
 };
 const rangeBasis = d => RANGE_BASIS[(d.ecoli_range_scope || {}).basis] || RANGE_BASIS['average lake'];
@@ -2549,7 +2550,9 @@ function water(d, days) {
   if (d.ecoli_typical && !daily(d)) { const t = d.ecoli_typical;
     return factorRow('E.&nbsp;coli in past samples', null, `${cap(ecoliReading(t.median))} per 100&nbsp;ml`, `${typicalLine(t)} ${TYPICAL_SAID}`); }
   if (d.error) return '';
-  return factorRow('E.&nbsp;coli estimate', null, 'Not estimated', (d.location || {}).mode === 'lake'
+  return factorRow('E.&nbsp;coli estimate', null, 'Not estimated', d.ecoli_range_withheld
+    ? 'Not shown here: this lake has no samples of its own, and a typical lake\'s range did not hold where it was checked.'
+    : (d.location || {}).mode === 'lake'
     ? 'No estimate here: the lake model needs monitored overflows upstream and a rain forecast for the lake.'
     : 'Estimated only on rivers with monitored overflows upstream, the case the model was tested on.');
 }

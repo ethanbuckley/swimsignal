@@ -1,0 +1,254 @@
+{
+ "plan": "docs/LAKE-AVERAGE-BASIS-CHECK-2026-11.md",
+ "rows_sha256": "417648aa938c7bb74e8eb85e8128a4227499a24474330f704f05ca14e3a91e13",
+ "train": {
+  "rows": 1675,
+  "sites": 31,
+  "refit_vs_frozen": {
+   "tau": [
+    0.2838,
+    0.2845
+   ],
+   "sigma_lake": [
+    0.6966,
+    0.6966
+   ]
+  }
+ },
+ "A": {
+  "Colwick Country Park (West Lake)": {
+   "rows": 64,
+   "inside": 0.6964,
+   "below": 0.0848,
+   "above": 0.2188,
+   "median": 12.9
+  },
+  "Coniston Water": {
+   "rows": 171,
+   "inside": 0.8219,
+   "below": 0.0904,
+   "above": 0.0877,
+   "median": 35.1
+  },
+  "Cotswold Country Park and Beach": {
+   "rows": 54,
+   "inside": 0.6867,
+   "below": 0.0725,
+   "above": 0.2407,
+   "median": 12.5
+  },
+  "Derwent Water": {
+   "rows": 58,
+   "inside": 0.5131,
+   "below": 0.0041,
+   "above": 0.4828,
+   "median": 25.9
+  },
+  "Frensham Great Pond": {
+   "rows": 54,
+   "inside": 0.8302,
+   "below": 0.0772,
+   "above": 0.0926,
+   "median": 14.1
+  },
+  "Hampstead Heath": {
+   "rows": 205,
+   "inside": 0.6143,
+   "below": 0.0101,
+   "above": 0.3756,
+   "median": 11.8
+  },
+  "Henleaze Lake": {
+   "rows": 76,
+   "inside": 0.5658,
+   "below": 0.0,
+   "above": 0.4342,
+   "median": 12.4
+  },
+  "Rutland Water": {
+   "rows": 141,
+   "inside": 0.7862,
+   "below": 0.1075,
+   "above": 0.1064,
+   "median": 13.2
+  },
+  "The Serpentine - Hyde Park": {
+   "rows": 79,
+   "inside": 0.4095,
+   "below": 0.0083,
+   "above": 0.5823,
+   "median": 12.0
+  },
+  "Windermere": {
+   "rows": 308,
+   "inside": 0.75,
+   "below": 0.2176,
+   "above": 0.0325,
+   "median": 34.9
+  }
+ },
+ "B": {
+  "Colwick Country Park (West Lake)": {
+   "rows": 64,
+   "inside": 0.8055,
+   "below": 0.1008,
+   "above": 0.0938,
+   "median": 19.1
+  },
+  "Coniston Water": {
+   "rows": 171,
+   "inside": 0.8363,
+   "below": 0.1111,
+   "above": 0.0526,
+   "median": 56.3
+  },
+  "Cotswold Country Park and Beach": {
+   "rows": 54,
+   "inside": 0.7662,
+   "below": 0.0857,
+   "above": 0.1481,
+   "median": 18.5
+  },
+  "Derwent Water": {
+   "rows": 58,
+   "inside": 0.53,
+   "below": 0.0045,
+   "above": 0.4655,
+   "median": 29.7
+  },
+  "Frensham Great Pond": {
+   "rows": 54,
+   "inside": 0.8911,
+   "below": 0.0904,
+   "above": 0.0185,
+   "median": 21.2
+  },
+  "Hampstead Heath": {
+   "rows": 205,
+   "inside": 0.7783,
+   "below": 0.0119,
+   "above": 0.2098,
+   "median": 17.4
+  },
+  "Henleaze Lake": {
+   "rows": 76,
+   "inside": 0.8421,
+   "below": 0.0,
+   "above": 0.1579,
+   "median": 18.4
+  },
+  "Rutland Water": {
+   "rows": 141,
+   "inside": 0.801,
+   "below": 0.1351,
+   "above": 0.0638,
+   "median": 21.5
+  },
+  "The Serpentine - Hyde Park": {
+   "rows": 79,
+   "inside": 0.7371,
+   "below": 0.0098,
+   "above": 0.2532,
+   "median": 17.8
+  },
+  "Windermere": {
+   "rows": 308,
+   "inside": 0.7356,
+   "below": 0.2449,
+   "above": 0.0195,
+   "median": 45.5
+  }
+ },
+ "C": {
+  "Coniston Water | Coniston Water, Brown Howe": {
+   "rows": 57,
+   "inside": 0.8402,
+   "below": 0.1072,
+   "above": 0.0526,
+   "median": 45.0
+  },
+  "Coniston Water | Coniston Water, Boating Centre": {
+   "rows": 57,
+   "inside": 0.8096,
+   "below": 0.0676,
+   "above": 0.1228,
+   "median": 42.8
+  },
+  "Coniston Water | Coniston Water, Monk Coniston": {
+   "rows": 57,
+   "inside": 0.774,
+   "below": 0.1909,
+   "above": 0.0351,
+   "median": 60.4
+  },
+  "Hampstead Heath | Hampstead Heath (Ladies Pond)": {
+   "rows": 78,
+   "inside": 0.9231,
+   "below": 0.0,
+   "above": 0.0769,
+   "median": 48.3
+  },
+  "Hampstead Heath | Hampstead Heath (Mens Pond)": {
+   "rows": 59,
+   "inside": 0.8839,
+   "below": 0.1161,
+   "above": 0.0,
+   "median": 80.5
+  },
+  "Hampstead Heath | Hampstead Heath (Mixed Pond)": {
+   "rows": 68,
+   "inside": 0.9675,
+   "below": 0.0178,
+   "above": 0.0147,
+   "median": 60.2
+  },
+  "Rutland Water | Rutland Water Whitwell Creek": {
+   "rows": 73,
+   "inside": 0.7781,
+   "below": 0.0986,
+   "above": 0.1233,
+   "median": 11.8
+  },
+  "Rutland Water | Rutland Water Sykes Lane": {
+   "rows": 68,
+   "inside": 0.8063,
+   "below": 0.1202,
+   "above": 0.0735,
+   "median": 15.7
+  },
+  "Windermere | Windermere, Lakeside YMCA": {
+   "rows": 77,
+   "inside": 0.7587,
+   "below": 0.1763,
+   "above": 0.0649,
+   "median": 14.0
+  },
+  "Windermere | Windermere, Millerground Landing": {
+   "rows": 77,
+   "inside": 0.8503,
+   "below": 0.1107,
+   "above": 0.039,
+   "median": 13.6
+  },
+  "Windermere | Windermere, Rayrigg Meadow": {
+   "rows": 77,
+   "inside": 0.8512,
+   "below": 0.0968,
+   "above": 0.0519,
+   "median": 12.6
+  },
+  "Windermere | Windermere, Fellfoot": {
+   "rows": 77,
+   "inside": 0.683,
+   "below": 0.0573,
+   "above": 0.2597,
+   "median": 7.6
+  }
+ },
+ "A_overall": 0.6942,
+ "A_lowest": 0.4095,
+ "B_overall": 0.7736,
+ "B_lowest": 0.53,
+ "C_overall": 0.8264,
+ "C_lowest": 0.683
+}

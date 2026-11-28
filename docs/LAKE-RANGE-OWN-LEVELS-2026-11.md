@@ -75,3 +75,7 @@ The 2027 read of `shadow_lake_range_v1` continues for the 11 (on or after 15 Oct
 2027 check is the bench's rule applied to 2027 samples: coverage of the frozen range, 70% to 90%, read after the season
 (owner: research sessions). The average-lake basis at the 20 spots has no test; a check would need samples at lakes
 with overflows and no level, which the EA does not take.
+
+## Later the same day
+
+The average-lake basis is no longer shown: [the average-lake check](LAKE-AVERAGE-BASIS-CHECK-2026-11.md) found it held 69% of samples at sampled lakes treated as unknown. Its sentence in the table above is kept in `levels.js` for the record but no spot uses it now.

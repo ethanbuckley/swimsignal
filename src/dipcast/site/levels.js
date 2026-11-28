@@ -185,13 +185,18 @@ const LAKE_RANGE_BASIS = {
   tested: 'From this lake\'s own samples, rain here and spills upstream. On 2012–2022 samples it never saw at Windermere and Frensham Great Pond, including here, 79 in 100 fell inside its range, which claims 80.',
   'own samples': 'From this lake\'s own samples since 2023, rain here and spills upstream. Not tested on past seasons here; at Windermere and Frensham the same model held 79 in 100 inside its range, which claims 80.',
   'own level, tested here': 'From this lake\'s own samples since 2023, rain here and the time of year, as nothing upstream is monitored. On 2012–2022 samples it never saw, here and at six other lake bathing waters like it, 87 in 100 fell inside its range, which claims 80: a little wide.',
+  "this lake's sampled sites": 'From the samples at this lake\'s bathing waters elsewhere on it, rain here and spills upstream. Checked on 2023–2026 samples by leaving one sampled site out and using the lake\'s others: 83 in 100 fell inside its range, which claims 80.',
   'average lake': 'This lake has no samples of its own, so this starts from a typical lake\'s level, with rain here and spills upstream. Less certain: at lakes it knew nothing of, more samples fell outside its range than it allows for, below it at Windermere and Frensham and above it at seven others.',
 };
 const LAKE_RANGE_OFF = 'Tested only for May to September, when the Environment Agency takes samples, so no figure is given now.';
+// At a lake with no samples of its own and none elsewhere on it, the range is computed and logged but not shown: the
+// average lake's range did not hold where it was checked (docs/LAKE-AVERAGE-BASIS-CHECK-2026-11.md).
+const LAKE_RANGE_WITHHELD = 'Not given here. This lake has no samples of its own, and a typical lake\'s range did not hold when it was checked at sampled lakes treated as unknown: too few samples fell inside it.';
 const lakeRangeRow = (s, x, when) => {
-  const r = lakeRange(x);
-  if (!r || (s.location || {}).mode !== 'lake') return null;
-  const label = 'E.\u00a0coli estimate at a lake, experimental';
+  const r = lakeRange(x), label = 'E.\u00a0coli estimate at a lake, experimental';
+  if ((s.location || {}).mode !== 'lake') return null;
+  if (!r && s.ecoli_range_withheld) return { key: 'ecoli', label, value: 'Not given', cls: 'lv-none', lines: [LAKE_RANGE_WITHHELD] };
+  if (!r) return null;
   if (ecoliUntested(x)) return { key: 'ecoli', label, value: 'Out of season', cls: 'lv-none', lines: [LAKE_RANGE_OFF] };
   const likely = r.median < 10 ? 'under 10' : `about ${lakeCount(r.median)}`;
   const usual = ['higher', 'lower', 'about'].includes(r.direction) && !nil(r.usual)
@@ -919,6 +924,6 @@ if (typeof module === 'object' && module.exports) {
   module.exports = { nameCase, plainName, overflowNames, ORDER, NOT_COVERED, NO_FORECAST, NO_OVERFLOWS, NO_RIVER, OTHER_RISKS, SPILL_CUTS, ECOLI_CUTS, spillLevel, shownRisk, tooFar, allUpstream, tooFarSaid, WEIGHT_SAID, setToday, today, dayWord, readerDay, fromDay, rank, risk, nowUnknown, nowUnknownWhy, nowFew, nowWatched, NOW_WATCHED_SHARE, LIVE_NONE, liveCover, liveHead, liveLine, liveParts, MODELLED_FROM, level, dayLevel, headParts, headline, levelScope, nowBecause, dayBecause, dayHeadline, tileLine, weekNext, laterWords, coverage, COVER, FOUND_NONE, ISOLATED_WHY, plainLevel, inBathingSeason, poorReason, poorAdvice, daily, ecoliBand, ecoliLevel, ecoliUntested, bestDay, weekendWords, yoursLevelled, lowAnswerDay, lowAnswerWords, mostWords, clockWords, clearWords, RAIN_OLD_H, rainAgeLine, backToLow,
     ACTION, POOR_ACTION, ALGAE_ACTION, PLAIN_ACTION, actionFor, levelAction, dayAction, HEAD_SCOPE, spillSet, worstNear,
     SAMPLE_LINE, SAMPLE_DAYS, sampleLevel, standingLevel, eaUnchecked, EA_UNCHECKED, walesShare, walesWords, trialWords, ecoliNotes,
-    ECOLI_OFF, ECOLI_EXPERIMENTAL, ECOLI_FOLD, ECOLI_OFF_SAID, RIVER_USUAL, riverUsual, RIVER_USUAL_WINTER, RIVER_USUAL_WINTER_SAID, riverUsualWinter, ecoliOffSaid, RAIN_USUAL, RAIN_USUAL_SAID, rainUsual, LAKE_ORDER, LAKE_ORDER_SAID, lakeOrder, lakeRange, LAKE_RANGE_BASIS, LAKE_RANGE_OFF, lakeRangeRow,
+    ECOLI_OFF, ECOLI_EXPERIMENTAL, ECOLI_FOLD, ECOLI_OFF_SAID, RIVER_USUAL, riverUsual, RIVER_USUAL_WINTER, RIVER_USUAL_WINTER_SAID, riverUsualWinter, ecoliOffSaid, RAIN_USUAL, RAIN_USUAL_SAID, rainUsual, LAKE_ORDER, LAKE_ORDER_SAID, lakeOrder, lakeRange, LAKE_RANGE_BASIS, LAKE_RANGE_OFF, LAKE_RANGE_WITHHELD, lakeRangeRow,
     companyName, atSpot, overflowWhere, travelSaid, SPILL_LONG_H, spillStart, longSpill, LONG_SPILL, isolated };
 }
