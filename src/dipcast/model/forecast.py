@@ -567,9 +567,12 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
             # At a lake with overflows upstream (the population it was fitted and tested on), lake-range-v1's likely
             # reading and range from the same inputs (lake_range.py): each day's `ecoli_range`, and its own table for
             # the 2027 read. The over-900 chance above stays unshown at lakes.
-            if pin.mode == "lake" and not ov.empty:
+            # And at a lake bathing water with no overflow upstream that has its own level (bench read 2,
+            # docs/LAKE-RANGE-OWN-LEVELS-2026-11.md): the same range from rain and the date. Not logged.
+            own_level = pin.mode == "lake" and ov.empty and lake_range.level_for(lat, lon) is not None
+            if pin.mode == "lake" and (not ov.empty or own_level):
                 try:
-                    ranges = lake_range.ranges(lat, lon, X)
+                    ranges = lake_range.ranges(lat, lon, X, own_level=own_level)
                 except Exception as e:  # noqa: BLE001 - an optional layer must not fail the forecast
                     log.warning("lake range skipped: %s", e)
             for row in day_rows:
@@ -723,7 +726,7 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
                                         model_version())
             except Exception as e:  # noqa: BLE001 - a shadow must never fail a forecast
                 log.warning("radar shadow log failed: %s", e)
-        if ranges is not None:
+        if ranges is not None and not ov.empty:   # the shadow table holds lakes with overflows only, as before
             try:
                 lake_range.log_shadow(now, lat, lon, days, r48, r24, risk, ranges, model_version())
             except Exception as e:  # noqa: BLE001 - logging must never fail a forecast

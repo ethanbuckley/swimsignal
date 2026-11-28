@@ -3158,6 +3158,29 @@ lake-range-v1's likely reading at lake bathing waters it has no own level for (0
 **Checked:** the rule in `tests/site_preview.test.cjs` and `tests/test_lake_order.py`. **Not checked:** a word on the
 live site, which cannot appear before 1 May 2027.
 
+### Ported, and at 5 more lakes: the lake range as a row (28 November 2026)
+
+From `docs/LAKE-RANGE-OWN-LEVELS-2026-11.md`, after bench read 2 passed (86.9% of 2012-22 samples inside the range at
+the 7 lake bathing waters with no level, given their own). Ethan: "Yes, build it".
+
+- **Ported:** the lake range (#585, #630) was only at `classic/` after the switch. The redesign's "Behind the level"
+  gains "E. coli estimate at a lake, experimental" at every lake spot with a range: the likely reading as its value,
+  the 8-in-10 range, the usual line where the lake has one, what it rests on by basis, "It does not set the level."
+  Out of season "Out of season" and one line (`lakeRangeRow`, `LAKE_RANGE_BASIS`, `LAKE_RANGE_OFF` in `levels.js`;
+  `ledger` in `preview/model.js`). No colour, band or level.
+- **Already decided, followed:** E. coli as a row, "Out of season" out of season (the five reversals, item 5); the
+  range's figures and the usual line (#585, #630).
+- **Reverses, at the Serpentine, the three Hampstead ponds and Colwick only:** "no E. coli estimate at these spots"
+  (3 and 11 October 2026). Bench read 2 tested a figure there on each lake's own level.
+- **New:** the row's words; the "own level, tested here" basis; the average-lake basis now says samples fell outside
+  the range both below (Windermere and Frensham, #584) and above (seven lakes, read 2's seen years), where `classic/`
+  says only below. The lake word's note says "How far above or below usual is not tested, so the word gives no
+  amount." in place of "Its size is not tested, so it gives no figure.", as a figure now sits beside it.
+- `classic/` is unchanged.
+
+**Checked:** `tests/site_preview.test.cjs`, a local preview at 375 and 320 px with ranges put on by hand. **Not
+checked:** a live build's range at the 5.
+
 ### Ported: the spill map, "Where spill water may be" (24 November 2026, night)
 
 The live page's spill map (`plume.js`, docs/PLUME-MAP-2026-10.md), which was only at `classic/` after the switch.

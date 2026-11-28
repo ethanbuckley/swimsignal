@@ -520,6 +520,29 @@ test('a lake bathing water with no overflow upstream reads the lake word today, 
   for (const t of [...Object.values(L.LAKE_ORDER), L.LAKE_ORDER_SAID]) assert.doesNotMatch(t, /\d|%|safe|clean|chance|risk|exceed|breach|—/i, t);
 });
 
+test('a lake with a range shows its likely reading and 8-in-10 range as a row behind the level, never as a level', () => {
+  // lake_range.py puts ecoli_range on each day; at a no-overflow lake bathing water with its own level the basis is
+  // "own level, tested here" (docs/LAKE-RANGE-OWN-LEVELS-2026-11.md). Out of season the row says only that.
+  const pond = (range, season) => spot([], {id: 'bw-uki1106-11940', name: 'The Serpentine - Hyde Park', kind: 'lake', river: '', upstream_summary: {overflows: 0},
+    location: {mode: 'lake'}, ecoli_range_scope: range ? {rule: 'lake-range-v1', basis: 'own level, tested here', bw_id: 'uki1106-11940'} : undefined,
+    days: DAYS.map(d => ({date: d, label: 'low', risk: 0, rain_48h_mm: 12, in_validated_season: season, ...(range ? {ecoli_range: range} : {})}))});
+  const row = s => M.ledger(s, DAYS[0], data([s]), NOW).find(r => r.key === 'ecoli');
+  const r = row(pond({low: 12, median: 41, high: 290}, true));
+  assert.equal(r.value, 'About 41');
+  assert.equal(r.cls, 'lv-none', 'no colour');
+  assert.equal(r.lines[0], 'A sample today would most likely read about 41 E.\u00a0coli per 100\u00a0ml; 8 in 10 would read between 12 and 290.');
+  assert.equal(r.lines[1], L.LAKE_RANGE_BASIS['own level, tested here']);
+  assert.equal(r.lines.slice(-1)[0], 'It does not set the level.');
+  assert.equal(row(pond({low: 1, median: 4, high: 30}, true)).value, 'Under 10');
+  assert.deepEqual(row(pond({low: 12, median: 41, high: 290}, false)).value, 'Out of season');
+  assert.equal(row(pond(null, true)), undefined, 'no range, no row');
+  const withRange = pond({low: 12, median: 41, high: 290}, true), plain = pond(null, true);
+  for (const k of ['head', 'cls', 'level', 'act']) assert.deepEqual(M.answer(withRange, DAYS[0], data([withRange]), NOW)[k], M.answer(plain, DAYS[0], data([plain]), NOW)[k], k);
+  const river = {...withRange, kind: 'river', location: {mode: 'river'}};
+  assert.equal(row(river), undefined, 'a river never gets the lake row');
+  for (const t of [...Object.values(L.LAKE_RANGE_BASIS), L.LAKE_RANGE_OFF]) assert.doesNotMatch(t, /safe|clean|chance|exceed|breach|—/i, t);
+});
+
 test('the spill map is the live site\'s own script, asked for only when its place on the page is near', () => {
   const PL = require(path.join(SITE, 'plume.js'));
   // The script draws the tile and the map; the page gives it a place, the map's library and the page's own tiles.
