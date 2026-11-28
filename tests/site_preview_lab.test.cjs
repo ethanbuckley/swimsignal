@@ -28,17 +28,18 @@ function built(spots, files) {
 
 test('a place lists the exhibits that hold its record, each opened on it', () => {
   const out = built([place('bw-ukd1203-45625', {kind: 'lake', location: {mode: 'lake'}})],
-    {'bw-ukd1203-45625': {id: 'bw-ukd1203-45625', contributors: [], lab: {lake: 'bw-ukd1203-45625', bw: 'ukd1203-45625', ws: 'windermere'}}});
+    {'bw-ukd1203-45625': {id: 'bw-ukd1203-45625', contributors: [], lab: {lake: 'bw-ukd1203-45625', bw: 'ukd1203-45625', ws: 'windermere', lt: true}}});
   const page = out.spots['bw-ukd1203-45625'], sec = page.slice(page.indexOf('id="lab-exhibits"'));
   assert.match(page, /<h2 id="labx-h">Explore the evidence<\/h2>/);
-  assert.deepEqual([...sec.matchAll(/<small>Exhibit (\d)<\/small>/g)].map(m => m[1]), ['1', '2', '3', '4']);
+  assert.deepEqual([...sec.matchAll(/<small>Exhibit (\d)<\/small>/g)].map(m => m[1]), ['1', '2', '3', '4', '8']);
+  assert.match(sec, /href="lab\/lakes\/"/);
   assert.match(sec, /href="lab\/lake-from-space\/#lake=bw-ukd1203-45625"/);
   assert.match(sec, /href="lab\/pollution\/#spot=bw-ukd1203-45625"/);
   assert.match(sec, /href="lab\/forecasts\/#bw=ukd1203-45625"/);
   assert.match(sec, /href="lab\/workspace\/#c=windermere&amp;spot=bw-ukd1203-45625"/);
   assert.match(sec, /The rivers joining its 3 overflows to it/);
   assert.match(sec, /Not a toxin measurement\./);
-  assert.match(sec, /It changes nothing in this forecast\. <a href="lab\/">All five exhibits<\/a> · <a href="research\.html">Research and data<\/a> · <a href="coverage\.html">Beaches, Wales, Scotland and Ireland<\/a>/);
+  assert.match(sec, /It changes nothing in this forecast\. <a href="lab\/">All eight exhibits<\/a> · <a href="research\.html">Research and data<\/a> · <a href="coverage\.html">Beaches, Wales, Scotland and Ireland<\/a>/);
   assert.ok(page.indexOf('id="lab-exhibits"') > page.indexOf('id="place"'), 'after the rest of the place, never above the answer');
   assert.ok(page.indexOf('id="lab-exhibits"') < page.indexOf('<footer'), 'before the foot');
   // Its id is its own: "evidence" is the record's "What the level rests on" (evidence.js), and a link to one must not land on the other.

@@ -4362,7 +4362,8 @@ def lab_ledger_copy(doc: dict) -> dict:
 def attach_lab_links(results: list[dict], lab: Path = LAB, research: Path = ROOT / "data" / "research") -> int:
     """On each spot whose record is in a Research Lab exhibit, `lab`: the key each exhibit opens it by, for the spot
     page's "Explore the evidence" (index.html labTile). `lake`: its satellite record (exhibit 1, #lake=); `bw`: its
-    bathing water in the forecast record (exhibit 3, #bw=); `ws`: the workspace catchment it is in (exhibit 4, #c=).
+    bathing water in the forecast record (exhibit 3, #bw=); `ws`: the workspace catchment it is in (exhibit 4, #c=);
+    `lt`: a lake bathing water the lake tests read (exhibit 8, lakes/reads.json).
     Exhibit 2 needs no key: every spot with an overflow upstream is in it. A spot's own file only (DETAIL_FIELDS).
     Returns how many spots got one."""
     def read(path: Path) -> dict:
@@ -4372,6 +4373,7 @@ def attach_lab_links(results: list[dict], lab: Path = LAB, research: Path = ROOT
             return {}
     lakes = {x.get("lake_id") for x in read(research / "lake_observations.v1.json").get("lakes", [])}
     bws = set((read(lab / "forecasts" / "exploration.json").get("ecoli") or {}).get("sites", {}))
+    lt = {f"bw-{x['id']}" for x in read(lab / "lakes" / "reads.json").get("lakes", [])}
     ws = {}
     for c in read(lab / "workspace" / "data" / "index.json").get("catchments", []):
         for s in read(lab / "workspace" / "data" / f"{c['id']}.json").get("spots", []):
@@ -4381,7 +4383,7 @@ def attach_lab_links(results: list[dict], lab: Path = LAB, research: Path = ROOT
         sid = str(r["id"])
         links = {k: v for k, v in (("lake", sid if sid in lakes else None),
                                    ("bw", sid[3:] if sid.startswith("bw-") and sid[3:] in bws else None),
-                                   ("ws", ws.get(sid))) if v}
+                                   ("ws", ws.get(sid)), ("lt", True if sid in lt else None)) if v}
         if links:
             r["lab"] = links
             n += 1
@@ -4440,6 +4442,9 @@ def write_lab_refresh(site: Path, paths_from_build: bool = False) -> dict:
         # exhibit 7: two dated reads (RIVER-UNSEEN, RIVER-WINTER), each made once; a new read would be a new version
         "river-reads": {"label": "River tests on unseen samples", "short": "river tests", "as_of": _lab_date(out / "rivers" / "reads.json", "last_read"),
                         "refresh": "two dated reads, each made once", "stale_days": None},
+        # exhibit 8: dated lake reads (#584, bench reads 1 and 2) and one development check, each made once
+        "lake-reads": {"label": "Lake tests on unseen samples", "short": "lake tests", "as_of": _lab_date(out / "lakes" / "reads.json", "last_read"),
+                       "refresh": "dated reads, each made once", "stale_days": None},
         "catalogue": {"label": "Research records", "short": "records", "as_of": _lab_date(out / "data" / "research_catalogue.v1.json", "written"),
                       "refresh": "with each research record", "stale_days": None},
     }

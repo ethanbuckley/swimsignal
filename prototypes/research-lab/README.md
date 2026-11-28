@@ -35,7 +35,7 @@ Prototypes the site build leaves out (`build_site.LAB_UNPUBLISHED`), linked from
 
 2. Open http://localhost:8823/prototypes/research-lab/
 
-It worked if the front page lists seven exhibits and each one opens with its answer and "The figures behind it".
+It worked if the front page lists eight exhibits and each one opens with its answer and "The figures behind it".
 "This exhibit's data could not be loaded" means the server was started in the wrong folder. From the repository the
 header is a stand-in with the name only; the site build puts the site's own header and phone bar there. A page showing the main
 SwimSignal app means another server or an old service worker holds that port: pick another.
@@ -67,6 +67,8 @@ SwimSignal app means another server or an old service worker holds that port: pi
   numbers and corner ticks hidden); exhibits 6 and 7 on 25 Nov 2026 the same way. Retake them if an exhibit's cover changes.
 - `../../data/research/overflow_ledger.v1.json` (exhibit 6 and its cover on this front page): ledger v1 as committed,
   from `scripts/export_overflow_ledger.py`. The build copies it to `lab/data/`.
+- `lakes/reads.json` (exhibit 8): the lake reads as committed (#584's scores, bench reads 1 and 2, the average-lake check)
+  and the tested lakes' positions, from `scripts/lab_lake_reads.py` (`check` compares it with those files).
 - `rivers/reads.json` (exhibit 7): the two river read results as committed (`docs/river-unseen/result.json`,
   `docs/river-winter/result.json`) and the summer read's 59 points, from `scripts/lab_river_reads.py` (committed files
   only; `check` compares the file with the results, and a test runs it). Figures the winter result reports on summer
