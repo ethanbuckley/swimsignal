@@ -1119,8 +1119,15 @@
   },
   "774": {
    "n": 774,
-   "state": "open",
+   "state": "merged",
    "branch": "claude/wales-inland",
+   "branch_exists": true,
+   "date": "2026-11-28"
+  },
+  "775": {
+   "n": 775,
+   "state": "open",
+   "branch": "claude/c1-shadow",
    "branch_exists": true,
    "date": "2026-11-28"
   }
@@ -3981,7 +3988,7 @@
    "scope": "Statutory bathing-water samples, May to September, E. coli over 500. ERA5-Land is a reanalysis, not issue-time rain. Brier skill against the pooled rate is 2.9%, so it supports past samples by rain, not a chance for today. Northern Irish and Irish sample times assumed midday.",
    "stage": "development",
    "stage_note": "Results recorded in #760 and the ANYWATER-IE statement. Past samples by rain are on English, Welsh, Northern Irish (#764) and Irish coast and estuary cards (#766), and, counted over 900 and not tested, on 14 inland cards in the Republic, Wales and Northern Ireland (#769). Today's rain beside them on Welsh, Northern Irish and Irish cards from 28 Nov (#774).",
-   "next": "A 2027 shadow protocol with issue-time rain before 1 May 2027; a frozen-model read of C1's order on the 2027 inland seasons at the 900 line.",
+   "next": "The 2027 shadow logs from 1 May 2027 (protocol written 28 Nov, #775); judged on or after 15 Oct 2027. A frozen-model read of C1's order on the 2027 inland seasons at the 900 line.",
    "records": [
     {
      "doc": "docs/COASTAL-C1-PROTOCOL-2026-11.md",
@@ -4006,6 +4013,10 @@
     {
      "doc": "docs/DIRECTORY-RAIN-NOW-2026-11.md",
      "quote": "No new request."
+    },
+    {
+     "doc": "docs/COASTAL-C1-SHADOW-2027.md",
+     "quote": "**Pass.** The interval lies wholly below 0."
     }
    ],
    "prs": [
@@ -4013,7 +4024,8 @@
     760,
     766,
     769,
-    774
+    774,
+    775
    ]
   }
  ],
