@@ -48,3 +48,5 @@ than recent rain; the line says when its source was fetched.
 fetch time, a window under 90% covered, no line without past samples by rain). **Not checked:** how many cards get the
 line on a live build; that depends on the CI cache. The build's health records the count per nation
 (`rain_now` under `wales`, `ireland`, `northern_ireland`).
+
+**Later the same night:** a neighbouring square now counts only within 10 km (`docs/RAIN-LINES-MORE-2026-11.md`, #777).

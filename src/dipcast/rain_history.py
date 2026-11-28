@@ -69,12 +69,18 @@ def attach_live(snapshot: dict | None, overflow_days: dict | None, points: dict 
     return n
 
 
+MAX_KM = 10.0   # a neighbouring square further than this from the water gives no line (docs/RAIN-LINES-MORE-2026-11.md)
+
+
 def attach_cached(snapshot: dict | None, points: dict | None, cache_dir: Path, now, max_age_h: float = 30.0,
-                  min_coverage: float = 0.9) -> int:
+                  min_coverage: float = 0.9, require_history: bool = True, only_missing: bool = False,
+                  max_km: float = MAX_KM) -> int:
     """Each site's `rain_now` from the forecast cells the build already caches near the directories for their water
     temperature (build_site.directory_air; docs/DIRECTORY-RAIN-NOW-2026-11.md): the rain in the 48 hours to midday
     today at the nearest cell, its own 0.1 degree square or one of the eight around it, whose file is at most
-    `max_age_h` old and covers `min_coverage` of the window. Only sites with past samples by rain (`rain_history`).
+    `max_age_h` old and covers `min_coverage` of the window; a neighbouring square only within `max_km` of the water.
+    Only sites with past samples by rain (`rain_history`) unless `require_history` is off (Scotland, which has none);
+    with `only_missing`, only sites with no `rain_now` yet (English beaches the click-anywhere squares missed).
     `points` maps a site id to [lat, lon] where the site has no position of its own. No request."""
     import math
 
@@ -105,7 +111,7 @@ def attach_cached(snapshot: dict | None, points: dict | None, cache_dir: Path, n
         return cells[(a, b)]
     n = 0
     for site in snapshot.get("sites") or []:
-        if not site.get("rain_history"):
+        if (require_history and not site.get("rain_history")) or (only_missing and site.get("rain_now")):
             continue
         p = (points or {}).get(site.get("id"))
         lat, lon = (site.get("lat"), site.get("lon")) if site.get("lat") is not None else (p or (None, None))[:2]
@@ -120,6 +126,8 @@ def attach_cached(snapshot: dict | None, points: dict | None, cache_dir: Path, n
                 if got is None:
                     continue
                 km = math.hypot((a - float(lat)) * 111.2, (b - float(lon)) * 111.2 * math.cos(math.radians(float(lat))))
+                if (i, j) != (0, 0) and km > max_km:
+                    continue
                 if best is None or (i, j) == (0, 0) or (best[2] != (0, 0) and km < best[0]):
                     best = (km, got, (i, j))   # the site's own square first, as on English cards; else the nearest
         if best:
@@ -158,15 +166,16 @@ def line(h: dict, rule: dict | None = None) -> str | None:
     return f"Past samples here by rain, {years}: {parts}. E. coli per 100 ml. Not a forecast"
 
 
-def now_line(site: dict, rule: dict | None = None) -> str | None:
-    """Today's rain at the beach's square and which of the two groups it falls in, or neither."""
+def now_line(site: dict, rule: dict | None = None, groups: bool = True) -> str | None:
+    """Today's rain at the beach's square and which of the two groups it falls in, or neither. Without `groups` (a
+    card with no past samples by rain, as in Scotland), the rain alone."""
     r = site.get("rain_now")
     if not r:
         return None
     rule = {**RULE, **(rule or {})}
     mm = r["mm"]
-    group = (" That is as wet as the after-rain samples above." if mm >= rule["after_rain_mm"]
-             else " That is as dry as the dry-day samples above." if mm < rule["dry_mm"] else "")
+    group = "" if not groups else (" That is as wet as the after-rain samples above." if mm >= rule["after_rain_mm"]
+                                   else " That is as dry as the dry-day samples above." if mm < rule["dry_mm"] else "")
     where = f'at a point {r["km"]} km away' if r.get("km") else "here"
     source = f'forecast service, fetched {r["fetched"]}' if r.get("fetched") else "forecast service, this build"
     return f'Rain {where} in the 2 days to midday on {r["date"]}: {mm:g} mm ({source}).{group}'
