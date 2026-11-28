@@ -117,3 +117,17 @@ def test_final_read_refuses_an_uncommitted_candidate(tmp_path):
             B.committed(p)
     finally:
         p.unlink()
+
+
+def test_inside80_counts_measured_and_censored_results_by_the_pit_rule():
+    """bench read 2's coverage (docs/BENCH-READ-LAKE-RANGE-COVERAGE-2026-11.md): a measured count inside q10..q90 is
+    inside; a "<10" counts by where 10 falls in the predictive distribution."""
+    d = pd.DataFrame({"log_ecoli": [1.5, 3.0, 1.0, 1.0, 4.0], "ecoli_qual": ["=", "=", "<", "<", ">"]})
+    f = {"q10": np.full(5, 1.2), "q90": np.full(5, 2.5), "p_le10": np.array([0.05, 0.05, 0.05, 0.5, 0.05]),
+         "p_le10000": np.full(5, 0.99)}
+    ins, below, above = B.inside80(d, f)
+    assert ins[:2].tolist() == [1.0, 0.0] and above[1] == 1.0
+    assert ins[2] == 0.0 and below[2] == 1.0                        # 10 sits below the range: all below
+    assert ins[3] == pytest.approx(0.8) and below[3] == pytest.approx(0.2)   # PIT uniform on [0, 0.5]
+    assert above[4] == 1.0 and ins[4] == 0.0
+    assert np.allclose(ins + below + above, 1.0)
