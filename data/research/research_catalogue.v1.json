@@ -1081,6 +1081,13 @@
    "branch": "claude/lake-order",
    "branch_exists": true,
    "date": "2026-11-27"
+  },
+  "769": {
+   "n": 769,
+   "state": "open",
+   "branch": "claude/irish-lakes",
+   "branch_exists": true,
+   "date": "2026-11-28"
   }
  },
  "entries": [
@@ -3918,8 +3925,8 @@
    "verdict": "Supported on unseen seasons. Frozen on 2022-26 before any older sample was fetched, C1 (site, month, last sample, ERA5-Land rain over 24 and 72 hours) beat the same model without rain on 65,350 English samples 2012-21 at 403 beaches: Brier difference -0.00041 (-0.00084 to -0.00012), 9 of 10 seasons, AUC 0.786 against 0.665. On 7,019 Welsh and Northern Irish samples 2023-26 it never saw, it ordered each beach's samples at 0.303 (0.245 to 0.338); rain added +0.122. On 24,413 Irish samples 2014-26 at 210 beaches it never saw, it ordered each beach's samples at 0.320 (0.274 to 0.356); rain added +0.083.",
    "scope": "Statutory bathing-water samples, May to September, E. coli over 500. ERA5-Land is a reanalysis, not issue-time rain. Brier skill against the pooled rate is 2.9%, so it supports past samples by rain, not a chance for today. Northern Irish and Irish sample times assumed midday.",
    "stage": "development",
-   "stage_note": "Results recorded in #760 and the ANYWATER-IE statement. Past samples by rain are on English, Welsh, Northern Irish (#764) and Irish coast and estuary cards (#766).",
-   "next": "A 2027 shadow protocol with issue-time rain before 1 May 2027; an inland version with a 900 line for Irish lakes.",
+   "stage_note": "Results recorded in #760 and the ANYWATER-IE statement. Past samples by rain are on English, Welsh, Northern Irish (#764) and Irish coast and estuary cards (#766), and, counted over 900 and not tested, on 14 inland cards in the Republic, Wales and Northern Ireland (#769).",
+   "next": "A 2027 shadow protocol with issue-time rain before 1 May 2027; a frozen-model read of C1's order on the 2027 inland seasons at the 900 line.",
    "records": [
     {
      "doc": "docs/COASTAL-C1-PROTOCOL-2026-11.md",
@@ -3936,12 +3943,17 @@
     {
      "doc": "docs/ANYWATER-IE-STATEMENT-2026-11.md",
      "quote": "**Pass:** the interval for C1 lies wholly above 0.10."
+    },
+    {
+     "doc": "docs/INLAND-RAIN-HISTORY-2026-11.md",
+     "quote": "Nothing was tested for inland waters."
     }
    ],
    "prs": [
     696,
     760,
-    766
+    766,
+    769
    ]
   }
  ],
