@@ -38,6 +38,7 @@ data/processed/*
 !data/processed/river_usual_winter.v1.json
 !data/processed/rain_usual.v1.json
 !data/processed/lake_order.v1.json
+!data/processed/lake_order_overflow.v1.json
 !data/processed/lake_range_levels.v1.json
 !data/processed/water_temp_model.json
 # The winter curves adopted by docs/WATER-TEMP-WINTER-BACKTEST-2026-11.md (model/water_temp.py, October to April)

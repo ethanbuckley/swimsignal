@@ -35,7 +35,7 @@ def test_the_committed_file_is_the_frozen_one_for_bench_read_1s_five_daily_lakes
         assert v["high"] - v["low"] >= script.MIN_GAP and v["days"] >= script.MIN_DAYS, k
         assert 0.3 <= v["lower"] <= 0.36 and 0.3 <= v["higher"] <= 0.36, k   # about a third of days each way
     lo.clear_cache()
-    assert len(lo.cuts()) == 5
+    assert len(lo.cuts()) == 12   # these five and the seven overflow lakes (test_lake_order_overflow.py)
 
 
 def test_none_of_the_five_has_its_own_level_in_lake_range_v1():
@@ -62,7 +62,7 @@ def test_no_word_out_of_season_off_the_list_with_an_input_missing_or_with_anothe
     assert lo.direction(*SERPENTINE, pd.concat([X(1.0), X(2.0)]), 7) is None  # today's row only
     monkeypatch.setattr(lo, "SHA256", "0" * 64)
     lo.clear_cache()
-    assert lo.cuts() == {} and lo.direction(*SERPENTINE, X(25.0), 7) is None
+    assert len(lo.cuts()) == 7 and lo.direction(*SERPENTINE, X(25.0), 7) is None   # the other file stands alone
     monkeypatch.undo()
     lo.clear_cache()
 
@@ -81,6 +81,7 @@ def test_the_word_is_the_figure_bench_read_1_scored():
 
 def test_the_forecast_gives_the_word_to_today_only_at_a_lake_with_no_overflow_upstream():
     src = (ROOT / "src" / "dipcast" / "model" / "forecast.py").read_text()
-    assert 'if pin.mode == "lake" and ov.empty and days[j] == now.floor("D"):' in src
+    assert 'if (pin.mode == "lake" and days[j] == now.floor("D")' in src
+    assert 'and (ov.empty or (ranges is not None and shown is None))):' in src
     assert "lake_order.direction(lat, lon, X.iloc[[j]], days[j].month)" in src
     assert src.count('row["lake_order"]') == 1 and "lake_order.clear_cache()" in src

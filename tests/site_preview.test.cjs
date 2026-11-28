@@ -546,6 +546,21 @@ test('a lake with a range shows its likely reading and 8-in-10 range as a row be
   for (const t of [...Object.values(L.LAKE_RANGE_BASIS), L.LAKE_RANGE_OFF, L.LAKE_RANGE_WITHHELD]) assert.doesNotMatch(t, /safe|clean|chance|exceed|breach|—/i, t);
 });
 
+test('a lake spot whose range is withheld reads the lake word today, with what it rests on, and its level is unchanged', () => {
+  const lake = word => { const s = spot(['low', 'low', 'low', 'low', 'low'], {id: 'grasmere', name: 'Grasmere (lake)', kind: 'lake', river: '', location: {mode: 'lake'},
+    ecoli_range_withheld: {rule: 'lake-range-v1', basis: 'average lake'}});
+    s.days.forEach(d => { d.in_validated_season = true; }); if (word) s.days[0].lake_order = word; return s; };
+  const a = (s, iso) => M.answer(s, iso, data([s]), NOW);
+  const withWord = a(lake('higher'), DAYS[0]), without = a(lake(null), DAYS[0]);
+  assert.deepEqual(withWord.why, [...without.why, 'Today E. coli is estimated higher than usual for this lake.']);
+  assert.deepEqual(withWord.notes, [...without.notes, L.LAKE_ORDER_UP_SAID]);
+  for (const k of ['head', 'cls', 'level', 'act']) assert.deepEqual(withWord[k], without[k], k);
+  assert.deepEqual(a(lake('higher'), DAYS[1]), a(lake(null), DAYS[1]), 'another day does not borrow today\'s word');
+  const shownRange = {...lake('higher'), ecoli_range_withheld: undefined};
+  assert.deepEqual(a(shownRange, DAYS[0]).why, without.why, 'a lake with a range shown does not get the word');
+  assert.doesNotMatch(L.LAKE_ORDER_UP_SAID, /\d|%|safe|clean|chance|risk|exceed|breach|—/i);
+});
+
 test('the spill map is the live site\'s own script, asked for only when its place on the page is near', () => {
   const PL = require(path.join(SITE, 'plume.js'));
   // The script draws the tile and the map; the page gives it a place, the map's library and the page's own tiles.

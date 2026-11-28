@@ -63,3 +63,5 @@ Irish lakes: 14 inland cards in the Republic, Wales and Northern Ireland show pa
 Lakes again, the same day: bench read 2 passed (the range held 87 in 100 at the 7 lakes given their own level), so the Serpentine, the Hampstead ponds and Colwick get the likely reading and 8-in-10 range from 1 May 2027, and the redesign shows the lake range as a row at every lake that has one (`docs/LAKE-RANGE-OWN-LEVELS-2026-11.md`, #771).
 
 Average-lake spots, later the same day: the average lake's range failed when sampled lakes were treated as unknown (69% inside), so 15 lake spots (Ullswater, Bassenthwaite, Grasmere, Rydal, Elter, Loch Ness, Loch Lomond) no longer show a range, and Windermere Waterhead and Derwent Water Calfclose Bay show their lake's level (`docs/LAKE-AVERAGE-BASIS-CHECK-2026-11.md`, #772).
+
+The 7 English lakes among them (Ullswater ×3, Bassenthwaite, Grasmere, Rydal, Elter) then got the lake word, today only, from 1 May 2027 (`docs/LAKE-ORDER-OVERFLOW-LAKES-2026-11.md`, #773). The 8 Scottish loch spots get nothing.
