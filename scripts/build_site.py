@@ -6029,6 +6029,17 @@ def build(refresh: bool = True) -> dict:
         _days, n_coastal_rain_now = None, 0
     coastal_water = attach_directory_water_temp(coastal["sites"], anypoint_water_air(SITE))
     coastal_spills = attach_coastal_spills(coastal["sites"], generated)
+    # C1 at issue time (docs/COASTAL-C1-SHADOW-2027.md): from May to September, English beaches' forecast cells join the
+    # directory fetch on their own budget (spare-capacity gated), then the day's shadow rows. Nothing reaches the site.
+    from dipcast import coastal_c1_shadow
+    try:
+        _eng = json.loads(BATHING_WATER_POINTS.read_text()).get("england") or {}
+    except Exception:  # noqa: BLE001
+        _eng = {}
+    if coastal_c1_shadow.in_season(generated) and _eng:
+        _, health["coastal_c1_air"] = directory_air([(float(p[0]), float(p[1])) for p in _eng.values()],
+                                                    budget=coastal_c1_shadow.CELLS_PER_BUILD)
+    health["coastal_c1_shadow"] = coastal_c1_shadow.log_day(coastal, _eng, generated, rainfall.CACHE, __version__)
     (SITE / "data" / "coastal.json").write_text(json.dumps(coastal))
     health["coastal"] = {"status": coastal["status"], "sites": len(coastal["sites"]),
                          "samples": coastal.get("samples", {}).get("state"),

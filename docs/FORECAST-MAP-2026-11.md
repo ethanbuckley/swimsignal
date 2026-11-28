@@ -67,3 +67,5 @@ Average-lake spots, later the same day: the average lake's range failed when sam
 The 7 English lakes among them (Ullswater ×3, Bassenthwaite, Grasmere, Rydal, Elter) then got the lake word, today only, from 1 May 2027 (`docs/LAKE-ORDER-OVERFLOW-LAKES-2026-11.md`, #773). The 8 Scottish loch spots get nothing.
 
 Wales inland, the same evening: today's rain beside past samples by rain on Welsh, Northern Irish and Irish cards, from the build's cached directory cells, no new request (`docs/DIRECTORY-RAIN-NOW-2026-11.md`, #774).
+
+Coast, the same evening: C1's 2027 shadow protocol is written and its logger built (`docs/COASTAL-C1-SHADOW-2027.md`, #775). From 1 May 2027 the build logs C1 from forecast rain at every English beach once a day; judged on or after 15 October 2027. Nothing on the site changes from it.
