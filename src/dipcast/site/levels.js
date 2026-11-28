@@ -175,6 +175,18 @@ const LAKE_ORDER = { higher: 'Today E. coli is estimated higher than usual for t
   about: 'Today E. coli is estimated about usual for this lake.', lower: 'Today E. coli is estimated lower than usual for this lake.' };
 const LAKE_ORDER_SAID = 'Higher or lower than usual comes from the rain here and the time of year, as nothing upstream is monitored. Only its order is tested: on past summer samples kept back to test it, at this lake and six other lake bathing waters with no overflow upstream, days it put higher tended to read higher. How far above or below usual is not tested, so the word gives no amount. This is not a level.';
 const lakeOrder = x => LAKE_ORDER[(x || {}).lake_order] || '';
+// Past samples after rain at a lake bathing water with no overflow upstream (`ecoli_after_rain`, build_site.attach_after_rain;
+// docs/AFTER-RAIN-SAMPLES-2026-11.md, #703, rebuilt for this page in docs/AFTER-RAIN-LAKES-2026-11.md): its own samples
+// split by the rain in the 2 days before each, and today's rain. Past samples, not a forecast. In season only (x: today's row).
+const afterRainCount = v => typeof v === 'string' ? `${v[0] === '<' ? 'under' : 'over'} ${Number(v.slice(1)).toLocaleString('en-GB')}`
+  : v < 10 ? 'under 10' : Number(v).toLocaleString('en-GB');
+const afterRainLine = (s, x) => {
+  const a = s && s.ecoli_after_rain;
+  if (!a || !a.after_rain || !a.after_less || !x || x.in_validated_season !== true) return '';
+  const years = a.first_year === a.last_year ? `${a.first_year}` : `${a.first_year}–${a.last_year}`;
+  const now = nil(x.rain_48h_mm) ? '' : ` Rain here in the 2 days to midday today: ${x.rain_48h_mm < 1 ? 'under 1' : `about ${Math.round(x.rain_48h_mm)}`} mm.`;
+  return `Past samples here, May to September ${years}: after more than ${a.line_mm} mm of rain in the 2 days before, the middle of ${a.after_rain.samples} read ${afterRainCount(a.after_rain.median)}; after less, the middle of ${a.after_less.samples} read ${afterRainCount(a.after_less.median)}. E.\u00a0coli per 100\u00a0ml.${now} Past samples, not a forecast.`;
+};
 // The same word at a lake spot with overflows upstream whose range is withheld (docs/LAKE-ORDER-OVERFLOW-LAKES-2026-11.md):
 // what it rests on is different, and said so.
 const LAKE_ORDER_UP_SAID = 'Higher or lower than usual comes from the rain here, spills at the overflows upstream and the time of year. Only its order is tested: on past summer samples kept back to test it at Windermere and Frensham Great Pond, days it put higher tended to read higher. This lake has no samples, so it was not tested here. How far above or below usual is not tested, so the word gives no amount. This is not a level.';
@@ -927,6 +939,6 @@ if (typeof module === 'object' && module.exports) {
   module.exports = { nameCase, plainName, overflowNames, ORDER, NOT_COVERED, NO_FORECAST, NO_OVERFLOWS, NO_RIVER, OTHER_RISKS, SPILL_CUTS, ECOLI_CUTS, spillLevel, shownRisk, tooFar, allUpstream, tooFarSaid, WEIGHT_SAID, setToday, today, dayWord, readerDay, fromDay, rank, risk, nowUnknown, nowUnknownWhy, nowFew, nowWatched, NOW_WATCHED_SHARE, LIVE_NONE, liveCover, liveHead, liveLine, liveParts, MODELLED_FROM, level, dayLevel, headParts, headline, levelScope, nowBecause, dayBecause, dayHeadline, tileLine, weekNext, laterWords, coverage, COVER, FOUND_NONE, ISOLATED_WHY, plainLevel, inBathingSeason, poorReason, poorAdvice, daily, ecoliBand, ecoliLevel, ecoliUntested, bestDay, weekendWords, yoursLevelled, lowAnswerDay, lowAnswerWords, mostWords, clockWords, clearWords, RAIN_OLD_H, rainAgeLine, backToLow,
     ACTION, POOR_ACTION, ALGAE_ACTION, PLAIN_ACTION, actionFor, levelAction, dayAction, HEAD_SCOPE, spillSet, worstNear,
     SAMPLE_LINE, SAMPLE_DAYS, sampleLevel, standingLevel, eaUnchecked, EA_UNCHECKED, walesShare, walesWords, trialWords, ecoliNotes,
-    ECOLI_OFF, ECOLI_EXPERIMENTAL, ECOLI_FOLD, ECOLI_OFF_SAID, RIVER_USUAL, riverUsual, RIVER_USUAL_WINTER, RIVER_USUAL_WINTER_SAID, riverUsualWinter, ecoliOffSaid, RAIN_USUAL, RAIN_USUAL_SAID, rainUsual, LAKE_ORDER, LAKE_ORDER_SAID, LAKE_ORDER_UP_SAID, lakeOrder, lakeRange, LAKE_RANGE_BASIS, LAKE_RANGE_OFF, LAKE_RANGE_WITHHELD, lakeRangeRow,
+    ECOLI_OFF, ECOLI_EXPERIMENTAL, ECOLI_FOLD, ECOLI_OFF_SAID, RIVER_USUAL, riverUsual, RIVER_USUAL_WINTER, RIVER_USUAL_WINTER_SAID, riverUsualWinter, ecoliOffSaid, RAIN_USUAL, RAIN_USUAL_SAID, rainUsual, LAKE_ORDER, LAKE_ORDER_SAID, LAKE_ORDER_UP_SAID, lakeOrder, afterRainLine, lakeRange, LAKE_RANGE_BASIS, LAKE_RANGE_OFF, LAKE_RANGE_WITHHELD, lakeRangeRow,
     companyName, atSpot, overflowWhere, travelSaid, SPILL_LONG_H, spillStart, longSpill, LONG_SPILL, isolated };
 }

@@ -1126,8 +1126,22 @@
   },
   "775": {
    "n": 775,
-   "state": "open",
+   "state": "merged",
    "branch": "claude/c1-shadow",
+   "branch_exists": true,
+   "date": "2026-11-28"
+  },
+  "703": {
+   "n": 703,
+   "state": "closed",
+   "branch": "claude/lake-direction-no-overflow",
+   "branch_exists": true,
+   "date": "2026-11-15"
+  },
+  "776": {
+   "n": 776,
+   "state": "open",
+   "branch": "claude/after-rain-lakes",
    "branch_exists": true,
    "date": "2026-11-28"
   }
@@ -4026,6 +4040,36 @@
     769,
     774,
     775
+   ]
+  },
+  {
+   "id": "after-rain-samples",
+   "title": "Past samples after rain, at lakes with no daily E. coli figure",
+   "section": "data",
+   "topics": [
+    "ecoli",
+    "lakes",
+    "rain"
+   ],
+   "verdict": "An observation, not a test. At the Serpentine, Hampstead Heath's three ponds and Colwick, their own 2023-26 samples after more than 10 mm of rain in 48 hours had middle results of 190, 360, 73, 210 and 27, against 130, 91, 55, 64 and 27 after less rain (7 to 12 samples after rain at each).",
+   "scope": "Seen samples, small wet groups; past results only, no estimate. Says nothing about a day's water.",
+   "stage": "scheduled",
+   "read_on": "2027-05-01",
+   "stage_note": "Built in #703, rebuilt for the new site in #776 (28 Nov) as an 'After rain' fact; in season only, so nothing shows before May 2027.",
+   "next": "Rerun the export after the 2027 season with rebuilt bench rows.",
+   "records": [
+    {
+     "doc": "docs/AFTER-RAIN-SAMPLES-2026-11.md",
+     "quote": "These are seen samples, and the wet groups are small: one more wet sample can move a middle a long way. The page says"
+    },
+    {
+     "doc": "docs/AFTER-RAIN-LAKES-2026-11.md",
+     "quote": "No estimate, word, colour or level."
+    }
+   ],
+   "prs": [
+    703,
+    776
    ]
   }
  ],

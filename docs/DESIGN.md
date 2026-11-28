@@ -3158,6 +3158,17 @@ lake-range-v1's likely reading at lake bathing waters it has no own level for (0
 **Checked:** the rule in `tests/site_preview.test.cjs` and `tests/test_lake_order.py`. **Not checked:** a word on the
 live site, which cannot appear before 1 May 2027.
 
+### Past samples after rain at the 5 no-overflow lakes (28 November 2026, night)
+
+From `docs/AFTER-RAIN-LAKES-2026-11.md`, rebuilding #703 (Ethan's choice of 15 November; "Yes, rebuild it", 28 November).
+
+- **Already decided, followed:** the line itself and its figures (#703, 15 November): each lake's own 2023-26 samples
+  split at 10 mm of rain in the 2 days before, with today's rain; past samples, not a forecast; in season only.
+- **New:** where it sits, an "After rain" fact in "The place", and its words, which follow the beach cards' "by rain"
+  lines. `classic/` is unchanged.
+- #703's "Not done: a higher / lower than usual line" referred to the twice-or-half rule; the lake word (#767, own
+  thirds) is shown there now, beside this line and the range (#771).
+
 ### Today's rain on Welsh, Northern Irish and Irish cards (28 November 2026, evening)
 
 From `docs/DIRECTORY-RAIN-NOW-2026-11.md`. Ethan: "Yes, Wales inland".

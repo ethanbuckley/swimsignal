@@ -561,6 +561,19 @@ test('a lake spot whose range is withheld reads the lake word today, with what i
   assert.doesNotMatch(L.LAKE_ORDER_UP_SAID, /\d|%|safe|clean|chance|risk|exceed|breach|—/i);
 });
 
+test('a lake with past samples split by rain says them in season, with today\'s rain, and nothing else', () => {
+  // build_site.attach_after_rain (#703's export), shown as a place fact (docs/AFTER-RAIN-LAKES-2026-11.md).
+  const s = {ecoli_after_rain: {line_mm: 10, after_rain: {samples: 12, median: 190}, after_less: {samples: 67, median: '<10'}, first_year: 2023, last_year: 2026}};
+  const day = (season, mm) => ({date: DAYS[0], in_validated_season: season, rain_48h_mm: mm});
+  assert.equal(L.afterRainLine(s, day(true, 14.2)), 'Past samples here, May to September 2023–2026: after more than 10 mm of rain in the 2 days before, the middle of 12 read 190; after less, the middle of 67 read under 10. E.\u00a0coli per 100\u00a0ml. Rain here in the 2 days to midday today: about 14 mm. Past samples, not a forecast.');
+  assert.match(L.afterRainLine(s, day(true, 0.3)), /today: under 1 mm\./);
+  assert.doesNotMatch(L.afterRainLine(s, day(true, null)), /Rain here/);
+  assert.equal(L.afterRainLine(s, day(false, 14)), '', 'out of season, nothing');
+  assert.equal(L.afterRainLine({}, day(true, 14)), '');
+  assert.match(JS, /const wet = afterRainLine\(s, \(s\.days \|\| \[\]\)\.find\(d => d\.date === today\(\)\)\);/);
+  assert.doesNotMatch(L.afterRainLine(s, day(true, 14)), /safe|clean|chance|risk|exceed|breach|—/i);
+});
+
 test('the spill map is the live site\'s own script, asked for only when its place on the page is near', () => {
   const PL = require(path.join(SITE, 'plume.js'));
   // The script draws the tile and the map; the page gives it a place, the map's library and the page's own tiles.
