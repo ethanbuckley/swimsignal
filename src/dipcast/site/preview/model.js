@@ -224,6 +224,9 @@ function answer(s, iso, data, nowMs) {
       else if (!spills) out.why.push(capFirst(dayBecause(s, r)) + '.');
       else if (r.now) out.why.push(capFirst(nowBecause(s, r)) + '.');
       if (say && r.by !== 'record') out.why.push(capFirst(say) + '.');
+      // At a lake spot whose range is withheld, today's lake word (levels.js, lakeOrder; LAKE-ORDER-OVERFLOW-LAKES).
+      const lw = isToday && s.ecoli_range_withheld ? lakeOrder(x) : '';
+      if (lw) { out.why.push(lw); out.notes.push(LAKE_ORDER_UP_SAID); }
       out.act = o ? o.act : dayAction(s, iso);
       if (isToday) {
         if (blind || nowUnknown(s)) { out.lead = liveHead(s) || 'Live sewage spill status not known'; out.modelled = MODELLED_FROM + '.'; }

@@ -610,7 +610,9 @@ def forecast_point(lat: float, lon: float, days_ahead: int = 4, max_km: float = 
                 # At a lake bathing water with no monitored overflow upstream that bench read 1 scored, whether
                 # today's estimate is higher or lower than usual there (lake_order.py). Today only, as the read was
                 # at lead 0. A word: no figure, level or colour.
-                if pin.mode == "lake" and ov.empty and days[j] == now.floor("D"):
+                # And at a lake spot whose average-lake range is withheld (docs/LAKE-ORDER-OVERFLOW-LAKES-2026-11.md).
+                if (pin.mode == "lake" and days[j] == now.floor("D")
+                        and (ov.empty or (ranges is not None and shown is None))):
                     lake_word = lake_order.direction(lat, lon, X.iloc[[j]], days[j].month)
                     if lake_word:
                         row["lake_order"] = lake_word

@@ -1,0 +1,87 @@
+{
+ "rule": "lake-order-overflow-v1",
+ "record": "docs/LAKE-ORDER-OVERFLOW-LAKES-2026-11.md",
+ "model_sha256": "5566b12e5fc6acc1686f2aeb201ec2b9f8cd7e38a39f4352de314c5e32c3fcca",
+ "years": [
+  2023,
+  2026
+ ],
+ "months": [
+  5,
+  9
+ ],
+ "rain_files_sha256": "8d260d916599d53a2704187e2ad563f8e0c0c2100cc8266ed30bdd3fe851733b",
+ "rain_files": 48,
+ "spots": {
+  "54.54400,-2.94800": {
+   "id": "ullswater-glenridding",
+   "name": "Ullswater, Glenridding",
+   "upstream": 1,
+   "low": 1.206,
+   "high": 1.514,
+   "days": 588,
+   "lower": 0.333,
+   "higher": 0.332
+  },
+  "54.61000,-2.81600": {
+   "id": "ullswater-pooley-bridge",
+   "name": "Ullswater, Pooley Bridge",
+   "upstream": 1,
+   "low": 1.129,
+   "high": 1.298,
+   "days": 590,
+   "lower": 0.332,
+   "higher": 0.332
+  },
+  "54.57432,-2.91114": {
+   "id": "osm-ullswater-sandwick",
+   "name": "Ullswater, near Sandwick",
+   "upstream": 1,
+   "low": 1.123,
+   "high": 1.433,
+   "days": 589,
+   "lower": 0.329,
+   "higher": 0.333
+  },
+  "54.65310,-3.21357": {
+   "id": "bassenthwaite",
+   "name": "Bassenthwaite Lake",
+   "upstream": 16,
+   "low": 1.476,
+   "high": 1.734,
+   "days": 589,
+   "lower": 0.333,
+   "higher": 0.333
+  },
+  "54.45000,-3.02000": {
+   "id": "grasmere",
+   "name": "Grasmere (lake)",
+   "upstream": 1,
+   "low": 1.283,
+   "high": 1.636,
+   "days": 588,
+   "lower": 0.333,
+   "higher": 0.333
+  },
+  "54.44700,-2.98900": {
+   "id": "rydal-water",
+   "name": "Rydal Water",
+   "upstream": 1,
+   "low": 1.119,
+   "high": 1.355,
+   "days": 588,
+   "lower": 0.332,
+   "higher": 0.333
+  },
+  "54.43000,-3.03300": {
+   "id": "elter-water",
+   "name": "Elter Water",
+   "upstream": 1,
+   "low": 1.308,
+   "high": 1.635,
+   "days": 588,
+   "lower": 0.333,
+   "higher": 0.332
+  }
+ }
+}

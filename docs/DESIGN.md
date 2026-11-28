@@ -3158,6 +3158,17 @@ lake-range-v1's likely reading at lake bathing waters it has no own level for (0
 **Checked:** the rule in `tests/site_preview.test.cjs` and `tests/test_lake_order.py`. **Not checked:** a word on the
 live site, which cannot appear before 1 May 2027.
 
+### The lake word where the range is withheld (28 November 2026, evening)
+
+From `docs/LAKE-ORDER-OVERFLOW-LAKES-2026-11.md`. Ethan: "Yes, lake word".
+
+- **New:** at Ullswater ×3, Bassenthwaite, Grasmere, Rydal Water and Elter Water (English lakes with overflows upstream
+  whose average-lake range is withheld), today's "higher / about / lower than usual for this lake", in season, after
+  the level's reasons, with its own note (`LAKE_ORDER_UP_SAID`): rain, spills upstream and the date; order tested at
+  Windermere and Frensham; not tested here; no amount; not a level.
+- **Already decided, followed:** the lake word's words and form (#767), own thirds, today only.
+- Not at the 8 Scottish loch spots (no reason built), and not at lakes whose range is shown.
+
 ### No range on the average-lake basis (28 November 2026, later)
 
 From `docs/LAKE-AVERAGE-BASIS-CHECK-2026-11.md` (plan pushed before the run; seen rows, development): treated as

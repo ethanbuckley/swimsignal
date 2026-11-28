@@ -30,23 +30,31 @@ RULE = "lake-order-v1"
 FILE = config.PROCESSED / "lake_order.v1.json"
 SHA256 = "93174f9b494e0c8101e5144514e6739f7ed18c6709dcdabb368cf81ef40440d5"
 SEASON = range(5, 10)
+# The 7 English lake spots with overflows upstream whose average-lake range is withheld (docs/LAKE-ORDER-OVERFLOW-
+# LAKES-2026-11.md): the same word from the same figure, rain and spill exposure included, on their own thirds.
+OVERFLOW_FILE = config.PROCESSED / "lake_order_overflow.v1.json"
+OVERFLOW_SHA256 = "0fd17fea359e68cb772e4dbd3e48a4238acae36b2d6540b35b77ed7719e4a75f"
 
 
-@lru_cache(maxsize=1)
-def cuts() -> dict:
-    """{position key: (low, high)} on log10; empty when the file is missing, is not the frozen one, or was made for
-    another model file."""
-    if not FILE.exists():
-        log.info("lake order word off: %s missing", FILE.name)
+def _load(path, sha: str) -> dict:
+    if not path.exists():
+        log.info("lake order word off: %s missing", path.name)
         return {}
-    raw = FILE.read_bytes()
-    if hashlib.sha256(raw).hexdigest() != SHA256:
-        log.warning("lake order word off: %s is not the frozen file", FILE.name)
+    raw = path.read_bytes()
+    if hashlib.sha256(raw).hexdigest() != sha:
+        log.warning("lake order word off: %s is not the frozen file", path.name)
         return {}
     doc = json.loads(raw)
     if doc.get("model_sha256") != lake_range.SHA256:
         return {}
     return {k: (float(v["low"]), float(v["high"])) for k, v in doc["spots"].items()}
+
+
+@lru_cache(maxsize=1)
+def cuts() -> dict:
+    """{position key: (low, high)} on log10 from both frozen files; a file that is missing, is not the frozen one, or
+    was made for another model file adds nothing."""
+    return {**_load(FILE, SHA256), **_load(OVERFLOW_FILE, OVERFLOW_SHA256)}
 
 
 def clear_cache() -> None:
@@ -55,7 +63,8 @@ def clear_cache() -> None:
 
 def direction(lat: float, lon: float, X: pd.DataFrame, month: int, m: dict | None = None) -> str | None:
     """"higher", "lower" or "about" for X's one row (ecoli.features' frame for today), or None (see the docstring).
-    The caller gives it today's row only, at a lake spot with no monitored overflow upstream."""
+    The caller gives it today's row only, at a lake spot with no monitored overflow upstream or one whose range is
+    withheld."""
     if month not in SEASON:
         return None
     c = cuts().get(key(lat, lon))
