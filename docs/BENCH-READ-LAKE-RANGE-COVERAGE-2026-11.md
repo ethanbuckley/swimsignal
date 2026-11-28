@@ -57,3 +57,40 @@ the read and is why the result may fall either side of the upper bar.
 
 `cover80`, `below80`, `above80` with intervals on `lake_not_read_before`, all held-out lake rows, and the 2017 split;
 coverage by water body; the order and Brier figures as the bench prints them.
+
+## Result
+
+Read on 28 November 2026 at 14:23 UTC, from the statement and candidate at `e2469078` (pushed at 14:22:57 UTC, before
+the read). Ledger read 2. Result file `docs/backtest-bench/results/lake_range_v1_ownlevel-20261128T142309Z.json`.
+Command: `bench.py final --candidate scripts/backtest_bench/candidates/lake_range_v1_ownlevel.py --statement
+docs/BENCH-READ-LAKE-RANGE-COVERAGE-2026-11.md`.
+
+**Both conditions pass.** On `lake_not_read_before` (1,373 rows, 7 bathing waters, 5 water bodies, 2012-22):
+
+| | Inside the 8-in-10 range | Below it | Above it |
+|---|---|---|---|
+| All 7 | **86.9%** [84.9, 88.6] | 9.1% [7.4, 10.8] | 4.0% [2.7, 5.6] |
+
+| Water body | Rows | Inside |
+|---|---|---|
+| Colwick (West Lake) | 182 | 80.2% |
+| Cotswold Country Park | 207 | 80.3% |
+| Hampstead Heath (3 ponds) | 612 | 89.0% |
+| Henleaze Lake | 163 | 93.8% |
+| The Serpentine | 209 | 87.7% |
+
+Condition 1 (70% to 90%): 86.9%, pass. Condition 2 (each water body 60% or more): lowest 80.2%, pass.
+
+**Said plainly.** Given its own level from 2023-26 samples, the range held about 87 in 100 results in years the model
+never saw, where it claims 80. It is a little wide, mostly because fewer results fall above it than it allows for (4
+in 100 against 10). Henleaze is the widest (94%). It errs on the side of including high readings, not missing them.
+
+**Reported, deciding nothing.** Within-lake order with own levels: rho 0.289 [0.238, 0.335], the same as read 1 (a
+level moves every day at a lake by the same amount, so order cannot change). All held-out lakes (with Windermere and
+Frensham on their frozen levels): 83.7%. Seasons to 2016: 82.8%; from 2017: 84.9%.
+
+**What follows (the statement's table):** at the 5 with daily inputs, the likely reading and 8-in-10 range on each
+lake's own level, as the 11 lakes show it, May to September, from a new versioned level file frozen by this rule from
+2023-26 samples. lake-range-v1, the 11 lakes' range and the lake word stay as they are. That page change is the next
+PR. The average-lake range sitting low at these 7 on seen years (59% inside, 38% above) goes to the register for the
+20 average-lake spots.
