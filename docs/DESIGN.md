@@ -3158,6 +3158,15 @@ lake-range-v1's likely reading at lake bathing waters it has no own level for (0
 **Checked:** the rule in `tests/site_preview.test.cjs` and `tests/test_lake_order.py`. **Not checked:** a word on the
 live site, which cannot appear before 1 May 2027.
 
+### Research Lab exhibit 8, lake tests (28 November 2026, night)
+
+From `docs/LAB-LAKES-EXHIBIT-2026-11.md`. Ethan: "Yes, build them".
+
+- **New:** `lab/lakes/`, "A lake the model has never seen": the order held at unknown lakes, a typical lake's level did
+  not, each lake's own level did. Linked from every exhibit's bar, the front page, the Research page and the 12 tested
+  lakes' "Explore the evidence".
+- **Already decided, followed:** the Lab's shell, bar, pager and covers (the Research Lab, 1 November 2026).
+
 ### Today's rain lines: 10 km cap, English gaps, Scotland (28 November 2026, night)
 
 From `docs/RAIN-LINES-MORE-2026-11.md`. Ethan: "Yes, build them".

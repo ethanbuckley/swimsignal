@@ -1152,7 +1152,7 @@ function mountJournal() {
 // words and covers are the earlier page's tile's (index.html, labTile), word for word. Last before the foot, as the
 // 1 November order put it, never above the answer. A place no exhibit holds is told so, with the way to all five; a
 // point tapped on the map has no record in the Lab. Drawn once the place's own file has been read, which a built page has.
-const LAB_COVER = n => `lab/assets/covers/${['', 'lake-from-space', 'pollution', 'forecasts', 'workspace', 'sampling'][n]}.jpg`;
+const LAB_COVER = n => `lab/assets/covers/${['', 'lake-from-space', 'pollution', 'forecasts', 'workspace', 'sampling', 'overflow-ledger', 'rivers', 'lakes'][n]}.jpg`;
 function labHtml(s) {
   const got = details.get(s.id);
   if (s.unlisted || !got) return '';
@@ -1161,10 +1161,11 @@ function labHtml(s) {
   if (n) items.push([2, `lab/pollution/#spot=${enc(s.id)}`, 'Where does the pollution go?', `The rivers joining its ${n} overflow${n === 1 ? '' : 's'} to it, and how strongly the model counts each.`]);
   if (l.bw) items.push([3, `lab/forecasts/#bw=${enc(l.bw)}`, 'How good are the forecasts?', 'Its E. coli samples against what the estimate, rebuilt afterwards, would have said.']);
   if (l.ws) items.push([4, `lab/workspace/#c=${enc(l.ws)}&spot=${enc(s.id)}`, 'Catchment workspace', 'Rain, spills and samples around it on one timeline, January 2024 to September 2026.']);
+  if (l.lt) items.push([8, 'lab/lakes/', 'A lake the model has never seen', 'Its samples in the lake tests: whether the model put the days in order, and where its range held.']);
   return `<section class="labx" id="lab-exhibits" aria-labelledby="labx-h"><h2 id="labx-h">Explore the evidence</h2>
     ${items.length ? `<ul class="routes">${items.map(([k, href, name, line]) => `<li><a href="${esc(href)}"><img src="${LAB_COVER(k)}" alt="" width="56" height="56" loading="lazy" decoding="async"><span><small>Exhibit ${k}</small><b>${esc(name)}</b>${esc(line)}</span></a></li>`).join('')}</ul>`
       : '<p class="sec-lede">No Research Lab exhibit holds a record for this spot yet.</p>'}
-    <p class="meta">Research Lab: exploratory, on data already read. It changes nothing in this forecast. <a href="lab/">All five exhibits</a> · <a href="research.html">Research and data</a> · <a href="coverage.html">Beaches, Wales, Scotland and Ireland</a></p></section>`;
+    <p class="meta">Research Lab: exploratory, on data already read. It changes nothing in this forecast. <a href="lab/">All eight exhibits</a> · <a href="research.html">Research and data</a> · <a href="coverage.html">Beaches, Wales, Scotland and Ireland</a></p></section>`;
 }
 // From swimmers: notes on a visit, reviews and reports of illness, each the live site's own script (visits.js,
 // reviews.js, illness.js), which draws its own part and takes what a swimmer sends. They look for the place they

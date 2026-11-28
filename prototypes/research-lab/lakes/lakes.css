@@ -1,0 +1,5 @@
+/* Research Lab exhibit 8, a lake the model has never seen, only; the rest is ../lab.css over the site's page.css. */
+.lk-read { columns: 2; column-gap: 40px; font-size: var(--fs-note); max-width: 1100px; }
+.lk-read p { margin: 0 0 12px; break-inside: avoid; }
+.lk-read.one { columns: 1; max-width: 68ch; }
+@media (max-width: 760px) { .lk-read { columns: 1; } }

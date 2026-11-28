@@ -1,0 +1,462 @@
+{
+ "schema": "swimsignal.lab-lake-reads",
+ "version": "1.0.0",
+ "last_read": "2026-11-28",
+ "sources": {
+  "docs/LAKE-RANGE-HINDCAST-TEST-2026-11-scores.json": "fc9f7ee0f3ceebd396daae66624b04a39e04f88d67dd7f4a56451b57082e287b",
+  "docs/LAKE-RANGE-HINDCAST-TEST-2026-11-extra.json": "cdf9786aa64a72b85a8fba8c144dd54abd53b0fe110b8a7661d93b1c22110f25",
+  "docs/backtest-bench/results/lake_range_v1-20261115T200444Z.json": "c9514242517d5bd368be08659141a7f832105a9299c87ce440788e026f166144",
+  "docs/backtest-bench/results/lake_range_v1_ownlevel-20261128T142309Z.json": "457961364ab0031f45980076451fa1d05e2620e0d36d65facf3088dd8ea0b36e",
+  "docs/lake-average-check/results.json": "9d88b5a2cd1fa6e8c458bb7fb81ee3e1de523d0891d9fc0b9616608c67090ac6",
+  "spots.csv": "efc8ae7756b38cc8536fd03eb85426f162e0201168e538c3d163126db823b8de"
+ },
+ "lakes": [
+  {
+   "id": "ukd1203-45625",
+   "name": "Windermere, Lakeside YMCA",
+   "lat": 54.3004,
+   "lon": -2.9615,
+   "had_level": true
+  },
+  {
+   "id": "ukd1203-45650",
+   "name": "Windermere, Millerground Landing",
+   "lat": 54.3807,
+   "lon": -2.9225,
+   "had_level": true
+  },
+  {
+   "id": "ukd1203-45675",
+   "name": "Windermere, Rayrigg Meadow",
+   "lat": 54.3782,
+   "lon": -2.9225,
+   "had_level": true
+  },
+  {
+   "id": "ukd1203-45700",
+   "name": "Windermere, Fellfoot",
+   "lat": 54.2745,
+   "lon": -2.9538,
+   "had_level": true
+  },
+  {
+   "id": "ukj2310-11945",
+   "name": "Frensham Great Pond",
+   "lat": 51.1573,
+   "lon": -0.7918,
+   "had_level": true
+  },
+  {
+   "id": "ukf1400-09750",
+   "name": "Colwick Country Park (West Lake)",
+   "lat": 52.9452,
+   "lon": -1.0981,
+   "had_level": false
+  },
+  {
+   "id": "uki1101-11910",
+   "name": "Hampstead Heath (Ladies Pond)",
+   "lat": 51.5667,
+   "lon": -0.1601,
+   "had_level": false
+  },
+  {
+   "id": "uki1101-11920",
+   "name": "Hampstead Heath (Mens Pond)",
+   "lat": 51.5633,
+   "lon": -0.1566,
+   "had_level": false
+  },
+  {
+   "id": "uki1101-11930",
+   "name": "Hampstead Heath (Mixed Pond)",
+   "lat": 51.5607,
+   "lon": -0.1663,
+   "had_level": false
+  },
+  {
+   "id": "uki1106-11940",
+   "name": "The Serpentine - Hyde Park",
+   "lat": 51.5049,
+   "lon": -0.1691,
+   "had_level": false
+  },
+  {
+   "id": "ukk1100-36050",
+   "name": "Henleaze Lake",
+   "lat": 51.4946,
+   "lon": -2.6057,
+   "had_level": false
+  },
+  {
+   "id": "ukk1302-11760",
+   "name": "Cotswold Country Park and Beach",
+   "lat": 51.661,
+   "lon": -1.9609,
+   "had_level": false
+  }
+ ],
+ "records": {
+  "hindcast": "docs/LAKE-RANGE-HINDCAST-TEST-2026-11.md",
+  "read1": "docs/BENCH-READ-LAKE-RANGE-2026-11.md",
+  "read2": "docs/BENCH-READ-LAKE-RANGE-COVERAGE-2026-11.md",
+  "average": "docs/LAKE-AVERAGE-BASIS-CHECK-2026-11.md",
+  "site": [
+   "docs/LAKE-ORDER-NO-OVERFLOW-2026-11.md",
+   "docs/LAKE-RANGE-OWN-LEVELS-2026-11.md",
+   "docs/LAKE-ORDER-OVERFLOW-LAKES-2026-11.md"
+  ]
+ },
+ "bar": {
+  "inside": [
+   0.7,
+   0.9
+  ],
+  "each_water_body": 0.6,
+  "claims": 0.8
+ },
+ "known": {
+  "rows": 962,
+  "inside": 0.789,
+  "below": 0.1154,
+  "above": 0.0956,
+  "by_water": {
+   "Windermere": {
+    "rows": 753,
+    "inside": 0.7928
+   },
+   "Frensham": {
+    "rows": 209,
+    "inside": 0.7751
+   }
+  },
+  "rho_by_site": {
+   "Windermere, Lakeside YMCA": 0.342,
+   "Windermere, Millerground Landing": 0.35,
+   "Windermere, Rayrigg Meadow": 0.435,
+   "Windermere, Fellfoot": 0.136,
+   "Frensham Great Pond": 0.168
+  },
+  "rho_production_by_site": {
+   "Windermere, Lakeside YMCA": 0.179,
+   "Windermere, Millerground Landing": 0.233,
+   "Windermere, Rayrigg Meadow": 0.271,
+   "Windermere, Fellfoot": -0.02,
+   "Frensham Great Pond": -0.005
+  }
+ },
+ "known_as_unknown": {
+  "inside": 0.7557,
+  "below": 0.1985,
+  "above": 0.0457,
+  "by_water": {
+   "Windermere": 0.7477,
+   "Frensham": 0.7847
+  }
+ },
+ "order": {
+  "rows": 1373,
+  "lakes": 7,
+  "water_bodies": 5,
+  "read_at": "2026-11-15",
+  "rho": {
+   "value": 0.28881,
+   "ci95": [
+    0.23793,
+    0.33469
+   ]
+  },
+  "rho_production": {
+   "value": -0.01489,
+   "ci95": [
+    -0.08538,
+    0.06053
+   ]
+  },
+  "difference": {
+   "value": 0.3037,
+   "ci95": [
+    0.19742,
+    0.40904
+   ]
+  }
+ },
+ "own_level": {
+  "rows": 1373,
+  "read_at": "2026-11-28",
+  "inside": {
+   "value": 0.86893,
+   "ci95": [
+    0.84913,
+    0.88643
+   ]
+  },
+  "below": 0.09101,
+  "above": 0.04006,
+  "by_water": {
+   "Colwick Country Park (West Lake)": {
+    "rows": 182,
+    "cover80": 0.80237
+   },
+   "Cotswold Country Park and Beach": {
+    "rows": 207,
+    "cover80": 0.8031
+   },
+   "Hampstead Heath": {
+    "rows": 612,
+    "cover80": 0.89
+   },
+   "Henleaze Lake": {
+    "rows": 163,
+    "cover80": 0.93764
+   },
+   "The Serpentine - Hyde Park": {
+    "rows": 209,
+    "cover80": 0.87679
+   }
+  }
+ },
+ "average_seen": {
+  "note": "development: seen rows 2023-26, each lake treated as unknown",
+  "A": {
+   "overall": 0.6942,
+   "by_water": {
+    "Colwick Country Park (West Lake)": {
+     "rows": 64,
+     "inside": 0.6964,
+     "below": 0.0848,
+     "above": 0.2188,
+     "median": 12.9
+    },
+    "Coniston Water": {
+     "rows": 171,
+     "inside": 0.8219,
+     "below": 0.0904,
+     "above": 0.0877,
+     "median": 35.1
+    },
+    "Cotswold Country Park and Beach": {
+     "rows": 54,
+     "inside": 0.6867,
+     "below": 0.0725,
+     "above": 0.2407,
+     "median": 12.5
+    },
+    "Derwent Water": {
+     "rows": 58,
+     "inside": 0.5131,
+     "below": 0.0041,
+     "above": 0.4828,
+     "median": 25.9
+    },
+    "Frensham Great Pond": {
+     "rows": 54,
+     "inside": 0.8302,
+     "below": 0.0772,
+     "above": 0.0926,
+     "median": 14.1
+    },
+    "Hampstead Heath": {
+     "rows": 205,
+     "inside": 0.6143,
+     "below": 0.0101,
+     "above": 0.3756,
+     "median": 11.8
+    },
+    "Henleaze Lake": {
+     "rows": 76,
+     "inside": 0.5658,
+     "below": 0.0,
+     "above": 0.4342,
+     "median": 12.4
+    },
+    "Rutland Water": {
+     "rows": 141,
+     "inside": 0.7862,
+     "below": 0.1075,
+     "above": 0.1064,
+     "median": 13.2
+    },
+    "The Serpentine - Hyde Park": {
+     "rows": 79,
+     "inside": 0.4095,
+     "below": 0.0083,
+     "above": 0.5823,
+     "median": 12.0
+    },
+    "Windermere": {
+     "rows": 308,
+     "inside": 0.75,
+     "below": 0.2176,
+     "above": 0.0325,
+     "median": 34.9
+    }
+   }
+  },
+  "B": {
+   "overall": 0.7736,
+   "by_water": {
+    "Colwick Country Park (West Lake)": {
+     "rows": 64,
+     "inside": 0.8055,
+     "below": 0.1008,
+     "above": 0.0938,
+     "median": 19.1
+    },
+    "Coniston Water": {
+     "rows": 171,
+     "inside": 0.8363,
+     "below": 0.1111,
+     "above": 0.0526,
+     "median": 56.3
+    },
+    "Cotswold Country Park and Beach": {
+     "rows": 54,
+     "inside": 0.7662,
+     "below": 0.0857,
+     "above": 0.1481,
+     "median": 18.5
+    },
+    "Derwent Water": {
+     "rows": 58,
+     "inside": 0.53,
+     "below": 0.0045,
+     "above": 0.4655,
+     "median": 29.7
+    },
+    "Frensham Great Pond": {
+     "rows": 54,
+     "inside": 0.8911,
+     "below": 0.0904,
+     "above": 0.0185,
+     "median": 21.2
+    },
+    "Hampstead Heath": {
+     "rows": 205,
+     "inside": 0.7783,
+     "below": 0.0119,
+     "above": 0.2098,
+     "median": 17.4
+    },
+    "Henleaze Lake": {
+     "rows": 76,
+     "inside": 0.8421,
+     "below": 0.0,
+     "above": 0.1579,
+     "median": 18.4
+    },
+    "Rutland Water": {
+     "rows": 141,
+     "inside": 0.801,
+     "below": 0.1351,
+     "above": 0.0638,
+     "median": 21.5
+    },
+    "The Serpentine - Hyde Park": {
+     "rows": 79,
+     "inside": 0.7371,
+     "below": 0.0098,
+     "above": 0.2532,
+     "median": 17.8
+    },
+    "Windermere": {
+     "rows": 308,
+     "inside": 0.7356,
+     "below": 0.2449,
+     "above": 0.0195,
+     "median": 45.5
+    }
+   }
+  },
+  "C": {
+   "overall": 0.8264,
+   "by_site": {
+    "Coniston Water | Coniston Water, Brown Howe": {
+     "rows": 57,
+     "inside": 0.8402,
+     "below": 0.1072,
+     "above": 0.0526,
+     "median": 45.0
+    },
+    "Coniston Water | Coniston Water, Boating Centre": {
+     "rows": 57,
+     "inside": 0.8096,
+     "below": 0.0676,
+     "above": 0.1228,
+     "median": 42.8
+    },
+    "Coniston Water | Coniston Water, Monk Coniston": {
+     "rows": 57,
+     "inside": 0.774,
+     "below": 0.1909,
+     "above": 0.0351,
+     "median": 60.4
+    },
+    "Hampstead Heath | Hampstead Heath (Ladies Pond)": {
+     "rows": 78,
+     "inside": 0.9231,
+     "below": 0.0,
+     "above": 0.0769,
+     "median": 48.3
+    },
+    "Hampstead Heath | Hampstead Heath (Mens Pond)": {
+     "rows": 59,
+     "inside": 0.8839,
+     "below": 0.1161,
+     "above": 0.0,
+     "median": 80.5
+    },
+    "Hampstead Heath | Hampstead Heath (Mixed Pond)": {
+     "rows": 68,
+     "inside": 0.9675,
+     "below": 0.0178,
+     "above": 0.0147,
+     "median": 60.2
+    },
+    "Rutland Water | Rutland Water Whitwell Creek": {
+     "rows": 73,
+     "inside": 0.7781,
+     "below": 0.0986,
+     "above": 0.1233,
+     "median": 11.8
+    },
+    "Rutland Water | Rutland Water Sykes Lane": {
+     "rows": 68,
+     "inside": 0.8063,
+     "below": 0.1202,
+     "above": 0.0735,
+     "median": 15.7
+    },
+    "Windermere | Windermere, Lakeside YMCA": {
+     "rows": 77,
+     "inside": 0.7587,
+     "below": 0.1763,
+     "above": 0.0649,
+     "median": 14.0
+    },
+    "Windermere | Windermere, Millerground Landing": {
+     "rows": 77,
+     "inside": 0.8503,
+     "below": 0.1107,
+     "above": 0.039,
+     "median": 13.6
+    },
+    "Windermere | Windermere, Rayrigg Meadow": {
+     "rows": 77,
+     "inside": 0.8512,
+     "below": 0.0968,
+     "above": 0.0519,
+     "median": 12.6
+    },
+    "Windermere | Windermere, Fellfoot": {
+     "rows": 77,
+     "inside": 0.683,
+     "below": 0.0573,
+     "above": 0.2597,
+     "median": 7.6
+    }
+   }
+  }
+ },
+ "credit": "Environment Agency bathing water samples, Open Government Licence v3.0. Rain: Open-Meteo archive (CC BY 4.0)."
+}

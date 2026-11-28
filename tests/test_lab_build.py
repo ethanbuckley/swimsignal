@@ -15,7 +15,7 @@ import build_site  # noqa: E402
 @pytest.fixture(scope="module")
 def site(tmp_path_factory) -> Path:
     site = tmp_path_factory.mktemp("site")
-    assert build_site.write_lab(site) >= 8   # the front page and seven exhibits, at least
+    assert build_site.write_lab(site) >= 9   # the front page and eight exhibits, at least
     return site
 
 
@@ -71,21 +71,21 @@ def test_the_sites_shell(site):
         assert build_site.site_header(up, "lab/") in s and s.count('<header class="top">') == 1, f
         assert s.count('<nav class="phone-nav" aria-label="Main">') == 1 and f'<a href="{up}clubs.html">For organisations</a>' in s, f   # the phone's More
         nav = re.search(r'<nav class="labnav".*?</nav>', s, re.S).group(0)
-        assert nav.count('aria-current="page"') == 1 and nav.count("<a ") == 8, f
+        assert nav.count('aria-current="page"') == 1 and nav.count("<a ") == 9, f
 
 
 def test_exhibits_end_with_the_next_and_the_way_back(site):
-    for d in ("lake-from-space", "pollution", "forecasts", "workspace", "sampling", "overflow-ledger", "rivers"):
+    for d in ("lake-from-space", "pollution", "forecasts", "workspace", "sampling", "overflow-ledger", "rivers", "lakes"):
         s = (site / "lab" / d / "index.html").read_text()
         assert '<nav class="pager" aria-label="Exhibits">' in s and ">Back to the forecasts</a>" in s, d
 
 
 def test_covers_are_not_controls(site):
     s = (site / "lab" / "index.html").read_text()
-    assert s.count("LAB.drawMap(") == 5 and s.count("inert: true") == 5
-    assert s.count('<div class="cover" aria-hidden="true">') == 7 and ".ex .cover * { pointer-events: none; }" in s
+    assert s.count("LAB.drawMap(") == 6 and s.count("inert: true") == 6
+    assert s.count('<div class="cover" aria-hidden="true">') == 8 and ".ex .cover * { pointer-events: none; }" in s
     covers = site / "lab" / "assets" / "covers"
-    assert sorted(f.name for f in covers.iterdir()) == ["forecasts.jpg", "lake-from-space.jpg", "overflow-ledger.jpg", "pollution.jpg", "rivers.jpg", "sampling.jpg", "workspace.jpg"]
+    assert sorted(f.name for f in covers.iterdir()) == ["forecasts.jpg", "lake-from-space.jpg", "lakes.jpg", "overflow-ledger.jpg", "pollution.jpg", "rivers.jpg", "sampling.jpg", "workspace.jpg"]
 
 
 def test_lab_links_name_only_what_an_exhibit_holds(tmp_path):
@@ -94,7 +94,7 @@ def test_lab_links_name_only_what_an_exhibit_holds(tmp_path):
     by = {s["id"]: s.get("lab") for s in spots}
     assert by["bw-uke4100-08901"] == {"bw": "uke4100-08901", "ws": "wharfe-ilkley"}
     assert by["osm-windermere-waterhead"] == {"ws": "windermere"}
-    assert by["bw-ukd1203-45675"] == {"lake": "bw-ukd1203-45675", "bw": "ukd1203-45675", "ws": "windermere"}
+    assert by["bw-ukd1203-45675"] == {"lake": "bw-ukd1203-45675", "bw": "ukd1203-45675", "ws": "windermere", "lt": True}   # exhibit 8
     assert by["thames-henley"] is None
     assert "lab" in build_site.DETAIL_FIELDS   # a spot's own file, not the list's
 
@@ -124,7 +124,7 @@ def test_left_out(site):
 def test_every_page_is_in_the_sitemap(site):
     pages = build_site.lab_pages()
     assert pages[0] == "lab/" and {"lab/lake-from-space/", "lab/pollution/", "lab/forecasts/", "lab/workspace/", "lab/sampling/",
-                                   "lab/overflow-ledger/", "lab/rivers/"} <= set(pages)
+                                   "lab/overflow-ledger/", "lab/rivers/", "lab/lakes/"} <= set(pages)
     assert all((site / p / "index.html").is_file() for p in pages)
     assert all(f"<loc>https://example.org/{p}</loc>" in build_site.sitemap("https://example.org/", [], "2026-11-01", extra=pages) for p in pages)
 
