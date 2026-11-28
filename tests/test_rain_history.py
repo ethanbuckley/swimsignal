@@ -94,3 +94,38 @@ def test_an_irish_card_carries_the_line(tmp_path):
     assert "Across Irish beaches (May to September, 2014 to 2026)" in html and "Tested on Irish beaches." in html
     assert "Contains Environment Agency data, OGL v3.0." in html   # the file's credit under the list
     assert "Rain here in the 2 days" not in html
+
+
+def test_an_inland_water_counts_over_900_and_the_note_says_it_was_not_tested(tmp_path):
+    """docs/INLAND-RAIN-HISTORY-2026-11.md: lakes and rivers count results over 900, the inland line, with no tested
+    label."""
+    lake = {"nation": "ireland", "first_year": 2014, "last_year": 2026, "samples": 183, "line": 900,
+            "after_rain": {"samples": 38, "median": 96.0, "over_900": 6},
+            "dry": {"samples": 54, "median": 30.0, "over_900": 0}}
+    doc = {**DOC, "nations": {"ireland": {**DOC["nations"]["england"], "tested": "Tested on Irish beaches.",
+                                          "inland": {"waters": 1, "samples": 183}}},
+           "sites": {"lake": lake, "beach": {**DOC["sites"]["a"], "nation": "ireland"}}}
+    f = tmp_path / "h.json"
+    f.write_text(json.dumps(doc))
+    snap = {"sites": [{"id": "lake"}, {"id": "beach"}]}
+    assert rain_history.attach(snap, "ireland", f) == 2
+    text = rain_history.line(snap["sites"][0]["rain_history"])
+    assert "the middle of 38 read 96 (6 over 900)" in text and "the middle of 54 read 30 (none over 900)" in text
+    assert "500" not in text
+    assert "(3 over 500)" in rain_history.line(snap["sites"][1]["rain_history"])   # a beach keeps its line
+    note = rain_history.note(snap)
+    assert "count results over 900, the inland line, and they were not tested" in note
+
+
+def test_the_committed_file_gives_inland_waters_900_and_leaves_beaches_at_500():
+    doc = json.loads(rain_history.PATH.read_text())
+    assert doc["version"].startswith("1.") and doc["version"] >= "1.2"
+    inland = {k: v for k, v in doc["sites"].items() if v.get("line") == 900}
+    assert inland and all(v["nation"] in ("ireland", "wales", "northern_ireland") for v in inland.values())
+    for v in doc["sites"].values():
+        for g in (v["after_rain"], v["dry"]):
+            if "median" in g:
+                assert (f'over_{v.get("line", 500)}' in g) and len([k for k in g if k.startswith("over_")]) == 1
+    for n in ("ireland", "wales", "northern_ireland"):
+        assert "share_over_900" in doc["nations"][n]["inland"]["after_rain"]
+        assert "share_over_500" in doc["nations"][n]["after_rain"]   # the beaches' pooled figure stays coast only

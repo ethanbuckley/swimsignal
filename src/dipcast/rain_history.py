@@ -1,5 +1,5 @@
 """What a beach's own past samples read after rain and after dry spells, in England, Wales, Northern Ireland and the
-Republic of Ireland (data/research/coastal_rain_history.v1.json, written off CI by
+Republic of Ireland, coast and inland (data/research/coastal_rain_history.v1.json, written off CI by
 scripts/coastal_c1/export_rain_history.py), and the rain at an English beach's square today. Past samples, never a
 forecast. Two lines on each beach's card on the coverage page, and one note above the list that says
 what was tested (C1's frozen-model backtest, docs/COASTAL-C1-PROTOCOL-2026-11.md).
@@ -75,19 +75,21 @@ def _reading(v) -> str:
     return f"{v:,.0f}" if v >= 10 else f"{v:g}"
 
 
-def _part(g: dict | None, words: str) -> str | None:
+def _part(g: dict | None, words: str, line: int = 500) -> str | None:
     if not g or "median" not in g:
         return None
-    over = f'{g["over_500"]} over 500' if g["over_500"] else "none over 500"
+    n = g.get(f"over_{line}")
+    over = f"{n} over {line}" if n else f"none over {line}"
     return f'{words}, the middle of {g["samples"]} read {_reading(g["median"])} ({over})'
 
 
 def line(h: dict, rule: dict | None = None) -> str | None:
-    """One plain line: the beach's samples after rain in the 2 days before, and after 2 dry days. None when neither
-    group has enough samples."""
+    """One plain line: the water's samples after rain in the 2 days before, and after 2 dry days, with how many were
+    over its line (500 on the coast, 900 inland: `line` in the file). None when neither group has enough samples."""
     rule = {**RULE, **(rule or {})}
-    wet = _part(h.get("after_rain"), f'after {rule["after_rain_mm"]:g} mm or more of rain in the 2 days before')
-    dry = _part(h.get("dry"), f'after 2 dry days (under {rule["dry_mm"]:g} mm)')
+    ln = h.get("line", 500)
+    wet = _part(h.get("after_rain"), f'after {rule["after_rain_mm"]:g} mm or more of rain in the 2 days before', ln)
+    dry = _part(h.get("dry"), f'after 2 dry days (under {rule["dry_mm"]:g} mm)', ln)
     if not wet and not dry:
         return None
     years = str(h["first_year"]) if h["first_year"] == h["last_year"] else f'{h["first_year"]}–{h["last_year"]}'
@@ -130,8 +132,12 @@ def note(snapshot: dict) -> str:
                   f'{wet["share_over_500"] * 100:.1f}% of samples taken after {rule["after_rain_mm"]:g} mm or more of '
                   f'rain in 2 days were over 500, against {dry["share_over_500"] * 100:.1f}% after 2 dry days.')
     tested = r.get("tested") or ""
-    return ('<p class="small">The "by rain" lines split each beach\'s own samples by the rain in the 2 days before '
-            'each one, from ERA5-Land, a reanalysis of past weather, at the beach\'s grid square.'
+    if r.get("inland"):
+        tested += (" At lakes and rivers the lines count results over 900, the inland line, and they were not "
+                   "tested: the test was on the coast.")
+    place = "water" if r.get("inland") else "beach"
+    return (f'<p class="small">The "by rain" lines split each {place}\'s own samples by the rain in the 2 days before '
+            f'each one, from ERA5-Land, a reanalysis of past weather, at the {place}\'s grid square.'
             f'{escape(pooled)} {escape(tested)} '
             'These are past samples. They are not a forecast for today, and rain is not the only cause of a bad '
             'result.</p>')

@@ -1,6 +1,6 @@
 {
  "credit": "Contains Environment Agency, Natural Resources Wales and DAERA data, OGL v3.0, and data from the Environmental Protection Agency (Ireland), CC BY 4.0. Rain generated using Copernicus Climate Change Service information 2026.",
- "generated_at": "2026-11-27T10:45:49+00:00",
+ "generated_at": "2026-11-28T13:33:21+00:00",
  "nations": {
   "england": {
    "after_rain": {
@@ -34,6 +34,22 @@
     "samples": 7619,
     "share_over_500": 0.0109
    },
+   "inland": {
+    "after_rain": {
+     "median": 18.0,
+     "over_900": 13,
+     "samples": 269,
+     "share_over_900": 0.0483
+    },
+    "dry": {
+     "median": "<10",
+     "over_900": 8,
+     "samples": 443,
+     "share_over_900": 0.0181
+    },
+    "samples": 1365,
+    "waters": 20
+   },
    "period": "May to September, 2014 to 2026",
    "samples": 24530,
    "tested": "England's frozen model, never fitted on Irish samples, put each beach's 2014 to 2026 samples in order better with rain than without (24,413 samples at 210 beaches). That supports these lines; it is not a chance for today."
@@ -51,6 +67,22 @@
     "over_500": 7,
     "samples": 719,
     "share_over_500": 0.0097
+   },
+   "inland": {
+    "after_rain": {
+     "median": 150.0,
+     "over_900": 7,
+     "samples": 20,
+     "share_over_900": 0.35
+    },
+    "dry": {
+     "median": 130.0,
+     "over_900": 2,
+     "samples": 22,
+     "share_over_900": 0.0909
+    },
+    "samples": 75,
+    "waters": 1
    },
    "period": "May to September, 2023 to 2026",
    "samples": 2564,
@@ -70,6 +102,22 @@
     "samples": 1555,
     "share_over_500": 0.0051
    },
+   "inland": {
+    "after_rain": {
+     "median": 45.0,
+     "over_900": 3,
+     "samples": 20,
+     "share_over_900": 0.15
+    },
+    "dry": {
+     "median": 45.0,
+     "over_900": 1,
+     "samples": 41,
+     "share_over_900": 0.0244
+    },
+    "samples": 117,
+    "waters": 4
+   },
    "period": "May to September, 2023 to 2026",
    "samples": 4471,
    "tested": "England's frozen model, never fitted on Welsh or Northern Irish samples, put each beach's 2023 to 2026 samples in order better with rain than without (7,019 samples at 141 beaches). That supports these lines; it is not a chance for today."
@@ -79,7 +127,8 @@
  "records": [
   "docs/COASTAL-C1-PROTOCOL-2026-11.md",
   "docs/ANYWATER-UK-STATEMENT-2026-11.md",
-  "docs/ANYWATER-IE-STATEMENT-2026-11.md"
+  "docs/ANYWATER-IE-STATEMENT-2026-11.md",
+  "docs/INLAND-RAIN-HISTORY-2026-11.md"
  ],
  "rule": {
   "after_rain_mm": 10.0,
@@ -774,6 +823,136 @@
    },
    "first_year": 2024,
    "last_year": 2026,
+   "nation": "ireland",
+   "samples": 18
+  },
+  "BPNBF240000020001": {
+   "after_rain": {
+    "samples": 4
+   },
+   "dry": {
+    "samples": 7
+   },
+   "first_year": 2022,
+   "last_year": 2026,
+   "line": 900,
+   "nation": "ireland",
+   "samples": 20
+  },
+  "BPNBF240000030001": {
+   "after_rain": {
+    "samples": 5
+   },
+   "dry": {
+    "samples": 8
+   },
+   "first_year": 2022,
+   "last_year": 2026,
+   "line": 900,
+   "nation": "ireland",
+   "samples": 25
+  },
+  "BPNBF240000040001": {
+   "after_rain": {
+    "samples": 3
+   },
+   "dry": {
+    "samples": 7
+   },
+   "first_year": 2022,
+   "last_year": 2026,
+   "line": 900,
+   "nation": "ireland",
+   "samples": 20
+  },
+  "BPNBF240000050001": {
+   "after_rain": {
+    "samples": 2
+   },
+   "dry": {
+    "samples": 7
+   },
+   "first_year": 2022,
+   "last_year": 2026,
+   "line": 900,
+   "nation": "ireland",
+   "samples": 20
+  },
+  "BPNBF240000060001": {
+   "after_rain": {
+    "samples": 2
+   },
+   "dry": {
+    "samples": 8
+   },
+   "first_year": 2022,
+   "last_year": 2026,
+   "line": 900,
+   "nation": "ireland",
+   "samples": 21
+  },
+  "BPNBF240000070001": {
+   "after_rain": {
+    "samples": 4
+   },
+   "dry": {
+    "samples": 8
+   },
+   "first_year": 2022,
+   "last_year": 2026,
+   "line": 900,
+   "nation": "ireland",
+   "samples": 22
+  },
+  "BPNBF240000080001": {
+   "after_rain": {
+    "samples": 1
+   },
+   "dry": {
+    "samples": 4
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "line": 900,
+   "nation": "ireland",
+   "samples": 16
+  },
+  "BPNBF240000090001": {
+   "after_rain": {
+    "samples": 3
+   },
+   "dry": {
+    "samples": 8
+   },
+   "first_year": 2022,
+   "last_year": 2026,
+   "line": 900,
+   "nation": "ireland",
+   "samples": 21
+  },
+  "BPNBF240000100001": {
+   "after_rain": {
+    "samples": 5
+   },
+   "dry": {
+    "samples": 8
+   },
+   "first_year": 2022,
+   "last_year": 2026,
+   "line": 900,
+   "nation": "ireland",
+   "samples": 25
+  },
+  "BPNBF240000110001": {
+   "after_rain": {
+    "samples": 4
+   },
+   "dry": {
+    "samples": 5
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "line": 900,
    "nation": "ireland",
    "samples": 18
   },
@@ -1626,6 +1805,23 @@
    "last_year": 2026,
    "nation": "ireland",
    "samples": 129
+  },
+  "IEEABWL07_274_0100": {
+   "after_rain": {
+    "median": 6.0,
+    "over_900": 0,
+    "samples": 23
+   },
+   "dry": {
+    "median": 2.0,
+    "over_900": 0,
+    "samples": 36
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "line": 900,
+   "nation": "ireland",
+   "samples": 123
   },
   "IENBBWC025_0000_0100": {
    "after_rain": {
@@ -2553,6 +2749,138 @@
    "nation": "ireland",
    "samples": 130
   },
+  "IESHBWL25_188_0100": {
+   "after_rain": {
+    "median": 96.0,
+    "over_900": 6,
+    "samples": 38
+   },
+   "dry": {
+    "median": 30.0,
+    "over_900": 6,
+    "samples": 54
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "line": 900,
+   "nation": "ireland",
+   "samples": 183
+  },
+  "IESHBWL25_191a_0100": {
+   "after_rain": {
+    "median": 30.0,
+    "over_900": 0,
+    "samples": 13
+   },
+   "dry": {
+    "median": 10.0,
+    "over_900": 0,
+    "samples": 40
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "line": 900,
+   "nation": "ireland",
+   "samples": 92
+  },
+  "IESHBWL25_191a_0190": {
+   "after_rain": {
+    "samples": 2
+   },
+   "dry": {
+    "samples": 5
+   },
+   "first_year": 2024,
+   "last_year": 2026,
+   "line": 900,
+   "nation": "ireland",
+   "samples": 23
+  },
+  "IESHBWL25_191a_0200": {
+   "after_rain": {
+    "median": 10.0,
+    "over_900": 0,
+    "samples": 28
+   },
+   "dry": {
+    "median": 10.0,
+    "over_900": 0,
+    "samples": 44
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "line": 900,
+   "nation": "ireland",
+   "samples": 130
+  },
+  "IESHBWL25_191a_0300": {
+   "after_rain": {
+    "median": "<10",
+    "over_900": 0,
+    "samples": 27
+   },
+   "dry": {
+    "median": "<10",
+    "over_900": 0,
+    "samples": 44
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "line": 900,
+   "nation": "ireland",
+   "samples": 130
+  },
+  "IESHBWL26_624_0100": {
+   "after_rain": {
+    "median": 11.0,
+    "over_900": 0,
+    "samples": 34
+   },
+   "dry": {
+    "median": 3.0,
+    "over_900": 0,
+    "samples": 34
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "line": 900,
+   "nation": "ireland",
+   "samples": 119
+  },
+  "IESHBWL26_703_0100": {
+   "after_rain": {
+    "median": 4.0,
+    "over_900": 0,
+    "samples": 24
+   },
+   "dry": {
+    "median": 1.0,
+    "over_900": 0,
+    "samples": 41
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "line": 900,
+   "nation": "ireland",
+   "samples": 123
+  },
+  "IESHBWL27_72_0100": {
+   "after_rain": {
+    "median": 30.0,
+    "over_900": 0,
+    "samples": 25
+   },
+   "dry": {
+    "median": 10.0,
+    "over_900": 0,
+    "samples": 40
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "line": 900,
+   "nation": "ireland",
+   "samples": 130
+  },
   "IESWBWC010_0000_0100": {
    "after_rain": {
     "median": 10.0,
@@ -3475,6 +3803,23 @@
    "nation": "ireland",
    "samples": 115
   },
+  "IEWEBWL29_194_0100": {
+   "after_rain": {
+    "median": "<10",
+    "over_900": 0,
+    "samples": 22
+   },
+   "dry": {
+    "median": "<10",
+    "over_900": 0,
+    "samples": 35
+   },
+   "first_year": 2014,
+   "last_year": 2026,
+   "line": 900,
+   "nation": "ireland",
+   "samples": 104
+  },
   "IEWEBWT170_0700_0100": {
    "after_rain": {
     "median": 98.0,
@@ -4002,6 +4347,23 @@
    "last_year": 2026,
    "nation": "northern_ireland",
    "samples": 81
+  },
+  "daera-30203": {
+   "after_rain": {
+    "median": 150.0,
+    "over_900": 7,
+    "samples": 20
+   },
+   "dry": {
+    "median": 130.0,
+    "over_900": 2,
+    "samples": 22
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "line": 900,
+   "nation": "northern_ireland",
+   "samples": 75
   },
   "daera-30205": {
    "after_rain": {
@@ -11025,6 +11387,23 @@
    "nation": "wales",
    "samples": 40
   },
+  "ukl1200-39975": {
+   "after_rain": {
+    "median": 27.0,
+    "over_900": 0,
+    "samples": 11
+   },
+   "dry": {
+    "median": "<10",
+    "over_900": 0,
+    "samples": 10
+   },
+   "first_year": 2023,
+   "last_year": 2026,
+   "line": 900,
+   "nation": "wales",
+   "samples": 40
+  },
   "ukl1301-40170": {
    "after_rain": {
     "samples": 9
@@ -11200,6 +11579,19 @@
    "last_year": 2026,
    "nation": "wales",
    "samples": 46
+  },
+  "ukl1401-37650": {
+   "after_rain": {
+    "samples": 4
+   },
+   "dry": {
+    "samples": 5
+   },
+   "first_year": 2026,
+   "last_year": 2026,
+   "line": 900,
+   "nation": "wales",
+   "samples": 16
   },
   "ukl1401-37700": {
    "after_rain": {
@@ -12009,6 +12401,21 @@
    "nation": "wales",
    "samples": 38
   },
+  "ukl2201-36040": {
+   "after_rain": {
+    "samples": 4
+   },
+   "dry": {
+    "median": "<10",
+    "over_900": 0,
+    "samples": 11
+   },
+   "first_year": 2025,
+   "last_year": 2026,
+   "line": 900,
+   "nation": "wales",
+   "samples": 31
+  },
   "ukl2202-36050": {
    "after_rain": {
     "samples": 5
@@ -12140,6 +12547,21 @@
    "last_year": 2026,
    "nation": "wales",
    "samples": 72
+  },
+  "ukl2400-38620": {
+   "after_rain": {
+    "samples": 1
+   },
+   "dry": {
+    "median": 110.0,
+    "over_900": 0,
+    "samples": 15
+   },
+   "first_year": 2024,
+   "last_year": 2026,
+   "line": 900,
+   "nation": "wales",
+   "samples": 30
   }
  },
  "sources": {
@@ -12148,5 +12570,5 @@
   "northern_ireland": "DAERA bathing water results tables, OGL v3.0",
   "wales": "Natural Resources Wales in-season bathing water samples, OGL v3.0"
  },
- "version": "1.1.0"
+ "version": "1.2.0"
 }

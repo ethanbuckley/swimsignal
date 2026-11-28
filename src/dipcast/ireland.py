@@ -388,7 +388,7 @@ def render(snapshot: dict) -> str:
         lines.append(_sample_text(s["sample"], today, season))
         if s.get("typical"):
             lines.append(escape(typical.line(s["typical"])))
-        lines += rain_history.card_lines(s, snapshot)   # past samples by rain, coast and estuary only
+        lines += rain_history.card_lines(s, snapshot)   # past samples by rain (over 900 at lakes and the river)
         if s.get("history"):   # every sample since 2014 on the shared sample viewer (sample_history.py)
             lines.append(f'<a href="samples.html#ireland={escape(s["id"], quote=True)}">'
                          f'{escape(sample_history.history_line(s["history"]))}</a>')
