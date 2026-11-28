@@ -1002,6 +1002,8 @@ function placeFactsHtml(s) {
   const ls = s.lab_sample;
   if (ls && ls.taken_at && !P.isNil(ls.ecoli)) facts.push(['Last sample', `${esc(ls.qualifier || '')}${num(ls.ecoli)} E. coli per 100 ml on ${esc(P.shortDate(String(ls.taken_at).slice(0, 10)))}, by the Environment Agency. The line for a rating of sufficient is 900.`
     + (s.ecoli_typical ? ` Of ${s.ecoli_typical.samples} samples from ${s.ecoli_typical.first_year} to ${s.ecoli_typical.last_year}, ${s.ecoli_typical.over_line} were over it.` : '')]);
+  const wet = afterRainLine(s, (s.days || []).find(d => d.date === today()));   // levels.js; in season, no overflow upstream
+  if (wet) facts.push(['After rain', esc(wet)]);
   if (s.algae && s.algae.date && s.algae.phrase) facts.push(['Algae', `At the Environment Agency's last check, ${esc(P.shortDate(s.algae.date))}: ${esc(s.algae.phrase)}. The check cannot tell blue-green algae from harmless kinds.`]);
   const rs = s.river_state;
   if (rs && !P.isNil(rs.level_m) && !rs.stale) { const word = ({ low: 'low water', normal: 'its usual level', high: 'high water', 'very high': 'very high water, above its usual range' })[rs.label];
